@@ -35,6 +35,8 @@ namespace CTRPluginFramework
         u16                         GetWidth(void);
         u16                         GetHeight(void);
         u32                         GetStride(void);
+        u32                         GetRowSize(void);
+        u32                         GetBytesPerPixel(void);
 
         u8                          *GetLeftFramebuffer(bool current = false);
         u8                          *GetRightFramebuffer(bool current = false);                    
@@ -42,15 +44,17 @@ namespace CTRPluginFramework
 
 
     private:
-        u32                         *_LCDSetup;
-        u32                         *_FillColor;
-        u8                          *_leftFramebuffers[2];
-        u8                          *_rightFramebuffers[2];
-        u32                         *_currentBuffer;
+        u32                         _LCDSetup;
+        u32                         _FillColor;
+        u32                         _leftFramebuffers[2];
+        u32                         _rightFramebuffers[2];
+        u32                         _currentBuffer;
         
         u16                         _width;
         u16                         _height;
         u32                         _stride;
+        u32                         _rowSize;
+        u32                         _bytesPerPixel;
         bool                        _isInit;
         GSPGPU_FramebufferFormats   _format;
     };
