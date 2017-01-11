@@ -8,11 +8,10 @@ extern "C" void abort(void);
 
 u32     fsUserHandle;
 u32     sdmcArchive;
-char    processName[10];
 
 extern "C" void    initSystem();
 
-int    main(u64 titleId, char *processName);
+int    main(void);
 
 void abort(void)
 {
@@ -27,18 +26,14 @@ using namespace CTRPluginFramework;
 void  ThreadInit(u32 arg)
 {
     // Wait for the game to be launched
-    svcSleepThread(100000000);
+    svcSleepThread(5000000000);
     // Init heap and services
     initSystem();
 
     System::Initialize();
     Screen::Initialize();
-    
-    memset(processName, 0, 10);
 
-    Process::GetName(processName);
-    u64 tid = Process::GetTitleID();
-    int ret = main(tid, processName);
+    int ret = main();
 
     // Free heap and services and exit thread
     exit(ret);
