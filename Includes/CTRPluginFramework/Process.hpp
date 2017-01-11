@@ -42,9 +42,11 @@ namespace CTRPluginFramework
             static void Initialize(bool isNew3DS);
            
             static u32          _processID;
-            static u32          *_kProcess;
-            static u32          *_kProcessHandleTable;          
-            static KCodeSet     *_kCodeSet;
+            static u64          _titleID;
+            static char         _processName[8];
+            static u32          _kProcess;
+            static KCodeSet     _kCodeSet;
+            //static u32          *_kProcessHandleTable;          
     };
 }
 
