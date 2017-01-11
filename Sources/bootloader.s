@@ -40,7 +40,8 @@ ldr     r1, = __c_bss_end
 sub     r1, r1, r0
 bl      ClearMem
 
-bl      main
+mov     r0, #0
+bl      LaunchMainThread
 mov     r0, sp
 
 ldmfd	sp!, {r0}
@@ -55,7 +56,7 @@ ldmfd	SP!, {R0-R12, LR};
 ClearMem:
 @---------------------------------------------------------------------------------
     mov  r2, #3     @ Round down to nearest word boundary
-    add  r1, r1, r2 @ Shouldn't be needed
+    add  r1, r1, r2 @ Shouldnt be needed
     bics r1, r1, r2 @ Clear 2 LSB (and set Z)
     bxeq lr         @ Quit if copy size is 0
 
@@ -79,4 +80,3 @@ __c_bss_start:
 .section .__bss_end
 .global __c_bss_end
 __c_bss_end:
-

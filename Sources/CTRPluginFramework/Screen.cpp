@@ -20,8 +20,8 @@ namespace CTRPluginFramework
 
     void    Screen::Initialize(void)
     {
-        Screen::Top = new (topScreenMemory)Screen(System::GetIOBasePDC() + 0x400, System::GetIOBaseLCD() + 0x204);
-        Screen::Bottom = new (bottomScreenMemory) Screen(System::GetIOBasePDC() + 0x500, System::GetIOBaseLCD() + 0xA04);
+        Screen::Top = new Screen(System::GetIOBasePDC() + 0x400, System::GetIOBaseLCD() + 0x204);
+        Screen::Bottom = new Screen(System::GetIOBasePDC() + 0x500, System::GetIOBaseLCD() + 0xA04);
     }
 
     void    Screen::Flash(Color &color)
