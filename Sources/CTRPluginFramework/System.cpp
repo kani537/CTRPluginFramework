@@ -1,7 +1,6 @@
-#include "System.hpp"
-#include "ctrulib/services/apt.h"
-#include "ctrulib/svc.h"
-#include "libntrplg/sharedfunc.h"
+#include "CTRPluginFramework.hpp"
+#include "3DS.h"
+
 namespace CTRPluginFramework
 {
     bool    System::_isInit = false;
@@ -32,7 +31,7 @@ namespace CTRPluginFramework
             _IOBasePDC = 0xFFFC0000;
         }
         _isInit = true;
-        Process:Initialize();
+        Process::Initialize(true);
     }
 
     u32     System::GetIOBaseLCD(void)
