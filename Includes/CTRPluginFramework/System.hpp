@@ -4,7 +4,7 @@
 #include "types.h"
 
 namespace CTRPluginFramework
-{
+{    
     class System
     {
     public:
@@ -17,11 +17,11 @@ namespace CTRPluginFramework
 
     private:
         System(){}
-        static bool    _isInit;
-        static bool    _isNew3DS;
-        static u32     _IOBaseLCD;
-        static u32     _IOBasePAD;
-        static u32     _IOBasePDC;
+        static bool     _isInit;
+        static bool     _isNew3DS;
+        static u32      _IOBaseLCD;
+        static u32      _IOBasePAD;
+        static u32      _IOBasePDC;
     };
 }
 

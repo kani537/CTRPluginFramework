@@ -10,36 +10,13 @@ namespace CTRPluginFramework
     u32     System::_IOBasePAD = 0;
     u32     System::_IOBasePDC = 0;
 
-    void gfxFillColor(u32 fillcolor)
-    {
-        u32 i;
-
-        u32 IoBaseLcd = System::GetIOBaseLCD();
-        for (i = 0; i < 0x64; ++i )
-        {
-            *(u32 *)(IoBaseLcd + 0x204) = fillcolor;
-            *(u32 *)(IoBaseLcd + 0xA04) = fillcolor;
-            svcSleepThread(5000000); // 0.005 second
-        }
-        *(u32*)(IoBaseLcd + 0x204) = 0;
-        *(u32*)(IoBaseLcd + 0xA04) = 0;
-    }
-
-    void    Check(void)
-    {
-        if (System::IsNew3DS())
-            gfxFillColor(0x100FF00);
-        else
-            gfxFillColor(0x10000FF);
-    }
-
     void    System::Initialize(void)
     {
         if (_isInit)
             return;
 
         bool isNew3DS = false;
-        //aptInit();
+        
         APT_CheckNew3DS(&isNew3DS);
         _isNew3DS = isNew3DS;
         if (isNew3DS)
@@ -55,7 +32,7 @@ namespace CTRPluginFramework
             _IOBasePDC = 0xFFFC0000;
         }
         _isInit = true;
-        Check();
+        Process:Initialize();
     }
 
     u32     System::GetIOBaseLCD(void)
