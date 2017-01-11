@@ -39,7 +39,7 @@ namespace CTRPluginFramework
             return;
 
         bool isNew3DS = false;
-        aptInit();
+        //aptInit();
         APT_CheckNew3DS(&isNew3DS);
         _isNew3DS = isNew3DS;
         if (isNew3DS)

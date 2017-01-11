@@ -24,7 +24,6 @@ void    MainThread(u32 arg)
 {   
     // Wait for the game to be launched
     svcSleepThread(0x100000000);
-
     srvInit();    
     initSystem();   
     CTRPluginFramework::System::Initialize();
