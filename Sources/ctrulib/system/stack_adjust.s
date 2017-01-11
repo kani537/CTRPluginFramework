@@ -37,8 +37,8 @@ __ctru_exit:
 @	bl	__libc_fini_array
 	bl	__appExit
 
-	ldr	r2, =saved_stack
-	ldr	sp, [r2]
+@	ldr	r2, =saved_stack
+@	ldr	sp, [r2]
 	b	__libctru_exit
 
 	.data

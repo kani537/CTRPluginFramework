@@ -8,5 +8,5 @@ void __attribute__((weak)) __appExit(void)
 
 	//hidExit();
 	//aptExit();
-	//srvExit();
+	srvExit();
 }

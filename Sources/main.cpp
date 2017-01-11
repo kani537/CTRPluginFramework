@@ -1,7 +1,7 @@
 #include "CTRPluginFramework.hpp"
 #include "3DS.h"
 #include "NTR.h"
-
+#include <stdlib.h>
 extern "C" int main(void);
 extern "C" void abort(void);
 
@@ -23,8 +23,7 @@ using namespace CTRPluginFramework;
 void    MainThread(u32 arg)
 {   
     // Wait for the game to be launched
-    svcSleepThread(0x100000000);
-    srvInit();    
+    svcSleepThread(0x100000000);   
     initSystem();   
     CTRPluginFramework::System::Initialize();
     CTRPluginFramework::Screen::Initialize();
@@ -35,7 +34,7 @@ void    MainThread(u32 arg)
     Color y = Color(255, 255, 0);
     Color z = Color(0, 255, 255);
 
-    while (i++ < 20)
+    while (i++ < 5)
     {
         Screen::Top->Flash(i % 2 ? y : z);
         Screen::Bottom->Flash(i % 2 ? z : y);
@@ -43,8 +42,8 @@ void    MainThread(u32 arg)
         svcSleepThread(0x50000000);
     }
 
-    srvExit();
-    svcExitThread();
+    // Exit thread and deinit framework
+    exit(0);
 }
 
 int   main(void)

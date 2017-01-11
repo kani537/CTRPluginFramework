@@ -36,5 +36,5 @@ void __attribute__((weak)) __attribute__((noreturn)) __libctru_exit(int rc)
 		//__system_retAddr();
 
 	// Since above did not jump, end this process
-	//svcExitThread();
+	svcExitThread();
 }
