@@ -1,12 +1,13 @@
 #ifndef FUNC_H
 #define FUNC_H
 
+
+#define IS_PLUGIN 1
 #if IS_PLUGIN
 #define INIT_SHARED_FUNC(name,id) rtGenerateJumpCode(((NS_CONFIG*)(NS_CONFIGURE_ADDR))->sharedFunc[id], (void*) name);rtFlushInstructionCache((void*) name, 8);
 #else
 #define INIT_SHARED_FUNC(name,id) (g_nsConfig->sharedFunc[id] = (u32) name)
 #endif
-
 
 u32 protectRemoteMemory(Handle hProcess, void* addr, u32 size);
 u32 protectMemory(void* addr, u32 size);
@@ -14,8 +15,8 @@ u32 getCurrentProcessHandle(void);
 
 
 
-extern Handle fsUserHandle;
-extern FS_Archive sdmcArchive;
+//extern Handle fsUserHandle;
+//extern FS_Archive sdmcArchive;
 
 
 #define MAX_PLUGIN_COUNT 32

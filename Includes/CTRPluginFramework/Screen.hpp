@@ -1,7 +1,7 @@
 #ifndef CTRPLUGINFRAMEWORK_SCREEN_HPP
 #define CTRPLUGINFRAMEWORK_SCREEN_HPP
 
-#include "types.h"
+#include "CTRPluginFramework.hpp"
 
 namespace CTRPluginFramework
 {
@@ -23,8 +23,19 @@ namespace CTRPluginFramework
     {
     public:
 
-    private:
+        static  Screen *Top; 
+        static  Screen *Bottom;
 
+        Screen(u32 lcdSetupInfo, u32 fillColorAddress);
+
+        static void    Initialize(void);
+        void    Flash(Color &color);
+
+
+    private:
+        LCDFamebufferSetup  *_LCDSetup;
+        u32                 *const _FillColor;
+        bool                _isInit;
     };
 }
 

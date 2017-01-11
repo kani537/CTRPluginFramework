@@ -1,5 +1,5 @@
-#ifndef 3DS_H
-#define 3DS_H
+#ifndef _3DS_H
+#define _3DS_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -13,11 +13,11 @@ extern "C" {
 #include "ctrulib/services/gspgpu.h"
 #include "ctrulib/services/hid.h"
 
-#include "ctrulib/util/uft.h"
+#include "ctrulib/util/utf.h"
 
 #include "ctrulib/env.h"
 #include "ctrulib/font.h"
-#include "ctrulib/gfx/h"
+#include "ctrulib/gfx.h"
 #include "ctrulib/ipc.h"
 #include "ctrulib/os.h"
 #include "ctrulib/result.h"

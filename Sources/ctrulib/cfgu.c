@@ -56,7 +56,7 @@ void cfguExit(void)
 	else if (language == 8) new_log(INFO, "Detected language: Dutch\n");
 	else if (language == 9) new_log(INFO, "Detected language: Portugese\n");
 	else if (language == 10) new_log(INFO, "Detected language: Russian\n");
-	else if (language == 11) new_log(INFO, "Detected language: Traditional Chinese\n");
+	else if (language == 11) new_log(INFO, "Detected language: Tradal Chinese\n");
 	else new_log(WARNING, "Detected language: Unrecognized\nDetected code: %d\n", language);
 }*/
 
@@ -184,6 +184,5 @@ Result CFGU_GetSystemLanguage(u8* language)
 	Result res = 0;
 	
 	res = CFGU_GetConfigInfoBlk2(1, 0xA0002, language);
-	log_language((u8)*language);
 	return res;
 }

@@ -1,47 +1,58 @@
-#include "types.h"
-#include "ctrulib/svc.h"
 #include "CTRPluginFramework.hpp"
-#include "libntrplg/ns/ns.h"
-#include "libntrplg/sharedfunc.h"
-#include "ctrulib/srv.h"
+#include "3DS.h"
+#include "NTR.h"
 
 extern "C" int main(void);
 extern "C" void abort(void);
+
 u32     fsUserHandle;
 u32     sdmcArchive;
 
-void(*__system_retAddr)(void);
+extern "C" void    initSystem();
 
 void abort(void)
 {
   for (;;) { }
 }
 
-static  u32 threadStack[0x1000];
+static  u32 threadStack[0x4000];
 Handle hThread;
-void    test(u32 i)
-{
-   // void    Check(void);
-    
-    
-    
-    svcSleepThread(0x200000000);
-    srvInit();
-    rtReleaseLock(&((NS_CONFIG*)(NS_CONFIGURE_ADDR))->debugBufferLock);
+
+using namespace CTRPluginFramework;
+
+void    MainThread(u32 arg)
+{   
+    // Wait for the game to be launched
+    svcSleepThread(0x100000000);
+
+    srvInit();    
+    initSystem();   
     CTRPluginFramework::System::Initialize();
+    CTRPluginFramework::Screen::Initialize();
+    svcSleepThread(0x50000000);
+
+    int     i =0;
+
+    Color y = Color(255, 255, 0);
+    Color z = Color(0, 255, 255);
+
+    while (i++ < 20)
+    {
+        Screen::Top->Flash(i % 2 ? y : z);
+        Screen::Bottom->Flash(i % 2 ? z : y);
+
+        svcSleepThread(0x50000000);
+    }
+
     srvExit();
     svcExitThread();
-    //void    Check(void);
 }
 
-//namespace CTRPluginFramework
-//{
 int   main(void)
 {
-    //initSharedFunc();
-    //INIT_SHARED_FUNC(plgGetIoBase, 8);
     rtReleaseLock(&((NS_CONFIG*)(NS_CONFIGURE_ADDR))->debugBufferLock);
-    svcCreateThread(&hThread, test, 0, &threadStack[0x1000], 0x3F, -2);
+     
+    //thread = threadCreate(MainThread, 0, 0x1000, 0x3F, -2, false);
+    svcCreateThread(&hThread, MainThread, 0, &threadStack[0x4000], 0x3F, -2);
     return (0);
 }
-//}

@@ -16,6 +16,7 @@ namespace CTRPluginFramework
         static bool    IsNew3DS(void);
 
     private:
+        System(){}
         static bool    _isInit;
         static bool    _isNew3DS;
         static u32     _IOBaseLCD;

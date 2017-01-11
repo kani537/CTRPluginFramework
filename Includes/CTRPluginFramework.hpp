@@ -3,6 +3,7 @@
 
 #include "types.h"
 
+#include "CTRPluginFramework/Color.hpp"
 #include "CTRPluginFramework/Screen.hpp"
 #include "CTRPluginFramework/System.hpp"
 

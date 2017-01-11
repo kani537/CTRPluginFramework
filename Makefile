@@ -17,13 +17,15 @@ INCLUDES	:= 	Includes \
 				Includes\ctrulib\services \
 				Includes\ctrulib\util \
 				Includes\libntrplg \
-				Includes\libntrplg\ns
+				Includes\libntrplg\ns \
+				C:\devkitPro\devkitARM\arm-none-eabi\include\c++\5.3.0
 LIBDIRS		:= 	$(TOPDIR)\Lib
 SOURCES 	:= 	Sources \
 				Sources\CTRPluginFramework \
 				Sources\ctrulib \
 				Sources\ctrulib\gpu \
 				Sources\ctrulib\services \
+				Sources\ctrulib\system \
 				Sources\ctrulib\utf \
 				Sources\NTR
 
@@ -36,14 +38,15 @@ CFLAGS	:=	-c -O2 -mword-relocations \
  			-fomit-frame-pointer -ffunction-sections \
 			$(ARCH)
 
-CFLAGS	+=	$(INCLUDE) -DARM11 -D_3DS
+CFLAGS		+=	$(INCLUDE) -DARM11 -D_3DS
 
 CXXFLAGS	:= $(CFLAGS) -fno-rtti -fno-exceptions -std=gnu++11
 
-ASFLAGS	:=	-c -s $(ARCH)
-LDFLAGS	:=	-pie --gc-sections -T $(TOPDIR)\3ds.ld -Map=$(TARGET).map
+ASFLAGS		:=	-c -s $(ARCH)
+LDFLAGS		:=	-pie  -T $(TOPDIR)/3ds.ld $(ARCH) -Wl,-Map,$(notdir $*.map) 
+# --gc-sections -Map=$(TARGET).map 
 
-LIBS	:= -lntr -lctr -lg -lsysbase -lc -lgcc -lgcov
+LIBS	:= -lntr -lctr -lg -lsysbase  -lc -lm -lgcc -lgcov
 
 #---------------------------------------------------------------------------------
 # no real need to edit anything past this point unless you need to add additional
@@ -65,7 +68,7 @@ CPPFILES		:=	$(foreach dir,$(SOURCES),$(notdir $(wildcard $(dir)/*.cpp)))
 SFILES			:=	$(foreach dir,$(SOURCES),$(notdir $(wildcard $(dir)/*.s)))
 #	BINFILES	:=	$(foreach dir,$(DATA),$(notdir $(wildcard $(dir)/*.*)))
 
-export LD 		:= $(LD)
+export LD 		:= $(CXX)
 export OFILES	:=	$(CPPFILES:.cpp=.o) $(CFILES:.c=.o) $(SFILES:.s=.o)
 
 export INCLUDE	:=	$(foreach dir,$(INCLUDES),-I$(CURDIR)/$(dir)) \
@@ -88,6 +91,9 @@ clean:
 	@echo clean ... 
 	@rm -fr $(BUILD) $(TARGET).3dsx $(OUTPUT).smdh $(TARGET).elf
 
+re:
+	@rm $(OUTPUT).plg $(OUTPUT).elf
+	make
 #---------------------------------------------------------------------------------
 
 else

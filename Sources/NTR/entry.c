@@ -5,11 +5,12 @@ extern u32 __c_bss_end;
 
 int main(void);
 
-void clear_entry(u32* reg) 
+void clear_entry(u32 *reg) 
 {
 	u32 i;
 
-	for (i = __c_bss_start; i < __c_bss_end; i += 4){
+	for (i = __c_bss_start; i < __c_bss_end; i += 4)
+    {
 		*(vu32*)(i) = 0;
 	}
 	main();

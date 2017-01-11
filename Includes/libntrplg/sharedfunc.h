@@ -3,7 +3,7 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-    #define IS_PLUGIN 1
+#define IS_PLUGIN 1
 #if IS_PLUGIN
 #define INIT_SHARED_FUNC(name,id) rtGenerateJumpCode(((NS_CONFIG*)(NS_CONFIGURE_ADDR))->sharedFunc[id], (void*) name);rtFlushInstructionCache((void*) name, 8);
 #else
