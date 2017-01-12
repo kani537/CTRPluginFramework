@@ -12,7 +12,7 @@ static MemPool sMappablePool;
 
 static bool mappableInit()
 {
-	auto blk = MemBlock::Create((u8*)0x10000000, 0x04000000);
+	auto blk = MemBlock::Create((u8*)0x10100000, 0x03000000);
 	if (blk)
 	{
 		sMappablePool.AddBlock(blk);

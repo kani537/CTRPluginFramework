@@ -4,10 +4,10 @@ void __attribute__((weak)) __appExit(void)
 {
 	// Exit services
     
-	//sdmcExit();
-	//fsExit();
+	sdmcExit();
+	fsExit();
 
-	//hidExit();
+	hidExit();
 	//aptExit();
 	srvExit();
 }

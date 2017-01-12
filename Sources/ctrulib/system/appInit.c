@@ -4,8 +4,8 @@ void __attribute__((weak)) __appInit(void) {
 	// Initialize services
 	srvInit();
 	//aptInit();
-	//hidInit();
+	hidInit();
 
-	//fsInit();
-	//sdmcInit();
+	fsInit();
+	sdmcInit();
 }

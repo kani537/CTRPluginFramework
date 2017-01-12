@@ -11,7 +11,6 @@
 
 #define FS_MAX_EXEMPT_ARCHIVE_HANDLES 16
 
-extern Handle fsUserHandle;
 static Handle fsuHandle;
 static int fsuRefCount;
 
@@ -19,9 +18,9 @@ static FS_Archive fsExemptArchives[FS_MAX_EXEMPT_ARCHIVE_HANDLES];
 
 static Handle fsSession(void)
 {
-	//ThreadVars* tv = getThreadVars();
-	//if (tv->fs_magic == FS_OVERRIDE_MAGIC)
-		//return tv->fs_session;
+	ThreadVars* tv = getThreadVars();
+	if (tv->fs_magic == FS_OVERRIDE_MAGIC)
+		return tv->fs_session;
 	return fsuHandle;
 }
 
@@ -41,36 +40,22 @@ Result fsInit(void)
 	Result ret = 0;
 
 	if (AtomicPostIncrement(&fsuRefCount)) return 0;
-	
-	fsuHandle = 0;
+
 	ret = srvGetServiceHandle(&fsuHandle, "fs:USER");
-	//plgGetSharedServiceHandle("fs:USER", &fsuHandle);
-	if (R_SUCCEEDED(ret))
+	if (R_SUCCEEDED(ret) && envGetHandle("fs:USER") == 0)
 	{
 		ret = FSUSER_Initialize(fsuHandle);
-		//if (R_FAILED(ret)) svcCloseHandle(fsuHandle);
+		if (R_FAILED(ret)) svcCloseHandle(fsuHandle);
 	}
-	else 
-	{
-		//new_log(WARNING, "srvGetServiceHandle fs:USER: FAILED -> %08X", ret);
-		fsuHandle = fsUserHandle;
-		ret = FSUSER_Initialize(fsuHandle);
-	}
-		
-	if (R_FAILED(ret)) 
-	{
-		//new_log(WARNING, "FS Init: FAILED: %08X", ret);
-		AtomicDecrement(&fsuRefCount);
-	}
-	//else
-		//new_log(INFO, "FS Init; SUCCESS");
+
+	if (R_FAILED(ret)) AtomicDecrement(&fsuRefCount);
 	return ret;
 }
 
 void fsExit(void)
 {
 	if (AtomicDecrement(&fsuRefCount)) return;
-	//svcCloseHandle(fsuHandle);
+	svcCloseHandle(fsuHandle);
 }
 
 void fsUseSession(Handle session)
@@ -1212,6 +1197,51 @@ Result FSUSER_GetLegacySubBannerData(u32 bannerSize, FS_MediaType mediaType, u64
 
 	Result ret = 0;
 	if(R_FAILED(ret = svcSendSyncRequest(fsSession()))) return ret;
+
+	return cmdbuf[1];
+}
+
+Result FSUSER_UpdateSha256Context(const void* data, u32 inputSize, u8* hash)
+{
+	if(!inputSize)
+	{
+		// For some reason a zero-size input outputs a garbage hash,
+		// so bypass the service call and just output it here.
+		if(hash)
+		{
+			static const u8 sha256_empty[32] =
+			{
+				0xE3, 0xB0, 0xC4, 0x42,
+				0x98, 0xFC, 0x1C, 0x14,
+				0x9A, 0xFB, 0xF4, 0xC8,
+				0x99, 0x6F, 0xB9, 0x24,
+				0x27, 0xAE, 0x41, 0xE4,
+				0x64, 0x9B, 0x93, 0x4C,
+				0xA4, 0x95, 0x99, 0x1B,
+				0x78, 0x52, 0xB8, 0x55,
+			};
+
+			memcpy(hash, sha256_empty, 0x20);
+		}
+
+		return 0;
+	}
+
+	u32 *cmdbuf = getThreadCommandBuffer();
+
+	cmdbuf[0] = IPC_MakeHeader(0x84E, 13, 2); // 0x84E0342
+	cmdbuf[9] = inputSize;
+	cmdbuf[10] = 0;
+	cmdbuf[11] = 0;
+	cmdbuf[12] = 0;
+	cmdbuf[13] = 1;
+	cmdbuf[14] = IPC_Desc_Buffer(inputSize, IPC_BUFFER_R);
+	cmdbuf[15] = (u32)data;
+
+	Result ret = 0;
+	if(R_FAILED(ret = svcSendSyncRequest(fsSession()))) return ret;
+
+	if(hash) memcpy(hash, &cmdbuf[2], 0x20);
 
 	return cmdbuf[1];
 }

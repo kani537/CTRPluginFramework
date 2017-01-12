@@ -3,6 +3,9 @@
  * @brief HID service.
  */
 #pragma once
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 //See also: http://3dbrew.org/wiki/HID_Services http://3dbrew.org/wiki/HID_Shared_Memory
 
@@ -193,3 +196,6 @@ Result HIDUSER_GetGyroscopeRawToDpsCoefficient(float *coeff);
  * @param volume Pointer to write the volume slider value to.
  */
 Result HIDUSER_GetSoundVolume(u8 *volume);
+#ifdef __cplusplus
+}
+#endif

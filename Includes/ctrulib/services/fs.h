@@ -3,10 +3,8 @@
  * @brief Filesystem Services
  */
 #pragma once
-#ifdef __cplusplus
-extern "C" {
-#endif
-#include "../../types.h"
+
+#include <types.h>
 
 /// Open flags.
 enum
@@ -238,9 +236,6 @@ typedef struct
 
 /// Filesystem archive handle, providing access to a filesystem's contents.
 typedef u64 FS_Archive;
-
-Handle openFile(char *path);
-u32 readFile(Handle file, void *dest, u64 offset, u32 size);
 
 /// Initializes FS.
 Result fsInit(void);
@@ -753,6 +748,14 @@ Result FSUSER_FormatSaveData(FS_ArchiveID archiveId, FS_Path path, u32 blocks, u
 Result FSUSER_GetLegacySubBannerData(u32 bannerSize, FS_MediaType mediaType, u64 programId, u8* banner);
 
 /**
+ * @brief Hashes the given data and outputs a SHA256 hash.
+ * @param data Pointer to the data to be hashed.
+ * @param inputSize The size of the data.
+ * @param hash Hash output pointer.
+ */
+Result FSUSER_UpdateSha256Context(const void* data, u32 inputSize, u8* hash);
+
+/**
  * @brief Reads from a special file.
  * @param bytesRead Pointer to output the number of bytes read to.
  * @param fileOffset Offset of the file.
@@ -1075,6 +1078,3 @@ Result FSDIR_SetPriority(Handle handle, u32 priority);
  * @param priority Pointer to output the priority to.
  */
 Result FSDIR_GetPriority(Handle handle, u32* priority);
-#ifdef __cplusplus
-}
-#endif
