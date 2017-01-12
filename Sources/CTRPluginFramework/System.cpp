@@ -31,7 +31,6 @@ namespace CTRPluginFramework
             _IOBasePDC = 0xFFFC0000;
         }
         _isInit = true;
-        Process::Initialize(true);
     }
 
     u32     System::GetIOBaseLCD(void)
