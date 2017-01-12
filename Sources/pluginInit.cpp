@@ -33,6 +33,12 @@ void  ThreadInit(u32 arg)
     System::Initialize();
     Screen::Initialize();
 
+    PageInfo pinfo;
+    MemInfo minfo;
+
+    svcQueryProcessMemory(&minfo, &pinfo, Process::GetHandle(), 0x1F000000);
+    svcControlProcessMemory(Process::GetHandle(), minfo.base_addr, minfo.base_addr, minfo.size, 6, 7);
+
     int ret = main();
 
     // Free heap and services and exit thread
