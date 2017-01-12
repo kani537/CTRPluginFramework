@@ -19,7 +19,7 @@ namespace CTRPluginFramework
 
     bool    Controller::IsKeyReleased(Key key)
     {
-        return (_keysUp & (u32)key);
+        return (_keysReleased & (u32)key);
     }
 
     void    Controller::Update(void)
