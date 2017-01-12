@@ -115,7 +115,7 @@ namespace CTRPluginFramework
         if (!_isTopScreen)
             return (false);
 
-        return (_format & 0b100000 ? true : false);
+        return (*(float *)(0x1FF81080) > 0.f ? true : false);
     }
 
     void    Screen::Flash(Color &color)
