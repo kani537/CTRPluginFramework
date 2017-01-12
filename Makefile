@@ -13,6 +13,7 @@ BUILD		:= 	Build
 INCLUDES	:= 	Includes \
 				Includes\CTRPluginFramework \
 				Includes\ctrulib \
+				Includes\ctrulib\allocator \
 				Includes\ctrulib\gpu \
 				Includes\ctrulib\services \
 				Includes\ctrulib\util \
@@ -23,10 +24,12 @@ LIBDIRS		:= 	$(TOPDIR)\Lib
 SOURCES 	:= 	Sources \
 				Sources\CTRPluginFramework \
 				Sources\ctrulib \
+				Sources\ctrulib\allocator \
 				Sources\ctrulib\gpu \
 				Sources\ctrulib\services \
 				Sources\ctrulib\system \
-				Sources\ctrulib\utf \
+				Sources\ctrulib\util\utf \
+				Sources\ctrulib\util\rbtree \
 				Sources\NTR
 
 #---------------------------------------------------------------------------------
@@ -34,16 +37,16 @@ SOURCES 	:= 	Sources \
 #---------------------------------------------------------------------------------
 ARCH	:=	-march=armv6k -mlittle-endian -mtune=mpcore -mfloat-abi=hard 
 
-CFLAGS	:=	-c -O2 -mword-relocations \
- 			-fomit-frame-pointer -ffunction-sections \
-			$(ARCH)
+CFLAGS	:=	-g -Os -mword-relocations \
+ 			-fomit-frame-pointer -ffunction-sections -fno-strict-aliasing \
+			$(ARCH) -fdata-sections
 
-CFLAGS		+=	$(INCLUDE) -DARM11 -D_3DS
+CFLAGS		+=	$(INCLUDE) -DARM11 -D_3DS 
 
 CXXFLAGS	:= $(CFLAGS) -fno-rtti -fno-exceptions -std=gnu++11
 
-ASFLAGS		:=	-c -s $(ARCH)
-LDFLAGS		:=	-pie  -T $(TOPDIR)/3ds.ld $(ARCH) -Wl,-Map,$(notdir $*.map) 
+ASFLAGS		:=	-g $(ARCH)
+LDFLAGS		:= -pie -T $(TOPDIR)/3ds.ld $(ARCH) -Os -Wl,-Map,$(notdir $*.map) -Wl,--gc-sections
 # --gc-sections -Map=$(TARGET).map 
 
 LIBS	:= -lntr -lctr -lg -lsysbase  -lc -lm -lgcc -lgcov
