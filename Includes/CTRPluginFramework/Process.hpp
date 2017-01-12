@@ -41,7 +41,7 @@ namespace CTRPluginFramework
             static u8   GetProcessState(void);
 
         private:
-            friend class System;
+            friend void Initialize(void);
             static void Initialize(bool isNew3DS);
            
             static u32          _processID;
