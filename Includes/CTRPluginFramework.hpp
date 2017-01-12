@@ -5,6 +5,7 @@
 
 #include "CTRPluginFramework/Clock.hpp"
 #include "CTRPluginFramework/Color.hpp"
+#include "CTRPluginFramework/Controller.hpp"
 #include "CTRPluginFramework/Process.hpp"
 #include "CTRPluginFramework/Screen.hpp"
 #include "CTRPluginFramework/Sleep.hpp"
