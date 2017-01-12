@@ -30,6 +30,7 @@ namespace CTRPluginFramework
         static void     Initialize(void);
 
         bool                        IsTopScreen(void);
+        bool                        Is3DEnabled(void);
         void                        Flash(Color &color);
         void                        SwapBuffer(void);
         GSPGPU_FramebufferFormats   GetFormat(void);

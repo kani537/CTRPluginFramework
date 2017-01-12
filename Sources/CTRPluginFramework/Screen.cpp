@@ -101,6 +101,16 @@ namespace CTRPluginFramework
         return (_isTopScreen);
     }
 
+    bool    Screen::Is3DEnabled(void)
+    {
+        if (!_isTopScreen)
+            return (false);
+
+        u32    fmt = (GSPGPU_FramebufferFormats)(REG(_LCDSetup + LCDSetup::Format) & 0b100000);
+
+        return (fmt ? true : false);
+    }
+
     void    Screen::Flash(Color &color)
     {
         u32     fillColor = (color.ToU32() & 0xFFFFFF) | 0x01000000;
