@@ -16,8 +16,13 @@ namespace CTRPluginFramework
             address += 0x07000000;
         else if (address >= 0x20000000 && address <= 0x30000000)
         {
-            address -= 0xC000000;
-            //address += 0x10000000;
+            u32     values[2] = {0};
+
+            svcGetProcessInfo((s64 *)&values, Process::GetHandle(), 20);
+            if (values[0] == 0xF0000000)
+                address += 0x10000000;
+            else
+                address -= values[0];
         }
         else
             return (0);
@@ -46,7 +51,7 @@ namespace CTRPluginFramework
     _isTopScreen(isTopScreen)
     {
         // Get format
-        _format = (GSPGPU_FramebufferFormats)(REG(_LCDSetup + LCDSetup::Format) & 0b111);
+        _format = REG(_LCDSetup + LCDSetup::Format);
 
         // Get width & height
         u32 wh = REG(_LCDSetup + LCDSetup::WidthHeight);
@@ -57,11 +62,26 @@ namespace CTRPluginFramework
         _leftFramebuffersP[0] = REG(_LCDSetup + LCDSetup::FramebufferA1);
         _leftFramebuffersP[1] = REG(_LCDSetup + LCDSetup::FramebufferA2);
 
-        // Get right framebuffers pointers (Physical need to be converted)
+        // Converting the framebuffers
+        _leftFramebuffersV[0] = FromPhysicalToVirtual(_leftFramebuffersP[0]);
+        _leftFramebuffersV[1] = FromPhysicalToVirtual(_leftFramebuffersP[1]);
+
         if (isTopScreen)
         {
+            // Get right framebuffers pointers (Physical need to be converted)
             _rightFramebuffersP[0] = REG(_LCDSetup + LCDSetup::FramebufferB1);
             _rightFramebuffersP[1] = REG(_LCDSetup + LCDSetup::FramebufferB2);  
+
+            // Converting the framebuffers
+            _rightFramebuffersV[0] = FromPhysicalToVirtual(_rightFramebuffersP[0]);
+            _rightFramebuffersV[1] = FromPhysicalToVirtual(_rightFramebuffersP[1]);
+        }
+        else
+        {
+            _rightFramebuffersP[0] = 0;
+            _rightFramebuffersP[1] = 0;
+            _rightFramebuffersV[0] = 0;
+            _rightFramebuffersV[1] = 0;
         }
 
 
@@ -72,21 +92,10 @@ namespace CTRPluginFramework
         _stride = REG(_LCDSetup + LCDSetup::Stride);
 
         // Set bytes per pixel
-        _bytesPerPixel = GetBPP(_format);
+        _bytesPerPixel = GetBPP(GetFormat());
 
         // Set row size
         _rowSize = _stride / _bytesPerPixel;
-
-        // Converting the framebuffers
-
-        _leftFramebuffersV[0] = FromPhysicalToVirtual(_leftFramebuffersP[0]);
-        _leftFramebuffersV[1] = FromPhysicalToVirtual(_leftFramebuffersP[1]);
-
-        if (isTopScreen)
-        {            
-            _rightFramebuffersV[0] = FromPhysicalToVirtual(_rightFramebuffersP[0]);
-            _rightFramebuffersV[1] = FromPhysicalToVirtual(_rightFramebuffersP[1]);
-        }
 
     }
 
@@ -106,9 +115,7 @@ namespace CTRPluginFramework
         if (!_isTopScreen)
             return (false);
 
-        u32    fmt = REG(_LCDSetup + LCDSetup::Format) & 0b100000;
-
-        return (fmt ? true : false);
+        return (_format & 0b100000 ? true : false);
     }
 
     void    Screen::Flash(Color &color)
@@ -130,7 +137,7 @@ namespace CTRPluginFramework
 
     GSPGPU_FramebufferFormats   Screen::GetFormat(void)
     {
-        return (_format);
+        return ((GSPGPU_FramebufferFormats)(_format & 0b111));
     }
 
     u16     Screen::GetWidth(void)
@@ -158,32 +165,33 @@ namespace CTRPluginFramework
         return (_bytesPerPixel);
     }
 
+    void    Screen::Update(void)
+    {
+        RefreshFramebuffers();
+    }
+
     void    Screen::RefreshFramebuffers(void)
     {
-        u32     leftFB[2] = {0};
-        u32     rightFB[2] = {0};
+        u32     leftFB = {0};
 
-        leftFB[0] = REG(_LCDSetup + FramebufferA1);
+        leftFB = REG(_LCDSetup + FramebufferA1);
 
-        if (leftFB[0] == _leftFramebuffersP[0])
+        if (leftFB == _leftFramebuffersP[0])
             return;
 
         // Get format
-        _format = (GSPGPU_FramebufferFormats)(REG(_LCDSetup + LCDSetup::Format) & 0b111);
+        _format = REG(_LCDSetup + LCDSetup::Format);
 
         // Get width & height
         u32 wh = REG(_LCDSetup + LCDSetup::WidthHeight);
         _width = (u16)(wh & 0xFFFF);
         _height = (u16)(wh >> 16);
 
-        // Set current buffer pointers
-        _currentBuffer = _LCDSetup + LCDSetup::Select;
-
         // Get stride
         _stride = REG(_LCDSetup + LCDSetup::Stride);
 
         // Set bytes per pixel
-        _bytesPerPixel = GetBPP(_format);
+        _bytesPerPixel = GetBPP(GetFormat());
 
         // Set row size
         _rowSize = _stride / _bytesPerPixel;
@@ -207,8 +215,6 @@ namespace CTRPluginFramework
     {
         u32    index = REG(_currentBuffer) & 0b1;
 
-        RefreshFramebuffers();
-
         if (current)
         {
             return ((u8 *)_leftFramebuffersV[index]); 
@@ -220,8 +226,6 @@ namespace CTRPluginFramework
     {
         if (!_isTopScreen)
             return (nullptr);
-
-        RefreshFramebuffers();
 
         u32    index = REG(_currentBuffer) & 0b1;
 

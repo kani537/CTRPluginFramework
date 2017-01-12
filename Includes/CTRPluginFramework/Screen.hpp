@@ -33,6 +33,7 @@ namespace CTRPluginFramework
         bool                        Is3DEnabled(void);
         void                        Flash(Color &color);
         void                        SwapBuffer(void);
+        void                        Update(void);
         GSPGPU_FramebufferFormats   GetFormat(void);
         u16                         GetWidth(void);
         u16                         GetHeight(void);
@@ -62,7 +63,7 @@ namespace CTRPluginFramework
         u32                         _rowSize;
         u32                         _bytesPerPixel;
         bool                        _isTopScreen;
-        GSPGPU_FramebufferFormats   _format;
+        u32                         _format;
     };
 }
 
