@@ -37,6 +37,14 @@ u32 arm11kGetKProcessFromHandle(Handle processHandle)
     return (g_kernelParams[2]);
 }
 
+u32 arm11kGetKProcessState(u32 kProcessState)
+{
+    g_kernelParams[0] = 6;
+    g_kernelParams[1] = kProcessState;
+    svcBackdoor(executeKernelCmd);
+    return (g_kernelParams[2] & 0xFF);
+}
+
 void arm11kMemcpy(u32 dst, u32 src, u32 size)
 {
   g_kernelParams[0] = 1;

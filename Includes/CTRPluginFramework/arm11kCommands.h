@@ -24,6 +24,9 @@ u32     arm11kGetCurrentKProcess(void);
 // Return KProcess associated to the handle
 u32     arm11kGetKProcessFromHandle(Handle processHandle);
 
+// Return the status read at kProcessState
+u32     arm11kGetKProcessState(u32 kProcessState);
+
 // Do a memcpy in kernel mode
 void arm11kMemcpy(u32 dst, u32 src, u32 size);
 
