@@ -25,10 +25,11 @@ namespace CTRPluginFramework
         static  Screen *Top; 
         static  Screen *Bottom;
 
-        Screen(u32 lcdSetupInfo, u32 fillColorAddress);
+        Screen(u32 lcdSetupInfo, u32 fillColorAddress, bool isTopScreen = false);
 
         static void     Initialize(void);
 
+        bool                        IsTopScreen(void);
         void                        Flash(Color &color);
         void                        SwapBuffer(void);
         GSPGPU_FramebufferFormats   GetFormat(void);
@@ -44,10 +45,14 @@ namespace CTRPluginFramework
 
 
     private:
+        void                        RefreshFramebuffers(void);
+
         u32                         _LCDSetup;
         u32                         _FillColor;
-        u32                         _leftFramebuffers[2];
-        u32                         _rightFramebuffers[2];
+        u32                         _leftFramebuffersP[2];
+        u32                         _leftFramebuffersV[2];
+        u32                         _rightFramebuffersP[2];
+        u32                         _rightFramebuffersV[2];
         u32                         _currentBuffer;
         
         u16                         _width;
@@ -55,7 +60,7 @@ namespace CTRPluginFramework
         u32                         _stride;
         u32                         _rowSize;
         u32                         _bytesPerPixel;
-        bool                        _isInit;
+        bool                        _isTopScreen;
         GSPGPU_FramebufferFormats   _format;
     };
 }

@@ -4,8 +4,6 @@
 
 namespace CTRPluginFramework
 {
-    //static  char    topScreenMemory[sizeof(Screen)];
-    //static  char    bottomScreenMemory[sizeof(Screen)];
 
     #define REG(x) *(vu32 *)(x)
 
@@ -18,16 +16,8 @@ namespace CTRPluginFramework
             address += 0x07000000;
         else if (address >= 0x20000000 && address <= 0x30000000)
         {
-            /*s64     value = 0;
-            svcGetProcessInfo(&value, 0xFFFF8001, 20);
-            s32     offset =  (s32)(value & 0xFFFFFFFF);
-            if (offset == 0)
-                return (value);
-            //else if (offset < 0x10000000)
-                address -= offset;
-            /*else
-                address -= offset;*/
-            address += 0x10000000;
+            address -= 0xC000000;
+            //address += 0x10000000;
         }
         else
             return (0);
@@ -50,13 +40,13 @@ namespace CTRPluginFramework
         return 3;
     }
 
-    Screen::Screen(u32 lcdSetupInfo, u32 fillColorAddress) : 
+    Screen::Screen(u32 lcdSetupInfo, u32 fillColorAddress, bool isTopScreen) : 
     _LCDSetup(lcdSetupInfo),
     _FillColor(fillColorAddress),
-    _isInit(true)
+    _isTopScreen(isTopScreen)
     {
         // Get format
-        _format = (GSPGPU_FramebufferFormats)(REG(_LCDSetup + LCDSetup::Format) & 0xFFFF);
+        _format = (GSPGPU_FramebufferFormats)(REG(_LCDSetup + LCDSetup::Format) & 0b111);
 
         // Get width & height
         u32 wh = REG(_LCDSetup + LCDSetup::WidthHeight);
@@ -64,12 +54,16 @@ namespace CTRPluginFramework
         _height = (u16)(wh >> 16);
 
         // Get left framebuffers pointers (Physical need to be converted)
-        _leftFramebuffers[0] = REG(_LCDSetup + LCDSetup::FramebufferA1);
-        _leftFramebuffers[1] = REG(_LCDSetup + LCDSetup::FramebufferA2);
+        _leftFramebuffersP[0] = REG(_LCDSetup + LCDSetup::FramebufferA1);
+        _leftFramebuffersP[1] = REG(_LCDSetup + LCDSetup::FramebufferA2);
 
         // Get right framebuffers pointers (Physical need to be converted)
-        _rightFramebuffers[0] = REG(_LCDSetup + LCDSetup::FramebufferB1);
-        _rightFramebuffers[1] = REG(_LCDSetup + LCDSetup::FramebufferB2);
+        if (isTopScreen)
+        {
+            _rightFramebuffersP[0] = REG(_LCDSetup + LCDSetup::FramebufferB1);
+            _rightFramebuffersP[1] = REG(_LCDSetup + LCDSetup::FramebufferB2);  
+        }
+
 
         // Set current buffer pointers
         _currentBuffer = _LCDSetup + LCDSetup::Select;
@@ -84,10 +78,15 @@ namespace CTRPluginFramework
         _rowSize = _stride / _bytesPerPixel;
 
         // Converting the framebuffers
-        _leftFramebuffers[0] = FromPhysicalToVirtual(_leftFramebuffers[0]);
-        _leftFramebuffers[1] = FromPhysicalToVirtual(_leftFramebuffers[1]);
-        _rightFramebuffers[0] = FromPhysicalToVirtual(_rightFramebuffers[0]);
-        _rightFramebuffers[1] = FromPhysicalToVirtual(_rightFramebuffers[1]);
+
+        _leftFramebuffersV[0] = FromPhysicalToVirtual(_leftFramebuffersP[0]);
+        _leftFramebuffersV[1] = FromPhysicalToVirtual(_leftFramebuffersP[1]);
+
+        if (isTopScreen)
+        {            
+            _rightFramebuffersV[0] = FromPhysicalToVirtual(_rightFramebuffersP[0]);
+            _rightFramebuffersV[1] = FromPhysicalToVirtual(_rightFramebuffersP[1]);
+        }
 
     }
 
@@ -97,10 +96,13 @@ namespace CTRPluginFramework
         Screen::Bottom = new Screen(System::GetIOBasePDC() + 0x500, System::GetIOBaseLCD() + 0xA04);
     }
 
+    bool    Screen::IsTopScreen(void)
+    {
+        return (_isTopScreen);
+    }
+
     void    Screen::Flash(Color &color)
     {
-        if (!_isInit)
-            return;
         u32     fillColor = (color.ToU32() & 0xFFFFFF) | 0x01000000;
 
         for (int i = 0; i < 0x64; i++)
@@ -146,25 +148,77 @@ namespace CTRPluginFramework
         return (_bytesPerPixel);
     }
 
+    void    Screen::RefreshFramebuffers(void)
+    {
+        u32     leftFB[2] = {0};
+        u32     rightFB[2] = {0};
+
+        leftFB[0] = REG(_LCDSetup + FramebufferA1);
+
+        if (leftFB[0] == _leftFramebuffersP[0])
+            return;
+
+        // Get format
+        _format = (GSPGPU_FramebufferFormats)(REG(_LCDSetup + LCDSetup::Format) & 0b111);
+
+        // Get width & height
+        u32 wh = REG(_LCDSetup + LCDSetup::WidthHeight);
+        _width = (u16)(wh & 0xFFFF);
+        _height = (u16)(wh >> 16);
+
+        // Set current buffer pointers
+        _currentBuffer = _LCDSetup + LCDSetup::Select;
+
+        // Get stride
+        _stride = REG(_LCDSetup + LCDSetup::Stride);
+
+        // Set bytes per pixel
+        _bytesPerPixel = GetBPP(_format);
+
+        // Set row size
+        _rowSize = _stride / _bytesPerPixel;
+
+
+        _leftFramebuffersP[0] = REG(_LCDSetup + FramebufferA1);
+        _leftFramebuffersP[1] = REG(_LCDSetup + FramebufferA2);
+        _leftFramebuffersV[0] = FromPhysicalToVirtual(_leftFramebuffersP[0]);
+        _leftFramebuffersV[1] = FromPhysicalToVirtual(_leftFramebuffersP[1]);
+
+        if (!_isTopScreen)
+            return;
+
+        _rightFramebuffersP[0] = REG(_LCDSetup + FramebufferB1);
+        _rightFramebuffersP[1] = REG(_LCDSetup + FramebufferB2);
+        _rightFramebuffersV[0] = FromPhysicalToVirtual(_rightFramebuffersP[0]);
+        _rightFramebuffersV[1] = FromPhysicalToVirtual(_rightFramebuffersP[1]);
+    }
+
     u8      *Screen::GetLeftFramebuffer(bool current)
     {
         u32    index = REG(_currentBuffer) & 0b1;
 
+        RefreshFramebuffers();
+
         if (current)
         {
-            return ((u8 *)_leftFramebuffers[index]); 
+            return ((u8 *)_leftFramebuffersV[index]); 
         }
-        return ((u8 *)_leftFramebuffers[!index]);            
+        return ((u8 *)_leftFramebuffersV[!index]);            
     }
 
     u8      *Screen::GetRightFramebuffer(bool current)
     {
+        if (!_isTopScreen)
+            return (nullptr);
+
+        RefreshFramebuffers();
+
         u32    index = REG(_currentBuffer) & 0b1;
 
         if (current)
         {
-            return ((u8 *)_rightFramebuffers[index]); 
+            return ((u8 *)_rightFramebuffersV[index]); 
         }
-        return ((u8 *)_rightFramebuffers[!index]);            
+        return ((u8 *)_rightFramebuffersV[!index]);            
     }
 }
