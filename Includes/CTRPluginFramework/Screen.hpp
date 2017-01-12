@@ -27,7 +27,7 @@ namespace CTRPluginFramework
 
         Screen(u32 lcdSetupInfo, u32 fillColorAddress, bool isTopScreen = false);
 
-        static void     Initialize(void);
+        
 
         bool                        IsTopScreen(void);
         bool                        Is3DEnabled(void);
@@ -47,6 +47,8 @@ namespace CTRPluginFramework
 
 
     private:
+        friend void                 Initialize(void);
+        static void                 Initialize(void);
         void                        RefreshFramebuffers(void);
 
         u32                         _LCDSetup;

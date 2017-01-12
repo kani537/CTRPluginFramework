@@ -172,13 +172,19 @@ namespace CTRPluginFramework
 
     void    Screen::RefreshFramebuffers(void)
     {
-        u32     leftFB = {0};
+        u32     leftFB1 = REG(_LCDSetup + FramebufferA1);
+        u32     leftFB2 = REG(_LCDSetup + FramebufferA2);
+        u32     rightFB1 = REG(_LCDSetup + FramebufferB1);
+        u32     rightFB2 = REG(_LCDSetup + FramebufferB2);
+        u32     fmt = REG(_LCDSetup + LCDSetup::Format); 
 
-        leftFB = REG(_LCDSetup + FramebufferA1);
+        if (_isTopScreen && (rightFB1 != _rightFramebuffersP[0] || rightFB2 != _rightFramebuffersP[1]))
+            goto refresh;
 
-        if (leftFB == _leftFramebuffersP[0])
+        if (leftFB1 == _leftFramebuffersP[0]  && leftFB2 == _leftFramebuffersP[1] && fmt == _format)
             return;
 
+    refresh:
         // Get format
         _format = REG(_LCDSetup + LCDSetup::Format);
 
@@ -196,19 +202,18 @@ namespace CTRPluginFramework
         // Set row size
         _rowSize = _stride / _bytesPerPixel;
 
-
-        _leftFramebuffersP[0] = REG(_LCDSetup + FramebufferA1);
-        _leftFramebuffersP[1] = REG(_LCDSetup + FramebufferA2);
-        _leftFramebuffersV[0] = FromPhysicalToVirtual(_leftFramebuffersP[0]);
-        _leftFramebuffersV[1] = FromPhysicalToVirtual(_leftFramebuffersP[1]);
+        _leftFramebuffersP[0] = leftFB1;
+        _leftFramebuffersP[1] = leftFB2;
+        _leftFramebuffersV[0] = FromPhysicalToVirtual(leftFB1);
+        _leftFramebuffersV[1] = FromPhysicalToVirtual(leftFB2);
 
         if (!_isTopScreen)
             return;
 
-        _rightFramebuffersP[0] = REG(_LCDSetup + FramebufferB1);
-        _rightFramebuffersP[1] = REG(_LCDSetup + FramebufferB2);
-        _rightFramebuffersV[0] = FromPhysicalToVirtual(_rightFramebuffersP[0]);
-        _rightFramebuffersV[1] = FromPhysicalToVirtual(_rightFramebuffersP[1]);
+        _rightFramebuffersP[0] = rightFB1;
+        _rightFramebuffersP[1] = rightFB2;
+        _rightFramebuffersV[0] = FromPhysicalToVirtual(rightFB1);
+        _rightFramebuffersV[1] = FromPhysicalToVirtual(rightFB2);
     }
 
     u8      *Screen::GetLeftFramebuffer(bool current)
