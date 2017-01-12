@@ -92,7 +92,7 @@ namespace CTRPluginFramework
 
     void    Screen::Initialize(void)
     {
-        Screen::Top = new Screen(System::GetIOBasePDC() + 0x400, System::GetIOBaseLCD() + 0x204);
+        Screen::Top = new Screen(System::GetIOBasePDC() + 0x400, System::GetIOBaseLCD() + 0x204, true);
         Screen::Bottom = new Screen(System::GetIOBasePDC() + 0x500, System::GetIOBaseLCD() + 0xA04);
     }
 
@@ -106,7 +106,7 @@ namespace CTRPluginFramework
         if (!_isTopScreen)
             return (false);
 
-        u32    fmt = (GSPGPU_FramebufferFormats)(REG(_LCDSetup + LCDSetup::Format) & 0b100000);
+        u32    fmt = REG(_LCDSetup + LCDSetup::Format) & 0b100000;
 
         return (fmt ? true : false);
     }
