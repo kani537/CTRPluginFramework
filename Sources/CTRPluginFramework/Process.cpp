@@ -9,9 +9,10 @@ namespace CTRPluginFramework
 	u64         Process::_titleID = 0;
 	char        Process::_processName[8] = {0};
 	u32         Process::_kProcess = 0;
-	//u32         *Process::_kProcessHandleTable = nullptr;
+	u32			Process::_kProcessState = 0;
 	KCodeSet    Process::_kCodeSet = {0};
 	Handle 		Process::_handle = 0;
+	//u32         *Process::_kProcessHandleTable = nullptr;
 
 
 	void    Process::Initialize(bool isNew3DS)
@@ -20,6 +21,7 @@ namespace CTRPluginFramework
 
 		// Get current KProcess
 		_kProcess = (u32)arm11kGetCurrentKProcess();
+		_kProcessState = _kProcess + 0x88;
 		// Copy KProcess data
 		arm11kMemcpy((u32)&kproc, _kProcess, 0x100);
 		if (isNew3DS)
@@ -83,5 +85,10 @@ namespace CTRPluginFramework
 		if (output != nullptr)
 			for (int i = 0; i < 8; i++)
 				output[i] = _processName[i];
+	}
+
+	u8 		Process::GetProcessState(void)
+	{
+		return (arm11kGetKProcessState(_kProcessState));
 	}
 }

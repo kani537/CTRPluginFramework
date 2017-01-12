@@ -38,6 +38,7 @@ namespace CTRPluginFramework
             static u64  GetTitleID(void);
             static void GetTitleID(char *output);
             static void GetName(char *output);
+            static u8   GetProcessState(void);
 
         private:
             friend class System;
@@ -47,6 +48,7 @@ namespace CTRPluginFramework
             static u64          _titleID;
             static char         _processName[8];
             static u32          _kProcess;
+            static u32          _kProcessState;
             static KCodeSet     _kCodeSet;
             static Handle       _handle;
             //static u32          *_kProcessHandleTable;          
