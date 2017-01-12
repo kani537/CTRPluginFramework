@@ -78,6 +78,15 @@ SetKProcessID:
 @ ---------------------------------------------------------------------------
 
 loc_1082AC:
+        CMP         R3, #6
+        BNE         exit
+
+GetKProcessState:
+        LDR         R1, [R4, #4]
+        LDR         R2, [R1]
+        STR         R2, [R4, #8]
+
+exit:
         LDMFD       SP!, {R4,PC};
 @        CMP         R3, #6  @ Set cond. codes on Op1 - Op2
 @        LDMNEFD     SP!, {R4,PC} @ Load Block from Memory
