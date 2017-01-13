@@ -149,18 +149,6 @@ void hidGyroRead(angularRate* rate);
  */
 void hidWaitForEvent(HID_Event id, bool nextEvent);
 
-/// Compatibility macro for hidScanInput.
-#define scanKeys   hidScanInput
-/// Compatibility macro for hidKeysHeld.
-#define keysHeld   hidKeysHeld
-/// Compatibility macro for hidKeysDown.
-#define keysDown   hidKeysDown
-/// Compatibility macro for hidKeysUp.
-#define keysUp     hidKeysUp
-/// Compatibility macro for hidTouchRead.
-#define touchRead  hidTouchRead
-/// Compatibility macro for hidCircleRead.
-#define circleRead hidCircleRead
 
 /**
  * @brief Gets the handles for HID operation.

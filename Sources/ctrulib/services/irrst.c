@@ -47,7 +47,7 @@ Result irrstInit(void)
 	}
 
 	if(R_FAILED(ret = svcMapMemoryBlock(irrstMemHandle, (u32)irrstSharedMem, MEMPERM_READ, 0x10000000))) goto cleanup2;
-
+	
 	// Reset internal state.
 	kHeld = 0;
 	return 0;

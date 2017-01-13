@@ -52,9 +52,7 @@ Result hidInit(void)
 		goto cleanup1;
 	}
 
-	if(R_FAILED(ret=svcMapMemoryBlock(hidMemHandle, (u32)hidSharedMem, MEMPERM_READ, 0x10000000)))goto cleanup2;
-	// Make the memory writeable
-	svcControlProcessMemory(CUR_PROCESS_HANDLE, (u32)hidSharedMem, (u32)hidSharedMem, 0x1000, 6, 7);
+	if(R_FAILED(ret=svcMapMemoryBlock(hidMemHandle, (u32)hidSharedMem, MEMPERM_READ, 0x10000000)))goto cleanup2;	
 	APT_CheckNew3DS(&val);
 
 	if(val)
