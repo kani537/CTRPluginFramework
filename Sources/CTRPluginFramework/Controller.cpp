@@ -24,7 +24,21 @@ namespace CTRPluginFramework
 
     bool    Controller::IsKeysDown(u32 keys)
     {
-        return (((_keysDown | _keysHeld) & keys) == keys);
+        return ((_keysHeld & keys) == keys);
+    }
+
+    bool    Controller::IsKeysPressed(u32 keys)
+    {
+        if ((_keysDown & keys) == keys)
+            return (true);
+        return (false);
+    }
+
+    bool    Controller::IsKeysReleased(u32 keys)
+    {
+        if ((_keysReleased & keys) == keys)
+            return (true);
+        return (false);
     }
 
     void    Controller::Update(void)
