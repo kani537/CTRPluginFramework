@@ -41,13 +41,15 @@ namespace CTRPluginFramework
 
 
             // Return if the key is still being pressed
-            static bool    IsKeyDown(Key key);
+            static bool     IsKeyDown(Key key);
             // Return if the key just got pressed
-            static bool    IsKeyPressed(Key key);
+            static bool     IsKeyPressed(Key key);
             // Return if the key was released
-            static bool    IsKeyReleased(Key key);
+            static bool     IsKeyReleased(Key key);
+            // Return if keyCombo is pressed
+            static bool     IsKeysDown(u32 keys);
             // Update Controller status
-            static void    Update(void);
+            static void     Update(void);
     private:
             static u32      _keysDown;
             static u32      _keysHeld;

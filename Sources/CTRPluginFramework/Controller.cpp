@@ -22,6 +22,11 @@ namespace CTRPluginFramework
         return (_keysReleased & (u32)key);
     }
 
+    bool    Controller::IsKeysDown(u32 keys)
+    {
+        return (((_keysDown | _keysHeld) & keys) == keys);
+    }
+
     void    Controller::Update(void)
     {
         hidScanInput();
