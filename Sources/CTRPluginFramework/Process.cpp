@@ -12,10 +12,11 @@ namespace CTRPluginFramework
 	u32			Process::_kProcessState = 0;
 	KCodeSet    Process::_kCodeSet = {0};
 	Handle 		Process::_handle = 0;
+	Handle 		Process::_mainThreadHandle = 0;
 	//u32         *Process::_kProcessHandleTable = nullptr;
 
 
-	void    Process::Initialize(bool isNew3DS)
+	void    Process::Initialize(Handle threadHandle, bool isNew3DS)
 	{
 		char    kproc[0x100] = {0};
 
@@ -49,6 +50,7 @@ namespace CTRPluginFramework
 		_titleID = _kCodeSet.titleId;
 		// Create handle for this process
 		svcOpenProcess(&_handle, _processID);
+		_mainThreadHandle = threadHandle;
 	}
 
 	Handle 	Process::GetHandle(void)
@@ -90,5 +92,15 @@ namespace CTRPluginFramework
 	u8 		Process::GetProcessState(void)
 	{
 		return (arm11kGetKProcessState(_kProcessState));
+	}
+
+	void 	Process::Pause(void)
+	{
+		svcSetThreadPriority(_mainThreadHandle, 0x18);
+	}
+
+	void 	Process::Play(void)
+	{
+		svcSetThreadPriority(_mainThreadHandle, 0x3F);
 	}
 }

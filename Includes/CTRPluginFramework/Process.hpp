@@ -32,17 +32,19 @@ namespace CTRPluginFramework
     class Process
     {
         public:
-            static Handle GetHandle(void);
-            static u32  GetProcessID(void);
-            static void GetProcessID(char *output);            
-            static u64  GetTitleID(void);
-            static void GetTitleID(char *output);
-            static void GetName(char *output);
-            static u8   GetProcessState(void);
+            static Handle   GetHandle(void);
+            static u32      GetProcessID(void);
+            static void     GetProcessID(char *output);            
+            static u64      GetTitleID(void);
+            static void     GetTitleID(char *output);
+            static void     GetName(char *output);
+            static u8       GetProcessState(void);
+            static void     Pause(void);
+            static void     Play(void);
 
         private:
             friend void Initialize(void);
-            static void Initialize(bool isNew3DS);
+            static void Initialize(Handle threadHandle, bool isNew3DS);
            
             static u32          _processID;
             static u64          _titleID;
@@ -51,6 +53,7 @@ namespace CTRPluginFramework
             static u32          _kProcessState;
             static KCodeSet     _kCodeSet;
             static Handle       _handle;
+            static Handle       _mainThreadHandle;
             //static u32          *_kProcessHandleTable;          
     };
 }
