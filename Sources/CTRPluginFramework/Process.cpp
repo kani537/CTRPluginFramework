@@ -2,6 +2,7 @@
 #include "arm11kCommands.h"
 #include "3DS.h"
 #include <cstdio>
+#include <cstring>
 
 namespace CTRPluginFramework
 {
@@ -11,8 +12,9 @@ namespace CTRPluginFramework
 	u32         Process::_kProcess = 0;
 	u32			Process::_kProcessState = 0;
 	KCodeSet    Process::_kCodeSet = {0};
-	Handle 		Process::_handle = 0;
+	Handle 		Process::_processHandle = 0;
 	Handle 		Process::_mainThreadHandle = 0;
+	//u32 		Process::_finishedStateDMA = 0;
 	//u32         *Process::_kProcessHandleTable = nullptr;
 
 
@@ -49,13 +51,14 @@ namespace CTRPluginFramework
 		// Copy title id
 		_titleID = _kCodeSet.titleId;
 		// Create handle for this process
-		svcOpenProcess(&_handle, _processID);
+		svcOpenProcess(&_processHandle, _processID);
+		// Set plugin's main thread handle
 		_mainThreadHandle = threadHandle;
 	}
 
 	Handle 	Process::GetHandle(void)
 	{
-		return (_handle);
+		return (_processHandle);
 	}
 
 	u32     Process::GetProcessID(void)
@@ -94,6 +97,11 @@ namespace CTRPluginFramework
 		return (arm11kGetKProcessState(_kProcessState));
 	}
 
+	bool 	Process::Patch(u32 	addr, u8 *patch, u32 length, u8 *original)
+	{
+		return (PatchProcess(addr, patch, length, original));
+	}
+
 	void 	Process::Pause(void)
 	{
 		svcSetThreadPriority(_mainThreadHandle, 0x18);
@@ -103,4 +111,53 @@ namespace CTRPluginFramework
 	{
 		svcSetThreadPriority(_mainThreadHandle, 0x3F);
 	}
+
+    bool     Process::ProtectMemory(u32 addr, u32 size, int perm)
+    {
+    	if (R_FAILED(svcControlProcessMemory(_processHandle, addr, addr, size, 6, perm)))
+        	return (false);
+        return (true);
+    }
+
+    bool     Process::ProtectRegion(u32 addr, int perm)
+    {
+    	MemInfo 	minfo;
+    	PageInfo 	pinfo;
+
+    	if (R_FAILED(svcQueryProcessMemory(&minfo, &pinfo, _processHandle, addr))) goto error;
+    	if (minfo.state == MEMSTATE_FREE) goto error;
+    	if (addr < minfo.base_addr || addr > minfo.base_addr + minfo.size) goto error;
+
+    	return (ProtectMemory(minfo.base_addr, minfo.size, perm));
+    error:
+        return (false);
+    }
+
+    bool     Process::PatchProcess(u32 addr, u8 *patch, u32 length, u8 *original)
+    {
+        if (!(ProtectMemory(((addr / 0x1000) * 0x1000), 0x1000))) goto error;
+ 
+ 		if (original != nullptr)
+ 		{
+ 			if (!CopyMemory((void *)original, (void *)addr, length))
+ 				goto error;
+ 		}
+
+ 		if (!CopyMemory((void *)addr, (void *)patch, length))
+ 			goto error;
+        return (true);
+    error:
+        return (false);
+    }
+
+    bool     Process::CopyMemory(void *dst, void *src, u32 size)
+    {
+        if (R_FAILED(svcFlushProcessDataCache(_processHandle, src, size))) goto error;
+        if (R_FAILED(svcFlushProcessDataCache(_processHandle, dst, size))) goto error;
+        std::memcpy(dst, src, size);
+        svcInvalidateProcessDataCache(_processHandle, dst, size);
+        return (true);
+    error:
+        return (false);
+    }
 }
