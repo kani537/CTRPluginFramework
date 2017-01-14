@@ -31,6 +31,7 @@ namespace CTRPluginFramework
         System::Initialize();
         // Init Screen
         Screen::Initialize();
+        gfxInit(Screen::Top->GetFormat(), Screen::Bottom->GetFormat(), false);
         // Init Process info
         Process::Initialize(threadHandle, System::IsNew3DS());    
         // Launch commands thread
