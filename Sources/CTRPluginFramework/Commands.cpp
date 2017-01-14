@@ -30,6 +30,15 @@ namespace CTRPluginFramework
                 case Commands::GSPGPU_INVALIDATE:
                     GSPGPU_InvalidateDataCache((void *)_arg1, _arg2);
                     break;
+                case Commands::GSPGPU_SWAP:
+                    gfxSwapBuffers();
+                    break;
+                case Commands::GSPGPU_VBLANK:                      
+                    gspWaitForVBlank();
+                    break;
+                case Commands::GSPGPU_VBLANK1:                      
+                    gspWaitForVBlank1();
+                    break;
                 case Commands::EXIT:
                     isRunning = false;
                     break;

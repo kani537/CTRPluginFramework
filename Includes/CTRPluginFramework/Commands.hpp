@@ -11,6 +11,9 @@ namespace CTRPluginFramework
         NONE,
         GSPGPU_FLUSH,
         GSPGPU_INVALIDATE,
+        GSPGPU_SWAP,
+        GSPGPU_VBLANK,
+        GSPGPU_VBLANK1,
         EXIT
     };
 
