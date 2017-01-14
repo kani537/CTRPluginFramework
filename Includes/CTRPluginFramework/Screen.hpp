@@ -32,8 +32,9 @@ namespace CTRPluginFramework
         bool                        IsTopScreen(void);
         bool                        Is3DEnabled(void);
         void                        Flash(Color &color);
+        void                        Acquire(void);
         void                        SwapBuffer(void);
-        void                        Update(void);
+        bool                        Update(void);
         GSPGPU_FramebufferFormats   GetFormat(void);
         u16                         GetWidth(void);
         u16                         GetHeight(void);
@@ -41,6 +42,7 @@ namespace CTRPluginFramework
         u32                         GetRowSize(void);
         u32                         GetBytesPerPixel(void);
         u32                         GetFramebufferSize(void);
+        void                        GetLeftFramebufferRegisters(u32 *out);
         int                         Debug(int posX, int posY);
 
         u8                          *GetLeftFramebuffer(bool current = false);
@@ -52,7 +54,6 @@ namespace CTRPluginFramework
         friend class Renderer;
         friend void                 Initialize(void);
         static void                 Initialize(void);
-        void                        RefreshFramebuffers(void);
 
         u8                          *GetLeftFramebufferP(bool current = false);
         u8                          *GetRightFramebufferP(bool current = false);
@@ -64,7 +65,7 @@ namespace CTRPluginFramework
         u32                         _rightFramebuffersP[2];
         u32                         _rightFramebuffersV[2];
         u32                         _currentBuffer;
-        
+        u32                         *_currentBufferReg;
         u16                         _width;
         u16                         _height;
         u32                         _stride;

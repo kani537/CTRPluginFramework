@@ -70,6 +70,7 @@ namespace CTRPluginFramework
         }
         return 3;
     }
+// ##########################################################################
 
     Screen::Screen(u32 lcdSetupInfo, u32 fillColorAddress, bool isTopScreen) : 
     _LCDSetup(lcdSetupInfo),
@@ -112,7 +113,8 @@ namespace CTRPluginFramework
 
 
         // Set current buffer pointers
-        _currentBuffer = _LCDSetup + LCDSetup::Select;
+        _currentBufferReg = (u32 *)(_LCDSetup + LCDSetup::Select);
+        _currentBuffer = 0;
 
         // Get stride
         _stride = REG(_LCDSetup + LCDSetup::Stride);
@@ -129,6 +131,18 @@ namespace CTRPluginFramework
     {
         Screen::Top = new Screen(System::GetIOBasePDC() + 0x400, System::GetIOBaseLCD() + 0x204, true);
         Screen::Bottom = new Screen(System::GetIOBasePDC() + 0x500, System::GetIOBaseLCD() + 0xA04);
+    }
+
+    void    Screen::GetLeftFramebufferRegisters(u32 *out)
+    {
+        out[0] = _LCDSetup + FramebufferA1;
+        out[1] = _LCDSetup + FramebufferA2;
+    }
+
+    void    Screen::Acquire(void)
+    {
+        _currentBuffer = *_currentBufferReg;
+        Update();
     }
 
     bool    Screen::IsTopScreen(void)
@@ -158,7 +172,8 @@ namespace CTRPluginFramework
 
     void    Screen::SwapBuffer(void)
     {
-        REG(_currentBuffer) = !REG(_currentBuffer);
+        _currentBuffer = !_currentBuffer;
+        *_currentBufferReg = _currentBuffer;
     }
 
     GSPGPU_FramebufferFormats   Screen::GetFormat(void)
@@ -193,12 +208,55 @@ namespace CTRPluginFramework
 
     u32     Screen::GetFramebufferSize(void)
     {
-        return (_rowSize * _width * _bytesPerPixel);
+        return (_stride * _width);
     }
 
-    void    Screen::Update(void)
+    bool    Screen::Update(void)
     {
-        RefreshFramebuffers();
+        u32     leftFB1 = REG(_LCDSetup + FramebufferA1);
+        u32     leftFB2 = REG(_LCDSetup + FramebufferA2);
+        u32     rightFB1 = REG(_LCDSetup + FramebufferB1);
+        u32     rightFB2 = REG(_LCDSetup + FramebufferB2);
+        u32     fmt = REG(_LCDSetup + LCDSetup::Format); 
+
+        if (_isTopScreen && (rightFB1 != _rightFramebuffersP[0] || rightFB2 != _rightFramebuffersP[1]))
+            goto refresh;
+
+        if (leftFB1 == _leftFramebuffersP[0]  && leftFB2 == _leftFramebuffersP[1] && fmt == _format)
+            return (false);
+
+    refresh:
+        // Get format
+        _format = REG(_LCDSetup + LCDSetup::Format);
+
+        // Get width & height
+        u32 wh = REG(_LCDSetup + LCDSetup::WidthHeight);
+        _height = (u16)(wh & 0xFFFF);
+        _width = (u16)(wh >> 16);
+
+        // Get stride
+        _stride = REG(_LCDSetup + LCDSetup::Stride);
+
+        // Set bytes per pixel
+        _bytesPerPixel = GetBPP(GetFormat());
+
+        // Set row size
+        _rowSize = _stride / _bytesPerPixel;
+
+        _leftFramebuffersP[0] = leftFB1;
+        _leftFramebuffersP[1] = leftFB2;
+        _leftFramebuffersV[0] = FromPhysicalToVirtual(leftFB1);
+        _leftFramebuffersV[1] = FromPhysicalToVirtual(leftFB2);
+
+        if (!_isTopScreen)
+            goto exit;
+
+        _rightFramebuffersP[0] = rightFB1;
+        _rightFramebuffersP[1] = rightFB2;
+        _rightFramebuffersV[0] = FromPhysicalToVirtual(rightFB1);
+        _rightFramebuffersV[1] = FromPhysicalToVirtual(rightFB2);
+        exit:
+            return (true);
     }
 
     int    Screen::Debug(int posX, int posY)
@@ -229,67 +287,21 @@ namespace CTRPluginFramework
         sprintf(buffer, "stride: %d, w: %d, h: %d", _stride, _width, _height);
         Renderer::DrawString(buffer, posX, posY, blank);
         posY += 10;
+        u32 io = System::GetIOBasePDC();
+        sprintf(buffer, "GPU Busy: %08X, P3D: %08X", REG(io + 0x34), 0);
+        Renderer::DrawString(buffer, posX, posY, blank);
+        posY += 10;
 
         return (posY);
     }
 
-    void    Screen::RefreshFramebuffers(void)
-    {
-        u32     leftFB1 = REG(_LCDSetup + FramebufferA1);
-        u32     leftFB2 = REG(_LCDSetup + FramebufferA2);
-        u32     rightFB1 = REG(_LCDSetup + FramebufferB1);
-        u32     rightFB2 = REG(_LCDSetup + FramebufferB2);
-        u32     fmt = REG(_LCDSetup + LCDSetup::Format); 
-
-        if (_isTopScreen && (rightFB1 != _rightFramebuffersP[0] || rightFB2 != _rightFramebuffersP[1]))
-            goto refresh;
-
-        if (leftFB1 == _leftFramebuffersP[0]  && leftFB2 == _leftFramebuffersP[1] && fmt == _format)
-            return;
-
-    refresh:
-        // Get format
-        _format = REG(_LCDSetup + LCDSetup::Format);
-
-        // Get width & height
-        u32 wh = REG(_LCDSetup + LCDSetup::WidthHeight);
-        _height = (u16)(wh & 0xFFFF);
-        _width = (u16)(wh >> 16);
-
-        // Get stride
-        _stride = REG(_LCDSetup + LCDSetup::Stride);
-
-        // Set bytes per pixel
-        _bytesPerPixel = GetBPP(GetFormat());
-
-        // Set row size
-        _rowSize = _stride / _bytesPerPixel;
-
-        Renderer::UpdateTarget();
-
-        _leftFramebuffersP[0] = leftFB1;
-        _leftFramebuffersP[1] = leftFB2;
-        _leftFramebuffersV[0] = FromPhysicalToVirtual(leftFB1);
-        _leftFramebuffersV[1] = FromPhysicalToVirtual(leftFB2);
-
-        if (!_isTopScreen)
-            return;
-
-        _rightFramebuffersP[0] = rightFB1;
-        _rightFramebuffersP[1] = rightFB2;
-        _rightFramebuffersV[0] = FromPhysicalToVirtual(rightFB1);
-        _rightFramebuffersV[1] = FromPhysicalToVirtual(rightFB2);
-    }
-
     u8      *Screen::GetLeftFramebuffer(bool current)
     {
-        u32    index = REG(_currentBuffer) & 0b1;
-
         if (current)
         {
-            return ((u8 *)_leftFramebuffersV[index]); 
+            return ((u8 *)_leftFramebuffersV[_currentBuffer]); 
         }
-        return ((u8 *)_leftFramebuffersV[!index]);            
+        return ((u8 *)_leftFramebuffersV[!_currentBuffer]);            
     }
 
     u8      *Screen::GetRightFramebuffer(bool current)
@@ -297,24 +309,20 @@ namespace CTRPluginFramework
         if (!_isTopScreen)
             return (nullptr);
 
-        u32    index = REG(_currentBuffer) & 0b1;
-
         if (current)
         {
-            return ((u8 *)_rightFramebuffersV[index]); 
+            return ((u8 *)_rightFramebuffersV[_currentBuffer]); 
         }
-        return ((u8 *)_rightFramebuffersV[!index]);            
+        return ((u8 *)_rightFramebuffersV[!_currentBuffer]);            
     }
 
     u8      *Screen::GetLeftFramebufferP(bool current)
     {
-        u32    index = REG(_currentBuffer) & 0b1;
-
         if (current)
         {
-            return ((u8 *)_leftFramebuffersP[index]); 
+            return ((u8 *)_leftFramebuffersP[_currentBuffer]); 
         }
-        return ((u8 *)_leftFramebuffersP[!index]);            
+        return ((u8 *)_leftFramebuffersP[!_currentBuffer]);            
     }
 
     u8      *Screen::GetRightFramebufferP(bool current)
@@ -326,8 +334,8 @@ namespace CTRPluginFramework
 
         if (current)
         {
-            return ((u8 *)_rightFramebuffersP[index]); 
+            return ((u8 *)_rightFramebuffersP[_currentBuffer]); 
         }
-        return ((u8 *)_rightFramebuffersP[!index]);            
+        return ((u8 *)_rightFramebuffersP[!_currentBuffer]);            
     }
 }
