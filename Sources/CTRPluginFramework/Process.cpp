@@ -4,6 +4,8 @@
 #include <cstdio>
 #include <cstring>
 
+extern 		Handle gspThreadEventHandle;
+
 namespace CTRPluginFramework
 {
 	u32         Process::_processID = 0;
@@ -14,6 +16,7 @@ namespace CTRPluginFramework
 	KCodeSet    Process::_kCodeSet = {0};
 	Handle 		Process::_processHandle = 0;
 	Handle 		Process::_mainThreadHandle = 0;
+
 	//u32 		Process::_finishedStateDMA = 0;
 	//u32         *Process::_kProcessHandleTable = nullptr;
 
@@ -106,11 +109,13 @@ namespace CTRPluginFramework
 
 	void 	Process::Pause(void)
 	{
-		svcSetThreadPriority(_mainThreadHandle, 0x19);
+		svcSetThreadPriority(gspThreadEventHandle, 0x19);
+		svcSetThreadPriority(_mainThreadHandle, 0x20);
 	}
 
 	void 	Process::Play(void)
 	{
+		svcSetThreadPriority(gspThreadEventHandle, 0x31);
 		svcSetThreadPriority(_mainThreadHandle, 0x3F);
 	}
 
