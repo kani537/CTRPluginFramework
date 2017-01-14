@@ -8,4 +8,5 @@ void __attribute__((weak)) __appInit(void) {
 
 	fsInit();
 	sdmcInit();
+    gspInit();
 }
