@@ -55,8 +55,8 @@ namespace CTRPluginFramework
 
         // Get width & height
         u32 wh = REG(_LCDSetup + LCDSetup::WidthHeight);
-        _width = (u16)(wh & 0xFFFF);
-        _height = (u16)(wh >> 16);
+        _height = (u16)(wh & 0xFFFF);
+        _width = (u16)(wh >> 16);
 
         // Get left framebuffers pointers (Physical need to be converted)
         _leftFramebuffersP[0] = REG(_LCDSetup + LCDSetup::FramebufferA1);
@@ -190,8 +190,8 @@ namespace CTRPluginFramework
 
         // Get width & height
         u32 wh = REG(_LCDSetup + LCDSetup::WidthHeight);
-        _width = (u16)(wh & 0xFFFF);
-        _height = (u16)(wh >> 16);
+        _height = (u16)(wh & 0xFFFF);
+        _width = (u16)(wh >> 16);
 
         // Get stride
         _stride = REG(_LCDSetup + LCDSetup::Stride);
@@ -201,6 +201,8 @@ namespace CTRPluginFramework
 
         // Set row size
         _rowSize = _stride / _bytesPerPixel;
+
+        Renderer::UpdateTarget();
 
         _leftFramebuffersP[0] = leftFB1;
         _leftFramebuffersP[1] = leftFB2;
@@ -239,5 +241,30 @@ namespace CTRPluginFramework
             return ((u8 *)_rightFramebuffersV[index]); 
         }
         return ((u8 *)_rightFramebuffersV[!index]);            
+    }
+
+    u8      *Screen::GetLeftFramebufferP(bool current)
+    {
+        u32    index = REG(_currentBuffer) & 0b1;
+
+        if (current)
+        {
+            return ((u8 *)_leftFramebuffersP[index]); 
+        }
+        return ((u8 *)_leftFramebuffersP[!index]);            
+    }
+
+    u8      *Screen::GetRightFramebufferP(bool current)
+    {
+        if (!_isTopScreen)
+            return (nullptr);
+
+        u32    index = REG(_currentBuffer) & 0b1;
+
+        if (current)
+        {
+            return ((u8 *)_rightFramebuffersP[index]); 
+        }
+        return ((u8 *)_rightFramebuffersP[!index]);            
     }
 }

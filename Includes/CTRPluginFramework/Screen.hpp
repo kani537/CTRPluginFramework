@@ -1,7 +1,7 @@
 #ifndef CTRPLUGINFRAMEWORK_SCREEN_HPP
 #define CTRPLUGINFRAMEWORK_SCREEN_HPP
 
-#include "CTRPluginFramework.hpp"
+#include "CTRPluginFramework/Color.hpp"
 #include "ctrulib/services/gspgpu.h"
 
 namespace CTRPluginFramework
@@ -47,9 +47,13 @@ namespace CTRPluginFramework
 
 
     private:
+        friend class Renderer;
         friend void                 Initialize(void);
         static void                 Initialize(void);
         void                        RefreshFramebuffers(void);
+
+        u8                          *GetLeftFramebufferP(bool current = false);
+        u8                          *GetRightFramebufferP(bool current = false);
 
         u32                         _LCDSetup;
         u32                         _FillColor;
