@@ -191,6 +191,11 @@ namespace CTRPluginFramework
         return (_bytesPerPixel);
     }
 
+    u32     Screen::GetFramebufferSize(void)
+    {
+        return (_rowSize * _width * _bytesPerPixel);
+    }
+
     void    Screen::Update(void)
     {
         RefreshFramebuffers();

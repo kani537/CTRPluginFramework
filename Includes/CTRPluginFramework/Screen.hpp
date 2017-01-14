@@ -40,6 +40,7 @@ namespace CTRPluginFramework
         u32                         GetStride(void);
         u32                         GetRowSize(void);
         u32                         GetBytesPerPixel(void);
+        u32                         GetFramebufferSize(void);
         int                         Debug(int posX, int posY);
 
         u8                          *GetLeftFramebuffer(bool current = false);
