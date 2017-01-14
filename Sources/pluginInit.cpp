@@ -15,7 +15,6 @@ void abort(void)
 
 namespace CTRPluginFramework
 {
-
     static  u32 threadStack[0x4000];
     Handle  threadHandle;
 
@@ -30,10 +29,12 @@ namespace CTRPluginFramework
         initSystem();
         // Init Framework's system constants
         System::Initialize();
-        // Init Process info
-        Process::Initialize(threadHandle, true);
         // Init Screen
         Screen::Initialize();
+        // Init Process info
+        Process::Initialize(threadHandle, System::IsNew3DS());    
+        // Launch commands thread
+        ThreadCommands::Initialize();
         // Patch process before it starts
         PatchProcess();        
     }
@@ -49,12 +50,13 @@ namespace CTRPluginFramework
         PageInfo pinfo;
         MemInfo minfo;
 
-        // Protect VRAM
-        Process::ProtectRegion(0x1F000000);
         // Reduce Priority
         Process::Play();
         // Wait for the game to be launched
         Sleep(Seconds(5));
+
+        // Protect VRAM
+        Process::ProtectRegion(0x1F000000);
         // Protect HID Shared Memory in case we want to push / redirects inputs
         Process::ProtectMemory((u32)hidSharedMem, 0x1000);
 
@@ -64,6 +66,9 @@ namespace CTRPluginFramework
         // Release process in case it was forgotten
         Process::Play();
 
+        // Exit commands thread
+        ThreadCommands::Exit();
+
         // Free heap and deinit services and exit thread
         exit(ret);
     }
@@ -71,7 +76,7 @@ namespace CTRPluginFramework
 
     int   LaunchMainThread(int arg)
     {
-        svcCreateThread(&threadHandle, ThreadInit, 0, &threadStack[0x4000], 0x18, -2);
+        svcCreateThread(&threadHandle, ThreadInit, 0, &threadStack[0x4000], 0x19, -2);
         return (0);
     }
 
