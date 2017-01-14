@@ -24,7 +24,7 @@ namespace CTRPluginFramework
 
 		// Get current KProcess
 		_kProcess = (u32)arm11kGetCurrentKProcess();
-		_kProcessState = _kProcess + 0x88;
+		
 		// Copy KProcess data
 		arm11kMemcpy((u32)&kproc, _kProcess, 0x100);
 		if (isNew3DS)
@@ -34,14 +34,16 @@ namespace CTRPluginFramework
 
 			// Copy process id
 			_processID = *(u32 *)(kproc + 0xBC);
+			_kProcessState = _kProcess + 0x88;
 		}
 		else
 		{
 			// Copy KCodeSet
-			arm11kMemcpy((u32)&_kCodeSet, *(u32 *)(kproc + 0xB0), 0x64);          
+			arm11kMemcpy((u32)&_kCodeSet, *(u32 *)(kproc + 0xB0), sizeof(KCodeSet));          
 
 			// Copy process id
 			_processID = *(u32 *)(kproc + 0xB4);
+			_kProcessState = _kProcess + 0x80;
 		}
 
 		// Copy process name
@@ -104,7 +106,7 @@ namespace CTRPluginFramework
 
 	void 	Process::Pause(void)
 	{
-		svcSetThreadPriority(_mainThreadHandle, 0x18);
+		svcSetThreadPriority(_mainThreadHandle, 0x19);
 	}
 
 	void 	Process::Play(void)
