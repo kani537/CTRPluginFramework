@@ -1,3 +1,5 @@
 /Build
 *.plg
 *.elf
+*.zip
+*.7z
