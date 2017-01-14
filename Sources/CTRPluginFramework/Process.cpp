@@ -17,10 +17,6 @@ namespace CTRPluginFramework
 	Handle 		Process::_processHandle = 0;
 	Handle 		Process::_mainThreadHandle = 0;
 
-	//u32 		Process::_finishedStateDMA = 0;
-	//u32         *Process::_kProcessHandleTable = nullptr;
-
-
 	void    Process::Initialize(Handle threadHandle, bool isNew3DS)
 	{
 		char    kproc[0x100] = {0};
@@ -110,12 +106,28 @@ namespace CTRPluginFramework
 	void 	Process::Pause(void)
 	{
 		svcSetThreadPriority(gspThreadEventHandle, 0x19);
+		// Attempts to always get different framebuffers
+		ThreadCommands::Execute(Commands::GSPGPU_END);
 		svcSetThreadPriority(_mainThreadHandle, 0x20);
+		u32 	top[2];
+		u32 	bot[2];
+		Screen::Top->GetLeftFramebufferRegisters(top);
+		Screen::Bottom->GetLeftFramebufferRegisters(bot);
+		while (1)
+		{
+			if ((*(u32 *)(top[0]) != *(u32 *)(top[1]))
+				&& (*(u32 *)(bot[0]) != *(u32 *)(bot[1])))
+				break;
+			svcSleepThread(10);
+
+		}
+		Screen::Top->Acquire();
+        Screen::Bottom->Acquire();        
 	}
 
 	void 	Process::Play(void)
 	{
-		svcSetThreadPriority(gspThreadEventHandle, 0x31);
+		svcSetThreadPriority(gspThreadEventHandle, 0x3F);
 		svcSetThreadPriority(_mainThreadHandle, 0x3F);
 	}
 
