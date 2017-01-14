@@ -3,6 +3,7 @@
 #include "CTRPluginFramework/Commands.hpp"
 #include "font6x10Linux.h"
 #include "3DS.h"
+#include "ctrulib/services/gspgpu.h"
 
 namespace CTRPluginFramework
 {
@@ -64,21 +65,31 @@ namespace CTRPluginFramework
         _framebufferP = _screenTarget->GetLeftFramebufferP();
         _framebufferR = _screenTarget->GetRightFramebuffer();
         _framebufferRP = _screenTarget->GetRightFramebufferP();
+
+        u8  *current = _screenTarget->GetLeftFramebuffer(true);
+        u32 size = _rowSize * _targetWidth * _screenTarget->GetBytesPerPixel();
+        memcpy(_framebuffer, current, size);
+        current = _screenTarget->GetRightFramebuffer(true);
+        if (current)
+            memcpy(_framebufferR, current, size);
     }
 
     void        Renderer::EndRendering(void)
     {
-        u32 size = _screenTarget->GetStride() * _screenTarget->GetWidth();
-        ThreadCommands::SetArgs((int)_framebufferP, (int)size);
+        u32 size = _rowSize * _targetWidth * _screenTarget->GetBytesPerPixel();
+        ThreadCommands::SetArgs((int)_framebuffer, (int)size);
         ThreadCommands::Execute(Commands::GSPGPU_FLUSH);
-        ThreadCommands::Execute(Commands::GSPGPU_INVALIDATE);
+       // ThreadCommands::Execute(Commands::GSPGPU_INVALIDATE);
         if (_render3D)
         {
-            ThreadCommands::SetArgs((int)_framebufferRP, (int)size);
+            ThreadCommands::SetArgs((int)_framebufferR, (int)size);
             ThreadCommands::Execute(Commands::GSPGPU_FLUSH);            
-            ThreadCommands::Execute(Commands::GSPGPU_INVALIDATE);
+            //ThreadCommands::Execute(Commands::GSPGPU_INVALIDATE);
         }
         _screenTarget->SwapBuffer();
+        //ThreadCommands::Execute(Commands::GSPGPU_SWAP);
+        ThreadCommands::Execute(Commands::GSPGPU_VBLANK);
+        //ThreadCommands::Execute(Commands::GSPGPU_VBLANK1);
     }
 
     void        Renderer::DrawLine(int posX, int posY, int width, Color color, int height)
