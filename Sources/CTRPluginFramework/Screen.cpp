@@ -1,14 +1,40 @@
 #include "CTRPluginFramework.hpp"
 #include "3DS.h"
-#include <new>
+#include "ctrulib/gfx.h"
+#include <cstdio>
+
 
 namespace CTRPluginFramework
 {
 
     #define REG(x) *(vu32 *)(x)
 
-    Screen *Screen::Top = NULL;
-    Screen  *Screen::Bottom = NULL;
+    Screen *Screen::Top = nullptr;
+    Screen  *Screen::Bottom = nullptr;
+
+    extern "C" void    UpdateCtrulibGfx(void);
+
+    void    UpdateCtrulibGfx(void)
+    {
+        Screen::Top->SetCtrulibScreen();
+        Screen::Bottom->SetCtrulibScreen();
+    }
+
+    void    Screen::SetCtrulibScreen(void)
+    {
+        if (_isTopScreen)
+        {
+            gfxTopLeftFramebuffers[0] = (u8 *)_leftFramebuffersV[0];
+            gfxTopLeftFramebuffers[1] = (u8 *)_leftFramebuffersV[1];
+            gfxTopRightFramebuffers[0] = (u8 *)_rightFramebuffersV[0];
+            gfxTopRightFramebuffers[1] = (u8 *)_rightFramebuffersV[1];           
+        }
+        else
+        {
+            gfxBottomFramebuffers[0] = (u8 *)_leftFramebuffersV[0];
+            gfxBottomFramebuffers[1] = (u8 *)_leftFramebuffersV[1];
+        }
+    }
 
     u32     FromPhysicalToVirtual(u32 address)
     {
@@ -168,6 +194,38 @@ namespace CTRPluginFramework
     void    Screen::Update(void)
     {
         RefreshFramebuffers();
+    }
+
+    int    Screen::Debug(int posX, int posY)
+    {
+        char buffer[50];
+        Color blank = Color(255, 255, 255);
+
+        sprintf(buffer, "left0: %08X", _leftFramebuffersV[0]);
+        Renderer::DrawString(buffer, posX, posY, blank);
+        posY += 10;
+
+        sprintf(buffer, "left1: %08X", _leftFramebuffersV[1]);
+        Renderer::DrawString(buffer, posX, posY, blank);
+        posY += 10;
+
+        sprintf(buffer, "right0: %08X", _rightFramebuffersV[0]);
+        Renderer::DrawString(buffer, posX, posY, blank);
+        posY += 10;
+
+        sprintf(buffer, "right1: %08X", _rightFramebuffersV[1]);
+        Renderer::DrawString(buffer, posX, posY, blank);
+        posY += 10;
+
+        sprintf(buffer, "format: %08X", _format);
+        Renderer::DrawString(buffer, posX, posY, blank);
+        posY += 10;
+
+        sprintf(buffer, "stride: %d, w: %d, h: %d", _stride, _width, _height);
+        Renderer::DrawString(buffer, posX, posY, blank);
+        posY += 10;
+
+        return (posY);
     }
 
     void    Screen::RefreshFramebuffers(void)

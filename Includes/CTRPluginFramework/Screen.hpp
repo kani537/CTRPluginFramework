@@ -27,7 +27,7 @@ namespace CTRPluginFramework
 
         Screen(u32 lcdSetupInfo, u32 fillColorAddress, bool isTopScreen = false);
 
-        
+        void                        SetCtrulibScreen(void);
 
         bool                        IsTopScreen(void);
         bool                        Is3DEnabled(void);
@@ -40,6 +40,7 @@ namespace CTRPluginFramework
         u32                         GetStride(void);
         u32                         GetRowSize(void);
         u32                         GetBytesPerPixel(void);
+        int                         Debug(int posX, int posY);
 
         u8                          *GetLeftFramebuffer(bool current = false);
         u8                          *GetRightFramebuffer(bool current = false);                    
