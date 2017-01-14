@@ -11,6 +11,7 @@ namespace CTRPluginFramework
         Clock(void);
 
         Time    GetElapsedTime(void) const;
+        bool    HasTimePassed(Time time) const;
         Time    Restart(void);
     private:
         Time    _startTime;

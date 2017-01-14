@@ -20,6 +20,11 @@ namespace CTRPluginFramework
         return (GetCurrentTime() - _startTime);
     }
 
+    bool    Clock::HasTimePassed(Time time) const
+    {
+        return (GetElapsedTime() >=  time);
+    }
+
     Time    Clock::Restart(void)
     {
         Time now = GetCurrentTime();
