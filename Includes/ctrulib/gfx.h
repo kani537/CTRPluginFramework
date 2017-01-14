@@ -9,8 +9,8 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-#include "../types.h"
-#include "services/gspgpu.h"
+#include <types.h>
+#include <ctrulib/services/gspgpu.h>
 
 /// Converts red, green, and blue components to packed RGB565.
 #define RGB565(r,g,b)  (((b)&0x1f)|(((g)&0x3f)<<5)|(((r)&0x1f)<<11))
@@ -22,8 +22,7 @@ extern "C" {
 typedef enum
 {
 	GFX_TOP = 0,   ///< Top screen
-	GFX_BOTTOM = 1,	///< Bottom screen
-	GFX_BOTH = 2
+	GFX_BOTTOM = 1 ///< Bottom screen
 }gfxScreen_t;
 
 /**
@@ -41,13 +40,6 @@ typedef enum
 
 ///@name System related
 ///@{
-void gfxFillColor(gfxScreen_t screen, u32 fillcolor);
-void gfxAllocateBuffer(void);
-void fadeOut(void);
-void gfxAcquire(void);
-void gfxRelease(void);
-void gfxTransferToScreen(gfxScreen_t screen);
-void gfxRestoreGameConfig(void);
 
 /**
  * @brief Initializes the LCD framebuffers with default parameters
@@ -131,7 +123,7 @@ void gfxSetDoubleBuffering(gfxScreen_t screen, bool doubleBuffering);
  * Use this if the data within your framebuffers changes a lot and that you want to make sure everything was updated correctly.
  * This shouldn't be needed and has a significant overhead.
  */
-void gfxFlushBuffers(gfxScreen_t screen);
+void gfxFlushBuffers(void);
 
 /**
  * @brief Updates the configuration of the specified screen (swapping the buffers if double-buffering is enabled).
@@ -172,7 +164,7 @@ void gfxSwapBuffersGpu(void);
  *
  * Please remember that the returned pointer will change after each call to gfxSwapBuffers if double buffering is enabled.
  */
-u8* gfxGetFramebuffer(gfxScreen_t screen);
+u8* gfxGetFramebuffer(gfxScreen_t screen, gfx3dSide_t side, u16* width, u16* height);
 ///@}
 
 //global variables

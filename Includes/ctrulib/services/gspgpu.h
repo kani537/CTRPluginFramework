@@ -3,12 +3,10 @@
  * @brief GSPGPU service.
  */
 #pragma once
-#ifndef GSPGPU_H
-#define GSPGPU_H
 #ifdef __cplusplus
 extern "C" {
 #endif
-#include "../../types.h"
+
 #define GSPGPU_REBASE_REG(r) ((r)-0x1EB00000)
 
 /// Framebuffer information.
@@ -222,7 +220,7 @@ Result GSPGPU_UnregisterInterruptRelayQueue(void);
 
 /// Triggers a handling of commands written to shared memory.
 Result GSPGPU_TriggerCmdReqQueue(void);
+
 #ifdef __cplusplus
 }
-#endif
 #endif

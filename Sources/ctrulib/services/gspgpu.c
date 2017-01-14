@@ -1,18 +1,19 @@
 #include <stdlib.h>
 #include <string.h>
-#include "types.h"
-#include "ctrulib/result.h"
-#include "ctrulib/svc.h"
-#include "ctrulib/srv.h"
-#include "ctrulib/synchronization.h"
-#include "ctrulib/services/gspgpu.h"
-#include "ctrulib/ipc.h"
-#include "ctrulib/thread.h"
+#include <types.h>
+#include <ctrulib/result.h>
+#include <ctrulib/svc.h>
+#include <ctrulib/srv.h>
+#include <ctrulib/synchronization.h>
+#include <ctrulib/services/gspgpu.h>
+#include <ctrulib/ipc.h>
+#include <ctrulib/thread.h>
 
 #define GSP_EVENT_STACK_SIZE 0x1000
 
 Handle gspGpuHandle;
 static int gspRefCount;
+
 static s32 gspLastEvent = -1;
 static LightEvent gspEvents[GSPGPU_EVENT_MAX];
 static vu32 gspEventCounts[GSPGPU_EVENT_MAX];
@@ -20,12 +21,15 @@ static ThreadFunc gspEventCb[GSPGPU_EVENT_MAX];
 static void* gspEventCbData[GSPGPU_EVENT_MAX];
 static bool gspEventCbOneShot[GSPGPU_EVENT_MAX];
 static volatile bool gspRunEvents;
-static Thread gspEventThread;
+//static Thread gspEventThread;
 
 static Handle gspEvent;
 static vu8* gspEventData;
 
-static void gspEventThreadMain(void *arg);
+static void gspEventThreadMain(u32 arg);
+
+Handle gspThreadEventHandle;
+static char gspThreadEventStack[0x1000] = {0};
 
 Handle __sync_get_arbiter(void);
 
@@ -34,13 +38,7 @@ Result gspInit(void)
 	Result res=0;
 	if (AtomicPostIncrement(&gspRefCount)) return 0;
 	res = srvGetServiceHandle(&gspGpuHandle, "gsp::Gpu");
-	if (R_FAILED(res))
-	{
-		//new_log(WARNING, "GSP Init: FAILED\n");
-		AtomicDecrement(&gspRefCount);
-	}
-	//else
-		//new_log(INFO, "GSP Init: SUCCESS\n");
+	if (R_FAILED(res)) AtomicDecrement(&gspRefCount);
 	return res;
 }
 
@@ -70,7 +68,8 @@ Result gspInitEventHandler(Handle _gspEvent, vu8* _gspSharedMem, u8 gspThreadId)
 	gspEvent = _gspEvent;
 	gspEventData = _gspSharedMem + gspThreadId*0x40;
 	gspRunEvents = true;
-	gspEventThread = threadCreate((ThreadFunc)gspEventThreadMain, 0x0, GSP_EVENT_STACK_SIZE, 0x31, -2, true);
+	svcCreateThread(&gspThreadEventHandle, gspEventThreadMain, 0, (u32*)&gspThreadEventStack[0x1000], 0x31, -2);
+	//gspEventThread = threadCreate(gspEventThreadMain, 0x0, GSP_EVENT_STACK_SIZE, 0x31, -2, true);
 	return 0;
 }
 
@@ -79,7 +78,8 @@ void gspExitEventHandler(void)
 	// Stop event thread
 	gspRunEvents = false;
 	svcSignalEvent(gspEvent);
-	threadJoin(gspEventThread, U64_MAX);
+	svcWaitSynchronization(gspThreadEventHandle, U64_MAX);
+	//threadJoin(gspEventThread, U64_MAX);
 }
 
 void gspWaitForEvent(GSPGPU_Event id, bool nextEvent)
@@ -149,7 +149,7 @@ static int popInterrupt()
 	return curEvt;
 }
 
-void gspEventThreadMain(void *arg)
+void gspEventThreadMain(u32 arg)
 {
 	while (gspRunEvents)
 	{
@@ -170,7 +170,7 @@ void gspEventThreadMain(void *arg)
 					ThreadFunc func = gspEventCb[curEvt];
 					if (gspEventCbOneShot[curEvt])
 						gspEventCb[curEvt] = NULL;
-					func((u32)gspEventCbData[curEvt]);
+					func(gspEventCbData[curEvt]);
 				}
 				LightEvent_Signal(&gspEvents[curEvt]);
 				do

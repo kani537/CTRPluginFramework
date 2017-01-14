@@ -1,66 +1,60 @@
 #include <stdlib.h>
 #include <stdio.h>
-#include "types.h"
-#include "ctrulib/services/fs.h"
-#include "ctrulib/gfx.h"
-#include "ctrulib/svc.h"
-#include "ctrulib/gpu/gx.h"
-#include "ctrulib/os.h"
-#define REG(x)   		*(volatile u32*)(x)
+#include <types.h>
+#include <ctrulib/gfx.h>
+#include <ctrulib/svc.h>
+#include <ctrulib/allocator/linear.h>
+#include <ctrulib/allocator/mappable.h>
+#include <ctrulib/allocator/vram.h>
+#include <ctrulib/gpu/gx.h>
 
-#define TOP_SIZE 0x46500
-#define BOTTOM_SIZE 0x38400
+GSPGPU_FramebufferInfo topFramebufferInfo, bottomFramebufferInfo;
 
-//GSPGPU_FramebufferInfo topFramebufferInfo;
-//GSPGPU_FramebufferInfo bottomFramebufferInfo;
-//u8 gfxThreadID;
-//u8* gfxSharedMemory;
+u8 gfxThreadID;
+u8* gfxSharedMemory;
 
-typedef struct 	s_LCDFamebufferSetup
-{
-	u16 	width;
-	u16 	height;
-	u32 	leftScreen1;
-	u32 	leftScreen2;
-	u32 	format;
-	u32 	index;
-	u32 	disco;
-	u32 	stride;
-	u32 	rightScreen1;
-	u32 	rightScreen2;
-}				t_LCDFramebufferSetup;
-
-static t_LCDFramebufferSetup	*g_topScreen = (void *)0;
-static t_LCDFramebufferSetup 	*g_bottomScreen = (void *)0;
+u8* gfxTopLeftFramebuffers[2];
+u8* gfxTopRightFramebuffers[2];
+u8* gfxBottomFramebuffers[2];
 
 static bool enable3d;
+static u8 currentBuffer[2];
+static int doubleBuf[2] = {1,1};
 
-//------------------------------------------
-//Plugin relative
-//------------------------------------------
+Handle gspEvent, gspSharedMemHandle;
 
-static bool alreadyAcquired = false;
+static GSPGPU_FramebufferFormats topFormat = GSP_BGR8_OES;
+static GSPGPU_FramebufferFormats botFormat = GSP_BGR8_OES;
 
+static GSPGPU_FramebufferInfo* const framebufferInfoSt[] = { &topFramebufferInfo, &bottomFramebufferInfo };
 
-//-------------------------------------------
-/*
-void gfxFillColor(gfxScreen_t screen, u32 fillcolor)
+void gfxSet3D(bool enable)
 {
-	u32 i;
-
-	IoBaseLcd = plgGetIoBase(IO_BASE_LCD);
-	for (i = 0; i < 0x64; ++i )
-	{
-		if (screen == GFX_BOTH || screen == GFX_TOP)
-			*(u32 *)(IoBaseLcd + 0x204) = fillcolor;
-		if (screen == GFX_BOTH || screen == GFX_BOTTOM)
-			*(u32 *)(IoBaseLcd + 0xA04) = fillcolor;
-		svc_sleepThread(5000000); // 0.005 second
-	}
-	*(u32*)(IoBaseLcd + 0x204) = 0;
-	*(u32*)(IoBaseLcd + 0xA04) = 0;
+	enable3d=enable;
 }
 
+bool gfxIs3D(void)
+{
+	return enable3d;
+}
+
+void gfxSetScreenFormat(gfxScreen_t screen, GSPGPU_FramebufferFormats format) {
+    if(screen==GFX_TOP)
+        topFormat = format;
+    else
+        botFormat = format;
+}
+
+GSPGPU_FramebufferFormats gfxGetScreenFormat(gfxScreen_t screen) {
+    if(screen==GFX_TOP)
+        return topFormat;
+    else
+        return botFormat;
+}
+
+void gfxSetDoubleBuffering(gfxScreen_t screen, bool doubleBuffering) {
+	doubleBuf[screen] = doubleBuffering ? 1 : 0; // make sure they're the integer values '1' and '0'
+}
 
 static u32 __get_bytes_per_pixel(GSPGPU_FramebufferFormats format) {
     switch(format) {
@@ -77,291 +71,194 @@ static u32 __get_bytes_per_pixel(GSPGPU_FramebufferFormats format) {
     return 3;
 }
 
-void logGpuReg(void)
+void gfxSetFramebufferInfo(gfxScreen_t screen, u8 id)
 {
-	new_log(DEBUG, \
-	"Framebuffer:\n" \
-	"TOP:\n" \
-	"left (0): %08X\n" \
-	"left (1): %08X\n" \
-	"right (0): %08X\n" \
-	"right (1): %08X\n" \
-	"current: %d\n" \
-	"BOTTOM:\n" \
-	"(0): %08X\n" \
-	"(1): %08X\n" \
-	"current: %d\n", \
-	REG(IoBasePdc + 0x468),
-	REG(IoBasePdc + 0x46C),
-	REG(IoBasePdc + 0x494),
-	REG(IoBasePdc + 0x498),
-	REG(IoBasePdc + 0x478) & 0x1,
-	REG(IoBasePdc + 0x568),
-	REG(IoBasePdc + 0x56C),
-	REG(IoBasePdc + 0x578) & 0x1);
+	if(screen==GFX_TOP)
+	{
+		topFramebufferInfo.active_framebuf = id;
+		topFramebufferInfo.framebuf0_vaddr = (u32*)gfxTopLeftFramebuffers[id];
+		if(enable3d)topFramebufferInfo.framebuf1_vaddr = (u32*)gfxTopRightFramebuffers[id];
+		else topFramebufferInfo.framebuf1_vaddr = topFramebufferInfo.framebuf0_vaddr;
+		topFramebufferInfo.framebuf_widthbytesize = 240*__get_bytes_per_pixel(topFormat);
+		u8 bit5 = (enable3d!=0);
+		topFramebufferInfo.format = ((1)<<8)|((1^bit5)<<6)|((bit5)<<5)|topFormat;
+		topFramebufferInfo.framebuf_dispselect = id;
+		topFramebufferInfo.unk = 0x00000000;
+	}else{
+		bottomFramebufferInfo.active_framebuf = id;
+		bottomFramebufferInfo.framebuf0_vaddr = (u32*)gfxBottomFramebuffers[id];
+		bottomFramebufferInfo.framebuf1_vaddr = 0x00000000;
+		bottomFramebufferInfo.framebuf_widthbytesize = 240*__get_bytes_per_pixel(botFormat);
+		bottomFramebufferInfo.format = botFormat;
+		bottomFramebufferInfo.framebuf_dispselect = id;
+		bottomFramebufferInfo.unk = 0x00000000;
+	}
+}
+
+void gfxWriteFramebufferInfo(gfxScreen_t screen)
+{
+	u8* framebufferInfoHeader=gfxSharedMemory+0x200+gfxThreadID*0x80;
+	if(screen==GFX_BOTTOM)framebufferInfoHeader+=0x40;
+	GSPGPU_FramebufferInfo* framebufferInfo=(GSPGPU_FramebufferInfo*)&framebufferInfoHeader[0x4];
+	framebufferInfoHeader[0x0]^=doubleBuf[screen];
+	framebufferInfo[framebufferInfoHeader[0x0]]=*framebufferInfoSt[screen];
+	framebufferInfoHeader[0x1]=1;
 }
 
 static void (*screenFree)(void *) = NULL;
-
-void gfxSaveVRAM(Handle file)
-{
-	u32 bytesRead;
-	u32 result;
-	
-	new_log(INFO, "gfx Write VRAM to file");
-	//result = FSFILE_Write(backFile, &bytesRead, 0, (void *)(gfxBottomFramebuffers[0] + PtoV), 0xFD200, 1);
-	//Bottom buffer 0
-	memcpy((void *)screenBuffer, gfxBottomFramebuffers[0] + PtoV, BOTTOM_SIZE);
-	result = FSFILE_Write(file, &bytesRead, 0, (void *)screenBuffer, BOTTOM_SIZE, 1);
-	if (R_FAILED(result)) new_log(WARNING, "Write BOTTOM VRAM to file: FAILED -> %08X", result);
-	//bottom buffer 1
-	memcpy((void *)screenBuffer, gfxBottomFramebuffers[1] + PtoV, BOTTOM_SIZE);
-	result = FSFILE_Write(file, &bytesRead, BOTTOM_SIZE, (void *)screenBuffer, BOTTOM_SIZE, 1);
-	if (R_FAILED(result)) new_log(WARNING, "Write BOTTOM2 VRAM to file: FAILED -> %08X", result);
-	//top buffer 0
-	memcpy((void *)screenBuffer, gfxTopLeftFramebuffers[0] + PtoV, TOP_SIZE);
-	result = FSFILE_Write(file, &bytesRead, BOTTOM_SIZE * 2, (void *)screenBuffer, TOP_SIZE, 1);
-	if (R_FAILED(result)) new_log(WARNING, "Write TOP VRAM to file: FAILED -> %08X", result);
-	//top buffer 0
-	memcpy((void *)screenBuffer, gfxTopLeftFramebuffers[1] + PtoV, TOP_SIZE);
-	result = FSFILE_Write(file, &bytesRead, (BOTTOM_SIZE * 2) + TOP_SIZE, (void *)screenBuffer, TOP_SIZE, 1);
-	if (R_FAILED(result)) new_log(WARNING, "Write TOP2 VRAM to file: FAILED -> %08X", result);
-}
-
-void gfxLoadVRAM(Handle file)
-{
-	u32 bytesRead;
-	u32 result;
-	
-	new_log(INFO, "gfx read VRAM from file");
-	//bottom0
-	result = FSFILE_Read(file, &bytesRead, 0, (void *)screenBuffer, BOTTOM_SIZE);
-	memcpy(gfxBottomFramebuffers[0] + PtoV, (void *)screenBuffer, BOTTOM_SIZE);
-	if (R_FAILED(result)) new_log(WARNING, "Read file BOTTOM to VRAM -> %08X", result);
-	//bottom1
-	result = FSFILE_Read(file, &bytesRead, BOTTOM_SIZE, (void *)screenBuffer, BOTTOM_SIZE);
-	memcpy(gfxBottomFramebuffers[1] + PtoV, (void *)screenBuffer, BOTTOM_SIZE);
-	if (R_FAILED(result)) new_log(WARNING, "Read file BOTTOM1 to VRAM -> %08X", result);
-	//top0
-	result = FSFILE_Read(file, &bytesRead, (BOTTOM_SIZE * 2), (void *)screenBuffer, TOP_SIZE);
-	memcpy(gfxTopLeftFramebuffers[0] + PtoV, (void *)screenBuffer, TOP_SIZE);
-	if (R_FAILED(result)) new_log(WARNING, "Read file TOP to VRAM -> %08X", result);
-	//top1
-	result = FSFILE_Read(file, &bytesRead, (BOTTOM_SIZE * 2) + TOP_SIZE, (void *)screenBuffer, TOP_SIZE);
-	memcpy(gfxTopLeftFramebuffers[1] + PtoV, (void *)screenBuffer, TOP_SIZE);
-	if (R_FAILED(result)) new_log(WARNING, "Read file TOP1 to VRAM -> %08X", result);
-}
-
-void gfxSaveGameConfig(void)
-{
-	u32 buffer;
-	u32 bytesRead;
-	u32 result;
-
-	bakBottomFramebuffers[0]= (u8 *)(REG(IoBasePdc + 0x568));
-	bakBottomFramebuffers[1]= (u8 *)(REG(IoBasePdc + 0x56C));
-	bakTopLeftFramebuffers[0]= (u8 *)(REG(IoBasePdc + 0x468));
-	bakTopLeftFramebuffers[1]= (u8 *)(REG(IoBasePdc + 0x46C));	
-	bakTopRightFramebuffers[0]= (u8	*)(REG(IoBasePdc + 0x494));
-	bakTopRightFramebuffers[1]= (u8 *)(REG(IoBasePdc + 0x498));	
-	buffer = REG(IoBasePdc + 0x478);
-	bakCurrentBuffer[0]= buffer & 0x1;
-	buffer = REG(IoBasePdc + 0x578);
-	bakCurrentBuffer[1]= buffer & 0x1;
-	bakScreenFormat[0] = REG(IoBasePdc + 0x470);
-	bakScreenFormat[1] = REG(IoBasePdc + 0x570);
-	gfxSaveVRAM(backGameVramFile);
-}
-
-void gfxRestoreGameConfig(void)
-{
-	u32 result;
-	u32 bytesRead;
-	
-	//gfxSaveVRAM(backPluginVramFile);
-	gfxLoadVRAM(backGameVramFile);
-	WRITEU32(IoBasePdc + 0x568, (u32)bakBottomFramebuffers[0]);
-	WRITEU32(IoBasePdc + 0x56C, (u32)bakBottomFramebuffers[1]);
-	WRITEU32(IoBasePdc + 0x468, (u32)bakTopLeftFramebuffers[0]);
-	WRITEU32(IoBasePdc + 0x46C, (u32)bakTopLeftFramebuffers[1]);
-	WRITEU32(IoBasePdc + 0x494, (u32)bakTopRightFramebuffers[0]);
-	WRITEU32(IoBasePdc + 0x498, (u32)bakTopRightFramebuffers[1]);
-	WRITEU8(IoBasePdc + 0x478, bakCurrentBuffer[0]);
-	WRITEU8(IoBasePdc + 0x578, bakCurrentBuffer[1]);
-	WRITEU32(IoBasePdc + 0x470, bakScreenFormat[0]);
-	WRITEU32(IoBasePdc + 0x570, bakScreenFormat[1]);
-	
-}
-
-void gfxAcquire(void)
-{
-	u32 stride;
-	u32 topWH;
-	u32 botWH;
-	u32 topFormatValue;
-	u32 botFormatValue;
-	//static u32 	firstInit = 1;
-	
-	if (!alreadyAcquired)
-	{
-		gfxSaveGameConfig();
-		alreadyAcquired = true;
-	//	if (firstInit) firstInit = 0;
-	//	else gfxLoadVRAM(backPluginVramFile);
-	}
-	stride = 720; // 240 * 3
-	topWH = (u32)(240 << 16 | 400);
-	botWH = (u32)(240 << 16 | 320);
-	topFormatValue = ((1 << 8)|((1 ^ 1) << 6)|((1) << 5)| topFormat);
-	botFormatValue = botFormat;	
-	//Set our plugin's framebuffers
-	WRITEU32(IoBasePdc + 0x45C, topWH); //TopWH
-	WRITEU32(IoBasePdc + 0x468, (u32)gfxTopLeftFramebuffers[0]); //TOP Left 0
-	WRITEU32(IoBasePdc + 0x46C, (u32)gfxTopLeftFramebuffers[1]); //TOP Left 1
-	WRITEU32(IoBasePdc + 0x470, topFormatValue); //TopFormat
-	WRITEU8(IoBasePdc + 0x478, !currentBuffer[0]); //Set buffer 0
-	WRITEU32(IoBasePdc + 0x490, stride);
-	WRITEU32(IoBasePdc + 0x494, (u32)gfxTopRightFramebuffers[0]); //TOP Right 0
-	WRITEU32(IoBasePdc + 0x498, (u32)gfxTopRightFramebuffers[1]); //TOP Left 1
-	WRITEU32(IoBasePdc + 0x55C, botWH); //BotWH
-	WRITEU32(IoBasePdc + 0x568, (u32)gfxBottomFramebuffers[0]); //BOTTOM 0
-	WRITEU32(IoBasePdc + 0x56C, (u32)gfxBottomFramebuffers[1]); //BOTTOM 1
-	WRITEU32(IoBasePdc + 0x570, botFormatValue); //BotFormat	
-	WRITEU8(IoBasePdc + 0x578, !currentBuffer[1]); //Set buffer 0
-	WRITEU32(IoBasePdc + 0x590, stride);
-	//gfxFillColor(GFX_TOP, 0x100FF00);
-}
-
-void gfxRelease(void)
-{
-	if (alreadyAcquired == false) return;
-	//fadeOut();
-	executeCommand(GFX_RELEASE);
-	//gfxRestoreGameConfig();	
-	alreadyAcquired = false;
-}
-
+void    UpdateCtrulibGfx(void);
 void gfxInit(GSPGPU_FramebufferFormats topFormat, GSPGPU_FramebufferFormats bottomFormat, bool vrambuffers)
 {
-	u32 bufferPhysicalAddress = 0x18000000;
-	u32 ret = 0;	
+	void *(*screenAlloc)(size_t);
+
+	/*if (vrambuffers)
+	{
+		screenAlloc=vramAlloc;
+		screenFree=vramFree;
+
+	} else {
+
+		screenAlloc=linearAlloc;
+		screenFree=linearFree;
+	}*/
+
 	gspInit();
-	
-	gfxSetupBuffer();
-	//gfxSaveGameConfig();
 
-	//VA: 0x1F000000 -> PA: 0x18000000
-	gfxBottomFramebuffers[0] = (u8 *)bufferPhysicalAddress;
-	bufferPhysicalAddress += BOTTOM_SIZE;
-	gfxBottomFramebuffers[1] = (u8 *)bufferPhysicalAddress;
-	bufferPhysicalAddress += BOTTOM_SIZE;
-	gfxTopLeftFramebuffers[0] = (u8 *)bufferPhysicalAddress;
-	gfxTopRightFramebuffers[0] = (u8 *)bufferPhysicalAddress;
-	bufferPhysicalAddress += TOP_SIZE;
-	gfxTopLeftFramebuffers[1] = (u8 *)bufferPhysicalAddress;
-	gfxTopRightFramebuffers[1] = (u8 *)bufferPhysicalAddress;
-	
-	enable3d = false;
-	currentBuffer[0] = 0;
-	currentBuffer[1] = 0;
-	//logGpuReg();
+	gfxSharedMemory=(u8*)mappableAlloc(0x1000);
+
+	//GSPGPU_AcquireRight(0x0);
+
+	//setup our gsp shared mem section
+	svcCreateEvent(&gspEvent, RESET_ONESHOT);
+	GSPGPU_RegisterInterruptRelayQueue(gspEvent, 0x1, &gspSharedMemHandle, &gfxThreadID);
+	svcMapMemoryBlock(gspSharedMemHandle, (u32)gfxSharedMemory, 0x3, 0x10000000);
+
+	// default gspHeap configuration :
+	//		topleft1  0x00000000-0x00046500
+	//		topleft2  0x00046500-0x0008CA00
+	//		bottom1   0x0008CA00-0x000C4E00
+	//		bottom2   0x000C4E00-0x000FD200
+	//	 if 3d enabled :
+	//		topright1 0x000FD200-0x00143700
+	//		topright2 0x00143700-0x00189C00
+	u32 topSize = 400 * 240 * __get_bytes_per_pixel(topFormat);
+	u32 bottomSize = 320 * 240 * __get_bytes_per_pixel(bottomFormat);
+
+	/*gfxTopLeftFramebuffers[0]=screenAlloc(topSize);
+	gfxTopLeftFramebuffers[1]=screenAlloc(topSize);
+	gfxBottomFramebuffers[0]=screenAlloc(bottomSize);
+	gfxBottomFramebuffers[1]=screenAlloc(bottomSize);
+	gfxTopRightFramebuffers[0]=screenAlloc(topSize);
+	gfxTopRightFramebuffers[1]=screenAlloc(topSize);*/
+
+	UpdateCtrulibGfx();
+
+	enable3d=false;
+
+	//set requested modes
+	gfxSetScreenFormat(GFX_TOP,topFormat);
+	gfxSetScreenFormat(GFX_BOTTOM,bottomFormat);
+
+	//initialize framebuffer info structures
+	gfxSetFramebufferInfo(GFX_TOP, 0);
+	gfxSetFramebufferInfo(GFX_BOTTOM, 0);
+
+	//GSP shared mem : 0x2779F000
+	gxCmdBuf=(u32*)(gfxSharedMemory+0x800+gfxThreadID*0x200);
+
+	currentBuffer[0]=0;
+	currentBuffer[1]=0;
+
+	// Initialize event handler and wait for VBlank
+	gspInitEventHandler(gspEvent, (vu8*) gfxSharedMemory, gfxThreadID);
+	gspWaitForVBlank();
+
+	//GSPGPU_SetLcdForceBlack(0x0);
+	//GSPGPU_ReleaseRight();
 }
 
-void gfxInitDefault(void)
-{
-	gfxInit(GSP_BGR8_OES, GSP_BGR8_OES, false);
+void gfxInitDefault(void) {
+	gfxInit(GSP_BGR8_OES,GSP_BGR8_OES,false);
 }
 
-u8 *gfxGetFramebuffer(gfxScreen_t screen)
+void gfxExit(void)
 {
-	if(screen == GFX_TOP)
+	//if (screenFree == NULL) return;
+
+	// Exit event handler
+	gspExitEventHandler();
+
+	// Free framebuffers
+	/*screenFree(gfxTopRightFramebuffers[1]);
+	screenFree(gfxTopRightFramebuffers[0]);
+	screenFree(gfxBottomFramebuffers[1]);
+	screenFree(gfxBottomFramebuffers[0]);
+	screenFree(gfxTopLeftFramebuffers[1]);
+	screenFree(gfxTopLeftFramebuffers[0]);*/
+
+	//unmap GSP shared mem
+	svcUnmapMemoryBlock(gspSharedMemHandle, (u32)gfxSharedMemory);
+
+	GSPGPU_UnregisterInterruptRelayQueue();
+
+	svcCloseHandle(gspSharedMemHandle);
+	if(gfxSharedMemory != NULL)
 	{
-		if (currentBuffer[0] == 0) return ((u8 *)gfxTopLeftFramebuffers[0] + PtoV);
-		else return ((u8 *)gfxTopLeftFramebuffers[1] + PtoV);
+		mappableFree(gfxSharedMemory);
+		gfxSharedMemory = NULL;
 	}
+
+	svcCloseHandle(gspEvent);
+
+	GSPGPU_ReleaseRight();
+
+	gspExit();	
+
+	//screenFree = NULL;
+}
+
+u8* gfxGetFramebuffer(gfxScreen_t screen, gfx3dSide_t side, u16* width, u16* height)
+{
+	if(width)*width=240;
+
+	if(screen==GFX_TOP)
+	{
+		if(height)*height=400;
+		return (side==GFX_LEFT || !enable3d)?(gfxTopLeftFramebuffers[currentBuffer[0]^doubleBuf[0]]):(gfxTopRightFramebuffers[currentBuffer[0]^doubleBuf[0]]);
+	}else{
+		if(height)*height=320;
+		return gfxBottomFramebuffers[currentBuffer[1]^doubleBuf[1]];
+	}
+}
+
+void gfxFlushBuffers(void)
+{
+	u32 topSize = 400 * 240 * __get_bytes_per_pixel(gfxGetScreenFormat(GFX_TOP));
+	u32 bottomSize = 320 * 240 * __get_bytes_per_pixel(gfxGetScreenFormat(GFX_BOTTOM));
+
+	GSPGPU_FlushDataCache(gfxGetFramebuffer(GFX_TOP, GFX_LEFT, NULL, NULL), topSize);
+	if(enable3d)GSPGPU_FlushDataCache(gfxGetFramebuffer(GFX_TOP, GFX_RIGHT, NULL, NULL), topSize);
+	GSPGPU_FlushDataCache(gfxGetFramebuffer(GFX_BOTTOM, GFX_LEFT, NULL, NULL), bottomSize);
+}
+
+void gfxConfigScreen(gfxScreen_t scr, bool immediate)
+{
+	currentBuffer[scr]^=doubleBuf[scr];
+	gfxSetFramebufferInfo(scr, currentBuffer[scr]);
+	if (immediate)
+		GSPGPU_SetBufferSwap(scr, framebufferInfoSt[scr]);
 	else
-	{
-		if (currentBuffer[1] == 0) return ((u8 *)gfxBottomFramebuffers[0] + PtoV);
-		else return ((u8 *)gfxBottomFramebuffers[1] + PtoV);
-	}
+		gfxWriteFramebufferInfo(scr);
 }
 
-void gfxTransferToScreen(gfxScreen_t screen)
+void gfxSwapBuffers(void)
 {
-	if (alreadyAcquired == false) return;
-	/*if (screen == GFX_TOP)
-		memcpy(gfxTopLeftFramebuffers[0] + PtoV, (void *)screenBuffer, TOP_SIZE);
-	if (screen == GFX_BOTTOM)
-		memcpy(gfxBottomFramebuffers[0] + PtoV, (void *)screenBuffer, BOTTOM_SIZE);*/
-	//new_log(INFO, "GFX: Transfered to screen");
-/*	if (screen == GFX_TOP)
-	{
-		WRITEU8(IoBasePdc + 0x478, currentBuffer[0]);
-		currentBuffer[0] = !currentBuffer[0];
-	}
-	else
-	{
-		WRITEU8(IoBasePdc + 0x578, currentBuffer[1]);
-		currentBuffer[1] = !currentBuffer[1];
-	}
+	gfxConfigScreen(GFX_TOP, true);
+	gfxConfigScreen(GFX_BOTTOM, true);
 }
 
-void gfxTransferFromScreen(gfxScreen_t screen)
+void gfxSwapBuffersGpu(void)
 {
-	if (alreadyAcquired == false) return;
-	if (screen == GFX_TOP)
-	{
-		WRITEU8(IoBasePdc + 0x478, currentBuffer[0]);
-		currentBuffer[0] = !currentBuffer[0];
-	}
-	else
-	{
-		WRITEU8(IoBasePdc + 0x578, currentBuffer[1]);
-		currentBuffer[1] = !currentBuffer[1];
-	}
-		//memcpy((void *)screenBuffer, gfxTopLeftFramebuffers[0] + PtoV, TOP_SIZE);
-	//if (screen == GFX_BOTTOM)
-		//memcpy((void *)screenBuffer, gfxBottomFramebuffers[0] + PtoV, BOTTOM_SIZE);
-	//new_log(INFO, "GFX: Transfered from screen");
+	gfxConfigScreen(GFX_TOP, false);
+	gfxConfigScreen(GFX_BOTTOM, false);
 }
-
-void gfxFlushBuffers(gfxScreen_t screen)
-{
-	if (alreadyAcquired == false) return;
-	if (screen == GFX_TOP)
-		GSPGPU_FlushDataCache(gfxTopLeftFramebuffers[currentBuffer[0]], TOP_SIZE);
-	if (screen == GFX_BOTTOM)
-		GSPGPU_FlushDataCache(gfxTopLeftFramebuffers[currentBuffer[1]], BOTTOM_SIZE);
-	//new_log(INFO, "GFX: Flushed");
-}
-
-static void DrawFadeScreen(gfxScreen_t screen)
-{
-	uint32_t 	*screen32 = (u32 *)gfxGetFramebuffer(screen);
-	u32			screenSize = (screen == GFX_TOP) ? 0x46500 : 0x38400;
-	
-	//gfxTransferFromScreen(screen);
-	for (int i = 0; i++ < screenSize / sizeof(uint32_t); screen32++)
-	{
-		*screen32 = (*screen32 >> 1) & 0x7F7F7F7F;
-		*screen32 += (*screen32 >> 3) & 0x1F1F1F1F; 
-		*screen32 += (*screen32 >> 1) & 0x7F7F7F7F; 
-	}
-}
-
-void fadeOut(void)
-{
-	for (int i = 32; i--;)
-	{ 
-		executeCommand(GFX_ACQUIRE);
-		DrawFadeScreen(GFX_BOTTOM);
-		//executeCommand(GFX_TRANSFER_SCREEN_BOTTOM);
-		executeCommand(GFX_FLUSH_BUFFER_BOTTOM);
-		DrawFadeScreen(GFX_TOP);		
-		//executeCommand(GFX_TRANSFER_SCREEN_TOP);
-		executeCommand(GFX_FLUSH_BUFFER_TOP);
-		
-		//DrawFadeScreen(&top2Screen); 
-		
-	} 
-}*/

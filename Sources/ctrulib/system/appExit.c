@@ -3,7 +3,8 @@
 void __attribute__((weak)) __appExit(void)
 {
 	// Exit services
-    gspExit();
+    gfxExit();
+    //gspExit();
 	sdmcExit();
 	fsExit();
 
