@@ -9,6 +9,7 @@ namespace CTRPluginFramework
     enum class Commands
     {
         NONE,
+        GSPGPU_END,
         GSPGPU_FLUSH,
         GSPGPU_INVALIDATE,
         GSPGPU_SWAP,
@@ -22,6 +23,8 @@ namespace CTRPluginFramework
     public:
         static void     SetArgs(int arg1 = 0, int arg2 = 0);
         static void     Execute(Commands command, bool isBlocking = true);
+        static void     Pause(void);
+        static void     Play(void);
         static void     Exit(void);
 
     private:

@@ -1,5 +1,7 @@
 #include "CTRPluginFramework.hpp"
 #include "3DS.h"
+#include "ctrulib/gpu/gx.h"
+#include "ctrulib/gpu/gpu.h"
 
 namespace CTRPluginFramework
 {
@@ -7,9 +9,10 @@ namespace CTRPluginFramework
     Handle   ThreadCommands::_threadHandle = 0;
     Handle   ThreadCommands::_threadEvent = 0;
     Commands ThreadCommands::_command = Commands::NONE;
-    volatile bool     ThreadCommands::_isBusy = 0;
     int      ThreadCommands::_arg1 = 0;
     int      ThreadCommands::_arg2 = 0;
+
+    volatile bool     ThreadCommands::_isBusy = 0;
 
     void    ThreadCommands::ThreadCommandsMain(u32 arg)
     {
@@ -23,6 +26,25 @@ namespace CTRPluginFramework
             switch (_command)
             {
                 case Commands::NONE:
+                    break;
+                case Commands::GSPGPU_END:
+                    /*
+                    ** Bottom size
+                    ** Bottom FB
+                    ** Top size
+                    ** IS3D
+                    ** Top LFB
+                    ** Top RFB
+                    **/
+                    u32     infos[6];
+                    Renderer::GetFramebuffersInfos(infos);
+                    GSPGPU_FlushDataCache((void *)infos[4], infos[2]);
+                    if (infos[3])
+                        GSPGPU_FlushDataCache((void *)infos[5], infos[2]);
+                    GSPGPU_FlushDataCache((void *)infos[1], infos[0]);
+                    Screen::Top->SwapBuffer();
+                    Screen::Bottom->SwapBuffer();
+                    gspWaitForVBlank();
                     break;
                 case Commands::GSPGPU_FLUSH:
                     GSPGPU_FlushDataCache((void *)_arg1, _arg2);
@@ -57,6 +79,18 @@ namespace CTRPluginFramework
         svcCreateThread(&_threadHandle, ThreadCommandsMain, 0, (u32 *)&_stack[0x1000], 0x18, -2);
     }
 
+    void    ThreadCommands::Pause(void)
+    {
+
+        svcSetThreadPriority(_threadHandle, 0x3F);
+    }
+
+    void    ThreadCommands::Play(void)
+    {
+
+        svcSetThreadPriority(_threadHandle, 0x18);
+    }
+
     void    ThreadCommands::Exit(void)
     {
         Execute(Commands::EXIT);
@@ -75,7 +109,7 @@ namespace CTRPluginFramework
         svcSignalEvent(_threadEvent);
         if (isBlocking)
         {
-            while (_isBusy);
+            while (_isBusy)
                 for (int i = 1000; i > 0; i--);
         }
     }
