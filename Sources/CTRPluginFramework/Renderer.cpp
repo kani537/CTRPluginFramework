@@ -11,33 +11,27 @@ namespace CTRPluginFramework
 
     Target      Renderer::_target = BOTTOM;
     bool        Renderer::_render3D = false;
-    Screen      *Renderer::_screenTarget = nullptr;
-    u8          *Renderer::_framebuffer = nullptr;
-    u8          *Renderer::_framebufferP = nullptr;
-    u8          *Renderer::_framebufferR = nullptr;
-    u8          *Renderer::_framebufferRP = nullptr;
-    u32         Renderer::_rowSize = 0;
-    u32         Renderer::_targetWidth = 0;
-    u32         Renderer::_targetHeight = 0;
+    bool        Renderer::_isRendering = false;
+    Screen      *Renderer::_screenTarget[2] = {Screen::Bottom, Screen::Top};
+    u8          *Renderer::_framebuffer[2] = {nullptr};
+    u8          *Renderer::_framebufferR[2] = {nullptr};
+    u32         Renderer::_rowSize[2] = {0};
+    u32         Renderer::_targetWidth[2] = {0};
+    u32         Renderer::_targetHeight[2] = {0};
     DrawPixelP  Renderer::_DrawPixel = nullptr;
     int         Renderer::_length = 1;
+
+    void        Renderer::Initialize(void)
+    {
+        _screenTarget[BOTTOM] = Screen::Bottom;
+        _screenTarget[TOP] = Screen::Top;
+    }
 
     void        Renderer::SetTarget(Target target)
     {
         _target = target;
-        UpdateTarget();
-    }
 
-    void        Renderer::UpdateTarget(void)
-    {
-        if (_target == BOTTOM)
-            _screenTarget = Screen::Bottom;
-        else
-            _screenTarget = Screen::Top;
-        _rowSize = _screenTarget->GetRowSize();
-        _targetWidth = _screenTarget->GetWidth();
-        _targetHeight = _screenTarget->GetHeight();
-        switch (_screenTarget->GetFormat())
+        switch (_screenTarget[_target]->GetFormat())
         {
             case GSP_RGBA8_OES:
                 _DrawPixel = RenderRGBA8;
@@ -53,49 +47,72 @@ namespace CTRPluginFramework
                 break;
             case GSP_RGBA4_OES:
                 _DrawPixel = RenderRGBA4;
-                break;
+                break;        
         }
     }
 
-    void        Renderer::StartRendering(void)
+    void        Renderer::StartRenderer(void)
     {
-        _screenTarget->Update();
-        _render3D = _screenTarget->Is3DEnabled();
-        _framebuffer = _screenTarget->GetLeftFramebuffer();
-        _framebufferP = _screenTarget->GetLeftFramebufferP();
-        _framebufferR = _screenTarget->GetRightFramebuffer();
-        _framebufferRP = _screenTarget->GetRightFramebufferP();
+        _isRendering = true;
+        _screenTarget[BOTTOM]->Update();
+        _framebuffer[BOTTOM] = _screenTarget[BOTTOM]->GetLeftFramebuffer();
+        _framebufferR[BOTTOM] = 0;        
+        _rowSize[BOTTOM] = _screenTarget[BOTTOM]->GetRowSize();
+        _targetWidth[BOTTOM] = _screenTarget[BOTTOM]->GetWidth();
+        _targetHeight[BOTTOM] = _screenTarget[BOTTOM]->GetHeight();
 
-        u8  *current = _screenTarget->GetLeftFramebuffer(true);
-        u32 size = _rowSize * _targetWidth * _screenTarget->GetBytesPerPixel();
-        memcpy(_framebuffer, current, size);
-        current = _screenTarget->GetRightFramebuffer(true);
+        // Screen TOP
+        _screenTarget[TOP]->Update();
+        _framebuffer[TOP] = _screenTarget[TOP]->GetLeftFramebuffer();
+        _framebufferR[TOP] = _screenTarget[TOP]->GetRightFramebuffer();
+        _render3D = _screenTarget[TOP]->Is3DEnabled();
+        _rowSize[TOP] = _screenTarget[TOP]->GetRowSize();
+        _targetWidth[TOP] = _screenTarget[TOP]->GetWidth();
+        _targetHeight[TOP] = _screenTarget[TOP]->GetHeight();
+
+        // Copy current framebuffer into the second to avoid frame glitch
+        u8  *current = _screenTarget[BOTTOM]->GetLeftFramebuffer(true);
+        int size = _screenTarget[BOTTOM]->GetFramebufferSize();
+        memcpy(_framebuffer[BOTTOM], current, size);
+
+        current = _screenTarget[TOP]->GetLeftFramebuffer(true);
+        size = _screenTarget[TOP]->GetFramebufferSize();
+        memcpy(_framebuffer[TOP], current, size);
+
+        current = _screenTarget[TOP]->GetRightFramebuffer(true);
         if (current)
-            memcpy(_framebufferR, current, size);
+            memcpy(_framebufferR[TOP], current, size);
     }
 
-    void        Renderer::EndRendering(void)
+    void        Renderer::GetFramebuffersInfos(u32 *infos)
     {
-        u32 size = _rowSize * _targetWidth * _screenTarget->GetBytesPerPixel();
-        ThreadCommands::SetArgs((int)_framebuffer, (int)size);
-        ThreadCommands::Execute(Commands::GSPGPU_FLUSH);
-       // ThreadCommands::Execute(Commands::GSPGPU_INVALIDATE);
-        if (_render3D)
-        {
-            ThreadCommands::SetArgs((int)_framebufferR, (int)size);
-            ThreadCommands::Execute(Commands::GSPGPU_FLUSH);            
-            //ThreadCommands::Execute(Commands::GSPGPU_INVALIDATE);
-        }
-        _screenTarget->SwapBuffer();
-        //ThreadCommands::Execute(Commands::GSPGPU_SWAP);
-        ThreadCommands::Execute(Commands::GSPGPU_VBLANK);
-        //ThreadCommands::Execute(Commands::GSPGPU_VBLANK1);
+        /*
+        ** Bottom size
+        ** Bottom FB
+        ** Top size
+        ** IS3D
+        ** Top LFB
+        ** Top RFB
+        **/
+        infos[0] = _screenTarget[BOTTOM]->GetFramebufferSize();
+        infos[1] = (u32)_framebuffer[BOTTOM];
+
+        infos[2] = _screenTarget[TOP]->GetFramebufferSize();
+        infos[3] = _render3D ? 1 : 0;
+        infos[4] = (u32)_framebuffer[TOP];
+        infos[5] = (u32)_framebufferR[TOP];
+    }
+
+    void        Renderer::EndRenderer(void)
+    {  
+        ThreadCommands::Execute(Commands::GSPGPU_END);
+        _isRendering = false;
     }
 
     void        Renderer::DrawLine(int posX, int posY, int width, Color color, int height)
     {  
         // Correct posY
-        posY += (_rowSize - 240);
+        posY += (_rowSize[_target] - 240);
         for (int x = 0; x < width; x++)
         {
             _length = height;
@@ -178,7 +195,7 @@ namespace CTRPluginFramework
     void    Renderer::DrawString(char *str, int posX, int posY, Color fg)
     {
         // Correct posY
-        posY += (_rowSize - 240);
+        posY += (_rowSize[_target] - 240);
 
         while (*str)
         {
@@ -190,7 +207,7 @@ namespace CTRPluginFramework
     void    Renderer::DrawString(char *str, int posX, int posY, Color fg, Color bg)
     {
         // Correct posY
-        posY += (_rowSize - 240);
+        posY += (_rowSize[_target] - 240);
 
         while (*str)
         {
@@ -202,7 +219,7 @@ namespace CTRPluginFramework
     void    Renderer::DrawString(char *str, int offset, int posX, int posY, Color fg)
     {
         // Correct posY
-        posY += (_rowSize - 240);
+        posY += (_rowSize[_target] - 240);
         str += (offset / 6);
         offset %= 6;
         while (*str)
@@ -227,19 +244,19 @@ namespace CTRPluginFramework
 
     void        Renderer::RenderRGBA8(int posX, int posY, Color color)
     {
-        if (!RANGE(0, posX, _targetWidth) || !RANGE(0, posY, _targetHeight))
+        if (!RANGE(0, posX, _targetWidth[_target]) || !RANGE(0, posY, _targetHeight[_target]))
             return;
 
-        u32     offset = GetFramebufferOffset(posX, posY, 4, _rowSize);
-        u8      *pos = _framebuffer + offset;
-        u8      *posR = _framebufferR + offset;
+        u32     offset = GetFramebufferOffset(posX, posY, 4, _rowSize[_target]);
+        u8      *pos = _framebuffer[_target] + offset;
+        u8      *posR = _framebufferR[_target] + offset;
         while (--_length >= 0)
         {
             *(pos++) = 0xFF;
             *(pos++) = color.b;
             *(pos++) = color.g;
             *(pos++) = color.r;
-            if (_render3D)
+            if (_target == TOP && _render3D)
             {
                 *(posR++) = 0xFF;
                 *(posR++) = color.b;
@@ -252,19 +269,19 @@ namespace CTRPluginFramework
 
     void        Renderer::RenderBGR8(int posX, int posY, Color color)
     {
-        if (!RANGE(0, posX, _targetWidth) || !RANGE(0, posY, _targetHeight))
+        if (!RANGE(0, posX, _targetWidth[_target]) || !RANGE(0, posY, _targetHeight[_target]))
             return;
 
-        u32     offset = GetFramebufferOffset(posX, posY, 3, _rowSize);
-        u8      *pos = _framebuffer + offset;
-        u8      *posR = _framebufferR + offset;
+        u32     offset = GetFramebufferOffset(posX, posY, 3, _rowSize[_target]);
+        u8      *pos = _framebuffer[_target] + offset;
+        u8      *posR = _framebufferR[_target] + offset;
 
         while (--_length >= 0)
         {
             *(pos++) = color.b;
             *(pos++) = color.g;
             *(pos++) = color.r;  
-            if (_render3D)
+            if (_target == TOP && _render3D)
             {
                 *(posR++) = color.b;
                 *(posR++) = color.g;
@@ -276,12 +293,12 @@ namespace CTRPluginFramework
 
     void        Renderer::RenderRGB565(int posX, int posY, Color color)
     {
-        if (!RANGE(0, posX, _targetWidth) || !RANGE(0, posY, _targetHeight))
+        if (!RANGE(0, posX, _targetWidth[_target]) || !RANGE(0, posY, _targetHeight[_target]))
             return;
 
-        u32     offset = GetFramebufferOffset(posX, posY, 2, _rowSize);
-        u8      *pos = _framebuffer + offset;
-        u8      *posR = _framebufferR + offset;
+        u32     offset = GetFramebufferOffset(posX, posY, 2, _rowSize[_target]);
+        u8      *pos = _framebuffer[_target] + offset;
+        u8      *posR = _framebufferR[_target] + offset;
 
         union
         {
@@ -296,7 +313,7 @@ namespace CTRPluginFramework
         {
             *(pos++) = half.b[0];
             *(pos++) = half.b[1]; 
-            if (_render3D)
+            if (_target == TOP && _render3D)
             {
                 *(posR++) = half.b[0];
                 *(posR++) = half.b[1];              
@@ -307,12 +324,12 @@ namespace CTRPluginFramework
 
     void        Renderer::RenderRGB5A1(int posX, int posY, Color color)
     {
-        if (!RANGE(0, posX, _targetWidth) || !RANGE(0, posY, _targetHeight))
+        if (!RANGE(0, posX, _targetWidth[_target]) || !RANGE(0, posY, _targetHeight[_target]))
             return;
 
-        u32     offset = GetFramebufferOffset(posX, posY, 2, _rowSize);
-        u8      *pos = _framebuffer + offset;
-        u8      *posR = _framebufferR + offset;
+        u32     offset = GetFramebufferOffset(posX, posY, 2, _rowSize[_target]);
+        u8      *pos = _framebuffer[_target] + offset;
+        u8      *posR = _framebufferR[_target] + offset;
 
         union
         {
@@ -328,7 +345,7 @@ namespace CTRPluginFramework
         {
             *(pos++) = half.b[0];
             *(pos++) = half.b[1]; 
-            if (_render3D)
+            if (_target == TOP && _render3D)
             {
                 *(posR++) = half.b[0];
                 *(posR++) = half.b[1]; 
@@ -339,12 +356,12 @@ namespace CTRPluginFramework
 
     void        Renderer::RenderRGBA4(int posX, int posY, Color color)
     {
-        if (!RANGE(0, posX, _targetWidth) || !RANGE(0, posY, _targetHeight))
+        if (!RANGE(0, posX, _targetWidth[_target]) || !RANGE(0, posY, _targetHeight[_target]))
             return;
 
-        u32     offset =  + GetFramebufferOffset(posX, posY, 2, _rowSize);
-        u8      *pos = _framebuffer + offset;
-        u8      *posR = _framebufferR + offset;
+        u32     offset =  + GetFramebufferOffset(posX, posY, 2, _rowSize[_target]);
+        u8      *pos = _framebuffer[_target] + offset;
+        u8      *posR = _framebufferR[_target] + offset;
 
         union
         {
@@ -360,7 +377,7 @@ namespace CTRPluginFramework
         {
             *(pos++) = half.b[0];
             *(pos++) = half.b[1];   
-            if (_render3D)
+            if (_target == TOP && _render3D)
             {
                 *(posR++) = half.b[0];
                 *(posR++) = half.b[1];               

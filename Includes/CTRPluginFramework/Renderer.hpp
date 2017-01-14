@@ -23,8 +23,9 @@ namespace CTRPluginFramework
 
         static void     SetTarget(Target target);
         static void     UpdateTarget(void);
-        static void     StartRendering(void);
-        static void     EndRendering(void);
+        static void     StartRenderer(void);
+        static void     EndRenderer(void);
+        static void     GetFramebuffersInfos(u32 *infos);
         static void     DrawLine(int posX, int posY, int length, Color color, int width = 1);
         static void     DrawRect(int posX, int posY, int width, int height, Color color, bool fill = true, int thickness = 1);
 
@@ -40,17 +41,19 @@ namespace CTRPluginFramework
         static void     DrawString(char *str, int posX, int posY, Color fg, Color bg);
         static void     DrawString(char *str, int offset, int posX, int posY, Color fg);
     private:
+        friend void     Initialize(void);
+        static void     Initialize(void);
+        static void     FlushAndSwap(void);
 
         static Target       _target;
         static bool         _render3D;
-        static Screen       *_screenTarget;
-        static u8           *_framebuffer;
-        static u8           *_framebufferR;
-        static u8           *_framebufferP;
-        static u8           *_framebufferRP;
-        static u32          _rowSize;
-        static u32          _targetWidth;
-        static u32          _targetHeight;
+        static bool         _isRendering;
+        static Screen       *_screenTarget[2];
+        static u8           *_framebuffer[2];
+        static u8           *_framebufferR[2];
+        static u32          _rowSize[2];
+        static u32          _targetWidth[2];
+        static u32          _targetHeight[2];
         static int          _length;
 
         static void         RenderRGBA8(int posX, int posY, Color color);
