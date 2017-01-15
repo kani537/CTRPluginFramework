@@ -6,12 +6,13 @@
 	.type	initSystem,	%function
 
 initSystem:
+
 	ldr	r2, =saved_stack
 	str	sp, [r2]
 	str	lr, [r2,#4]
 
 	bl	__libctru_init
-
+@-----------------------------
 @	ldr	r2, =fake_heap_start
 @	ldr	sp, [r2]
 
@@ -22,6 +23,7 @@ initSystem:
 @	bics	sp, sp, #7
 @	str	sp, [r2]
 
+@---------------------------------
 	bl	__appInit
 @	bl	__libc_init_array
 

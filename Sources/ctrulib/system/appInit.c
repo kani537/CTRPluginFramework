@@ -1,6 +1,7 @@
 #include <3DS.h>
 
-void __attribute__((weak)) __appInit(void) {
+void __attribute__((weak)) __appInit(void)
+{
 	// Initialize services
 	srvInit();
 	//aptInit();
@@ -9,5 +10,4 @@ void __attribute__((weak)) __appInit(void) {
 	fsInit();
 	sdmcInit();
     //gfxInit();
-    //gspInit();
 }
