@@ -47,7 +47,7 @@ namespace CTRPluginFramework
         friend void     Initialize(void);
         
         static void     Initialize(void);
-        static void     FlushAndSwap(void);
+        static void     InitBuffer(u32 size);
 
         static Target       _target;
         static bool         _render3D;
@@ -58,6 +58,9 @@ namespace CTRPluginFramework
         static u32          _rowSize[2];
         static u32          _targetWidth[2];
         static u32          _targetHeight[2];
+        static u8           _smallBuffer[1000];
+        static u8           *_buffer;
+        static u32          _bufferSize;
         static int          _length;
 
         static void         RenderRGBA8(int posX, int posY, Color color);

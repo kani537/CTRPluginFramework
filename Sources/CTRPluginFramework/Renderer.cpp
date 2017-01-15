@@ -23,11 +23,35 @@ namespace CTRPluginFramework
     DrawPixelP  Renderer::_DrawPixel = nullptr;
     DrawDataP   Renderer::_DrawData = nullptr;
     int         Renderer::_length = 1;
+    u8          Renderer::_smallBuffer[1000] = {0};
+    u8          *Renderer::_buffer = nullptr;
+    u32         Renderer::_bufferSize = 1000;
+
+    static FileCommand      _fileCmd;
+
+
+    void    Renderer::InitBuffer(u32 size)
+    {
+        _buffer = new u8(size);
+        if (_buffer == nullptr)
+        {
+            if (size > 0x1000)
+                InitBuffer(size - 0x1000);
+            else
+            {
+                _buffer = _smallBuffer;
+                _bufferSize = 1000;
+            }
+        }
+        else
+            _bufferSize = size;
+    }
 
     void        Renderer::Initialize(void)
     {
         _screenTarget[BOTTOM] = Screen::Bottom;
         _screenTarget[TOP] = Screen::Top;
+        InitBuffer(0x50000);
     }
 
     void        Renderer::SetTarget(Target target)
@@ -252,28 +276,6 @@ namespace CTRPluginFramework
         return (posY);
     }
 //#########################################################################################
-    static u8               _fileBuffer[1000] = {0};
-    static u8               *_fileBuf = nullptr;
-    static u32              _bufferSize = 1000;
-    static FileCommand      _fileCmd;
-
-
-    void    InitBuffer(u32 size)
-    {
-        _fileBuf = new u8(size);
-        if (_fileBuf == nullptr)
-        {
-            if (size > 0x1000)
-                InitBuffer(size - 0x1000);
-            else
-            {
-                _fileBuf = _fileBuffer;
-                _bufferSize = 1000;
-            }
-        }
-        else
-            _bufferSize = size;
-    }
 
     void    Renderer::DrawFile(std::FILE *file, int posX, int posY, int width, int height)
     {
@@ -282,8 +284,8 @@ namespace CTRPluginFramework
 
 
         // Init buffer
-        if (_fileBuf == nullptr || _fileBuf == 0)
-            InitBuffer(0x40000);
+        if (_buffer == nullptr)
+            return;
 
         int     rowsize = height * 3;
         int     fileSize = width * height * 3;
@@ -293,14 +295,14 @@ namespace CTRPluginFramework
 
         _fileCmd.file = file;        
         _fileCmd.size = fileSize;
-        _fileCmd.dst = _fileBuf;
+        _fileCmd.dst = _buffer;
 
         _fileCmd.read = 0;
         ThreadCommands::SetArgs((int)&_fileCmd);
         ThreadCommands::Execute(Commands::FS_READFILE);
         if (_fileCmd.read == _fileCmd.size)
         {
-            DrawBuffer(_fileBuf, posX, posY, width, height);
+            DrawBuffer(_buffer, posX, posY, width, height);
             return;
         }
         // Correct posY
@@ -316,7 +318,7 @@ namespace CTRPluginFramework
 
         _fileCmd.file = file;        
         _fileCmd.size = readSize;
-        _fileCmd.dst = _fileBuf;
+        _fileCmd.dst = _buffer;
 
         // reset pos in file
         std::fseek(file, static_cast<std::size_t>(0), SEEK_SET);
@@ -337,7 +339,7 @@ namespace CTRPluginFramework
                 }
                 for (int i = 0; i < rowPerRead; i++)
                 {
-                    _DrawData(posX, posY, _fileBuf + (rowsize * i), height);
+                    _DrawData(posX, posY, _buffer + (rowsize * i), height);
                     posX++;
                 }
             }
@@ -356,7 +358,7 @@ namespace CTRPluginFramework
                 }
                 for (int i = 0; i > leftOver; i++)
                 {
-                    _DrawData(posX, posY, _fileBuf + (rowsize * i), height);
+                    _DrawData(posX, posY, _buffer + (rowsize * i), height);
                     posX++;
                 }
             }            
