@@ -47,9 +47,10 @@ namespace CTRPluginFramework
         threadJoin(mT, U64_MAX);
         exit(1);
     }
-
+    extern "C" void __appInit(void);
     void    Initialize(void)
     {        
+        __appInit();
         // Init Framework's system constants
         System::Initialize();
 
@@ -88,7 +89,7 @@ namespace CTRPluginFramework
 
         // Protect VRAM
         Process::ProtectRegion(0x1F000000);
-        Process::ProtectRegion(__ctru_heap);
+        
         // Protect HID Shared Memory in case we want to push / redirects inputs
         Process::ProtectMemory((u32)hidSharedMem, 0x1000);
 
@@ -112,9 +113,7 @@ namespace CTRPluginFramework
     extern "C" void __system_allocateHeaps(void);
     int   LaunchMainThread(int arg)
     {
-        //__system_allocateHeaps();
         svcCreateThread(&keepThreadHandle, keepThreadMain, 0, &keepThreadStack[0x1000], 0x21, -2);
-        //svcCreateThread(&threadHandle, ThreadInit, 0, &threadStack[0x4000], 0x19, -2);
         return (0);
     }
 

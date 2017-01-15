@@ -15,7 +15,7 @@ SECTIONS
 	/* =========== CODE section =========== */
 	. = 0x00100000;
 	__start__ = . ;
-	.text ALIGN(0x1000) :
+	.text ALIGN(0x4) :
 	{
 		/* .init */		
 		bootloader.o (.text*)
@@ -39,7 +39,7 @@ SECTIONS
 
 	/* =========== RODATA section =========== */
 
-	.rodata ALIGN(0x1000) :
+	.rodata ALIGN(0x4) :
 	{
 		*(.rodata)
 		*(.roda)

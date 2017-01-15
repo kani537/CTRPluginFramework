@@ -24,7 +24,7 @@ initSystem:
 	str	sp, [r2]
 
 @---------------------------------
-	bl	__appInit
+@	bl	__appInit
 	bl	__libc_init_array
 
 	ldr	r2, =saved_stack
