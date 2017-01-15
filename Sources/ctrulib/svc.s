@@ -37,6 +37,14 @@ SVC_BEGIN svcExitProcess
 	svc 0x03
 	bx  lr
 
+SVC_BEGIN svcSetProcessAffinityMask
+	svc 0x05
+	bx lr
+
+SVC_BEGIN svcSetProcessIdealProcessor
+	svc 0x07
+	bx lr
+
 SVC_BEGIN svcCreateThread
 	push {r0, r4}
 	ldr  r0, [sp, #0x8]
@@ -61,11 +69,11 @@ SVC_BEGIN svcGetThreadPriority
 	ldr r3, [sp], #4
 	str r1, [r3]
 	bx  lr
-	
+
 SVC_BEGIN svcSetThreadPriority
 	svc 0x0C
 	bx  lr
-	
+
 SVC_BEGIN svcGetThreadAffinityMask
 	svc 0x0D
 	bx  lr
@@ -73,20 +81,31 @@ SVC_BEGIN svcGetThreadAffinityMask
 SVC_BEGIN svcSetThreadAffinityMask
 	svc 0x0E
 	bx  lr
-	
+
 SVC_BEGIN svcGetThreadIdealProcessor
 	str r0, [sp, #-0x4]!
 	svc 0x0F
 	ldr r3, [sp], #4
 	str r1, [r3]
 	bx  lr
-	
+
 SVC_BEGIN svcSetThreadIdealProcessor
 	svc 0x10
 	bx  lr
 
 SVC_BEGIN svcGetProcessorID
 	svc 0x11
+	bx  lr
+
+SVC_BEGIN svcRun
+	push {r4,r5}
+	ldr r2, [r1, #0x04]
+	ldr r3, [r1, #0x08]
+	ldr r4, [r1, #0x0C]
+	ldr r5, [r1, #0x10]
+	ldr r1, [r1, #0x00]
+	svc 0x12
+	pop {r4,r5}
 	bx  lr
 
 SVC_BEGIN svcCreateMutex
@@ -214,6 +233,14 @@ SVC_BEGIN svcGetSystemTick
 	svc 0x28
 	bx  lr
 
+SVC_BEGIN svcGetHandleInfo
+	str r0, [sp, #-0x4]!
+	svc 0x29
+	ldr r3, [sp], #4
+	str r1, [r3]
+	str r2, [r3,#4]
+	bx lr
+
 SVC_BEGIN svcGetSystemInfo
 	str r0, [sp, #-0x4]!
 	svc 0x2A
@@ -262,7 +289,7 @@ SVC_BEGIN svcOpenThread
 	pop {r2}
 	str r1, [r2]
 	bx  lr
-	
+
 SVC_BEGIN svcGetProcessId
 	str r0, [sp, #-0x4]!
 	svc 0x35
@@ -276,12 +303,27 @@ SVC_BEGIN svcGetProcessIdOfThread
 	ldr r3, [sp], #4
 	str r1, [r3]
 	bx  lr
-	
+
 SVC_BEGIN svcGetThreadId
 	str r0, [sp, #-0x4]!
 	svc 0x37
 	ldr r3, [sp], #4
 	str r1, [r3]
+	bx  lr
+
+SVC_BEGIN svcGetResourceLimit
+	str r0, [sp, #-0x4]!
+	svc 0x38
+	ldr r3, [sp], #4
+	str r1, [r3]
+	bx  lr
+
+SVC_BEGIN svcGetResourceLimitLimitValues
+	svc 0x39
+	bx  lr
+
+SVC_BEGIN svcGetResourceLimitCurrentValues
+	svc 0x3A
 	bx  lr
 
 SVC_BEGIN svcBreak
@@ -317,6 +359,14 @@ SVC_BEGIN svcReplyAndReceive
 	str r1, [r2]
 	add sp, sp, #4
 	bx  lr
+
+SVC_BEGIN svcBindInterrupt
+	svc 0x50
+	bx lr
+
+SVC_BEGIN svcUnbindInterrupt
+	svc 0x51
+	bx lr
 
 SVC_BEGIN svcInvalidateProcessDataCache
 	svc 0x52
@@ -365,19 +415,42 @@ SVC_BEGIN svcTerminateDebugProcess
 SVC_BEGIN svcGetProcessDebugEvent
 	svc 0x63
 	bx  lr
-	
+
 SVC_BEGIN svcContinueDebugEvent
 	svc 0x64
 	bx  lr
 
 SVC_BEGIN svcGetProcessList
-	push {r0, r1}
+	str r0, [sp, #-0x4]!
 	svc 0x65
-	ldr r3, [sp, #0]
+	ldr r3, [sp], #4
 	str r1, [r3]
-	ldr r3, [sp, #4]
-	str r2, [r3]
+	bx  lr
+
+SVC_BEGIN svcGetThreadList
+	str r0, [sp, #-0x4]!
+	svc 0x66
+	ldr r3, [sp], #4
+	str r1, [r3]
+	bx  lr
+
+SVC_BEGIN svcGetDebugThreadContext
+	svc 0x67
+	bx lr
+
+SVC_BEGIN svcSetDebugThreadContext
+	svc 0x68
+	bx lr
+
+SVC_BEGIN svcQueryDebugProcessMemory
+	push {r0, r1, r4-r6}
+	svc 0x69
+	ldr r6, [sp]
+	stm r6, {r1-r4}
+	ldr r6, [sp, #4]
+	str r5, [r6]
 	add sp, sp, #8
+	pop {r4-r6}
 	bx  lr
 
 SVC_BEGIN svcReadProcessMemory
@@ -387,6 +460,20 @@ SVC_BEGIN svcReadProcessMemory
 SVC_BEGIN svcWriteProcessMemory
 	svc 0x6B
 	bx  lr
+
+SVC_BEGIN svcSetHardwareBreakPoint
+	svc 0x6C
+	bx  lr
+
+SVC_BEGIN svcGetDebugThreadParam
+	push {r0, r1, r4, r5}
+	ldr r0, [sp, #16]
+	svc 0x6D
+	pop {r4, r5}
+	stm r4, {r1, r2}
+	str r3, [r5]
+	pop {r4, r5}
+	bx lr
 
 SVC_BEGIN svcControlProcessMemory
 	push {r4-r5}
