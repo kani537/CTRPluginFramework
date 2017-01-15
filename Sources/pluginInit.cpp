@@ -52,14 +52,18 @@ namespace CTRPluginFramework
     {        
         // Init Framework's system constants
         System::Initialize();
+
         // Init Screen
         Screen::Initialize();
         Renderer::Initialize();
         gfxInit(Screen::Top->GetFormat(), Screen::Bottom->GetFormat(), false);
+
         // Init Process info
-        Process::Initialize(threadHandle, keepEvent);    
+        Process::Initialize(threadHandle, keepEvent);
+
         // Launch commands thread
         ThreadCommands::Initialize();
+
         // Patch process before it starts
         PatchProcess();        
     }
@@ -96,6 +100,8 @@ namespace CTRPluginFramework
 
         // Exit commands thread
         ThreadCommands::Exit();
+
+        gfxExit();
 
         // Exit loop in keep thread
         keepRunning = false;

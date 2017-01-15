@@ -15,16 +15,31 @@ SECTIONS
 	/* =========== CODE section =========== */
 	. = 0x00100000;
 	__start__ = . ;
-	.text ALIGN(4):
-	{	
+	.text ALIGN(0x1000) :
+	{
+		/* .init */		
 		bootloader.o (.text*)
+		KEEP( *(.init) )
+		. = ALIGN(4);
+
+		/* .text */
 		*(.text)
 		*(.text.*)
+		*(.glue_7)
+		*(.glue_7t)
+		*(.stub)
+		*(.gnu.warning)
+		*(.gnu.linkonce.t*)
+		. = ALIGN(4);
+
+		/* .fini */
+		KEEP( *(.fini) )
+		. = ALIGN(4);
 	} : code
 
 	/* =========== RODATA section =========== */
 
-	.rodata ALIGN(4) :
+	.rodata ALIGN(0x1000) :
 	{
 		*(.rodata)
 		*(.roda)
