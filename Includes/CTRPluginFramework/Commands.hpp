@@ -3,6 +3,7 @@
 
 #include "types.h"
 #include "ctrulib/svc.h"
+#include <cstdio>
 
 namespace CTRPluginFramework
 {
@@ -15,7 +16,16 @@ namespace CTRPluginFramework
         GSPGPU_SWAP,
         GSPGPU_VBLANK,
         GSPGPU_VBLANK1,
+        FS_READFILE,
         EXIT
+    };
+
+    struct FileCommand
+    {
+        FILE    *file;
+        u8      *dst;
+        u32     size;
+        u32     read;
     };
 
     class ThreadCommands
@@ -28,7 +38,7 @@ namespace CTRPluginFramework
         static void     Exit(void);
 
     private:
-        static void     ThreadCommandsMain(u32 arg);
+        static void     ThreadCommandsMain(void *arg);
         friend void     Initialize(void);
         static void     Initialize(void);
 

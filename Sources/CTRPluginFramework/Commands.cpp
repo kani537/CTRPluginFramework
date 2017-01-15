@@ -2,6 +2,7 @@
 #include "3DS.h"
 #include "ctrulib/gpu/gx.h"
 #include "ctrulib/gpu/gpu.h"
+#include <cstdio>
 
 namespace CTRPluginFramework
 {
@@ -14,7 +15,26 @@ namespace CTRPluginFramework
 
     volatile bool     ThreadCommands::_isBusy = 0;
 
-    void    ThreadCommands::ThreadCommandsMain(u32 arg)
+    int     ReadFile(int arg1)
+    {
+        FileCommand *fc = (FileCommand *)arg1;
+        if (!fc)
+        {
+            //Color r = Color(255, 0, 0);
+            //Screen::Bottom->Flash(r);
+            return (-1);
+        }
+        FILE    *file = fc->file;
+        u8      *dst = fc->dst;
+        u32     size = fc->size;
+        u32     br = 0;
+
+        br = std::fread(dst, 1, size, file);
+        fc->read = br;
+        return (br);
+    }
+
+    void    ThreadCommands::ThreadCommandsMain(void *arg)
     {
         static bool isRunning = true;
 
@@ -60,6 +80,9 @@ namespace CTRPluginFramework
                     break;
                 case Commands::GSPGPU_VBLANK1:                      
                     gspWaitForVBlank1();
+                    break;
+                case Commands::FS_READFILE:
+                    ReadFile(_arg1);
                     break;
                 case Commands::EXIT:
                     isRunning = false;
