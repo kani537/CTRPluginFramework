@@ -33,31 +33,31 @@ static void _thread_begin(void  *arg)
 	tv->reent = &t->reent;
 	tv->thread_ptr = t;
 	tv->tls_tp = (u8*)t->stacktop-8; // ARM ELF TLS ABI mandates an 8-byte header
-	t->ep((u32)t->arg);
+	t->ep(t->arg);
 	threadExit(0);
 }
 
-Thread threadCreate(ThreadFunc entrypoint, void* arg, size_t stack_size, int prio, int affinity, bool detached)
+Thread threadCreate(ThreadFunc entrypoint, void *stack_pointer, size_t stack_size, int prio, int affinity, bool detached)
 {
-	size_t stackoffset = (sizeof(struct Thread_tag)+7)&~7;
-	size_t allocsize   = stackoffset + ((stack_size+7)&~7);
-	size_t tlssize = __tls_end-__tls_start;
-	size_t tlsloadsize = __tdata_lma_end-__tdata_lma;
-	size_t tbsssize = tlssize-tlsloadsize;
+	size_t stackoffset 	= (sizeof(struct Thread_tag) + 7) &~ 7;
+	size_t allocsize   	= ((stack_size - stackoffset) - 7) &~ 7;
+	size_t tlssize 		= __tls_end - __tls_start;
+	size_t tlsloadsize 	= __tdata_lma_end - __tdata_lma;
+	size_t tbsssize 	= tlssize - tlsloadsize;
 
 	// Guard against overflow
 	if (allocsize < stackoffset) return NULL;
-	if ((allocsize-stackoffset) < stack_size) return NULL;
-	if ((allocsize+tlssize) < allocsize) return NULL;
+	//if ((allocsize - stackoffset) < stack_size) return NULL;
+	//if ((allocsize+tlssize) < allocsize) return NULL;
 
-	Thread t = (Thread)memalign(8,allocsize+tlssize);
+	Thread t = (Thread)stack_pointer;//memalign(8,allocsize+tlssize);
 	if (!t) return NULL;
 
 	t->ep       = entrypoint;
-	t->arg      = arg;
+	t->arg      = 0;
 	t->detached = detached;
 	t->finished = false;
-	t->stacktop = (u8*)t + allocsize;
+	t->stacktop = (u8*)t + (allocsize - tlssize);
 
 	if (tlsloadsize)
 		memcpy(t->stacktop, __tdata_lma, tlsloadsize);
@@ -75,7 +75,7 @@ Thread threadCreate(ThreadFunc entrypoint, void* arg, size_t stack_size, int pri
 	rc = svcCreateThread(&t->handle, (ThreadFunc)_thread_begin, (u32)t, (u32*)t->stacktop, prio, affinity);
 	if (R_FAILED(rc))
 	{
-		free(t);
+		//free(t);
 		return NULL;
 	}
 
@@ -98,7 +98,7 @@ void threadFree(Thread thread)
 {
 	if (!thread || !thread->finished) return;
 	svcCloseHandle(thread->handle);
-	free(thread);
+	//free(thread);
 }
 
 Result threadJoin(Thread thread, u64 timeout_ns)
@@ -122,9 +122,9 @@ void threadExit(int rc)
 		__panic();
 
 	t->finished = true;
-	if (t->detached)
+	if (!t->detached)
 		threadFree(t);
-	else
+	//else
 		t->rc = rc;
 
 	svcExitThread();

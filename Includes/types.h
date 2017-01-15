@@ -3,6 +3,8 @@
  * @brief Various system types.
  */
 #pragma once
+#ifndef TYPES_H
+#define TYPES_H
 
 #include <stdint.h>
 #include <stdbool.h>
@@ -77,3 +79,5 @@ typedef struct {
 	u32 fpscr;        ///< fpscr.
 	u32 fpexc;        ///< fpexc.
 } FpuRegisters;
+
+#endif

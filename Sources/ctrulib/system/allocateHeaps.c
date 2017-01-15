@@ -3,6 +3,7 @@
 extern char* fake_heap_start;
 extern char* fake_heap_end;
 
+u32 __tmp;
 u32 __ctru_heap;
 u32 __ctru_heap_size;
 u32 __ctru_linear_heap;
@@ -11,7 +12,6 @@ u32 __ctru_linear_heap_size;
 
 void __attribute__((weak)) __system_allocateHeaps(void) 
 {
-	u32 tmp=0;
 
 	
 	__ctru_heap_size = 0x100000;
@@ -19,10 +19,11 @@ void __attribute__((weak)) __system_allocateHeaps(void)
 
 	// Allocate the application heap
 	__ctru_heap = 0x07500000;
-	if (R_FAILED(svcControlMemory(&tmp, __ctru_heap, 0x0, __ctru_heap_size, MEMOP_ALLOC, MEMPERM_READ | MEMPERM_WRITE | MEMPERM_EXECUTE)))
+	if (R_FAILED(svcControlMemory(&__tmp, __ctru_heap, 0x0, __ctru_heap_size, MEMOP_ALLOC, MEMPERM_READ | MEMPERM_WRITE | MEMPERM_EXECUTE)))
 	{
+		__ctru_heap = 0x07500000;
 		__ctru_heap_size = 0x10000;
-		svcControlMemory(&tmp, __ctru_heap, 0x0, __ctru_heap_size, MEMOP_ALLOC, MEMPERM_READ | MEMPERM_WRITE | MEMPERM_EXECUTE);
+		svcControlMemory(&__tmp, __ctru_heap, 0x0, __ctru_heap_size, MEMOP_ALLOC, MEMPERM_READ | MEMPERM_WRITE | MEMPERM_EXECUTE);
 
 	}
 
