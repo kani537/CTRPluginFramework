@@ -16,10 +16,13 @@ namespace CTRPluginFramework
 	KCodeSet    Process::_kCodeSet = {0};
 	Handle 		Process::_processHandle = 0;
 	Handle 		Process::_mainThreadHandle = 0;
+	Handle 		Process::_keepEvent = 0;
+	bool 		Process::_isPaused = false;
 
-	void    Process::Initialize(Handle threadHandle, bool isNew3DS)
+	void    Process::Initialize(Handle threadHandle, Handle keepEvent)
 	{
 		char    kproc[0x100] = {0};
+		bool 	isNew3DS = System::IsNew3DS();
 
 		// Get current KProcess
 		_kProcess = (u32)arm11kGetCurrentKProcess();
@@ -55,6 +58,12 @@ namespace CTRPluginFramework
 		svcOpenProcess(&_processHandle, _processID);
 		// Set plugin's main thread handle
 		_mainThreadHandle = threadHandle;
+		_keepEvent = keepEvent;
+	}
+
+	bool 	Process::IsPaused(void)
+	{
+		return (_isPaused);
 	}
 
 	Handle 	Process::GetHandle(void)
@@ -118,15 +127,18 @@ namespace CTRPluginFramework
 			if ((*(u32 *)(top[0]) != *(u32 *)(top[1]))
 				&& (*(u32 *)(bot[0]) != *(u32 *)(bot[1])))
 				break;
-			svcSleepThread(10);
+			svcSleepThread(100);
 
 		}
+		_isPaused = true;
+		svcSignalEvent(_keepEvent);
 		Screen::Top->Acquire();
         Screen::Bottom->Acquire();        
 	}
 
 	void 	Process::Play(void)
 	{
+		_isPaused = false;
 		svcSetThreadPriority(gspThreadEventHandle, 0x3F);
 		svcSetThreadPriority(_mainThreadHandle, 0x3F);
 	}

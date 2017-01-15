@@ -16,12 +16,27 @@ void abort(void)
 namespace CTRPluginFramework
 {
     static  u32 threadStack[0x4000];
+    static  u32 keepThreadStack[0x1000];
     Handle  threadHandle;
+    Handle  keepThreadHandle;
+    Handle  keepEvent;
+    bool    keepRunning = true;
 
     extern "C" int      LaunchMainThread(int arg);
 
     void    PatchProcess(void);
     int     main(void);
+
+    void    keepThreadMain(void *arg)
+    {
+        while (keepRunning)
+        {
+            svcWaitSynchronization(keepEvent, U64_MAX);
+            svcClearEvent(keepEvent);
+            while (Process::IsPaused());
+        }
+        svcExitThread();
+    }
 
     void    Initialize(void)
     {
@@ -34,7 +49,7 @@ namespace CTRPluginFramework
         Renderer::Initialize();
         gfxInit(Screen::Top->GetFormat(), Screen::Bottom->GetFormat(), false);
         // Init Process info
-        Process::Initialize(threadHandle, System::IsNew3DS());    
+        Process::Initialize(threadHandle, keepEvent);    
         // Launch commands thread
         ThreadCommands::Initialize();
         // Patch process before it starts
@@ -44,8 +59,10 @@ namespace CTRPluginFramework
     // Declared in ctrulib/hid
     extern "C" vu32* hidSharedMem;
 
-    void  ThreadInit(u32 arg)
+    void  ThreadInit(void *arg)
     {
+        svcCreateEvent(&keepEvent, RESET_ONESHOT);
+        svcCreateThread(&keepThreadHandle, keepThreadMain, 0, &keepThreadStack[0x1000], 0x21, -2);
 
         CTRPluginFramework::Initialize();
 
@@ -70,6 +87,11 @@ namespace CTRPluginFramework
 
         // Exit commands thread
         ThreadCommands::Exit();
+
+        // Exit keep thread
+        keepRunning = false;
+        svcSignalEvent(keepEvent);
+        svcWaitSynchronization(keepThreadHandle, U64_MAX);
 
         // Free heap and deinit services and exit thread
         exit(ret);

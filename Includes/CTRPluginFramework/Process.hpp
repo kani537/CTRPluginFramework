@@ -62,10 +62,11 @@ namespace CTRPluginFramework
             static void     Pause(void);
             // Unpause the current process
             static void     Play(void);
+            static bool     IsPaused(void);
 
         private:
             friend void     Initialize(void);
-            static void     Initialize(Handle threadHandle, bool isNew3DS);
+            static void     Initialize(Handle threadHandle, Handle keepEvent);
             static bool     PatchProcess(u32 addr, u8 *patch, u32 length, u8 *original);
 
            
@@ -77,6 +78,8 @@ namespace CTRPluginFramework
             static KCodeSet     _kCodeSet;
             static Handle       _processHandle;
             static Handle       _mainThreadHandle;
+            static Handle       _keepEvent;
+            static bool         _isPaused;
             //static u32          _finishedStateDMA;
             //static u32          *_kProcessHandleTable;          
     };
