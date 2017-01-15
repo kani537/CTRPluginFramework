@@ -13,7 +13,7 @@
 
 static Handle fsuHandle;
 static int fsuRefCount;
-
+bool fs = false;
 static FS_Archive fsExemptArchives[FS_MAX_EXEMPT_ARCHIVE_HANDLES];
 
 static Handle fsSession(void)
@@ -49,6 +49,7 @@ Result fsInit(void)
 	}
 
 	if (R_FAILED(ret)) AtomicDecrement(&fsuRefCount);
+	else fs = true;
 	return ret;
 }
 

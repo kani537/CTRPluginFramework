@@ -199,7 +199,7 @@ sdmc_utf16path(struct _reent *r,
 extern int __system_argc;
 extern char** __system_argv;
 
-static bool sdmcInitialised = false;
+bool sdmcInitialised = false;
 
 /*! Initialize SDMC device */
 Result sdmcInit(void)
@@ -325,6 +325,8 @@ sdmc_open(struct _reent *r,
   u32           attributes = 0;
   FS_Path       fs_path;
 
+  if (!fileStruct || !r || !path)
+    return (-1);
   fs_path = sdmc_utf16path(r, path);
   if(fs_path.data == NULL)
     return -1;
