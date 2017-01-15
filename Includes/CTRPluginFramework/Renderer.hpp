@@ -5,6 +5,7 @@
 #include "Color.hpp"
 #include "Screen.hpp"
 #include "3DS.h"
+#include <cstdio>
 
 namespace CTRPluginFramework
 {
@@ -15,6 +16,7 @@ namespace CTRPluginFramework
     };
     class Renderer;
     typedef void (*DrawPixelP)(int, int, Color);
+    typedef void (*DrawDataP)(int, int, u8*, int);
     class Renderer
     {
     public:
@@ -23,7 +25,7 @@ namespace CTRPluginFramework
 
         static void     SetTarget(Target target);
         static void     UpdateTarget(void);
-        static void     StartRenderer(void);
+        static void     StartRenderer(bool current = false);
         static void     EndRenderer(void);
         static void     GetFramebuffersInfos(u32 *infos);
         static void     DrawLine(int posX, int posY, int length, Color color, int width = 1);
@@ -35,13 +37,15 @@ namespace CTRPluginFramework
         static void     DrawCharacter(int c, int posX, int posY, Color fg, Color bg);
         // Draw Character with offset
         static void     DrawCharacter(int c, int offset, int posX, int posY, Color fg);
-
+        static void     DrawFile(std::FILE *file, int posX, int posY, int width, int height);
+        static void     DrawBuffer(u8 *buffer, int posX, int posY, int width, int height);
         //
-        static void     DrawString(char *str, int posX, int posY, Color fg);
-        static void     DrawString(char *str, int posX, int posY, Color fg, Color bg);
-        static void     DrawString(char *str, int offset, int posX, int posY, Color fg);
+        static int      DrawString(char *str, int posX, int &posY, Color fg);
+        static int      DrawString(char *str, int posX, int &posY, Color fg, Color bg);
+        static int      DrawString(char *str, int offset, int posX, int &posY, Color fg);
     private:
         friend void     Initialize(void);
+        
         static void     Initialize(void);
         static void     FlushAndSwap(void);
 
@@ -62,7 +66,14 @@ namespace CTRPluginFramework
         static void         RenderRGB5A1(int posX, int posY, Color color);
         static void         RenderRGBA4(int posX, int posY, Color color);
 
+        static void         RenderRGBA8(int posX, int posY, u8 *data, int height);
+        static void         RenderBGR8(int posX, int posY, u8 *data, int height);
+        static void         RenderRGB565(int posX, int posY, u8 *data, int height);
+        static void         RenderRGB5A1(int posX, int posY, u8 *data, int height);
+        static void         RenderRGBA4(int posX, int posY, u8 *data, int height);
+
         static DrawPixelP   _DrawPixel;
+        static DrawDataP    _DrawData;
 
     };
 }

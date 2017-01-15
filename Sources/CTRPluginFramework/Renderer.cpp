@@ -4,6 +4,8 @@
 #include "font6x10Linux.h"
 #include "3DS.h"
 #include "ctrulib/services/gspgpu.h"
+#include <cstdio>
+
 
 namespace CTRPluginFramework
 {
@@ -19,6 +21,7 @@ namespace CTRPluginFramework
     u32         Renderer::_targetWidth[2] = {0};
     u32         Renderer::_targetHeight[2] = {0};
     DrawPixelP  Renderer::_DrawPixel = nullptr;
+    DrawDataP   Renderer::_DrawData = nullptr;
     int         Renderer::_length = 1;
 
     void        Renderer::Initialize(void)
@@ -35,27 +38,32 @@ namespace CTRPluginFramework
         {
             case GSP_RGBA8_OES:
                 _DrawPixel = RenderRGBA8;
+                _DrawData = RenderRGBA8;
                 break;
             case GSP_BGR8_OES:
                 _DrawPixel = RenderBGR8;
+                _DrawData = RenderBGR8;
                 break;
             case GSP_RGB565_OES:
                 _DrawPixel = RenderRGB565;
+                _DrawData = RenderRGB565;
                 break;
             case GSP_RGB5_A1_OES:
                 _DrawPixel = RenderRGB5A1;
+                _DrawData = RenderRGB5A1;
                 break;
             case GSP_RGBA4_OES:
                 _DrawPixel = RenderRGBA4;
+                _DrawData = RenderRGBA4;
                 break;        
         }
     }
 
-    void        Renderer::StartRenderer(void)
+    void        Renderer::StartRenderer(bool current)
     {
         _isRendering = true;
         _screenTarget[BOTTOM]->Update();
-        _framebuffer[BOTTOM] = _screenTarget[BOTTOM]->GetLeftFramebuffer();
+        _framebuffer[BOTTOM] = _screenTarget[BOTTOM]->GetLeftFramebuffer(current);
         _framebufferR[BOTTOM] = 0;        
         _rowSize[BOTTOM] = _screenTarget[BOTTOM]->GetRowSize();
         _targetWidth[BOTTOM] = _screenTarget[BOTTOM]->GetWidth();
@@ -63,25 +71,29 @@ namespace CTRPluginFramework
 
         // Screen TOP
         _screenTarget[TOP]->Update();
-        _framebuffer[TOP] = _screenTarget[TOP]->GetLeftFramebuffer();
-        _framebufferR[TOP] = _screenTarget[TOP]->GetRightFramebuffer();
+        _framebuffer[TOP] = _screenTarget[TOP]->GetLeftFramebuffer(current);
+        _framebufferR[TOP] = _screenTarget[TOP]->GetRightFramebuffer(current);
         _render3D = _screenTarget[TOP]->Is3DEnabled();
         _rowSize[TOP] = _screenTarget[TOP]->GetRowSize();
         _targetWidth[TOP] = _screenTarget[TOP]->GetWidth();
         _targetHeight[TOP] = _screenTarget[TOP]->GetHeight();
 
         // Copy current framebuffer into the second to avoid frame glitch
-        u8  *current = _screenTarget[BOTTOM]->GetLeftFramebuffer(true);
-        int size = _screenTarget[BOTTOM]->GetFramebufferSize();
-        memcpy(_framebuffer[BOTTOM], current, size);
+        if (!current)
+        {
+            u8  *current = _screenTarget[BOTTOM]->GetLeftFramebuffer(true);
+            int size = _screenTarget[BOTTOM]->GetFramebufferSize();
+            memcpy(_framebuffer[BOTTOM], current, size);
 
-        current = _screenTarget[TOP]->GetLeftFramebuffer(true);
-        size = _screenTarget[TOP]->GetFramebufferSize();
-        memcpy(_framebuffer[TOP], current, size);
+            current = _screenTarget[TOP]->GetLeftFramebuffer(true);
+            size = _screenTarget[TOP]->GetFramebufferSize();
+            memcpy(_framebuffer[TOP], current, size);
 
-        current = _screenTarget[TOP]->GetRightFramebuffer(true);
-        if (current)
-            memcpy(_framebufferR[TOP], current, size);
+            current = _screenTarget[TOP]->GetRightFramebuffer(true);
+            if (current)
+                memcpy(_framebufferR[TOP], current, size);
+        }
+
     }
 
     void        Renderer::GetFramebuffersInfos(u32 *infos)
@@ -192,45 +204,177 @@ namespace CTRPluginFramework
         }  
     }
 
-    void    Renderer::DrawString(char *str, int posX, int posY, Color fg)
+    int    Renderer::DrawString(char *str, int posX, int &posY, Color fg)
     {
         // Correct posY
-        posY += (_rowSize[_target] - 240);
+        int y = posY + (_rowSize[_target] - 240);
 
         while (*str)
         {
-            DrawCharacter(*str++, posX++, posY, fg);
+            DrawCharacter(*str++, posX++, y, fg);
             posX += 6;
         }
+            posY += 10;
+        return (posY);
     }
 
-    void    Renderer::DrawString(char *str, int posX, int posY, Color fg, Color bg)
+    int    Renderer::DrawString(char *str, int posX, int &posY, Color fg, Color bg)
     {
         // Correct posY
-        posY += (_rowSize[_target] - 240);
+        int y = posY + (_rowSize[_target] - 240);
 
         while (*str)
         {
-            DrawCharacter(*str++, posX++, posY, fg, bg);
+            DrawCharacter(*str++, posX++, y, fg, bg);
             posX += 6;
         }
+        posY += 10;
+        return (posY);
     }
 
-    void    Renderer::DrawString(char *str, int offset, int posX, int posY, Color fg)
+    int    Renderer::DrawString(char *str, int offset, int posX, int &posY, Color fg)
     {
         // Correct posY
-        posY += (_rowSize[_target] - 240);
+        int y = posY + (_rowSize[_target] - 240);
         str += (offset / 6);
         offset %= 6;
         while (*str)
         {
-            DrawCharacter(*str++, offset, posX, posY, fg);
+            DrawCharacter(*str++, offset, posX, y, fg);
             if (offset)
             {                          
                 posX -= offset;      
                 offset = 0;
             }
             posX += 6;
+        }
+        posY += 10;
+        return (posY);
+    }
+//#########################################################################################
+    static u8               _fileBuffer[1000] = {0};
+    static u8               *_fileBuf = nullptr;
+    static u32              _bufferSize = 1000;
+    static FileCommand      _fileCmd;
+
+
+    void    InitBuffer(u32 size)
+    {
+        _fileBuf = new u8(size);
+        if (_fileBuf == nullptr)
+        {
+            if (size > 0x1000)
+                InitBuffer(size - 0x1000);
+            else
+            {
+                _fileBuf = _fileBuffer;
+                _bufferSize = 1000;
+            }
+        }
+        else
+            _bufferSize = size;
+    }
+
+    void    Renderer::DrawFile(std::FILE *file, int posX, int posY, int width, int height)
+    {
+        if (!file)
+            return;
+
+
+        // Init buffer
+        if (_fileBuf == nullptr || _fileBuf == 0)
+            InitBuffer(0x40000);
+
+        int     rowsize = height * 3;
+        int     fileSize = width * height * 3;
+        
+        // reset pos in file
+        std::fseek(file, static_cast<std::size_t>(0), SEEK_SET);
+
+        _fileCmd.file = file;        
+        _fileCmd.size = fileSize;
+        _fileCmd.dst = _fileBuf;
+
+        _fileCmd.read = 0;
+        ThreadCommands::SetArgs((int)&_fileCmd);
+        ThreadCommands::Execute(Commands::FS_READFILE);
+        if (_fileCmd.read == _fileCmd.size)
+        {
+            DrawBuffer(_fileBuf, posX, posY, width, height);
+            return;
+        }
+        // Correct posY
+        posY = _rowSize[_target] - posY;
+
+
+        int     rowPerRead = _bufferSize / rowsize;
+        int     readSize = rowPerRead * rowsize;
+
+        int     totalRead = width / rowPerRead;
+        int     leftOver = width % rowPerRead;
+        totalRead += leftOver > 0 ? 1 : 0;
+
+        _fileCmd.file = file;        
+        _fileCmd.size = readSize;
+        _fileCmd.dst = _fileBuf;
+
+        // reset pos in file
+        std::fseek(file, static_cast<std::size_t>(0), SEEK_SET);
+        
+        while (--totalRead >= 0)
+        {
+            if (totalRead > 0)
+            {
+                _fileCmd.read = 0;
+                ThreadCommands::SetArgs((int)&_fileCmd);
+                ThreadCommands::Execute(Commands::FS_READFILE);
+                if (_fileCmd.read != _fileCmd.size)
+                {
+                    ThreadCommands::SetArgs((int)&_fileCmd);
+                    ThreadCommands::Execute(Commands::FS_READFILE);
+                    if (_fileCmd.read != _fileCmd.size)
+                        return;
+                }
+                for (int i = 0; i < rowPerRead; i++)
+                {
+                    _DrawData(posX, posY, _fileBuf + (rowsize * i), height);
+                    posX++;
+                }
+            }
+            else
+            {
+                _fileCmd.size = leftOver * rowsize;
+                _fileCmd.read = 0;
+                ThreadCommands::SetArgs((int)&_fileCmd);
+                ThreadCommands::Execute(Commands::FS_READFILE);
+                if (_fileCmd.read != _fileCmd.size)
+                {
+                    ThreadCommands::SetArgs((int)&_fileCmd);
+                    ThreadCommands::Execute(Commands::FS_READFILE);
+                    if (_fileCmd.read != _fileCmd.size)
+                        return;
+                }
+                for (int i = 0; i > leftOver; i++)
+                {
+                    _DrawData(posX, posY, _fileBuf + (rowsize * i), height);
+                    posX++;
+                }
+            }            
+        }
+    }
+
+    void    Renderer::DrawBuffer(u8 *buffer, int posX, int posY, int width, int height)
+    {
+        const int padding = height * 3;
+        // Correct posY
+        //posY += (_rowSize[_target] - 240);
+        posY = _rowSize[_target] - posY;
+        int i = 0;
+        while (--width >= 0)
+        {
+            _DrawData(posX, posY, buffer + i, height);
+            posX++;
+            i += padding;
         }
     }
 
@@ -385,4 +529,206 @@ namespace CTRPluginFramework
         }
         _length = 1;
     }
+
+ // ##################################################################################################
+     void        Renderer::RenderRGBA8(int posX, int posY, u8 *data, int height)
+    {
+        if (!RANGE(0, posX, _targetWidth[_target]) || !RANGE(0, posY, _targetHeight[_target]))
+            return;
+
+        u32     offset = GetFramebufferOffset(posX, posY, 4, _rowSize[_target]);
+        u8      *pos = _framebuffer[_target] + offset;
+        u8      *posR = _framebufferR[_target] + offset;
+
+        if (!_render3D || _target == BOTTOM)
+        {
+            while (--height >= 0)
+            {
+                *(pos++) = 0xFF;
+                *(pos++) = *(data++);
+                *(pos++) = *(data++);
+                *(pos++) = *(data++);
+            }
+        }
+        else
+        {
+            while (--height >= 0)
+            {
+                *(pos++) = 0xFF;
+                *(posR++) = 0xFF;
+                *(pos++) = *(data);
+                *(posR++) = *(data++);
+                *(pos++) = *(data);
+                *(posR++) = *(data++); 
+                *(pos++) = *(data);
+                *(posR++) = *(data++);   
+            } 
+        }       
+        _length = 1;
+    }
+
+    void        Renderer::RenderBGR8(int posX, int posY, u8 *data, int height)
+    {
+        if (!RANGE(0, posX, _targetWidth[_target]) || !RANGE(0, posY, _targetHeight[_target]))
+            return;
+
+        u32     offset = GetFramebufferOffset(posX, posY, 3, _rowSize[_target]);
+        u8      *pos = _framebuffer[_target] + offset;
+        u8      *posR = _framebufferR[_target] + offset;
+
+        if (!_render3D ||_target == BOTTOM)
+        {
+            while (--height >= 0)
+            {
+                *(pos++) = *(data++);
+                *(pos++) = *(data++);
+                *(pos++) = *(data++);
+            }
+        }
+        else
+        {
+            while (--height >= 0)
+            {
+                *(pos++) = *(data);
+                *(posR++) = *(data++);
+                *(pos++) = *(data);
+                *(posR++) = *(data++); 
+                *(pos++) = *(data);
+                *(posR++) = *(data++); 
+            }
+        }
+        _length = 1;
+    }
+
+    void        Renderer::RenderRGB565(int posX, int posY, u8 *data, int height)
+    {
+        if (!RANGE(0, posX, _targetWidth[_target]) || !RANGE(0, posY, _targetHeight[_target]))
+            return;
+
+        u32     offset = GetFramebufferOffset(posX, posY, 2, _rowSize[_target]);
+        u8      *pos = _framebuffer[_target] + offset;
+        u8      *posR = _framebufferR[_target] + offset;
+
+        union
+        {
+            u16     u;
+            u8      b[2];
+        }     half;
+
+        if (!_render3D || _target == BOTTOM)
+        {
+            while (--height >= 0)
+            {
+                half.u = (*(data++) & 0xF8) >> 3;
+                half.u |= (*(data++) & 0xFC) << 3;
+                half.u |= (*(data++) & 0xF8) << 8;
+                
+                
+                *(pos++) = half.b[0];
+                *(pos++) = half.b[1];                
+            }
+        }
+        else
+        {
+            while (--height >= 0)
+            {
+                half.u = (*(data++) & 0xF8) >> 3;
+                half.u |= (*(data++) & 0xFC) << 3;
+                half.u |= (*(data++) & 0xF8) << 8;;
+                *(pos++) = half.b[0];                
+                *(posR++) = half.b[0];
+                *(pos++) = half.b[1]; 
+                *(posR++) = half.b[1];                
+            }
+        }
+        _length = 1;
+    }
+
+    void        Renderer::RenderRGB5A1(int posX, int posY, u8 *data, int height)
+    {
+        if (!RANGE(0, posX, _targetWidth[_target]) || !RANGE(0, posY, _targetHeight[_target]))
+            return;
+
+        u32     offset = GetFramebufferOffset(posX, posY, 2, _rowSize[_target]);
+        u8      *pos = _framebuffer[_target] + offset;
+        u8      *posR = _framebufferR[_target] + offset;
+
+        union
+        {
+            u16     u;
+            u8      b[2];
+        }     half;
+
+        if (!_render3D || _target == BOTTOM)
+        {
+            while (--height >= 0)
+            {
+                half.u = (*(data++) & 0xF8) >> 2;
+                half.u |= (*(data++) & 0xF8) << 3;
+                half.u |= (*(data++) & 0xF8) << 8;
+                half.u |= 1;
+                *(pos++) = half.b[0];
+                *(pos++) = half.b[1];                
+            }
+        }
+        else
+        {
+            while (--height >= 0)
+            {
+                half.u = (*(data++) & 0xF8) >> 2;
+                half.u |= (*(data++) & 0xF8) << 3;
+                half.u |= (*(data++) & 0xF8) << 8;
+                half.u |= 1;
+                *(pos++) = half.b[0];                
+                *(posR++) = half.b[0];
+                *(pos++) = half.b[1]; 
+                *(posR++) = half.b[1];                
+            }
+        }
+        _length = 1;
+    }
+
+    void        Renderer::RenderRGBA4(int posX, int posY, u8 *data, int height)
+    {
+        if (!RANGE(0, posX, _targetWidth[_target]) || !RANGE(0, posY, _targetHeight[_target]))
+            return;
+
+        u32     offset =  + GetFramebufferOffset(posX, posY, 2, _rowSize[_target]);
+        u8      *pos = _framebuffer[_target] + offset;
+        u8      *posR = _framebufferR[_target] + offset;
+
+        union
+        {
+            u16     u;
+            u8      b[2];
+        }     half;
+
+        if (!_render3D || _target == BOTTOM)
+        {
+            while (--height >= 0)
+            {
+                half.u = (*(data++) & 0xF0);
+                half.u |= (*(data++) & 0xF0) << 4;
+                half.u |= (*(data++) & 0xF0) << 8;
+                half.u |= 0x0F;
+                *(pos++) = half.b[0];
+                *(pos++) = half.b[1];                
+            }
+        }
+        else
+        {
+            while (--height >= 0)
+            {
+                half.u = (*(data++) & 0xF0);
+                half.u |= (*(data++) & 0xF0) << 4;
+                half.u |= (*(data++) & 0xF0) << 8;
+                half.u |= 0x0F;
+                *(pos++) = half.b[0];                
+                *(posR++) = half.b[0];
+                *(pos++) = half.b[1]; 
+                *(posR++) = half.b[1];                
+            }
+        }
+        _length = 1;
+    }   
 }
