@@ -21,7 +21,7 @@ static ThreadFunc gspEventCb[GSPGPU_EVENT_MAX];
 static void* gspEventCbData[GSPGPU_EVENT_MAX];
 static bool gspEventCbOneShot[GSPGPU_EVENT_MAX];
 static volatile bool gspRunEvents;
-//static Thread gspEventThread;
+static Thread gspEventThread;
 
 static Handle gspEvent;
 static vu8* gspEventData;
@@ -69,7 +69,8 @@ Result gspInitEventHandler(Handle _gspEvent, vu8* _gspSharedMem, u8 gspThreadId)
 	gspEventData = _gspSharedMem + gspThreadId*0x40;
 	gspRunEvents = true;
 	svcCreateThread(&gspThreadEventHandle, gspEventThreadMain, 0, (u32*)&gspThreadEventStack[0x1000], 0x19, -2);
-	//gspEventThread = threadCreate(gspEventThreadMain, 0x0, GSP_EVENT_STACK_SIZE, 0x31, -2, true);
+	//gspEventThread = threadCreate(gspEventThreadMain, gspThreadEventStack, 0x1000, 0x31, -2, true);
+	//gspThreadEventHandle = threadGetHandle(gspEventThread);
 	return 0;
 }
 
@@ -181,6 +182,7 @@ void gspEventThreadMain(u32 arg)
 			}
 		}
 	}
+	svcExitThread();
 }
 
 //essentially : get commandIndex and totalCommands, calculate offset of new command, copy command and update totalCommands

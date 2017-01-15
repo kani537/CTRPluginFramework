@@ -107,20 +107,11 @@ void gfxWriteFramebufferInfo(gfxScreen_t screen)
 
 static void (*screenFree)(void *) = NULL;
 void    UpdateCtrulibGfx(void);
+
 void gfxInit(GSPGPU_FramebufferFormats topFormat, GSPGPU_FramebufferFormats bottomFormat, bool vrambuffers)
 {
 	void *(*screenAlloc)(size_t);
 
-	/*if (vrambuffers)
-	{
-		screenAlloc=vramAlloc;
-		screenFree=vramFree;
-
-	} else {
-
-		screenAlloc=linearAlloc;
-		screenFree=linearFree;
-	}*/
 
 	gspInit();
 
@@ -143,13 +134,6 @@ void gfxInit(GSPGPU_FramebufferFormats topFormat, GSPGPU_FramebufferFormats bott
 	//		topright2 0x00143700-0x00189C00
 	u32 topSize = 400 * 240 * __get_bytes_per_pixel(topFormat);
 	u32 bottomSize = 320 * 240 * __get_bytes_per_pixel(bottomFormat);
-
-	/*gfxTopLeftFramebuffers[0]=screenAlloc(topSize);
-	gfxTopLeftFramebuffers[1]=screenAlloc(topSize);
-	gfxBottomFramebuffers[0]=screenAlloc(bottomSize);
-	gfxBottomFramebuffers[1]=screenAlloc(bottomSize);
-	gfxTopRightFramebuffers[0]=screenAlloc(topSize);
-	gfxTopRightFramebuffers[1]=screenAlloc(topSize);*/
 
 	UpdateCtrulibGfx();
 
@@ -210,7 +194,7 @@ void gfxExit(void)
 
 	svcCloseHandle(gspEvent);
 
-	GSPGPU_ReleaseRight();
+	//GSPGPU_ReleaseRight();
 
 	gspExit();	
 
