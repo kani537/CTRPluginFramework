@@ -43,6 +43,9 @@ namespace CTRPluginFramework
         static int      DrawString(char *str, int posX, int &posY, Color fg);
         static int      DrawString(char *str, int posX, int &posY, Color fg, Color bg);
         static int      DrawString(char *str, int offset, int posX, int &posY, Color fg);
+        static void      DrawCheckBoxString(char *str, int posX, int &posY, bool isChecked, Color fg, Color checked);
+
+        static void            DrawSysString(const char *str, int posX, int &posY, int max, Color color, int offset = 0, bool autoReturn = false);
     private:
         friend void     Initialize(void);
         

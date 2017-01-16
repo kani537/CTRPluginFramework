@@ -141,7 +141,17 @@ namespace CTRPluginFramework
 
     void        Renderer::EndRenderer(void)
     {  
-        ThreadCommands::Execute(Commands::GSPGPU_END);
+        u32 infos[6];
+        //GetFramebuffersInfos(infos);
+        //Renderer::GetFramebuffersInfos(infos);
+        //GSPGPU_FlushDataCache((void *)infos[4], infos[2]);
+        // if (infos[3])
+          //  GSPGPU_FlushDataCache((void *)infos[5], infos[2]);
+        //GSPGPU_FlushDataCache((void *)infos[1], infos[0]);
+        Screen::Top->SwapBuffer();
+        Screen::Bottom->SwapBuffer();
+        gspWaitForVBlank();
+        //gspWaitForVBlank1();
         _isRendering = false;
     }
 
@@ -279,10 +289,10 @@ namespace CTRPluginFramework
 
     void    Renderer::DrawFile(std::FILE *file, int posX, int posY, int width, int height)
     {
-        if (!file)
+        
             return;
 
-
+/*
         // Init buffer
         if (_buffer == nullptr)
             return;
@@ -362,7 +372,7 @@ namespace CTRPluginFramework
                     posX++;
                 }
             }            
-        }
+        }*/
     }
 
     void    Renderer::DrawBuffer(u8 *buffer, int posX, int posY, int width, int height)
@@ -370,14 +380,44 @@ namespace CTRPluginFramework
         const int padding = height * 3;
         // Correct posY
         //posY += (_rowSize[_target] - 240);
-        posY = _rowSize[_target] - posY;
+        int y = _rowSize[_target] - posY;
         int i = 0;
-        while (--width >= 0)
+
+    }
+
+    void    Renderer::DrawCheckBoxString(char *str, int posX, int &posY, bool isChecked, Color fg, Color color)
+    {
+        // Correct posY
+        int y = posY + (_rowSize[_target] - 240);
+
+        u8 unchecked[]=
         {
-            _DrawData(posX, posY, buffer + i, height);
-            posX++;
-            i += padding;
+            0xFF, 0x81, 0x81, 0x81, 0x81, 0x81, 0x81, 0xFF
+        };
+
+        u8 checked[] =
+        {
+            0x0, 0x0, 0x2, 0x46, 0x6C, 0x38, 0x10, 0x0
+        };
+
+        for (int yy = 0; yy < 8; yy++)
+        {
+            u8 u = unchecked[yy];
+            u8 c = checked[yy];
+            int x = 0;
+            for (int xx = 7; xx >= 0; xx--, x++)
+            {
+                if ((u >> xx) & 1)
+                {
+                    _DrawPixel(posX + x, y + yy, fg);
+                }
+                if (isChecked && (c >> xx) & 1)
+                {
+                    _DrawPixel(posX + x, y + yy, color);
+                }
+            }
         }
+        DrawString(str, posX + 10, posY, fg);
     }
 
 
@@ -733,4 +773,226 @@ namespace CTRPluginFramework
         }
         _length = 1;
     }   
+
+//###################################################
+
+
+
+typedef struct
+{
+    uint_fast16_t   w;
+    uint_fast16_t   h;
+    uint_fast8_t    bpp;
+    uint32_t        size;
+    void            *addr;
+    void            *buf2;
+    uint_fast8_t    updated;
+} screenT;
+
+
+typedef struct 
+{
+    uint_fast16_t   x;
+    uint_fast16_t   y;
+    uint_fast16_t   w;
+    uint_fast16_t   h;
+} Rect;
+
+typedef struct
+{
+    u32             code;
+    charWidthInfo_s *width;
+}   Glyph;
+
+static inline uint8_t *GlyphSheet(uint_fast16_t glyphcode)
+{
+    FINF_s *finf = fontGetInfo();
+    TGLP_s *tglp = finf->tglp;
+    
+    return (uint8_t*)(tglp->sheetData + tglp->sheetSize * (glyphcode / (tglp->nLines * tglp->nRows)));
+}
+
+typedef struct  s_tile
+{
+    float   startX;
+    float   startY;
+    float   endX;
+    float   endY;
+    u8      *tex;
+    float   iconsize;
+    float   tilesize;   
+}               t_tile;
+
+typedef struct {
+    uint8_t r;
+    uint8_t g;
+    uint8_t b;
+} __attribute__((packed)) Pixel;
+
+ static uint8_t *DrawTile(Pixel   (*pScreen)[240], uint8_t *tile, uint8_t iconsize, uint8_t tilesize, uint16_t startX, \
+ uint16_t startY, uint16_t endX, uint16_t endY, uint8_t charWidth, uint8_t charHeight, Color color)
+{
+    uint16_t alpha;
+    uint16_t py;
+    uint16_t px;
+    size_t y;
+    size_t x;
+    int     size = 2;
+    
+    if (iconsize == 2 || iconsize == 1)
+    {
+        if ((uint16_t)(endY + 1) <= charHeight)
+        {           
+            alpha = *(uint16_t*)tile;
+            alpha = (alpha & 0x0F0F) + ((alpha >> 4) & 0x0F0F);
+            alpha = ((alpha + (alpha >> 8)) >> 2) & 0x0F;
+            py = 240 - startY - (endY + 1) / 2;
+            if ((uint16_t)(endX + 1) <= charWidth && alpha)
+            {
+                px = startX + (endX + 1) / 2;
+                
+                if (!(px >= 400 || px < 0 || py >= 240 || py < 0))
+                {
+                    pScreen[px][py].r = (pScreen[px][py].r * (0x0F - alpha) + color.r * (alpha + 1)) >> 4;
+                    pScreen[px][py].g = (pScreen[px][py].g * (0x0F - alpha) + color.g * (alpha + 1)) >> 4;
+                    pScreen[px][py].b = (pScreen[px][py].b * (0x0F - alpha) + color.b * (alpha + 1)) >> 4;
+                }
+            }
+        }
+        tile += iconsize;
+    }
+    else
+    {
+        for (y = 0; y < iconsize; y += tilesize)
+        {
+            for (x = 0; x < iconsize; x += tilesize)
+                tile = DrawTile(pScreen, tile, tilesize, tilesize / 2, startX, startY, endX + x, endY + y, charWidth, charHeight, color);
+        }
+    }
+    return tile;
+}
+
+static uint8_t DrawGlyph(Pixel (*pScreen)[240], uint16_t x, uint16_t y, u32 glyphCode, Color color, int offset)
+{
+    FINF_s *finf = fontGetInfo();
+    TGLP_s *tglp = finf->tglp;
+    Glyph glyph;
+    fontGlyphPos_s glyphPos;
+    fontGlyphPos_s glyphPos2;
+    uint16_t    charx;
+    uint16_t    chary;
+    uint16_t    glyphXoffs;
+    uint16_t    glyphYoffs;
+    uint8_t     *sheetsrc;
+    uint8_t     *sheetsrc3;
+    uint16_t    tilex;
+    uint16_t    tilexend;
+    uint16_t    tiley;
+    uint16_t    tileyend;
+    //t_tile        tile;
+    float       size;
+    float       padding;
+    float       height;
+    u8          *tile;
+    
+    //size = 128 / 8;
+    size = 16;
+    padding = 8;
+    height = 30;
+    glyph.code = glyphCode;
+    fontCalcGlyphPos(&glyphPos, glyphCode, GLYPH_POS_CALC_VTXCOORD, 1.0f, 1.0f);
+    glyph.width = fontGetCharWidthInfo(glyphCode);
+    glyphYoffs = glyph.code % (tglp->nRows * tglp->nLines) / tglp->nRows * (tglp->cellHeight + 1) + 1;
+    sheetsrc = (u8 *)fontGetGlyphSheetTex(glyphPos.sheetIndex);
+    glyphXoffs = 128 * glyphPos.texcoord.left;
+    tilex = glyphXoffs & 0xFFFFFFF8;
+    tilexend = 128 * glyphPos.texcoord.right;
+    tiley = glyphYoffs & 0xFFFFFFF8;
+    tileyend = (glyphYoffs + (u32)height) & 0xFFFFFFF8;
+    glyphXoffs &= 0x00000007;
+    glyphYoffs &= 0x00000007;
+    
+    for (chary = tiley; chary <= tileyend; chary += padding)
+    {
+
+        for (charx = tilex; charx <= tilexend; charx += padding)
+        {
+            sheetsrc3 = sheetsrc + (u32)(4 * (charx + chary * size));
+
+                
+                DrawTile(pScreen, sheetsrc3, padding, padding, \
+                    x + (glyphPos.xOffset + 1) / 2, y, charx - tilex - glyphXoffs - offset, chary - tiley - glyphYoffs, \
+                    glyphPos.width, height, color);
+        }
+    }
+    return ((glyphPos.xAdvance - offset) / 2 + 1);
+}
+
+void Renderer::DrawSysString(const char *str, int posX, int &posY, int max, Color color, int offset, bool autoReturn)
+{
+    //FINF_s            *finf = fontGetInfo();  
+    //CMAP_s    *cmap = finf->cmap;
+    //CWDH_s    *cwdh = finf->cwdh;
+    size_t          len;
+    int             temp;
+    Glyph           glyph;
+    u32             glyphcode;
+    int  units;
+    u32             xLimits;
+    int             lineCount;
+    size_t i;
+    fontGlyphPos_s glyphPos;
+    int             x = posX;
+    int             y = posY;
+    Pixel           (*pScreen)[240] = (Pixel(*)[240])_framebuffer[_target];
+    
+    if (!(str && *str))
+        return;
+    len = strlen(str);
+    if (!max || max > len)
+        max = len;  
+    i = max;
+    lineCount = 1;
+    xLimits = (_target == TOP) ? 400 : 320;
+    do
+    {
+        if (x >= xLimits)
+        {
+            if (autoReturn)
+            {
+                x = posX;
+                lineCount++;
+                y += 16;
+            }
+            else break;
+        }
+        if (*str == '\n')
+        {
+            x = posX;
+            lineCount++;    
+            y += 16;
+            str++;
+        }           
+        if (y >= 240) break;
+        glyphcode = 0;
+        if (!*str)
+            break;
+        units = decode_utf8(&glyphcode, (const u8 *)str);
+        if (units == -1)
+            break;
+        str += units;
+        u32 index = fontGlyphIndexFromCodePoint(glyphcode);
+        fontCalcGlyphPos(&glyphPos, index, GLYPH_POS_CALC_VTXCOORD, 1.0f, 1.0f);
+        if (offset > glyphPos.xAdvance)
+        {
+            offset -= glyphPos.xAdvance;
+            continue;
+        }
+        i--;
+        x += DrawGlyph(pScreen, x, y, index, color, offset);
+        offset = 0;
+    } while (glyphcode > 0);
+
+    posY += 16 * lineCount;
+}
 }
