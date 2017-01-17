@@ -17,6 +17,7 @@ namespace CTRPluginFramework
     class Renderer;
     typedef void (*DrawPixelP)(int, int, Color);
     typedef void (*DrawDataP)(int, int, u8*, int);
+    #define     RANGE(x, y, z) (y >= x && y <= z)
     class Renderer
     {
     public:
@@ -66,7 +67,7 @@ namespace CTRPluginFramework
         static bool         _isRendering;
         static bool         _doubleBuffer;
 
-        static Screen       *_screenTarget[2];
+        static Screen       *_screens[2];
 
         static u8           *_framebuffer[4];
         static u8           *_framebufferR[4];
