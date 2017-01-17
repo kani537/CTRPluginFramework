@@ -1,6 +1,6 @@
 #include "CTRPluginFramework.hpp"
 
-namepace CTRPluginFramework
+namespace CTRPluginFramework
 {
     inline u32   GetFramebufferOffset(int posX, int posY, int bpp, int rowsize)
     {
