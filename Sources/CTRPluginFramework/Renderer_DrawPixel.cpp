@@ -13,23 +13,43 @@ namepace CTRPluginFramework
             return;
 
         u32     offset = GetFramebufferOffset(posX, posY, 4, _rowSize[_target]);
-        u8      *pos = _framebuffer[_target] + offset;
-        u8      *posR = _framebufferR[_target] + offset;
-        while (--_length >= 0)
+
+        bool    is3D = _target == TOP && _render3D;
+        bool    isLeftDouble = _doubleBuffer;
+        bool    isRightDouble = _doubleBuffer;        
+
+        u8  *screen = _screens[_target]->GetLeftFramebuffer() + offset;
+
+again:
+        int     length = _length;
+        while (--length >= 0)
         {
-            *(pos++) = 0xFF;
-            *(pos++) = color.b;
-            *(pos++) = color.g;
-            *(pos++) = color.r;
-            if (_target == TOP && _render3D)
-            {
-                *(posR++) = 0xFF;
-                *(posR++) = color.b;
-                *(posR++) = color.g;
-                *(posR++) = color.r;
-            }         
+            *(screen++) = 0xFF;
+            *(screen++) = color.b;
+            *(screen++) = color.g;
+            *(screen++) = color.r;
         }
-        _length = 1;
+
+        if (isLeftDouble)
+        {
+            screen = _screens[_target]->GetLeftFramebuffer(true) + offset;
+            isLeftDouble = false;
+            goto again;
+        }
+
+        if (is3D)
+        {
+            screen = _screens[_target]->GetRightFramebuffer() + offset;
+            is3D = false;
+            goto again;
+        }
+
+        if (isRightDouble)
+        {
+            screen = _screens[_target]->GetRightFramebuffer(true) + offset;
+            isRightDouble = false;
+            goto again;
+        }
     }
 
     void        Renderer::RenderBGR8(int posX, int posY, Color color)
@@ -38,22 +58,42 @@ namepace CTRPluginFramework
             return;
 
         u32     offset = GetFramebufferOffset(posX, posY, 3, _rowSize[_target]);
-        u8      *pos = _framebuffer[_target] + offset;
-        u8      *posR = _framebufferR[_target] + offset;
 
-        while (--_length >= 0)
+        bool    is3D = _target == TOP && _render3D;
+        bool    isLeftDouble = _doubleBuffer;
+        bool    isRightDouble = _doubleBuffer;        
+
+        u8  *screen = _screens[_target]->GetLeftFramebuffer() + offset;
+
+again:
+        int     length = _length;
+        while (--length >= 0)
         {
-            *(pos++) = color.b;
-            *(pos++) = color.g;
-            *(pos++) = color.r;  
-            if (_target == TOP && _render3D)
-            {
-                *(posR++) = color.b;
-                *(posR++) = color.g;
-                *(posR++) = color.r;                
-            }          
+            *(screen++) = color.b;
+            *(screen++) = color.g;
+            *(screen++) = color.r;
         }
-        _length = 1;
+
+        if (isLeftDouble)
+        {
+            screen = _screens[_target]->GetLeftFramebuffer(true) + offset;
+            isLeftDouble = false;
+            goto again;
+        }
+
+        if (is3D)
+        {
+            screen = _screens[_target]->GetRightFramebuffer() + offset;
+            is3D = false;
+            goto again;
+        }
+
+        if (isRightDouble)
+        {
+            screen = _screens[_target]->GetRightFramebuffer(true) + offset;
+            isRightDouble = false;
+            goto again;
+        }
     }
 
     void        Renderer::RenderRGB565(int posX, int posY, Color color)
@@ -62,8 +102,12 @@ namepace CTRPluginFramework
             return;
 
         u32     offset = GetFramebufferOffset(posX, posY, 2, _rowSize[_target]);
-        u8      *pos = _framebuffer[_target] + offset;
-        u8      *posR = _framebufferR[_target] + offset;
+
+        bool    is3D = _target == TOP && _render3D;
+        bool    isLeftDouble = _doubleBuffer;
+        bool    isRightDouble = _doubleBuffer;        
+
+        u8  *screen = _screens[_target]->GetLeftFramebuffer() + offset;
 
         union
         {
@@ -74,17 +118,35 @@ namepace CTRPluginFramework
         half.u  = (color.b & 0xF8) << 8;
         half.u |= (color.g & 0xFC) << 3;
         half.u |= (color.r & 0xF8) >> 3;
-        while (--_length >= 0)
+
+again:
+        int     length = _length;
+        while (--length >= 0)
         {
-            *(pos++) = half.b[0];
-            *(pos++) = half.b[1]; 
-            if (_target == TOP && _render3D)
-            {
-                *(posR++) = half.b[0];
-                *(posR++) = half.b[1];              
-            }              
+            *(screen++) = half.b[0];
+            *(screen++) = half.b[1];
         }
-        _length = 1;
+
+        if (isLeftDouble)
+        {
+            screen = _screens[_target]->GetLeftFramebuffer(true) + offset;
+            isLeftDouble = false;
+            goto again;
+        }
+
+        if (is3D)
+        {
+            screen = _screens[_target]->GetRightFramebuffer() + offset;
+            is3D = false;
+            goto again;
+        }
+
+        if (isRightDouble)
+        {
+            screen = _screens[_target]->GetRightFramebuffer(true) + offset;
+            isRightDouble = false;
+            goto again;
+        }
     }
 
     void        Renderer::RenderRGB5A1(int posX, int posY, Color color)
@@ -92,9 +154,13 @@ namepace CTRPluginFramework
         if (!RANGE(0, posX, _targetWidth[_target]) || !RANGE(0, posY, _targetHeight[_target]))
             return;
 
-        u32     offset = GetFramebufferOffset(posX, posY, 2, _rowSize[_target]);
-        u8      *pos = _framebuffer[_target] + offset;
-        u8      *posR = _framebufferR[_target] + offset;
+      u32     offset = GetFramebufferOffset(posX, posY, 2, _rowSize[_target]);
+
+        bool    is3D = _target == TOP && _render3D;
+        bool    isLeftDouble = _doubleBuffer;
+        bool    isRightDouble = _doubleBuffer;        
+
+        u8  *screen = _screens[_target]->GetLeftFramebuffer() + offset;
 
         union
         {
@@ -106,17 +172,35 @@ namepace CTRPluginFramework
         half.u |= (color.g & 0xF8) << 3;
         half.u |= (color.r & 0xF8) >> 2;
         half.u |= 1;
-        while (--_length >= 0)
+
+again:
+        int     length = _length;
+        while (--length >= 0)
         {
-            *(pos++) = half.b[0];
-            *(pos++) = half.b[1]; 
-            if (_target == TOP && _render3D)
-            {
-                *(posR++) = half.b[0];
-                *(posR++) = half.b[1]; 
-            }           
+            *(screen++) = half.b[0];
+            *(screen++) = half.b[1];
         }
-        _length = 1;
+
+        if (isLeftDouble)
+        {
+            screen = _screens[_target]->GetLeftFramebuffer(true) + offset;
+            isLeftDouble = false;
+            goto again;
+        }
+
+        if (is3D)
+        {
+            screen = _screens[_target]->GetRightFramebuffer() + offset;
+            is3D = false;
+            goto again;
+        }
+
+        if (isRightDouble)
+        {
+            screen = _screens[_target]->GetRightFramebuffer(true) + offset;
+            isRightDouble = false;
+            goto again;
+        }
     }
 
     void        Renderer::RenderRGBA4(int posX, int posY, Color color)
@@ -124,9 +208,14 @@ namepace CTRPluginFramework
         if (!RANGE(0, posX, _targetWidth[_target]) || !RANGE(0, posY, _targetHeight[_target]))
             return;
 
-        u32     offset =  + GetFramebufferOffset(posX, posY, 2, _rowSize[_target]);
-        u8      *pos = _framebuffer[_target] + offset;
-        u8      *posR = _framebufferR[_target] + offset;
+
+        u32     offset = GetFramebufferOffset(posX, posY, 2, _rowSize[_target]);
+
+        bool    is3D = _target == TOP && _render3D;
+        bool    isLeftDouble = _doubleBuffer;
+        bool    isRightDouble = _doubleBuffer;        
+
+        u8  *screen = _screens[_target]->GetLeftFramebuffer() + offset;
 
         union
         {
@@ -138,53 +227,34 @@ namepace CTRPluginFramework
         half.u |= (color.g & 0xF0) << 4;
         half.u |= (color.r & 0xF0);
         half.u |= 0x0F;
-        while (--_length >= 0)
+
+again:
+        int     length = _length;
+        while (--length >= 0)
         {
-            *(pos++) = half.b[0];
-            *(pos++) = half.b[1];   
-            if (_target == TOP && _render3D)
-            {
-                *(posR++) = half.b[0];
-                *(posR++) = half.b[1];               
-            }        
+            *(screen++) = half.b[0];
+            *(screen++) = half.b[1];
         }
-        _length = 1;
-    }
 
- // ##################################################################################################
-     void        Renderer::RenderRGBA8(int posX, int posY, u8 *data, int height)
-    {
-        if (!RANGE(0, posX, _targetWidth[_target]) || !RANGE(0, posY, _targetHeight[_target]))
-            return;
-
-        u32     offset = GetFramebufferOffset(posX, posY, 4, _rowSize[_target]);
-        u8      *pos = _framebuffer[_target] + offset;
-        u8      *posR = _framebufferR[_target] + offset;
-
-        if (!_render3D || _target == BOTTOM)
+        if (isLeftDouble)
         {
-            while (--height >= 0)
-            {
-                *(pos++) = 0xFF;
-                *(pos++) = *(data++);
-                *(pos++) = *(data++);
-                *(pos++) = *(data++);
-            }
+            screen = _screens[_target]->GetLeftFramebuffer(true) + offset;
+            isLeftDouble = false;
+            goto again;
         }
-        else
+
+        if (is3D)
         {
-            while (--height >= 0)
-            {
-                *(pos++) = 0xFF;
-                *(posR++) = 0xFF;
-                *(pos++) = *(data);
-                *(posR++) = *(data++);
-                *(pos++) = *(data);
-                *(posR++) = *(data++); 
-                *(pos++) = *(data);
-                *(posR++) = *(data++);   
-            } 
-        }       
-        _length = 1;
+            screen = _screens[_target]->GetRightFramebuffer() + offset;
+            is3D = false;
+            goto again;
+        }
+
+        if (isRightDouble)
+        {
+            screen = _screens[_target]->GetRightFramebuffer(true) + offset;
+            isRightDouble = false;
+            goto again;
+        }
     }
 }
