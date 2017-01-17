@@ -104,4 +104,39 @@ namespace CTRPluginFramework
         posY += 10;
         return (posY);
     }
+
+    void    Renderer::DrawCheckBoxString(char *str, int posX, int &posY, bool isChecked, Color fg, Color color)
+    {
+        // Correct posY
+        int y = posY + (_rowSize[_target] - 240);
+
+        u8 unchecked[] =
+        {
+            0xFF, 0x81, 0x81, 0x81, 0x81, 0x81, 0x81, 0xFF
+        };
+
+        u8 checked[] =
+        {
+            0x0, 0x0, 0x2, 0x46, 0x6C, 0x38, 0x10, 0x0
+        };
+
+        for (int yy = 0; yy < 8; yy++)
+        {
+            u8 u = unchecked[yy];
+            u8 c = checked[yy];
+            int x = 0;
+            for (int xx = 7; xx >= 0; xx--, x++)
+            {
+                if ((u >> xx) & 1)
+                {
+                    _DrawPixel(posX + x, y + yy, fg);
+                }
+                if (isChecked && (c >> xx) & 1)
+                {
+                    _DrawPixel(posX + x, y + yy, color);
+                }
+            }
+        }
+        DrawString(str, posX + 10, posY, fg);
+    }
 }
