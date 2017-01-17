@@ -45,19 +45,31 @@ namespace CTRPluginFramework
         static int      DrawString(char *str, int offset, int posX, int &posY, Color fg);
         static void      DrawCheckBoxString(char *str, int posX, int &posY, bool isChecked, Color fg, Color checked);
 
-        static void            DrawSysString(const char *str, int posX, int &posY, int max, Color color, int offset = 0, bool autoReturn = false);
+        static void            DrawSysString(const char *str, int posX, int &posY, int max, Color color, float offset = 0, bool autoReturn = false);
+        static float GetTextSize(const char *text);
     private:
         friend void     Initialize(void);
-        
+        // Initalize Renderer
         static void     Initialize(void);
+        // Allocate buffer to process files in ram
         static void     InitBuffer(u32 size);
+        // Calulate sysfont glyph
+        static void     FontCalcGlyphPos(fontGlyphPos_s* out, int glyphIndex, float scaleX, float scaleY);
+        // Draw glyph
+        static uint8_t  DrawGlyph(uint16_t x, uint16_t y, u32 glyphCode, Color color, float offset);
+        static u8       *DrawTile(u8 *tile, u8 iconsize, u8 tilesize, u16 startX, \
+ u16 startY, u16 endX, u16 endY, u8 charWidth, u8 charHeight, Color color);
+
 
         static Target       _target;
         static bool         _render3D;
         static bool         _isRendering;
+        static bool         _doubleBuffer;
+
         static Screen       *_screenTarget[2];
-        static u8           *_framebuffer[2];
-        static u8           *_framebufferR[2];
+
+        static u8           *_framebuffer[4];
+        static u8           *_framebufferR[4];
         static u32          _rowSize[2];
         static u32          _targetWidth[2];
         static u32          _targetHeight[2];

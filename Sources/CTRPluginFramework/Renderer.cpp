@@ -1,10 +1,9 @@
 #include "CTRPluginFramework/Color.hpp"
 #include "CTRPluginFramework/Renderer.hpp"
-#include "CTRPluginFramework/Commands.hpp"
-#include "font6x10Linux.h"
 #include "3DS.h"
 #include "ctrulib/services/gspgpu.h"
 #include <cstdio>
+#include <cmath>
 
 
 namespace CTRPluginFramework
@@ -15,8 +14,8 @@ namespace CTRPluginFramework
     bool        Renderer::_render3D = false;
     bool        Renderer::_isRendering = false;
     Screen      *Renderer::_screenTarget[2] = {Screen::Bottom, Screen::Top};
-    u8          *Renderer::_framebuffer[2] = {nullptr};
-    u8          *Renderer::_framebufferR[2] = {nullptr};
+    u8          *Renderer::_framebuffer[4] = {nullptr};
+    u8          *Renderer::_framebufferR[4] = {nullptr};
     u32         Renderer::_rowSize[2] = {0};
     u32         Renderer::_targetWidth[2] = {0};
     u32         Renderer::_targetHeight[2] = {0};
@@ -151,7 +150,7 @@ namespace CTRPluginFramework
         Screen::Top->SwapBuffer();
         Screen::Bottom->SwapBuffer();
         gspWaitForVBlank();
-        //gspWaitForVBlank1();
+        gspWaitForVBlank1();
         _isRendering = false;
     }
 
@@ -184,108 +183,6 @@ namespace CTRPluginFramework
             DrawLine(posX + width - (thickness - 1), posY, thickness, color, height);
         }
     }
-
-    // Draw Character without background
-    void     Renderer::DrawCharacter(int c, int posX, int posY, Color fg)
-    {
-        for (int yy = 0; yy < 10; yy++)
-        {
-            u8 charPos = font[c * 10 + yy];
-            int x = 0;
-            for (int xx = 6; xx >= 0; xx--, x++)
-            {
-                if ((charPos >> xx) & 1)
-                {
-                    _DrawPixel(posX + x, posY + yy, fg);
-                }
-            }
-        }        
-    }
-    // Draw Character with background
-    void     Renderer::DrawCharacter(int c, int posX, int posY, Color fg, Color bg)
-    {
-        for (int yy = 0; yy < 10; yy++)
-        {
-            u8 charPos = font[c * 10 + yy];
-            int x = 0;
-            for (int xx = 6; xx >= 0; xx--, x++)
-            {
-                if ((charPos >> xx) & 1)
-                {
-                    _DrawPixel(posX + x, posY + yy, fg);
-                }
-                else
-                {
-                    _DrawPixel(posX + x, posY + yy, bg);
-                }
-            }
-        } 
-    }
-    // Draw Character with offset
-    void     Renderer::DrawCharacter(int c, int offset, int posX, int posY, Color fg)
-    {      
-        for (int yy = 0; yy < 10; yy++)
-        {
-            u8 charPos = font[c * 10 + yy];
-            int x = 0;
-            for (int xx = 6 - offset; xx >= 0; xx--, x++)
-            {
-                if ((charPos >> xx) & 1)
-                {
-                    _DrawPixel(posX + x, posY + yy, fg);
-                }
-            }
-        }  
-    }
-
-    int    Renderer::DrawString(char *str, int posX, int &posY, Color fg)
-    {
-        // Correct posY
-        int y = posY + (_rowSize[_target] - 240);
-
-        while (*str)
-        {
-            DrawCharacter(*str++, posX++, y, fg);
-            posX += 6;
-        }
-            posY += 10;
-        return (posY);
-    }
-
-    int    Renderer::DrawString(char *str, int posX, int &posY, Color fg, Color bg)
-    {
-        // Correct posY
-        int y = posY + (_rowSize[_target] - 240);
-
-        while (*str)
-        {
-            DrawCharacter(*str++, posX++, y, fg, bg);
-            posX += 6;
-        }
-        posY += 10;
-        return (posY);
-    }
-
-    int    Renderer::DrawString(char *str, int offset, int posX, int &posY, Color fg)
-    {
-        // Correct posY
-        int y = posY + (_rowSize[_target] - 240);
-        str += (offset / 6);
-        offset %= 6;
-        while (*str)
-        {
-            DrawCharacter(*str++, offset, posX, y, fg);
-            if (offset)
-            {                          
-                posX -= offset;      
-                offset = 0;
-            }
-            posX += 6;
-        }
-        posY += 10;
-        return (posY);
-    }
-//#########################################################################################
 
     void    Renderer::DrawFile(std::FILE *file, int posX, int posY, int width, int height)
     {
@@ -380,8 +277,15 @@ namespace CTRPluginFramework
         const int padding = height * 3;
         // Correct posY
         //posY += (_rowSize[_target] - 240);
-        int y = _rowSize[_target] - posY;
+
+        posY = _rowSize[_target] - posY;
         int i = 0;
+        while (--width >= 0)
+        {
+            _DrawData(posX, posY, buffer + i, height);
+            posX++;
+            i += padding;
+        }
 
     }
 
@@ -423,191 +327,6 @@ namespace CTRPluginFramework
 
 //############################################################################################
 
-    inline u32   GetFramebufferOffset(int posX, int posY, int bpp, int rowsize)
-    {
-        return ((rowsize - 1 - posY + posX * rowsize) * bpp);
-    }
-
-    void        Renderer::RenderRGBA8(int posX, int posY, Color color)
-    {
-        if (!RANGE(0, posX, _targetWidth[_target]) || !RANGE(0, posY, _targetHeight[_target]))
-            return;
-
-        u32     offset = GetFramebufferOffset(posX, posY, 4, _rowSize[_target]);
-        u8      *pos = _framebuffer[_target] + offset;
-        u8      *posR = _framebufferR[_target] + offset;
-        while (--_length >= 0)
-        {
-            *(pos++) = 0xFF;
-            *(pos++) = color.b;
-            *(pos++) = color.g;
-            *(pos++) = color.r;
-            if (_target == TOP && _render3D)
-            {
-                *(posR++) = 0xFF;
-                *(posR++) = color.b;
-                *(posR++) = color.g;
-                *(posR++) = color.r;
-            }         
-        }
-        _length = 1;
-    }
-
-    void        Renderer::RenderBGR8(int posX, int posY, Color color)
-    {
-        if (!RANGE(0, posX, _targetWidth[_target]) || !RANGE(0, posY, _targetHeight[_target]))
-            return;
-
-        u32     offset = GetFramebufferOffset(posX, posY, 3, _rowSize[_target]);
-        u8      *pos = _framebuffer[_target] + offset;
-        u8      *posR = _framebufferR[_target] + offset;
-
-        while (--_length >= 0)
-        {
-            *(pos++) = color.b;
-            *(pos++) = color.g;
-            *(pos++) = color.r;  
-            if (_target == TOP && _render3D)
-            {
-                *(posR++) = color.b;
-                *(posR++) = color.g;
-                *(posR++) = color.r;                
-            }          
-        }
-        _length = 1;
-    }
-
-    void        Renderer::RenderRGB565(int posX, int posY, Color color)
-    {
-        if (!RANGE(0, posX, _targetWidth[_target]) || !RANGE(0, posY, _targetHeight[_target]))
-            return;
-
-        u32     offset = GetFramebufferOffset(posX, posY, 2, _rowSize[_target]);
-        u8      *pos = _framebuffer[_target] + offset;
-        u8      *posR = _framebufferR[_target] + offset;
-
-        union
-        {
-            u16     u;
-            u8      b[2];
-        }     half;
-
-        half.u  = (color.b & 0xF8) << 8;
-        half.u |= (color.g & 0xFC) << 3;
-        half.u |= (color.r & 0xF8) >> 3;
-        while (--_length >= 0)
-        {
-            *(pos++) = half.b[0];
-            *(pos++) = half.b[1]; 
-            if (_target == TOP && _render3D)
-            {
-                *(posR++) = half.b[0];
-                *(posR++) = half.b[1];              
-            }              
-        }
-        _length = 1;
-    }
-
-    void        Renderer::RenderRGB5A1(int posX, int posY, Color color)
-    {
-        if (!RANGE(0, posX, _targetWidth[_target]) || !RANGE(0, posY, _targetHeight[_target]))
-            return;
-
-        u32     offset = GetFramebufferOffset(posX, posY, 2, _rowSize[_target]);
-        u8      *pos = _framebuffer[_target] + offset;
-        u8      *posR = _framebufferR[_target] + offset;
-
-        union
-        {
-            u16     u;
-            u8      b[2];
-        }     half;
-
-        half.u  = (color.b & 0xF8) << 8;
-        half.u |= (color.g & 0xF8) << 3;
-        half.u |= (color.r & 0xF8) >> 2;
-        half.u |= 1;
-        while (--_length >= 0)
-        {
-            *(pos++) = half.b[0];
-            *(pos++) = half.b[1]; 
-            if (_target == TOP && _render3D)
-            {
-                *(posR++) = half.b[0];
-                *(posR++) = half.b[1]; 
-            }           
-        }
-        _length = 1;
-    }
-
-    void        Renderer::RenderRGBA4(int posX, int posY, Color color)
-    {
-        if (!RANGE(0, posX, _targetWidth[_target]) || !RANGE(0, posY, _targetHeight[_target]))
-            return;
-
-        u32     offset =  + GetFramebufferOffset(posX, posY, 2, _rowSize[_target]);
-        u8      *pos = _framebuffer[_target] + offset;
-        u8      *posR = _framebufferR[_target] + offset;
-
-        union
-        {
-            u16     u;
-            u8      b[2];
-        }     half;
-
-        half.u  = (color.b & 0xF0) << 8;
-        half.u |= (color.g & 0xF0) << 4;
-        half.u |= (color.r & 0xF0);
-        half.u |= 0x0F;
-        while (--_length >= 0)
-        {
-            *(pos++) = half.b[0];
-            *(pos++) = half.b[1];   
-            if (_target == TOP && _render3D)
-            {
-                *(posR++) = half.b[0];
-                *(posR++) = half.b[1];               
-            }        
-        }
-        _length = 1;
-    }
-
- // ##################################################################################################
-     void        Renderer::RenderRGBA8(int posX, int posY, u8 *data, int height)
-    {
-        if (!RANGE(0, posX, _targetWidth[_target]) || !RANGE(0, posY, _targetHeight[_target]))
-            return;
-
-        u32     offset = GetFramebufferOffset(posX, posY, 4, _rowSize[_target]);
-        u8      *pos = _framebuffer[_target] + offset;
-        u8      *posR = _framebufferR[_target] + offset;
-
-        if (!_render3D || _target == BOTTOM)
-        {
-            while (--height >= 0)
-            {
-                *(pos++) = 0xFF;
-                *(pos++) = *(data++);
-                *(pos++) = *(data++);
-                *(pos++) = *(data++);
-            }
-        }
-        else
-        {
-            while (--height >= 0)
-            {
-                *(pos++) = 0xFF;
-                *(posR++) = 0xFF;
-                *(pos++) = *(data);
-                *(posR++) = *(data++);
-                *(pos++) = *(data);
-                *(posR++) = *(data++); 
-                *(pos++) = *(data);
-                *(posR++) = *(data++);   
-            } 
-        }       
-        _length = 1;
-    }
 
     void        Renderer::RenderBGR8(int posX, int posY, u8 *data, int height)
     {
@@ -777,60 +496,43 @@ namespace CTRPluginFramework
 //###################################################
 
 
-
-typedef struct
-{
-    uint_fast16_t   w;
-    uint_fast16_t   h;
-    uint_fast8_t    bpp;
-    uint32_t        size;
-    void            *addr;
-    void            *buf2;
-    uint_fast8_t    updated;
-} screenT;
-
-
-typedef struct 
-{
-    uint_fast16_t   x;
-    uint_fast16_t   y;
-    uint_fast16_t   w;
-    uint_fast16_t   h;
-} Rect;
-
-typedef struct
-{
-    u32             code;
-    charWidthInfo_s *width;
-}   Glyph;
-
-static inline uint8_t *GlyphSheet(uint_fast16_t glyphcode)
-{
-    FINF_s *finf = fontGetInfo();
-    TGLP_s *tglp = finf->tglp;
-    
-    return (uint8_t*)(tglp->sheetData + tglp->sheetSize * (glyphcode / (tglp->nLines * tglp->nRows)));
-}
-
-typedef struct  s_tile
-{
-    float   startX;
-    float   startY;
-    float   endX;
-    float   endY;
-    u8      *tex;
-    float   iconsize;
-    float   tilesize;   
-}               t_tile;
-
 typedef struct {
     uint8_t r;
     uint8_t g;
     uint8_t b;
 } __attribute__((packed)) Pixel;
 
- static uint8_t *DrawTile(Pixel   (*pScreen)[240], uint8_t *tile, uint8_t iconsize, uint8_t tilesize, uint16_t startX, \
- uint16_t startY, uint16_t endX, uint16_t endY, uint8_t charWidth, uint8_t charHeight, Color color)
+extern "C" CFNT_s* g_sharedFont;
+extern "C" int charPerSheet;
+void Renderer::FontCalcGlyphPos(fontGlyphPos_s* out, int glyphIndex, float scaleX, float scaleY)
+{
+    FINF_s* finf = &g_sharedFont->finf;
+    TGLP_s* tglp = finf->tglp;
+    charWidthInfo_s* cwi = fontGetCharWidthInfo(glyphIndex);
+
+    int sheetId = glyphIndex / charPerSheet;
+    int glInSheet = glyphIndex % charPerSheet;
+    out->sheetIndex = sheetId;
+    out->xOffset = scaleX * cwi->left;
+    out->xAdvance = scaleX * cwi->charWidth;
+    out->width = scaleX * cwi->glyphWidth;
+
+    int lineId = glInSheet / tglp->nRows;
+    int rowId = glInSheet % tglp->nRows;
+
+    float tp = (float)(rowId*(tglp->cellWidth+1)+1);
+    float tx = (float)(tp / tglp->sheetWidth)   ;
+    float ty = 1.0f - (float)((lineId+1)*(tglp->cellHeight+1)+1) / tglp->sheetHeight;
+    float tw = (float)cwi->glyphWidth / tglp->sheetWidth;
+    float th = (float)tglp->cellHeight / tglp->sheetHeight;
+    out->texcoord.left = tx;
+    out->texcoord.top = ty+th;
+    out->texcoord.right = tx+tw;
+    out->texcoord.bottom = ty;
+}
+
+ u8 *Renderer::DrawTile(u8 *tile, u8 iconsize, u8 tilesize, u16 startX, \
+ u16 startY, u16 endX, u16 endY, u8 charWidth, u8 charHeight, Color color)
 {
     uint16_t alpha;
     uint16_t py;
@@ -850,12 +552,28 @@ typedef struct {
             if ((uint16_t)(endX + 1) <= charWidth && alpha)
             {
                 px = startX + (endX + 1) / 2;
-                
+                Pixel   (*pScreen)[240] = (Pixel(*)[240])_framebuffer[_target];
+
+
                 if (!(px >= 400 || px < 0 || py >= 240 || py < 0))
                 {
-                    pScreen[px][py].r = (pScreen[px][py].r * (0x0F - alpha) + color.r * (alpha + 1)) >> 4;
-                    pScreen[px][py].g = (pScreen[px][py].g * (0x0F - alpha) + color.g * (alpha + 1)) >> 4;
-                    pScreen[px][py].b = (pScreen[px][py].b * (0x0F - alpha) + color.b * (alpha + 1)) >> 4;
+                    u32 offset = GetFramebufferOffset(px, py, 3, _rowSize[_target]);
+                    *(u8 *)left = _framebuffer + offset;
+                    *(u8 *)right = _framebufferR + offset;
+
+                    Color l = (*(left + 2), *(left + 1), *(left));
+
+                    *left++ = (l.b * (0x0F - alpha) + color.b * (alpha + 1)) >> 4;
+                    *left++ = (l.g * (0x0F - alpha) + color.g * (alpha + 1)) >> 4;
+                    *left++ = (l.r * (0x0F - alpha) + color.r * (alpha + 1)) >> 4;
+                    if (_render3D)
+                    {
+                        Color r = (*(right + 2), *(right + 1), *(right));
+
+                        *right++ = (left.b * (0x0F - alpha) + color.b * (alpha + 1)) >> 4;
+                        *right++ = (left.g * (0x0F - alpha) + color.g * (alpha + 1)) >> 4;
+                        *right++ = (left.r * (0x0F - alpha) + color.r * (alpha + 1)) >> 4;
+                    }
                 }
             }
         }
@@ -866,29 +584,27 @@ typedef struct {
         for (y = 0; y < iconsize; y += tilesize)
         {
             for (x = 0; x < iconsize; x += tilesize)
-                tile = DrawTile(pScreen, tile, tilesize, tilesize / 2, startX, startY, endX + x, endY + y, charWidth, charHeight, color);
+                tile = DrawTile(tile, tilesize, tilesize / 2, startX, startY, endX + x, endY + y, charWidth, charHeight, color);
         }
     }
     return tile;
 }
 
-static uint8_t DrawGlyph(Pixel (*pScreen)[240], uint16_t x, uint16_t y, u32 glyphCode, Color color, int offset)
+uint8_t Renderer::DrawGlyph(uint16_t x, uint16_t y, u32 glyphCode, Color color, float offset)
 {
-    FINF_s *finf = fontGetInfo();
-    TGLP_s *tglp = finf->tglp;
-    Glyph glyph;
-    fontGlyphPos_s glyphPos;
-    fontGlyphPos_s glyphPos2;
+    fontGlyphPos_s      glyphPos;
+    charWidthInfo_s*    cwi;
+
     uint16_t    charx;
     uint16_t    chary;
     uint16_t    glyphXoffs;
     uint16_t    glyphYoffs;
     uint8_t     *sheetsrc;
     uint8_t     *sheetsrc3;
-    uint16_t    tilex;
-    uint16_t    tilexend;
-    uint16_t    tiley;
-    uint16_t    tileyend;
+    uint16_t    tileX;
+    uint16_t    tileXend;
+    uint16_t    tileY;
+    uint16_t    tileYend;
     //t_tile        tile;
     float       size;
     float       padding;
@@ -896,55 +612,98 @@ static uint8_t DrawGlyph(Pixel (*pScreen)[240], uint16_t x, uint16_t y, u32 glyp
     u8          *tile;
     
     //size = 128 / 8;
-    size = 16;
-    padding = 8;
+    size = 16; //<-- 128 / 8
+    padding = 8; //<-- 
     height = 30;
-    glyph.code = glyphCode;
-    fontCalcGlyphPos(&glyphPos, glyphCode, GLYPH_POS_CALC_VTXCOORD, 1.0f, 1.0f);
-    glyph.width = fontGetCharWidthInfo(glyphCode);
-    glyphYoffs = glyph.code % (tglp->nRows * tglp->nLines) / tglp->nRows * (tglp->cellHeight + 1) + 1;
+    //fontCalcGlyphPos(&glyphPos, glyphCode, GLYPH_POS_CALC_VTXCOORD, 1.0f, 1.0f);
+    FontCalcGlyphPos(&glyphPos, glyphCode, 0.5f, 0.5f);
     sheetsrc = (u8 *)fontGetGlyphSheetTex(glyphPos.sheetIndex);
-    glyphXoffs = 128 * glyphPos.texcoord.left;
-    tilex = glyphXoffs & 0xFFFFFFF8;
-    tilexend = 128 * glyphPos.texcoord.right;
-    tiley = glyphYoffs & 0xFFFFFFF8;
-    tileyend = (glyphYoffs + (u32)height) & 0xFFFFFFF8;
+
+    cwi = fontGetCharWidthInfo(glyphCode);
+
+    glyphYoffs = (int)ceilf(128.0f * glyphPos.texcoord.bottom);//glyph.code % (tglp->nRows * tglp->nLines) / tglp->nRows * (tglp->cellHeight + 1) + 1;
+    glyphXoffs = (int)ceilf(128.0f * glyphPos.texcoord.left - 1 + offset);
+
+    tileX = (int)ceilf((128.0f * (glyphPos.texcoord.left) - 1) + offset) & 0xFFFFFFF8;  
+    tileXend = (int)ceilf((128.0f * glyphPos.texcoord.right)) & 0xFFFFFFF8;
+
+    tileY = glyphYoffs & 0xFFFFFFF8;
+    tileYend = (glyphYoffs + (u32)height) & 0xFFFFFFF8;
+
     glyphXoffs &= 0x00000007;
     glyphYoffs &= 0x00000007;
-    
-    for (chary = tiley; chary <= tileyend; chary += padding)
+
+    //*********
+    int st = (int)(ceilf(glyphPos.xOffset) + 1);
+    u16 startX = x + (offset ? 0 : st);
+    u16 startY = y;
+    u16 endX = 0;
+    u16 endY = 0;
+    u8  charWidth = cwi->charWidth; // !!!! - offset
+    u8  charHeight = height;
+
+
+    //********
+    for (chary = tileY; chary <= tileYend; chary += padding, endY += padding)
     {
 
-        for (charx = tilex; charx <= tilexend; charx += padding)
+        for (charx = tileX; charx <= tileXend; charx += padding, endX += padding)
         {
             sheetsrc3 = sheetsrc + (u32)(4 * (charx + chary * size));
 
-                
+            
+                DrawTile(sheetsrc3, padding, padding, \
+                    startX, startY, charx - tileX - glyphXoffs, endY - glyphYoffs, \
+                    charWidth, height, color);
+                /*
                 DrawTile(pScreen, sheetsrc3, padding, padding, \
-                    x + (glyphPos.xOffset + 1) / 2, y, charx - tilex - glyphXoffs - offset, chary - tiley - glyphYoffs, \
-                    glyphPos.width, height, color);
+                    startX, startY, charx - tilex - glyphXoffs, chary - tiley - glyphYoffs, \
+                    glyphPos.width - offset, height, color);*/
         }
     }
-    return ((glyphPos.xAdvance - offset) / 2 + 1);
+    return ((int)ceilf(glyphPos.xAdvance) + 1 - offset);//((glyphPos.xAdvance + 1 - offset) / 2);
 }
 
-void Renderer::DrawSysString(const char *str, int posX, int &posY, int max, Color color, int offset, bool autoReturn)
+float Renderer::GetTextSize(const char *text)
 {
-    //FINF_s            *finf = fontGetInfo();  
-    //CMAP_s    *cmap = finf->cmap;
-    //CWDH_s    *cwdh = finf->cwdh;
+    float   w;
+    u8      *c;
+    u32     code;
+    ssize_t units;
+    int     glyphIndex;
+    fontGlyphPos_s  data;
+
+    w = 0.0f;
+    c = (u8 *)text;
+    if (!text) return (0.0f);
+    while (*c == '\n') c++;
+    do
+    {
+        if (!*c) break;
+        units = decode_utf8(&code, c);
+        if (units == -1) break;
+        c += units;
+        if (code > 0)
+        {
+            glyphIndex = fontGlyphIndexFromCodePoint(code);
+            FontCalcGlyphPos(&data, glyphIndex, 0.5f, 0.5f);
+            w += data.xAdvance + 1;
+        }
+    } while (code > 0);
+    return (w);
+}
+
+void Renderer::DrawSysString(const char *str, int posX, int &posY, int max, Color color, float offset, bool autoReturn)
+{
     size_t          len;
-    int             temp;
-    Glyph           glyph;
     u32             glyphcode;
-    int  units;
+    int             units;
     u32             xLimits;
     int             lineCount;
-    size_t i;
+    size_t          i;
     fontGlyphPos_s glyphPos;
     int             x = posX;
     int             y = posY;
-    Pixel           (*pScreen)[240] = (Pixel(*)[240])_framebuffer[_target];
     
     if (!(str && *str))
         return;
@@ -982,14 +741,15 @@ void Renderer::DrawSysString(const char *str, int posX, int &posY, int max, Colo
             break;
         str += units;
         u32 index = fontGlyphIndexFromCodePoint(glyphcode);
-        fontCalcGlyphPos(&glyphPos, index, GLYPH_POS_CALC_VTXCOORD, 1.0f, 1.0f);
-        if (offset > glyphPos.xAdvance)
+        FontCalcGlyphPos(&glyphPos, index, 1.0f, 1.0f);
+        float width = (glyphPos.xAdvance / 2.0f) + ((int)glyphPos.xOffset % 2) + ((int)glyphPos.xAdvance % 2);
+        if (offset > width)
         {
-            offset -= glyphPos.xAdvance;
+            offset -= width;
             continue;
         }
         i--;
-        x += DrawGlyph(pScreen, x, y, index, color, offset);
+        x += DrawGlyph(x, y, index, color, offset);
         offset = 0;
     } while (glyphcode > 0);
 
