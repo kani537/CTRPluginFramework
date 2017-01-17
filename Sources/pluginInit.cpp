@@ -42,15 +42,19 @@ namespace CTRPluginFramework
         {
             svcWaitSynchronization(keepEvent, U64_MAX);
             svcClearEvent(keepEvent);
-            //while (Process::IsPaused());
+            while (Process::IsPaused());
         }
         threadJoin(mT, U64_MAX);
         exit(1);
     }
+
     extern "C" void __appInit(void);
+
     void    Initialize(void)
     {        
+        // Init Services
         __appInit();
+
         // Init Framework's system constants
         System::Initialize();
 
@@ -60,11 +64,8 @@ namespace CTRPluginFramework
         gfxInit(Screen::Top->GetFormat(), Screen::Bottom->GetFormat(), false);
 
         // Init Process info
-        Process::Initialize(threadHandle, keepEvent);
-
-        // Launch commands thread
-        ThreadCommands::Initialize();
-
+        Process::Initialize(keepEvent);
+        
         // Patch process before it starts
         PatchProcess();        
     }
@@ -75,7 +76,6 @@ namespace CTRPluginFramework
 
     void  ThreadInit(void *arg)
     {
-        threadHandle = threadGetCurrent()->handle;
 
         CTRPluginFramework::Initialize();
 
@@ -85,11 +85,11 @@ namespace CTRPluginFramework
         // Reduce Priority
         Process::Play();
         // Wait for the game to be launched
-        Sleep(Seconds(5));
+        Sleep(Seconds(1));
 
         // Protect VRAM
         Process::ProtectRegion(0x1F000000);
-        
+
         // Protect HID Shared Memory in case we want to push / redirects inputs
         Process::ProtectMemory((u32)hidSharedMem, 0x1000);
 
@@ -100,7 +100,7 @@ namespace CTRPluginFramework
         Process::Play();
 
         // Exit commands thread
-        ThreadCommands::Exit();
+        //ThreadCommands::Exit();
 
         gfxExit();
 
@@ -113,7 +113,7 @@ namespace CTRPluginFramework
     extern "C" void __system_allocateHeaps(void);
     int   LaunchMainThread(int arg)
     {
-        svcCreateThread(&keepThreadHandle, keepThreadMain, 0, &keepThreadStack[0x1000], 0x21, -2);
+        svcCreateThread(&keepThreadHandle, keepThreadMain, 0, &keepThreadStack[0x1000], 0x18, -2);
         return (0);
     }
 

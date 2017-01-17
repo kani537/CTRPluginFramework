@@ -37,16 +37,17 @@ SOURCES 	:= 	Sources \
 #---------------------------------------------------------------------------------
 ARCH	:=	-march=armv6k -mlittle-endian -mtune=mpcore -mfloat-abi=hard 
 
-CFLAGS	:=	-g -Os -mword-relocations \
+CFLAGS	:=	-g -O2 -mword-relocations \
  			-fomit-frame-pointer -ffunction-sections -fno-strict-aliasing \
-			$(ARCH) -fdata-sections
+			$(ARCH)
 
 CFLAGS		+=	$(INCLUDE) -DARM11 -D_3DS 
 
 CXXFLAGS	:= $(CFLAGS) -fno-rtti -fno-exceptions -std=gnu++11
 
 ASFLAGS		:=	-g $(ARCH)
-LDFLAGS		:= -pie -T $(TOPDIR)/3ds.ld $(ARCH) -Os -Wl,-Map,$(notdir $*.map) -Wl,--gc-sections
+LDFLAGS		:= -pie -T $(TOPDIR)/3ds.ld $(ARCH) -O2 -Wl,-Map,$(notdir $*.map),--gc-sections 
+# ,-d,--emit-relocs,--use-blx,--print-gc-sections
 # --gc-sections -Map=$(TARGET).map 
 
 LIBS	:= -lntr -lctr -lg -lsysbase  -lc -lm -lgcc -lgcov

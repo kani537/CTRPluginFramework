@@ -19,7 +19,7 @@ namespace CTRPluginFramework
 	Handle 		Process::_keepEvent = 0;
 	bool 		Process::_isPaused = false;
 
-	void    Process::Initialize(Handle threadHandle, Handle keepEvent)
+	void    Process::Initialize(Handle keepEvent)
 	{
 		char    kproc[0x100] = {0};
 		bool 	isNew3DS = System::IsNew3DS();
@@ -57,7 +57,7 @@ namespace CTRPluginFramework
 		// Create handle for this process
 		svcOpenProcess(&_processHandle, _processID);
 		// Set plugin's main thread handle
-		_mainThreadHandle = threadHandle;
+		_mainThreadHandle = threadGetCurrent()->handle;
 		_keepEvent = keepEvent;
 	}
 
@@ -114,10 +114,11 @@ namespace CTRPluginFramework
 
 	void 	Process::Pause(void)
 	{
-		svcSetThreadPriority(gspThreadEventHandle, 0x19);
+		svcSetThreadPriority(gspThreadEventHandle, 0x17);
+
 		// Attempts to always get different framebuffers
-		ThreadCommands::Execute(Commands::GSPGPU_END);
-		svcSetThreadPriority(_mainThreadHandle, 0x20);
+		gspWaitForVBlank();
+		svcSetThreadPriority(_mainThreadHandle, 0x16);
 		u32 	top[2];
 		u32 	bot[2];
 		Screen::Top->GetLeftFramebufferRegisters(top);
@@ -128,7 +129,6 @@ namespace CTRPluginFramework
 				&& (*(u32 *)(bot[0]) != *(u32 *)(bot[1])))
 				break;
 			svcSleepThread(100);
-
 		}
 		_isPaused = true;
 		svcSignalEvent(_keepEvent);

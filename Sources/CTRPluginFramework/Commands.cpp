@@ -99,7 +99,9 @@ namespace CTRPluginFramework
     void    ThreadCommands::Initialize(void)
     {
         svcCreateEvent(&_threadEvent, RESET_ONESHOT);
-        svcCreateThread(&_threadHandle, ThreadCommandsMain, 0, (u32 *)&_stack[0x1000], 0x18, -2);
+        Thread t = threadCreate(ThreadCommandsMain, _stack, 0x1000, 0x18, -2, false);
+        _threadHandle = t->handle;
+        //svcCreateThread(&_threadHandle, ThreadCommandsMain, 0, (u32 *)&_stack[0x1000], 0x18, -2);
     }
 
     void    ThreadCommands::Pause(void)

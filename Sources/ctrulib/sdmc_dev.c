@@ -96,8 +96,8 @@ static FS_Archive sdmcArchive;
 /*! @endcond */
 
 static char     __cwd[PATH_MAX+1] = "/";
-static __thread char     __fixedpath[PATH_MAX+1];
-static __thread uint16_t __utf16path[PATH_MAX+1];
+static __thread char     __fixedpath[PATH_MAX+1]; //__thread
+static __thread uint16_t __utf16path[PATH_MAX+1]; //__thread
 
 static const char*
 sdmc_fixpath(struct _reent *r,

@@ -8,5 +8,6 @@ void __attribute__((weak)) __appInit(void)
 	hidInit();
 
 	fsInit();
-	sdmcInit();
+    fontEnsureMapped();
+	//sdmcInit();
 }

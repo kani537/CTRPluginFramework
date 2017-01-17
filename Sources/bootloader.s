@@ -3,11 +3,11 @@
 .section .text
 .global _start
 _start:
-
 STMFD	SP!, {R0-R12, LR};
 MRS     R0, CPSR
 STMFD	SP!, {R0}
 
+@b skip
 LDR     R6, =_start
 ADR     R5, _start
 sub     r5, r5, r6      /* r5 = realAddress - baseAddress */
@@ -34,6 +34,7 @@ svc     0x54            /* flush instruction cache */
 nop
 nop
 
+skip:
 @ Clear the BSS section
 ldr     r0, = __c_bss_start
 ldr     r1, = __c_bss_end

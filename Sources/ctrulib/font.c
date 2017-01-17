@@ -8,7 +8,7 @@
 
 CFNT_s* g_sharedFont;
 static u32 sharedFontAddr;
-static int charPerSheet;
+int charPerSheet;
 
 
 Result fontEnsureMapped(void)
