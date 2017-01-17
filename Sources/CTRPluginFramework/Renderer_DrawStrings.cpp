@@ -4,7 +4,6 @@
 
 namespace CTRPluginFramework
 {
-
     // Draw Character without background
     void     Renderer::DrawCharacter(int c, int posX, int posY, Color fg)
     {
