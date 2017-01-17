@@ -11,9 +11,10 @@ namespace CTRPluginFramework
     
 
     Target      Renderer::_target = BOTTOM;
-    bool        Renderer::_render3D = false;
+    bool        Renderer::_useRender3D = false;
     bool        Renderer::_isRendering = false;
-    bool        Renderer::_doubleBuffer = false;
+    bool        Renderer::_useDoubleBuffer = false;
+    bool        Renderer::_useSystemFont = false;
     Screen      *Renderer::_screens[2] = {Screen::Bottom, Screen::Top};
     u8          *Renderer::_framebuffer[4] = {nullptr};
     u8          *Renderer::_framebufferR[4] = {nullptr};
@@ -95,7 +96,7 @@ namespace CTRPluginFramework
         _screens[TOP]->Update();
         _framebuffer[TOP] = _screens[TOP]->GetLeftFramebuffer(current);
         _framebufferR[TOP] = _screens[TOP]->GetRightFramebuffer(current);
-        _render3D = _screens[TOP]->Is3DEnabled();
+        _useRender3D = _screens[TOP]->Is3DEnabled();
         _rowSize[TOP] = _screens[TOP]->GetRowSize();
         _targetWidth[TOP] = _screens[TOP]->GetWidth();
         _targetHeight[TOP] = _screens[TOP]->GetHeight();
@@ -127,40 +128,6 @@ namespace CTRPluginFramework
         _isRendering = false;
     }
 
-    inline u32   GetFramebufferOffset(int posX, int posY, int bpp, int rowsize)
-    {
-        return ((rowsize - 1 - posY + posX * rowsize) * bpp);
-    }
-
-    void        Renderer::DrawLine(int posX, int posY, int width, Color color, int height)
-    {  
-        // Correct posY
-        posY += (_rowSize[_target] - 240);
-        for (int x = 0; x < width; x++)
-        {
-            _length = height;
-            _DrawPixel(posX + x, posY + height, color);
-        }
-    }
-
-    void        Renderer::DrawRect(int posX, int posY, int width, int height, Color color, bool fill, int thickness)
-    {
-        if (fill)
-        {
-            DrawLine(posX, posY, width, color, height);
-        }
-        else
-        {
-            // Top line
-            DrawLine(posX, posY, width, color, thickness);
-            // Bottom line
-            DrawLine(posX, posY + height - (thickness - 1), width, color, thickness);
-            // Left line
-            DrawLine(posX, posY, thickness, color, height);
-            // Right line
-            DrawLine(posX + width - (thickness - 1), posY, thickness, color, height);
-        }
-    }
 
     void    Renderer::DrawFile(std::FILE *file, int posX, int posY, int width, int height)
     {
@@ -264,6 +231,5 @@ namespace CTRPluginFramework
             posX++;
             i += padding;
         }
-
     }
 }

@@ -73,7 +73,7 @@ namespace CTRPluginFramework
                         *left++ = (l.b * (0x0F - alpha) + color.b * (alpha + 1)) >> 4;
                         *left++ = (l.g * (0x0F - alpha) + color.g * (alpha + 1)) >> 4;
                         *left++ = (l.r * (0x0F - alpha) + color.r * (alpha + 1)) >> 4;
-                        if (_render3D)
+                        if (_useRender3D)
                         {
                             Color r = Color(*(right + 2), *(right + 1), *(right));
 

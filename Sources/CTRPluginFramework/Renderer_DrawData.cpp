@@ -14,9 +14,9 @@ namespace CTRPluginFramework
 
         u32     offset = GetFramebufferOffset(posX, posY, 4, _rowSize[_target]);
 
-        bool    is3D = _target == TOP && _render3D;
-        bool    isLeftDouble = _doubleBuffer;
-        bool    isRightDouble = _doubleBuffer;        
+        bool    is3D = _target == TOP && _useRender3D;
+        bool    isLeftDouble = _useDoubleBuffer;
+        bool    isRightDouble = _useDoubleBuffer;        
 
         u8  *screen = _screens[_target]->GetLeftFramebuffer() + offset;
 
@@ -59,9 +59,9 @@ again:
             return;
 
         u32     offset = GetFramebufferOffset(posX, posY, 3, _rowSize[_target]);
-        bool    is3D = _target == TOP && _render3D;
-        bool    isLeftDouble = _doubleBuffer;
-        bool    isRightDouble = _doubleBuffer;        
+        bool    is3D = _target == TOP && _useRender3D;
+        bool    isLeftDouble = _useDoubleBuffer;
+        bool    isRightDouble = _useDoubleBuffer;        
 
         u8  *screen = _screens[_target]->GetLeftFramebuffer() + offset;
 
@@ -104,9 +104,9 @@ again:
             return;
 
         u32     offset = GetFramebufferOffset(posX, posY, 2, _rowSize[_target]);
-        bool    is3D = _target == TOP && _render3D;
-        bool    isLeftDouble = _doubleBuffer;
-        bool    isRightDouble = _doubleBuffer;        
+        bool    is3D = _target == TOP && _useRender3D;
+        bool    isLeftDouble = _useDoubleBuffer;
+        bool    isRightDouble = _useDoubleBuffer;        
 
         u8  *screen = _screens[_target]->GetLeftFramebuffer() + offset;
 
@@ -157,9 +157,9 @@ again:
             return;
 
         u32     offset = GetFramebufferOffset(posX, posY, 2, _rowSize[_target]);
-        bool    is3D = _target == TOP && _render3D;
-        bool    isLeftDouble = _doubleBuffer;
-        bool    isRightDouble = _doubleBuffer;        
+        bool    is3D = _target == TOP && _useRender3D;
+        bool    isLeftDouble = _useDoubleBuffer;
+        bool    isRightDouble = _useDoubleBuffer;        
 
         u8  *screen = _screens[_target]->GetLeftFramebuffer() + offset;
 
@@ -211,9 +211,9 @@ again:
             return;
 
         u32     offset =  + GetFramebufferOffset(posX, posY, 2, _rowSize[_target]);
-        bool    is3D = _target == TOP && _render3D;
-        bool    isLeftDouble = _doubleBuffer;
-        bool    isRightDouble = _doubleBuffer;        
+        bool    is3D = _target == TOP && _useRender3D;
+        bool    isLeftDouble = _useDoubleBuffer;
+        bool    isRightDouble = _useDoubleBuffer;        
 
         u8  *screen = _screens[_target]->GetLeftFramebuffer() + offset;
 

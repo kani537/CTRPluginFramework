@@ -22,32 +22,40 @@ namespace CTRPluginFramework
     {
     public:
         
-
-
         static void     SetTarget(Target target);
-        static void     UpdateTarget(void);
         static void     StartFrame(bool current = false);
         static void     EndFrame(void);
-        static void     GetFramebuffersInfos(u32 *infos);
+
+        // Forms
+        //#############################################################################################
         static void     DrawLine(int posX, int posY, int length, Color color, int width = 1);
         static void     DrawRect(int posX, int posY, int width, int height, Color color, bool fill = true, int thickness = 1);
 
+        // Linux Font
+        //#############################################################################################
         // Draw Character without background
         static void     DrawCharacter(int c, int posX, int posY, Color fg);
         // Draw Character with background
         static void     DrawCharacter(int c, int posX, int posY, Color fg, Color bg);
         // Draw Character with offset
         static void     DrawCharacter(int c, int offset, int posX, int posY, Color fg);
-        static void     DrawFile(std::FILE *file, int posX, int posY, int width, int height);
-        static void     DrawBuffer(u8 *buffer, int posX, int posY, int width, int height);
         //
         static int      DrawString(char *str, int posX, int &posY, Color fg);
         static int      DrawString(char *str, int posX, int &posY, Color fg, Color bg);
         static int      DrawString(char *str, int offset, int posX, int &posY, Color fg);
-        static void      DrawCheckBoxString(char *str, int posX, int &posY, bool isChecked, Color fg, Color checked);
+        static void     DrawCheckBoxString(char *str, int posX, int &posY, bool isChecked, Color fg, Color checked);
 
-        static void            DrawSysString(const char *str, int posX, int &posY, int max, Color color, float offset = 0, bool autoReturn = false);
-        static float GetTextSize(const char *text);
+        // System Font
+        //#############################################################################################
+        static void     DrawSysString(const char *str, int posX, int &posY, int max, Color color, float offset = 0, bool autoReturn = false);
+        static float    GetTextSize(const char *text);
+
+        // Misc
+        //#############################################################################################
+        static void     DrawFile(std::FILE *file, int posX, int posY, int width, int height);
+        static void     DrawBuffer(u8 *buffer, int posX, int posY, int width, int height);
+
+
     private:
         friend void     Initialize(void);
         // Initalize Renderer
@@ -58,14 +66,14 @@ namespace CTRPluginFramework
         static void     FontCalcGlyphPos(fontGlyphPos_s* out, int glyphIndex, float scaleX, float scaleY);
         // Draw glyph
         static uint8_t  DrawGlyph(uint16_t x, uint16_t y, u32 glyphCode, Color color, float offset);
-        static u8       *DrawTile(u8 *tile, u8 iconsize, u8 tilesize, u16 startX, \
- u16 startY, u16 endX, u16 endY, u8 charWidth, u8 charHeight, Color color);
+        static u8       *DrawTile(u8 *tile, u8 iconsize, u8 tilesize, u16 startX, u16 startY, u16 endX, u16 endY, u8 charWidth, u8 charHeight, Color color);
 
 
         static Target       _target;
-        static bool         _render3D;
+        static bool         _useRender3D;
         static bool         _isRendering;
-        static bool         _doubleBuffer;
+        static bool         _useDoubleBuffer;
+        static bool         _useSystemFont;
 
         static Screen       *_screens[2];
 
