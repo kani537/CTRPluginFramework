@@ -81,7 +81,7 @@ namespace CTRPluginFramework
         }
     }
 
-    void        Renderer::StartRenderer(bool current)
+    void        Renderer::StartFrame(bool current)
     {
         _isRendering = true;
         _screens[BOTTOM]->Update();
@@ -118,7 +118,7 @@ namespace CTRPluginFramework
 
     }
 
-    void        Renderer::EndRenderer(void)
+    void        Renderer::EndFrame(void)
     {
         Screen::Top->SwapBuffer();
         Screen::Bottom->SwapBuffer();
@@ -256,7 +256,7 @@ namespace CTRPluginFramework
 
         // Correct posY
         posY = _rowSize[_target] - posY;
-        
+
         int i = 0;
         while (--width >= 0)
         {

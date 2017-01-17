@@ -26,8 +26,8 @@ namespace CTRPluginFramework
 
         static void     SetTarget(Target target);
         static void     UpdateTarget(void);
-        static void     StartRenderer(bool current = false);
-        static void     EndRenderer(void);
+        static void     StartFrame(bool current = false);
+        static void     EndFrame(void);
         static void     GetFramebuffersInfos(u32 *infos);
         static void     DrawLine(int posX, int posY, int length, Color color, int width = 1);
         static void     DrawRect(int posX, int posY, int width, int height, Color color, bool fill = true, int thickness = 1);
