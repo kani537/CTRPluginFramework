@@ -60,27 +60,26 @@ namespace CTRPluginFramework
                 if ((uint16_t)(endX + 1) <= charWidth && alpha)
                 {
                     px = startX + (endX + 1) / 2;
-                    //Pixel   (*pScreen)[240] = (Pixel(*)[240])_framebuffer[_target];
-
 
                     if (!(px >= 400 || px < 0 || py >= 240 || py < 0))
                     {
-                        u32 offset = GetFramebufferOffset(px, py, 3, _rowSize[_target]);
+                        u32 offset = GetFramebufferOffset(px, py, _screens[_target]->GetBytesPerPixel(), _rowSize[_target]);
                         u8 *left = (u8 *)_screens[_target]->GetLeftFramebuffer() + offset;
-                        u8 *right = (u8 *)_screens[_target]->GetRightFramebuffer() + offset;
 
-                        Color l = Color::ColorFromMemory(left);
+                        GSPGPU_FramebufferFormats fmt = _screens[_target]->GetFormat();
+                        Color l = Color::FromMemory(left, fmt);
 
-                        *left++ = (l.b * (0x0F - alpha) + color.b * (alpha + 1)) >> 4;
-                        *left++ = (l.g * (0x0F - alpha) + color.g * (alpha + 1)) >> 4;
-                        *left++ = (l.r * (0x0F - alpha) + color.r * (alpha + 1)) >> 4;
+                        Color res  = Color();
+                        res.b = (l.b * (0x0F - alpha) + color.b * (alpha + 1)) >> 4;  
+                        res.g = (l.g * (0x0F - alpha) + color.g * (alpha + 1)) >> 4;
+                        res.r = (l.r * (0x0F - alpha) + color.r * (alpha + 1)) >> 4;
+
+                        res.ToMemory(left, fmt);
+
                         if (_useRender3D)
                         {
-                            Color r = Color::ColorFromMemory(right);
-
-                            *right++ = (r.b * (0x0F - alpha) + color.b * (alpha + 1)) >> 4;
-                            *right++ = (r.g * (0x0F - alpha) + color.g * (alpha + 1)) >> 4;
-                            *right++ = (r.r * (0x0F - alpha) + color.r * (alpha + 1)) >> 4;
+                            u8 *right = (u8 *)_screens[_target]->GetRightFramebuffer() + offset;
+                            res.ToMemory(right, fmt);
                         }
                     }
                 }
@@ -277,10 +276,12 @@ namespace CTRPluginFramework
         size_t          i;
         fontGlyphPos_s glyphPos;
         int             x = posX;
-        int             y = posY;
         
         if (!(str && *str))
             return;
+
+        // Correct posY
+        int y = posY + (_rowSize[_target] - 240);
         lineCount = 1;
         xLimits = std::min(xLimits, (_target == TOP ? 400 : 320));
 
