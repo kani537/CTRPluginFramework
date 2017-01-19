@@ -48,7 +48,7 @@ namespace CTRPluginFramework
         u8                          *GetLeftFramebuffer(bool current = false);
         u8                          *GetRightFramebuffer(bool current = false);                    
         
-
+        void                        Fade(float fade);
 
     private:
         friend class Renderer;

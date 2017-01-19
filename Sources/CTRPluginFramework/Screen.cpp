@@ -133,6 +133,34 @@ namespace CTRPluginFramework
         Screen::Bottom = new Screen(System::GetIOBasePDC() + 0x500, System::GetIOBaseLCD() + 0xA04);
     }
 
+    void    Screen::Fade(float fade)
+    {
+        *_currentBufferReg = 0;       
+
+        u32 size = GetFramebufferSize();
+
+        u8 *src = GetLeftFramebuffer();
+        u8 *src1 = GetRightFramebuffer();
+        for (int i = 0; i < size; i += 3)
+        {
+            Color c = Color::ColorFromMemory(src);
+
+            c.Fade(fade);
+            *src++ = c.b;
+            *src++ = c.g;
+            *src++ = c.r;
+            if (Is3DEnabled())
+            {
+                Color c = Color::ColorFromMemory(src1);
+
+                c.Fade(fade);
+                *src1++ = c.b;
+                *src1++ = c.g;
+                *src1++ = c.r;
+            }
+        }
+    }
+
     void    Screen::GetLeftFramebufferRegisters(u32 *out)
     {
         out[0] = _LCDSetup + FramebufferA1;
@@ -143,6 +171,15 @@ namespace CTRPluginFramework
     {
         _currentBuffer = *_currentBufferReg;
         Update();
+        u32 size = GetFramebufferSize();
+        GSPGPU_FlushDataCache((void *)_leftFramebuffersV[0], size);
+        GSPGPU_FlushDataCache((void *)_leftFramebuffersV[1], size);
+        if (Is3DEnabled())
+        {
+            GSPGPU_FlushDataCache((void *)_rightFramebuffersV[0], size);
+            GSPGPU_FlushDataCache((void *)_rightFramebuffersV[0], size);
+        }
+        
     }
 
     bool    Screen::IsTopScreen(void)
@@ -266,31 +303,31 @@ namespace CTRPluginFramework
 
         sprintf(buffer, "left0: %08X", _leftFramebuffersV[0]);
         Renderer::DrawString(buffer, posX, posY, blank);
-        posY += 10;
+        //posY += 10;
 
         sprintf(buffer, "left1: %08X", _leftFramebuffersV[1]);
         Renderer::DrawString(buffer, posX, posY, blank);
-        posY += 10;
+        //posY += 10;
 
         sprintf(buffer, "right0: %08X", _rightFramebuffersV[0]);
         Renderer::DrawString(buffer, posX, posY, blank);
-        posY += 10;
+        //posY += 10;
 
         sprintf(buffer, "right1: %08X", _rightFramebuffersV[1]);
         Renderer::DrawString(buffer, posX, posY, blank);
-        posY += 10;
+       // posY += 10;
 
         sprintf(buffer, "format: %08X", _format);
         Renderer::DrawString(buffer, posX, posY, blank);
-        posY += 10;
+        //posY += 10;
 
         sprintf(buffer, "stride: %d, w: %d, h: %d", _stride, _width, _height);
         Renderer::DrawString(buffer, posX, posY, blank);
-        posY += 10;
-        u32 io = System::GetIOBasePDC();
+       // posY += 10;
+        /*u32 io = System::GetIOBasePDC();
         sprintf(buffer, "GPU Busy: %08X, P3D: %08X", REG(io + 0x34), 0);
-        Renderer::DrawString(buffer, posX, posY, blank);
-        posY += 10;
+        Renderer::DrawString(buffer, posX, posY, blank);*/
+        //posY += 10;
 
         return (posY);
     }
