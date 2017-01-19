@@ -1,5 +1,6 @@
 #include "CTRPluginFramework.hpp"
 #include <cmath>
+#include <algorithm>
 
 namespace CTRPluginFramework
 {
@@ -33,9 +34,9 @@ namespace CTRPluginFramework
         float tw = (float)cwi->glyphWidth / tglp->sheetWidth;
         float th = (float)tglp->cellHeight / tglp->sheetHeight;
         out->texcoord.left = tx;
-        out->texcoord.top = ty+th;
+        out->texcoord.top = ty;
         out->texcoord.right = tx+tw;
-        out->texcoord.bottom = ty;
+        out->texcoord.bottom = ty + th;
     }
 
      u8 *Renderer::DrawTile(u8 *tile, u8 iconsize, u8 tilesize, u16 startX, \
@@ -55,7 +56,7 @@ namespace CTRPluginFramework
                 alpha = *(uint16_t*)tile;
                 alpha = (alpha & 0x0F0F) + ((alpha >> 4) & 0x0F0F);
                 alpha = ((alpha + (alpha >> 8)) >> 2) & 0x0F;
-                py = 240 - startY - (endY + 1) / 2;
+                py = startY + (endY / 2);
                 if ((uint16_t)(endX + 1) <= charWidth && alpha)
                 {
                     px = startX + (endX + 1) / 2;
@@ -65,21 +66,21 @@ namespace CTRPluginFramework
                     if (!(px >= 400 || px < 0 || py >= 240 || py < 0))
                     {
                         u32 offset = GetFramebufferOffset(px, py, 3, _rowSize[_target]);
-                        u8 *left = (u8 *)_framebuffer + offset;
-                        u8 *right = (u8 *)_framebufferR + offset;
+                        u8 *left = (u8 *)_screens[_target]->GetLeftFramebuffer() + offset;
+                        u8 *right = (u8 *)_screens[_target]->GetRightFramebuffer() + offset;
 
-                        Color l = Color(*(left + 2), *(left + 1), *(left));
+                        Color l = Color::ColorFromMemory(left);
 
                         *left++ = (l.b * (0x0F - alpha) + color.b * (alpha + 1)) >> 4;
                         *left++ = (l.g * (0x0F - alpha) + color.g * (alpha + 1)) >> 4;
                         *left++ = (l.r * (0x0F - alpha) + color.r * (alpha + 1)) >> 4;
                         if (_useRender3D)
                         {
-                            Color r = Color(*(right + 2), *(right + 1), *(right));
+                            Color r = Color::ColorFromMemory(right);
 
-                            *right++ = (l.b * (0x0F - alpha) + color.b * (alpha + 1)) >> 4;
-                            *right++ = (l.g * (0x0F - alpha) + color.g * (alpha + 1)) >> 4;
-                            *right++ = (l.r * (0x0F - alpha) + color.r * (alpha + 1)) >> 4;
+                            *right++ = (r.b * (0x0F - alpha) + color.b * (alpha + 1)) >> 4;
+                            *right++ = (r.g * (0x0F - alpha) + color.g * (alpha + 1)) >> 4;
+                            *right++ = (r.r * (0x0F - alpha) + color.r * (alpha + 1)) >> 4;
                         }
                     }
                 }
@@ -100,42 +101,34 @@ namespace CTRPluginFramework
     uint8_t Renderer::DrawGlyph(uint16_t x, uint16_t y, u32 glyphCode, Color color, float offset)
     {
         fontGlyphPos_s      glyphPos;
-        charWidthInfo_s*    cwi;
+        charWidthInfo_s     *cwi;
+        u8                  *texSheet;
 
-        uint16_t    charx;
-        uint16_t    chary;
-        uint16_t    glyphXoffs;
-        uint16_t    glyphYoffs;
-        uint8_t     *sheetsrc;
-        uint8_t     *sheetsrc3;
-        uint16_t    tileX;
-        uint16_t    tileXend;
-        uint16_t    tileY;
-        uint16_t    tileYend;
-        //t_tile        tile;
-        float       size;
-        float       padding;
-        float       height;
-        u8          *tile;
+        u16         glyphXoffs;
+        u16         glyphYoffs;        
+
+        u16         tileX;
+        u16         tileXend;
+        u16         tileY;
+        u16         tileYend;
+
+        //float       size = 16;
+        //float       padding = 8;
+        //float       height = 30;
         
-        //size = 128 / 8;
-        size = 16; //<-- 128 / 8
-        padding = 8; //<-- 
-        height = 30;
-        //fontCalcGlyphPos(&glyphPos, glyphCode, GLYPH_POS_CALC_VTXCOORD, 1.0f, 1.0f);
         FontCalcGlyphPos(&glyphPos, glyphCode, 0.5f, 0.5f);
-        sheetsrc = (u8 *)fontGetGlyphSheetTex(glyphPos.sheetIndex);
+        texSheet = (u8 *)fontGetGlyphSheetTex(glyphPos.sheetIndex);
 
         cwi = fontGetCharWidthInfo(glyphCode);
 
-        glyphYoffs = (int)ceilf(128.0f * glyphPos.texcoord.bottom);//glyph.code % (tglp->nRows * tglp->nLines) / tglp->nRows * (tglp->cellHeight + 1) + 1;
-        glyphXoffs = (int)ceilf(128.0f * glyphPos.texcoord.left - 1 + offset);
 
-        tileX = (int)ceilf((128.0f * (glyphPos.texcoord.left) - 1) + offset) & 0xFFFFFFF8;  
+        glyphXoffs = (int)ceilf(128.0f * glyphPos.texcoord.left - 1 + (offset * 2));
+        tileX = glyphXoffs & 0xFFFFFFF8;  
         tileXend = (int)ceilf((128.0f * glyphPos.texcoord.right)) & 0xFFFFFFF8;
 
-        tileY = glyphYoffs & 0xFFFFFFF8;
-        tileYend = (glyphYoffs + (u32)height) & 0xFFFFFFF8;
+        glyphYoffs = (int)ceilf(128.0f * glyphPos.texcoord.bottom);
+        tileY = (int)ceilf(128.0f * glyphPos.texcoord.top) & 0xFFFFFFF8;
+        tileYend = glyphYoffs & 0xFFFFFFF8;
 
         glyphXoffs &= 0x00000007;
         glyphYoffs &= 0x00000007;
@@ -146,29 +139,28 @@ namespace CTRPluginFramework
         u16 startY = y;
         u16 endX = 0;
         u16 endY = 0;
-        u8  charWidth = cwi->charWidth; // !!!! - offset
-        u8  charHeight = height;
+        u8  charWidth = cwi->charWidth - (offset * 2);
 
 
         //********
-        for (chary = tileY; chary <= tileYend; chary += padding, endY += padding)
+        for (u16 charY = tileY; charY <= tileYend; charY += 8, endY += 8)
         {
 
-            for (charx = tileX; charx <= tileXend; charx += padding, endX += padding)
+            for (u16 charX = tileX; charX <= tileXend; charX += 8, endX += 8)
             {
-                sheetsrc3 = sheetsrc + (u32)(4 * (charx + chary * size));
-
+                u8 *tile = texSheet + (u32)(4 * (charX + charY * 16));
                 
-                    DrawTile(sheetsrc3, padding, padding, \
-                        startX, startY, charx - tileX - glyphXoffs, endY - glyphYoffs, \
-                        charWidth, height, color);
-                    /*
-                    DrawTile(pScreen, sheetsrc3, padding, padding, \
-                        startX, startY, charx - tilex - glyphXoffs, chary - tiley - glyphYoffs, \
-                        glyphPos.width - offset, height, color);*/
+                    DrawTile(tile, 8, 8, \
+                        startX, startY, charX - tileX - glyphXoffs, endY - glyphYoffs, \
+                        charWidth, 30, color);
             }
         }
-        return ((int)ceilf(glyphPos.xAdvance) + 1 - offset);//((glyphPos.xAdvance + 1 - offset) / 2);
+        int ret = (int)ceilf(glyphPos.xAdvance);
+        if (offset)
+            ret -= (offset);
+        else
+            ret += 1;
+        return (ret);
     }
 
     float Renderer::GetTextSize(const char *text)
@@ -200,12 +192,87 @@ namespace CTRPluginFramework
         return (w);
     }
 
-    void Renderer::DrawSysString(const char *str, int posX, int &posY, int max, Color color, float offset, bool autoReturn)
+    void Renderer::DrawSysCheckBox(const char *str, int posX, int &posY, int xLimits, Color color, bool isChecked,  float offset)
     {
-        size_t          len;
+        u16 outterBorder[] =
+        {
+            0x3FF8, 0x600C, 0xCFE6, 0x9012,
+            0xA00A, 0xA00A, 0xA00A, 0xA00A,
+            0xA00A, 0xA00A, 0xA00A, 0x9012,
+            0xCFE6, 0x600C, 0x3FF8
+        };
+
+        u16 innerBorder[] =
+        {
+            0x0, 0x1FF0, 0x3018, 0x600C,
+            0x4004, 0x4004, 0x4004, 0x4004,
+            0x4004, 0x4004, 0x4004, 0x600C,
+            0x3018, 0x1FF0, 0x0
+        };
+
+        u16 borderChecked[] =
+        {
+            0x0, 0xF, 0x9, 0x11,
+            0x22, 0x1044, 0x888, 0x510,
+            0x220, 0x1040, 0x880, 0x500,
+            0x0, 0x0, 0x0
+        };
+
+        u16 Checked[] =
+        {
+            0x0, 0x0, 0x6, 0xE,
+            0x1C, 0x38, 0x1070, 0x18E0,
+            0x1DC0, 0xF80, 0x700, 0x200,
+            0x0, 0x0, 0x0
+        };
+
+        // Correct posY
+        int y = posY + (_rowSize[_target] - 240);
+
+        // temp color
+        Color grey = Color(105, 105, 105);
+        Color blank = Color(255, 255, 255);
+        Color green = Color(0, 255, 0);
+
+        for (int yy = 0; yy < 15; yy++)
+        {
+            u32 out = outterBorder[yy];
+            u32 in = innerBorder[yy];
+            u32 chb = borderChecked[yy];
+            u32 ch = Checked[yy];
+
+            int x = 0;
+            for (int xx = 16; xx >= 0; xx--, x++)
+            {
+                if ((out >> xx) & 1)
+                {
+                    _DrawPixel(posX + x, y + yy, blank);
+                }
+                if ((in >> xx) & 1)
+                {
+                    _DrawPixel(posX + x, y + yy, grey);
+                }
+                if (isChecked && (chb >> xx) & 1)
+                {
+                    _DrawPixel(posX + x, y + yy, blank);
+                }
+                if (isChecked && (ch >> xx) & 1)
+                {
+                    _DrawPixel(posX + x, y + yy, green);
+                }
+            }
+        }
+        posX += 20;
+        // posY += ;
+        DrawSysString(str, posX, posY, xLimits, color, offset);
+        posY += 4;
+
+    }
+
+    void Renderer::DrawSysString(const char *str, int posX, int &posY, int xLimits, Color color, float offset, bool autoReturn)
+    {
         u32             glyphcode;
         int             units;
-        u32             xLimits;
         int             lineCount;
         size_t          i;
         fontGlyphPos_s glyphPos;
@@ -214,12 +281,9 @@ namespace CTRPluginFramework
         
         if (!(str && *str))
             return;
-        len = strlen(str);
-        if (!max || max > len)
-            max = len;  
-        i = max;
         lineCount = 1;
-        xLimits = (_target == TOP) ? 400 : 320;
+        xLimits = std::min(xLimits, (_target == TOP ? 400 : 320));
+
         do
         {
             if (x >= xLimits)
@@ -248,14 +312,21 @@ namespace CTRPluginFramework
                 break;
             str += units;
             u32 index = fontGlyphIndexFromCodePoint(glyphcode);
-            FontCalcGlyphPos(&glyphPos, index, 1.0f, 1.0f);
-            float width = (glyphPos.xAdvance / 2.0f) + ((int)glyphPos.xOffset % 2) + ((int)glyphPos.xAdvance % 2);
-            if (offset > width)
+            FontCalcGlyphPos(&glyphPos, index, 0.5f, 0.5f);
+            //float width = (glyphPos.xAdvance / 2.0f) + ((int)glyphPos.xOffset % 2) + ((int)glyphPos.xAdvance % 2);
+            if (offset >= glyphPos.xAdvance + 1)
             {
-                offset -= width;
+                offset -= glyphPos.xAdvance + 1;
+                if (x + glyphPos.xAdvance > xLimits)
+                    x+= glyphPos.xAdvance;
                 continue;
             }
-            i--;
+            if (x + glyphPos.xAdvance + 1 > xLimits)
+            {
+                x+= glyphPos.xAdvance + 1;
+                str -= units;
+                continue;
+            }      
             x += DrawGlyph(x, y, index, color, offset);
             offset = 0;
         } while (glyphcode > 0);
