@@ -25,7 +25,7 @@ namespace CTRPluginFramework
 
     }
 
-    Color Color::ColorFromMemory(u8 *src, GSPGPU_FramebufferFormats format)
+    Color Color::FromMemory(u8 *src, GSPGPU_FramebufferFormats format)
     {
         u8 a, r, g, b;
         union
@@ -75,6 +75,57 @@ namespace CTRPluginFramework
         }
         return (Color(r, g, b, a));
     }
+
+    void Color::ToMemory(u8 *dst, GSPGPU_FramebufferFormats format)
+    {
+        union
+        {
+            u16     u;
+            u8      b[2];
+        }     half;
+
+        switch (format)
+        {
+            case GSP_RGBA8_OES:
+                *(dst++) = a;
+                *(dst++) = b;
+                *(dst++) = g;
+                *(dst) = r;
+                break;
+            case GSP_BGR8_OES:
+                *(dst++) = b;
+                *(dst++) = g;
+                *(dst) = r;
+                break;
+            case GSP_RGB565_OES:
+                half.u  = (b & 0xF8) << 8;
+                half.u |= (g & 0xFC) << 3;
+                half.u |= (r & 0xF8) >> 3;
+
+                *(dst++) = half.b[0];
+                *(dst) = half.b[1];
+                break;
+            case GSP_RGB5_A1_OES:
+                half.u  = (b & 0xF8) << 8;
+                half.u |= (g & 0xF8) << 3;
+                half.u |= (r & 0xF8) >> 2;
+                half.u |= 1;
+
+                *(dst++) = half.b[0];
+                *(dst) = half.b[1];
+                break;
+            case GSP_RGBA4_OES:
+                half.u  = (b & 0xF0) << 8;
+                half.u |= (g & 0xF0) << 4;
+                half.u |= (r & 0xF0);
+                half.u |= 0x0F;
+
+                *(dst++) = half.b[0];
+                *(dst) = half.b[1];
+                break;            
+        }
+    }
+
 
     Color::Color(u32 color)
     {

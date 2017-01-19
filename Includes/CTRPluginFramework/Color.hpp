@@ -13,7 +13,8 @@ namespace CTRPluginFramework
         Color(u32 color);
         Color(u8 red, u8 green, u8 blue, u8 alpha = 255);
 
-        static Color ColorFromMemory(u8 *src, GSPGPU_FramebufferFormats format = GSP_BGR8_OES);
+        static Color FromMemory(u8 *src, GSPGPU_FramebufferFormats format = GSP_BGR8_OES);
+        void  ToMemory(u8 *dst, GSPGPU_FramebufferFormats format = GSP_BGR8_OES);
         static const Color Black;       
         static const Color White;       
         static const Color Red;         
