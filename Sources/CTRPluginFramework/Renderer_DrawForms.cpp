@@ -11,6 +11,7 @@ namespace CTRPluginFramework
             _length = height;
             _DrawPixel(posX + x, posY + height, color);
         }
+        _length = 1;
     }
 
     void        Renderer::DrawRect(int posX, int posY, int width, int height, Color color, bool fill, int thickness)
