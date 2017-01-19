@@ -83,7 +83,7 @@ namespace CTRPluginFramework
         MemInfo minfo;
 
         // Reduce Priority
-        Process::Play();
+        Process::Play(true);
         // Wait for the game to be launched
         Sleep(Seconds(1));
 
@@ -97,7 +97,7 @@ namespace CTRPluginFramework
         int ret = main();
 
         // Release process in case it was forgotten
-        Process::Play();
+        Process::Play(true);
 
         // Exit commands thread
         //ThreadCommands::Exit();
@@ -113,7 +113,7 @@ namespace CTRPluginFramework
     extern "C" void __system_allocateHeaps(void);
     int   LaunchMainThread(int arg)
     {
-        svcCreateThread(&keepThreadHandle, keepThreadMain, 0, &keepThreadStack[0x1000], 0x18, -2);
+        svcCreateThread(&keepThreadHandle, keepThreadMain, 0, &keepThreadStack[0x1000], 0x20, -2);
         return (0);
     }
 
