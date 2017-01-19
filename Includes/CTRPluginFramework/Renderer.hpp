@@ -50,11 +50,12 @@ namespace CTRPluginFramework
         static void     DrawSysString(const char *str, int posX, int &posY, int max, Color color, float offset = 0, bool autoReturn = false);
         static float    GetTextSize(const char *text);
 
+         static   void DrawSysCheckBox(const char *str, int posX, int &posY, int xLimits, Color color, bool isChecked = false,  float offset = 0);
+
         // Misc
         //#############################################################################################
         static void     DrawFile(std::FILE *file, int posX, int posY, int width, int height);
         static void     DrawBuffer(u8 *buffer, int posX, int posY, int width, int height);
-
 
     private:
         friend void     Initialize(void);

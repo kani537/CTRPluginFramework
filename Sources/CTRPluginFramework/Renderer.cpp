@@ -56,6 +56,10 @@ namespace CTRPluginFramework
     void        Renderer::SetTarget(Target target)
     {
         _target = target;
+        if (_target == BOTTOM)
+            _useRender3D = false;
+        else if (_screens[TOP]->Is3DEnabled())
+            _useRender3D = true;
 
         switch (_screens[_target]->GetFormat())
         {
@@ -102,7 +106,7 @@ namespace CTRPluginFramework
         _targetHeight[TOP] = _screens[TOP]->GetHeight();
 
         // Copy current framebuffer into the second to avoid frame glitch
-        if (!current)
+        /*if (!current)
         {
             u8  *current = _screens[BOTTOM]->GetLeftFramebuffer(true);
             int size = _screens[BOTTOM]->GetFramebufferSize();
@@ -115,16 +119,19 @@ namespace CTRPluginFramework
             current = _screens[TOP]->GetRightFramebuffer(true);
             if (current)
                 memcpy(_framebufferR[TOP], current, size);
-        }
+        }*/
 
     }
 
     void        Renderer::EndFrame(void)
     {
-        Screen::Top->SwapBuffer();
+
         Screen::Bottom->SwapBuffer();
+        Screen::Top->SwapBuffer();
+        //gspWaitForVBlank();
         gspWaitForVBlank();
-        gspWaitForVBlank1();
+        //gspWaitForVBlank1();
+
         _isRendering = false;
     }
 
