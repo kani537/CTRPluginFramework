@@ -114,11 +114,11 @@ namespace CTRPluginFramework
 
 	void 	Process::Pause(void)
 	{
-		svcSetThreadPriority(gspThreadEventHandle, 0x17);
+		svcSetThreadPriority(gspThreadEventHandle, 0x19);
 
 		// Attempts to always get different framebuffers
 		gspWaitForVBlank();
-		svcSetThreadPriority(_mainThreadHandle, 0x16);
+		svcSetThreadPriority(_mainThreadHandle, 0x18);
 		u32 	top[2];
 		u32 	bot[2];
 		Screen::Top->GetLeftFramebufferRegisters(top);
@@ -133,14 +133,42 @@ namespace CTRPluginFramework
 		_isPaused = true;
 		svcSignalEvent(_keepEvent);
 		Screen::Top->Acquire();
-        Screen::Bottom->Acquire();        
+        Screen::Bottom->Acquire();
+        float fade = 0.03f;
+        while (fade <= 0.3f)
+        {
+        	if (fade != 0.03f)
+        		Sleep(Milliseconds(5));
+        	Screen::Top->Fade(fade);
+        	Screen::Bottom->Fade(fade);
+        	fade += 0.015f;
+        	Screen::Top->SwapBuffer();
+        	Screen::Bottom->SwapBuffer();
+        	gspWaitForVBlank(); 
+        }
+       
 	}
 
-	void 	Process::Play(void)
-	{
-		_isPaused = false;
+	void 	Process::Play(bool isInit)
+	{	
+		if (!isInit)
+		{
+	        float fade = -0.1f;
+	        while (fade >= -0.9f)
+	        {
+	        	Screen::Top->Fade(fade);
+	        	Screen::Bottom->Fade(fade);
+	        	fade -= 0.05f;
+	        	Sleep(Milliseconds(10));
+	        	Screen::Top->SwapBuffer();
+	        	Screen::Bottom->SwapBuffer();
+	        	gspWaitForVBlank();
+	        }			
+		}
+        _isPaused = false;
 		svcSetThreadPriority(gspThreadEventHandle, 0x3F);
 		svcSetThreadPriority(_mainThreadHandle, 0x3F);
+
 	}
 
     bool     Process::ProtectMemory(u32 addr, u32 size, int perm)

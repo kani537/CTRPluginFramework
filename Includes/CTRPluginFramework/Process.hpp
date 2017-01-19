@@ -61,7 +61,7 @@ namespace CTRPluginFramework
             // Pause the current process
             static void     Pause(void);
             // Unpause the current process
-            static void     Play(void);
+            static void     Play(bool isInit = false);
             static bool     IsPaused(void);
 
         private:
