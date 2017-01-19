@@ -72,7 +72,7 @@ namespace CTRPluginFramework
         u32                         _rowSize;
         u32                         _bytesPerPixel;
         bool                        _isTopScreen;
-        u32                         _format;
+        GSPGPU_FramebufferFormats   _format;
     };
 }
 

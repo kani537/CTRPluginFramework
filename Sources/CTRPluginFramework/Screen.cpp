@@ -78,7 +78,7 @@ namespace CTRPluginFramework
     _isTopScreen(isTopScreen)
     {
         // Get format
-        _format = REG(_LCDSetup + LCDSetup::Format);
+        _format = (GSPGPU_FramebufferFormats)(REG(_LCDSetup + LCDSetup::Format) & 0b111);
 
         // Get width & height
         u32 wh = REG(_LCDSetup + LCDSetup::WidthHeight);
@@ -141,23 +141,22 @@ namespace CTRPluginFramework
 
         u8 *src = GetLeftFramebuffer();
         u8 *src1 = GetRightFramebuffer();
-        for (int i = 0; i < size; i += 3)
+        for (int i = 0; i < size; i += _bytesPerPixel)
         {
-            Color c = Color::ColorFromMemory(src);
+            Color c = Color::FromMemory(src, _format);
 
             c.Fade(fade);
-            *src++ = c.b;
-            *src++ = c.g;
-            *src++ = c.r;
+            c.ToMemory(src, _format);
+
             if (Is3DEnabled())
             {
-                Color c = Color::ColorFromMemory(src1);
+                Color d = Color::FromMemory(src1, _format);
 
-                c.Fade(fade);
-                *src1++ = c.b;
-                *src1++ = c.g;
-                *src1++ = c.r;
+                d.Fade(fade);
+                d.ToMemory(src1, _format);
+                src1 += _bytesPerPixel;
             }
+            src += _bytesPerPixel;
         }
     }
 
@@ -215,7 +214,7 @@ namespace CTRPluginFramework
 
     GSPGPU_FramebufferFormats   Screen::GetFormat(void)
     {
-        return ((GSPGPU_FramebufferFormats)(_format & 0b111));
+        return (_format);
     }
 
     u16     Screen::GetWidth(void)
@@ -264,7 +263,7 @@ namespace CTRPluginFramework
 
     refresh:
         // Get format
-        _format = REG(_LCDSetup + LCDSetup::Format);
+        _format = (GSPGPU_FramebufferFormats)(REG(_LCDSetup + LCDSetup::Format) & 0b111);
 
         // Get width & height
         u32 wh = REG(_LCDSetup + LCDSetup::WidthHeight);
