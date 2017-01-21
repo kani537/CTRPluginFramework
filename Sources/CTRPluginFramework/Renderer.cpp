@@ -129,9 +129,8 @@ namespace CTRPluginFramework
         Screen::Bottom->SwapBuffer();
         Screen::Top->SwapBuffer();
         //gspWaitForVBlank();
+        gspWaitForVBlank1();
         gspWaitForVBlank();
-        //gspWaitForVBlank1();
-
         _isRendering = false;
     }
 
