@@ -172,10 +172,12 @@ namespace CTRPluginFramework
         Update();
         u32 size = GetFramebufferSize();
         GSPGPU_FlushDataCache((void *)_leftFramebuffersV[0], size);
+        memcpy((void *)_leftFramebuffersV[1], (void *)_leftFramebuffersV[0], size);
         GSPGPU_FlushDataCache((void *)_leftFramebuffersV[1], size);
         if (Is3DEnabled())
         {
-            GSPGPU_FlushDataCache((void *)_rightFramebuffersV[0], size);
+            GSPGPU_FlushDataCache((void *)_rightFramebuffersV[0], size);            
+            memcpy((void *)_rightFramebuffersV[1], (void *)_rightFramebuffersV[0], size);
             GSPGPU_FlushDataCache((void *)_rightFramebuffersV[0], size);
         }
         
@@ -206,8 +208,15 @@ namespace CTRPluginFramework
         REG(_FillColor) = 0;
     }
 
-    void    Screen::SwapBuffer(void)
+    void    Screen::SwapBuffer(bool flush)
     {
+        if (flush)
+        {
+            u32 size = GetFramebufferSize();
+            GSPGPU_FlushDataCache((void *)_leftFramebuffersV[_currentBuffer], size);
+            if (Is3DEnabled())
+                GSPGPU_FlushDataCache((void *)_rightFramebuffersV[_currentBuffer], size);
+        }
         _currentBuffer = !_currentBuffer;
         *_currentBufferReg = _currentBuffer;
     }

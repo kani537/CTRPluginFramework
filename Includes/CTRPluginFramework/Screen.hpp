@@ -33,7 +33,7 @@ namespace CTRPluginFramework
         bool                        Is3DEnabled(void);
         void                        Flash(Color &color);
         void                        Acquire(void);
-        void                        SwapBuffer(void);
+        void                        SwapBuffer(bool flush = false);
         bool                        Update(void);
         GSPGPU_FramebufferFormats   GetFormat(void);
         u16                         GetWidth(void);
