@@ -114,11 +114,12 @@ namespace CTRPluginFramework
 
 	void 	Process::Pause(void)
 	{
-		svcSetThreadPriority(gspThreadEventHandle, 0x19);
+		while (R_FAILED(svcSetThreadPriority(gspThreadEventHandle, 0x19)));
 
 		// Attempts to always get different framebuffers
-		gspWaitForVBlank();
-		svcSetThreadPriority(_mainThreadHandle, 0x18);
+
+		while (R_FAILED(svcSetThreadPriority(_mainThreadHandle, 0x18)));
+
 		u32 	top[2];
 		u32 	bot[2];
 		Screen::Top->GetLeftFramebufferRegisters(top);
@@ -128,7 +129,8 @@ namespace CTRPluginFramework
 			if ((*(u32 *)(top[0]) != *(u32 *)(top[1]))
 				&& (*(u32 *)(bot[0]) != *(u32 *)(bot[1])))
 				break;
-			svcSleepThread(100);
+			gspWaitForVBlank1();
+			gspWaitForVBlank();
 		}
 		_isPaused = true;
 		svcSignalEvent(_keepEvent);
@@ -138,12 +140,13 @@ namespace CTRPluginFramework
         while (fade <= 0.3f)
         {
         	if (fade != 0.03f)
-        		Sleep(Milliseconds(5));
+        		Sleep(Milliseconds(3));
         	Screen::Top->Fade(fade);
         	Screen::Bottom->Fade(fade);
         	fade += 0.015f;
         	Screen::Top->SwapBuffer();
         	Screen::Bottom->SwapBuffer();
+        	gspWaitForVBlank1(); 
         	gspWaitForVBlank(); 
         }
        
