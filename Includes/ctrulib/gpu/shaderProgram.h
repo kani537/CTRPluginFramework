@@ -12,8 +12,8 @@ extern "C" {
 /// 24-bit float uniforms.
 typedef struct
 {
-	u32 id;      ///< Uniform ID.
-	u32 data[3]; ///< Uniform data.
+	u32 id;      	///< Uniform ID.
+	u32 data[3]; 	///< Uniform data.
 }float24Uniform_s;
 
 /// Describes an instance of either a vertex or geometry shader.
