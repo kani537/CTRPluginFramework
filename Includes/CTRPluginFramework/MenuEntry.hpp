@@ -15,7 +15,6 @@ namespace CTRPluginFramework
         {
             bool  state : 1;
             bool  justChanged : 1;
-            bool  devDisable : 1;
             bool  isRadio : 1;
             bool  isStarred : 1;  
         };
