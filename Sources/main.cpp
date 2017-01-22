@@ -22,12 +22,30 @@ namespace CTRPluginFramework
 
         Menu    menu("Home");
 
-        menu.Append(new MenuEntry("Test #1"));
-        menu.Append(new MenuEntry("Test #2"));
+        MenuFolder *folder = new MenuFolder("Folder #1");
 
+        for (int i = 0; i < 10; i++)
+        {
+            char buf[40];
+            sprintf(buf, "Entry #%d", i);
+            menu.Append(new MenuEntry(buf));
+        }
+
+        for (int i = 0; i < 10; i++)
+        {
+            char buf[40];
+            sprintf(buf, "Folder Entry #%d", i);
+            folder->Append(new MenuEntry(buf));
+        }
+
+        menu.Append(folder);
+        menu.Append(folder);
+        menu.Append(folder);
         menu.Run();
         // Exit plugin
         return (0);
+
+
     }
 }
 
