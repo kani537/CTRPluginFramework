@@ -6,6 +6,7 @@ namespace CTRPluginFramework
     {
         _isOpen = false;
         _folder = new MenuFolder(name, note);
+        _selector = 0;
     }
 
     Menu::~Menu(void)
@@ -53,14 +54,46 @@ namespace CTRPluginFramework
     {
         Color black = Color();
         Color blank(255, 255, 255);
-        int   posY = 35;
-        int   posX = 35;
+        Color lightGrey(190, 190, 190);
+        Color silver(160, 160, 160);
+        int   posY = 25;
+        int   posX = 40;
         Renderer::SetTarget(TOP);
 
-        Renderer::DrawRect(30, 30, 320, 200, black);
-        Renderer::DrawRect(32, 22, 314, 194, blank, false);
+        // Draw background
+        Renderer::DrawRect(30, 20, 340, 200, black);
+        Renderer::DrawRect(32, 22, 336, 196, blank, false);
 
-        Renderer::DrawSysString(_folder->name.c_str(), posX, posY, 350, blank);
+        // Draw Title
+        int width;
+        width = Renderer::DrawSysString(_folder->name.c_str(), posX, posY, 350, blank);
+        Renderer::DrawLine(posX, posY, width, blank);
+        posY += 7;
+
+        // Draw Entry
+        int max = _folder->ItemsCount();
+        int i = std::max(0, _selector - 6);//(_selector / 9) * 9;
+        max = std::min(max, (i + 8));
+        
+        for (; i < max; i++)
+        {
+            MenuItem *item = _folder->_items[i];
+            if (i == _selector)
+            {
+                Renderer::MenuSelector(posX - 5, posY - 3, 320, 20);
+            }
+            if (item->_type == MenuType::Entry)
+            {
+                MenuEntry *entry = reinterpret_cast<MenuEntry *>(item);
+                Renderer::DrawSysCheckBox(entry->name.c_str(), posX, posY, 350, i == _selector ? blank : silver, entry->IsActivated());  
+            }
+            else
+            {
+                Renderer::DrawSysFolder(item->name.c_str(), posX, posY, 350, i == _selector ? blank : silver);
+            }
+            posY += 4;
+        }
+
     }
 
     //###########################################
@@ -74,7 +107,7 @@ namespace CTRPluginFramework
         Renderer::SetTarget(BOTTOM);
 
         Renderer::DrawRect(20, 20, 280, 200, black);
-        Renderer::DrawRect(22, 22, 274, 194, blank, false);
+        Renderer::DrawRect(22, 22, 276, 196, blank, false);
     }
 
     //###########################################
@@ -102,6 +135,47 @@ namespace CTRPluginFramework
                         _isOpen = true;
                     }
                     inputClock.Restart();   
+                }
+                // Moving Selector
+                if (event.key.code == Key::DPadUp)
+                {
+                    if (_selector == 0)
+                        _selector = _folder->ItemsCount() - 1;
+                    else
+                        _selector--;
+                }
+                if (event.key.code == Key::DPadDown)
+                {
+                    if (_selector == _folder->ItemsCount() - 1)
+                        _selector = 0;
+                    else
+                        _selector++;
+                }
+                // Triggering entry
+                if (event.key.code == Key::A)
+                {
+                    if (_folder->_items[_selector]->_type == MenuType::Entry)
+                    {
+                        reinterpret_cast<MenuEntry *>(_folder->_items[_selector])->_TriggerState();
+                    }
+                    else
+                    {
+                        MenuFolder *p = reinterpret_cast<MenuFolder *>(_folder->_items[_selector]);
+                        p->_Open(_folder);
+                        _folder = p;
+                        _selector = 0;
+                    }
+                }
+
+                // Close Folder
+                if (event.key.code == Key::B)
+                {
+                    MenuFolder *p = _folder->_Close();
+                    if (p != nullptr)
+                    {
+                        _selector = 0;
+                        _folder = p;
+                    }
                 }
             }
         }

@@ -1,15 +1,20 @@
 #ifndef CTRPLUGINFRAMEWORK_MENU_HPP
 #define CTRPLUGINFRAMEWORK_MENU_HPP
 
+#include "CTRPluginFramework.hpp"
 #include "MenuItem.hpp"
-#include "MenuEntry.hpp"
 #include "MenuFolder.hpp"
-#include "EventManager.hpp"
+#include "MenuEntry.hpp"
 
 namespace CTRPluginFramework
 {
     class Menu
     {
+        struct MenuFlags
+        {
+            bool showFPS : 1;
+        };
+
     public:
 
         Menu(std::string name = "Cheats", std::string note = "");
@@ -25,7 +30,12 @@ namespace CTRPluginFramework
         void    _Update(Time delta);
 
         MenuFolder      *_folder;
+        MenuFolder      *_starred;
         bool            _isOpen;
+
+        int             _selector;
+        Clock           _scrollClock;
+
     };
 }
 
