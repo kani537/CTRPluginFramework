@@ -3,7 +3,7 @@
 
 #include "types.h"
 #include "MenuItem.hpp"
-#include <list>
+#include <vector>
 
 namespace CTRPluginFramework
 {
@@ -25,7 +25,7 @@ namespace CTRPluginFramework
 
         // Private members
         MenuFolder              *_parent;
-        std::list<MenuItem *>   _items;
+        std::vector<MenuItem *>   _items;
 
     };
 }
