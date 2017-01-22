@@ -25,6 +25,7 @@ namespace CTRPluginFramework
     void    MenuEntry::Disable(void)
     {
         _flags.state = 0;
+        _flags.justChanged = 1;
     }
 
     void    MenuEntry::SetRadio(int id)
@@ -67,9 +68,6 @@ namespace CTRPluginFramework
             _flags.state = 1;
             _flags.justChanged = 1;
         }
-
-        // TODO: Add the FuncPointer to the executable list
-        // TODO: Parse executable list and disable radio entry with same ID
     }
 
     void    MenuEntry::_TriggerStar(void)
@@ -82,19 +80,17 @@ namespace CTRPluginFramework
         {
             _flags.isStarred = 1;
         }
-
-        // TODO: Add the object to the starred list
     }
 
     void    MenuEntry::_Execute(void)
     {
+        Flags fl = _flags;
         GameFunc(this);
-        _flags.justChanged = 0;
-
-        if (!_flags.state)
-        {
-            // TODO: Remove the object to the executable list
-        }
+        
+        if (_flags.state && _flags.justChanged)
+            _flags.justChanged = 0;
+        else if (!_flags.state && _fl.justChanged && !_fl.state)
+            _flags.justChanged = 0;
     }
 
 }
