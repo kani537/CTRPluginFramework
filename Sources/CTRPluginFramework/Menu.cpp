@@ -5,8 +5,13 @@ namespace CTRPluginFramework
     Menu::Menu(std::string name, std::string note)
     {
         _isOpen = false;
+        _starMode = false;
         _folder = new MenuFolder(name, note);
         _selector = 0;
+        _selectedTextSize = 0;
+        _scrollOffset = 0.f;
+        _maxScrollOffset = 0.f;
+        _reverseFlow = false;
     }
 
     Menu::~Menu(void)
@@ -25,6 +30,8 @@ namespace CTRPluginFramework
         EventManager    manager;
         Clock           clock;
         Time            delta;
+
+        _selectedTextSize = Renderer::GetTextSize(_folder->_items[_selector]->name.c_str());
         // Main loop
         while (1)
         {
@@ -85,11 +92,11 @@ namespace CTRPluginFramework
             if (item->_type == MenuType::Entry)
             {
                 MenuEntry *entry = reinterpret_cast<MenuEntry *>(item);
-                Renderer::DrawSysCheckBox(entry->name.c_str(), posX, posY, 350, i == _selector ? blank : silver, entry->IsActivated());  
+                Renderer::DrawSysCheckBox(entry->name.c_str(), posX, posY, 350, i == _selector ? blank : silver, entry->IsActivated(), _scrollOffset);  
             }
             else
             {
-                Renderer::DrawSysFolder(item->name.c_str(), posX, posY, 350, i == _selector ? blank : silver);
+                Renderer::DrawSysFolder(item->name.c_str(), posX, posY, 350, i == _selector ? blank : silver, _scrollOffset);
             }
             posY += 4;
         }
@@ -177,6 +184,12 @@ namespace CTRPluginFramework
                         _folder = p;
                     }
                 }
+                // Update selected text size
+                _selectedTextSize = Renderer::GetTextSize(_folder->_items[_selector]->name.c_str());
+                _maxScrollOffset = (float)_selectedTextSize - 300.f;
+                _scrollClock.Restart();
+                _scrollOffset = 0.f;
+                _reverseFlow = false;
             }
         }
     }
@@ -186,6 +199,23 @@ namespace CTRPluginFramework
     //###########################################
     void    Menu::_Update(Time delta)
     {
-
+        if (_selectedTextSize > 350 && _scrollClock.HasTimePassed(Seconds(2)))
+        {
+            if (!_reverseFlow && _scrollOffset < _maxScrollOffset)
+            {
+                _scrollOffset += 25.f * delta.AsSeconds();
+            }
+            else
+            {
+                _scrollOffset -= 38.f * delta.AsSeconds();
+                if (_scrollOffset <= 0.0f)
+                {
+                    _reverseFlow = false;
+                    _scrollOffset = 0.f;
+                }
+                else
+                    _reverseFlow = true;
+            }
+        }
     }
 }

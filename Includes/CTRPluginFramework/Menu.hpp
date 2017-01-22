@@ -29,13 +29,18 @@ namespace CTRPluginFramework
         void    _ProcessEvent(Event &event);
         void    _Update(Time delta);
 
-        MenuFolder      *_folder;
-        MenuFolder      *_starred;
-        bool            _isOpen;
+        std::vector<MenuEntry *>    _executeLoop;
+        MenuFolder                  *_folder;
+        MenuFolder                  *_starred;
+        bool                        _isOpen;
+        bool                        _starMode;
 
-        int             _selector;
-        Clock           _scrollClock;
-
+        int                         _selector;
+        int                         _selectedTextSize;
+        float                       _maxScrollOffset;
+        float                       _scrollOffset;
+        Clock                       _scrollClock;
+        bool                        _reverseFlow;
     };
 }
 
