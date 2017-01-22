@@ -82,6 +82,15 @@ namespace CTRPluginFramework
         }
     }
 
+    bool    MenuEntry::_MustBeRemoved(void)
+    {
+        if (_flags.state)
+            return (false);
+        if (_flags.justChanged)
+            return (false);
+        return (true);
+    }
+
     void    MenuEntry::_Execute(void)
     {
         Flags fl = _flags;
