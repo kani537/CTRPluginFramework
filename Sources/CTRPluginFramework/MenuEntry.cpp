@@ -89,7 +89,7 @@ namespace CTRPluginFramework
         
         if (_flags.state && _flags.justChanged)
             _flags.justChanged = 0;
-        else if (!_flags.state && _fl.justChanged && !_fl.state)
+        else if (!_flags.state && fl.justChanged && !fl.state)
             _flags.justChanged = 0;
     }
 
