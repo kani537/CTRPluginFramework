@@ -1,5 +1,6 @@
 #include "CTRPluginFramework.hpp"
 #include <cmath>
+#include "ctrulib/services/gspgpu.h"
 #include <algorithm>
 
 namespace CTRPluginFramework
@@ -190,10 +191,12 @@ namespace CTRPluginFramework
         } while (code > 0);
         return (w);
     }
+    extern "C" unsigned char *CheckedCheckbox;
+    extern "C" unsigned char *UnCheckedCheckbox;
 
     void Renderer::DrawSysCheckBox(const char *str, int posX, int &posY, int xLimits, Color color, bool isChecked,  float offset)
     {
-        u16 outterBorder[] =
+     /*   u16 outterBorder[] =
         {
             0x3FF8, 0x600C, 0xCFE6, 0x9012,
             0xA00A, 0xA00A, 0xA00A, 0xA00A,
@@ -223,17 +226,17 @@ namespace CTRPluginFramework
             0x1C, 0x38, 0x1070, 0x18E0,
             0x1DC0, 0xF80, 0x700, 0x200,
             0x0, 0x0, 0x0
-        };
+        };*/
 
         // Correct posY
         int y = posY + (_rowSize[_target] - 240);
 
         // temp color
         Color grey = Color(105, 105, 105);
-        Color blank = Color(255, 255, 255);
+        Color blank = Color(192, 192, 192);
         Color green = Color(0, 255, 0);
 
-        for (int yy = 0; yy < 15; yy++)
+       /* for (int yy = 0; yy < 15; yy++)
         {
             u32 out = outterBorder[yy];
             u32 in = innerBorder[yy];
@@ -260,15 +263,65 @@ namespace CTRPluginFramework
                     _DrawPixel(posX + x, y + yy, green);
                 }
             }
+        }*/
+        u8 *ucb = isChecked ? CheckedCheckbox :  UnCheckedCheckbox;
+        u8 *left = _screens[_target]->GetLeftFramebuffer();
+        u8 *right = _screens[_target]->GetRightFramebuffer();
+        GSPGPU_FramebufferFormats fmt = _screens[_target]->GetFormat();
+        int rowsize = _rowSize[_target];
+        int bpp = _screens[_target]->GetBytesPerPixel();
+
+        for (int yy = 0; yy < 15; yy++)
+        {
+            for (int xx = 0; xx < 15; xx++)
+            {
+                u32 offset = GetFramebufferOffset(posX + xx, y + yy, bpp, rowsize);
+                Color c = Color::FromMemory(ucb, GSP_RGBA8_OES);
+                ucb += 4;
+                c.ToMemory(left + offset, fmt);
+                if (_useRender3D)
+                    c.ToMemory(right + offset, fmt);
+            }
         }
         posX += 20;
         // posY += ;
         DrawSysString(str, posX, posY, xLimits, color, offset);
-        posY += 4;
+        posY += 1;
+
+    }
+    extern "C" unsigned char *FolderFilled;
+    void Renderer::DrawSysFolder(const char *str, int posX, int &posY, int xLimits, Color color, float offset)
+    {
+        // Correct posY
+        int y = posY + (_rowSize[_target] - 240);
+
+        u8 *folder = FolderFilled;
+        u8 *left = _screens[_target]->GetLeftFramebuffer();
+        u8 *right = _screens[_target]->GetRightFramebuffer();
+        GSPGPU_FramebufferFormats fmt = _screens[_target]->GetFormat();
+        int rowsize = _rowSize[_target];
+        int bpp = _screens[_target]->GetBytesPerPixel();
+
+        for (int yy = 0; yy < 15; yy++)
+        {
+            for (int xx = 0; xx < 15; xx++)
+            {
+                u32 offset = GetFramebufferOffset(posX + xx, y + yy, bpp, rowsize);
+                Color c = Color::FromMemory(folder, GSP_RGBA8_OES);
+                folder += 4;
+                c.ToMemory(left + offset, fmt);
+                if (_useRender3D)
+                    c.ToMemory(right + offset, fmt);
+            }
+        }
+        posX += 20;
+        // posY += ;
+        DrawSysString(str, posX, posY, xLimits, color, offset);
+        posY += 1;
 
     }
 
-    void Renderer::DrawSysString(const char *str, int posX, int &posY, int xLimits, Color color, float offset, bool autoReturn)
+    int Renderer::DrawSysString(const char *str, int posX, int &posY, int xLimits, Color color, float offset, bool autoReturn)
     {
         u32             glyphcode;
         int             units;
@@ -278,7 +331,7 @@ namespace CTRPluginFramework
         int             x = posX;
         
         if (!(str && *str))
-            return;
+            return (x);
 
         // Correct posY
         int y = posY + (_rowSize[_target] - 240);
@@ -333,5 +386,6 @@ namespace CTRPluginFramework
         } while (glyphcode > 0);
 
         posY += 16 * lineCount;
+        return (x);
     }
 }

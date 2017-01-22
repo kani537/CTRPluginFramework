@@ -29,6 +29,11 @@ namespace CTRPluginFramework
     u32         Renderer::_bufferSize = 1000;
 
 
+    inline u32   GetFramebufferOffset(int posX, int posY, int bpp, int rowsize)
+    {
+        return ((rowsize - 1 - posY + posX * rowsize) * bpp);
+    }
+
     void    Renderer::InitBuffer(u32 size)
     {
         _buffer = new u8(size);
@@ -132,6 +137,92 @@ namespace CTRPluginFramework
         gspWaitForVBlank1();
         gspWaitForVBlank();
         _isRendering = false;
+    }
+
+    void    Renderer::MenuSelector(int posX, int posY, int width, int height)
+    {
+
+        // Correct posY
+        posY += _rowSize[_target] - 240;
+
+        int x = posX;
+        int y = posY;
+        int w = width;
+        int h = height;
+
+
+        u8 *left = (u8 *)_screens[_target]->GetLeftFramebuffer();
+        u8 *right = (u8 *)_screens[_target]->GetRightFramebuffer();
+        GSPGPU_FramebufferFormats fmt = _screens[_target]->GetFormat();
+        int bpp = _screens[_target]->GetBytesPerPixel();
+        int rs = _screens[_target]->GetRowSize();
+
+        while (--w > 0)
+        {
+            h = height;
+            x = posX + w;
+            while (--h > 0)
+            {   
+                u32 offset = GetFramebufferOffset(x, y + h, bpp, rs);
+                Color c = Color::FromMemory(left + offset, fmt);
+
+                c.Fade(0.1f);
+                c.ToMemory(left + offset, fmt);
+                if (_useRender3D)
+                {
+                    c.ToMemory(right + offset, fmt);
+                }
+            }
+        }
+
+        int tier = width / 3;
+        int pitch = tier / 10;
+        int j = 0;
+        float fading = 0.0f;
+
+        Color l(255, 255, 255);
+        posY += height;
+        for (int i = tier; i > 0; --i)
+        {
+            u32 offset = GetFramebufferOffset(posX + i, posY, bpp, rs);
+            l.Fade(fading);
+            l.ToMemory(left + offset, fmt);
+            if (_useRender3D)
+                l.ToMemory(right + offset, fmt);
+            j++;
+            if (j == pitch)
+            {
+                fading -= 0.01f;
+                j = 0;
+            }
+        }
+
+        l = Color(255, 255, 255);
+        for (int i = tier * 2; i > tier; --i)
+        {
+            u32 offset = GetFramebufferOffset(posX + i, posY, bpp, rs);
+            l.ToMemory(left + offset, fmt);
+            if (_useRender3D)
+                l.ToMemory(right + offset, fmt);
+        }
+
+        l = Color(255, 255, 255);
+        fading = 0.0f;
+        j = 0;
+        for (int i = tier * 2; i < tier * 3; ++i)
+        {
+            u32 offset = GetFramebufferOffset(posX + i, posY, bpp, rs);
+            l.Fade(fading);
+            l.ToMemory(left + offset, fmt);
+            if (_useRender3D)
+                l.ToMemory(right + offset, fmt);
+            j++;
+            if (j == pitch)
+            {
+                fading -= 0.01f;
+                j = 0;
+            }
+        }
     }
 
 

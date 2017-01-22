@@ -25,11 +25,11 @@ namespace CTRPluginFramework
             // Top line
             DrawLine(posX, posY, width, color, thickness);
             // Bottom line
-            DrawLine(posX, posY + height - (thickness - 1), width, color, thickness);
+            DrawLine(posX, posY + height - thickness, width, color, thickness);
             // Left line
             DrawLine(posX, posY, thickness, color, height);
             // Right line
-            DrawLine(posX + width - (thickness - 1), posY, thickness, color, height);
+            DrawLine(posX + width - thickness, posY, thickness, color, height);
         }
     }
 }

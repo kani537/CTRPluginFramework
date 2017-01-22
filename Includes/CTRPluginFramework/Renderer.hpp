@@ -30,7 +30,9 @@ namespace CTRPluginFramework
         //#############################################################################################
         static void     DrawLine(int posX, int posY, int length, Color color, int width = 1);
         static void     DrawRect(int posX, int posY, int width, int height, Color color, bool fill = true, int thickness = 1);
-
+        // Menu
+        //#############################################################################################
+        static    void        MenuSelector(int posX, int posY, int width, int height);
         // Linux Font
         //#############################################################################################
         // Draw Character without background
@@ -44,13 +46,13 @@ namespace CTRPluginFramework
         static int      DrawString(char *str, int posX, int &posY, Color fg, Color bg);
         static int      DrawString(char *str, int offset, int posX, int &posY, Color fg);
         static void     DrawCheckBoxString(char *str, int posX, int &posY, bool isChecked, Color fg, Color checked);
-
         // System Font
         //#############################################################################################
-        static void     DrawSysString(const char *str, int posX, int &posY, int max, Color color, float offset = 0, bool autoReturn = false);
+        static int      DrawSysString(const char *str, int posX, int &posY, int max, Color color, float offset = 0, bool autoReturn = false);
         static float    GetTextSize(const char *text);
 
-         static   void DrawSysCheckBox(const char *str, int posX, int &posY, int xLimits, Color color, bool isChecked = false,  float offset = 0);
+        static void     DrawSysCheckBox(const char *str, int posX, int &posY, int xLimits, Color color, bool isChecked = false,  float offset = 0);
+        static void     DrawSysFolder(const char *str, int posX, int &posY, int xLimits, Color color, float offset = 0);
 
         // Misc
         //#############################################################################################
