@@ -84,18 +84,40 @@ namespace CTRPluginFramework
             u8      b[2];
         }     half;
 
+        u8 _b;
+        u8 _g;
+        u8 _r;
+
         switch (format)
         {
             case GSP_RGBA8_OES:
                 *(dst++) = a;
-                *(dst++) = b;
-                *(dst++) = g;
-                *(dst) = r;
+                _b = *(dst);
+                _g = *(dst + 1);
+                _r = *(dst + 2);
+                
+                _b *= (255 - a);
+                _g *= (255 - a);
+                _r *= (255 - a);
+
+                *dst++ = ((b * a) + _b) / 255;
+                *dst++ = ((g * a) + _g) / 255;
+                *dst = ((r * a) + _r) / 255;
+
+
                 break;
             case GSP_BGR8_OES:
-                *(dst++) = b;
-                *(dst++) = g;
-                *(dst) = r;
+                _b = *(dst);
+                _g = *(dst + 1);
+                _r = *(dst + 2);
+                
+                _b *= (255 - a);
+                _g *= (255 - a);
+                _r *= (255 - a);
+
+                *dst++ = ((b * a) + _b) / 255;
+                *dst++ = ((g * a) + _g) / 255;
+                *dst = ((r * a) + _r) / 255;
                 break;
             case GSP_RGB565_OES:
                 half.u  = (b & 0xF8) << 8;
