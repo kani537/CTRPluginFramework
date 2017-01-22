@@ -2,6 +2,8 @@
 #define CTRPLUGINFRAMEWORK_MENU_HPP
 
 #include "MenuItem.hpp"
+#include "MenuEntry.hpp"
+#include "MenuFolder.hpp"
 #include "EventManager.hpp"
 
 namespace CTRPluginFramework
@@ -10,20 +12,19 @@ namespace CTRPluginFramework
     {
     public:
 
-        Menu();
-        ~Menu();
+        Menu(std::string name = "Cheats", std::string note = "");
+        ~Menu(void);
 
-        bool    Append(MenuItem &item);
-        bool    Insert(MenuItem &item, int index);
-
+        void    Append(MenuItem *item);
         int     Run(void);
     private:
 
         void    _RenderTop(void);
         void    _RenderBottom(void);
+        void    _ProcessEvent(Event &event);
         void    _Update(Time delta);
 
-        EventManager    _manager;
+        MenuFolder      *_folder;
         bool            _isOpen;
     };
 }

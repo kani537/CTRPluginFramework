@@ -18,7 +18,7 @@ namespace CTRPluginFramework
         {}
 
         std::string     name;
-        std::string     infos;
+        std::string     note;
     private:
         friend class Menu;
         MenuType  _type;

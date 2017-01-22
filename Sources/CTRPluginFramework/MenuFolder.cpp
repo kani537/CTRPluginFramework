@@ -6,8 +6,35 @@ namespace CTRPluginFramework
     MenuItem(MenuType::Folder)
     {
         this->name = name;
-        this->infos = note;
+        this->note = note;
     }
 
-    bool    MenuFolder::Append(MenuItem)
+    MenuFolder::~MenuFolder()
+    {
+
+    }
+
+    void    MenuFolder::Append(MenuItem *item)
+    {
+        _items.push_back(item);
+
+    }
+
+    u32    MenuFolder::ItemsCount(void)
+    {
+        return (_items.size());
+    }
+
+    //#######################################################################
+
+    void    MenuFolder::_Open(MenuFolder *parent)
+    {
+        _parent = parent;
+    }
+
+    MenuFolder  *MenuFolder::_Close(void)
+    {
+        return (_parent);
+    }
+
 }

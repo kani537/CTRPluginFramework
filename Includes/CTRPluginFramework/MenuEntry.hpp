@@ -1,9 +1,15 @@
 #ifndef CTRPLUGINFRAMEWORK_MENUENTRY_HPP
 #define CTRPLUGINFRAMEWORK_MENUENTRY_HPP
 
+#include "types.h"
+#include "MenuItem.hpp"
+#include <string>
+
 namespace CTRPluginFramework
 {
-    class MenuEntry : MenuItem
+    class MenuEntry;
+    typedef void (*FuncPointer)(MenuEntry*);
+    class MenuEntry : public MenuItem
     {
         struct Flags
         {
@@ -11,7 +17,6 @@ namespace CTRPluginFramework
             bool  justChanged : 1;
             bool  isRadio : 1;
             bool  isStarred : 1;  
-            bool  isImmediate : 1;
         };
 
     public:
@@ -23,8 +28,6 @@ namespace CTRPluginFramework
         void    Disable(void);
         // Set the entry as radio, an ID must be provided
         void    SetRadio(int id);        
-        // Set it as an immediate entry (which will be enabled on the menu ONLY)
-        void    SetImmediate(void);
         // Set an argument for the entry
         void    SetArg(void *arg);
         // Get the argument
@@ -35,20 +38,20 @@ namespace CTRPluginFramework
         bool    IsActivated(void);
 
         // Public members
-        FuncPointer     Func;
+        FuncPointer     GameFunc;
+        FuncPointer     MenuFunc;
 
     private:
         friend class Menu;
 
         // Functions used by the menu
-        void    Activate(void);
-        void    Deactivate(void);
-        void    Star(void);
-        void    UnStar(void);
-        void    Execute(void);
+        void    _TriggerState(void);
+        void    _TriggerStar(void);
+        void    _Execute(void);
 
         Flags       _flags;
         int         _radioId;
+        void        *_arg;
     };
 }
 

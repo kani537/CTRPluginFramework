@@ -1,32 +1,33 @@
 #include "CTRPluginFramework.hpp"
 #include "3DS.h"
-#include <stdlib.h>
 
-using namespace CTRPluginFramework;
-
-int    main(u64 titleId, char *processName)
-{   
-    svcSleepThread(0x50000000);
-
-    int     i = 0;
-
-    Color y = Color::Yellow;
-    Color z = Color(0, 255, 255);
-    Color red = Color(255, 0, 0);
-    Color green = Color(0, 255, 0);
-    Color magenta = Color(255, 0, 255);
-
-    if (titleId == 0x0004000000033600)
-        Screen::Top->Flash(magenta);
-
-    while (i++ < 1)
+namespace CTRPluginFramework
+{
+    // This function is called on the plugin starts, before main
+    void    PatchProcess(void)
     {
-        Screen::Top->Flash(i % 2 ? y : z);
-        Screen::Bottom->Flash(i % 2 ? z : y);
+        u64 tid = Process::GetTitleID();
 
-        svcSleepThread(0x50000000);
+        // Patch game to prevent deconnection from Stream / debugger
+        if (tid == 0x0004000000175E00 
+            || tid == 0x0004000000164800)
+        {
+            u32     patch  = 0xE3A01000;
+            Process::Patch(0x003DFFD0, (u8 *)&patch, 4);
+        }
     }
 
-    return (0);
+    int    main(void)
+    {   
+
+        Menu    menu("Home");
+
+        menu.Append(new MenuEntry("Test #1"));
+        menu.Append(new MenuEntry("Test #2"));
+
+        menu.Run();
+        // Exit plugin
+        return (0);
+    }
 }
 

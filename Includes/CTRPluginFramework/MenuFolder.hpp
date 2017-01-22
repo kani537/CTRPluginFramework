@@ -7,24 +7,25 @@
 
 namespace CTRPluginFramework
 {
-    class MenuFolder : MenuItem
+    class MenuFolder : public MenuItem
     {
     public:
         MenuFolder(std::string name, std::string note = "");
         ~MenuFolder();
 
-        bool    Append(MenuItem &item);
-        bool    Insert(MenuItem &item, int index);
+        void    Append(MenuItem *item);
+        u32     ItemsCount(void);
 
-        u32     GetLength(void);
     private:
         friend class Menu;
-        void            Open(MenuFolder *parent);
-        MenuFolder      *Close(void);
 
-        MenuFolder      *_parent;
+        // Private methods
+        void            _Open(MenuFolder *parent);
+        MenuFolder      *_Close(void);
 
-        std::list<MenuItem>   _items;
+        // Private members
+        MenuFolder              *_parent;
+        std::list<MenuItem *>   _items;
 
     };
 }
