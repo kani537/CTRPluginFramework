@@ -85,7 +85,7 @@ namespace CTRPluginFramework
         // Reduce Priority
         Process::Play(true);
         // Wait for the game to be launched
-        Sleep(Seconds(1));
+        Sleep(Seconds(5));
 
         // Protect VRAM
         Process::ProtectRegion(0x1F000000);
