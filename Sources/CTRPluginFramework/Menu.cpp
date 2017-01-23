@@ -49,7 +49,22 @@ namespace CTRPluginFramework
                 _RenderTop();
                 Renderer::EndFrame();
             }
-
+            else
+            {
+                for (int i = 0; i < _executeLoop.size(); i++)
+                {
+                    MenuEntry *entry = _executeLoop[i];
+                    if (entry)
+                    {
+                        if (entry->_Execute())
+                        {
+                            _executeLoop[i] = nullptr;
+                            entry->_executeIndex = -1;
+                            _freeIndex.push(i);                    
+                        }
+                    }
+                }
+            }
         }
         return (0);
     }
@@ -161,10 +176,48 @@ namespace CTRPluginFramework
                 // Triggering entry
                 if (event.key.code == Key::A)
                 {
+                    // If the selected element is an entry
                     if (_folder->_items[_selector]->_type == MenuType::Entry)
                     {
-                        reinterpret_cast<MenuEntry *>(_folder->_items[_selector])->_TriggerState();
+                        MenuEntry *entry = reinterpret_cast<MenuEntry *>(_folder->_items[_selector]);
+                        // Change the state
+                        bool state = entry->_TriggerState();
+                        // If the entry has a valid funcpointer
+                        if (entry->GameFunc != nullptr)
+                        {
+                            // If is activated add to executeLoop
+                            if (state)
+                            {
+                                // Check for free index in the vector
+                                if (!_freeIndex.empty())
+                                {
+                                    int i = _freeIndex.front();
+                                    _freeIndex.pop();
+                                    _executeLoop[i] = entry;
+                                    entry->_executeIndex = i;
+                                }
+                                // Else add it at the back
+                                else
+                                {
+                                    int i = _executeLoop.size();
+                                    _executeLoop.push_back(entry);
+                                    entry->_executeIndex = i;
+                                }
+                            }
+                            // Else removes it
+                            else
+                            {
+                                int i = entry->_executeIndex;
+                                if (i >= 0 && i < _executeLoop.size())
+                                {
+                                    _executeLoop[i] = nullptr;
+                                    _freeIndex.push(i);
+                                }
+                                entry->_executeIndex = -1;
+                            }
+                        }                      
                     }
+                    // Else the selected element is a folder
                     else
                     {
                         MenuFolder *p = reinterpret_cast<MenuFolder *>(_folder->_items[_selector]);

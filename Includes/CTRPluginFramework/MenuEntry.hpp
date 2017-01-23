@@ -9,6 +9,7 @@ namespace CTRPluginFramework
 {
     class MenuEntry;
     typedef void (*FuncPointer)(MenuEntry*);
+    //typedef bool (*FuncPointer)(void);
     class MenuEntry : public MenuItem
     {
         struct Flags
@@ -48,7 +49,7 @@ namespace CTRPluginFramework
         bool    _TriggerState(void);
         bool    _TriggerStar(void);
         bool    _MustBeRemoved(void);
-        void    _Execute(void);
+        bool    _Execute(void);
         int     _executeIndex;
 
         Flags       _flags;

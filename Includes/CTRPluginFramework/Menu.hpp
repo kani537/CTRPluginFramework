@@ -30,6 +30,7 @@ namespace CTRPluginFramework
         void    _Update(Time delta);
 
         std::vector<MenuEntry *>    _executeLoop;
+        std::queue<int>             _freeIndex;
         MenuFolder                  *_folder;
         MenuFolder                  *_starred;
         bool                        _isOpen;

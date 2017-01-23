@@ -97,15 +97,18 @@ namespace CTRPluginFramework
         return (true);
     }
 
-    void    MenuEntry::_Execute(void)
+    bool    MenuEntry::_Execute(void)
     {
         Flags fl = _flags;
-        GameFunc(this);
+        if (GameFunc != nullptr)
+            GameFunc(this);
         
         if (_flags.state && _flags.justChanged)
             _flags.justChanged = 0;
         else if (!_flags.state && fl.justChanged && !fl.state)
             _flags.justChanged = 0;
+
+        return (_MustBeRemoved());
     }
 
 }
