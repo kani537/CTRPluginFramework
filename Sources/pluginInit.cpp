@@ -52,6 +52,7 @@ namespace CTRPluginFramework
 
     void    Initialize(void)
     {        
+        Sleep(Seconds(1));
         // Init Services
         __appInit();
 
@@ -85,7 +86,7 @@ namespace CTRPluginFramework
         // Reduce Priority
         Process::Play(true);
         // Wait for the game to be launched
-        Sleep(Seconds(5));
+        Sleep(Seconds(3));
 
         // Protect VRAM
         Process::ProtectRegion(0x1F000000);
