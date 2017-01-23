@@ -76,7 +76,7 @@ namespace CTRPluginFramework
         return (Color(r, g, b, a));
     }
 
-    void Color::ToMemory(u8 *dst, GSPGPU_FramebufferFormats format)
+    void Color::ToMemory(u8 *dst, GSPGPU_FramebufferFormats format, u8 *dst2)
     {
         union
         {
@@ -100,9 +100,18 @@ namespace CTRPluginFramework
                 _g *= (255 - a);
                 _r *= (255 - a);
 
-                *dst++ = ((b * a) + _b) / 255;
-                *dst++ = ((g * a) + _g) / 255;
-                *dst = ((r * a) + _r) / 255;
+                _b = ((b * a) + _b) / 255;
+                _g = ((g * a) + _g) / 255;
+                _r = ((r * a) + _r) / 255;
+                *dst++ = _b;
+                *dst++ = _g;
+                *dst = _r;
+                if (dst2)
+                {
+                    *dst2++ = _b;
+                    *dst2++ = _g;
+                    *dst2 = _r;
+                }
 
 
                 break;
@@ -114,10 +123,18 @@ namespace CTRPluginFramework
                 _b *= (255 - a);
                 _g *= (255 - a);
                 _r *= (255 - a);
-
-                *dst++ = ((b * a) + _b) / 255;
-                *dst++ = ((g * a) + _g) / 255;
-                *dst = ((r * a) + _r) / 255;
+                _b = ((b * a) + _b) / 255;
+                _g = ((g * a) + _g) / 255;
+                _r = ((r * a) + _r) / 255;
+                *dst++ = _b;
+                *dst++ = _g;
+                *dst = _r;
+                if (dst2)
+                {
+                    *dst2++ = _b;
+                    *dst2++ = _g;
+                    *dst2 = _r;
+                }
                 break;
             case GSP_RGB565_OES:
                 half.u  = (b & 0xF8) << 8;
