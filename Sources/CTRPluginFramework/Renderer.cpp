@@ -125,16 +125,15 @@ namespace CTRPluginFramework
             if (current)
                 memcpy(_framebufferR[TOP], current, size);
         }*/
-
     }
 
     void        Renderer::EndFrame(void)
     {
 
         Screen::Bottom->SwapBuffer();
-        Screen::Top->SwapBuffer();
+        Screen::Top->SwapBuffer(true);
         //gspWaitForVBlank();
-        gspWaitForVBlank1();
+        //gspWaitForVBlank1();
         gspWaitForVBlank();
         _isRendering = false;
     }
