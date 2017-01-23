@@ -221,7 +221,7 @@ namespace CTRPluginFramework
                     else
                     {
                         MenuFolder *p = reinterpret_cast<MenuFolder *>(_folder->_items[_selector]);
-                        p->_Open(_folder);
+                        p->_Open(_folder, _selector);
                         _folder = p;
                         _selector = 0;
                     }
@@ -230,10 +230,9 @@ namespace CTRPluginFramework
                 // Close Folder
                 if (event.key.code == Key::B)
                 {
-                    MenuFolder *p = _folder->_Close();
+                    MenuFolder *p = _folder->_Close(_selector);
                     if (p != nullptr)
                     {
-                        _selector = 0;
                         _folder = p;
                     }
                 }

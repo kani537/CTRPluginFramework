@@ -7,6 +7,7 @@ namespace CTRPluginFramework
     {
         this->name = name;
         this->note = note;
+        this->_position = -1;
     }
 
     MenuFolder::~MenuFolder()
@@ -27,13 +28,16 @@ namespace CTRPluginFramework
 
     //#######################################################################
 
-    void    MenuFolder::_Open(MenuFolder *parent)
+    void    MenuFolder::_Open(MenuFolder *parent, int position)
     {
         _parent = parent;
+        _position = position;
     }
 
-    MenuFolder  *MenuFolder::_Close(void)
+    MenuFolder  *MenuFolder::_Close(int &position)
     {
+        if (_parent)
+            position = _position;
         return (_parent);
     }
 
