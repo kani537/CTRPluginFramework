@@ -45,8 +45,8 @@ namespace CTRPluginFramework
         friend class Menu;
 
         // Functions used by the menu
-        void    _TriggerState(void);
-        void    _TriggerStar(void);
+        bool    _TriggerState(void);
+        bool    _TriggerStar(void);
         bool    _MustBeRemoved(void);
         void    _Execute(void);
 

@@ -56,29 +56,33 @@ namespace CTRPluginFramework
 
     //##############################################################
 
-    void    MenuEntry::_TriggerState(void)
+    bool    MenuEntry::_TriggerState(void)
     {
         if (_flags.state)
         {
             _flags.state = 0;
             _flags.justChanged = 0;
+            return (false);
         }
         else
         {
             _flags.state = 1;
             _flags.justChanged = 1;
+            return (true);
         }
     }
 
-    void    MenuEntry::_TriggerStar(void)
+    bool    MenuEntry::_TriggerStar(void)
     {
         if (_flags.isStarred)
         {
             _flags.isStarred = 0;
+            return (false);
         }
         else 
         {
             _flags.isStarred = 1;
+            return (true);
         }
     }
 
