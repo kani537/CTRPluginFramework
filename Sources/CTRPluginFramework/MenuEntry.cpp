@@ -9,7 +9,7 @@ namespace CTRPluginFramework
         this->GameFunc = nullptr;
         this->MenuFunc = nullptr;
         this->_arg = nullptr;
-        this->_executeIndex = 0;
+        this->_executeIndex = -1;
     }
 
     MenuEntry::MenuEntry(std::string name, FuncPointer func, std::string note) : MenuItem(MenuType::Entry)
@@ -19,7 +19,7 @@ namespace CTRPluginFramework
         this->GameFunc = func;
         this->MenuFunc = nullptr;
         this->_arg = nullptr;
-        this->_executeIndex = 0;
+        this->_executeIndex = -1;
     }
 
     MenuEntry::~MenuEntry() {}
