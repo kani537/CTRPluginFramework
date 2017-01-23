@@ -49,6 +49,7 @@ namespace CTRPluginFramework
         bool    _TriggerStar(void);
         bool    _MustBeRemoved(void);
         void    _Execute(void);
+        int     _executeIndex;
 
         Flags       _flags;
         int         _radioId;
