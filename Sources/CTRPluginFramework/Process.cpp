@@ -137,35 +137,51 @@ namespace CTRPluginFramework
 		Screen::Top->Acquire();
         Screen::Bottom->Acquire();
         float fade = 0.03f;
+        Clock t = Clock();
+        Time limit = Seconds(1) / 10.f;
+        Time delta;
+        float pitch = 0.0006f;
+
         while (fade <= 0.3f)
         {
-        	if (fade != 0.03f)
-        		Sleep(Milliseconds(3));
+        	delta = t.Restart();        	
+        	fade += pitch * delta.AsMilliseconds();
         	Screen::Top->Fade(fade);
         	Screen::Bottom->Fade(fade);
-        	fade += 0.015f;
-        	Screen::Top->SwapBuffer();
-        	Screen::Bottom->SwapBuffer();
-        	gspWaitForVBlank1(); 
+
+        	Screen::Top->SwapBuffer(false, true);
+        	Screen::Bottom->SwapBuffer(false, true);
         	gspWaitForVBlank(); 
+        	if (System::IsNew3DS())
+        		while (t.GetElapsedTime() < limit);        	
         }
+       	Screen::Top->Acquire();
+        Screen::Bottom->Acquire();
        
 	}
 
 	void 	Process::Play(bool isInit)
 	{	
+		Time limit = Seconds(1) / 10.f;
+		Time delta;
+        float pitch = 0.10f;
+        Clock t = Clock();
+
 		if (!isInit)
 		{
 	        float fade = -0.1f;
 	        while (fade >= -0.9f)
 	        {
+	        	delta = t.Restart();
 	        	Screen::Top->Fade(fade);
 	        	Screen::Bottom->Fade(fade);
-	        	fade -= 0.05f;
-	        	Sleep(Milliseconds(10));
+	        	fade -= 0.001f * delta.AsMilliseconds();
+	        	//Sleep(Milliseconds(10));
 	        	Screen::Top->SwapBuffer();
 	        	Screen::Bottom->SwapBuffer();
 	        	gspWaitForVBlank();
+	        	if (System::IsNew3DS())
+	        	while (t.GetElapsedTime() < limit); 
 	        }			
 		}
         _isPaused = false;
