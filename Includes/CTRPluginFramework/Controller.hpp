@@ -33,7 +33,8 @@ namespace CTRPluginFramework
         Up          = DPadUp    | CPadUp,
         Down        = DPadDown  | CPadDown,
         Left        = DPadLeft  | CPadLeft,
-        Right       = DPadRight | CPadRight
+        Right       = DPadRight | CPadRight,
+        CPad        = CPadLeft  | CPadRight | CPadUp | CPadDown
     };
     class Controller
     {
