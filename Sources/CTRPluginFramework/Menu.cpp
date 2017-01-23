@@ -30,6 +30,9 @@ namespace CTRPluginFramework
         EventManager    manager;
         Clock           clock;
         Clock           inputClock;
+        Time            second = Seconds(1);
+        Time            frameLimit = second / 30.f;
+        float           framerate;
         Time            delta;
 
         _selectedTextSize = Renderer::GetTextSize(_folder->_items[_selector]->name.c_str());
@@ -57,14 +60,25 @@ namespace CTRPluginFramework
                 if (_isOpen)
                     _ProcessEvent(event);
             }
-            delta = clock.Restart();
+            
             if (_isOpen)
-            {                
+            {   
+                delta = clock.Restart();
+                framerate = (second.AsSeconds() / delta.AsSeconds());         
                 _Update(delta);
+
                 Renderer::StartFrame();
                 _RenderBottom();
                 _RenderTop();
+                char buf[40];
+                sprintf(buf, "FPS: %03.2f", framerate);
+                Color blank(255, 255, 255);
+                Color black = Color();
+                int posY = 10;
+                Renderer::DrawString(buf, 320, posY, blank, black);
                 Renderer::EndFrame();
+                while(clock.GetElapsedTime() < frameLimit);
+
             }
             else
             {
@@ -124,11 +138,11 @@ namespace CTRPluginFramework
             if (item->_type == MenuType::Entry)
             {
                 MenuEntry *entry = reinterpret_cast<MenuEntry *>(item);
-                Renderer::DrawSysCheckBox(entry->name.c_str(), posX, posY, 350, i == _selector ? blank : silver, entry->IsActivated(), _scrollOffset);  
+                Renderer::DrawSysCheckBox(entry->name.c_str(), posX, posY, 350, i == _selector ? blank : silver, entry->IsActivated(), i == _selector ? _scrollOffset : 0.f);  
             }
             else
             {
-                Renderer::DrawSysFolder(item->name.c_str(), posX, posY, 350, i == _selector ? blank : silver, _scrollOffset);
+                Renderer::DrawSysFolder(item->name.c_str(), posX, posY, 350, i == _selector ? blank : silver, i == _selector ? _scrollOffset : 0.f);
             }
             posY += 4;
         }
@@ -147,6 +161,8 @@ namespace CTRPluginFramework
 
         Renderer::DrawRect(20, 20, 280, 200, black);
         Renderer::DrawRect(22, 22, 276, 196, blank, false);
+        int posY = 35;
+        Renderer::DrawString("CTRPluginFramework", 106, posY, blank);
     }
 
     //###########################################
@@ -257,15 +273,16 @@ namespace CTRPluginFramework
         {
             if (!_reverseFlow && _scrollOffset < _maxScrollOffset)
             {
-                _scrollOffset += 25.f * delta.AsSeconds();
+                _scrollOffset += 29.f * delta.AsSeconds();
             }
             else
             {
-                _scrollOffset -= 38.f * delta.AsSeconds();
+                _scrollOffset -= 55.f * delta.AsSeconds();
                 if (_scrollOffset <= 0.0f)
                 {
                     _reverseFlow = false;
                     _scrollOffset = 0.f;
+                    _scrollClock.Restart();
                 }
                 else
                     _reverseFlow = true;
