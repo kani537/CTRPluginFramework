@@ -66,22 +66,19 @@ namespace CTRPluginFramework
                     {
                         u32 offset = GetFramebufferOffset(px, py, _screens[_target]->GetBytesPerPixel(), _rowSize[_target]);
                         u8 *left = (u8 *)_screens[_target]->GetLeftFramebuffer() + offset;
-
+                        u8 *right = (u8 *)_screens[_target]->GetRightFramebuffer() + offset;
                         GSPGPU_FramebufferFormats fmt = _screens[_target]->GetFormat();
                         Color l = Color::FromMemory(left, fmt);
 
-                        Color res  = Color();
+                        Color res;
                         res.b = (l.b * (0x0F - alpha) + color.b * (alpha + 1)) >> 4;  
                         res.g = (l.g * (0x0F - alpha) + color.g * (alpha + 1)) >> 4;
                         res.r = (l.r * (0x0F - alpha) + color.r * (alpha + 1)) >> 4;
 
-                        res.ToMemory(left, fmt);
-
-                        if (_useRender3D)
-                        {
-                            u8 *right = (u8 *)_screens[_target]->GetRightFramebuffer() + offset;
-                            res.ToMemory(right, fmt);
-                        }
+                        if (!_useRender3D)
+                            res.ToMemory(left, fmt);
+                        else
+                            res.ToMemory(left, fmt, right);
                     }
                 }
             }
@@ -271,18 +268,33 @@ namespace CTRPluginFramework
         int rowsize = _rowSize[_target];
         int bpp = _screens[_target]->GetBytesPerPixel();
 
-        for (int yy = 0; yy < 15; yy++)
+        if (!_useRender3D)
         {
-            for (int xx = 0; xx < 15; xx++)
+            for (int yy = 0; yy < 15; yy++)
             {
-                u32 offset = GetFramebufferOffset(posX + xx, y + yy, bpp, rowsize);
-                Color c = Color::FromMemory(ucb, GSP_RGBA8_OES);
-                ucb += 4;
-                c.ToMemory(left + offset, fmt);
-                if (_useRender3D)
-                    c.ToMemory(right + offset, fmt);
+                for (int xx = 0; xx < 15; xx++)
+                {
+                    u32 offset = GetFramebufferOffset(posX + xx, y + yy, bpp, rowsize);
+                    Color icon = Color::FromMemory(ucb, GSP_RGBA8_OES);
+                    icon.ToMemoryBlend(left + offset, fmt, BlendMode::Alpha, nullptr);
+                    ucb += 4;
+                }
             }
         }
+        else
+        {
+            for (int yy = 0; yy < 15; yy++)
+            {
+                for (int xx = 0; xx < 15; xx++)
+                {
+                    u32 offset = GetFramebufferOffset(posX + xx, y + yy, bpp, rowsize);
+                    Color icon = Color::FromMemory(ucb, GSP_RGBA8_OES);
+                    icon.ToMemoryBlend(left + offset, fmt, BlendMode::Alpha, right + offset);
+                    ucb += 4;
+                }
+            }
+        }
+
         posX += 20;
         // posY += ;
         DrawSysString(str, posX, posY, xLimits, color, offset);
@@ -302,16 +314,30 @@ namespace CTRPluginFramework
         int rowsize = _rowSize[_target];
         int bpp = _screens[_target]->GetBytesPerPixel();
 
-        for (int yy = 0; yy < 15; yy++)
+        if (!_useRender3D)
         {
-            for (int xx = 0; xx < 15; xx++)
+            for (int yy = 0; yy < 15; yy++)
             {
-                u32 offset = GetFramebufferOffset(posX + xx, y + yy, bpp, rowsize);
-                Color c = Color::FromMemory(folder, GSP_RGBA8_OES);
-                folder += 4;
-                c.ToMemory(left + offset, fmt);
-                if (_useRender3D)
-                    c.ToMemory(right + offset, fmt);
+                for (int xx = 0; xx < 15; xx++)
+                {
+                    u32 offset = GetFramebufferOffset(posX + xx, y + yy, bpp, rowsize);
+                    Color icon = Color::FromMemory(folder, GSP_RGBA8_OES);
+                    icon.ToMemoryBlend(left + offset, fmt, BlendMode::Alpha, nullptr);
+                    folder += 4;
+                }
+            }
+        }
+        else
+        {
+            for (int yy = 0; yy < 15; yy++)
+            {
+                for (int xx = 0; xx < 15; xx++)
+                {
+                    u32 offset = GetFramebufferOffset(posX + xx, y + yy, bpp, rowsize);
+                    Color icon = Color::FromMemory(folder, GSP_RGBA8_OES);
+                    icon.ToMemoryBlend(left + offset, fmt, BlendMode::Alpha, right + offset);
+                    folder += 4;
+                }
             }
         }
         posX += 20;
