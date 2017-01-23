@@ -29,6 +29,7 @@ namespace CTRPluginFramework
         Event           event;
         EventManager    manager;
         Clock           clock;
+        Clock           inputClock;
         Time            delta;
 
         _selectedTextSize = Renderer::GetTextSize(_folder->_items[_selector]->name.c_str());
@@ -38,7 +39,23 @@ namespace CTRPluginFramework
             // Check Event
             while (manager.PollEvent(event))
             {
-                _ProcessEvent(event);
+                // If Select is pressed
+                if (event.key.code == Key::Select && inputClock.HasTimePassed(Milliseconds(500)))
+                {
+                    if (_isOpen)
+                    {
+                        Process::Play();
+                        _isOpen = false;
+                    }
+                    else
+                    {
+                        Process::Pause();
+                        _isOpen = true;
+                    }
+                    inputClock.Restart();   
+                }
+                if (_isOpen)
+                    _ProcessEvent(event);
             }
             delta = clock.Restart();
             if (_isOpen)
@@ -137,27 +154,12 @@ namespace CTRPluginFramework
     //###########################################
     void    Menu::_ProcessEvent(Event &event)
     {
-        static Clock inputClock;
+        
 
         switch (event.type)
         {
             case Event::KeyPressed:
             {
-                // If Select is pressed
-                if (event.key.code == Key::Select && inputClock.HasTimePassed(Milliseconds(500)))
-                {
-                    if (_isOpen)
-                    {
-                        Process::Play();
-                        _isOpen = false;
-                    }
-                    else
-                    {
-                        Process::Pause();
-                        _isOpen = true;
-                    }
-                    inputClock.Restart();   
-                }
                 // Moving Selector
                 if (event.key.code == Key::DPadUp)
                 {
