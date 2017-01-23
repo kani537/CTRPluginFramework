@@ -6,6 +6,14 @@
 
 namespace CTRPluginFramework
 {
+    enum class BlendMode
+    {
+        Alpha,
+        Add,
+        Sub,
+        Mul,
+        None
+    };
     class Color
     {
     public:
@@ -15,18 +23,21 @@ namespace CTRPluginFramework
 
         static Color FromMemory(u8 *src, GSPGPU_FramebufferFormats format = GSP_BGR8_OES);
         void  ToMemory(u8 *dst, GSPGPU_FramebufferFormats format = GSP_BGR8_OES, u8 *dst2 = nullptr);
-        static const Color Black;       
-        static const Color White;       
-        static const Color Red;         
-        static const Color Green;       
-        static const Color Blue;       
-        static const Color Yellow;      
-        static const Color Magenta;     
-        static const Color Cyan;        
-        static const Color Transparent; 
+        void  ToMemoryBlend(u8 *dst, GSPGPU_FramebufferFormats format = GSP_BGR8_OES, BlendMode mode = BlendMode::None, u8 *dst2 = nullptr);
 
-        u32     ToU32(void);
-        Color   &Fade(double fading);    
+        u32                 ToU32(void) const;
+        Color               &Fade(double fading);   
+        Color               Blend(const Color &color, BlendMode mode) const;
+        
+
+        bool operator == (const Color &right) const;
+        bool operator != (const Color &right) const;
+        Color operator + (const Color &right) const;
+        Color operator - (const Color &right) const;
+        Color operator * (const Color &right) const;
+        Color &operator += (const Color &right);
+        Color &operator -= (const Color &right);
+        Color &operator *= (const Color &right); 
 
         u8      r;
         u8      g;
