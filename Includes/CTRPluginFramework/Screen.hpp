@@ -33,7 +33,7 @@ namespace CTRPluginFramework
         bool                        Is3DEnabled(void);
         void                        Flash(Color &color);
         void                        Acquire(void);
-        void                        SwapBuffer(bool flush = false);
+        void                        SwapBuffer(bool flush = false, bool copy = false);
         bool                        Update(void);
         GSPGPU_FramebufferFormats   GetFormat(void);
         u16                         GetWidth(void);
@@ -48,7 +48,7 @@ namespace CTRPluginFramework
         u8                          *GetLeftFramebuffer(bool current = false);
         u8                          *GetRightFramebuffer(bool current = false);                    
         
-        void                        Fade(float fade);
+        void                        Fade(float fade, bool copy = false);
 
     private:
         friend class Renderer;

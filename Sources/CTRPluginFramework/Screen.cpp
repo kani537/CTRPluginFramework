@@ -133,7 +133,7 @@ namespace CTRPluginFramework
         Screen::Bottom = new Screen(System::GetIOBasePDC() + 0x500, System::GetIOBaseLCD() + 0xA04);
     }
 
-    void    Screen::Fade(float fade)
+    void    Screen::Fade(float fade, bool copy)
     {
         *_currentBufferReg = 0;       
 
@@ -141,22 +141,30 @@ namespace CTRPluginFramework
 
         u8 *src = GetLeftFramebuffer();
         u8 *src1 = GetRightFramebuffer();
+
+        u8 *src3 = copy ? GetLeftFramebuffer(true) : nullptr;
+        u8 *src4 = copy ? GetRightFramebuffer(true) : nullptr;
+
         for (int i = 0; i < size; i += _bytesPerPixel)
         {
             Color c = Color::FromMemory(src, _format);
 
             c.Fade(fade);
-            c.ToMemory(src, _format);
-
+            c.ToMemory(src, _format, src3);
             if (Is3DEnabled())
             {
                 Color d = Color::FromMemory(src1, _format);
 
                 d.Fade(fade);
-                d.ToMemory(src1, _format);
+                d.ToMemory(src1, _format, src4);
                 src1 += _bytesPerPixel;
             }
             src += _bytesPerPixel;
+            if (copy)
+            {
+                src3 += _bytesPerPixel;
+                src4 += _bytesPerPixel;
+            }       
         }
     }
 
@@ -208,17 +216,25 @@ namespace CTRPluginFramework
         REG(_FillColor) = 0;
     }
 
-    void    Screen::SwapBuffer(bool flush)
+    void    Screen::SwapBuffer(bool flush, bool copy)
     {
         if (flush)
         {
             u32 size = GetFramebufferSize();
-            GSPGPU_FlushDataCache((void *)_leftFramebuffersV[_currentBuffer], size);
+            GSPGPU_FlushDataCache((void *)_leftFramebuffersV[!_currentBuffer], size);
             if (Is3DEnabled())
-                GSPGPU_FlushDataCache((void *)_rightFramebuffersV[_currentBuffer], size);
+                GSPGPU_FlushDataCache((void *)_rightFramebuffersV[!_currentBuffer], size);
+        }
+        if (copy)
+        {
+            u32 size = GetFramebufferSize();
+            memcpy((void *)_leftFramebuffersV[_currentBuffer], (void *)_leftFramebuffersV[!_currentBuffer], size);
+            if (Is3DEnabled())
+                memcpy((void *)_rightFramebuffersV[_currentBuffer], (void *)_rightFramebuffersV[!_currentBuffer], size);
         }
         _currentBuffer = !_currentBuffer;
         *_currentBufferReg = _currentBuffer;
+
     }
 
     GSPGPU_FramebufferFormats   Screen::GetFormat(void)
