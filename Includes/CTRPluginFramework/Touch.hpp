@@ -7,6 +7,7 @@ namespace CTRPluginFramework
 {
     class Touch
     {
+    public:
         static bool         IsDown(void);
         static UIntVector   GetPosition(void);
     };
