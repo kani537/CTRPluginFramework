@@ -16,8 +16,6 @@ namespace CTRPluginFramework
         _scrollOffset = 0.f;
         _maxScrollOffset = 0.f;
         _reverseFlow = false;
-        _arcX = 50;
-        _arcRadius = 1;
     }
 
     Menu::~Menu(void)
@@ -155,12 +153,8 @@ namespace CTRPluginFramework
 
     }
 
-    float _a = 5.f;
-    float _b = 1.f;
-    int _max = 0;
-    int _aff = 0;
+    float _a = 10.f;
     Color _c;
-    extern "C" void    gfxReadFramebufferInfo(gfxScreen_t screen, GSPGPU_FramebufferInfo *out);
     //###########################################
     // Render Bottom Screen
     //###########################################
@@ -170,8 +164,6 @@ namespace CTRPluginFramework
         Color blank(255, 255, 255);
         Color green(0, 255, 0);
         Color blue(0, 255, 255);
-        GSPGPU_CaptureInfo infos = {0};
-        GSPGPU_FramebufferInfo inf = {0};
 
         Renderer::SetTarget(BOTTOM);
 
@@ -179,20 +171,9 @@ namespace CTRPluginFramework
         Renderer::DrawRect(22, 22, 276, 196, blank, false);
         int posY = 35;
         Renderer::DrawString("CTRPluginFramework", 1000, posY, blank);
-        posY = Screen::Top->Debug(25, posY);
-        //GSPGPU_ImportDisplayCaptureInfo(&infos);
-        //gfxReadFramebufferInfo(GFX_TOP, &inf);
-        char buf[100];
-        //sprintf(buf, "active: %d, 0: %08X, 1:%08X, dspSelect: %d", 
-        //    inf.active_framebuf, inf.framebuf0_vaddr, inf.framebuf1_vaddr, inf.framebuf_dispselect);
-       // Renderer::DrawString(buf, 25, posY, blank);
         if (_startLine.x != -1)
         {
-           
-            Renderer::Line(_startLine, _endLine, green);
-            //Renderer::Arc(_endLine.x, _endLine.y, _arcRadius, green);
-            //Renderer::EllipseIncomplete(_endLine.x, _endLine.y, _a, _b, _max, _aff, blue);
-            //char buf[100];
+            char buf[100];
             sprintf(buf, "%f", _a);
             Renderer::DrawString(buf, 25, posY, blank);
             IntRect rect(_startLine, _endLine - _startLine);
@@ -229,102 +210,117 @@ namespace CTRPluginFramework
             }
             case Event::KeyPressed:
             {
-                // Changing Arc
-                if (event.key.code == Key::DPadRight)
-                    _a++;
-                else if (event.key.code == Key::DPadLeft)
-                    _a--;
-                else if (event.key.code == Key::L)
-                    _b--;
-                else if (event.key.code == Key::R)
-                    _b++;
-                else if (event.key.code == Key::X)
-                    _max++;
-                else if (event.key.code == Key::Y)
-                    _max--;
-                else if (event.key.code == Key::ZL)
-                    _aff--;
-                else if (event.key.code == Key::ZR)
-                    _aff++;
-                // Moving Selector
-                if (event.key.code == Key::DPadUp)
+                switch (event.key.code)
                 {
-                    if (_selector == 0)
-                        _selector = _folder->ItemsCount() - 1;
-                    else
-                        _selector--;
-                }
-                if (event.key.code == Key::DPadDown)
-                {
-                    if (_selector == _folder->ItemsCount() - 1)
-                        _selector = 0;
-                    else
-                        _selector++;
-                }
-                // Triggering entry
-                if (event.key.code == Key::A)
-                {
-                    // If the selected element is an entry
-                    if (_folder->_items[_selector]->_type == MenuType::Entry)
+                    /*
+                    ** Tests
+                    */
+                    case Key::DPadRight:
                     {
-                        MenuEntry *entry = reinterpret_cast<MenuEntry *>(_folder->_items[_selector]);
-                        // Change the state
-                        bool state = entry->_TriggerState();
-                        // If the entry has a valid funcpointer
-                        if (entry->GameFunc != nullptr)
+                        _a++;
+                        break;
+                    }
+                    case Key::DPadLeft:
+                    {
+                        _a--;
+                        break;
+                    }
+
+                    /*
+                    ** Selector
+                    **************/
+                    case Key::DPadDown:
+                    {
+                        if (_selector == 0)
+                            _selector = _folder->ItemsCount() - 1;
+                        else
+                            _selector--;
+                        break;
+                    }
+                    case Key::DPadUp:
+                    {
+                        if (_selector == _folder->ItemsCount() - 1)
+                            _selector = 0;
+                        else
+                            _selector++;
+                        break;
+                    }
+                    /*
+                    ** Trigger entry
+                    ** Top Screen
+                    ******************/
+                    case Key::A:
+                    {
+                        /*
+                        ** MenuEntry
+                        **************/
+                        if (_folder->_items[_selector]->_type == MenuType::Entry)
                         {
-                            // If is activated add to executeLoop
-                            if (state)
+                            MenuEntry *entry = reinterpret_cast<MenuEntry *>(_folder->_items[_selector]);
+                            // Change the state
+                            bool state = entry->_TriggerState();
+                            // If the entry has a valid funcpointer
+                            if (entry->GameFunc != nullptr)
                             {
-                                // Check for free index in the vector
-                                if (!_freeIndex.empty())
+                                // If is activated add to executeLoop
+                                if (state)
                                 {
-                                    int i = _freeIndex.front();
-                                    _freeIndex.pop();
-                                    _executeLoop[i] = entry;
-                                    entry->_executeIndex = i;
+                                    // Check for free index in the vector
+                                    if (!_freeIndex.empty())
+                                    {
+                                        int i = _freeIndex.front();
+                                        _freeIndex.pop();
+                                        _executeLoop[i] = entry;
+                                        entry->_executeIndex = i;
+                                    }
+                                    // Else add it at the back
+                                    else
+                                    {
+                                        int i = _executeLoop.size();
+                                        _executeLoop.push_back(entry);
+                                        entry->_executeIndex = i;
+                                    }
                                 }
-                                // Else add it at the back
                                 else
                                 {
-                                    int i = _executeLoop.size();
-                                    _executeLoop.push_back(entry);
-                                    entry->_executeIndex = i;
+                                    int i = entry->_executeIndex;
+                                    if (i >= 0 && i < _executeLoop.size())
+                                    {
+                                        _executeLoop[i] = nullptr;
+                                        _freeIndex.push(i);
+                                    }
+                                    entry->_executeIndex = -1;
                                 }
                             }
-                            // Else removes it
-                            else
-                            {
-                                int i = entry->_executeIndex;
-                                if (i >= 0 && i < _executeLoop.size())
-                                {
-                                    _executeLoop[i] = nullptr;
-                                    _freeIndex.push(i);
-                                }
-                                entry->_executeIndex = -1;
-                            }
-                        }                      
+                        }
+                        /*
+                        ** MenuFolder
+                        ****************/
+                        else
+                        {
+                            MenuFolder *p = reinterpret_cast<MenuFolder *>(_folder->_items[_selector]);
+                            p->_Open(_folder, _selector);
+                            _folder = p;
+                            _selector = 0;
+                        }
+                        break;
                     }
-                    // Else the selected element is a folder
-                    else
+                    /*
+                    ** Closing Folder
+                    ********************/
+                    case Key::B:
                     {
-                        MenuFolder *p = reinterpret_cast<MenuFolder *>(_folder->_items[_selector]);
-                        p->_Open(_folder, _selector);
-                        _folder = p;
-                        _selector = 0;
+                        MenuFolder *p = _folder->_Close(_selector);
+                        if (p != nullptr)
+                        {
+                            _folder = p;
+                        }
+                        break;
                     }
-                }
-
-                // Close Folder
-                if (event.key.code == Key::B)
-                {
-                    MenuFolder *p = _folder->_Close(_selector);
-                    if (p != nullptr)
-                    {
-                        _folder = p;
-                    }
-                }
-                // Update selected text size
+                } // end switch
+                /*
+                ** Scrolling text variables
+                *********************************/
                 _selectedTextSize = Renderer::GetTextSize(_folder->_items[_selector]->name.c_str());
                 _maxScrollOffset = (float)_selectedTextSize - 200.f;
                 _scrollClock.Restart();

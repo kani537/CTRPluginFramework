@@ -45,9 +45,6 @@ namespace CTRPluginFramework
         bool                        _reverseFlow;
         IntVector                   _startLine;
         IntVector                   _endLine;
-
-        int                         _arcX;
-        int                         _arcRadius;
     };
 }
 
