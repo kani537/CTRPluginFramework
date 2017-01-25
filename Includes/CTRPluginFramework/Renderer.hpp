@@ -5,7 +5,10 @@
 #include "Color.hpp"
 #include "Screen.hpp"
 #include "3DS.h"
+#include "Vector.h"
+#include "Rect.hpp"
 #include <cstdio>
+#include <algorithm>
 
 namespace CTRPluginFramework
 {
@@ -30,6 +33,13 @@ namespace CTRPluginFramework
         //#############################################################################################
         static void     DrawLine(int posX, int posY, int length, Color color, int width = 1);
         static void     DrawRect(int posX, int posY, int width, int height, Color color, bool fill = true, int thickness = 1);
+        template <typename T>
+        static void     Line(Vector<T> &start, Vector<T> &end, Color color);  
+        static void     Arc(int x, int y, int r, Color color);      
+        static void     Ellipse(int posX, int posY, long a, long b, Color color);
+        static void     EllipseIncomplete(int posX, int posY, float a, float b, int max, int aff, Color color);
+        static     void RoundedRectangle(const IntRect &rect, float radius, int max, Color color);
+
         // Menu
         //#############################################################################################
         static    void        MenuSelector(int posX, int posY, int width, int height);
@@ -80,8 +90,8 @@ namespace CTRPluginFramework
 
         static Screen       *_screens[2];
 
-        static u8           *_framebuffer[4];
-        static u8           *_framebufferR[4];
+        //static u8           *_framebuffer[4];
+        //static u8           *_framebufferR[4];
         static u32          _rowSize[2];
         static u32          _targetWidth[2];
         static u32          _targetHeight[2];
@@ -106,6 +116,63 @@ namespace CTRPluginFramework
         static DrawDataP    _DrawData;
 
     };
+
+    template <typename T>
+    void Renderer::Line(Vector<T> &start, Vector<T> &end, Color color)
+    {
+        int dx;
+        int dy;
+        int i;
+        int xinc;
+        int yinc;
+        int cumul;
+        int x;
+        int y;
+
+        x = static_cast<int>(start.x);
+        y = static_cast<int>(start.y);
+        // Correct posY
+        y += (_rowSize[_target] - 240);
+        dx = static_cast<int>(end.x - start.x);
+        dy = static_cast<int>(end.y - start.y);
+        xinc = ( dx > 0 ) ? 1 : -1;
+        yinc = ( dy > 0 ) ? 1 : -1;
+        dx = abs(dx) ;
+        dy = abs(dy) ;
+
+        _DrawPixel(x,y, color);
+
+        if ( dx > dy )
+        {
+            cumul = dx / 2 ;
+            for ( i = 1 ; i <= dx ; i++ )
+            {
+                x += xinc ;
+                cumul += dy ;
+                if ( cumul >= dx ) 
+                {
+                    cumul -= dx ;
+                    y += yinc ; 
+                }
+                _DrawPixel(x,y, color); 
+            } 
+        }
+        else 
+        {
+            cumul = dy / 2 ;
+            for ( i = 1 ; i <= dy ; i++ ) 
+            {
+                y += yinc ;
+                cumul += dx ;
+                if ( cumul >= dy ) 
+                {
+                    cumul -= dy ;
+                    x += xinc ; 
+                }
+                _DrawPixel(x,y, color); 
+            }
+        }
+    }
 }
 
 #endif 

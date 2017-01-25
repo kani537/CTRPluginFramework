@@ -105,6 +105,17 @@ void gfxWriteFramebufferInfo(gfxScreen_t screen)
 	framebufferInfoHeader[0x1]=1;
 }
 
+void 	gfxReadFramebufferInfo(gfxScreen_t screen, GSPGPU_FramebufferInfo *out)
+{
+	u8* framebufferInfoHeader = gfxSharedMemory + 0x200 + gfxThreadID * 0x80;
+
+	if(screen == GFX_BOTTOM)
+		framebufferInfoHeader += 0x40;
+
+	GSPGPU_FramebufferInfo *framebufferInfo = (GSPGPU_FramebufferInfo*)&framebufferInfoHeader[0x4];
+	*out = *framebufferInfo;
+}
+
 static void (*screenFree)(void *) = NULL;
 void    UpdateCtrulibGfx(void);
 

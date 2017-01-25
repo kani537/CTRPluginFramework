@@ -16,8 +16,8 @@ namespace CTRPluginFramework
     bool        Renderer::_useDoubleBuffer = false;
     bool        Renderer::_useSystemFont = false;
     Screen      *Renderer::_screens[2] = {Screen::Bottom, Screen::Top};
-    u8          *Renderer::_framebuffer[4] = {nullptr};
-    u8          *Renderer::_framebufferR[4] = {nullptr};
+    //u8          *Renderer::_framebuffer[4] = {nullptr};
+    //u8          *Renderer::_framebufferR[4] = {nullptr};
     u32         Renderer::_rowSize[2] = {0};
     u32         Renderer::_targetWidth[2] = {0};
     u32         Renderer::_targetHeight[2] = {0};
@@ -55,7 +55,8 @@ namespace CTRPluginFramework
     {
         _screens[BOTTOM] = Screen::Bottom;
         _screens[TOP] = Screen::Top;
-        InitBuffer(0x50000);
+        _useDoubleBuffer = false;
+        //InitBuffer(0x50000);
     }
 
     void        Renderer::SetTarget(Target target)
@@ -94,18 +95,14 @@ namespace CTRPluginFramework
     void        Renderer::StartFrame(bool current)
     {
         _isRendering = true;
-        _screens[BOTTOM]->Update();
-        _framebuffer[BOTTOM] = _screens[BOTTOM]->GetLeftFramebuffer(current);
-        _framebufferR[BOTTOM] = 0;        
+       // _screens[BOTTOM]->Update();       
         _rowSize[BOTTOM] = _screens[BOTTOM]->GetRowSize();
         _targetWidth[BOTTOM] = _screens[BOTTOM]->GetWidth();
         _targetHeight[BOTTOM] = _screens[BOTTOM]->GetHeight();
 
         // Screen TOP
-        _screens[TOP]->Update();
-        _framebuffer[TOP] = _screens[TOP]->GetLeftFramebuffer(current);
-        _framebufferR[TOP] = _screens[TOP]->GetRightFramebuffer(current);
-        _useRender3D = _screens[TOP]->Is3DEnabled();
+        //_screens[TOP]->Update();
+       // _useRender3D = _screens[TOP]->Is3DEnabled();
         _rowSize[TOP] = _screens[TOP]->GetRowSize();
         _targetWidth[TOP] = _screens[TOP]->GetWidth();
         _targetHeight[TOP] = _screens[TOP]->GetHeight();
