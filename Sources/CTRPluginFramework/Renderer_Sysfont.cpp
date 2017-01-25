@@ -341,7 +341,6 @@ namespace CTRPluginFramework
             }
         }
         posX += 20;
-        // posY += ;
         DrawSysString(str, posX, posY, xLimits, color, offset);
         posY += 1;
 

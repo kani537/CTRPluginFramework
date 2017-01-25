@@ -303,17 +303,21 @@ namespace CTRPluginFramework
         // Bottom line
         DrawLine(posX + rWidth, posYBak + height - 1, width - rWidth, color);
         // Left line
-        DrawLine(posX, posYBak + rHeight - 1, 1, color, height - (rHeight* 2));
+        DrawLine(posX - x + rWidth, posYBak + rHeight - 1, 1, color, height - (rHeight* 2));
         // Right line
-        DrawLine(posX + width + rWidth, posYBak + rHeight, 1, color, height - (rHeight * 2));
+        DrawLine(posX + x + width, posYBak + rHeight, 1, color, height - (rHeight * 2));
 
-        Color cyan = Color(0, 255, 255);
+        u64 tick = svcGetSystemTick();
+        Color cyan = Color(tick & 0xFF, (tick >> 16) & 0xFF, (tick >> 8) & 0xFF);
         IntVector start = rect._leftTopCorner;
-        IntVector end = start + rect._size;
+        IntRect area = rect;
+        area._leftTopCorner.x -= 1;
+        area._size.x += 2;
+
         start.x += rWidth + 1;
         start.y++;
-        if (width > 5 && height > 5)
-            FormFiller(start, end, cyan, color);
+
+            FormFiller(start, area, true, cyan, color);
     }
 
     void        Renderer::DrawRect(int posX, int posY, int width, int height, Color color, bool fill, int thickness)
@@ -335,12 +339,14 @@ namespace CTRPluginFramework
         }
     }
 
-    void    Renderer::FormFiller(const IntVector &start, const IntVector &end, Color &fill, Color &limit) 
+    void    Renderer::FormFiller(const IntVector &start, const IntRect &area, bool singlePoint, Color &fill, Color &limit) 
     {
         std::queue<IntVector> fpQueue;
 
-        const int maxY = end.y;
-        const int maxX = end.x;
+        const int minX = area._leftTopCorner.x;
+        const int minY = area._leftTopCorner.y;        
+        const int maxX = minX + area._size.x;
+        const int maxY = minY + area._size.y;
 
         Screen *scr = _screens[_target];
         GSPGPU_FramebufferFormats fmt = scr->GetFormat();
@@ -351,7 +357,7 @@ namespace CTRPluginFramework
         {
             int x = start.x;
             // Get line frontiers points
-            while (x < maxX)
+            do
             {
                 Color bg = Color::FromMemory(scr->GetLeftFramebuffer(x, y), fmt);
                 if (bg != limit && x < maxX)
@@ -362,23 +368,24 @@ namespace CTRPluginFramework
                         bg = Color::FromMemory(scr->GetLeftFramebuffer(x, y), fmt);
                     } while ((bg != limit) && x < maxX);     
                     // Store frontier point
-                    fpQueue.push(IntVector(x, y));    
+                    if (bg == limit)
+                        fpQueue.push(IntVector(x, y));    
                 }            
                 x++;
-            }
+            } while (x < maxX && !singlePoint);
             // While queue isn't empty
             while (!fpQueue.empty())
             {
                 IntVector rPoint = fpQueue.front();
                 fpQueue.pop();
 
-                int left = rPoint.x - 1;
+                int left = rPoint.x;
                 Color bg;
                 do
                 {
-                    bg = Color::FromMemory(scr->GetLeftFramebuffer(left, y), fmt);
                     left--;
-                } while (bg != limit && left >= start.x);
+                    bg = Color::FromMemory(scr->GetLeftFramebuffer(left, y), fmt);
+                } while (bg != limit && left > minX);
 
                 // If width is at least 1, draw line
                 if (rPoint.x - left > 1)

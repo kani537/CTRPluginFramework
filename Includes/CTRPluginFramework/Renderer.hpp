@@ -41,7 +41,7 @@ namespace CTRPluginFramework
         static void     EllipseIncomplete(int posX, int posY, float a, float b, int max, int aff, Color color);
         static     void RoundedRectangle(const IntRect &rect, float radius, int max, Color color);
         //static void     FormFiller(int posX,int posY, Color &fillColor, Color &limit) ;
-        static    void    FormFiller(const IntVector &start, const IntVector &end, Color &fill, Color &limit);
+        static    void    FormFiller(const IntVector &start, const IntRect &area, bool singlePoint, Color &fill, Color &limit);
         // Menu
         //#############################################################################################
         static    void        MenuSelector(int posX, int posY, int width, int height);
