@@ -263,9 +263,9 @@ namespace CTRPluginFramework
     bool Color::operator!=(const Color& right) const
     {
         return ((r != right.r)
-            && (b != right.b)
-            && (g != right.g)
-            && (a != right.a));
+            || (b != right.b)
+            || (g != right.g)
+            || (a != right.a));
     }
 
     Color Color::operator+(const Color& right) const
