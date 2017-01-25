@@ -5,6 +5,7 @@
 #include "MenuItem.hpp"
 #include "MenuFolder.hpp"
 #include "MenuEntry.hpp"
+#include "Vector.h"
 
 namespace CTRPluginFramework
 {
@@ -42,6 +43,11 @@ namespace CTRPluginFramework
         float                       _scrollOffset;
         Clock                       _scrollClock;
         bool                        _reverseFlow;
+        IntVector                   _startLine;
+        IntVector                   _endLine;
+
+        int                         _arcX;
+        int                         _arcRadius;
     };
 }
 

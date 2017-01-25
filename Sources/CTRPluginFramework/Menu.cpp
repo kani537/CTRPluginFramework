@@ -1,8 +1,12 @@
 #include "Menu.hpp"
 #include "Renderer.hpp"
+#include "Touch.hpp"
+#include "ctrulib/services/gspgpu.h"
+#include "ctrulib/gfx.h"
+
 namespace CTRPluginFramework
 {
-    Menu::Menu(std::string name, std::string note)
+    Menu::Menu(std::string name, std::string note) : _startLine(-1, -1), _endLine(-1, -1)
     {
         _isOpen = false;
         _starMode = false;
@@ -12,6 +16,8 @@ namespace CTRPluginFramework
         _scrollOffset = 0.f;
         _maxScrollOffset = 0.f;
         _reverseFlow = false;
+        _arcX = 50;
+        _arcRadius = 1;
     }
 
     Menu::~Menu(void)
@@ -149,6 +155,12 @@ namespace CTRPluginFramework
 
     }
 
+    float _a = 5.f;
+    float _b = 1.f;
+    int _max = 0;
+    int _aff = 0;
+    Color _c;
+    extern "C" void    gfxReadFramebufferInfo(gfxScreen_t screen, GSPGPU_FramebufferInfo *out);
     //###########################################
     // Render Bottom Screen
     //###########################################
@@ -156,13 +168,38 @@ namespace CTRPluginFramework
     {
         Color black = Color();
         Color blank(255, 255, 255);
+        Color green(0, 255, 0);
+        Color blue(0, 255, 255);
+        GSPGPU_CaptureInfo infos = {0};
+        GSPGPU_FramebufferInfo inf = {0};
 
         Renderer::SetTarget(BOTTOM);
 
         Renderer::DrawRect(20, 20, 280, 200, black);
         Renderer::DrawRect(22, 22, 276, 196, blank, false);
         int posY = 35;
-        Renderer::DrawString("CTRPluginFramework", 106, posY, blank);
+        Renderer::DrawString("CTRPluginFramework", 1000, posY, blank);
+        posY = Screen::Top->Debug(25, posY);
+        //GSPGPU_ImportDisplayCaptureInfo(&infos);
+        //gfxReadFramebufferInfo(GFX_TOP, &inf);
+        char buf[100];
+        //sprintf(buf, "active: %d, 0: %08X, 1:%08X, dspSelect: %d", 
+        //    inf.active_framebuf, inf.framebuf0_vaddr, inf.framebuf1_vaddr, inf.framebuf_dispselect);
+       // Renderer::DrawString(buf, 25, posY, blank);
+        if (_startLine.x != -1)
+        {
+           
+            Renderer::Line(_startLine, _endLine, green);
+            //Renderer::Arc(_endLine.x, _endLine.y, _arcRadius, green);
+            //Renderer::EllipseIncomplete(_endLine.x, _endLine.y, _a, _b, _max, _aff, blue);
+            //char buf[100];
+            sprintf(buf, "%f", _a);
+            Renderer::DrawString(buf, 25, posY, blank);
+            IntRect rect(_startLine, _endLine - _startLine);
+            Renderer::RoundedRectangle(rect, _a, 50, _c);
+        }
+        
+        
     }
 
     //###########################################
@@ -174,8 +211,41 @@ namespace CTRPluginFramework
 
         switch (event.type)
         {
+            case Event::TouchBegan:
+            {
+                _startLine.x = event.touch.x;
+                _startLine.y = event.touch.y;
+                _endLine.x = event.touch.x;
+                _endLine.y = event.touch.y;
+                 u64 tick = svcGetSystemTick();
+                _c = Color(tick >> 16 & 0xFF, tick >> 8 & 0xFF, tick & 0xFF);
+                break;
+            }
+            case Event::TouchMoved:
+            {
+                _endLine.x = event.touch.x;
+                _endLine.y = event.touch.y;
+                break;
+            }
             case Event::KeyPressed:
             {
+                // Changing Arc
+                if (event.key.code == Key::DPadRight)
+                    _a++;
+                else if (event.key.code == Key::DPadLeft)
+                    _a--;
+                else if (event.key.code == Key::L)
+                    _b--;
+                else if (event.key.code == Key::R)
+                    _b++;
+                else if (event.key.code == Key::X)
+                    _max++;
+                else if (event.key.code == Key::Y)
+                    _max--;
+                else if (event.key.code == Key::ZL)
+                    _aff--;
+                else if (event.key.code == Key::ZR)
+                    _aff++;
                 // Moving Selector
                 if (event.key.code == Key::DPadUp)
                 {
@@ -256,7 +326,7 @@ namespace CTRPluginFramework
                 }
                 // Update selected text size
                 _selectedTextSize = Renderer::GetTextSize(_folder->_items[_selector]->name.c_str());
-                _maxScrollOffset = (float)_selectedTextSize - 300.f;
+                _maxScrollOffset = (float)_selectedTextSize - 200.f;
                 _scrollClock.Restart();
                 _scrollOffset = 0.f;
                 _reverseFlow = false;
@@ -269,7 +339,7 @@ namespace CTRPluginFramework
     //###########################################
     void    Menu::_Update(Time delta)
     {
-        if (_selectedTextSize > 350 && _scrollClock.HasTimePassed(Seconds(2)))
+        if (_selectedTextSize >= 280 && _scrollClock.HasTimePassed(Seconds(2)))
         {
             if (!_reverseFlow && _scrollOffset < _maxScrollOffset)
             {
