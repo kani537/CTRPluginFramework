@@ -40,12 +40,7 @@ namespace CTRPluginFramework
             case GSP_RGB565_OES:
                 half.b[0] = *src++;
                 half.b[1] = *src;
-             /*   b = half.u >> 11;
-                g = (half.u >> 5) & 0b111111;
-                r = (half.u & 0b11111);    
-                b = ( b * 527 + 23 ) >> 6;
-                r = ( g * 527 + 23 ) >> 6;
-                g = ( r * 259 + 33 ) >> 6;*/
+
                 a = 255;
                 b = (half.u >> 8) & 0xF8;
                 g = (half.u >> 3) & 0xFC;
