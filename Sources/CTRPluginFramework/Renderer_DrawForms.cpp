@@ -1,8 +1,14 @@
 #include "CTRPluginFramework.hpp"
 #include <algorithm>
+#include <queue>
 
 namespace CTRPluginFramework
 {
+    inline u32   GetFramebufferOffset(int posX, int posY, int bpp, int rowsize)
+    {
+        return ((rowsize - 1 - posY + posX * rowsize) * bpp);
+    }
+
     void        Renderer::DrawLine(int posX, int posY, int width, Color color, int height)
     {  
         // Correct posY
@@ -11,6 +17,23 @@ namespace CTRPluginFramework
         {
             _length = height;
             _DrawPixel(posX + x, posY + height, color);
+        }
+        _length = 1;
+    }
+
+    void        Renderer::DrawLine(IntVector start, IntVector end, Color color)
+    {  
+        int posX = start.x;
+        int posY = start.y;
+        int width = end.x - posX;
+        int height = 1 + end.y - posY;
+
+        // Correct posY
+        posY += (_rowSize[_target] - 240);
+        for (int x = 0; x < width; x++)
+        {
+            _length = height;
+            _DrawPixel(posX + x, posY, color);
         }
         _length = 1;
     }
@@ -93,9 +116,6 @@ namespace CTRPluginFramework
         y = b;
         d1 = b * b - a * a * b + a * a / 4;
         _DrawPixel(posX + x, posY, color);
-        /*_DrawPixel(x, -y, c);
-        _DrawPixel(-x, -y, c);
-        _DrawPixel(-x, y, c);*/
         _DrawPixel(posX + x, posY + (b - y), color);
         _DrawPixel(posX + x, posY - (b - y), color);
         _DrawPixel(posX - x, posY - (b - y), color);
@@ -120,9 +140,6 @@ namespace CTRPluginFramework
             _DrawPixel(posX + x, posY - (b - y), color);
             _DrawPixel(posX - x, posY - (b - y), color);
             _DrawPixel(posX - x, posY + (b - y), color);
-            /*pixel(x,-y,c) ;
-            pixel(-x,-y,c) ;
-            pixel(-x,y,c) ;*/ 
         }
         d2 =(float)(b * b * (x + .5) * (x + .5) + a * a * (y - 1) * (y - 1) - a * a * b * b);
         while ((y > 0 ) && (cpt < max )) 
@@ -142,11 +159,7 @@ namespace CTRPluginFramework
             _DrawPixel(posX + x, posY + (b - y), color);
             _DrawPixel(posX + x, posY - (b - y), color);
             _DrawPixel(posX - x, posY - (b - y), color);
-            _DrawPixel(posX - x, posY + (b - y), color);
-            /*pixel(x,-y,c) ;
-            pixel(-x,-y,c) ;
-            pixel(-x,y,c) ;*/
-        }
+            _DrawPixel(posX - x, posY + (b - y), color);        }
     }
 
     void Renderer::RoundedRectangle(const IntRect &rect, float radius, int max, Color color) 
@@ -285,17 +298,22 @@ namespace CTRPluginFramework
             _DrawPixel(posX - x + rWidth, posY + (radius - y), color);
         }
 
-        // Un Correct posY
-        posY = posYBak;
-
         // Top line
-        DrawLine(posX + rWidth, posY - 1, width - rWidth, color);
+        DrawLine(posX + rWidth, posYBak - 1, width - rWidth, color);
         // Bottom line
-        DrawLine(posX + rWidth, posY + height - 1, width - rWidth, color);
+        DrawLine(posX + rWidth, posYBak + height - 1, width - rWidth, color);
         // Left line
-        DrawLine(posX, posY + rHeight - 1, 1, color, height - (rHeight* 2));
+        DrawLine(posX, posYBak + rHeight - 1, 1, color, height - (rHeight* 2));
         // Right line
-        DrawLine(posX + width + rWidth, posY + rHeight, 1, color, height - (rHeight * 2));
+        DrawLine(posX + width + rWidth, posYBak + rHeight, 1, color, height - (rHeight * 2));
+
+        Color cyan = Color(0, 255, 255);
+        IntVector start = rect._leftTopCorner;
+        IntVector end = start + rect._size;
+        start.x += rWidth + 1;
+        start.y++;
+        if (width > 5 && height > 5)
+            FormFiller(start, end, cyan, color);
     }
 
     void        Renderer::DrawRect(int posX, int posY, int width, int height, Color color, bool fill, int thickness)
@@ -306,7 +324,6 @@ namespace CTRPluginFramework
         }
         else
         {
-
             // Top line
             DrawLine(posX, posY, width, color, thickness);
             // Bottom line
@@ -316,5 +333,61 @@ namespace CTRPluginFramework
             // Right line
             DrawLine(posX + width - thickness, posY, thickness, color, height);
         }
+    }
+
+    void    Renderer::FormFiller(const IntVector &start, const IntVector &end, Color &fill, Color &limit) 
+    {
+        std::queue<IntVector> fpQueue;
+
+        const int maxY = end.y;
+        const int maxX = end.x;
+
+        Screen *scr = _screens[_target];
+        GSPGPU_FramebufferFormats fmt = scr->GetFormat();
+
+        int y = start.y;
+
+        do
+        {
+            int x = start.x;
+            // Get line frontiers points
+            while (x < maxX)
+            {
+                Color bg = Color::FromMemory(scr->GetLeftFramebuffer(x, y), fmt);
+                if (bg != limit && x < maxX)
+                {
+                    do 
+                    {
+                        x++;
+                        bg = Color::FromMemory(scr->GetLeftFramebuffer(x, y), fmt);
+                    } while ((bg != limit) && x < maxX);     
+                    // Store frontier point
+                    fpQueue.push(IntVector(x, y));    
+                }            
+                x++;
+            }
+            // While queue isn't empty
+            while (!fpQueue.empty())
+            {
+                IntVector rPoint = fpQueue.front();
+                fpQueue.pop();
+
+                int left = rPoint.x - 1;
+                Color bg;
+                do
+                {
+                    bg = Color::FromMemory(scr->GetLeftFramebuffer(left, y), fmt);
+                    left--;
+                } while (bg != limit && left >= start.x);
+
+                // If width is at least 1, draw line
+                if (rPoint.x - left > 1)
+                {
+                    IntVector lPoint = IntVector(left + 1, y);
+                    DrawLine(lPoint, rPoint, fill);
+                }
+            }
+            y++;
+        } while (y <= maxY);
     }
 }

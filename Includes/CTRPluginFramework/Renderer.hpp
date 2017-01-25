@@ -32,6 +32,7 @@ namespace CTRPluginFramework
         // Forms
         //#############################################################################################
         static void     DrawLine(int posX, int posY, int length, Color color, int width = 1);
+        static void     DrawLine(IntVector start, IntVector end, Color color);
         static void     DrawRect(int posX, int posY, int width, int height, Color color, bool fill = true, int thickness = 1);
         template <typename T>
         static void     Line(Vector<T> &start, Vector<T> &end, Color color);  
@@ -39,7 +40,8 @@ namespace CTRPluginFramework
         static void     Ellipse(int posX, int posY, long a, long b, Color color);
         static void     EllipseIncomplete(int posX, int posY, float a, float b, int max, int aff, Color color);
         static     void RoundedRectangle(const IntRect &rect, float radius, int max, Color color);
-
+        //static void     FormFiller(int posX,int posY, Color &fillColor, Color &limit) ;
+        static    void    FormFiller(const IntVector &start, const IntVector &end, Color &fill, Color &limit);
         // Menu
         //#############################################################################################
         static    void        MenuSelector(int posX, int posY, int width, int height);
