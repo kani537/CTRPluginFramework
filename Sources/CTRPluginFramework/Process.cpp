@@ -18,6 +18,7 @@ namespace CTRPluginFramework
 	Handle 		Process::_mainThreadHandle = 0;
 	Handle 		Process::_keepEvent = 0;
 	bool 		Process::_isPaused = false;
+	bool 		Process::_isAcquiring = false;
 
 	void    Process::Initialize(Handle keepEvent)
 	{
@@ -112,30 +113,29 @@ namespace CTRPluginFramework
 		return (PatchProcess(addr, patch, length, original));
 	}
 
+	bool 	Process::IsAcquiring(void)
+	{
+		return (_isAcquiring);
+	}
+
 	void 	Process::Pause(void)
 	{
+		// Raising priority of Event Thread
 		while (R_FAILED(svcSetThreadPriority(gspThreadEventHandle, 0x19)));
-
-		// Attempts to always get different framebuffers
-
+		// Raising priority of this thread
 		while (R_FAILED(svcSetThreadPriority(_mainThreadHandle, 0x18)));
-
-		u32 	top[2];
-		u32 	bot[2];
-		Screen::Top->GetLeftFramebufferRegisters(top);
-		Screen::Bottom->GetLeftFramebufferRegisters(bot);
-		while (1)
-		{
-			if ((*(u32 *)(top[0]) != *(u32 *)(top[1]))
-				&& (*(u32 *)(bot[0]) != *(u32 *)(bot[1])))
-				break;
-			gspWaitForVBlank1();
-			gspWaitForVBlank();
-		}
 		_isPaused = true;
+		
+		// Waking up Init thread
 		svcSignalEvent(_keepEvent);
+
+		_isAcquiring = true;
 		Screen::Top->Acquire();
         Screen::Bottom->Acquire();
+		_isAcquiring = false;
+
+
+
         float fade = 0.03f;
         Clock t = Clock();
         Time limit = Seconds(1) / 10.f;
@@ -154,10 +154,7 @@ namespace CTRPluginFramework
         	gspWaitForVBlank(); 
         	if (System::IsNew3DS())
         		while (t.GetElapsedTime() < limit);        	
-        }
-       	Screen::Top->Acquire();
-        Screen::Bottom->Acquire();
-       
+        }       
 	}
 
 	void 	Process::Play(bool isInit)
@@ -185,8 +182,8 @@ namespace CTRPluginFramework
 	        }			
 		}
         _isPaused = false;
-		svcSetThreadPriority(gspThreadEventHandle, 0x3F);
-		svcSetThreadPriority(_mainThreadHandle, 0x3F);
+		while(R_FAILED(svcSetThreadPriority(gspThreadEventHandle, 0x3F)));
+		while(R_FAILED(svcSetThreadPriority(_mainThreadHandle, 0x3F)));
 
 	}
 

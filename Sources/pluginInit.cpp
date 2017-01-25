@@ -15,36 +15,43 @@ void abort(void)
 
 namespace CTRPluginFramework
 {
-    static  u32 threadStack[0x4000] ALIGN(8);
+    static u32 threadStack[0x4000] ALIGN(8);
     extern "C" u32 keepThreadStack[0x1000];
+    u32 keepThreadStack[0x1000] ALIGN(8);
 
-    u32         keepThreadStack[0x1000] ALIGN(8);
-    Handle      threadHandle;
+    
+
+    
+
     Handle      keepThreadHandle;
     Handle      keepEvent;
     bool        keepRunning = true;
-    Thread      mT;
+    Thread      mainThread;
 
-    extern "C" int      LaunchMainThread(int arg);
-
+    // From main.cpp
     void    PatchProcess(void);
     int     main(void);
 
     void    ThreadInit(void *arg);
 
-    void    keepThreadMain(void *arg)
+    void    KeepThreadMain(void *arg)
     {
+        // Wait for the game to be launched
+        Sleep(Seconds(3));
+
         // Init heap and services   
         initSystem();
-        mT = threadCreate(ThreadInit, (void *)threadStack, 0x4000, 0x3F, -2, 0);
+        mainThread = threadCreate(ThreadInit, (void *)threadStack, 0x4000, 0x3F, -2, 0);
         svcCreateEvent(&keepEvent, RESET_ONESHOT);
         while (keepRunning)
         {
             svcWaitSynchronization(keepEvent, U64_MAX);
             svcClearEvent(keepEvent);
-            while (Process::IsPaused());
+            while (Process::IsPaused())
+                if (Process::IsAcquiring())
+                    Sleep(Milliseconds(10));
         }
-        threadJoin(mT, U64_MAX);
+        threadJoin(mainThread, U64_MAX);
         exit(1);
     }
 
@@ -52,7 +59,6 @@ namespace CTRPluginFramework
 
     void    Initialize(void)
     {        
-        Sleep(Seconds(1));
         // Init Services
         __appInit();
 
@@ -73,20 +79,13 @@ namespace CTRPluginFramework
 
     // Declared in ctrulib/hid
     extern "C" vu32* hidSharedMem;
-    extern "C" u32 __ctru_heap;
 
     void  ThreadInit(void *arg)
     {
-
         CTRPluginFramework::Initialize();
-
-        PageInfo pinfo;
-        MemInfo minfo;
 
         // Reduce Priority
         Process::Play(true);
-        // Wait for the game to be launched
-        Sleep(Seconds(3));
 
         // Protect VRAM
         Process::ProtectRegion(0x1F000000);
@@ -100,21 +99,21 @@ namespace CTRPluginFramework
         // Release process in case it was forgotten
         Process::Play(true);
 
-        // Exit commands thread
-        //ThreadCommands::Exit();
-
         gfxExit();
 
         // Exit loop in keep thread
         keepRunning = false;
         svcSignalEvent(keepEvent);
+
         threadExit(1);        
     }
 
-    extern "C" void __system_allocateHeaps(void);
+    // For the linker to find the function
+    extern "C" int LaunchMainThread(int arg);
+
     int   LaunchMainThread(int arg)
     {
-        svcCreateThread(&keepThreadHandle, keepThreadMain, 0, &keepThreadStack[0x1000], 0x20, -2);
+        svcCreateThread(&keepThreadHandle, KeepThreadMain, 0, &keepThreadStack[0x1000], 0x20, -2);
         return (0);
     }
 

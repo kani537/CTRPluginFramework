@@ -63,6 +63,7 @@ namespace CTRPluginFramework
             // Unpause the current process
             static void     Play(bool isInit = false);
             static bool     IsPaused(void);
+            static bool     IsAcquiring(void);
 
         private:
             friend void     Initialize(void);
@@ -80,6 +81,7 @@ namespace CTRPluginFramework
             static Handle       _mainThreadHandle;
             static Handle       _keepEvent;
             static bool         _isPaused;
+            static bool         _isAcquiring;
             //static u32          _finishedStateDMA;
             //static u32          *_kProcessHandleTable;          
     };
