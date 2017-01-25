@@ -176,9 +176,53 @@ namespace CTRPluginFramework
 
     void    Screen::Acquire(void)
     {
+        
+    again:
+        u32     leftFB1 = REG(_LCDSetup + FramebufferA1);
+        u32     leftFB2 = REG(_LCDSetup + FramebufferA2);
+        u32     rightFB1 = REG(_LCDSetup + FramebufferB1);
+        u32     rightFB2 = REG(_LCDSetup + FramebufferB2);
+
+        if (leftFB1 == leftFB2)
+        {
+            u16 sl = svcGetSystemTick() & 0xFF;
+            Sleep(Microseconds(sl));
+            goto again;
+        }
+
         _currentBuffer = *_currentBufferReg;
-        Update();
+        // Get format
+        _format = (GSPGPU_FramebufferFormats)(REG(_LCDSetup + LCDSetup::Format) & 0b111);
+
+        // Get width & height
+        u32 wh = REG(_LCDSetup + LCDSetup::WidthHeight);
+        _height = (u16)(wh & 0xFFFF);
+        _width = (u16)(wh >> 16);
+
+        // Get stride
+        _stride = REG(_LCDSetup + LCDSetup::Stride);
+
+        // Set bytes per pixel
+        _bytesPerPixel = GetBPP(GetFormat());
+
+        // Set row size
+        _rowSize = _stride / _bytesPerPixel;
+
+        _leftFramebuffersP[0] = leftFB1;
+        _leftFramebuffersP[1] = leftFB2;
+        _leftFramebuffersV[0] = FromPhysicalToVirtual(leftFB1);
+        _leftFramebuffersV[1] = FromPhysicalToVirtual(leftFB2);
+
+        if (_isTopScreen)
+        {
+            _rightFramebuffersP[0] = rightFB1;
+            _rightFramebuffersP[1] = rightFB2;
+            _rightFramebuffersV[0] = FromPhysicalToVirtual(rightFB1);
+            _rightFramebuffersV[1] = FromPhysicalToVirtual(rightFB2);
+        }
+
         u32 size = GetFramebufferSize();
+
         GSPGPU_FlushDataCache((void *)_leftFramebuffersV[0], size);
         memcpy((void *)_leftFramebuffersV[1], (void *)_leftFramebuffersV[0], size);
         GSPGPU_FlushDataCache((void *)_leftFramebuffersV[1], size);
@@ -188,7 +232,6 @@ namespace CTRPluginFramework
             memcpy((void *)_rightFramebuffersV[1], (void *)_rightFramebuffersV[0], size);
             GSPGPU_FlushDataCache((void *)_rightFramebuffersV[0], size);
         }
-        
     }
 
     bool    Screen::IsTopScreen(void)
@@ -221,9 +264,12 @@ namespace CTRPluginFramework
         if (flush)
         {
             u32 size = GetFramebufferSize();
-            GSPGPU_FlushDataCache((void *)_leftFramebuffersV[!_currentBuffer], size);
+
+            if (R_FAILED(GSPGPU_FlushDataCache((void *)_leftFramebuffersV[!_currentBuffer], size)))
+                svcFlushProcessDataCache(Process::GetHandle(), (void *)_leftFramebuffersV[!_currentBuffer], size);
             if (Is3DEnabled())
-                GSPGPU_FlushDataCache((void *)_rightFramebuffersV[!_currentBuffer], size);
+                if (R_FAILED(GSPGPU_FlushDataCache((void *)_rightFramebuffersV[!_currentBuffer], size)))
+                    svcFlushProcessDataCache(Process::GetHandle(), (void *)_rightFramebuffersV[!_currentBuffer], size);
         }
         if (copy)
         {
@@ -232,9 +278,15 @@ namespace CTRPluginFramework
             if (Is3DEnabled())
                 memcpy((void *)_rightFramebuffersV[_currentBuffer], (void *)_rightFramebuffersV[!_currentBuffer], size);
         }
-        _currentBuffer = !_currentBuffer;
-        *_currentBufferReg = _currentBuffer;
 
+        // Change buffer
+        _currentBuffer = !_currentBuffer;
+        // Set gpu buffer
+        *_currentBufferReg = _currentBuffer;
+        REG(_LCDSetup + FramebufferA1) = _leftFramebuffersP[0];
+        REG(_LCDSetup + FramebufferA2) = _leftFramebuffersP[1];
+        REG(_LCDSetup + FramebufferB1) = _rightFramebuffersP[0];
+        REG(_LCDSetup + FramebufferB2) = _rightFramebuffersP[1];
     }
 
     GSPGPU_FramebufferFormats   Screen::GetFormat(void)
@@ -274,7 +326,7 @@ namespace CTRPluginFramework
 
     bool    Screen::Update(void)
     {
-        u32     leftFB1 = REG(_LCDSetup + FramebufferA1);
+       /* u32     leftFB1 = REG(_LCDSetup + FramebufferA1);
         u32     leftFB2 = REG(_LCDSetup + FramebufferA2);
         u32     rightFB1 = REG(_LCDSetup + FramebufferB1);
         u32     rightFB2 = REG(_LCDSetup + FramebufferB2);
@@ -316,7 +368,7 @@ namespace CTRPluginFramework
         _rightFramebuffersP[1] = rightFB2;
         _rightFramebuffersV[0] = FromPhysicalToVirtual(rightFB1);
         _rightFramebuffersV[1] = FromPhysicalToVirtual(rightFB2);
-        exit:
+        exit:*/
             return (true);
     }
 
@@ -331,6 +383,13 @@ namespace CTRPluginFramework
 
         sprintf(buffer, "left1: %08X", _leftFramebuffersV[1]);
         Renderer::DrawString(buffer, posX, posY, blank);
+
+        sprintf(buffer, "GPU left0: %08X", REG(_LCDSetup + FramebufferA1));
+        Renderer::DrawString(buffer, posX, posY, blank);
+        //posY += 10;
+
+        sprintf(buffer, "GPU left1: %08X", REG(_LCDSetup + FramebufferA2));
+        Renderer::DrawString(buffer, posX, posY, blank);
         //posY += 10;
 
         sprintf(buffer, "right0: %08X", _rightFramebuffersV[0]);
@@ -341,7 +400,7 @@ namespace CTRPluginFramework
         Renderer::DrawString(buffer, posX, posY, blank);
        // posY += 10;
 
-        sprintf(buffer, "format: %08X", _format);
+        sprintf(buffer, "format: %d", _format);
         Renderer::DrawString(buffer, posX, posY, blank);
         //posY += 10;
 
