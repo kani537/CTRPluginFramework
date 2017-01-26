@@ -9,7 +9,10 @@ namespace CTRPluginFramework
     Menu::Menu(std::string name, std::string note) : 
     _startLine(-1, -1), _endLine(-1, -1),
     _showStarredBtn("Show starred", *this, &Menu::Null, IntRect(30, 70, 120, 30)), 
-    _gameGuideBtn("Game Guide", *this, &Menu::Null, IntRect(165, 70, 120, 30))
+    _gameGuideBtn("Game Guide", *this, &Menu::Null, IntRect(30, 105, 120, 30)),    
+    _toolsBtn("Tools", *this, &Menu::Null, IntRect(30, 140, 120, 30)),
+    _hidMapperBtn("HID Mapper", *this, &Menu::Null, IntRect(165, 70, 120, 30)),
+    _searchBtn("Search", *this, &Menu::Null, IntRect(165, 105, 120, 30))
     {
         _isOpen = false;
         _starMode = false;
@@ -87,7 +90,7 @@ namespace CTRPluginFramework
                 int posY = 10;
                 Renderer::DrawString(buf, 320, posY, blank, black);
                 Renderer::EndFrame();
-                while(clock.GetElapsedTime() < frameLimit);
+               // while(clock.GetElapsedTime() < frameLimit);
 
             }
             else
@@ -115,16 +118,19 @@ namespace CTRPluginFramework
     //###########################################
     void    Menu::_RenderTop(void)
     {
-        Color black = Color();
-        Color blank(255, 255, 255);
-        Color lightGrey(190, 190, 190);
-        Color silver(160, 160, 160);
+        static Color black = Color();
+        static Color blank(255, 255, 255);
+        static Color lightGrey(190, 190, 190);
+        static Color dimGrey(15, 15, 15);
+        static Color silver(160, 160, 160);
+        static IntRect background(30, 20, 340, 200);
+
         int   posY = 25;
         int   posX = 40;
         Renderer::SetTarget(TOP);
 
         // Draw background
-        Renderer::DrawRect(30, 20, 340, 200, black);
+        Renderer::DrawRect2(background, black, dimGrey);
         Renderer::DrawRect(32, 22, 336, 196, blank, false);
 
         // Draw Title
@@ -166,37 +172,42 @@ namespace CTRPluginFramework
     //###########################################
     void    Menu::_RenderBottom(void)
     {
-        Color black = Color();
-        Color blank(255, 255, 255);
-        Color green(0, 255, 0);
-        Color blue(0, 255, 255);
+        static Color black = Color();
+        static Color blank(255, 255, 255);
+        static Color green(0, 255, 0);
+        static Color blue(0, 255, 255);
+        static Color lightGrey(190, 190, 190);
+        static Color dimGrey(15, 15, 15);
+        static Color silver(160, 160, 160);
+        static IntRect background(20, 20, 280, 200);
 
         Renderer::SetTarget(BOTTOM);
 
-        Renderer::DrawRect(20, 20, 280, 200, black);
+        // Background
+        Renderer::DrawRect2(background, black, dimGrey);
         Renderer::DrawRect(22, 22, 276, 196, blank, false);
-        int posY = 35;
-        Renderer::DrawString("CTRPluginFramework", 1000, posY, blank);
+
+
+        int posY = 205;
+        Renderer::DrawString("CTRPluginFramework", 100, posY, blank);
+
+        posY = 35;
+
         _showStarredBtn();
         _gameGuideBtn();
+        _toolsBtn();
+        _hidMapperBtn();
+        _searchBtn();
+
+        // Draw Touch Cursor
         if (Touch::IsDown())
         {
             UIntVector t = Touch::GetPosition();
             int posX = t.x - 2;
             int posY = t.y - 1;
+            
             Renderer::DrawSysString("\uE058", posX, posY, 320, blank);
-        }
-       /* if (_startLine.x != -1)
-        {
-            char buf[100];
-            sprintf(buf, "%f", _a);
-            Renderer::DrawString(buf, 25, posY, blank);
-            IntRect rect(_startLine, _endLine - _startLine);
-            Renderer::RoundedRectangle(rect, _a, 50, _c);
-        }*/
-
-        
-        
+        }        
     }
 
     //###########################################
@@ -245,7 +256,7 @@ namespace CTRPluginFramework
                     /*
                     ** Selector
                     **************/
-                    case Key::DPadDown:
+                    case Key::DPadUp:
                     {
                         if (_selector == 0)
                             _selector = _folder->ItemsCount() - 1;
@@ -253,7 +264,7 @@ namespace CTRPluginFramework
                             _selector--;
                         break;
                     }
-                    case Key::DPadUp:
+                    case Key::DPadDown:
                     {
                         if (_selector == _folder->ItemsCount() - 1)
                             _selector = 0;
@@ -337,11 +348,15 @@ namespace CTRPluginFramework
                 /*
                 ** Scrolling text variables
                 *********************************/
-                _selectedTextSize = Renderer::GetTextSize(_folder->_items[_selector]->name.c_str());
-                _maxScrollOffset = (float)_selectedTextSize - 200.f;
-                _scrollClock.Restart();
-                _scrollOffset = 0.f;
-                _reverseFlow = false;
+                if (event.key.code != Key::Touchpad)
+                {
+                    _selectedTextSize = Renderer::GetTextSize(_folder->_items[_selector]->name.c_str());
+                    _maxScrollOffset = (float)_selectedTextSize - 200.f;
+                    _scrollClock.Restart();
+                    _scrollOffset = 0.f;
+                    _reverseFlow = false;                   
+                }
+                break;
             }
         }
     }

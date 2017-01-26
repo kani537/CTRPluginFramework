@@ -48,8 +48,13 @@ namespace CTRPluginFramework
         IntVector                   _startLine;
         IntVector                   _endLine;
 
-        Button<Menu, void>          _showStarredBtn;
         Button<Menu, void>          _gameGuideBtn;
+        Button<Menu, void>          _showStarredBtn;
+        Button<Menu, void>          _toolsBtn;
+        Button<Menu, void>          _hidMapperBtn;
+        Button<Menu, void>          _searchBtn;
+
+        
     };
 }
 
