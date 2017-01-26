@@ -21,7 +21,7 @@ namespace CTRPluginFramework
         _length = 1;
     }
 
-    void        Renderer::DrawLine(IntVector start, IntVector end, Color color)
+    void        Renderer::DrawLine(IntVector &start, IntVector &end, Color color)
     {  
         int posX = start.x;
         int posY = start.y;
@@ -169,8 +169,9 @@ namespace CTRPluginFramework
         float   d1;
         int     d2;
 
+        using Point = IntVector;
         
-        
+        std::queue<Point> points;
 
         int     width = rect._size.x;
         int     height = rect._size.y;
@@ -240,14 +241,36 @@ namespace CTRPluginFramework
         x = 0; 
 
         width -= rWidth;
-        // Right Top Corner
-        _DrawPixel(posX + x + width, posY + (radius - y), color);
-        // Right Bottom Corner
-        _DrawPixel(posX + x + width , posY + height - (radius - y), color);
-        // Left Bottom Corner
-        _DrawPixel(posX - x + rWidth, posY - (radius - y) + height, color);
-        // Left Top Corner
-        _DrawPixel(posX - x + rWidth, posY + (radius - y), color);
+        {
+            int posXX;
+            int posYY;
+
+            
+            // Left Top Corner
+            posXX = posX - x + rWidth;
+            posYY = posY + (radius - y);
+            _DrawPixel(posXX, posYY, color);
+            points.push(Point(posXX + 1, posYY));
+
+            // Right Top Corner
+            posXX = posX + x + width;
+            posYY = posY + (radius - y);
+            _DrawPixel(posXX, posYY, color);
+            points.push(Point(posXX - 1, posYY));
+
+            // Left Bottom Corner
+            posXX = posX - x + rWidth;
+            posYY = posY - (radius - y) + height;
+            _DrawPixel(posXX, posYY, color);
+            points.push(Point(posXX + 1, posYY));
+
+            // Right Bottom Corner
+            posXX = posX + x + width;
+            posYY = posY + height - (radius - y);
+            _DrawPixel(posXX, posYY, color);
+            points.push(Point(posXX - 1, posYY));
+
+        }
         cpt = 0;
 
         while ((radius * radius * (radius - .5) > radius * radius * (x + 1)) && (cpt < max)) 
@@ -264,14 +287,33 @@ namespace CTRPluginFramework
                 x++;
                 y--; 
             }
-            // Right Top Corner
-            _DrawPixel(posX + x + width, posY + (radius - y), color);
-            // Right Bottom Corner
-            _DrawPixel(posX + x + width , posY + height - (radius - y), color);
-            // Left Bottom Corner
-            _DrawPixel(posX - x + rWidth, posY - (radius - y) + height, color);
+            int posXX;
+            int posYY;
+
+            
             // Left Top Corner
-            _DrawPixel(posX - x + rWidth, posY + (radius - y), color);
+            posXX = posX - x + rWidth;
+            posYY = posY + (radius - y);
+            _DrawPixel(posXX, posYY, color);
+            points.push(Point(posXX + 1, posYY));
+
+            // Right Top Corner
+            posXX = posX + x + width;
+            posYY = posY + (radius - y);
+            _DrawPixel(posXX, posYY, color);
+            points.push(Point(posXX - 1, posYY));
+
+            // Left Bottom Corner
+            posXX = posX - x + rWidth;
+            posYY = posY - (radius - y) + height;
+            _DrawPixel(posXX, posYY, color);
+            points.push(Point(posXX + 1, posYY));
+
+            // Right Bottom Corner
+            posXX = posX + x + width;
+            posYY = posY + height - (radius - y);
+            _DrawPixel(posXX, posYY, color);
+            points.push(Point(posXX - 1, posYY));
         }
         d2 =(float)(radius * radius * (x + .5) * (x + .5) + radius * radius * (y - 1) * (y - 1) - radius * radius * radius * radius);
         while ((y > 0 ) && (cpt < max )) 
@@ -288,14 +330,32 @@ namespace CTRPluginFramework
                 d2 += radius * radius * (-2 * y + 3);
                 y--; 
             }
-            // Right Top Corner
-            _DrawPixel(posX + x + width, posY + (radius - y), color);
-            // Right Bottom Corner
-            _DrawPixel(posX + x + width , posY + height - (radius - y), color);
-            // Left Bottom Corner
-            _DrawPixel(posX - x + rWidth, posY - (radius - y) + height, color);
+            int posXX;
+            int posYY;
+
             // Left Top Corner
-            _DrawPixel(posX - x + rWidth, posY + (radius - y), color);
+            posXX = posX - x + rWidth;
+            posYY = posY + (radius - y);
+            _DrawPixel(posXX, posYY, color);
+            points.push(Point(posXX + 1, posYY));
+
+            // Right Top Corner
+            posXX = posX + x + width;
+            posYY = posY + (radius - y);
+            _DrawPixel(posXX, posYY, color);
+            points.push(Point(posXX - 1, posYY));
+
+            // Left Bottom Corner
+            posXX = posX - x + rWidth;
+            posYY = posY - (radius - y) + height;
+            _DrawPixel(posXX, posYY, color);
+            points.push(Point(posXX + 1, posYY));
+
+            // Right Bottom Corner
+            posXX = posX + x + width;
+            posYY = posY + height - (radius - y);
+            _DrawPixel(posXX, posYY, color);
+            points.push(Point(posXX - 1, posYY));
         }
 
         // Top line
@@ -309,7 +369,22 @@ namespace CTRPluginFramework
 
         if (mustFill)
         {
-            IntVector start = rect._leftTopCorner;
+            while (!points.empty())
+            {
+                Point left = points.front(); points.pop();
+                Point right = points.front(); points.pop();
+
+                DrawLine(left, right, fillColor);
+            }
+
+            int posXX = posX - x + rWidth + 1;
+            int posYY = posYBak + rHeight - 1;
+            int wwidth = x + width - 1;
+            int hheight = height - (rHeight* 2);
+            DrawLine(posXX, posYY, wwidth, fillColor, hheight);
+
+
+            /*IntVector start = rect._leftTopCorner;
             IntRect area = rect;
             area._leftTopCorner.x -= 1;
             area._size.x += 2;
@@ -317,8 +392,233 @@ namespace CTRPluginFramework
             start.x += rWidth + 1;
             start.y++;
 
-            FormFiller(start, area, true, fillColor, color);           
+            FormFiller(start, area, true, fillColor, color);    */       
         }
+    }
+
+    void        Renderer::ComputeRoundedRectangle(std::vector<IntLine> &out, const IntRect &rect, float radius, int max)
+    {
+        int     x;
+        int     y;
+        float   d1;
+        int     d2;
+
+        using Point = IntVector;
+        
+        std::queue<Point> points;
+
+        int     width = rect._size.x;
+        int     height = rect._size.y;
+
+        int     posX = rect._leftTopCorner.x;
+        int     posY = rect._leftTopCorner.y;
+
+        int     posYBak;
+        
+
+        if (width < 0)
+        {
+            width = -width;
+            posX -= width;
+        }
+        if (height < 0)
+        {
+            height = -height;
+            posY -= height;
+        }
+        posYBak = posY;
+        // Correct posY
+        //posY += (_rowSize[_target] - 240);
+        int cpt = 0;
+
+        x = 0;
+        y = radius;
+        d1 = radius * radius - radius * radius * radius + radius * radius / 4;
+
+        float d1Bak = d1;
+
+        while ((radius * radius * (radius - .5) > radius * radius * (x + 1)) && (cpt < max)) 
+        {
+            cpt++;
+            if (d1 < 0) 
+            {
+                d1 += radius * radius * (2 * x + 3);
+                x++;
+            }
+            else 
+            {
+                d1 += radius * radius * (2 * x + 3) + radius * radius * (-2 * y + 2);
+                x++;
+                y--; 
+            }
+        }
+        while ((y > 0 ) && (cpt < max )) 
+        {
+            cpt++;
+            if (d2 < 0) 
+            {
+                d2 += radius * radius * (2 * x + 2) + radius * radius * (-2 * y + 3);
+                y--;
+                x++; 
+            }
+            else 
+            {
+                d2 += radius * radius * (-2 * y + 3);
+                y--; 
+            }
+        }
+        d1 = d1Bak;
+        int rHeight = radius - y;
+        int rWidth = x;
+
+        y = radius;
+        x = 0; 
+
+        width -= rWidth;
+        {
+            int posXX;
+            int posYY;
+
+            
+            // Left Top Corner
+            posXX = posX - x + rWidth;
+            posYY = posY + (radius - y);
+            //_DrawPixel(posXX, posYY, color);
+            points.push(Point(posXX, posYY));
+
+            // Right Top Corner
+            posXX = posX + x + width;
+            posYY = posY + (radius - y);
+            //_DrawPixel(posXX, posYY, color);
+            points.push(Point(posXX, posYY));
+
+            // Left Bottom Corner
+            posXX = posX - x + rWidth;
+            posYY = posY - (radius - y) + height;
+            //_DrawPixel(posXX, posYY, color);
+            points.push(Point(posXX, posYY));
+
+            // Right Bottom Corner
+            posXX = posX + x + width;
+            posYY = posY + height - (radius - y);
+            //_DrawPixel(posXX, posYY, color);
+            points.push(Point(posXX, posYY));
+
+        }
+        cpt = 0;
+
+        while ((radius * radius * (radius - .5) > radius * radius * (x + 1)) && (cpt < max)) 
+        {
+            cpt++;
+            if (d1 < 0) 
+            {
+                d1 += radius * radius * (2 * x + 3);
+                x++;
+            }
+            else 
+            {
+                d1 += radius * radius * (2 * x + 3) + radius * radius * (-2 * y + 2);
+                x++;
+                y--; 
+            }
+            int posXX;
+            int posYY;
+
+            
+            // Left Top Corner
+            posXX = posX - x + rWidth;
+            posYY = posY + (radius - y);
+            //_DrawPixel(posXX, posYY, color);
+            points.push(Point(posXX, posYY));
+
+            // Right Top Corner
+            posXX = posX + x + width;
+            posYY = posY + (radius - y);
+            // _DrawPixel(posXX, posYY, color);
+            points.push(Point(posXX, posYY));
+
+            // Left Bottom Corner
+            posXX = posX - x + rWidth;
+            posYY = posY - (radius - y) + height;
+            ///_DrawPixel(posXX, posYY, color);
+            points.push(Point(posXX, posYY));
+
+            // Right Bottom Corner
+            posXX = posX + x + width;
+            posYY = posY + height - (radius - y);
+            //_DrawPixel(posXX, posYY, color);
+            points.push(Point(posXX, posYY));
+        }
+        d2 =(float)(radius * radius * (x + .5) * (x + .5) + radius * radius * (y - 1) * (y - 1) - radius * radius * radius * radius);
+        while ((y > 0 ) && (cpt < max )) 
+        {
+            cpt++;
+            if (d2 < 0) 
+            {
+                d2 += radius * radius * (2 * x + 2) + radius * radius * (-2 * y + 3);
+                y--;
+                x++; 
+            }
+            else 
+            {
+                d2 += radius * radius * (-2 * y + 3);
+                y--; 
+            }
+            int posXX;
+            int posYY;
+
+            // Left Top Corner
+            posXX = posX - x + rWidth;
+            posYY = posY + (radius - y);
+            //_DrawPixel(posXX, posYY, color);
+            points.push(Point(posXX, posYY));
+
+            // Right Top Corner
+            posXX = posX + x + width;
+            posYY = posY + (radius - y);
+            //_DrawPixel(posXX, posYY, color);
+            points.push(Point(posXX, posYY));
+
+            // Left Bottom Corner
+            posXX = posX - x + rWidth;
+            posYY = posY - (radius - y) + height;
+            //_DrawPixel(posXX, posYY, color);
+            points.push(Point(posXX, posYY));
+
+            // Right Bottom Corner
+            posXX = posX + x + width;
+            posYY = posY + height - (radius - y);
+            //_DrawPixel(posXX, posYY, color);
+            points.push(Point(posXX, posYY));
+        }
+
+        // Top line
+        //DrawLine(posX + rWidth, posYBak - 1, width - rWidth, color);
+        // Bottom line
+        //DrawLine(posX + rWidth, posYBak + height - 1, width - rWidth, color);
+        // Left line
+        //DrawLine(posX - x + rWidth, posYBak + rHeight - 1, 1, color, height - (rHeight* 2));
+        // Right line
+        //DrawLine(posX + x + width, posYBak + rHeight, 1, color, height - (rHeight * 2));
+
+        while (!points.empty())
+        {
+                Point left = points.front(); points.pop();
+                Point right = points.front(); points.pop();
+                out.push_back(IntLine(left, right));
+                //DrawLine(left, right, fillColor);
+        }
+            
+        out.push_back(IntLine(posX + rWidth, posYBak - 2, width - rWidth, 1));
+        out.push_back(IntLine(posX + rWidth, posYBak + height, width - rWidth, 1));
+        out.push_back(IntLine(posX - x + rWidth, posYBak + rHeight - 1, 1, height - (rHeight* 2)));
+        out.push_back(IntLine(posX + x + width, posYBak + rHeight, 1, height - (rHeight * 2)));
+            int posXX = posX - x + rWidth;
+            int posYY = posYBak + rHeight;
+            int wwidth = x + width;
+            int hheight = height - (rHeight* 2);
+            out.push_back(IntLine(posXX, posYY, wwidth, hheight));
+            //DrawLine(posXX, posYY, wwidth, fillColor, hheight);
 
     }
 
@@ -339,6 +639,24 @@ namespace CTRPluginFramework
             // Right line
             DrawLine(posX + width - thickness, posY, thickness, color, height);
         }
+    }
+
+    void        Renderer::DrawRect2(const IntRect &rect, Color &color1, Color &color2)
+    {
+        int height = rect._size.y;
+
+        int posX = rect._leftTopCorner.x;
+        int posY = rect._leftTopCorner.y;
+        int width = rect._size.x;
+
+        while (--height >= 0)
+        {
+            Color &c = height % 2 ? color1 : color2;
+            // DrawLine line
+            DrawLine(posX, posY, width, c);
+            posY++;    
+        }
+
     }
 
     void    Renderer::FormFiller(const IntVector &start, const IntRect &area, bool singlePoint, Color &fill, Color &limit) 

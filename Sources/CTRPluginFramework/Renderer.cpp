@@ -127,8 +127,8 @@ namespace CTRPluginFramework
     void        Renderer::EndFrame(void)
     {
 
-        Screen::Bottom->SwapBuffer();
-        Screen::Top->SwapBuffer(true);
+        Screen::Bottom->SwapBuffer(true, false);
+        Screen::Top->SwapBuffer(true, false);
         //gspWaitForVBlank();
         //gspWaitForVBlank1();
         gspWaitForVBlank();

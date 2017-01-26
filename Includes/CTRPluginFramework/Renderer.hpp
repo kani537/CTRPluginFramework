@@ -7,8 +7,10 @@
 #include "3DS.h"
 #include "Vector.h"
 #include "Rect.hpp"
+#include "Line.hpp"
 #include <cstdio>
 #include <algorithm>
+#include <vector>
 
 namespace CTRPluginFramework
 {
@@ -32,14 +34,16 @@ namespace CTRPluginFramework
         // Forms
         //#############################################################################################
         static void     DrawLine(int posX, int posY, int length, Color color, int width = 1);
-        static void     DrawLine(IntVector start, IntVector end, Color color);
+        static void     DrawLine(IntVector &start, IntVector &end, Color color);
         static void     DrawRect(int posX, int posY, int width, int height, Color color, bool fill = true, int thickness = 1);
+        static void     DrawRect2(const IntRect &rect, Color &color1, Color &color2);
         template <typename T>
         static void     Line(Vector<T> &start, Vector<T> &end, Color color);  
         static void     Arc(int x, int y, int r, Color color);      
         static void     Ellipse(int posX, int posY, long a, long b, Color color);
         static void     EllipseIncomplete(int posX, int posY, float a, float b, int max, int aff, Color color);
         static void     RoundedRectangle(const IntRect &rect, float radius, int max, Color color, bool mustFill = false, Color fillColor = Color());
+        static     void  ComputeRoundedRectangle(std::vector<IntLine> &out, const IntRect &rect, float radius, int max);
         //static void     FormFiller(int posX,int posY, Color &fillColor, Color &limit) ;
         static    void    FormFiller(const IntVector &start, const IntRect &area, bool singlePoint, Color &fill, Color &limit);
         // Menu
@@ -70,7 +74,7 @@ namespace CTRPluginFramework
         //#############################################################################################
         static void     DrawFile(std::FILE *file, int posX, int posY, int width, int height);
         static void     DrawBuffer(u8 *buffer, int posX, int posY, int width, int height);
-
+        static DrawPixelP   _DrawPixel;
     private:
         friend void     Initialize(void);
         // Initalize Renderer
@@ -114,7 +118,7 @@ namespace CTRPluginFramework
         static void         RenderRGB5A1(int posX, int posY, u8 *data, int height);
         static void         RenderRGBA4(int posX, int posY, u8 *data, int height);
 
-        static DrawPixelP   _DrawPixel;
+        
         static DrawDataP    _DrawData;
 
     };
