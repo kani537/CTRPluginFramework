@@ -5,8 +5,11 @@
 #include "Renderer.hpp"
 #include "Touch.hpp"
 //#include "Vector.h"
+
+#include "Line.hpp"
 #include "Rect.hpp"
 #include <string>
+#include <vector>
 
 namespace CTRPluginFramework
 {
@@ -29,6 +32,8 @@ namespace CTRPluginFramework
             contentColor = Color();
 
             _textSize = Renderer::GetTextSize(content.c_str());
+
+            Renderer::ComputeRoundedRectangle(_lines, _uiProperty, 7, 50);
         }
         ~Button(){};
 
@@ -67,14 +72,50 @@ namespace CTRPluginFramework
             if (!Touch::IsDown())
                 return (false);
 
-            IntVector touch = IntVector(Touch::GetPosition());
+            IntVector touch(Touch::GetPosition());
             return (_uiProperty.Contains(touch));
         }
 
         virtual void    _Draw(bool isPressed)
         {
-            Renderer::RoundedRectangle(_uiProperty, 7, 50, borderColor, true, isPressed ? pressedColor : idleColor);
+            //Renderer::RoundedRectangle(_uiProperty, 7, 50, borderColor, true, isPressed ? pressedColor : idleColor);
             
+            Color &fillColor = isPressed ? pressedColor : idleColor;
+            int bMax = _lines.size() - 5;
+            int i;
+
+            for (i = 0; i < bMax; i++)
+            {
+                IntLine &line = _lines[i];
+                // Draw border
+                Renderer::_DrawPixel(line.start.x, line.start.y, borderColor);
+                Renderer::_DrawPixel(line.end.x, line.end.y, borderColor);
+               /* if (i == 0)
+                {
+                    char buf[40];
+                    sprintf(buf, "[%d, %d] - [%d, %d]", line.start.x, line.start.y, line.end.x, line.end.y);
+                    int posY = 50;
+                    Color blank(255, 255, 255);
+                    Renderer::DrawString(buf, 150, posY, blank);
+                }*/
+                // Fill line
+                IntVector left(line.start);
+                IntVector right(line.end);
+                left.x++;
+                right.x--;
+                Renderer::DrawLine(left, right, fillColor);
+            }
+
+            for (; i < _lines.size() - 1; i++)
+            {
+                IntLine &line = _lines[i];
+
+                Renderer::DrawLine(line.start.x, line.start.y, line.end.x, borderColor, line.end.y);
+            }
+
+            IntLine &line = _lines[i];
+            Renderer::DrawLine(line.start.x, line.start.y, line.end.x, fillColor, line.end.y);
+
             int posX = _uiProperty._leftTopCorner.x;
             int posY = _uiProperty._leftTopCorner.y;
 
@@ -83,10 +124,11 @@ namespace CTRPluginFramework
             int limit = posX + width;
 
             posY += (height - 16) / 2;
+            //posY += (height - 10) / 2;
             int x = (width - _textSize) / 2;
             if (x > 0)
                 posX += x;
-
+            //Renderer::DrawString((char *)_content.c_str(), posX, posY, contentColor);
             Renderer::DrawSysString(_content.c_str(), posX, posY, limit, contentColor);        
         }
 
@@ -96,6 +138,7 @@ namespace CTRPluginFramework
         std::string     _content;
         IntRect         _uiProperty;
         float           _textSize;
+        std::vector<IntLine> _lines;
 
     };
 
