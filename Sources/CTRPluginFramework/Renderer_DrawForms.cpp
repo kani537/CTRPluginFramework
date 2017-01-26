@@ -162,7 +162,7 @@ namespace CTRPluginFramework
             _DrawPixel(posX - x, posY + (b - y), color);        }
     }
 
-    void Renderer::RoundedRectangle(const IntRect &rect, float radius, int max, Color color) 
+    void Renderer::RoundedRectangle(const IntRect &rect, float radius, int max, Color color, bool mustFill, Color fillColor) 
     {
         int     x;
         int     y;
@@ -307,17 +307,19 @@ namespace CTRPluginFramework
         // Right line
         DrawLine(posX + x + width, posYBak + rHeight, 1, color, height - (rHeight * 2));
 
-        u64 tick = svcGetSystemTick();
-        Color cyan = Color(tick & 0xFF, (tick >> 16) & 0xFF, (tick >> 8) & 0xFF);
-        IntVector start = rect._leftTopCorner;
-        IntRect area = rect;
-        area._leftTopCorner.x -= 1;
-        area._size.x += 2;
+        if (mustFill)
+        {
+            IntVector start = rect._leftTopCorner;
+            IntRect area = rect;
+            area._leftTopCorner.x -= 1;
+            area._size.x += 2;
 
-        start.x += rWidth + 1;
-        start.y++;
+            start.x += rWidth + 1;
+            start.y++;
 
-            FormFiller(start, area, true, cyan, color);
+            FormFiller(start, area, true, fillColor, color);           
+        }
+
     }
 
     void        Renderer::DrawRect(int posX, int posY, int width, int height, Color color, bool fill, int thickness)

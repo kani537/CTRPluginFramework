@@ -39,7 +39,7 @@ namespace CTRPluginFramework
         static void     Arc(int x, int y, int r, Color color);      
         static void     Ellipse(int posX, int posY, long a, long b, Color color);
         static void     EllipseIncomplete(int posX, int posY, float a, float b, int max, int aff, Color color);
-        static     void RoundedRectangle(const IntRect &rect, float radius, int max, Color color);
+        static void     RoundedRectangle(const IntRect &rect, float radius, int max, Color color, bool mustFill = false, Color fillColor = Color());
         //static void     FormFiller(int posX,int posY, Color &fillColor, Color &limit) ;
         static    void    FormFiller(const IntVector &start, const IntRect &area, bool singlePoint, Color &fill, Color &limit);
         // Menu
