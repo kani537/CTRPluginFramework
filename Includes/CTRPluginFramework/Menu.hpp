@@ -6,6 +6,7 @@
 #include "MenuFolder.hpp"
 #include "MenuEntry.hpp"
 #include "Vector.h"
+#include "Button.hpp"
 
 namespace CTRPluginFramework
 {
@@ -23,6 +24,7 @@ namespace CTRPluginFramework
 
         void    Append(MenuItem *item);
         int     Run(void);
+        void    Null(void);
     private:
 
         void    _RenderTop(void);
@@ -45,6 +47,9 @@ namespace CTRPluginFramework
         bool                        _reverseFlow;
         IntVector                   _startLine;
         IntVector                   _endLine;
+
+        Button<Menu, void>          _showStarredBtn;
+        Button<Menu, void>          _gameGuideBtn;
     };
 }
 

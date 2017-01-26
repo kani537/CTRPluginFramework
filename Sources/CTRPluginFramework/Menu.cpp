@@ -6,7 +6,10 @@
 
 namespace CTRPluginFramework
 {
-    Menu::Menu(std::string name, std::string note) : _startLine(-1, -1), _endLine(-1, -1)
+    Menu::Menu(std::string name, std::string note) : 
+    _startLine(-1, -1), _endLine(-1, -1),
+    _showStarredBtn("Show starred", *this, &Menu::Null, IntRect(30, 70, 120, 30)), 
+    _gameGuideBtn("Game Guide", *this, &Menu::Null, IntRect(165, 70, 120, 30))
     {
         _isOpen = false;
         _starMode = false;
@@ -22,7 +25,10 @@ namespace CTRPluginFramework
     {
 
     }
+    void    Menu::Null(void)
+    {
 
+    }    
     void    Menu::Append(MenuItem *item)
     {
         _folder->Append(item);
@@ -171,14 +177,24 @@ namespace CTRPluginFramework
         Renderer::DrawRect(22, 22, 276, 196, blank, false);
         int posY = 35;
         Renderer::DrawString("CTRPluginFramework", 1000, posY, blank);
-        if (_startLine.x != -1)
+        _showStarredBtn();
+        _gameGuideBtn();
+        if (Touch::IsDown())
+        {
+            UIntVector t = Touch::GetPosition();
+            int posX = t.x - 2;
+            int posY = t.y - 1;
+            Renderer::DrawSysString("\uE058", posX, posY, 320, blank);
+        }
+       /* if (_startLine.x != -1)
         {
             char buf[100];
             sprintf(buf, "%f", _a);
             Renderer::DrawString(buf, 25, posY, blank);
             IntRect rect(_startLine, _endLine - _startLine);
             Renderer::RoundedRectangle(rect, _a, 50, _c);
-        }
+        }*/
+
         
         
     }
@@ -192,7 +208,7 @@ namespace CTRPluginFramework
 
         switch (event.type)
         {
-            case Event::TouchBegan:
+            /*case Event::TouchBegan:
             {
                 _startLine.x = event.touch.x;
                 _startLine.y = event.touch.y;
@@ -207,7 +223,7 @@ namespace CTRPluginFramework
                 _endLine.x = event.touch.x;
                 _endLine.y = event.touch.y;
                 break;
-            }
+            }*/
             case Event::KeyPressed:
             {
                 switch (event.key.code)
