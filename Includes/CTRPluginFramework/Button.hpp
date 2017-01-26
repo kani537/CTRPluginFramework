@@ -22,11 +22,11 @@ namespace CTRPluginFramework
             // Black
             borderColor = Color(1, 1, 1);
             // Blank
-            idleColor   = Color(255, 255, 255);
+            idleColor   = Color(250, 250, 250);
             // Dim Grey
             pressedColor = Color(105, 105, 105);
             // Black
-            contentColor = Color(0,255, 0);
+            contentColor = Color();
 
             _textSize = Renderer::GetTextSize(content.c_str());
         }
@@ -47,11 +47,13 @@ namespace CTRPluginFramework
                 if (_callback)
                     (_caller.*_callback)(args...);
                 isReady = false;
+                return (true);
             }
             if (!isPressed && !isReady)
             {
                 isReady = true;
             }
+            return (false);
         }
 
         Color           borderColor;
