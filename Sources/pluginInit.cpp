@@ -37,7 +37,7 @@ namespace CTRPluginFramework
     void    KeepThreadMain(void *arg)
     {
         // Wait for the game to be launched
-        Sleep(Seconds(3));
+        //Sleep(Seconds(3));
 
         // Init heap and services   
         initSystem();
