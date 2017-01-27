@@ -13,8 +13,8 @@ namespace CTRPluginFramework
 {
     extern "C" unsigned char *AddFavorite25;
     extern "C" unsigned char *AddFavoriteFilled25;
-    extern "C" unsigned char *CheckedCheckBox;
-    extern "C" unsigned char *UnCheckedCheckBox;
+    extern "C" unsigned char *CheckedCheckbox;
+    extern "C" unsigned char *UnCheckedCheckbox;
     extern "C" unsigned char *CloseWindow20;
     extern "C" unsigned char *CloseWindowFilled20;
     extern "C" unsigned char *FolderFilled;
@@ -30,6 +30,7 @@ namespace CTRPluginFramework
         int     rowsize;
         int     bpp;
 
+        posY += sizeY;
         GSPGPU_FramebufferFormats fmt;
         // Get target infos
         switch (Renderer::_target)
@@ -77,7 +78,7 @@ namespace CTRPluginFramework
     int     Icon::DrawCheckBox(IntVector &pos, bool isChecked)
     {
         // Define which version to draw
-        u8 *img = isChecked ? CheckedCheckBox : UnCheckedCheckBox;
+        u8 *img = isChecked ? CheckedCheckbox : UnCheckedCheckbox;
 
         return (DrawImg(img, pos.y, pos.y, 15, 15));
     }
@@ -85,7 +86,7 @@ namespace CTRPluginFramework
     int     Icon::DrawCheckBox(int posX, int posY, bool isChecked)
     {
         // Define which version to draw
-        u8 *img = isChecked ? CheckedCheckBox : UnCheckedCheckBox;
+        u8 *img = isChecked ? CheckedCheckbox : UnCheckedCheckbox;
 
         return (DrawImg(img, posX, posY, 15, 15));
     }
