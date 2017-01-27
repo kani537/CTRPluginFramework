@@ -23,6 +23,7 @@ namespace CTRPluginFramework
     typedef void (*DrawPixelP)(int, int, Color);
     typedef void (*DrawDataP)(int, int, u8*, int);
     #define     RANGE(x, y, z) (y >= x && y <= z)
+    class Icon;
     class Renderer
     {
     public:
@@ -77,6 +78,7 @@ namespace CTRPluginFramework
         static DrawPixelP   _DrawPixel;
     private:
         friend void     Initialize(void);
+        friend class    Icon;
         // Initalize Renderer
         static void     Initialize(void);
         // Allocate buffer to process files in ram
@@ -87,8 +89,8 @@ namespace CTRPluginFramework
         static uint8_t  DrawGlyph(uint16_t x, uint16_t y, u32 glyphCode, Color color, float offset);
         static u8       *DrawTile(u8 *tile, u8 iconsize, u8 tilesize, u16 startX, u16 startY, u16 endX, u16 endY, u8 charWidth, u8 charHeight, Color color);
 
-
         static Target       _target;
+        
         static bool         _useRender3D;
         static bool         _isRendering;
         static bool         _useDoubleBuffer;

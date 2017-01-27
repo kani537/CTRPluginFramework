@@ -329,7 +329,7 @@ namespace CTRPluginFramework
         }
         else
         {
-                for (int yy = 0; yy < 15; yy++)
+            for (int yy = 0; yy < 15; yy++)
             {
                 for (int xx = 0; xx < 15; xx++)
                 {
