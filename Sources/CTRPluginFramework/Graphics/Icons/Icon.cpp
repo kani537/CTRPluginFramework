@@ -13,25 +13,81 @@ namespace CTRPluginFramework
 {
     extern "C" unsigned char *AddFavorite25;
     extern "C" unsigned char *AddFavoriteFilled25;
+    extern "C" unsigned char *CheckedCheckBox;
+    extern "C" unsigned char *UnCheckedCheckBox;
     extern "C" unsigned char *CloseWindow20;
     extern "C" unsigned char *CloseWindowFilled20;
+    extern "C" unsigned char *FolderFilled;
     extern "C" unsigned char *Info25;
     extern "C" unsigned char *InfoFilled25;
     extern "C" unsigned char *UserManualFilled15;
 
     #define RGBA8 GSP_RGBA8_OES
+
+    inline int Icon::DrawImg(u8 *img, int posX, int posY, int sizeX, int sizeY)
+    {
+        u8      *framebuf = nullptr;
+        int     rowsize;
+        int     bpp;
+
+        GSPGPU_FramebufferFormats fmt;
+        // Get target infos
+        switch (Renderer::_target)
+        {
+            case Target::TOP:
+            {
+                framebuf = Screen::Top->GetLeftFramebuffer(posX, posY);
+                Screen::Top->GetFramebufferInfos(rowsize, bpp, fmt);
+                break;
+            }
+            case Target::BOTTOM:
+            {
+                framebuf = Screen::Bottom->GetLeftFramebuffer(posX, posY);
+                Screen::Bottom->GetFramebufferInfos(rowsize, bpp, fmt);
+                break;                
+            }
+            default:
+                return (posX);
+        }
+        if (framebuf == nullptr)
+            return (posX);
+
+        // Draw
+        for (int x = 0; x < sizeX; x++)
+        {
+            u8 *dst = framebuf + rowsize * x;
+            int y = 0;
+            while (y++ < sizeY)
+            {
+                Color px = Color::FromMemory(img, RGBA8);
+                px.ToMemoryBlend(dst, fmt, BlendMode::Alpha);
+                dst += bpp;
+                img += 4;
+            }
+        }
+        return (posX + sizeX);
+
+    }
+
     /*
     ** CheckBox
+    ** 15px * 15px
     ************/
 
     int     Icon::DrawCheckBox(IntVector &pos, bool isChecked)
     {
+        // Define which version to draw
+        u8 *img = isChecked ? CheckedCheckBox : UnCheckedCheckBox;
 
+        return (DrawImg(img, pos.y, pos.y, 15, 15));
     }
 
     int     Icon::DrawCheckBox(int posX, int posY, bool isChecked)
     {
+        // Define which version to draw
+        u8 *img = isChecked ? CheckedCheckBox : UnCheckedCheckBox;
 
+        return (DrawImg(img, posX, posY, 15, 15));
     }
 
     /*
@@ -41,55 +97,32 @@ namespace CTRPluginFramework
 
     int     Icon::DrawClose(IntVector &pos, bool filled)
     {
-        u8      *framebuf = nullptr;
-        int     rowsize;
-        int     bpp;
-
-        GSPGPU_FramebufferFormats fmt;
-
-        // Get target infos
-        switch (Renderer::_target)
-        {
-            case Target::TOP:
-            {
-                framebuf = Screen::Top->GetLeftFramebuffer(pos.x, pos.y);
-                fmt = Screen::Top->GetFormat();
-                rowsize = Screen::Top->GetRowSize();
-                bpp = Screen::Top->GetBytesPerPixel();
-                break;
-            }
-            case Target::BOTTOM:
-            {
-                framebuf = Screen::Bottom->GetLeftFramebuffer(pos.x, pos.y);
-                fmt = Screen::Bottom->GetFormat();
-                rowsize = Screen::Bottom->GetRowSize();
-                bpp = Screen::Bottom->GetBytesPerPixel();
-                break;                
-            }
-            default:
-                return (pos.x);
-        }
-        if (framebuf == nullptr)
-            return (pos.x);
-
         // Define which version to draw
         u8 *img = filled ? CloseWindowFilled20 : CloseWindow20;
 
-        // Draw
-        for (int x = 0; x < 20; x++)
-        {
-            u8 *dst = framebuf + rowsize * x;
-            int y = 0;
-            while (y++ < 20)
-            {
-                Color px = Color::FromMemory(img, RGBA8);
-                px.ToMemoryBlend(dst, fmt, BlendMode::Alpha);
-                dst += bpp;
-                img += 4;
-            }
-        }
+        return (DrawImg(img, pos.x, pos.y, 20, 20));
+    }
 
-        pos.x += 20;
-        return (pos.x);
+    int     Icon::DrawClose(int posX, int posY, bool filled)
+    {
+        // Define which version to draw
+        u8 *img = filled ? CloseWindowFilled20 : CloseWindow20;
+
+        return (DrawImg(img, posX, posY, 20, 20));
+    }
+
+    /*
+    ** Folder
+    ** 15px * 15px
+    ***************/
+
+    int     Icon::DrawFolder(IntVector &pos)
+    {
+        return (DrawImg(FolderFilled, pos.x, pos.y, 15, 15));
+    }
+
+    int     Icon::DrawFolder(int posX, int posY)
+    {
+        return (DrawImg(FolderFilled, posX, posY, 15, 15));
     }
 }
