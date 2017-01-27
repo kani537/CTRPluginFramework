@@ -1,13 +1,11 @@
-#include "CTRPluginFramework.hpp"
-#include <cmath>
+#include "types.h"
+#include "ctrulib/services/gspgpu.h"
+
+#include "CTRPluginFramework/Graphics/Color.hpp"
 #include <algorithm>
 
 namespace CTRPluginFramework
 {
-    Color::Color() : r(0), g(0), b(0), a(255)
-    {
-    }
-
     Color::Color(u8 red, u8 green, u8 blue, u8 alpha) 
     : r(red), g(green), b(blue), a(alpha)
     {

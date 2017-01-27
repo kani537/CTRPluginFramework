@@ -2,28 +2,31 @@
 #define CTRPLUGINFRAMEWORK_RENDERER_HPP
 
 #include "types.h"
-#include "Color.hpp"
-#include "Screen.hpp"
-#include "3DS.h"
-#include "Vector.h"
-#include "Rect.hpp"
-#include "Line.hpp"
-#include <cstdio>
+
+#include "ctrulib/font.h"
+#include "CTRPluginFramework/Vector.hpp"
+#include "CTRPluginFramework/Rect.hpp"
+#include "CTRPluginFramework/Line.hpp"
+#include "CTRPluginFramework/Graphics/Color.hpp"
+
 #include <algorithm>
-#include <vector>
 
 namespace CTRPluginFramework
 {
+    
+    #define     RANGE(x, y, z) (y >= x && y <= z)
+
     enum Target
     {
         BOTTOM = 0,
         TOP = 1
     };
-    class Renderer;
-    typedef void (*DrawPixelP)(int, int, Color);
-    typedef void (*DrawDataP)(int, int, u8*, int);
-    #define     RANGE(x, y, z) (y >= x && y <= z)
+    
+    using DrawPixelP = void (*)(int, int, Color);
+    using DrawDataP = void (*)(int, int, u8*, int);
+    
     class Icon;
+    class Screen;
     class Renderer
     {
     public:
@@ -73,7 +76,6 @@ namespace CTRPluginFramework
 
         // Misc
         //#############################################################################################
-        static void     DrawFile(std::FILE *file, int posX, int posY, int width, int height);
         static void     DrawBuffer(u8 *buffer, int posX, int posY, int width, int height);
         static DrawPixelP   _DrawPixel;
     private:

@@ -1,11 +1,11 @@
 #ifndef CTRPLUGINFRAMEWORK_SCREEN_HPP
 #define CTRPLUGINFRAMEWORK_SCREEN_HPP
 
-#include "CTRPluginFramework/Color.hpp"
 #include "ctrulib/services/gspgpu.h"
 
 namespace CTRPluginFramework
 {
+    class Color;
     class Screen
     {
     public:
@@ -27,14 +27,17 @@ namespace CTRPluginFramework
 
         Screen(u32 lcdSetupInfo, u32 fillColorAddress, bool isTopScreen = false);
 
+        // Useless ?
         void                        SetCtrulibScreen(void);
 
         bool                        IsTopScreen(void);
         bool                        Is3DEnabled(void);
+
         void                        Flash(Color &color);
+
         void                        Acquire(void);
         void                        SwapBuffer(bool flush = false, bool copy = false);
-        bool                        Update(void);
+
         GSPGPU_FramebufferFormats   GetFormat(void);
         u16                         GetWidth(void);
         u16                         GetHeight(void);
@@ -42,23 +45,26 @@ namespace CTRPluginFramework
         u32                         GetRowSize(void);
         u32                         GetBytesPerPixel(void);
         u32                         GetFramebufferSize(void);
-        void                        GetLeftFramebufferRegisters(u32 *out);
-        int                         Debug(int posX, int posY);
+
+        void                        GetFramebufferInfos(int &rowsize, int &bpp, GSPGPU_FramebufferFormats &format);
+
+        
 
         u8                          *GetLeftFramebuffer(bool current = false);
         u8                          *GetLeftFramebuffer(int posX, int posY);
+
         u8                          *GetRightFramebuffer(bool current = false);
         u8                          *GetRightFramebuffer(int posX, int posY);                  
         
         void                        Fade(float fade, bool copy = false);
 
+        int                         Debug(int posX, int posY);
+
     private:
         friend class Renderer;
         friend void                 Initialize(void);
-        static void                 Initialize(void);
 
-        u8                          *GetLeftFramebufferP(bool current = false);
-        u8                          *GetRightFramebufferP(bool current = false);
+        static void                 Initialize(void);
 
         u32                         _LCDSetup;
         u32                         _FillColor;

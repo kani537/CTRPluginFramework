@@ -1,5 +1,6 @@
-#include "CTRPluginFramework.hpp"
+#include "types.h"
 #include "3DS.h"
+#include "CTRPluginFramework/System.hpp"
 
 namespace CTRPluginFramework
 {

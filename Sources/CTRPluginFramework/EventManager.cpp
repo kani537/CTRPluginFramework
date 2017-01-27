@@ -1,4 +1,14 @@
-#include "CTRPluginFramework.hpp"
+#include "types.h"
+
+#include "ctrulib/services/hid.h"
+
+#include <queue>
+#include "CTRPluginFramework/Controller.hpp"
+#include "CTRPluginFramework/Touch.hpp"
+#include "CTRPluginFramework/Events.hpp"
+#include "CTRPluginFramework/EventManager.hpp"
+#include "CTRPluginFramework/Sleep.hpp"
+#include "CTRPluginFramework/Time.hpp"
 
 namespace CTRPluginFramework
 {

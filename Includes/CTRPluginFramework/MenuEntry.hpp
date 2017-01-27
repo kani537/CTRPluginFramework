@@ -1,15 +1,14 @@
 #ifndef CTRPLUGINFRAMEWORK_MENUENTRY_HPP
 #define CTRPLUGINFRAMEWORK_MENUENTRY_HPP
 
-#include "types.h"
-#include "MenuItem.hpp"
-#include <string>
+#include "CTRPluginFramework/MenuItem.hpp"
 
 namespace CTRPluginFramework
 {
     class MenuEntry;
-    typedef void (*FuncPointer)(MenuEntry*);
-    //typedef bool (*FuncPointer)(void);
+    
+    using FuncPointer = void (*)(MenuEntry*);
+    
     class MenuEntry : public MenuItem
     {
         struct Flags

@@ -1,6 +1,13 @@
-#include "CTRPluginFramework.hpp"
-#include "arm11kCommands.h"
+#include "types.h"
+
 #include "3DS.h"
+#include "CTRPluginFramework/Clock.hpp"
+#include "CTRPluginFramework/Time.hpp"
+#include "CTRPluginFramework/Screen.hpp"
+#include "CTRPluginFramework/System.hpp"
+#include "CTRPluginFramework/Process.hpp"
+#include "CTRPluginFramework/arm11kCommands.h"
+
 #include <cstdio>
 #include <cstring>
 

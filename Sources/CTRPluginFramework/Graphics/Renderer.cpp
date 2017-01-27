@@ -1,7 +1,11 @@
-#include "CTRPluginFramework/Color.hpp"
-#include "CTRPluginFramework/Renderer.hpp"
-#include "3DS.h"
+#include "types.h"
 #include "ctrulib/services/gspgpu.h"
+
+
+#include "CTRPluginFramework/Graphics/Color.hpp"
+#include "CTRPluginFramework/Screen.hpp"
+#include "CTRPluginFramework/Graphics/Renderer.hpp"
+
 #include <cstdio>
 #include <cmath>
 
@@ -95,33 +99,14 @@ namespace CTRPluginFramework
     void        Renderer::StartFrame(bool current)
     {
         _isRendering = true;
-       // _screens[BOTTOM]->Update();       
+     
         _rowSize[BOTTOM] = _screens[BOTTOM]->GetRowSize();
         _targetWidth[BOTTOM] = _screens[BOTTOM]->GetWidth();
         _targetHeight[BOTTOM] = _screens[BOTTOM]->GetHeight();
 
-        // Screen TOP
-        //_screens[TOP]->Update();
-       // _useRender3D = _screens[TOP]->Is3DEnabled();
         _rowSize[TOP] = _screens[TOP]->GetRowSize();
         _targetWidth[TOP] = _screens[TOP]->GetWidth();
         _targetHeight[TOP] = _screens[TOP]->GetHeight();
-
-        // Copy current framebuffer into the second to avoid frame glitch
-        /*if (!current)
-        {
-            u8  *current = _screens[BOTTOM]->GetLeftFramebuffer(true);
-            int size = _screens[BOTTOM]->GetFramebufferSize();
-            memcpy(_framebuffer[BOTTOM], current, size);
-
-            current = _screens[TOP]->GetLeftFramebuffer(true);
-            size = _screens[TOP]->GetFramebufferSize();
-            memcpy(_framebuffer[TOP], current, size);
-
-            current = _screens[TOP]->GetRightFramebuffer(true);
-            if (current)
-                memcpy(_framebufferR[TOP], current, size);
-        }*/
     }
 
     void        Renderer::EndFrame(void)
@@ -129,8 +114,6 @@ namespace CTRPluginFramework
 
         Screen::Bottom->SwapBuffer(true, false);
         Screen::Top->SwapBuffer(true, false);
-        //gspWaitForVBlank();
-        //gspWaitForVBlank1();
         gspWaitForVBlank();
         _isRendering = false;
     }
@@ -219,95 +202,6 @@ namespace CTRPluginFramework
                 j = 0;
             }
         }
-    }
-
-
-    void    Renderer::DrawFile(std::FILE *file, int posX, int posY, int width, int height)
-    {
-        
-            return;
-
-/*
-        // Init buffer
-        if (_buffer == nullptr)
-            return;
-
-        int     rowsize = height * 3;
-        int     fileSize = width * height * 3;
-        
-        // reset pos in file
-        std::fseek(file, static_cast<std::size_t>(0), SEEK_SET);
-
-        _fileCmd.file = file;        
-        _fileCmd.size = fileSize;
-        _fileCmd.dst = _buffer;
-
-        _fileCmd.read = 0;
-        ThreadCommands::SetArgs((int)&_fileCmd);
-        ThreadCommands::Execute(Commands::FS_READFILE);
-        if (_fileCmd.read == _fileCmd.size)
-        {
-            DrawBuffer(_buffer, posX, posY, width, height);
-            return;
-        }
-        // Correct posY
-        posY = _rowSize[_target] - posY;
-
-
-        int     rowPerRead = _bufferSize / rowsize;
-        int     readSize = rowPerRead * rowsize;
-
-        int     totalRead = width / rowPerRead;
-        int     leftOver = width % rowPerRead;
-        totalRead += leftOver > 0 ? 1 : 0;
-
-        _fileCmd.file = file;        
-        _fileCmd.size = readSize;
-        _fileCmd.dst = _buffer;
-
-        // reset pos in file
-        std::fseek(file, static_cast<std::size_t>(0), SEEK_SET);
-        
-        while (--totalRead >= 0)
-        {
-            if (totalRead > 0)
-            {
-                _fileCmd.read = 0;
-                ThreadCommands::SetArgs((int)&_fileCmd);
-                ThreadCommands::Execute(Commands::FS_READFILE);
-                if (_fileCmd.read != _fileCmd.size)
-                {
-                    ThreadCommands::SetArgs((int)&_fileCmd);
-                    ThreadCommands::Execute(Commands::FS_READFILE);
-                    if (_fileCmd.read != _fileCmd.size)
-                        return;
-                }
-                for (int i = 0; i < rowPerRead; i++)
-                {
-                    _DrawData(posX, posY, _buffer + (rowsize * i), height);
-                    posX++;
-                }
-            }
-            else
-            {
-                _fileCmd.size = leftOver * rowsize;
-                _fileCmd.read = 0;
-                ThreadCommands::SetArgs((int)&_fileCmd);
-                ThreadCommands::Execute(Commands::FS_READFILE);
-                if (_fileCmd.read != _fileCmd.size)
-                {
-                    ThreadCommands::SetArgs((int)&_fileCmd);
-                    ThreadCommands::Execute(Commands::FS_READFILE);
-                    if (_fileCmd.read != _fileCmd.size)
-                        return;
-                }
-                for (int i = 0; i > leftOver; i++)
-                {
-                    _DrawData(posX, posY, _buffer + (rowsize * i), height);
-                    posX++;
-                }
-            }            
-        }*/
     }
 
     void    Renderer::DrawBuffer(u8 *buffer, int posX, int posY, int width, int height)

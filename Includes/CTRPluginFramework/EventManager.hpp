@@ -1,13 +1,9 @@
 #ifndef CTRPLUGINFRAMEWORK_EVENTMANAGER_HPP
 #define CTRPLUGINFRAMEWORK_EVENTMANAGER_HPP
 
-#include "types.h"
-#include "ctrulib/services/hid.h"
-#include "Events.hpp"
-#include <queue>
-
 namespace CTRPluginFramework
 {
+    class Event;
     class EventManager
     {
     public:

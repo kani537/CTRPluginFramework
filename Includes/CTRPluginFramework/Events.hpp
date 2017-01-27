@@ -1,8 +1,6 @@
 #ifndef CTRPLUGINFRAMEWORK_EVENTS_HPP
 #define CTRPLUGINFRAMEWORK_EVENTS_HPP
 
-#include "CTRPluginFramework.hpp"
-
 namespace CTRPluginFramework
 {
     class Event
@@ -74,8 +72,6 @@ namespace CTRPluginFramework
             SliderEvent     slider;
             SwipEvent       swip;
         };
-
-
     };
 }
 

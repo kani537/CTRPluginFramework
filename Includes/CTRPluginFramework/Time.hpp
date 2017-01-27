@@ -1,8 +1,6 @@
 #ifndef CTRPLUGINFRAMEWORK_TIME_HPP
 #define CTRPLUGINFRAMEWORK_TIME_HPP
 
-#include "CTRPluginFramework.hpp"
-
 namespace CTRPluginFramework
 {
     class Time

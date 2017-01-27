@@ -1,13 +1,13 @@
 #ifndef CTRPLUGINFRAMEWORK_BUTTON_H
 #define CTRPLUGINFRAMEWORK_BUTTON_H
 
-#include "CTRPluginFramework.hpp"
-#include "Renderer.hpp"
-#include "Touch.hpp"
-//#include "Vector.h"
+#include "CTRPluginFramework/Line.hpp"
+#include "CTRPluginFramework/Rect.hpp"
+#include "CTRPluginFramework/Screen.hpp"
+#include "CTRPluginFramework/Touch.hpp"
+#include "CTRPluginFramework/Graphics/Renderer.hpp"
+#include "CTRPluginFramework/Graphics/Color.hpp"
 
-#include "Line.hpp"
-#include "Rect.hpp"
 #include <string>
 #include <vector>
 
@@ -18,7 +18,8 @@ namespace CTRPluginFramework
     {
         
     public:
-        typedef T(C::*EventCallback)(Args...);
+        using EventCallback = T (C::*)(Args...);
+        //typedef T(C::*EventCallback)(Args...);
         Button(std::string content, C &caller, T(C::*callback)(Args...), IntRect rect) :
         _caller(caller), _callback(callback), _content(content), _uiProperty(rect)
         {
@@ -37,12 +38,18 @@ namespace CTRPluginFramework
         }
         ~Button(){};
 
-        virtual bool    operator ()(Args&... args)
+        virtual bool    operator ()(bool isTouchDown, IntVector touchPos, Args&... args)
         {
             static bool isReady = true;
 
             // Check if is pressed
-            bool isPressed = _Update();
+            bool isPressed = false;
+
+            if (isTouchDown)
+            {
+                isPressed = _uiProperty.Contains(touchPos);
+            }
+
             // Draw button
             _Draw(isPressed);
 
@@ -66,15 +73,6 @@ namespace CTRPluginFramework
         Color           pressedColor;
         Color           contentColor;
     private:
-
-        virtual bool    _Update(void)
-        {
-            if (!Touch::IsDown())
-                return (false);
-
-            IntVector touch(Touch::GetPosition());
-            return (_uiProperty.Contains(touch));
-        }
 
         virtual void    _Draw(bool isPressed)
         {

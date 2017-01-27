@@ -1,8 +1,6 @@
 #ifndef CTRPLUGINFRAMEWORK_SYSTEM_HPP
 #define CTRPLUGINFRAMEWORK_SYSTEM_HPP
 
-#include "types.h"
-
 namespace CTRPluginFramework
 {    
     class System

@@ -1,4 +1,6 @@
-#include "CTRPluginFramework.hpp"
+#include "types.h"
+
+#include "CTRPluginFramework/Time.hpp"
 
 namespace CTRPluginFramework
 {

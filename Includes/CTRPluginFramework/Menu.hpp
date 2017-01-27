@@ -1,15 +1,20 @@
 #ifndef CTRPLUGINFRAMEWORK_MENU_HPP
 #define CTRPLUGINFRAMEWORK_MENU_HPP
 
-#include "CTRPluginFramework.hpp"
-#include "MenuItem.hpp"
-#include "MenuFolder.hpp"
-#include "MenuEntry.hpp"
-#include "Vector.h"
+#include "Vector.hpp"
 #include "Button.hpp"
+#include "Clock.hpp"
+
+#include <queue>
 
 namespace CTRPluginFramework
 {
+    class MenuEntry;
+    class MenuItem;
+    class MenuFolder;
+    class Event;
+    class Time;
+    class Clock;
     class Menu
     {
         struct MenuFlags

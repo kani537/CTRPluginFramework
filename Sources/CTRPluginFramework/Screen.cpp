@@ -1,6 +1,14 @@
-#include "CTRPluginFramework.hpp"
+#include "types.h"
 #include "3DS.h"
-#include "ctrulib/gfx.h"
+
+#include "CTRPluginFramework/Graphics/Color.hpp"
+#include "CTRPluginFramework/Graphics/Renderer.hpp"
+#include "CTRPluginFramework/Screen.hpp"
+#include "CTRPluginFramework/System.hpp"
+#include "CTRPluginFramework/Process.hpp"
+#include "CTRPluginFramework/Time.hpp"
+#include "CTRPluginFramework/Sleep.hpp"
+
 #include <cstdio>
 
 
@@ -168,12 +176,6 @@ namespace CTRPluginFramework
         }
     }
 
-    void    Screen::GetLeftFramebufferRegisters(u32 *out)
-    {
-        out[0] = _LCDSetup + FramebufferA1;
-        out[1] = _LCDSetup + FramebufferA2;
-    }
-
     void    Screen::Acquire(void)
     {
         
@@ -223,14 +225,26 @@ namespace CTRPluginFramework
 
         u32 size = GetFramebufferSize();
 
-        GSPGPU_FlushDataCache((void *)_leftFramebuffersV[0], size);
+        // Flush left framebuf0
+        if (R_FAILED(GSPGPU_FlushDataCache((void *)_leftFramebuffersV[0], size)))
+            svcFlushProcessDataCache(Process::GetHandle(), (void *)_leftFramebuffersV[0], size);
+        // Copy left framebuf0 to framebuf1
         memcpy((void *)_leftFramebuffersV[1], (void *)_leftFramebuffersV[0], size);
-        GSPGPU_FlushDataCache((void *)_leftFramebuffersV[1], size);
+        // Flush left framebuf1
+        if (R_FAILED(GSPGPU_FlushDataCache((void *)_leftFramebuffersV[1], size)))
+            svcFlushProcessDataCache(Process::GetHandle(), (void *)_leftFramebuffersV[1], size);
+
         if (Is3DEnabled())
         {
-            GSPGPU_FlushDataCache((void *)_rightFramebuffersV[0], size);            
+            // Flush right framebuf0
+            if (R_FAILED(GSPGPU_FlushDataCache((void *)_rightFramebuffersV[0], size)))
+                svcFlushProcessDataCache(Process::GetHandle(), (void *)_rightFramebuffersV[0], size);
+            // Copy right framebuf0 to framebuf1      
             memcpy((void *)_rightFramebuffersV[1], (void *)_rightFramebuffersV[0], size);
-            GSPGPU_FlushDataCache((void *)_rightFramebuffersV[0], size);
+            //
+            // Flush right framebuf1
+            if (R_FAILED(GSPGPU_FlushDataCache((void *)_rightFramebuffersV[1], size)))
+                svcFlushProcessDataCache(Process::GetHandle(), (void *)_rightFramebuffersV[1], size);
         }
     }
 
@@ -281,8 +295,10 @@ namespace CTRPluginFramework
 
         // Change buffer
         _currentBuffer = !_currentBuffer;
+
         // Set gpu buffer
         *_currentBufferReg = _currentBuffer;
+        // Ensure that the framebuffers are the good ones
         REG(_LCDSetup + FramebufferA1) = _leftFramebuffersP[0];
         REG(_LCDSetup + FramebufferA2) = _leftFramebuffersP[1];
         REG(_LCDSetup + FramebufferB1) = _rightFramebuffersP[0];
@@ -324,52 +340,11 @@ namespace CTRPluginFramework
         return (_stride * _width);
     }
 
-    bool    Screen::Update(void)
+    void    Screen::GetFramebufferInfos(int &rowsize, int &bpp, GSPGPU_FramebufferFormats &format)
     {
-       /* u32     leftFB1 = REG(_LCDSetup + FramebufferA1);
-        u32     leftFB2 = REG(_LCDSetup + FramebufferA2);
-        u32     rightFB1 = REG(_LCDSetup + FramebufferB1);
-        u32     rightFB2 = REG(_LCDSetup + FramebufferB2);
-        u32     fmt = REG(_LCDSetup + LCDSetup::Format); 
-
-        if (_isTopScreen && (rightFB1 != _rightFramebuffersP[0] || rightFB2 != _rightFramebuffersP[1]))
-            goto refresh;
-
-        if (leftFB1 == _leftFramebuffersP[0]  && leftFB2 == _leftFramebuffersP[1] && fmt == _format)
-            return (false);
-
-    refresh:
-        // Get format
-        _format = (GSPGPU_FramebufferFormats)(REG(_LCDSetup + LCDSetup::Format) & 0b111);
-
-        // Get width & height
-        u32 wh = REG(_LCDSetup + LCDSetup::WidthHeight);
-        _height = (u16)(wh & 0xFFFF);
-        _width = (u16)(wh >> 16);
-
-        // Get stride
-        _stride = REG(_LCDSetup + LCDSetup::Stride);
-
-        // Set bytes per pixel
-        _bytesPerPixel = GetBPP(GetFormat());
-
-        // Set row size
-        _rowSize = _stride / _bytesPerPixel;
-
-        _leftFramebuffersP[0] = leftFB1;
-        _leftFramebuffersP[1] = leftFB2;
-        _leftFramebuffersV[0] = FromPhysicalToVirtual(leftFB1);
-        _leftFramebuffersV[1] = FromPhysicalToVirtual(leftFB2);
-
-        if (!_isTopScreen)
-            goto exit;
-
-        _rightFramebuffersP[0] = rightFB1;
-        _rightFramebuffersP[1] = rightFB2;
-        _rightFramebuffersV[0] = FromPhysicalToVirtual(rightFB1);
-        _rightFramebuffersV[1] = FromPhysicalToVirtual(rightFB2);
-        exit:*/
-            return (true);
+        rowsize = _rowSize;
+        bpp = _bytesPerPixel;
+        format = _format;
     }
 
     int    Screen::Debug(int posX, int posY)
@@ -415,13 +390,16 @@ namespace CTRPluginFramework
         return (posY);
     }
 
+    /*
+    ** Framebuffers Getters
+    ******************************/
+
+    /*
+    ** Left
+    *************/
     u8      *Screen::GetLeftFramebuffer(bool current)
     {
-        if (current)
-        {
-            return ((u8 *)_leftFramebuffersV[_currentBuffer]); 
-        }
-        return ((u8 *)_leftFramebuffersV[!_currentBuffer]);            
+        return ((u8 *)_leftFramebuffersV[ current ? _currentBuffer : !_currentBuffer ]);            
     }
 
     u8      *Screen::GetLeftFramebuffer(int posX, int posY)
@@ -431,21 +409,24 @@ namespace CTRPluginFramework
         posY = std::max(posY, 0);
         posY = std::min(posY, 240);
 
+        // Correct posY
         posY += _rowSize - 240;
+
         u32 offset = (_rowSize - 1 - posY + posX * _rowSize) * _bytesPerPixel;
+
         return ((u8 *)_leftFramebuffersV[!_currentBuffer] + offset);            
     }
+
+    /*
+    ** Right
+    *************/
 
     u8      *Screen::GetRightFramebuffer(bool current)
     {
         if (!_isTopScreen)
             return (nullptr);
 
-        if (current)
-        {
-            return ((u8 *)_rightFramebuffersV[_currentBuffer]); 
-        }
-        return ((u8 *)_rightFramebuffersV[!_currentBuffer]);            
+        return ((u8 *)_rightFramebuffersV[ current ? _currentBuffer : !_currentBuffer ]);            
     }
 
     u8      *Screen::GetRightFramebuffer(int posX, int posY)
@@ -458,31 +439,10 @@ namespace CTRPluginFramework
         posY = std::max(posY, 0);
         posY = std::min(posY, 240);
         
+        // Correct posY
         posY += _rowSize - 240;
         u32 offset = (_rowSize - 1 - posY + posX * _rowSize) * _bytesPerPixel;
+
         return ((u8 *)_rightFramebuffersV[!_currentBuffer] + offset);            
-    }
-
-    u8      *Screen::GetLeftFramebufferP(bool current)
-    {
-        if (current)
-        {
-            return ((u8 *)_leftFramebuffersP[_currentBuffer]); 
-        }
-        return ((u8 *)_leftFramebuffersP[!_currentBuffer]);            
-    }
-
-    u8      *Screen::GetRightFramebufferP(bool current)
-    {
-        if (!_isTopScreen)
-            return (nullptr);
-
-        u32    index = REG(_currentBuffer) & 0b1;
-
-        if (current)
-        {
-            return ((u8 *)_rightFramebuffersP[_currentBuffer]); 
-        }
-        return ((u8 *)_rightFramebuffersP[!_currentBuffer]);            
     }
 }

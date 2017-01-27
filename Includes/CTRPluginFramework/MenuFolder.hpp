@@ -1,8 +1,7 @@
 #ifndef CTRPLUGINFRAMEWORK_MENUFOLDER_HPP
 #define CTRPLUGINFRAMEWORK_MENUFOLDER_HPP
 
-#include "types.h"
-#include "MenuItem.hpp"
+#include "CTRPluginFramework/MenuItem.hpp"
 #include <vector>
 
 namespace CTRPluginFramework

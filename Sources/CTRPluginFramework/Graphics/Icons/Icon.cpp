@@ -1,7 +1,13 @@
-#include "Icon.hpp"
-#include "Color.hpp"
-#include "Screen.hpp"
-#include "Renderer.hpp"
+#include "types.h"
+#include "ctrulib/services/gspgpu.h"
+
+#include "CTRPluginFramework/Vector.hpp"
+#include "CTRPluginFramework/Graphics/Color.hpp"
+#include "CTRPluginFramework/Graphics/Icon.hpp"
+#include "CTRPluginFramework/Screen.hpp"
+#include "CTRPluginFramework/Graphics/Renderer.hpp"
+
+
 
 namespace CTRPluginFramework
 {

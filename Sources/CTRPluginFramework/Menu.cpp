@@ -1,8 +1,27 @@
-#include "Menu.hpp"
-#include "Renderer.hpp"
-#include "Touch.hpp"
+#include "types.h"
 #include "ctrulib/services/gspgpu.h"
-#include "ctrulib/gfx.h"
+
+#include <string>
+#include <vector>
+#include <cstdio>
+
+#include "CTRPluginFramework/Vector.hpp"
+#include "CTRPluginFramework/Rect.hpp"
+#include "CTRPluginFramework/Line.hpp"
+#include "CTRPluginFramework/Graphics/Color.hpp"
+#include "CTRPluginFramework/Graphics/Renderer.hpp"
+#include "CTRPluginFramework/Menu.hpp"
+#include "CTRPluginFramework/MenuFolder.hpp"
+#include "CTRPluginFramework/MenuEntry.hpp"
+#include "CTRPluginFramework/Controller.hpp"
+#include "CTRPluginFramework/Touch.hpp"
+#include "CTRPluginFramework/Events.hpp"
+#include "CTRPluginFramework/EventManager.hpp"
+#include "CTRPluginFramework/Time.hpp"
+#include "CTRPluginFramework/Clock.hpp"
+#include "CTRPluginFramework/Process.hpp"
+
+
 
 namespace CTRPluginFramework
 {
@@ -141,6 +160,8 @@ namespace CTRPluginFramework
 
         // Draw Entry
         int max = _folder->ItemsCount();
+        if (max == 0)
+            return;
         int i = std::max(0, _selector - 6);//(_selector / 9) * 9;
         max = std::min(max, (i + 8));
         
@@ -193,18 +214,20 @@ namespace CTRPluginFramework
 
         posY = 35;
 
-        _showStarredBtn();
-        _gameGuideBtn();
-        _toolsBtn();
-        _hidMapperBtn();
-        _searchBtn();
+        bool isTouchDown = Touch::IsDown();
+        IntVector touchPos(Touch::GetPosition());
+
+        _showStarredBtn(isTouchDown, touchPos);
+        _gameGuideBtn(isTouchDown, touchPos);
+        _toolsBtn(isTouchDown, touchPos);
+        _hidMapperBtn(isTouchDown, touchPos);
+        _searchBtn(isTouchDown, touchPos);
 
         // Draw Touch Cursor
-        if (Touch::IsDown())
+        if (isTouchDown)
         {
-            UIntVector t = Touch::GetPosition();
-            int posX = t.x - 2;
-            int posY = t.y - 1;
+            int posX = touchPos.x - 2;
+            int posY = touchPos.y - 1;
             
             Renderer::DrawSysString("\uE058", posX, posY, 320, blank);
         }        
@@ -350,7 +373,7 @@ namespace CTRPluginFramework
                 *********************************/
                 if (event.key.code != Key::Touchpad)
                 {
-                    _selectedTextSize = Renderer::GetTextSize(_folder->_items[_selector]->name.c_str());
+                    _selectedTextSize = _folder->ItemsCount() > 0 ? Renderer::GetTextSize(_folder->_items[_selector]->name.c_str()) : 0;
                     _maxScrollOffset = (float)_selectedTextSize - 200.f;
                     _scrollClock.Restart();
                     _scrollOffset = 0.f;

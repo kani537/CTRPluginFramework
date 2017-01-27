@@ -1,4 +1,8 @@
-#include "MenuFolder.hpp"
+#include "types.h"
+
+#include "CTRPluginFramework/MenuItem.hpp"
+#include "CTRPluginFramework/MenuEntry.hpp"
+#include "CTRPluginFramework/MenuFolder.hpp"
 
 namespace CTRPluginFramework
 {
@@ -8,6 +12,7 @@ namespace CTRPluginFramework
         this->name = name;
         this->note = note;
         this->_position = -1;
+        this->_parent = nullptr;
     }
 
     MenuFolder::~MenuFolder()
@@ -36,7 +41,7 @@ namespace CTRPluginFramework
 
     MenuFolder  *MenuFolder::_Close(int &position)
     {
-        if (_parent)
+        if (_parent != nullptr && position != -1)
             position = _position;
         return (_parent);
     }

@@ -1,7 +1,7 @@
 #ifndef CTRPLUGINFRAMEWORK_LINE_HPP
 #define CTRPLUGINFRAMEWORK_LINE_HPP
 
-#include "Vector.h"
+#include "Vector.hpp"
 
 namespace CTRPluginFramework
 {

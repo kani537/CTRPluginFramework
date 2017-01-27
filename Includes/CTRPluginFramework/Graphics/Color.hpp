@@ -17,7 +17,7 @@ namespace CTRPluginFramework
     class Color
     {
     public:
-        Color(void);
+        Color(void) : r(0), g(0), b(0), a(0) {}
         Color(u32 color);
         Color(u8 red, u8 green, u8 blue, u8 alpha = 255);
 

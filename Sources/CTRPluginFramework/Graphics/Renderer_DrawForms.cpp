@@ -1,4 +1,11 @@
-#include "CTRPluginFramework.hpp"
+#include "types.h"
+
+#include "CTRPluginFramework/Graphics/Color.hpp"
+#include "CTRPluginFramework/Graphics/Renderer.hpp"
+#include "CTRPluginFramework/Screen.hpp"
+#include "CTRPluginFramework/Vector.hpp"
+#include "CTRPluginFramework/Rect.hpp"
+#include "CTRPluginFramework/Line.hpp"
 #include <algorithm>
 #include <queue>
 

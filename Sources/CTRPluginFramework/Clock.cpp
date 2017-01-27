@@ -1,5 +1,8 @@
-#include "CTRPluginFramework.hpp"
-#include "3DS.h"
+#include "types.h"
+#include "ctrulib/svc.h"
+
+#include "CTRPluginFramework/Time.hpp"
+#include "CTRPluginFramework/Clock.hpp"
 
 namespace CTRPluginFramework
 {

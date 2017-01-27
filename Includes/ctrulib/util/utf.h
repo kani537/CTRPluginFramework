@@ -3,7 +3,9 @@
  * @brief UTF conversion functions.
  */
 #pragma once
-
+#ifdef __cplusplus
+extern "C" {
+#endif
 #include <stdint.h>
 #include <sys/types.h>
 
@@ -153,3 +155,6 @@ ssize_t utf32_to_utf8(uint8_t  *out, const uint32_t *in, size_t len);
  *  @note \a out is not null-terminated
  */
 ssize_t utf32_to_utf16(uint16_t *out, const uint32_t *in, size_t len);
+#ifdef __cplusplus
+}
+#endif

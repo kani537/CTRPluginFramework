@@ -1,8 +1,6 @@
 #ifndef CTRPLUGINFRAMEWORK_ICON_HPP
 #define CTRPLUGINFRAMEWORK_ICON_HPP
 
-#include "Vector.h"
-
 namespace CTRPluginFramework
 {
     class Icon

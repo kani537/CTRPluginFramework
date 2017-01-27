@@ -1,7 +1,13 @@
-#include "CTRPluginFramework.hpp"
-#include <cmath>
+#include "types.h"
 #include "ctrulib/services/gspgpu.h"
+#include "ctrulib/util/utf.h"
+
+#include "CTRPluginFramework/Graphics/Color.hpp"
+#include "CTRPluginFramework/Screen.hpp"
+#include "CTRPluginFramework/Graphics/Renderer.hpp"
+
 #include <algorithm>
+#include <cmath>
 
 namespace CTRPluginFramework
 {
