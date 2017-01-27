@@ -27,7 +27,7 @@ namespace CTRPluginFramework
     inline int Icon::DrawImg(u8 *img, int posX, int posY, int sizeX, int sizeY)
     {
         u8      *framebuf = nullptr;
-        int     rowsize;
+        int     rowstride;
         int     bpp;
 
         posY += sizeY;
@@ -38,13 +38,13 @@ namespace CTRPluginFramework
             case Target::TOP:
             {
                 framebuf = Screen::Top->GetLeftFramebuffer(posX, posY);
-                Screen::Top->GetFramebufferInfos(rowsize, bpp, fmt);
+                Screen::Top->GetFramebufferInfos(rowstride, bpp, fmt);
                 break;
             }
             case Target::BOTTOM:
             {
                 framebuf = Screen::Bottom->GetLeftFramebuffer(posX, posY);
-                Screen::Bottom->GetFramebufferInfos(rowsize, bpp, fmt);
+                Screen::Bottom->GetFramebufferInfos(rowstride, bpp, fmt);
                 break;                
             }
             default:
@@ -56,7 +56,7 @@ namespace CTRPluginFramework
         // Draw
         for (int x = 0; x < sizeX; x++)
         {
-            u8 *dst = framebuf + rowsize * x;
+            u8 *dst = framebuf + rowstride * x;
             int y = 0;
             while (y++ < sizeY)
             {

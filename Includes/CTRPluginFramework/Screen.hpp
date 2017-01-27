@@ -46,7 +46,7 @@ namespace CTRPluginFramework
         u32                         GetBytesPerPixel(void);
         u32                         GetFramebufferSize(void);
 
-        void                        GetFramebufferInfos(int &rowsize, int &bpp, GSPGPU_FramebufferFormats &format);
+        void                        GetFramebufferInfos(int &rowstride, int &bpp, GSPGPU_FramebufferFormats &format);
 
         
 

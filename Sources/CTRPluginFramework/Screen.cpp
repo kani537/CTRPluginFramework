@@ -340,9 +340,9 @@ namespace CTRPluginFramework
         return (_stride * _width);
     }
 
-    void    Screen::GetFramebufferInfos(int &rowsize, int &bpp, GSPGPU_FramebufferFormats &format)
+    void    Screen::GetFramebufferInfos(int &rowstride, int &bpp, GSPGPU_FramebufferFormats &format)
     {
-        rowsize = _rowSize;
+        rowstride = _stride;
         bpp = _bytesPerPixel;
         format = _format;
     }
