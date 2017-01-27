@@ -90,12 +90,12 @@ namespace CTRPluginFramework
                 *dst++  = b;
                 *dst++  = g;
                 *dst    = r;
-                if (dst2)
+                /*if (dst2)
                 {
                     *dst2++ = b;
                     *dst2++ = g;
                     *dst2   = r;
-                }
+                }*/
                 break;
             case GSP_RGB565_OES:
                 half.u  = (b & 0xF8) << 8;

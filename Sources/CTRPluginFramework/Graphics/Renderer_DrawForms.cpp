@@ -19,7 +19,7 @@ namespace CTRPluginFramework
     void        Renderer::DrawLine(int posX, int posY, int width, Color color, int height)
     {  
         // Correct posY
-        posY += (_rowSize[_target] - 240);
+        //posY += (_rowSize[_target] - 240);
         for (int x = 0; x < width; x++)
         {
             _length = height;
@@ -36,7 +36,7 @@ namespace CTRPluginFramework
         int height = 1 + end.y - posY;
 
         // Correct posY
-        posY += (_rowSize[_target] - 240);
+        //posY += (_rowSize[_target] - 240);
         for (int x = 0; x < width; x++)
         {
             _length = height;

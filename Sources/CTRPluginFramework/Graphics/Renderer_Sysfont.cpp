@@ -384,7 +384,8 @@ namespace CTRPluginFramework
                 posY += 16;
                 str++;
             }  */         
-            if (posY >= 240) break;
+            if (posY >= 240)
+                break;
             glyphcode = 0;
             if (!*str)
                 break;
