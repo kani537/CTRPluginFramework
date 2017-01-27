@@ -12,6 +12,7 @@ TARGET		:= 	$(notdir $(CURDIR))
 BUILD		:= 	Build
 INCLUDES	:= 	Includes \
 				Includes\CTRPluginFramework \
+				Includes\CTRPluginFramework\Graphics \
 				Includes\ctrulib \
 				Includes\ctrulib\allocator \
 				Includes\ctrulib\gpu \
@@ -23,6 +24,8 @@ INCLUDES	:= 	Includes \
 LIBDIRS		:= 	$(TOPDIR)\Lib
 SOURCES 	:= 	Sources \
 				Sources\CTRPluginFramework \
+				Sources\CTRPluginFramework\Graphics \
+				Sources\CTRPluginFramework\Graphics\Icons \
 				Sources\ctrulib \
 				Sources\ctrulib\allocator \
 				Sources\ctrulib\gpu \
