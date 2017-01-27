@@ -20,12 +20,19 @@ namespace CTRPluginFramework
     {  
         // Correct posY
         //posY += (_rowSize[_target] - 240);
-        for (int x = 0; x < width; x++)
+        u8 *dst = _screen->GetLeftFramebuffer(posX, posY + height);
+        u32 stride = _rowstride;
+
+        while (width-- > 0)
         {
-            _length = height;
-            _DrawPixel(posX + x, posY + height, color);
+            u8 *dd = dst;
+            for (int y = 0; y < height; y++)
+            {
+                dd = Color::ToFramebuffer(dd, color);
+            }
+            dst += stride;
         }
-        _length = 1;
+        //_length = 1;
     }
 
     void        Renderer::DrawLine(IntVector &start, IntVector &end, Color color)
@@ -35,14 +42,22 @@ namespace CTRPluginFramework
         int width = end.x - posX;
         int height = 1 + end.y - posY;
 
+        u8 *dst = _screen->GetLeftFramebuffer(posX, posY + height);
+        u32 stride = _rowstride;
         // Correct posY
         //posY += (_rowSize[_target] - 240);
-        for (int x = 0; x < width; x++)
+        while (width-- > 0)
         {
-            _length = height;
-            _DrawPixel(posX + x, posY, color);
+            u8 *dd = dst;
+            for (int y = 0; y < height; y++)
+            {
+                dd = Color::ToFramebuffer(dd, color);
+            }
+            dst += stride;
+            //_length = height;
+            //_DrawPixel(posX + x, posY, color);
         }
-        _length = 1;
+        //_length = 1;
     }
 
 
@@ -668,7 +683,7 @@ namespace CTRPluginFramework
 
     void    Renderer::FormFiller(const IntVector &start, const IntRect &area, bool singlePoint, Color &fill, Color &limit) 
     {
-        std::queue<IntVector> fpQueue;
+       /* std::queue<IntVector> fpQueue;
 
         const int minX = area._leftTopCorner.x;
         const int minY = area._leftTopCorner.y;        
@@ -722,6 +737,6 @@ namespace CTRPluginFramework
                 }
             }
             y++;
-        } while (y <= maxY);
+        } while (y <= maxY);*/
     }
 }

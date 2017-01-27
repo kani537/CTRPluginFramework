@@ -18,8 +18,9 @@ namespace CTRPluginFramework
     bool        Renderer::_useRender3D = false;
     bool        Renderer::_isRendering = false;
     bool        Renderer::_useDoubleBuffer = false;
-    bool        Renderer::_useSystemFont = false;
-    Screen      *Renderer::_screens[2] = {Screen::Bottom, Screen::Top};
+    //bool        Renderer::_useSystemFont = false;
+    //Screen      *Renderer::_screens[2] = {Screen::Bottom, Screen::Top};
+    Screen      *Renderer::_screen = Screen::Bottom;
     //u8          *Renderer::_framebuffer[4] = {nullptr};
     //u8          *Renderer::_framebufferR[4] = {nullptr};
     u32         Renderer::_rowSize[2] = {0};
@@ -31,6 +32,8 @@ namespace CTRPluginFramework
     u8          Renderer::_smallBuffer[1000] = {0};
     u8          *Renderer::_buffer = nullptr;
     u32         Renderer::_bufferSize = 1000;
+    u32         Renderer::_rowstride;
+    GSPGPU_FramebufferFormats Renderer::_format = GSP_BGR8_OES;
 
 
     inline u32   GetFramebufferOffset(int posX, int posY, int bpp, int rowsize)
@@ -57,8 +60,8 @@ namespace CTRPluginFramework
 
     void        Renderer::Initialize(void)
     {
-        _screens[BOTTOM] = Screen::Bottom;
-        _screens[TOP] = Screen::Top;
+        //_screens[BOTTOM] = Screen::Bottom;
+       // _screens[TOP] = Screen::Top;
         _useDoubleBuffer = false;
         //InitBuffer(0x50000);
     }
@@ -67,11 +70,15 @@ namespace CTRPluginFramework
     {
         _target = target;
         if (_target == BOTTOM)
+        {
             _useRender3D = false;
-        else if (_screens[TOP]->Is3DEnabled())
-            _useRender3D = true;
-
-        switch (_screens[_target]->GetFormat())
+            _screen = Screen::Bottom;
+        }
+        else
+            _screen = Screen::Top;
+        _format = _screen->GetFormat();
+        _rowstride = _screen->GetStride();
+        switch (_format)
         {
             case GSP_RGBA8_OES:
                 _DrawPixel = RenderRGBA8;
@@ -100,13 +107,13 @@ namespace CTRPluginFramework
     {
         _isRendering = true;
      
-        _rowSize[BOTTOM] = _screens[BOTTOM]->GetRowSize();
+        /*_rowSize[BOTTOM] = _screen->GetRowSize();
         _targetWidth[BOTTOM] = _screens[BOTTOM]->GetWidth();
         _targetHeight[BOTTOM] = _screens[BOTTOM]->GetHeight();
 
         _rowSize[TOP] = _screens[TOP]->GetRowSize();
         _targetWidth[TOP] = _screens[TOP]->GetWidth();
-        _targetHeight[TOP] = _screens[TOP]->GetHeight();
+        _targetHeight[TOP] = _screens[TOP]->GetHeight();*/
     }
 
     void        Renderer::EndFrame(void)
@@ -122,7 +129,7 @@ namespace CTRPluginFramework
     {
 
         // Correct posY
-        posY += _rowSize[_target] - 240;
+        //posY += _rowSize[_target] - 240;
 
         int x = posX;
         int y = posY;
@@ -130,27 +137,34 @@ namespace CTRPluginFramework
         int h = height;
 
 
-        u8 *left = (u8 *)_screens[_target]->GetLeftFramebuffer();
-        u8 *right = (u8 *)_screens[_target]->GetRightFramebuffer();
-        GSPGPU_FramebufferFormats fmt = _screens[_target]->GetFormat();
-        int bpp = _screens[_target]->GetBytesPerPixel();
-        int rs = _screens[_target]->GetRowSize();
+        u8 *left = _screen->GetLeftFramebuffer(posX, posY);
+        //u8 *right = (u8 *)_screens[_target]->GetRightFramebuffer();
+        GSPGPU_FramebufferFormats fmt;// = _screens[_target]->GetFormat();
+        int bpp;
+        int rowstride;
 
-        while (--w > 0)
+        _screen->GetFramebufferInfos(rowstride, bpp, fmt);
+        //int bpp = _screens[_target]->GetBytesPerPixel();
+        //int rs = _screens[_target]->GetRowSize();
+
+        // Draw Rectangle
+        while (--w >= 0)
         {
             h = height;
-            x = posX + w;
-            while (--h > 0)
+            //x = posX + w;
+            u8 *dst = left + rowstride * w;
+            while (--h >= 0)
             {   
-                u32 offset = GetFramebufferOffset(x, y + h, bpp, rs);
-                Color c = Color::FromMemory(left + offset, fmt);
+                //u32 offset = GetFramebufferOffset(x, y + h, bpp, rs);
+                Color c = Color::FromFramebuffer(dst);
 
                 c.Fade(0.1f);
-                c.ToMemory(left + offset, fmt);
-                if (_useRender3D)
+                Color::ToFramebuffer(dst, c);
+                dst -= bpp;
+                /*if (_useRender3D)
                 {
                     c.ToMemory(right + offset, fmt);
-                }
+                }*/
             }
         }
 
@@ -159,42 +173,40 @@ namespace CTRPluginFramework
         int j = 0;
         float fading = 0.0f;
 
-        Color l(255, 255, 255);
+        Color l = Color();//255, 255, 255);
         posY += height;
+        u8 *dst = _screen->GetLeftFramebuffer(posX + width, posY);
+
+        // Right tier
         for (int i = tier; i > 0; --i)
         {
-            u32 offset = GetFramebufferOffset(posX + i, posY, bpp, rs);
             l.Fade(fading);
-            l.ToMemory(left + offset, fmt);
-            if (_useRender3D)
-                l.ToMemory(right + offset, fmt);
+            Color::ToFramebuffer(dst, l);
             j++;
             if (j == pitch)
             {
-                fading -= 0.01f;
+                fading += 0.01f;
                 j = 0;
             }
+            dst -= rowstride;
         }
 
         l = Color(255, 255, 255);
-        for (int i = tier * 2; i > tier; --i)
+        //dst = _screen->GetLeftFramebuffer(posX + (tier * 2), posY);
+        // Middle tier
+        for (int i = 0; i < tier; ++i)
         {
-            u32 offset = GetFramebufferOffset(posX + i, posY, bpp, rs);
-            l.ToMemory(left + offset, fmt);
-            if (_useRender3D)
-                l.ToMemory(right + offset, fmt);
+            Color::ToFramebuffer(dst, l);
+            dst -= rowstride;
         }
-
-        l = Color(255, 255, 255);
         fading = 0.0f;
-        j = 0;
-        for (int i = tier * 2; i < tier * 3; ++i)
+
+        // Left tier
+        for (int i = tier; i > 0; --i)
         {
-            u32 offset = GetFramebufferOffset(posX + i, posY, bpp, rs);
             l.Fade(fading);
-            l.ToMemory(left + offset, fmt);
-            if (_useRender3D)
-                l.ToMemory(right + offset, fmt);
+            Color::ToFramebuffer(dst, l);
+            dst -= rowstride;
             j++;
             if (j == pitch)
             {
@@ -202,6 +214,11 @@ namespace CTRPluginFramework
                 j = 0;
             }
         }
+
+        
+
+        //l = Color(255, 255, 255);
+
     }
 
     void    Renderer::DrawBuffer(u8 *buffer, int posX, int posY, int width, int height)

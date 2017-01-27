@@ -61,11 +61,11 @@ namespace CTRPluginFramework
     int    Renderer::DrawString(char *str, int posX, int &posY, Color fg)
     {
         // Correct posY
-        int y = posY + (_rowSize[_target] - 240);
+       // int y = posY + (_rowSize[_target] - 240);
 
         while (*str)
         {
-            DrawCharacter(*str++, posX++, y, fg);
+            DrawCharacter(*str++, posX++, posY, fg);
             posX += 6;
         }
             posY += 10;
@@ -75,11 +75,11 @@ namespace CTRPluginFramework
     int    Renderer::DrawString(char *str, int posX, int &posY, Color fg, Color bg)
     {
         // Correct posY
-        int y = posY + (_rowSize[_target] - 240);
+        //int y = posY + (_rowSize[_target] - 240);
 
         while (*str)
         {
-            DrawCharacter(*str++, posX++, y, fg, bg);
+            DrawCharacter(*str++, posX++, posY, fg, bg);
             posX += 6;
         }
         posY += 10;
@@ -89,12 +89,12 @@ namespace CTRPluginFramework
     int    Renderer::DrawString(char *str, int offset, int posX, int &posY, Color fg)
     {
         // Correct posY
-        int y = posY + (_rowSize[_target] - 240);
+        //int y = posY + (_rowSize[_target] - 240);
         str += (offset / 6);
         offset %= 6;
         while (*str)
         {
-            DrawCharacter(*str++, offset, posX, y, fg);
+            DrawCharacter(*str++, offset, posX, posY, fg);
             if (offset)
             {                          
                 posX -= offset;      
@@ -109,7 +109,7 @@ namespace CTRPluginFramework
     void    Renderer::DrawCheckBoxString(char *str, int posX, int &posY, bool isChecked, Color fg, Color color)
     {
         // Correct posY
-        int y = posY + (_rowSize[_target] - 240);
+        //int y = posY + (_rowSize[_target] - 240);
 
         u8 unchecked[] =
         {
@@ -130,11 +130,11 @@ namespace CTRPluginFramework
             {
                 if ((u >> xx) & 1)
                 {
-                    _DrawPixel(posX + x, y + yy, fg);
+                    _DrawPixel(posX + x, posY + yy, fg);
                 }
                 if (isChecked && (c >> xx) & 1)
                 {
-                    _DrawPixel(posX + x, y + yy, color);
+                    _DrawPixel(posX + x, posY + yy, color);
                 }
             }
         }

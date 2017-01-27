@@ -22,7 +22,7 @@ namespace CTRPluginFramework
         TOP = 1
     };
     
-    using DrawPixelP = void (*)(int, int, Color);
+    using DrawPixelP = void (*)(int, int, Color&);
     using DrawDataP = void (*)(int, int, u8*, int);
     
     class Icon;
@@ -96,25 +96,28 @@ namespace CTRPluginFramework
         static bool         _useRender3D;
         static bool         _isRendering;
         static bool         _useDoubleBuffer;
-        static bool         _useSystemFont;
+        //static bool         _useSystemFont;
 
-        static Screen       *_screens[2];
+        //static Screen       *_screens[2];
+        static Screen       *_screen;
 
         //static u8           *_framebuffer[4];
         //static u8           *_framebufferR[4];
+        static u32          _rowstride;
         static u32          _rowSize[2];
         static u32          _targetWidth[2];
         static u32          _targetHeight[2];
         static u8           _smallBuffer[1000];
+        static GSPGPU_FramebufferFormats _format;
         static u8           *_buffer;
         static u32          _bufferSize;
         static int          _length;
 
-        static void         RenderRGBA8(int posX, int posY, Color color);
-        static void         RenderBGR8(int posX, int posY, Color color);
-        static void         RenderRGB565(int posX, int posY, Color color);
-        static void         RenderRGB5A1(int posX, int posY, Color color);
-        static void         RenderRGBA4(int posX, int posY, Color color);
+        static void         RenderRGBA8(int posX, int posY, Color &color);
+        static void         RenderBGR8(int posX, int posY, Color &color);
+        static void         RenderRGB565(int posX, int posY, Color &color);
+        static void         RenderRGB5A1(int posX, int posY, Color &color);
+        static void         RenderRGBA4(int posX, int posY, Color &color);
 
         static void         RenderRGBA8(int posX, int posY, u8 *data, int height);
         static void         RenderBGR8(int posX, int posY, u8 *data, int height);

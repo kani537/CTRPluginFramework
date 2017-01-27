@@ -5,6 +5,7 @@
 #include "CTRPluginFramework/Graphics/Color.hpp"
 #include "CTRPluginFramework/Screen.hpp"
 #include "CTRPluginFramework/Graphics/Renderer.hpp"
+#include "CTRPluginFramework/Graphics/Icon.hpp"
 
 #include <algorithm>
 #include <cmath>
@@ -50,40 +51,41 @@ namespace CTRPluginFramework
      u8 *Renderer::DrawTile(u8 *tile, u8 iconsize, u8 tilesize, u16 startX, \
      u16 startY, u16 endX, u16 endY, u8 charWidth, u8 charHeight, Color color)
     {
-        uint16_t alpha;
-        uint16_t py;
-        uint16_t px;
-        size_t y;
-        size_t x;
+        u16     alpha;
+        u16     py;
+        u16     px;
+        u32     y;
+        u32     x;
         int     size = 2;
         
         if (iconsize == 2 || iconsize == 1)
         {
-            if ((uint16_t)(endY + 1) <= charHeight)
+            if (endY + 1 <= charHeight)
             {           
-                alpha = *(uint16_t*)tile;
+                alpha = *(u16 *)tile;
                 alpha = (alpha & 0x0F0F) + ((alpha >> 4) & 0x0F0F);
                 alpha = ((alpha + (alpha >> 8)) >> 2) & 0x0F;
                 py = startY + (endY / 2);
-                if ((uint16_t)(endX + 1) <= charWidth && alpha)
+                if (alpha && endX + 1 <= charWidth)
                 {
                     px = startX + (endX + 1) / 2;
 
                     if (!(px >= 400 || px < 0 || py >= 240 || py < 0))
                     {
                         //u32 offset = GetFramebufferOffset(px, py, _screens[_target]->GetBytesPerPixel(), _rowSize[_target]);
-                        u8 *left = (u8 *)_screens[_target]->GetLeftFramebuffer(px, py);
+                        u8 *left = (u8 *)_screen->GetLeftFramebuffer(px, py);
                         //u8 *right = (u8 *)_screens[_target]->GetRightFramebuffer(px, py) + offset;
-                        GSPGPU_FramebufferFormats fmt = _screens[_target]->GetFormat();
-                        Color l = Color::FromMemory(left, fmt);
-
+                        GSPGPU_FramebufferFormats fmt = _format;
+                        Color l = Color::FromFramebuffer(left);
+                        int aneg = 0x0F - alpha;
+                        int apos = alpha + 1;
                         Color res;
-                        res.b = (l.b * (0x0F - alpha) + color.b * (alpha + 1)) >> 4;  
-                        res.g = (l.g * (0x0F - alpha) + color.g * (alpha + 1)) >> 4;
-                        res.r = (l.r * (0x0F - alpha) + color.r * (alpha + 1)) >> 4;
-
+                        res.b = (l.b * aneg + color.b * apos) >> 4;  
+                        res.g = (l.g * aneg + color.g * apos) >> 4;
+                        res.r = (l.r * aneg + color.r * apos) >> 4;
+                        Color::ToFramebuffer(left, res);
                         //if (!_useRender3D)
-                            res.ToMemory(left, fmt);
+                        //res.ToMemory(left, fmt);
                         /*else
                             res.ToMemory(left, fmt, right);*/
                     }
@@ -102,9 +104,9 @@ namespace CTRPluginFramework
         return tile;
     }
 
-    uint8_t Renderer::DrawGlyph(fontGlyphPos_s  &glyphPos, charWidthInfo_s *cwi, uint16_t x, uint16_t y, Color color, float offset)
+    uint8_t Renderer::DrawGlyph(fontGlyphPos_s  &glyphPos, charWidthInfo_s *cwi, u16 x, u16 y, Color color, float offset)
     {
-        u8                  *texSheet;
+        u8          *texSheet;
 
         u16         glyphXoffs;
         u16         glyphYoffs;        
@@ -139,11 +141,9 @@ namespace CTRPluginFramework
         u16 endY = 0;
         u8  charWidth = cwi->charWidth - (offset * 2);
 
-
         //********
         for (u16 charY = tileY; charY <= tileYend; charY += 8, endY += 8)
         {
-
             for (u16 charX = tileX; charX <= tileXend; charX += 8)
             {
                 u8 *tile = texSheet + (u32)(4 * (charX + charY * 16));
@@ -228,12 +228,12 @@ namespace CTRPluginFramework
         };*/
 
         // Correct posY
-        int y = posY + (_rowSize[_target] - 240);
+       // int y = posY + (_rowSize[_target] - 240);
 
         // temp color
-        Color grey = Color(105, 105, 105);
+       /* Color grey = Color(105, 105, 105);
         Color blank = Color(192, 192, 192);
-        Color green = Color(0, 255, 0);
+        Color green = Color(0, 255, 0);*/
 
        /* for (int yy = 0; yy < 15; yy++)
         {
@@ -263,7 +263,7 @@ namespace CTRPluginFramework
                 }
             }
         }*/
-        u8 *ucb = isChecked ? CheckedCheckbox :  UnCheckedCheckbox;
+       /* u8 *ucb = isChecked ? CheckedCheckbox :  UnCheckedCheckbox;
         u8 *left = _screens[_target]->GetLeftFramebuffer();
         u8 *right = _screens[_target]->GetRightFramebuffer();
         GSPGPU_FramebufferFormats fmt = _screens[_target]->GetFormat();
@@ -295,8 +295,9 @@ namespace CTRPluginFramework
                     ucb += 4;
                 }
             }
-        }
+        }*/
 
+        Icon::DrawCheckBox(posX, posY, isChecked);
         posX += 20;
         // posY += ;
         DrawSysString(str, posX, posY, xLimits, color, offset);
@@ -307,7 +308,7 @@ namespace CTRPluginFramework
     void Renderer::DrawSysFolder(const char *str, int posX, int &posY, int xLimits, Color color, float offset)
     {
         // Correct posY
-        int y = posY + (_rowSize[_target] - 240);
+       /* int y = posY + (_rowSize[_target] - 240);
 
         u8 *folder = FolderFilled;
         u8 *left = _screens[_target]->GetLeftFramebuffer();
@@ -341,7 +342,8 @@ namespace CTRPluginFramework
                     folder += 4;
                 }
             }
-        }
+        }*/
+        Icon::DrawFolder(posX, posY);
         posX += 20;
         DrawSysString(str, posX, posY, xLimits, color, offset);
         posY += 1;
@@ -387,8 +389,6 @@ namespace CTRPluginFramework
             if (posY >= 240)
                 break;
             glyphcode = 0;
-            if (!*str)
-                break;
             units = decode_utf8(&glyphcode, (const u8 *)str);
             if (units == -1)
                 break;
@@ -396,7 +396,6 @@ namespace CTRPluginFramework
             u32 index = fontGlyphIndexFromCodePoint(glyphcode);
             charWidthInfo_s *cwi;
             FontCalcGlyphPos(&glyphPos, &cwi, index, 0.5f, 0.5f);
-            //float width = (glyphPos.xAdvance / 2.0f) + ((int)glyphPos.xOffset % 2) + ((int)glyphPos.xAdvance % 2);
             if (offset >= glyphPos.xAdvance + 1)
             {
                 offset -= glyphPos.xAdvance + 1;
@@ -412,7 +411,7 @@ namespace CTRPluginFramework
             }      
             x += DrawGlyph(glyphPos, cwi, x, posY, color, offset);
             offset = 0;
-        } while (glyphcode > 0);
+        } while (glyphcode > 0 && *str);
 
         posY += 16;// * lineCount;
         return (x);

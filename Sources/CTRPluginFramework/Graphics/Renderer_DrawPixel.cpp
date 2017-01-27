@@ -11,18 +11,18 @@ namespace CTRPluginFramework
         return ((rowsize - 1 - posY + posX * rowsize) * bpp);
     }
 
-    void        Renderer::RenderRGBA8(int posX, int posY, Color color)
+    void        Renderer::RenderRGBA8(int posX, int posY, Color &color)
     {
-        if (!RANGE(0, posX, _targetWidth[_target]) || !RANGE(0, posY, _targetHeight[_target]))
-            return;
+       /* if (!RANGE(0, posX, _targetWidth[_target]) || !RANGE(0, posY, _targetHeight[_target]))
+            return;*/
 
-        u32     offset = GetFramebufferOffset(posX, posY, 4, _rowSize[_target]);
+       // u32     offset = GetFramebufferOffset(posX, posY, 4, _rowSize[_target]);
 
-        bool    is3D = _target == TOP && _useRender3D;
+      /*  bool    is3D = _target == TOP && _useRender3D;
         bool    isLeftDouble = _useDoubleBuffer;
-        bool    isRightDouble = _useDoubleBuffer;        
+        bool    isRightDouble = _useDoubleBuffer; */       
 
-        u8  *screen = _screens[_target]->GetLeftFramebuffer() + offset;
+        u8  *screen = _screen->GetLeftFramebuffer(posX, posY);// + offset;
 
 again:
         int     length = _length;
@@ -33,7 +33,7 @@ again:
             *(screen++) = color.g;
             *(screen++) = color.r;
         }
-
+        /*
         if (isLeftDouble)
         {
             screen = _screens[_target]->GetLeftFramebuffer(true) + offset;
@@ -53,10 +53,10 @@ again:
             screen = _screens[_target]->GetRightFramebuffer(true) + offset;
             isRightDouble = false;
             goto again;
-        }
+        }*/
     }
 
-    void        Renderer::RenderBGR8(int posX, int posY, Color color)
+    void        Renderer::RenderBGR8(int posX, int posY, Color &color)
     {
        /* if (!RANGE(0, posX, _targetWidth[_target]) || !RANGE(0, posY, _targetHeight[_target]))
             return;*/
@@ -66,7 +66,7 @@ again:
         bool    isLeftDouble = _useDoubleBuffer;
         bool    isRightDouble = _useDoubleBuffer;  */      
 
-        u8  *screen = _screens[_target]->GetLeftFramebuffer(posX, posY);// + offset;
+        u8  *screen = _screen->GetLeftFramebuffer(posX, posY);// + offset;
 
 again:
         int     length = _length;
@@ -99,18 +99,18 @@ again:
         }*/
     }
 
-    void        Renderer::RenderRGB565(int posX, int posY, Color color)
+    void        Renderer::RenderRGB565(int posX, int posY, Color &color)
     {
-        if (!RANGE(0, posX, _targetWidth[_target]) || !RANGE(0, posY, _targetHeight[_target]))
-            return;
+       /* if (!RANGE(0, posX, _targetWidth[_target]) || !RANGE(0, posY, _targetHeight[_target]))
+            return;*/
 
-        u32     offset = GetFramebufferOffset(posX, posY, 2, _rowSize[_target]);
+        /*u32     offset = GetFramebufferOffset(posX, posY, 2, _rowSize[_target]);
 
         bool    is3D = _target == TOP && _useRender3D;
         bool    isLeftDouble = _useDoubleBuffer;
-        bool    isRightDouble = _useDoubleBuffer;        
+        bool    isRightDouble = _useDoubleBuffer;     */   
 
-        u8  *screen = _screens[_target]->GetLeftFramebuffer() + offset;
+        u8  *screen = _screen->GetLeftFramebuffer(posX, posY);// + offset;
 
         union
         {
@@ -130,7 +130,7 @@ again:
             *(screen++) = half.b[1];
         }
 
-        if (isLeftDouble)
+       /* if (isLeftDouble)
         {
             screen = _screens[_target]->GetLeftFramebuffer(true) + offset;
             isLeftDouble = false;
@@ -149,21 +149,21 @@ again:
             screen = _screens[_target]->GetRightFramebuffer(true) + offset;
             isRightDouble = false;
             goto again;
-        }
+        }*/
     }
 
-    void        Renderer::RenderRGB5A1(int posX, int posY, Color color)
+    void        Renderer::RenderRGB5A1(int posX, int posY, Color &color)
     {
-        if (!RANGE(0, posX, _targetWidth[_target]) || !RANGE(0, posY, _targetHeight[_target]))
-            return;
+      /*  if (!RANGE(0, posX, _targetWidth[_target]) || !RANGE(0, posY, _targetHeight[_target]))
+            return;*/
 
-      u32     offset = GetFramebufferOffset(posX, posY, 2, _rowSize[_target]);
+        /*u32     offset = GetFramebufferOffset(posX, posY, 2, _rowSize[_target]);
 
         bool    is3D = _target == TOP && _useRender3D;
         bool    isLeftDouble = _useDoubleBuffer;
-        bool    isRightDouble = _useDoubleBuffer;        
+        bool    isRightDouble = _useDoubleBuffer; */       
 
-        u8  *screen = _screens[_target]->GetLeftFramebuffer() + offset;
+        u8  *screen = _screen->GetLeftFramebuffer(posX, posY);// + offset;
 
         union
         {
@@ -184,7 +184,7 @@ again:
             *(screen++) = half.b[1];
         }
 
-        if (isLeftDouble)
+        /*if (isLeftDouble)
         {
             screen = _screens[_target]->GetLeftFramebuffer(true) + offset;
             isLeftDouble = false;
@@ -203,12 +203,12 @@ again:
             screen = _screens[_target]->GetRightFramebuffer(true) + offset;
             isRightDouble = false;
             goto again;
-        }
+        }*/
     }
 
-    void        Renderer::RenderRGBA4(int posX, int posY, Color color)
+    void        Renderer::RenderRGBA4(int posX, int posY, Color &color)
     {
-        if (!RANGE(0, posX, _targetWidth[_target]) || !RANGE(0, posY, _targetHeight[_target]))
+     /*   if (!RANGE(0, posX, _targetWidth[_target]) || !RANGE(0, posY, _targetHeight[_target]))
             return;
 
 
@@ -217,8 +217,8 @@ again:
         bool    is3D = _target == TOP && _useRender3D;
         bool    isLeftDouble = _useDoubleBuffer;
         bool    isRightDouble = _useDoubleBuffer;        
-
-        u8  *screen = _screens[_target]->GetLeftFramebuffer() + offset;
+*/
+        u8  *screen = _screen->GetLeftFramebuffer(posX, posY);// + offset;
 
         union
         {
@@ -239,7 +239,7 @@ again:
             *(screen++) = half.b[1];
         }
 
-        if (isLeftDouble)
+        /*if (isLeftDouble)
         {
             screen = _screens[_target]->GetLeftFramebuffer(true) + offset;
             isLeftDouble = false;
@@ -258,6 +258,6 @@ again:
             screen = _screens[_target]->GetRightFramebuffer(true) + offset;
             isRightDouble = false;
             goto again;
-        }
+        }*/
     }
 }

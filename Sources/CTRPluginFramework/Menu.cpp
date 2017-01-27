@@ -20,6 +20,7 @@
 #include "CTRPluginFramework/Time.hpp"
 #include "CTRPluginFramework/Clock.hpp"
 #include "CTRPluginFramework/Process.hpp"
+#include "CTRPluginFramework/Graphics/Icon.hpp"
 
 
 
@@ -201,6 +202,7 @@ namespace CTRPluginFramework
         static Color dimGrey(15, 15, 15);
         static Color silver(160, 160, 160);
         static IntRect background(20, 20, 280, 200);
+        static IntRect closeIcon(260, 30, 20, 20);
 
         Renderer::SetTarget(BOTTOM);
 
@@ -216,7 +218,8 @@ namespace CTRPluginFramework
 
         bool isTouchDown = Touch::IsDown();
         IntVector touchPos(Touch::GetPosition());
-
+        bool closeIsTouch = closeIcon.Contains(touchPos);
+        Icon::DrawClose(260, 30, closeIsTouch);
         _showStarredBtn(isTouchDown, touchPos);
         _gameGuideBtn(isTouchDown, touchPos);
         _toolsBtn(isTouchDown, touchPos);
@@ -230,7 +233,12 @@ namespace CTRPluginFramework
             int posY = touchPos.y - 1;
             
             Renderer::DrawSysString("\uE058", posX, posY, 320, blank);
-        }        
+        } 
+        if (closeIsTouch)
+        {
+            Process::Play();
+            _isOpen = false;
+        }   
     }
 
     //###########################################
