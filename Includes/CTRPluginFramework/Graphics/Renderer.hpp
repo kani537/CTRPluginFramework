@@ -86,9 +86,9 @@ namespace CTRPluginFramework
         // Allocate buffer to process files in ram
         static void     InitBuffer(u32 size);
         // Calulate sysfont glyph
-        static void     FontCalcGlyphPos(fontGlyphPos_s* out, int glyphIndex, float scaleX, float scaleY);
+        static void     FontCalcGlyphPos(fontGlyphPos_s *out,  charWidthInfo_s **cwout, int glyphIndex, float scaleX, float scaleY);
         // Draw glyph
-        static uint8_t  DrawGlyph(uint16_t x, uint16_t y, u32 glyphCode, Color color, float offset);
+        static uint8_t  DrawGlyph(fontGlyphPos_s &pos,  charWidthInfo_s *cwi, uint16_t x, uint16_t y, Color color, float offset);
         static u8       *DrawTile(u8 *tile, u8 iconsize, u8 tilesize, u16 startX, u16 startY, u16 endX, u16 endY, u8 charWidth, u8 charHeight, Color color);
 
         static Target       _target;
