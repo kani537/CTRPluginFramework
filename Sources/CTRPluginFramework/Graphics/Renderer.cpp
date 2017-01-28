@@ -121,11 +121,11 @@ namespace CTRPluginFramework
         _targetHeight[TOP] = _screens[TOP]->GetHeight();*/
     }
 
-    void        Renderer::EndFrame(void)
+    void        Renderer::EndFrame(bool copy)
     {
 
-        Screen::Bottom->SwapBuffer(true, false);
-        Screen::Top->SwapBuffer(true, false);
+        Screen::Bottom->SwapBuffer(true, copy);
+        Screen::Top->SwapBuffer(true, copy);
         gspWaitForVBlank();
         _isRendering = false;
     }

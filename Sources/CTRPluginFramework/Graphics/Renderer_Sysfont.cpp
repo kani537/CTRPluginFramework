@@ -84,12 +84,12 @@ namespace CTRPluginFramework
                         res.g = (l.g * aneg + color.g * apos) >> 4;
                         res.r = (l.r * aneg + color.r * apos) >> 4;
                         Color::ToFramebuffer(left, res);
-                        if (_useDoubleBuffer)
+                        /*if (_useDoubleBuffer)
                         {
                             u8 *right = (u8 *)_screen->GetLeftFramebuffer(true);
                             u32 offset = GetFramebufferOffset(px, py, _screen->GetBytesPerPixel(), _screen->GetRowSize());
                             Color::ToFramebuffer(right + offset, res);
-                        }
+                        }*/
                         //if (!_useRender3D)
                         //res.ToMemory(left, fmt);
                         /*else
