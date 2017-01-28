@@ -153,14 +153,15 @@ namespace CTRPluginFramework
         {
         	delta = t.Restart();        	
         	fade += pitch * delta.AsMilliseconds();
+
         	Screen::Top->Fade(fade);
         	Screen::Bottom->Fade(fade);
 
-        	Screen::Top->SwapBuffer(false, true);
-        	Screen::Bottom->SwapBuffer(false, true);
+        	Screen::Top->SwapBuffer(true, true);
+        	Screen::Bottom->SwapBuffer(true, true);
         	gspWaitForVBlank(); 
         	if (System::IsNew3DS())
-        		while (t.GetElapsedTime() < limit);        	
+        		while (t.GetElapsedTime() < limit);       	
         }       
 	}
 
@@ -181,11 +182,11 @@ namespace CTRPluginFramework
 	        	Screen::Bottom->Fade(fade);
 	        	fade -= 0.001f * delta.AsMilliseconds();
 	        	//Sleep(Milliseconds(10));
-	        	Screen::Top->SwapBuffer();
-	        	Screen::Bottom->SwapBuffer();
+	        	Screen::Top->SwapBuffer(true, true);
+	        	Screen::Bottom->SwapBuffer(true, true);
 	        	gspWaitForVBlank();
 	        	if (System::IsNew3DS())
-	        	while (t.GetElapsedTime() < limit); 
+	        	  while (t.GetElapsedTime() < limit); 
 	        }			
 		}
         _isPaused = false;
