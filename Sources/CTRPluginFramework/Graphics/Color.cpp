@@ -447,9 +447,9 @@ namespace CTRPluginFramework
             char    b[2];
         }           half;
 
-        half.u  = (color.b & 0xF8) << 8;
+        half.u  = (color.r & 0xF8) << 8;
         half.u |= (color.g & 0xFC) << 3;
-        half.u |= (color.r & 0xF8) >> 3;
+        half.u |= (color.b & 0xF8) >> 3;
 
         *(dst++) = half.b[0];
         *(dst++) = half.b[1];
