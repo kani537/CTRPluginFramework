@@ -61,8 +61,9 @@ namespace CTRPluginFramework
             while (y++ < sizeY)
             {
                 Color px = Color::FromMemory(img, RGBA8);
-                px.ToMemoryBlend(dst, fmt, BlendMode::Alpha);
-                dst += bpp;
+                Color bg = Color::FromFramebuffer(dst);
+                Color blended = bg.Blend(px, BlendMode::Alpha);
+                dst = Color::ToFramebuffer(dst, blended);
                 img += 4;
             }
         }
