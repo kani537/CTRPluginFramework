@@ -22,6 +22,12 @@ namespace CTRPluginFramework
         static int      DrawClose(int posX, int posY, bool filled);
 
         /*
+        ** Controller
+        ** 15px * 15px
+        *************/
+        static int      DrawController(int posX, int posY);
+
+        /*
         ** Folder
         ** 15px * 15px
         ************/
@@ -50,6 +56,18 @@ namespace CTRPluginFramework
         ***********/
         static int      DrawGuide(IntVector &pos);
         static int      DrawGuide(int posX, int posY);
+
+        /*
+        ** Search
+        ** 15px * 15 px
+        **************/
+        static int      DrawSearch(int posX, int posY);
+
+        /*
+        ** Tools
+        ** 15px * 15 px
+        *************/
+        static int      DrawTools(int posX, int posY);
 
     private:
         static int      DrawImg(u8 *img, int posX, int posY, int sizeX, int sizeY);

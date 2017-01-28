@@ -17,9 +17,12 @@ namespace CTRPluginFramework
     extern "C" unsigned char *UnCheckedCheckbox;
     extern "C" unsigned char *CloseWindow20;
     extern "C" unsigned char *CloseWindowFilled20;
+    extern "C" unsigned char *Controller15;
     extern "C" unsigned char *FolderFilled;
     extern "C" unsigned char *Info25;
     extern "C" unsigned char *InfoFilled25;
+    extern "C" unsigned char *Maintenance15;
+    extern "C" unsigned char *Search15;
     extern "C" unsigned char *UserManualFilled15;
 
     #define RGBA8 GSP_RGBA8_OES
@@ -114,6 +117,16 @@ namespace CTRPluginFramework
     }
 
     /*
+    ** Controller
+    ** 15px * 15px
+    ***************/
+
+    int     Icon::DrawController(int posX, int posY)
+    {
+        return (DrawImg(Controller15, posX, posY, 15, 15));
+    }
+
+    /*
     ** Folder
     ** 15px * 15px
     ***************/
@@ -175,5 +188,25 @@ namespace CTRPluginFramework
     int     Icon::DrawGuide(int posX, int posY)
     {
         return (DrawImg(UserManualFilled15, posX, posY, 15, 15));
+    }
+
+    /*
+    ** Search
+    ** 15px * 15px
+    ***************/
+
+    int     Icon::DrawSearch(int posX, int posY)
+    {
+        return (DrawImg(Search15, posX, posY, 15, 15));
+    }
+
+    /*
+    ** Tools
+    ** 15px * 15px
+    ***************/
+
+    int     Icon::DrawTools(int posX, int posY)
+    {
+        return (DrawImg(Maintenance15, posX, posY, 15, 15));
     }
 }
