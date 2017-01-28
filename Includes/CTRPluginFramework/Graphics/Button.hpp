@@ -68,7 +68,6 @@ namespace CTRPluginFramework
         Color           idleColor;
         Color           pressedColor;
         Color           contentColor;
-        u8              icon;
     private:
 
         
