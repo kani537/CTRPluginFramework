@@ -141,38 +141,19 @@ namespace CTRPluginFramework
         Screen::Bottom = new Screen(System::GetIOBasePDC() + 0x500, System::GetIOBaseLCD() + 0xA04);
     }
 
+
     void    Screen::Fade(float fade, bool copy)
     {
-        *_currentBufferReg = 0;       
+        u32 size = GetFramebufferSize() / _bytesPerPixel;
 
-        u32 size = GetFramebufferSize();
+        u8 *framebuf = (u8 *)_leftFramebuffersV[!_currentBuffer];
 
-        u8 *src = GetLeftFramebuffer();
-        u8 *src1 = GetRightFramebuffer();
-
-        u8 *src3 = copy ? GetLeftFramebuffer(true) : nullptr;
-        u8 *src4 = copy ? GetRightFramebuffer(true) : nullptr;
-
-        for (int i = 0; i < size; i += _bytesPerPixel)
+        for (int i = size; i > 0; i--)
         {
-            Color c = Color::FromMemory(src, _format);
-
+            Color c = Color::FromFramebuffer(framebuf);
+            
             c.Fade(fade);
-            c.ToMemory(src, _format, src3);
-            if (Is3DEnabled())
-            {
-                Color d = Color::FromMemory(src1, _format);
-
-                d.Fade(fade);
-                d.ToMemory(src1, _format, src4);
-                src1 += _bytesPerPixel;
-            }
-            src += _bytesPerPixel;
-            if (copy)
-            {
-                src3 += _bytesPerPixel;
-                src4 += _bytesPerPixel;
-            }       
+            framebuf = Color::ToFramebuffer(framebuf, c);
         }
     }
 
@@ -182,8 +163,6 @@ namespace CTRPluginFramework
     again:
         u32     leftFB1 = REG(_LCDSetup + FramebufferA1);
         u32     leftFB2 = REG(_LCDSetup + FramebufferA2);
-        u32     rightFB1 = REG(_LCDSetup + FramebufferB1);
-        u32     rightFB2 = REG(_LCDSetup + FramebufferB2);
 
         if (leftFB1 == leftFB2)
         {
@@ -217,35 +196,22 @@ namespace CTRPluginFramework
 
         if (_isTopScreen)
         {
-            _rightFramebuffersP[0] = rightFB1;
-            _rightFramebuffersP[1] = rightFB2;
-            _rightFramebuffersV[0] = FromPhysicalToVirtual(rightFB1);
-            _rightFramebuffersV[1] = FromPhysicalToVirtual(rightFB2);
+            _rightFramebuffersP[0] = leftFB1;
+            _rightFramebuffersP[1] = leftFB2;
+            _rightFramebuffersV[0] = FromPhysicalToVirtual(leftFB1);
+            _rightFramebuffersV[1] = FromPhysicalToVirtual(leftFB2);
         }
 
         u32 size = GetFramebufferSize();
 
-        // Flush left framebuf0
-        if (R_FAILED(GSPGPU_FlushDataCache((void *)_leftFramebuffersV[0], size)))
-            svcFlushProcessDataCache(Process::GetHandle(), (void *)_leftFramebuffersV[0], size);
-        // Copy left framebuf0 to framebuf1
-        memcpy((void *)_leftFramebuffersV[1], (void *)_leftFramebuffersV[0], size);
-        // Flush left framebuf1
-        if (R_FAILED(GSPGPU_FlushDataCache((void *)_leftFramebuffersV[1], size)))
-            svcFlushProcessDataCache(Process::GetHandle(), (void *)_leftFramebuffersV[1], size);
-
-        if (Is3DEnabled())
-        {
-            // Flush right framebuf0
-            if (R_FAILED(GSPGPU_FlushDataCache((void *)_rightFramebuffersV[0], size)))
-                svcFlushProcessDataCache(Process::GetHandle(), (void *)_rightFramebuffersV[0], size);
-            // Copy right framebuf0 to framebuf1      
-            memcpy((void *)_rightFramebuffersV[1], (void *)_rightFramebuffersV[0], size);
-            //
-            // Flush right framebuf1
-            if (R_FAILED(GSPGPU_FlushDataCache((void *)_rightFramebuffersV[1], size)))
-                svcFlushProcessDataCache(Process::GetHandle(), (void *)_rightFramebuffersV[1], size);
-        }
+        // Flush currentBuffer
+        if (R_FAILED(GSPGPU_FlushDataCache((void *)_leftFramebuffersV[_currentBuffer], size)))
+            svcFlushProcessDataCache(Process::GetHandle(), (void *)_leftFramebuffersV[_currentBuffer], size);
+        // Copy current buffer in the other one
+        memcpy((void *)_leftFramebuffersV[!_currentBuffer], (void *)_leftFramebuffersV[_currentBuffer], size);
+        // Flush second buffer
+        if (R_FAILED(GSPGPU_FlushDataCache((void *)_leftFramebuffersV[!_currentBuffer], size)))
+            svcFlushProcessDataCache(Process::GetHandle(), (void *)_leftFramebuffersV[!_currentBuffer], size);
     }
 
     bool    Screen::IsTopScreen(void)
@@ -273,36 +239,44 @@ namespace CTRPluginFramework
         REG(_FillColor) = 0;
     }
 
+    /*
+    ** Swap buffers
+    *****************/
+
     void    Screen::SwapBuffer(bool flush, bool copy)
-    {
+    {   
         if (flush)
         {
             u32 size = GetFramebufferSize();
 
             if (R_FAILED(GSPGPU_FlushDataCache((void *)_leftFramebuffersV[!_currentBuffer], size)))
                 svcFlushProcessDataCache(Process::GetHandle(), (void *)_leftFramebuffersV[!_currentBuffer], size);
-            if (Is3DEnabled())
-                if (R_FAILED(GSPGPU_FlushDataCache((void *)_rightFramebuffersV[!_currentBuffer], size)))
-                    svcFlushProcessDataCache(Process::GetHandle(), (void *)_rightFramebuffersV[!_currentBuffer], size);
         }
-        if (copy)
-        {
-            u32 size = GetFramebufferSize();
-            memcpy((void *)_leftFramebuffersV[_currentBuffer], (void *)_leftFramebuffersV[!_currentBuffer], size);
-            if (Is3DEnabled())
-                memcpy((void *)_rightFramebuffersV[_currentBuffer], (void *)_rightFramebuffersV[!_currentBuffer], size);
-        }
-
+        
         // Change buffer
         _currentBuffer = !_currentBuffer;
 
         // Set gpu buffer
         *_currentBufferReg = _currentBuffer;
+
+        if (copy)
+        {
+            u32 size = GetFramebufferSize();
+            memcpy((void *)_leftFramebuffersV[!_currentBuffer], (void *)_leftFramebuffersV[_currentBuffer], size);
+
+            if (R_FAILED(GSPGPU_FlushDataCache((void *)_leftFramebuffersV[!_currentBuffer], size)))
+                svcFlushProcessDataCache(Process::GetHandle(), (void *)_leftFramebuffersV[!_currentBuffer], size);
+        }
+
+
         // Ensure that the framebuffers are the good ones
-        REG(_LCDSetup + FramebufferA1) = _leftFramebuffersP[0];
-        REG(_LCDSetup + FramebufferA2) = _leftFramebuffersP[1];
-        REG(_LCDSetup + FramebufferB1) = _rightFramebuffersP[0];
-        REG(_LCDSetup + FramebufferB2) = _rightFramebuffersP[1];
+        u32 left1 = _leftFramebuffersP[0];
+        REG(_LCDSetup + FramebufferA1) = left1;
+        REG(_LCDSetup + FramebufferB1) = left1; 
+
+        u32 left2 = _leftFramebuffersP[1];
+        REG(_LCDSetup + FramebufferA2) = left2;
+        REG(_LCDSetup + FramebufferB2) = left2;
     }
 
     GSPGPU_FramebufferFormats   Screen::GetFormat(void)
