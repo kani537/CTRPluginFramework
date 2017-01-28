@@ -26,6 +26,7 @@
 
 namespace CTRPluginFramework
 {
+    bool    _shouldClose = false;
     Menu::Menu(std::string name, std::string note) : 
     _startLine(-1, -1), _endLine(-1, -1),
     _showStarredBtn("Show starred", *this, &Menu::Null, IntRect(30, 70, 120, 30)), 
@@ -67,6 +68,7 @@ namespace CTRPluginFramework
         Time            frameLimit = second / 30.f;
         float           framerate;
         Time            delta;
+        Color           blank(255, 0, 255);
 
         _selectedTextSize = Renderer::GetTextSize(_folder->_items[_selector]->name.c_str());
         // Main loop
@@ -85,6 +87,7 @@ namespace CTRPluginFramework
                     }
                     else
                     {
+                        Renderer::UseDoubleBuffer(false);
                         Process::Pause();
                         _isOpen = true;
                     }
@@ -109,12 +112,29 @@ namespace CTRPluginFramework
                 Color black = Color();
                 int posY = 10;
                 Renderer::DrawString(buf, 320, posY, blank, black);
-                Renderer::EndFrame();
+                Renderer::EndFrame(_shouldClose);
+                if (_shouldClose)
+                {
+                    Process::Play();
+                    _isOpen = false;
+                    _shouldClose = false;
+                }
                // while(clock.GetElapsedTime() < frameLimit);
 
             }
             else
             {
+                        // Draw Touch Cursor
+                if (Touch::IsDown())
+                {
+                    UIntVector t(Touch::GetPosition());
+                    int posX = t.x - 2;
+                    int posY = t.y - 1;
+                    Renderer::UseDoubleBuffer(true);
+                    Renderer::SetTarget(BOTTOM);
+                    Renderer::DrawSysString("\uE058", posX, posY, 320, blank);
+                    gspWaitForVBlank();
+                } 
                 for (int i = 0; i < _executeLoop.size(); i++)
                 {
                     MenuEntry *entry = _executeLoop[i];
@@ -219,7 +239,7 @@ namespace CTRPluginFramework
         bool isTouchDown = Touch::IsDown();
         IntVector touchPos(Touch::GetPosition());
         bool closeIsTouch = closeIcon.Contains(touchPos);
-        Icon::DrawClose(260, 30, closeIsTouch);
+        Icon::DrawClose(270, 30, closeIsTouch);
         _showStarredBtn(isTouchDown, touchPos);
         _gameGuideBtn(isTouchDown, touchPos);
         _toolsBtn(isTouchDown, touchPos);
@@ -234,11 +254,16 @@ namespace CTRPluginFramework
             
             Renderer::DrawSysString("\uE058", posX, posY, 320, blank);
         } 
+        static bool _closing = false;
         if (closeIsTouch)
         {
-            Process::Play();
-            _isOpen = false;
+            _closing = true;
         }   
+        else if (_closing)
+        {
+            _closing = false;
+            _shouldClose = true;
+        }
     }
 
     //###########################################
