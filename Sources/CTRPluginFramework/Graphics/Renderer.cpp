@@ -142,7 +142,7 @@ namespace CTRPluginFramework
         int h = height;
 
 
-        u8 *left = _screen->GetLeftFramebuffer(posX, posY);
+        u8 *left = _screen->GetLeftFramebuffer(posX, posY + 1);
         //u8 *right = (u8 *)_screens[_target]->GetRightFramebuffer();
         GSPGPU_FramebufferFormats fmt;// = _screens[_target]->GetFormat();
         int bpp;
@@ -178,26 +178,26 @@ namespace CTRPluginFramework
         int j = 0;
         float fading = 0.0f;
 
-        Color l = Color();//255, 255, 255);
+        Color l = Color(255, 255, 255);
         posY += height;
-        u8 *dst = _screen->GetLeftFramebuffer(posX + width, posY);
-
+        u8 *dst = _screen->GetLeftFramebuffer(posX + (width - tier), posY);
+        u8 *rtier = dst;
         // Right tier
         for (int i = tier; i > 0; --i)
         {
             l.Fade(fading);
-            Color::ToFramebuffer(dst, l);
+            Color::ToFramebuffer(rtier, l);
             j++;
             if (j == pitch)
             {
-                fading += 0.01f;
+                fading -= 0.01f;
                 j = 0;
             }
-            dst -= rowstride;
+            rtier += rowstride;
         }
 
         l = Color(255, 255, 255);
-        //dst = _screen->GetLeftFramebuffer(posX + (tier * 2), posY);
+        //dst = _screen->GetLeftFramebuffer(posX + (width - tier), posY);
         // Middle tier
         for (int i = 0; i < tier; ++i)
         {

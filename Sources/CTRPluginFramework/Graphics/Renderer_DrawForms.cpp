@@ -625,9 +625,9 @@ namespace CTRPluginFramework
         }
         
         // Top Line
-        out.push_back(IntLine(posX + rWidth - 1, posYBak, width - rWidth + 2, 1));
+        out.push_back(IntLine(posX + rWidth - 1, posYBak, width - rWidth + 3, 1));
         // Bottom Line
-        out.push_back(IntLine(posX + rWidth - 1, posYBak + height, width - rWidth + 2, 1));
+        out.push_back(IntLine(posX + rWidth - 1, posYBak + height, width - rWidth + 3, 1));
         // Left Line
         out.push_back(IntLine(posX - x + rWidth, posYBak + rHeight, 1, height - (rHeight* 2)));
         // Right Line
