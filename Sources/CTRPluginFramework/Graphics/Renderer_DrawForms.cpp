@@ -18,9 +18,7 @@ namespace CTRPluginFramework
 
     void        Renderer::DrawLine(int posX, int posY, int width, Color color, int height)
     {  
-        // Correct posY
-        //posY += (_rowSize[_target] - 240);
-        u8 *dst = _screen->GetLeftFramebuffer(posX, posY + height);
+        u8 *dst = _screen->GetLeftFramebuffer(posX, posY + height - 1);
         u32 stride = _rowstride;
 
         while (width-- > 0)
@@ -32,20 +30,18 @@ namespace CTRPluginFramework
             }
             dst += stride;
         }
-        //_length = 1;
     }
 
     void        Renderer::DrawLine(IntVector &start, IntVector &end, Color color)
     {  
         int posX = start.x;
         int posY = start.y;
-        int width = end.x - posX;
-        int height = 1 + end.y - posY;
+        int width = end.x - posX; // 50 - 10 = 40
+        int height = 1 + end.y - posY;// 1 
 
-        u8 *dst = _screen->GetLeftFramebuffer(posX, posY + height);
+        u8 *dst = _screen->GetLeftFramebuffer(posX, posY + height - 1);
         u32 stride = _rowstride;
-        // Correct posY
-        //posY += (_rowSize[_target] - 240);
+
         while (width-- > 0)
         {
             u8 *dd = dst;
@@ -54,10 +50,7 @@ namespace CTRPluginFramework
                 dd = Color::ToFramebuffer(dd, color);
             }
             dst += stride;
-            //_length = height;
-            //_DrawPixel(posX + x, posY, color);
         }
-        //_length = 1;
     }
 
 
@@ -630,16 +623,22 @@ namespace CTRPluginFramework
                 out.push_back(IntLine(left, right));
                 //DrawLine(left, right, fillColor);
         }
-            
-        out.push_back(IntLine(posX + rWidth, posYBak - 2, width - rWidth, 1));
-        out.push_back(IntLine(posX + rWidth, posYBak + height, width - rWidth, 1));
-        out.push_back(IntLine(posX - x + rWidth, posYBak + rHeight - 1, 1, height - (rHeight* 2)));
+        
+        // Top Line
+        out.push_back(IntLine(posX + rWidth - 1, posYBak, width - rWidth + 2, 1));
+        // Bottom Line
+        out.push_back(IntLine(posX + rWidth - 1, posYBak + height, width - rWidth + 2, 1));
+        // Left Line
+        out.push_back(IntLine(posX - x + rWidth, posYBak + rHeight, 1, height - (rHeight* 2)));
+        // Right Line
         out.push_back(IntLine(posX + x + width, posYBak + rHeight, 1, height - (rHeight * 2)));
-            int posXX = posX - x + rWidth;
-            int posYY = posYBak + rHeight;
-            int wwidth = x + width;
-            int hheight = height - (rHeight* 2);
-            out.push_back(IntLine(posXX, posYY, wwidth, hheight));
+
+        int posXX = posX - x + rWidth + 1;
+        int posYY = posYBak + rHeight;
+        int wwidth = x + width - 1;
+        int hheight = height - (rHeight* 2);
+
+        out.push_back(IntLine(posXX, posYY, wwidth, hheight));
             //DrawLine(posXX, posYY, wwidth, fillColor, hheight);
 
     }

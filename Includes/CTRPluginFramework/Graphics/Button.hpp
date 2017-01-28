@@ -24,7 +24,7 @@ namespace CTRPluginFramework
         _caller(caller), _callback(callback), _content(content), _uiProperty(rect)
         {
             // Black
-            borderColor = Color(1, 1, 1);
+            borderColor = Color(165, 165, 165);
             // Blank
             idleColor   = Color(250, 250, 250);
             // Dim Grey
@@ -100,7 +100,7 @@ namespace CTRPluginFramework
                 IntVector left(line.start);
                 IntVector right(line.end);
                 left.x++;
-                right.x--;
+                right.x;
                 Renderer::DrawLine(left, right, fillColor);
             }
 

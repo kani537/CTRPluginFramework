@@ -41,6 +41,11 @@ namespace CTRPluginFramework
         return ((rowsize - 1 - posY + posX * rowsize) * bpp);
     }
 
+    void    Renderer::UseDoubleBuffer(bool useIt)
+    {
+        _useDoubleBuffer = useIt;
+    }
+
     void    Renderer::InitBuffer(u32 size)
     {
         _buffer = new u8(size);

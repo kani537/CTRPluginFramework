@@ -34,7 +34,7 @@ namespace CTRPluginFramework
         static void     SetTarget(Target target);
         static void     StartFrame(bool current = false);
         static void     EndFrame(void);
-
+        static void     UseDoubleBuffer(bool useIt);
         // Forms
         //#############################################################################################
         static void     DrawLine(int posX, int posY, int length, Color color, int width = 1);
