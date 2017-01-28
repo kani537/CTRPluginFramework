@@ -49,6 +49,7 @@ namespace CTRPluginFramework
         ** 15px * 15px
         ***********/
         static int      DrawGuide(IntVector &pos);
+        static int      DrawGuide(int posX, int posY);
 
     private:
         static int      DrawImg(u8 *img, int posX, int posY, int sizeX, int sizeY);

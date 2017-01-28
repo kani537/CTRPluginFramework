@@ -127,4 +127,53 @@ namespace CTRPluginFramework
     {
         return (DrawImg(FolderFilled, posX, posY, 15, 15));
     }
+
+    /*
+    ** Favorite
+    ** 25px * 25px
+    ***************/
+
+    int     Icon::DrawAddFavorite(IntVector &pos, bool filled)
+    {
+        u8 *img = filled ? AddFavoriteFilled25 : AddFavorite25;
+        return (DrawImg(img, pos.x, pos.y, 25, 25));
+    }
+
+    int     Icon::DrawAddFavorite(int posX, int posY, bool filled)
+    {
+        u8 *img = filled ? AddFavoriteFilled25 : AddFavorite25;
+        return (DrawImg(img, posX, posY, 25, 25));
+    } 
+
+    /*
+    ** Info
+    ** 25px * 25px
+    ***************/
+
+    int     Icon::DrawInfo(IntVector &pos, bool filled)
+    {
+        u8 *img = filled ? InfoFilled25 : Info25;
+        return (DrawImg(img, pos.x, pos.y, 25, 25));
+    }
+
+    int     Icon::DrawInfo(int posX, int posY, bool filled)
+    {
+        u8 *img = filled ? InfoFilled25 : Info25;
+        return (DrawImg(img, posX, posY, 25, 25));
+    } 
+
+    /*
+    ** Guide
+    ** 15px * 15px
+    ***************/
+
+    int     Icon::DrawGuide(IntVector &pos)
+    {
+        return (DrawImg(UserManualFilled15, pos.x, pos.y, 15, 15));
+    }
+
+    int     Icon::DrawGuide(int posX, int posY)
+    {
+        return (DrawImg(UserManualFilled15, posX, posY, 15, 15));
+    }
 }
