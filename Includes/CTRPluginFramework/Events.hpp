@@ -10,6 +10,7 @@ namespace CTRPluginFramework
         enum EventType
         {
             KeyPressed,
+            KeyDown,
             KeyReleased,
             CPadMoved,
             CStickMoved,

@@ -35,7 +35,9 @@ namespace CTRPluginFramework
 
     bool    EventManager::PopEvent(Event &event, bool isBlocking)
     {
-        if (_eventsQueue.empty())
+        static bool refresh = true;
+
+        if (refresh && _eventsQueue.empty())
         {
             ProcessEvents();
             if (isBlocking)
@@ -47,11 +49,16 @@ namespace CTRPluginFramework
                 }
             }
         }
-
+        else if (_eventsQueue.empty())
+        {
+            refresh = true;
+        }
         if (!_eventsQueue.empty())
         {
             event = _eventsQueue.front();
             _eventsQueue.pop();
+            if (_eventsQueue.empty())
+                refresh = false;
             return (true);
         }
         return (false);
@@ -77,6 +84,12 @@ namespace CTRPluginFramework
             if (Controller::IsKeyPressed(code))
             {
                 event.type = Event::KeyPressed;
+                event.key.code = code;
+                PushEvent(event);
+            }
+            if (Controller::IsKeyDown(code))
+            {
+                event.type = Event::KeyDown;
                 event.key.code = code;
                 PushEvent(event);
             }
