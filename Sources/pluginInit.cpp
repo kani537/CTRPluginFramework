@@ -37,10 +37,11 @@ namespace CTRPluginFramework
     void    KeepThreadMain(void *arg)
     {
         // Wait for the game to be launched
-        //Sleep(Seconds(3));
+        //Sleep(Seconds(5));
 
         // Init heap and services   
         initSystem();
+        Sleep(Seconds(5));
         mainThread = threadCreate(ThreadInit, (void *)threadStack, 0x4000, 0x3F, -2, 0);
         svcCreateEvent(&keepEvent, RESET_ONESHOT);
         while (keepRunning)
