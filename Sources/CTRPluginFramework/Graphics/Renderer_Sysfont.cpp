@@ -201,111 +201,8 @@ namespace CTRPluginFramework
 
     void Renderer::DrawSysCheckBox(const char *str, int posX, int &posY, int xLimits, Color color, bool isChecked,  float offset)
     {
-     /*   u16 outterBorder[] =
-        {
-            0x3FF8, 0x600C, 0xCFE6, 0x9012,
-            0xA00A, 0xA00A, 0xA00A, 0xA00A,
-            0xA00A, 0xA00A, 0xA00A, 0x9012,
-            0xCFE6, 0x600C, 0x3FF8
-        };
-
-        u16 innerBorder[] =
-        {
-            0x0, 0x1FF0, 0x3018, 0x600C,
-            0x4004, 0x4004, 0x4004, 0x4004,
-            0x4004, 0x4004, 0x4004, 0x600C,
-            0x3018, 0x1FF0, 0x0
-        };
-
-        u16 borderChecked[] =
-        {
-            0x0, 0xF, 0x9, 0x11,
-            0x22, 0x1044, 0x888, 0x510,
-            0x220, 0x1040, 0x880, 0x500,
-            0x0, 0x0, 0x0
-        };
-
-        u16 Checked[] =
-        {
-            0x0, 0x0, 0x6, 0xE,
-            0x1C, 0x38, 0x1070, 0x18E0,
-            0x1DC0, 0xF80, 0x700, 0x200,
-            0x0, 0x0, 0x0
-        };*/
-
-        // Correct posY
-       // int y = posY + (_rowSize[_target] - 240);
-
-        // temp color
-       /* Color grey = Color(105, 105, 105);
-        Color blank = Color(192, 192, 192);
-        Color green = Color(0, 255, 0);*/
-
-       /* for (int yy = 0; yy < 15; yy++)
-        {
-            u32 out = outterBorder[yy];
-            u32 in = innerBorder[yy];
-            u32 chb = borderChecked[yy];
-            u32 ch = Checked[yy];
-
-            int x = 0;
-            for (int xx = 16; xx >= 0; xx--, x++)
-            {
-                if ((out >> xx) & 1)
-                {
-                    _DrawPixel(posX + x, y + yy, blank);
-                }
-                if ((in >> xx) & 1)
-                {
-                    _DrawPixel(posX + x, y + yy, grey);
-                }
-                if (isChecked && (chb >> xx) & 1)
-                {
-                    _DrawPixel(posX + x, y + yy, blank);
-                }
-                if (isChecked && (ch >> xx) & 1)
-                {
-                    _DrawPixel(posX + x, y + yy, green);
-                }
-            }
-        }*/
-       /* u8 *ucb = isChecked ? CheckedCheckbox :  UnCheckedCheckbox;
-        u8 *left = _screens[_target]->GetLeftFramebuffer();
-        u8 *right = _screens[_target]->GetRightFramebuffer();
-        GSPGPU_FramebufferFormats fmt = _screens[_target]->GetFormat();
-        int rowsize = _rowSize[_target];
-        int bpp = _screens[_target]->GetBytesPerPixel();
-
-        if (!_useRender3D)
-        {
-            for (int yy = 0; yy < 15; yy++)
-            {
-                for (int xx = 0; xx < 15; xx++)
-                {
-                    u32 offset = GetFramebufferOffset(posX + xx, y + yy, bpp, rowsize);
-                    Color icon = Color::FromMemory(ucb, GSP_RGBA8_OES);
-                    icon.ToMemoryBlend(left + offset, fmt, BlendMode::Alpha, nullptr);
-                    ucb += 4;
-                }
-            }
-        }
-        else
-        {
-            for (int yy = 0; yy < 15; yy++)
-            {
-                for (int xx = 0; xx < 15; xx++)
-                {
-                    u32 offset = GetFramebufferOffset(posX + xx, y + yy, bpp, rowsize);
-                    Color icon = Color::FromMemory(ucb, GSP_RGBA8_OES);
-                    icon.ToMemoryBlend(left + offset, fmt, BlendMode::Alpha, right + offset);
-                    ucb += 4;
-                }
-            }
-        }*/
-
         Icon::DrawCheckBox(posX, posY, isChecked);
         posX += 20;
-        // posY += ;
         DrawSysString(str, posX, posY, xLimits, color, offset);
         posY += 1;
 
@@ -313,42 +210,6 @@ namespace CTRPluginFramework
     extern "C" unsigned char *FolderFilled;
     void Renderer::DrawSysFolder(const char *str, int posX, int &posY, int xLimits, Color color, float offset)
     {
-        // Correct posY
-       /* int y = posY + (_rowSize[_target] - 240);
-
-        u8 *folder = FolderFilled;
-        u8 *left = _screens[_target]->GetLeftFramebuffer();
-        u8 *right = _screens[_target]->GetRightFramebuffer();
-        GSPGPU_FramebufferFormats fmt = _screens[_target]->GetFormat();
-        int rowsize = _rowSize[_target];
-        int bpp = _screens[_target]->GetBytesPerPixel();
-
-        if (!_useRender3D)
-        {
-            for (int yy = 0; yy < 15; yy++)
-            {
-                for (int xx = 0; xx < 15; xx++)
-                {
-                    u32 offset = GetFramebufferOffset(posX + xx, y + yy, bpp, rowsize);
-                    Color icon = Color::FromMemory(folder, GSP_RGBA8_OES);
-                    icon.ToMemoryBlend(left + offset, fmt, BlendMode::Alpha, nullptr);
-                    folder += 4;
-                }
-            }
-        }
-        else
-        {
-            for (int yy = 0; yy < 15; yy++)
-            {
-                for (int xx = 0; xx < 15; xx++)
-                {
-                    u32 offset = GetFramebufferOffset(posX + xx, y + yy, bpp, rowsize);
-                    Color icon = Color::FromMemory(folder, GSP_RGBA8_OES);
-                    icon.ToMemoryBlend(left + offset, fmt, BlendMode::Alpha, right + offset);
-                    folder += 4;
-                }
-            }
-        }*/
         Icon::DrawFolder(posX, posY);
         posX += 20;
         DrawSysString(str, posX, posY, xLimits, color, offset);

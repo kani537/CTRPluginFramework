@@ -93,7 +93,6 @@ namespace CTRPluginFramework
 
         static Target       _target;
         
-        static bool         _useRender3D;
         static bool         _isRendering;
         static bool         _useDoubleBuffer;
         //static bool         _useSystemFont;
@@ -104,9 +103,6 @@ namespace CTRPluginFramework
         //static u8           *_framebuffer[4];
         //static u8           *_framebufferR[4];
         static u32          _rowstride;
-        static u32          _rowSize[2];
-        static u32          _targetWidth[2];
-        static u32          _targetHeight[2];
         static u8           _smallBuffer[1000];
         static GSPGPU_FramebufferFormats _format;
         static u8           *_buffer;
@@ -144,8 +140,6 @@ namespace CTRPluginFramework
 
         x = static_cast<int>(start.x);
         y = static_cast<int>(start.y);
-        // Correct posY
-        y += (_rowSize[_target] - 240);
         dx = static_cast<int>(end.x - start.x);
         dy = static_cast<int>(end.y - start.y);
         xinc = ( dx > 0 ) ? 1 : -1;

@@ -15,17 +15,9 @@ namespace CTRPluginFramework
     
 
     Target      Renderer::_target = BOTTOM;
-    bool        Renderer::_useRender3D = false;
     bool        Renderer::_isRendering = false;
     bool        Renderer::_useDoubleBuffer = false;
-    //bool        Renderer::_useSystemFont = false;
-    //Screen      *Renderer::_screens[2] = {Screen::Bottom, Screen::Top};
     Screen      *Renderer::_screen = Screen::Bottom;
-    //u8          *Renderer::_framebuffer[4] = {nullptr};
-    //u8          *Renderer::_framebufferR[4] = {nullptr};
-    u32         Renderer::_rowSize[2] = {0};
-    u32         Renderer::_targetWidth[2] = {0};
-    u32         Renderer::_targetHeight[2] = {0};
     DrawPixelP  Renderer::_DrawPixel = nullptr;
     DrawDataP   Renderer::_DrawData = nullptr;
     int         Renderer::_length = 1;
@@ -65,20 +57,14 @@ namespace CTRPluginFramework
 
     void        Renderer::Initialize(void)
     {
-        //_screens[BOTTOM] = Screen::Bottom;
-       // _screens[TOP] = Screen::Top;
         _useDoubleBuffer = false;
-        //InitBuffer(0x50000);
     }
 
     void        Renderer::SetTarget(Target target)
     {
         _target = target;
         if (_target == BOTTOM)
-        {
-            _useRender3D = false;
             _screen = Screen::Bottom;
-        }
         else
             _screen = Screen::Top;
         _format = _screen->GetFormat();
@@ -111,14 +97,6 @@ namespace CTRPluginFramework
     void        Renderer::StartFrame(bool current)
     {
         _isRendering = true;
-     
-        /*_rowSize[BOTTOM] = _screen->GetRowSize();
-        _targetWidth[BOTTOM] = _screens[BOTTOM]->GetWidth();
-        _targetHeight[BOTTOM] = _screens[BOTTOM]->GetHeight();
-
-        _rowSize[TOP] = _screens[TOP]->GetRowSize();
-        _targetWidth[TOP] = _screens[TOP]->GetWidth();
-        _targetHeight[TOP] = _screens[TOP]->GetHeight();*/
     }
 
     void        Renderer::EndFrame(bool copy)
@@ -132,10 +110,6 @@ namespace CTRPluginFramework
 
     void    Renderer::MenuSelector(int posX, int posY, int width, int height)
     {
-
-        // Correct posY
-        //posY += _rowSize[_target] - 240;
-
         int x = posX;
         int y = posY;
         int w = width;
@@ -143,14 +117,10 @@ namespace CTRPluginFramework
 
 
         u8 *left = _screen->GetLeftFramebuffer(posX, posY + 1);
-        //u8 *right = (u8 *)_screens[_target]->GetRightFramebuffer();
-        GSPGPU_FramebufferFormats fmt;// = _screens[_target]->GetFormat();
         int bpp;
         int rowstride;
-
+        GSPGPU_FramebufferFormats fmt;
         _screen->GetFramebufferInfos(rowstride, bpp, fmt);
-        //int bpp = _screens[_target]->GetBytesPerPixel();
-        //int rs = _screens[_target]->GetRowSize();
 
         // Draw Rectangle
         while (--w >= 0)
@@ -160,16 +130,11 @@ namespace CTRPluginFramework
             u8 *dst = left + rowstride * w;
             while (--h >= 0)
             {   
-                //u32 offset = GetFramebufferOffset(x, y + h, bpp, rs);
                 Color c = Color::FromFramebuffer(dst);
 
                 c.Fade(0.1f);
                 Color::ToFramebuffer(dst, c);
                 dst -= bpp;
-                /*if (_useRender3D)
-                {
-                    c.ToMemory(right + offset, fmt);
-                }*/
             }
         }
 
@@ -197,7 +162,6 @@ namespace CTRPluginFramework
         }
 
         l = Color(255, 255, 255);
-        //dst = _screen->GetLeftFramebuffer(posX + (width - tier), posY);
         // Middle tier
         for (int i = 0; i < tier; ++i)
         {
@@ -218,27 +182,6 @@ namespace CTRPluginFramework
                 fading -= 0.01f;
                 j = 0;
             }
-        }
-
-        
-
-        //l = Color(255, 255, 255);
-
-    }
-
-    void    Renderer::DrawBuffer(u8 *buffer, int posX, int posY, int width, int height)
-    {
-        const int padding = height * 3;
-
-        // Correct posY
-        posY = _rowSize[_target] - posY;
-
-        int i = 0;
-        while (--width >= 0)
-        {
-            _DrawData(posX, posY, buffer + i, height);
-            posX++;
-            i += padding;
         }
     }
 }

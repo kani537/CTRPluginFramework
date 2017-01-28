@@ -193,10 +193,8 @@ namespace CTRPluginFramework
 
         int     posX = rect._leftTopCorner.x;
         int     posY = rect._leftTopCorner.y;
-
-        int     posYBak;
         
-
+        // From negative rectangle to positive
         if (width < 0)
         {
             width = -width;
@@ -207,9 +205,6 @@ namespace CTRPluginFramework
             height = -height;
             posY -= height;
         }
-        posYBak = posY;
-        // Correct posY
-        posY += (_rowSize[_target] - 240);
         int cpt = 0;
 
         x = 0;
@@ -374,13 +369,13 @@ namespace CTRPluginFramework
         }
 
         // Top line
-        DrawLine(posX + rWidth, posYBak - 1, width - rWidth, color);
+        DrawLine(posX + rWidth, posY - 1, width - rWidth, color);
         // Bottom line
-        DrawLine(posX + rWidth, posYBak + height - 1, width - rWidth, color);
+        DrawLine(posX + rWidth, posY + height - 1, width - rWidth, color);
         // Left line
-        DrawLine(posX - x + rWidth, posYBak + rHeight - 1, 1, color, height - (rHeight* 2));
+        DrawLine(posX - x + rWidth, posY + rHeight - 1, 1, color, height - (rHeight* 2));
         // Right line
-        DrawLine(posX + x + width, posYBak + rHeight, 1, color, height - (rHeight * 2));
+        DrawLine(posX + x + width, posY + rHeight, 1, color, height - (rHeight * 2));
 
         if (mustFill)
         {
@@ -393,7 +388,7 @@ namespace CTRPluginFramework
             }
 
             int posXX = posX - x + rWidth + 1;
-            int posYY = posYBak + rHeight - 1;
+            int posYY = posY + rHeight - 1;
             int wwidth = x + width - 1;
             int hheight = height - (rHeight* 2);
             DrawLine(posXX, posYY, wwidth, fillColor, hheight);
