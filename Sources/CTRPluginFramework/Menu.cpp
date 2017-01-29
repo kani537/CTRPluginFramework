@@ -535,8 +535,10 @@ namespace CTRPluginFramework
     void   Menu::_StarItem(void)
     {
         MenuFolder *folder = _starMode ? _starred : _folder;
+
         if (_selector >= folder->ItemsCount())
             return;
+        
         MenuItem *item = folder->_items[_selector];
 
         if (item)

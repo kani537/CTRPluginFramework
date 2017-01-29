@@ -188,11 +188,11 @@ namespace CTRPluginFramework
         
         std::queue<Point> points;
 
-        int     width = rect._size.x;
-        int     height = rect._size.y;
+        int     width = rect.size.x;
+        int     height = rect.size.y;
 
-        int     posX = rect._leftTopCorner.x;
-        int     posY = rect._leftTopCorner.y;
+        int     posX = rect.leftTop.x;
+        int     posY = rect.leftTop.y;
         
         // From negative rectangle to positive
         if (width < 0)
@@ -417,11 +417,11 @@ namespace CTRPluginFramework
         
         std::queue<Point> points;
 
-        int     width = rect._size.x;
-        int     height = rect._size.y;
+        int     width = rect.size.x;
+        int     height = rect.size.y;
 
-        int     posX = rect._leftTopCorner.x;
-        int     posY = rect._leftTopCorner.y;
+        int     posX = rect.leftTop.x;
+        int     posY = rect.leftTop.y;
 
         int     posYBak;
         
@@ -659,11 +659,11 @@ namespace CTRPluginFramework
 
     void        Renderer::DrawRect2(const IntRect &rect, Color &color1, Color &color2)
     {
-        int height = rect._size.y;
+        int height = rect.size.y;
 
-        int posX = rect._leftTopCorner.x;
-        int posY = rect._leftTopCorner.y;
-        int width = rect._size.x;
+        int posX = rect.leftTop.x;
+        int posY = rect.leftTop.y;
+        int width = rect.size.x;
 
         while (--height >= 0)
         {

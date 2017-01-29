@@ -11,8 +11,8 @@ namespace CTRPluginFramework
     {
     public:
         Rect();
-        Rect(const Vector<T>& leftTopCorner, const Vector<T>& size);
-        Rect(const Vector<T>& leftTopCorner, T width, T height);
+        Rect(const Vector<T>& leftTop, const Vector<T>& size);
+        Rect(const Vector<T>& leftTop, T width, T height);
         Rect(T left, T top, const Vector<T>& size);
         Rect(T left, T top, T width, T height);
         template <typename U>
@@ -23,12 +23,12 @@ namespace CTRPluginFramework
         bool Intersects(const Rect<T>& rect);
         bool Intersects(const Rect<T>& rect, Rect<T>& intersect);
 
-        Vector<T> _leftTopCorner;
-        Vector<T> _size;
+        Vector<T> leftTop;
+        Vector<T> size;
     };
 
     template <typename T>
-    Rect<T>::Rect() : _leftTopCorner(0, 0), _size(0, 0)
+    Rect<T>::Rect() : leftTop(0, 0), size(0, 0)
     {
 
     }
@@ -36,50 +36,50 @@ namespace CTRPluginFramework
     template <typename T>
     Rect<T>::Rect(const Vector<T>& leftTopCorner, const Vector<T>& size)
     {
-        _leftTopCorner = leftTopCorner;
-        _size = size;
+        leftTop = leftTopCorner;
+        this->size = size;
     }
 
     template <typename T>
     Rect<T>::Rect(const Vector<T>& leftTopCorner, T width, T height)
     {
-        _leftTopCorner = leftTopCorner;
-        _size.x = width;
-        _size.y = height;
+        leftTop = leftTopCorner;
+        size.x = width;
+        size.y = height;
     }
 
     template <typename T>
     Rect<T>::Rect(T left, T top, const Vector<T>& size)
     {
-        _leftTopCorner.x = left;
-        _leftTopCorner.y = top;
-        _size = size;
+        leftTop.x = left;
+        leftTop.y = top;
+        this->size = size;
     }
 
     template <typename T>
     Rect<T>::Rect(T left, T top, T width, T height)
     {
-        _leftTopCorner.x = left;
-        _leftTopCorner.y = top;
-        _size.x = width;
-        _size.y = height;
+        leftTop.x = left;
+        leftTop.y = top;
+        size.x = width;
+        size.y = height;
     }
 
     template <typename T>
     template <typename U>
     Rect<T>::Rect(const Rect<U>& rect)
     {
-        _leftTopCorner = reinterpret_cast<T>(rect._leftTopCorner);
-        _size = reinterpret_cast<T>(rect._size);
+        leftTop = reinterpret_cast<T>(rect.leftTop);
+        size = reinterpret_cast<T>(rect.size);
     }
 
     template <typename T>
     bool Rect<T>::Contains(T x, T y)
     {
-        T minX = std::min(_leftTopCorner.x, _leftTopCorner.x + _size.x);
-        T maxX = std::max(_leftTopCorner.x, _leftTopCorner.x + _size.x);
-        T minY = std::min(_leftTopCorner.y, _leftTopCorner.y + _size.y);
-        T maxY = std::max(_leftTopCorner.y, _leftTopCorner.y + _size.y);
+        T minX = std::min(leftTop.x, leftTop.x + size.x);
+        T maxX = std::max(leftTop.x, leftTop.x + size.x);
+        T minY = std::min(leftTop.y, leftTop.y + size.y);
+        T maxY = std::max(leftTop.y, leftTop.y + size.y);
 
         return (x >= minX && x < maxX
             && y >= minY && y < maxY);
@@ -101,14 +101,14 @@ namespace CTRPluginFramework
     template <typename T>
     bool Rect<T>::Intersects(const Rect<T> &rect, Rect<T> &intersect)
     {
-        T thisMinX = std::min(_leftTopCorner.x, _leftTopCorner.x + _size.x);
-        T thisMaxX = std::max(_leftTopCorner.x, _leftTopCorner.x + _size.x);
-        T thisMinY = std::min(_leftTopCorner.y, _leftTopCorner.y + _size.y);
-        T thisMaxY = std::max(_leftTopCorner.y, _leftTopCorner.y + _size.y);
-        T rectMinX = std::min(rect._leftTopCorner.x, rect._leftTopCorner.x + rect._size.x);
-        T rectMaxX = std::max(rect._leftTopCorner.x, rect._leftTopCorner.x + rect._size.x);
-        T rectMinY = std::min(rect._leftTopCorner.y, rect._leftTopCorner.y + rect._size.y);
-        T rectMaxY = std::max(rect._leftTopCorner.y, rect._leftTopCorner.y + rect._size.y);
+        T thisMinX = std::min(leftTop.x, leftTop.x + size.x);
+        T thisMaxX = std::max(leftTop.x, leftTop.x + size.x);
+        T thisMinY = std::min(leftTop.y, leftTop.y + size.y);
+        T thisMaxY = std::max(leftTop.y, leftTop.y + size.y);
+        T rectMinX = std::min(rect.leftTop.x, rect.leftTop.x + rect.size.x);
+        T rectMaxX = std::max(rect.leftTop.x, rect.leftTop.x + rect.size.x);
+        T rectMinY = std::min(rect.leftTop.y, rect.leftTop.y + rect.size.y);
+        T rectMaxY = std::max(rect.leftTop.y, rect.leftTop.y + rect.size.y);
 
         T intersectLeftX = std::max(thisMinX, rectMinX);
         T intersectLeftY = std::max(thisMinY, rectMinY);
@@ -128,15 +128,15 @@ namespace CTRPluginFramework
     template <typename T>
     bool operator ==(Rect<T> &left, Rect<T> &right)
     {
-        return (left._leftTopCorner == right._leftTopCorner
-                && left._size == right._size);
+        return (left.leftTop == right.leftTop
+                && left.size == right.size);
     }
 
     template <typename T>
     bool operator !=(Rect<T> &left, Rect<T> &right)
     {
-        return (left._leftTopCorner != right._leftTopCorner
-            && left._size != right._size);
+        return (left.leftTop != right.leftTop
+            && left.size != right.size);
     }
 
     typedef Rect<unsigned int> UIntRect;

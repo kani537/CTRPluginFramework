@@ -71,7 +71,7 @@ namespace CTRPluginFramework
     void    TToggleButton::Draw(void)
     {
         if (_enabled)
-            _icon(_uiProperties._leftTopCorner.x, _uiProperties._leftTopCorner.y, _state);
+            _icon(_uiProperties.leftTop.x, _uiProperties.leftTop.y, _state);
     }
 
     // Update

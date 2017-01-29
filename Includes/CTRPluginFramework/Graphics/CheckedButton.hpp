@@ -117,11 +117,11 @@ namespace CTRPluginFramework
         IntLine &line = _lines[i];
         Renderer::DrawLine(line.start.x, line.start.y, line.end.x, fillColor, line.end.y);
 
-        int posX = _uiProperties._leftTopCorner.x;
-        int posY = _uiProperties._leftTopCorner.y;
+        int posX = _uiProperties.leftTop.x;
+        int posY = _uiProperties.leftTop.y;
 
-        int height = _uiProperties._size.y;
-        int width = _uiProperties._size.x;
+        int height = _uiProperties.size.y;
+        int width = _uiProperties.size.x;
         int limit = posX + width;
 
         posY += (height - 16) / 2;
