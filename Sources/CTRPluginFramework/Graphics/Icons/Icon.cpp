@@ -161,12 +161,12 @@ namespace CTRPluginFramework
 
     int     Icon::DrawFavorite(IntVector &pos)
     {
-        return (DrawImg(Star15, pos.x, pos.y, 25, 25));
+        return (DrawImg(Star15, pos.x, pos.y, 15, 15));
     }
 
     int     Icon::DrawFavorite(int posX, int posY)
     {
-        return (DrawImg(Star15, posX, posY, 25, 25));
+        return (DrawImg(Star15, posX, posY, 15, 15));
     } 
 
     /*
