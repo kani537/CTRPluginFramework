@@ -33,7 +33,7 @@ namespace CTRPluginFramework
 
         MenuFolder *folder = new MenuFolder("Movement");
 
-        folder->Append(new MenuEntry("MoonJump (\uE000)", MoonJump));
+        folder->Append(new MenuEntry("MoonJump (\uE000)", MoonJump, "Press A to be free of the gravity"));
         folder->Append(new MenuEntry("Fast Move (\uE077 + \uE054)", MoveFast));
         menu.Append(folder);
 
@@ -41,8 +41,8 @@ namespace CTRPluginFramework
         ** Battle codes
         ******************/
 
-        folder = new MenuFolder("Battle");
-        folder->Append(new MenuEntry("Refill Heart (\uE058)", RefillHeart));
+        folder = new MenuFolder("Battle", "Need some booster for your fights ?");
+        folder->Append(new MenuEntry("Refill Heart (\uE058)", RefillHeart, "Running low on heart ?"));
         folder->Append(new MenuEntry("Refill Magic (\uE058)", RefillLargeMagicbar));
         folder->Append(new MenuEntry("Unlock Heart", MaxHeart));
         folder->Append(new MenuEntry("Unlock Magic", UnlockMagic));
