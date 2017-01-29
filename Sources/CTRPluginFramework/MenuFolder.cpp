@@ -11,8 +11,10 @@ namespace CTRPluginFramework
     {
         this->name = name;
         this->note = note;
-        this->_position = -1;
-        this->_parent = nullptr;
+        this->_position[0] = -1;
+        this->_position[1] = -1;
+        this->_parent[0] = nullptr;        
+        this->_parent[1] = nullptr;
     }
 
     MenuFolder::~MenuFolder()
@@ -33,17 +35,19 @@ namespace CTRPluginFramework
 
     //#######################################################################
 
-    void    MenuFolder::_Open(MenuFolder *parent, int position)
+    void    MenuFolder::_Open(MenuFolder *parent, int position, bool starMode)
     {
-        _parent = parent;
-        _position = position;
+        int index = starMode ? 1 : 0;
+        _parent[index] = parent;
+        _position[index] = position;
     }
 
-    MenuFolder  *MenuFolder::_Close(int &position)
+    MenuFolder  *MenuFolder::_Close(int &position, bool starMode)
     {
-        if (_parent != nullptr && position != -1)
-            position = _position;
-        return (_parent);
+        int index = starMode ? 1 : 0;
+        if (_parent[index] != nullptr && _position[index] != -1)
+            position = _position[index];
+        return (_parent[index]);
     }
 
 }

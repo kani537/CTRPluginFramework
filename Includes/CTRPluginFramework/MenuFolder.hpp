@@ -19,13 +19,13 @@ namespace CTRPluginFramework
         friend class Menu;
 
         // Private methods
-        void            _Open(MenuFolder *parent, int position);
-        MenuFolder      *_Close(int &position);
+        void            _Open(MenuFolder *parent, int position, bool starMode);
+        MenuFolder      *_Close(int &position, bool starMode);
 
         // Private members
-        MenuFolder              *_parent;
+        MenuFolder              *_parent[2];
         std::vector<MenuItem *>   _items;
-        int                     _position;
+        int                     _position[2];
 
     };
 }
