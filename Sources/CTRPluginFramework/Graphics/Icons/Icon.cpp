@@ -23,6 +23,7 @@ namespace CTRPluginFramework
     extern "C" unsigned char *InfoFilled25;
     extern "C" unsigned char *Maintenance15;
     extern "C" unsigned char *Search15;
+    extern "C" unsigned char *Star15;
     extern "C" unsigned char *UserManualFilled15;
 
     #define RGBA8 GSP_RGBA8_OES
@@ -156,6 +157,16 @@ namespace CTRPluginFramework
     {
         u8 *img = filled ? AddFavoriteFilled25 : AddFavorite25;
         return (DrawImg(img, posX, posY, 25, 25));
+    } 
+
+    int     Icon::DrawFavorite(IntVector &pos)
+    {
+        return (DrawImg(Star15, pos.x, pos.y, 25, 25));
+    }
+
+    int     Icon::DrawFavorite(int posX, int posY)
+    {
+        return (DrawImg(Star15, posX, posY, 25, 25));
     } 
 
     /*
