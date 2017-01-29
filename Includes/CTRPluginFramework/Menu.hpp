@@ -3,6 +3,8 @@
 
 #include "Vector.hpp"
 #include "Button.hpp"
+#include "ToggleButton.hpp"
+#include "CheckedButton.hpp"
 #include "Clock.hpp"
 
 #include <queue>
@@ -37,6 +39,10 @@ namespace CTRPluginFramework
         void    _ProcessEvent(Event &event);
         void    _Update(Time delta);
 
+        void    _TriggerEntry(void);
+        void    _StarItem(void);
+        void    _StarMode(void);
+
         std::vector<MenuEntry *>    _executeLoop;
         std::queue<int>             _freeIndex;
         MenuFolder                  *_folder;
@@ -54,10 +60,13 @@ namespace CTRPluginFramework
         IntVector                   _endLine;
 
         Button<Menu, void>          _gameGuideBtn;
-        Button<Menu, void>          _showStarredBtn;
+        CheckedButton<Menu, void>   _showStarredBtn;
         Button<Menu, void>          _toolsBtn;
         Button<Menu, void>          _hidMapperBtn;
         Button<Menu, void>          _searchBtn;
+
+        ToggleButton<Menu, void>      _AddFavoriteBtn;
+        ToggleButton<Menu, void>      _InfoBtn;
 
         
     };

@@ -26,18 +26,23 @@
 
 namespace CTRPluginFramework
 {
+    static MenuItem m(MenuType::Entry);
+
     bool    _shouldClose = false;
     Menu::Menu(std::string name, std::string note) : 
     _startLine(-1, -1), _endLine(-1, -1),
-    _showStarredBtn("Show starred", *this, &Menu::Null, IntRect(30, 70, 120, 30)), 
-    _gameGuideBtn("Game Guide", *this, &Menu::Null, IntRect(30, 105, 120, 30)),    
-    _toolsBtn("Tools", *this, &Menu::Null, IntRect(30, 140, 120, 30)),
-    _hidMapperBtn("HID Mapper", *this, &Menu::Null, IntRect(165, 70, 120, 30)),
-    _searchBtn("Search", *this, &Menu::Null, IntRect(165, 105, 120, 30))
+    _showStarredBtn("Favorite", *this, &Menu::_StarMode, IntRect(30, 70, 120, 30), Icon::DrawFavorite), 
+    _gameGuideBtn("Game Guide", *this, &Menu::Null, IntRect(30, 105, 120, 30), Icon::DrawGuide),    
+    _toolsBtn("Tools", *this, &Menu::Null, IntRect(30, 140, 120, 30), Icon::DrawTools),
+    _hidMapperBtn("Mapper", *this, &Menu::Null, IntRect(165, 70, 120, 30), Icon::DrawController),
+    _searchBtn("Search", *this, &Menu::Null, IntRect(165, 105, 120, 30), Icon::DrawSearch),
+    _AddFavoriteBtn(*this, &Menu::_StarItem, IntRect(50, 30, 25, 25), Icon::DrawAddFavorite),
+    _InfoBtn(*this, &Menu::Null, IntRect(90, 30, 25, 25), Icon::DrawInfo, false)
     {
         _isOpen = false;
         _starMode = false;
         _folder = new MenuFolder(name, note);
+        _starred = new MenuFolder("Favorites");
         _selector = 0;
         _selectedTextSize = 0;
         _scrollOffset = 0.f;
@@ -52,7 +57,24 @@ namespace CTRPluginFramework
     void    Menu::Null(void)
     {
 
-    }    
+    } 
+    void    Menu::_StarMode(void)
+    {
+        static int selector = 0;
+
+        if (_starMode)
+        {
+            _selector = selector;
+            _starMode = false;
+        }
+        else
+        {
+            selector = _selector;
+            _selector = 0;
+            _starMode = true;
+        }
+    }   
+
     void    Menu::Append(MenuItem *item)
     {
         _folder->Append(item);
@@ -69,6 +91,7 @@ namespace CTRPluginFramework
         float           framerate;
         Time            delta;
         Color           blank(255, 0, 255);
+        bool            isInit = false;
 
         _selectedTextSize = Renderer::GetTextSize(_folder->_items[_selector]->name.c_str());
         // Main loop
@@ -84,6 +107,7 @@ namespace CTRPluginFramework
                     {
                         Process::Play();
                         _isOpen = false;
+                        isInit = true;
                     }
                     else
                     {
@@ -106,12 +130,13 @@ namespace CTRPluginFramework
                 Renderer::StartFrame();
                 _RenderBottom();
                 _RenderTop();
-                char buf[40];
+                
+              /*  char buf[40];
                 sprintf(buf, "FPS: %03.2f", framerate);
                 Color blank(255, 255, 255);
                 Color black = Color();
                 int posY = 10;
-                Renderer::DrawString(buf, 320, posY, blank, black);
+                Renderer::DrawString(buf, 320, posY, blank, black);*/
                 Renderer::EndFrame(_shouldClose);
                 if (_shouldClose)
                 {
@@ -119,13 +144,22 @@ namespace CTRPluginFramework
                     _isOpen = false;
                     _shouldClose = false;
                 }
-               // while(clock.GetElapsedTime() < frameLimit);
 
+                _gameGuideBtn();
+                _showStarredBtn();
+                _toolsBtn();
+                _hidMapperBtn();
+                _searchBtn();
+
+                _AddFavoriteBtn();
+                _InfoBtn();
+               // while(clock.GetElapsedTime() < frameLimit);
+            
             }
             else
             {
                         // Draw Touch Cursor
-                if (Touch::IsDown())
+                if (isInit && Touch::IsDown())
                 {
                     UIntVector t(Touch::GetPosition());
                     int posX = t.x - 2;
@@ -173,14 +207,16 @@ namespace CTRPluginFramework
         Renderer::DrawRect2(background, black, dimGrey);
         Renderer::DrawRect(32, 22, 336, 196, blank, false);
 
+        MenuFolder *folder = _starMode ? _starred : _folder;
+
         // Draw Title
         int width;
-        width = Renderer::DrawSysString(_folder->name.c_str(), posX, posY, 350, blank);
+        width = Renderer::DrawSysString(folder->name.c_str(), posX, posY, 350, blank);
         Renderer::DrawLine(posX, posY, width, blank);
         posY += 7;
 
         // Draw Entry
-        int max = _folder->ItemsCount();
+        int max = folder->ItemsCount();
         if (max == 0)
             return;
         int i = std::max(0, _selector - 6);//(_selector / 9) * 9;
@@ -188,7 +224,7 @@ namespace CTRPluginFramework
         
         for (; i < max; i++)
         {
-            MenuItem *item = _folder->_items[i];
+            MenuItem *item = folder->_items[i];
             if (i == _selector)
             {
                 Renderer::MenuSelector(posX - 5, posY - 3, 320, 20);
@@ -204,11 +240,8 @@ namespace CTRPluginFramework
             }
             posY += 4;
         }
-
     }
 
-    float _a = 10.f;
-    Color _c;
     //###########################################
     // Render Bottom Screen
     //###########################################
@@ -222,7 +255,7 @@ namespace CTRPluginFramework
         static Color dimGrey(15, 15, 15);
         static Color silver(160, 160, 160);
         static IntRect background(20, 20, 280, 200);
-        static IntRect closeIcon(260, 30, 20, 20);
+        static IntRect closeIcon(275, 24, 20, 20);
 
         Renderer::SetTarget(BOTTOM);
 
@@ -238,21 +271,29 @@ namespace CTRPluginFramework
 
         bool isTouchDown = Touch::IsDown();
         IntVector touchPos(Touch::GetPosition());
+
         bool closeIsTouch = closeIcon.Contains(touchPos);
-        Icon::DrawClose(270, 30, closeIsTouch);
-        _showStarredBtn(isTouchDown, touchPos);
-        _gameGuideBtn(isTouchDown, touchPos);
-        _toolsBtn(isTouchDown, touchPos);
-        _hidMapperBtn(isTouchDown, touchPos);
-        _searchBtn(isTouchDown, touchPos);
+        Icon::DrawClose(275, 24, closeIsTouch);
+
+
+        _showStarredBtn.Draw();
+        _gameGuideBtn.Draw();
+        _toolsBtn.Draw();
+        _hidMapperBtn.Draw();
+        _searchBtn.Draw();
+
+        _AddFavoriteBtn.Draw();
+        _InfoBtn.Draw();
 
         // Draw Touch Cursor
-        if (isTouchDown)
+        if (isTouchDown && background.Contains(touchPos))
         {
             int posX = touchPos.x - 2;
             int posY = touchPos.y - 1;
-            
-            Renderer::DrawSysString("\uE058", posX, posY, 320, blank);
+            touchPos.x += 10;
+            touchPos.y += 15;
+            if (background.Contains(touchPos))
+                Renderer::DrawSysString("\uE058", posX, posY, 320, blank);
         } 
         static bool _closing = false;
         if (closeIsTouch)
@@ -271,61 +312,64 @@ namespace CTRPluginFramework
     //###########################################
     void    Menu::_ProcessEvent(Event &event)
     {
-        
+        static Clock fastScroll;
+        static Clock inputClock;
+
+        MenuFolder *folder = _starMode ? _starred : _folder;
 
         switch (event.type)
         {
-            /*case Event::TouchBegan:
+            case Event::KeyDown:
             {
-                _startLine.x = event.touch.x;
-                _startLine.y = event.touch.y;
-                _endLine.x = event.touch.x;
-                _endLine.y = event.touch.y;
-                 u64 tick = svcGetSystemTick();
-                _c = Color(tick >> 16 & 0xFF, tick >> 8 & 0xFF, tick & 0xFF);
-                break;
-            }
-            case Event::TouchMoved:
-            {
-                _endLine.x = event.touch.x;
-                _endLine.y = event.touch.y;
-                break;
-            }*/
-            case Event::KeyPressed:
-            {
+                if (fastScroll.HasTimePassed(Seconds(0.5f)) && inputClock.HasTimePassed(Milliseconds(400)))
                 switch (event.key.code)
                 {
-                    /*
-                    ** Tests
-                    */
-                    case Key::DPadRight:
-                    {
-                        _a++;
-                        break;
-                    }
-                    case Key::DPadLeft:
-                    {
-                        _a--;
-                        break;
-                    }
-
                     /*
                     ** Selector
                     **************/
                     case Key::DPadUp:
                     {
                         if (_selector == 0)
-                            _selector = _folder->ItemsCount() - 1;
+                            _selector = folder->ItemsCount() - 1;
                         else
                             _selector--;
                         break;
                     }
                     case Key::DPadDown:
                     {
-                        if (_selector == _folder->ItemsCount() - 1)
+                        if (_selector == folder->ItemsCount() - 1)
                             _selector = 0;
                         else
                             _selector++;
+                        break;
+                    }
+                    inputClock.Restart();                  
+                }
+                break;
+            } // Event::KeyDown
+            case Event::KeyPressed:
+            {
+                switch (event.key.code)
+                {
+                    /*
+                    ** Selector
+                    **************/
+                    case Key::DPadUp:
+                    {
+                        if (_selector == 0)
+                            _selector = folder->ItemsCount() - 1;
+                        else
+                            _selector--;
+                        fastScroll.Restart();    
+                        break;
+                    }
+                    case Key::DPadDown:
+                    {
+                        if (_selector == folder->ItemsCount() - 1)
+                            _selector = 0;
+                        else
+                            _selector++;
+                        fastScroll.Restart();
                         break;
                     }
                     /*
@@ -334,58 +378,7 @@ namespace CTRPluginFramework
                     ******************/
                     case Key::A:
                     {
-                        /*
-                        ** MenuEntry
-                        **************/
-                        if (_folder->_items[_selector]->_type == MenuType::Entry)
-                        {
-                            MenuEntry *entry = reinterpret_cast<MenuEntry *>(_folder->_items[_selector]);
-                            // Change the state
-                            bool state = entry->_TriggerState();
-                            // If the entry has a valid funcpointer
-                            if (entry->GameFunc != nullptr)
-                            {
-                                // If is activated add to executeLoop
-                                if (state)
-                                {
-                                    // Check for free index in the vector
-                                    if (!_freeIndex.empty())
-                                    {
-                                        int i = _freeIndex.front();
-                                        _freeIndex.pop();
-                                        _executeLoop[i] = entry;
-                                        entry->_executeIndex = i;
-                                    }
-                                    // Else add it at the back
-                                    else
-                                    {
-                                        int i = _executeLoop.size();
-                                        _executeLoop.push_back(entry);
-                                        entry->_executeIndex = i;
-                                    }
-                                }
-                                else
-                                {
-                                    int i = entry->_executeIndex;
-                                    if (i >= 0 && i < _executeLoop.size())
-                                    {
-                                        _executeLoop[i] = nullptr;
-                                        _freeIndex.push(i);
-                                    }
-                                    entry->_executeIndex = -1;
-                                }
-                            }
-                        }
-                        /*
-                        ** MenuFolder
-                        ****************/
-                        else
-                        {
-                            MenuFolder *p = reinterpret_cast<MenuFolder *>(_folder->_items[_selector]);
-                            p->_Open(_folder, _selector);
-                            _folder = p;
-                            _selector = 0;
-                        }
+                        _TriggerEntry();
                         break;
                     }
                     /*
@@ -393,27 +386,42 @@ namespace CTRPluginFramework
                     ********************/
                     case Key::B:
                     {
-                        MenuFolder *p = _folder->_Close(_selector);
+                        MenuFolder *p = folder->_Close(_selector, _starMode);
                         if (p != nullptr)
                         {
-                            _folder = p;
+                            if (_starMode)
+                                _starred = p;
+                            else
+                                _folder = p;
                         }
                         break;
                     }
-                } // end switch
-                /*
-                ** Scrolling text variables
-                *********************************/
-                if (event.key.code != Key::Touchpad)
-                {
-                    _selectedTextSize = _folder->ItemsCount() > 0 ? Renderer::GetTextSize(_folder->_items[_selector]->name.c_str()) : 0;
-                    _maxScrollOffset = (float)_selectedTextSize - 200.f;
-                    _scrollClock.Restart();
-                    _scrollOffset = 0.f;
-                    _reverseFlow = false;                   
-                }
+
+                } 
                 break;
+            } // End Key::Pressed event
+
+            /*
+            ** Scrolling text variables
+            *********************************/
+            if (event.key.code != Key::Touchpad)
+            {
+                _selectedTextSize = folder->ItemsCount() > 0 ? Renderer::GetTextSize(folder->_items[_selector]->name.c_str()) : 0;
+                _maxScrollOffset = (float)_selectedTextSize - 200.f;
+                _scrollClock.Restart();
+                _scrollOffset = 0.f;
+                _reverseFlow = false;               
             }
+        } // End switch
+
+        /*
+        ** Update favorite state
+        **************************/
+        if (folder->ItemsCount() > 0)
+        {
+            MenuItem *item = folder->_items[_selector];
+            _AddFavoriteBtn.SetState(item->_IsStarred());
+            _InfoBtn.Enable(item->note.size() > 0);
         }
     }
 
@@ -422,6 +430,10 @@ namespace CTRPluginFramework
     //###########################################
     void    Menu::_Update(Time delta)
     {
+        /*
+        ** Scrolling
+        *************/
+
         if (_selectedTextSize >= 280 && _scrollClock.HasTimePassed(Seconds(2)))
         {
             if (!_reverseFlow && _scrollOffset < _maxScrollOffset)
@@ -439,6 +451,112 @@ namespace CTRPluginFramework
                 }
                 else
                     _reverseFlow = true;
+            }
+        }
+
+        /*
+        ** Buttons
+        *************/
+        bool isTouched = Touch::IsDown();
+        IntVector touchPos(Touch::GetPosition());
+
+        _showStarredBtn.Update(isTouched, touchPos);
+        _gameGuideBtn.Update(isTouched, touchPos);
+        _toolsBtn.Update(isTouched, touchPos);
+        _hidMapperBtn.Update(isTouched, touchPos);
+        _searchBtn.Update(isTouched, touchPos);
+        _InfoBtn.Update(isTouched, touchPos);
+        _AddFavoriteBtn.Update(isTouched, touchPos);
+
+    }
+
+    void    Menu::_TriggerEntry(void)
+    {
+        MenuFolder *folder = _starMode ? _starred : _folder;
+        /*
+        ** MenuEntry
+        **************/
+        if (_selector >= folder->ItemsCount())
+            return;
+        if (folder->_items[_selector]->_type == MenuType::Entry)
+        {
+            MenuEntry *entry = reinterpret_cast<MenuEntry *>(folder->_items[_selector]);
+            // Change the state
+            bool state = entry->_TriggerState();
+            // If the entry has a valid funcpointer
+            if (entry->GameFunc != nullptr)
+            {
+                // If is activated add to executeLoop
+                if (state)
+                {
+                    // Check for free index in the vector
+                    if (!_freeIndex.empty())
+                    {
+                        int i = _freeIndex.front();
+                        _freeIndex.pop();
+                        _executeLoop[i] = entry;
+                        entry->_executeIndex = i;
+                    }
+                    // Else add it at the back
+                    else
+                    {
+                        int i = _executeLoop.size();
+                        _executeLoop.push_back(entry);
+                        entry->_executeIndex = i;
+                    }
+                }
+                else
+                {
+                    int i = entry->_executeIndex;
+                    if (i >= 0 && i < _executeLoop.size())
+                    {
+                        _executeLoop[i] = nullptr;
+                        _freeIndex.push(i);
+                    }
+                    entry->_executeIndex = -1;
+                }
+            }
+        }
+        /*
+        ** MenuFolder
+        ****************/
+        else
+        {
+            MenuFolder *p = reinterpret_cast<MenuFolder *>(folder->_items[_selector]);
+            p->_Open(folder, _selector, _starMode);
+            if (_starMode)
+                _starred = p;
+            else
+                _folder = p;
+            _selector = 0;
+        }
+    }
+
+    void   Menu::_StarItem(void)
+    {
+        MenuFolder *folder = _starMode ? _starred : _folder;
+        if (_selector >= folder->ItemsCount())
+            return;
+        MenuItem *item = folder->_items[_selector];
+
+        if (item)
+        {
+            bool star = item->_TriggerStar();
+
+            if (star)
+                _starred->Append(item);
+            else
+            {
+                for (int i = 0; i < folder->ItemsCount(); i++)
+                {
+                    MenuItem *it = folder->_items[i];
+
+                    if (it == item)
+                    {
+                        _starred->_items.erase(_starred->_items.begin() + i);
+                        break;
+                    }
+                }
             }
         }
     }
