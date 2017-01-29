@@ -16,7 +16,6 @@ namespace CTRPluginFramework
             bool  state : 1;
             bool  justChanged : 1;
             bool  isRadio : 1;
-            bool  isStarred : 1;  
         };
 
     public:
@@ -46,7 +45,6 @@ namespace CTRPluginFramework
 
         // Functions used by the menu
         bool    _TriggerState(void);
-        bool    _TriggerStar(void);
         bool    _MustBeRemoved(void);
         bool    _Execute(void);
         int     _executeIndex;

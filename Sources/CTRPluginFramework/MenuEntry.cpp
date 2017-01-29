@@ -81,20 +81,6 @@ namespace CTRPluginFramework
         }
     }
 
-    bool    MenuEntry::_TriggerStar(void)
-    {
-        if (_flags.isStarred)
-        {
-            _flags.isStarred = 0;
-            return (false);
-        }
-        else 
-        {
-            _flags.isStarred = 1;
-            return (true);
-        }
-    }
-
     bool    MenuEntry::_MustBeRemoved(void)
     {
         if (_flags.state)

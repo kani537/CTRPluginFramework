@@ -14,14 +14,27 @@ namespace CTRPluginFramework
     class MenuItem
     {
     public:
-        MenuItem(MenuType type) : _type(type) 
+        MenuItem(MenuType type) : _type(type) , _isStarred(false)
         {}
 
         std::string     name;
         std::string     note;
+
     private:
         friend class Menu;
-        MenuType  _type;
+
+        bool        _IsStarred(void)
+        {
+            return (_isStarred);
+        }
+
+        bool        _TriggerStar(void)
+        {
+            _isStarred = !_isStarred;
+            return (_isStarred);
+        }
+        MenuType    _type;
+        bool        _isStarred;
     };
 }
 
