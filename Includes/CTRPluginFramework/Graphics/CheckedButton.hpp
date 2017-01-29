@@ -36,6 +36,7 @@ namespace CTRPluginFramework
         Color   idleColor;  
         Color   pressedColor;
         Color   contentColor;
+        Color   checkedColor;
 
     private:
         std::vector<IntLine>    _lines;
@@ -71,11 +72,14 @@ namespace CTRPluginFramework
         // Black
         contentColor = Color();
 
+        // Limegreen
+        checkedColor = Color(50, 205, 50);
+
         _textSize = Renderer::GetTextSize(content.c_str());
-        _textSize += 18.f;
+        //_textSize += 18.f;
 
         if (icon != nullptr)
-            _textSize += 8.f;
+            _textSize += 18.f;
 
         Renderer::ComputeRoundedRectangle(_lines, _uiProperties, 7, 50);
     }
@@ -84,7 +88,7 @@ namespace CTRPluginFramework
     template <class C, class T, class ...Args>
     void    TCheckedButton::Draw(void)
     {      
-        Color &fillColor = _isPressed ? pressedColor : idleColor;
+        Color &fillColor = _isPressed ? pressedColor : (_state ? checkedColor : idleColor);
         int bMax = _lines.size() - 5;
         int i;
 
@@ -129,7 +133,7 @@ namespace CTRPluginFramework
         if (x > 0)
             posX += x;
 
-        posX = Icon::DrawCheckBox(posX, posY, _state);
+       // posX = Icon::DrawCheckBox(posX, posY, _state);
         if (_icon != nullptr)
             posX = _icon(posX, posY);
         Renderer::DrawSysString(_content.c_str(), posX, posY, limit, contentColor);        
@@ -141,10 +145,12 @@ namespace CTRPluginFramework
     {
 
         if (isTouchDown && _uiProperties.Contains(touchPos))
-        {
-            _execute = true;
+        {            
             if (_isPressed != isTouchDown)
+            {
                 _state = !_state;
+                _execute = true;
+            }
             _isPressed = true;
         }
         else
