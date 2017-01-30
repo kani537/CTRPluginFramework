@@ -37,7 +37,7 @@ namespace CTRPluginFramework
     _hidMapperBtn("Mapper", *this, &Menu::Null, IntRect(165, 70, 120, 30), Icon::DrawController),
     _searchBtn("Search", *this, &Menu::Null, IntRect(165, 105, 120, 30), Icon::DrawSearch),
     _AddFavoriteBtn(*this, &Menu::_StarItem, IntRect(50, 30, 25, 25), Icon::DrawAddFavorite),
-    _InfoBtn(*this, &Menu::Null, IntRect(90, 30, 25, 25), Icon::DrawInfo, false)
+    _InfoBtn(*this, &Menu::_DisplayNote, IntRect(90, 30, 25, 25), Icon::DrawInfo, false)
     {
         _isOpen = false;
         _starMode = false;
@@ -48,6 +48,7 @@ namespace CTRPluginFramework
         _scrollOffset = 0.f;
         _maxScrollOffset = 0.f;
         _reverseFlow = false;
+        _noteTB = nullptr;
     }
 
     Menu::~Menu(void)
@@ -79,6 +80,10 @@ namespace CTRPluginFramework
     {
         _folder->Append(item);
     }
+
+    /*
+    ** Run
+    **************/
 
     int    Menu::Run(void)
     {
@@ -118,7 +123,10 @@ namespace CTRPluginFramework
                     inputClock.Restart();   
                 }
                 if (_isOpen)
-                    _ProcessEvent(event);
+                {
+                    if (_noteTB == nullptr || !_noteTB->ProcessEvent(event))
+                        _ProcessEvent(event);
+                }
             }
             
             if (_isOpen)
@@ -188,11 +196,12 @@ namespace CTRPluginFramework
     }
 
     //###########################################
-    // Render Top Screen
+    // Render Menu
     //###########################################
-    void    Menu::_RenderTop(void)
+
+    void    Menu::_Render_Menu(void)
     {
-        static Color black = Color();
+                static Color black = Color();
         static Color blank(255, 255, 255);
         static Color lightGrey(190, 190, 190);
         static Color dimGrey(15, 15, 15);
@@ -201,7 +210,7 @@ namespace CTRPluginFramework
 
         int   posY = 25;
         int   posX = 40;
-        Renderer::SetTarget(TOP);
+        
 
         // Draw background
         Renderer::DrawRect2(background, black, dimGrey);
@@ -240,6 +249,19 @@ namespace CTRPluginFramework
             }
             posY += 4;
         }
+    }
+
+    //###########################################
+    // Render Top Screen
+    //###########################################
+
+    void    Menu::_RenderTop(void)
+    {
+        Renderer::SetTarget(TOP);
+        if (_noteTB == nullptr || !_noteTB->IsOpen())
+            _Render_Menu();
+        else
+            _noteTB->Draw();
     }
 
     //###########################################
@@ -422,6 +444,22 @@ namespace CTRPluginFramework
             MenuItem *item = folder->_items[_selector];
             _AddFavoriteBtn.SetState(item->_IsStarred());
             _InfoBtn.Enable(item->note.size() > 0);
+            static MenuItem *last = nullptr;
+            if (last != item)
+            {
+                last = item;
+                if (_noteTB != nullptr)
+                {
+                    delete _noteTB;
+                    _noteTB = nullptr;
+                }
+                
+                if (item->note.size() > 0)
+                {
+                    static IntRect noteRect(40, 30, 320, 180);
+                    _noteTB = new TextBox(item->name, item->note, noteRect);
+                }
+            }
         }
     }
 
@@ -538,7 +576,7 @@ namespace CTRPluginFramework
 
         if (_selector >= folder->ItemsCount())
             return;
-        
+
         MenuItem *item = folder->_items[_selector];
 
         if (item)
@@ -560,6 +598,17 @@ namespace CTRPluginFramework
                     }
                 }
             }
+        }
+    }
+
+    void    Menu::_DisplayNote(void)
+    {
+        if (_noteTB != nullptr)
+        {
+            if (_noteTB->IsOpen())
+                _noteTB->Close();
+            else
+                _noteTB->Open();
         }
     }
 }

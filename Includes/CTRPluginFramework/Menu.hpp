@@ -6,6 +6,7 @@
 #include "ToggleButton.hpp"
 #include "CheckedButton.hpp"
 #include "Clock.hpp"
+#include "CTRPluginFramework/Graphics/TextBox.hpp"
 
 #include <queue>
 
@@ -34,6 +35,7 @@ namespace CTRPluginFramework
         void    Null(void);
     private:
 
+        void    _Render_Menu(void);
         void    _RenderTop(void);
         void    _RenderBottom(void);
         void    _ProcessEvent(Event &event);
@@ -42,6 +44,7 @@ namespace CTRPluginFramework
         void    _TriggerEntry(void);
         void    _StarItem(void);
         void    _StarMode(void);
+        void    _DisplayNote(void);
 
         std::vector<MenuEntry *>    _executeLoop;
         std::queue<int>             _freeIndex;
@@ -68,7 +71,7 @@ namespace CTRPluginFramework
         ToggleButton<Menu, void>      _AddFavoriteBtn;
         ToggleButton<Menu, void>      _InfoBtn;
 
-        
+        TextBox                     *_noteTB;
     };
 }
 
