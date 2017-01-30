@@ -8,7 +8,6 @@
 #include "CTRPluginFramework/Rect.hpp"
 #include "CTRPluginFramework/Line.hpp"
 #include "CTRPluginFramework/Graphics/Color.hpp"
-
 #include <algorithm>
 
 namespace CTRPluginFramework
@@ -27,6 +26,7 @@ namespace CTRPluginFramework
     
     class Icon;
     class Screen;
+    class TextBox;
     class Renderer
     {
     public:
@@ -40,6 +40,7 @@ namespace CTRPluginFramework
         static void     DrawLine(int posX, int posY, int length, Color color, int width = 1);
         static void     DrawLine(IntVector &start, IntVector &end, Color color);
         static void     DrawRect(int posX, int posY, int width, int height, Color color, bool fill = true, int thickness = 1);
+        static void     DrawRect(const IntRect &rect, Color &color, bool fill = true);
         static void     DrawRect2(const IntRect &rect, Color &color1, Color &color2);
         template <typename T>
         static void     Line(Vector<T> &start, Vector<T> &end, Color color);  
@@ -68,8 +69,9 @@ namespace CTRPluginFramework
         static void     DrawCheckBoxString(char *str, int posX, int &posY, bool isChecked, Color fg, Color checked);
         // System Font
         //#############################################################################################
-        static int      DrawSysString(const char *str, int posX, int &posY, int max, Color color, float offset = 0, bool autoReturn = false);
+        static int      DrawSysString(const char *str, int posX, int &posY, int max, Color color, float offset = 0, const char *end = nullptr);
         static float    GetTextSize(const char *text);
+        static int      GetLineCount(const char *text, float maxWidth);
 
         static void     DrawSysCheckBox(const char *str, int posX, int &posY, int xLimits, Color color, bool isChecked = false,  float offset = 0);
         static void     DrawSysFolder(const char *str, int posX, int &posY, int xLimits, Color color, float offset = 0);
@@ -79,8 +81,12 @@ namespace CTRPluginFramework
         static void     DrawBuffer(u8 *buffer, int posX, int posY, int width, int height);
         static DrawPixelP   _DrawPixel;
     private:
+
         friend void     Initialize(void);
         friend class    Icon;
+
+        friend class    TextBox;
+
         // Initalize Renderer
         static void     Initialize(void);
         // Allocate buffer to process files in ram

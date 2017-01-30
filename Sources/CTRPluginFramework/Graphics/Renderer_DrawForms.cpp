@@ -53,8 +53,6 @@ namespace CTRPluginFramework
         }
     }
 
-
-
     void        Renderer::Arc(int posX, int posY, int r, Color color)
     {
         int d;
@@ -654,6 +652,29 @@ namespace CTRPluginFramework
             DrawLine(posX, posY, thickness, color, height);
             // Right line
             DrawLine(posX + width - thickness, posY, thickness, color, height);
+        }
+    }
+
+    void        Renderer::DrawRect(const IntRect &rect, Color &color, bool fill)
+    {
+        if (fill)
+        {
+            DrawLine(rect.leftTop.x, rect.leftTop.y, rect.size.x, color, rect.size.y);
+        }
+        else
+        {
+            int posX = rect.leftTop.x;
+            int posY = rect.leftTop.y;
+            int width = rect.size.x;
+            int height = rect.size.y;
+            // Top line
+            DrawLine(posX, posY, width, color, 1);
+            // Bottom line
+            DrawLine(posX, posY + height - 1, width, color, 1);
+            // Left line
+            DrawLine(posX, posY, 1, color, height);
+            // Right line
+            DrawLine(posX + width - 1, posY, 1, color, height);
         }
     }
 

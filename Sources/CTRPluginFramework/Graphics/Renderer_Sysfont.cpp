@@ -196,6 +196,56 @@ namespace CTRPluginFramework
         } while (code > 0);
         return (w);
     }
+
+
+    int Renderer::GetLineCount(const char *text, float maxWidth)
+    {
+        float   w;
+        u8      *c;
+        u32     code;
+        ssize_t units;
+        int     glyphIndex;
+        fontGlyphPos_s  data;
+        int     lineCount = 1;
+
+        w = 0.0f;
+        c = (u8 *)text;
+        if (!text) return (0.0f);
+        while (*c == '\n')
+        {
+            c++;
+            lineCount++;
+        }
+        do
+        {
+            if (!*c) 
+                break;
+            if (*c == '\n')
+            {
+                lineCount++;
+                w = 0;
+            }
+            units = decode_utf8(&code, c);
+            if (units == -1) break;
+            c += units;
+            if (code > 0)
+            {
+                glyphIndex = fontGlyphIndexFromCodePoint(code);
+                charWidthInfo_s *cwi;
+                FontCalcGlyphPos(&data, &cwi, glyphIndex, 0.5f, 0.5f);
+                if (w + data.xAdvance + 1 > maxWidth)
+                {
+                    lineCount++;
+                    w = data.xAdvance + 1;
+                }
+                else
+                    w += data.xAdvance + 1;
+            }
+        } while (code > 0);
+
+        return (lineCount);
+    }
+
     extern "C" unsigned char *CheckedCheckbox;
     extern "C" unsigned char *UnCheckedCheckbox;
 
@@ -214,10 +264,9 @@ namespace CTRPluginFramework
         posX += 20;
         DrawSysString(str, posX, posY, xLimits, color, offset);
         posY += 1;
-
     }
 
-    int Renderer::DrawSysString(const char *str, int posX, int &posY, int xLimits, Color color, float offset, bool autoReturn)
+    int Renderer::DrawSysString(const char *str, int posX, int &posY, int xLimits, Color color, float offset, const char *end)
     {
         u32             glyphcode;
         int             units;
@@ -228,6 +277,9 @@ namespace CTRPluginFramework
         
         if (!(str && *str))
             return (x);
+        /*static const char *_end = "\0";
+        if (end == nullptr)
+            end = _end;*/
 
         // Correct posY
         //int y = posY + (_rowSize[_target] - 240);
@@ -236,7 +288,7 @@ namespace CTRPluginFramework
 
         do
         {
-            if (x >= xLimits)
+            if (x >= xLimits || str == end)
             {
                 /*if (autoReturn)
                 {
@@ -246,13 +298,15 @@ namespace CTRPluginFramework
                 }
                 else*/ break;
             }
-            /*if (*str == '\n')
+            if (*str == '\n')
             {
-                x = posX;
+                /*x = posX;
                 lineCount++;    
                 posY += 16;
+                str++;*/
                 str++;
-            }  */         
+                continue;
+            }       
             if (posY >= 240)
                 break;
             glyphcode = 0;
@@ -280,7 +334,7 @@ namespace CTRPluginFramework
             offset = 0;
         } while (glyphcode > 0 && *str);
 
-        posY += 16;// * lineCount;
+        posY += 16 * lineCount;
         return (x);
     }
 }
