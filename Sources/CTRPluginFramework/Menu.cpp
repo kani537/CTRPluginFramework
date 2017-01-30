@@ -37,7 +37,8 @@ namespace CTRPluginFramework
     _hidMapperBtn("Mapper", *this, &Menu::Null, IntRect(165, 70, 120, 30), Icon::DrawController),
     _searchBtn("Search", *this, &Menu::Null, IntRect(165, 105, 120, 30), Icon::DrawSearch),
     _AddFavoriteBtn(*this, &Menu::_StarItem, IntRect(50, 30, 25, 25), Icon::DrawAddFavorite),
-    _InfoBtn(*this, &Menu::_DisplayNote, IntRect(90, 30, 25, 25), Icon::DrawInfo, false)
+    _InfoBtn(*this, &Menu::_DisplayNote, IntRect(90, 30, 25, 25), Icon::DrawInfo, false),
+    _noteTB(nullptr)
     {
         _isOpen = false;
         _starMode = false;
@@ -48,7 +49,6 @@ namespace CTRPluginFramework
         _scrollOffset = 0.f;
         _maxScrollOffset = 0.f;
         _reverseFlow = false;
-        _noteTB = nullptr;
     }
 
     Menu::~Menu(void)
@@ -339,8 +339,10 @@ namespace CTRPluginFramework
     {
         static Clock fastScroll;
         static Clock inputClock;
+        static MenuItem *last = nullptr;
 
         MenuFolder *folder = _starMode ? _starred : _folder;
+        MenuItem *item;
 
         switch (event.type)
         {
@@ -354,18 +356,18 @@ namespace CTRPluginFramework
                     **************/
                     case Key::DPadUp:
                     {
-                        if (_selector == 0)
-                            _selector = folder->ItemsCount() - 1;
-                        else
+                        if (_selector > 0)
                             _selector--;
+                        else
+                            _selector = std::max((int)folder->ItemsCount() - 1, 0);
                         break;
                     }
                     case Key::DPadDown:
                     {
-                        if (_selector == folder->ItemsCount() - 1)
-                            _selector = 0;
-                        else
+                        if (_selector < folder->ItemsCount() - 1)
                             _selector++;
+                        else
+                            _selector = 0;
                         break;
                     }
                     inputClock.Restart();                  
@@ -381,19 +383,19 @@ namespace CTRPluginFramework
                     **************/
                     case Key::DPadUp:
                     {
-                        if (_selector == 0)
-                            _selector = folder->ItemsCount() - 1;
-                        else
+                        if (_selector > 0)
                             _selector--;
+                        else
+                            _selector = std::max((int)folder->ItemsCount() - 1, 0);
                         fastScroll.Restart();    
                         break;
                     }
                     case Key::DPadDown:
                     {
-                        if (_selector == folder->ItemsCount() - 1)
-                            _selector = 0;
-                        else
+                        if (_selector < folder->ItemsCount() - 1)
                             _selector++;
+                        else
+                            _selector = 0;
                         fastScroll.Restart();
                         break;
                     }
@@ -415,9 +417,15 @@ namespace CTRPluginFramework
                         if (p != nullptr)
                         {
                             if (_starMode)
+                            {
                                 _starred = p;
+                                folder = p;
+                            }
                             else
+                            {
                                 _folder = p;
+                                folder = p;
+                            }
                         }
                         break;
                     }
@@ -426,12 +434,15 @@ namespace CTRPluginFramework
                 break;
             } // End Key::Pressed event
 
+            
+
             /*
             ** Scrolling text variables
             *********************************/
             if (event.key.code != Key::Touchpad)
-            {
-                _selectedTextSize = folder->ItemsCount() > 0 ? Renderer::GetTextSize(folder->_items[_selector]->name.c_str()) : 0;
+            {                
+                item = folder->_items[_selector];
+                _selectedTextSize = folder->ItemsCount() > 0 ? Renderer::GetTextSize(item->name.c_str()) : 0;
                 _maxScrollOffset = (float)_selectedTextSize - 200.f;
                 _scrollClock.Restart();
                 _scrollOffset = 0.f;
@@ -442,12 +453,12 @@ namespace CTRPluginFramework
         /*
         ** Update favorite state
         **************************/
-        if (folder->ItemsCount() > 0)
+
+        if (folder->ItemsCount() > 0  && _selector < folder->ItemsCount())
         {
-            MenuItem *item = folder->_items[_selector];
+            item = folder->_items[_selector];
             _AddFavoriteBtn.SetState(item->_IsStarred());
-            _InfoBtn.Enable(item->note.size() > 0);
-            static MenuItem *last = nullptr;
+            
             if (last != item)
             {
                 last = item;
@@ -461,7 +472,10 @@ namespace CTRPluginFramework
                 {
                     static IntRect noteRect(40, 30, 320, 180);
                     _noteTB = new TextBox(item->name, item->note, noteRect);
+                    _InfoBtn.Enable(true);
                 }
+                else
+                    _InfoBtn.Enable(false);
             }
         }
     }
@@ -590,16 +604,27 @@ namespace CTRPluginFramework
                 _starred->Append(item);
             else
             {
-                for (int i = 0; i < folder->ItemsCount(); i++)
-                {
-                    MenuItem *it = folder->_items[i];
+                int count = _starred->ItemsCount();
 
-                    if (it == item)
-                    {
-                        _starred->_items.erase(_starred->_items.begin() + i);
-                        break;
-                    }
+                if (count == 1)
+                {
+                    _starred->_items.clear  ();
                 }
+                else
+                {
+                    for (int i = 0; i < count; i++)
+                    {
+                        MenuItem *it = _starred->_items[i];
+
+                        if (it == item)
+                        {
+                            _starred->_items.erase(_starred->_items.begin() + i);
+                            break;
+                        }
+                    }                    
+                }
+                if (_selector >= folder->ItemsCount())
+                    _selector = std::max((int)folder->ItemsCount() - 1, 0);
             }
         }
     }
