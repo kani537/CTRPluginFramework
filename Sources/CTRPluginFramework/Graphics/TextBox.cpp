@@ -83,6 +83,12 @@ namespace CTRPluginFramework
                     }
                     break;
                 }
+                case Key::B:
+                {
+                    Close();
+                    return (false);
+                    break;
+                }
             }
         }
         return (true);

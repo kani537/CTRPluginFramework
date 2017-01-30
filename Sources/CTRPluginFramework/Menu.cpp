@@ -125,7 +125,10 @@ namespace CTRPluginFramework
                 if (_isOpen)
                 {
                     if (_noteTB == nullptr || !_noteTB->ProcessEvent(event))
+                    {
+                        _InfoBtn.SetState(false);
                         _ProcessEvent(event);
+                    }
                 }
             }
             
