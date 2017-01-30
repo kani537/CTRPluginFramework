@@ -60,8 +60,9 @@ namespace CTRPluginFramework
             switch (event.key.code)
             {
                 case Key::DPadUp:
+                case Key::CPadUp:
                 {
-                    if (inputClock.HasTimePassed(Milliseconds(400)))
+                    if (inputClock.HasTimePassed(Milliseconds(100)))
                     {
                         if (_currentLine > 0)
                             _currentLine--;
@@ -72,9 +73,10 @@ namespace CTRPluginFramework
                     break;
                 }
                 case Key::DPadDown:
+                case Key::CPadDown:
                 {
-                    if (inputClock.HasTimePassed(Milliseconds(400)))
-                    {
+                    if (inputClock.HasTimePassed(Milliseconds(100)))
+                    {   
                         if (_currentLine < _newline.size() - _maxLines)
                             _currentLine++;
                         else
