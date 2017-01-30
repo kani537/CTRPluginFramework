@@ -33,17 +33,17 @@ namespace CTRPluginFramework
 
         MenuFolder *folder = new MenuFolder("Movement");
 
-        folder->Append(new MenuEntry("MoonJump (\uE000)", MoonJump, "Press A to be free of the gravity"));
-        folder->Append(new MenuEntry("Fast Move (\uE077 + \uE054)", MoveFast));
+        folder->Append(new MenuEntry("MoonJump (\uE000)", MoonJump, "Press \uE000 to be free of the gravity."));
+        folder->Append(new MenuEntry("Fast Move (\uE077 + \uE054)", MoveFast, "Use \uE077 while pressing \uE054 to move very fast. Be careful of the loading zone, it might put you out of bound."));
         menu.Append(folder);
 
         /*
         ** Battle codes
         ******************/
 
-        folder = new MenuFolder("Battle", "Need some booster for your fights ?");
-        folder->Append(new MenuEntry("Refill Heart (\uE058)", RefillHeart, "Running low on heart ?"));
-        folder->Append(new MenuEntry("Refill Magic (\uE058)", RefillLargeMagicbar));
+        folder = new MenuFolder("Battle", "Need some boosters for your fights ?");
+        folder->Append(new MenuEntry("Refill Heart (\uE058)", RefillHeart, "Running low on heart ?\nThen touch the screen to fill you in."));
+        folder->Append(new MenuEntry("Refill Magic (\uE058)", RefillLargeMagicbar, "Running low on magic ?\nThen touch the screen to refill the magic bar."));
         folder->Append(new MenuEntry("Unlock Heart", MaxHeart));
         folder->Append(new MenuEntry("Unlock Magic", UnlockMagic));
         folder->Append(new MenuEntry("Unlock Large Magic", UnlockLargeMb));
