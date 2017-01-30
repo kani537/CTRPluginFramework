@@ -61,7 +61,7 @@ namespace CTRPluginFramework
             {
                 case Key::DPadUp:
                 {
-                    if (inputClock.HasTimePassed(Milliseconds(500)))
+                    if (inputClock.HasTimePassed(Milliseconds(400)))
                     {
                         if (_currentLine > 0)
                             _currentLine--;
@@ -73,7 +73,7 @@ namespace CTRPluginFramework
                 }
                 case Key::DPadDown:
                 {
-                    if (inputClock.HasTimePassed(Milliseconds(500)))
+                    if (inputClock.HasTimePassed(Milliseconds(400)))
                     {
                         if (_currentLine < _newline.size() - _maxLines)
                             _currentLine++;
