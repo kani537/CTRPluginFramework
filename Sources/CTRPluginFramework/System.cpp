@@ -9,6 +9,7 @@ namespace CTRPluginFramework
     u32     System::_IOBaseLCD = 0;
     u32     System::_IOBasePAD = 0;
     u32     System::_IOBasePDC = 0;
+    extern "C" u32     g_KProcessPIDOffset;
 
     void    System::Initialize(void)
     {
@@ -17,6 +18,7 @@ namespace CTRPluginFramework
 
         bool isNew3DS = false;
         
+        srvInit();
         APT_CheckNew3DS(&isNew3DS);
         _isNew3DS = isNew3DS;
         if (isNew3DS)
@@ -24,12 +26,14 @@ namespace CTRPluginFramework
             _IOBaseLCD = 0xFFFC4000;
             _IOBasePAD = 0xFFFC2000;
             _IOBasePDC = 0xFFFBC000;
+            g_KProcessPIDOffset = 0xBC;
         }
         else
         {
             _IOBaseLCD = 0xFFFC8000;
             _IOBasePAD = 0xFFFC6000;
             _IOBasePDC = 0xFFFC0000;
+            g_KProcessPIDOffset = 0xB4;
         }
         _isInit = true;
     }

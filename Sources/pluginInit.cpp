@@ -37,13 +37,21 @@ namespace CTRPluginFramework
     void    KeepThreadMain(void *arg)
     {
         // Wait for the game to be launched
-        //Sleep(Seconds(5));
-
-        // Init heap and services   
-        initSystem();
-        Sleep(Seconds(5));
-        mainThread = threadCreate(ThreadInit, (void *)threadStack, 0x4000, 0x3F, -2, 0);
+        //Sleep(Seconds(5));        
+        // Init Framework's system constants
+        System::Initialize();
+        // Init Process info
         svcCreateEvent(&keepEvent, RESET_ONESHOT);
+        Process::Initialize(keepEvent);
+        u64 tid = Process::GetTitleID();
+        if (tid == 0x0004000000183600)
+            Sleep(Seconds(3));
+        // Init heap and services
+        initSystem();
+        mainThread = threadCreate(ThreadInit, (void *)threadStack, 0x4000, 0x3F, -2, 0);
+        //Sleep(Seconds(5));
+        
+        //svcSetThreadPriority(keepThreadHandle, 0x20);
         while (keepRunning)
         {
             svcWaitSynchronization(keepEvent, U64_MAX);
@@ -64,16 +72,16 @@ namespace CTRPluginFramework
         __appInit();
 
         // Init Framework's system constants
-        System::Initialize();
-
+        //System::Initialize();
+        
         // Init Screen
         Screen::Initialize();
         Renderer::Initialize();
         gfxInit(Screen::Top->GetFormat(), Screen::Bottom->GetFormat(), false);
 
         // Init Process info
-        Process::Initialize(keepEvent);
-        
+        //Process::Initialize(keepEvent);
+        Process::UpdateThreadHandle();
         // Patch process before it starts
         PatchProcess();        
     }
@@ -84,6 +92,7 @@ namespace CTRPluginFramework
     void  ThreadInit(void *arg)
     {
         CTRPluginFramework::Initialize();
+        //Sleep(Seconds(5));
 
         // Reduce Priority
         Process::Play(true);

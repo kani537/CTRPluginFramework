@@ -65,9 +65,14 @@ namespace CTRPluginFramework
 		// Create handle for this process
 		svcOpenProcess(&_processHandle, _processID);
 		// Set plugin's main thread handle
-		_mainThreadHandle = threadGetCurrent()->handle;
+		//_mainThreadHandle = threadGetCurrent()->handle;
 		_keepEvent = keepEvent;
 	}
+
+    void    Process::UpdateThreadHandle(void)
+    {
+        _mainThreadHandle = threadGetCurrent()->handle;
+    }
 
 	bool 	Process::IsPaused(void)
 	{
