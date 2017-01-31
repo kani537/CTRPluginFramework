@@ -378,9 +378,9 @@ namespace CTRPluginFramework
         half.b[1] = *src;
 
         color.a = 255;
-        color.b = (half.u >> 8) & 0xF8;
+        color.r = (half.u >> 8) & 0xF8;
         color.g = (half.u >> 3) & 0xFC;
-        color.r = (half.u << 3) & 0xF8;
+        color.b = (half.u << 3) & 0xF8;
         return (color);
     }
 
