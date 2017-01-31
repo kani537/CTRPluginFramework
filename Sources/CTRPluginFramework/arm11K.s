@@ -68,12 +68,12 @@ SetCurrentKprocess:
 
 SetKProcessID:
         LDR         R3, =g_KProcessPIDOffset
-        LDR         R1, [R4,#4] @ R1 = g_kernelParams[2]
+        LDR         R1, [R4,#4] @ R1 = g_kernelParams[1]
         LDR         R2, [R3] @ R2 = *(g_KProcessPIDOffset)
-        LDR         R3, [R4] @ R3 = g_kernelParams[1]
-        LDR         R0, [R2,R3] @ r0 = *(kprocess + g_KProcessPIDOffset)
+        LDR         R3, [R4, #8] @ R3 = g_kernelParams[2]
+        LDR         R0, [R1,R2] @ r0 = *(kprocess + g_KProcessPIDOffset)
         STR         R0, [R4,#4] @ g_kernelParams[1] = *(kprocess + g_KProcessPIDOffset)
-        STR         R1, [R2,R3] @ Store to Memory
+        STR         R3, [R1,R2] @ Store to Memory
         LDMFD       SP!, {R4,PC} @ Load Block from Memory
 @ ---------------------------------------------------------------------------
 

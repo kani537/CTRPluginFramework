@@ -3,9 +3,9 @@
 
 u32     g_kernelParams[32];
 u32     g_KProcessHandleDataOffset;
-u32     g_KProcessPIDOffset;
+u32     g_KProcessPIDOffset = 0xBC;
 
-u32 arm11kSetKProcessIDd(u32 kprocess, u32 newPid)
+u32 arm11kSetKProcessId(u32 kprocess, u32 newPid)
 {
     g_kernelParams[0] = 5;
     g_kernelParams[1] = kprocess;
@@ -53,6 +53,20 @@ void arm11kMemcpy(u32 dst, u32 src, u32 size)
   g_kernelParams[3] = size;
   svcBackdoor(executeKernelCmd);
   return;
+}
+
+Result  arm11kSvcControlMemory(u32 addr, u32 size, u32 op, u32 perm)
+{
+  u32 currentKProcess;
+  u32 currentPID;
+  Result res;
+
+  currentKProcess = arm11kGetCurrentKProcess();
+  currentPID = arm11kSetKProcessId(currentKProcess, 1);
+  u32 temp;
+  res = svcControlMemory(&temp, addr, 0x0, size, op, perm);
+  arm11kSetKProcessId(currentKProcess, currentPID);
+  return (res);
 }
 
 u32 getKernelObjectPtr(void *KProcessHandleTable, Handle processHandle)
