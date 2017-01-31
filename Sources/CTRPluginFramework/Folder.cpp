@@ -6,10 +6,10 @@
 
 namespace CTRPluginFramework
 {
-    std::string         Folder::_workingDirectory;
-    extern FS_Archive   sdmcArchive;
+    std::string         Directory::_workingDirectory = "";
+    extern FS_Archive   _sdmcArchive;
 
-    int  Folder::_SdmcFixPath(std::string &path)
+    int  Directory::_SdmcFixPath(std::string &path)
     {
         ssize_t         units;
         uint32_t        code;
@@ -74,7 +74,7 @@ namespace CTRPluginFramework
         return (0);
     }
 
-    FS_Path     Folder::_SdmcUtf16Path(std::string &path)
+    FS_Path     Directory::_SdmcUtf16Path(std::string &path)
     {
         ssize_t     units;
         FS_Path     fspath;
@@ -114,7 +114,7 @@ namespace CTRPluginFramework
     ** CWD
     ******************/
 
-    int     Folder::ChangeWorkingDirectory(std::string &path)
+    int     Directory::ChangeWorkingDirectory(std::string &path)
     {
         FS_Path fsPath = _SdmcUtf16Path(path);
 
@@ -124,7 +124,7 @@ namespace CTRPluginFramework
         Handle file;
         Result res;
 
-        res = FSUSER_OpenDirectory(&file, sdmcArchive, fsPath);
+        res = FSUSER_OpenDirectory(&file, _sdmcArchive, fsPath);
         if (R_SUCCEEDED(res))
         {
             FSDIR_Close(file);
@@ -139,7 +139,7 @@ namespace CTRPluginFramework
     /*
     ** Create
     ***********/
-    int     Folder::Create(std::string &path)
+    int     Directory::Create(std::string &path)
     {
         FS_Path fsPath = _SdmcUtf16Path(path);
 
@@ -148,7 +148,7 @@ namespace CTRPluginFramework
 
         Result res;
 
-        res = FSUSER_CreateDirectory(sdmcArchive, fsPath, 0);
+        res = FSUSER_CreateDirectory(_sdmcArchive, fsPath, 0);
         if(res == 0xC82044BE)
             return (1);
         else if (R_SUCCEEDED(res))
@@ -159,7 +159,7 @@ namespace CTRPluginFramework
     /*
     ** Remove
     ************/
-    int     Folder::Remove(std::string &path)
+    int     Directory::Remove(std::string &path)
     {
         FS_Path fsPath = _SdmcUtf16Path(path);
 
@@ -168,7 +168,7 @@ namespace CTRPluginFramework
 
         Result res;
 
-        res = FSUSER_DeleteDirectory(sdmcArchive, fsPath);
+        res = FSUSER_DeleteDirectory(_sdmcArchive, fsPath);
         if (R_SUCCEEDED(res))
             return (0);
 
@@ -178,7 +178,7 @@ namespace CTRPluginFramework
     /*
     ** Rename
     ***********/
-    int     Folder::Rename(std::string &oldPath, std::string &newPath)
+    int     Directory::Rename(std::string &oldPath, std::string &newPath)
     {
         uint16_t    oldpath[PATH_MAX + 1] = {0};
 
@@ -198,7 +198,7 @@ namespace CTRPluginFramework
 
         Result res;
 
-        res = FSUSER_RenameDirectory(sdmcArchive, fsOldPath, sdmcArchive, fsNewPath);
+        res = FSUSER_RenameDirectory(_sdmcArchive, fsOldPath, _sdmcArchive, fsNewPath);
         if (R_SUCCEEDED(res))
             return (0);
 
@@ -208,7 +208,7 @@ namespace CTRPluginFramework
     /*
     ** IsExists
     ************/
-    int    Folder::IsExists(std::string &path)
+    int    Directory::IsExists(std::string &path)
     {
         FS_Path     fsPath;
 
@@ -219,7 +219,7 @@ namespace CTRPluginFramework
         Result res;
         Handle handle;
 
-        res = FSUSER_OpenDirectory(&handle, sdmcArchive, fsPath);
+        res = FSUSER_OpenDirectory(&handle, _sdmcArchive, fsPath);
         if (R_SUCCEEDED(res))
         {
             FSDIR_Close(handle);
@@ -232,7 +232,7 @@ namespace CTRPluginFramework
     /*
     ** Open
     **********/
-    int     Folder::Open(Folder &output, std::string &path, bool create)
+    int     Directory::Open(Directory &output, std::string path, bool create)
     {
         FS_Path fsPath;
         std::string bakpath = path;
@@ -241,9 +241,9 @@ namespace CTRPluginFramework
             return (-1);
 
         Result res;
-        Handle handle;
+        Handle handle = 0;
 
-        res = FSUSER_OpenDirectory(&handle, sdmcArchive, fsPath);
+        res = FSUSER_OpenDirectory(&handle, _sdmcArchive, fsPath);
         if (R_FAILED(res) && create)
         {
             if (create)
@@ -252,27 +252,30 @@ namespace CTRPluginFramework
                 {
                     return (res);
                 }
-                res = FSUSER_OpenDirectory(&handle, sdmcArchive, fsPath);
+                res = FSUSER_OpenDirectory(&handle, _sdmcArchive, fsPath);
                 if (R_FAILED(res))
-                    return (res);                
+                    return (res);             
             }
             else
                 return (res);
         }
+        output._path = bakpath;
+        output._handle = handle;
 
-        output = Folder(bakpath, handle);
-        return (0);
+        //output = Folders(bakpath, handle);// = Folders(bakpath, handle);
+        return (res);
     }
 
-    Folder::Folder  (std::string &path, Handle &handle) :
-    _path(path), _handle(handle)
+    Directory::Directory(std::string &path, Handle &handle) :
+    _path(path)
     {
+        _handle = handle;
     }
 
     /*
     ** Close
     ***********/
-    int     Folder::Close(void)
+    int     Directory::Close(void)
     {
         Result res;
 
@@ -285,7 +288,7 @@ namespace CTRPluginFramework
     /*
     ** Open a file
     ****************/
-    int     Folder::OpenFile(File &output, std::string &path, bool create)
+    int     Directory::OpenFile(File &output, std::string &path, bool create)
     {
         std::string fullPath;
         FS_Path fsPath;
@@ -304,7 +307,76 @@ namespace CTRPluginFramework
             mode |= File::CREATE; 
         
         int res;
-        res = File::Open(output, fullPath, mode);
+        //res = File::Open(output, fullPath, mode);
         return (res);
+    }
+
+    /*
+    ** List files
+    ***************/
+    #define MAX_ENTRIES 20
+    int     Directory::ListFiles(std::vector<std::string> &files, std::string pattern)
+    {
+        bool patternCheck = (pattern.size() > 0);
+        FS_DirectoryEntry   entries[MAX_ENTRIES] = {0};
+        FS_DirectoryEntry   *entry;
+        Result              res;
+        u32                 units;
+        u32                 entriesNb = 0;
+        u8                  filename[PATH_MAX + 1] = {0};
+
+        res = FSDIR_Read(_handle, &entriesNb, MAX_ENTRIES, entries);
+        if (R_FAILED(res))
+            return (res);
+
+        for (int i = 0; i < entriesNb; i++)
+        {
+            entry = &entries[i];
+            if (entry->attributes & 1)
+                continue;
+            std::memset(filename, 0, sizeof(filename));
+            units = utf16_to_utf8(filename, entry->name, PATH_MAX);
+            if (units < 0)
+                continue;
+            std::string fn = (char *)filename;
+            if (patternCheck && fn.find(pattern) == std::string::npos)
+                continue;
+            files.push_back(fn);
+        }
+        return (0);
+    }
+
+    /*
+    ** List folders
+    *****************/
+    int     Directory::ListFolders(std::vector<std::string> &folders, std::string pattern)
+    {
+        bool patternCheck = (pattern.size() > 0);
+        FS_DirectoryEntry   entries[MAX_ENTRIES] = {0};
+        FS_DirectoryEntry   *entry;
+        Result              res;
+        u32                 units;
+        u32                 entriesNb = 0;
+        u8                  filename[PATH_MAX + 1] = {0};
+
+        res = FSDIR_Read(_handle, &entriesNb, MAX_ENTRIES, entries);
+        if (R_FAILED(res))
+            return (res);
+
+        for (int i = 0; i < entriesNb; i++)
+        {
+            entry = &entries[i];
+            if (!(entry->attributes & 1))
+                continue;
+            std::memset(filename, 0, sizeof(filename));
+            units = utf16_to_utf8(filename, entry->name, PATH_MAX);
+            if (units < 0)
+                continue;
+            std::string fn = (char *)filename;
+            if (patternCheck && fn.find(pattern) == std::string::npos)
+                continue;
+            folders.push_back(fn);
+        }
+        return (0);
     }
 }

@@ -2,13 +2,14 @@
 #define CTRPLUGINFRAMEWORK_FOLDER_HPP
 
 #include "CTRPluginFramework/File.hpp"
-
+#include "types.h"
+#include "3DS.h"
 #include <string>
 #include <vector>
 
 namespace CTRPluginFramework
 {
-    class Folder
+    class Directory
     {
     public:
 
@@ -70,9 +71,9 @@ namespace CTRPluginFramework
         ** 0 : Success
         ** Other : Result value by FS
         **********************************************/
-        static int     Open(Folder &output, std::string &path, bool create = true);
-
-        ~Folder() { Close(); }
+        static int     Open(Directory &output, std::string path, bool create = true);
+        Directory(){}
+        ~Directory() { Close(); }
 
         int     Close(void);
 
@@ -93,11 +94,13 @@ namespace CTRPluginFramework
 
     private:
 
+        friend class File;
+
         static  std::string     _workingDirectory;
         static  int             _SdmcFixPath(std::string &path);
         static  FS_Path         _SdmcUtf16Path(std::string &path);
 
-        Folder  (std::string &path, Handle &handle);
+        Directory  (std::string &path, Handle &handle);
         std::string     _path;
         Handle          _handle;
     };

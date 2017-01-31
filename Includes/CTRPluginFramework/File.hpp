@@ -49,6 +49,7 @@ namespace CTRPluginFramework
     private:
         FS_Path         _fspath;
         std::string     _path;
+        std::string     _name;
         Handle          _handle;
         u32             _offset;
         int             _mode;

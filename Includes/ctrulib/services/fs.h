@@ -5,7 +5,9 @@
 #pragma once
 
 #include <types.h>
-
+#ifdef __cplusplus
+extern "C" {
+#endif
 /// Open flags.
 enum
 {
@@ -1078,3 +1080,7 @@ Result FSDIR_SetPriority(Handle handle, u32 priority);
  * @param priority Pointer to output the priority to.
  */
 Result FSDIR_GetPriority(Handle handle, u32* priority);
+
+#ifdef __cplusplus
+}
+#endif

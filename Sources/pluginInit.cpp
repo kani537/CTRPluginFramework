@@ -1,6 +1,8 @@
 #include "CTRPluginFramework.hpp"
 #include "3DS.h"
 #include <stdlib.h>
+#include <cstdio>
+#include "CTRPluginFramework/Folder.hpp"
 
 extern "C" void     abort(void);
 extern "C" void     initSystem();
@@ -18,8 +20,6 @@ namespace CTRPluginFramework
     static u32 threadStack[0x4000] ALIGN(8);
     extern "C" u32 keepThreadStack[0x1000];
     u32 keepThreadStack[0x1000] ALIGN(8);
-
-    
 
     
 
@@ -88,10 +88,17 @@ namespace CTRPluginFramework
 
     // Declared in ctrulib/hid
     extern "C" vu32* hidSharedMem;
+    FS_Archive _sdmcArchive;
 
     void  ThreadInit(void *arg)
     {
         CTRPluginFramework::Initialize();
+
+        FS_Path sdmcPath = { PATH_EMPTY, 1, (u8*)"" };
+        FSUSER_OpenArchive(&_sdmcArchive, ARCHIVE_SDMC, sdmcPath);
+        // Set the current working directory for file
+        // SD/plugin/titleid/
+
         //Sleep(Seconds(5));
 
         // Reduce Priority
@@ -102,6 +109,12 @@ namespace CTRPluginFramework
 
         // Protect HID Shared Memory in case we want to push / redirects inputs
         Process::ProtectMemory((u32)hidSharedMem, 0x1000);
+
+        u64 tid = Process::GetTitleID();
+        char    path[256] = {0};
+        sprintf(path, "/plugin/%016llX/", tid);
+        std::string p = path;
+        Directory::ChangeWorkingDirectory(p);
 
         // Start plugin
         int ret = main();
