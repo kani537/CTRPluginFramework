@@ -1,5 +1,5 @@
 #include <3DS.h>
-
+#include "CTRPluginFramework/arm11kCommands.h"
 extern char* fake_heap_start;
 extern char* fake_heap_end;
 
@@ -13,17 +13,16 @@ u32 __ctru_linear_heap_size;
 void __attribute__((weak)) __system_allocateHeaps(void) 
 {
 
-	
-	__ctru_heap_size = 0x10000;
+	__ctru_heap_size = 0x100000;
 		//__ctru_linear_heap_size = size;
 
 	// Allocate the application heap
 	__ctru_heap = 0x07500000;
-	if (R_FAILED(svcControlMemory(&__tmp, __ctru_heap, 0x0, __ctru_heap_size, MEMOP_ALLOC, MEMPERM_READ | MEMPERM_WRITE | MEMPERM_EXECUTE)))
+	if (R_FAILED(arm11kSvcControlMemory(__ctru_heap, __ctru_heap_size, 0x203u, MEMPERM_READ | MEMPERM_WRITE | MEMPERM_EXECUTE)))
 	{
 		__ctru_heap = 0x07500000;
 		__ctru_heap_size = 0x10000;
-		svcControlMemory(&__tmp, __ctru_heap, 0x0, __ctru_heap_size, MEMOP_ALLOC, MEMPERM_READ | MEMPERM_WRITE | MEMPERM_EXECUTE);
+		svcControlMemory(&__tmp, __ctru_heap, 0x0, __ctru_heap_size, 0x203u, MEMPERM_READ | MEMPERM_WRITE | MEMPERM_EXECUTE);
 
 	}
 
