@@ -74,7 +74,7 @@ namespace CTRPluginFramework
         return (0);
     }
 
-    FS_Path     Directory::_SdmcUtf16Path(std::string &path)
+    FS_Path     Directory::_SdmcUtf16Path(std::string path)
     {
         ssize_t     units;
         FS_Path     fspath;
@@ -114,7 +114,7 @@ namespace CTRPluginFramework
     ** CWD
     ******************/
 
-    int     Directory::ChangeWorkingDirectory(std::string &path)
+    int     Directory::ChangeWorkingDirectory(std::string path)
     {
         FS_Path fsPath = _SdmcUtf16Path(path);
 
@@ -139,7 +139,7 @@ namespace CTRPluginFramework
     /*
     ** Create
     ***********/
-    int     Directory::Create(std::string &path)
+    int     Directory::Create(std::string path)
     {
         FS_Path fsPath = _SdmcUtf16Path(path);
 
@@ -159,7 +159,7 @@ namespace CTRPluginFramework
     /*
     ** Remove
     ************/
-    int     Directory::Remove(std::string &path)
+    int     Directory::Remove(std::string path)
     {
         FS_Path fsPath = _SdmcUtf16Path(path);
 
@@ -178,7 +178,7 @@ namespace CTRPluginFramework
     /*
     ** Rename
     ***********/
-    int     Directory::Rename(std::string &oldPath, std::string &newPath)
+    int     Directory::Rename(std::string oldPath, std::string newPath)
     {
         uint16_t    oldpath[PATH_MAX + 1] = {0};
 
@@ -208,7 +208,7 @@ namespace CTRPluginFramework
     /*
     ** IsExists
     ************/
-    int    Directory::IsExists(std::string &path)
+    int    Directory::IsExists(std::string path)
     {
         FS_Path     fsPath;
 
@@ -288,7 +288,7 @@ namespace CTRPluginFramework
     /*
     ** Open a file
     ****************/
-    int     Directory::OpenFile(File &output, std::string &path, bool create)
+    int     Directory::OpenFile(File &output, std::string path, bool create)
     {
         std::string fullPath;
         FS_Path fsPath;
