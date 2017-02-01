@@ -113,8 +113,7 @@ namespace CTRPluginFramework
         u64 tid = Process::GetTitleID();
         char    path[256] = {0};
         sprintf(path, "/plugin/%016llX/", tid);
-        std::string p = path;
-        Directory::ChangeWorkingDirectory(p);
+        Directory::ChangeWorkingDirectory(path);
 
         // Start plugin
         int ret = main();
