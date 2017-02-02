@@ -23,11 +23,11 @@ namespace CTRPluginFramework
 	KCodeSet    Process::_kCodeSet = {0};
 	Handle 		Process::_processHandle = 0;
 	Handle 		Process::_mainThreadHandle = 0;
-	Handle 		Process::_keepEvent = 0;
 	bool 		Process::_isPaused = false;
 	bool 		Process::_isAcquiring = false;
 
-	void    Process::Initialize(Handle keepEvent)
+    extern      Handle      _keepEvent;
+	void    Process::Initialize(Handle keepvent)
 	{
 		char    kproc[0x100] = {0};
 		bool 	isNew3DS = System::IsNew3DS();
@@ -66,7 +66,6 @@ namespace CTRPluginFramework
 		svcOpenProcess(&_processHandle, _processID);
 		// Set plugin's main thread handle
 		//_mainThreadHandle = threadGetCurrent()->handle;
-		_keepEvent = keepEvent;
 	}
 
     void    Process::UpdateThreadHandle(void)
@@ -197,7 +196,7 @@ namespace CTRPluginFramework
         _isPaused = false;
 		while(R_FAILED(svcSetThreadPriority(gspThreadEventHandle, 0x3F)));
 		while(R_FAILED(svcSetThreadPriority(_mainThreadHandle, 0x3F)));
-
+        svcCreateEvent(&_keepEvent, RESET_ONESHOT);
 	}
 
     bool     Process::ProtectMemory(u32 addr, u32 size, int perm)

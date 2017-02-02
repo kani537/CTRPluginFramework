@@ -81,7 +81,6 @@ namespace CTRPluginFramework
             static KCodeSet     _kCodeSet;
             static Handle       _processHandle;
             static Handle       _mainThreadHandle;
-            static Handle       _keepEvent;
             static bool         _isPaused;
             static bool         _isAcquiring;
             //static u32          _finishedStateDMA;
