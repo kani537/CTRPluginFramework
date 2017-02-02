@@ -237,6 +237,16 @@ namespace CTRPluginFramework
         return (0);
     }
 
+    u64     File::Tell(void)
+    {
+        return (_offset);
+    }
+
+    void    File::Rewind(void)
+    {
+        _offset = 0;
+    }
+
     u64     File::GetSize(void)
     {
         u64 file = 0;

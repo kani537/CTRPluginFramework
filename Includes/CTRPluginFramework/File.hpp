@@ -128,6 +128,14 @@ namespace CTRPluginFramework
         *************************************************/
         int     Seek(s64 offset, SeekPos rel = CUR);
         /*
+        ** Return the current position in the file
+        *************************************************/
+        u64     Tell(void);
+        /*
+        **
+        *************************************************/
+        void    Rewind(void);
+        /*
         ** Return the current size of the file
         ** return value:
         ** -1 : Error    
