@@ -1,5 +1,6 @@
 #include "CTRPluginFramework.hpp"
-#include "CTRPluginFramework/Folder.hpp"
+#include "CTRPluginFramework/Directory.hpp"
+#include "CTRPluginFramework/File.hpp"
 #include "cheats.hpp"
 #include <cstdio>
 
@@ -30,7 +31,7 @@ namespace CTRPluginFramework
     int    main(void)
     {   
 
-        Menu    menu("Zelda Ocarina Of Time 3D");
+        PluginMenu    menu("Zelda Ocarina Of Time 3D");
 
         std::string text = "";
         /*    "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus id semper ligula. Vivamus sollicitudin lacinia ligula, vel hendrerit massa posuere in. Aliquam eget euismod tortor, vel ultricies sem. Donec tempor odio vel neque suscipit finibus ac at quam. Cras pharetra, massa scelerisque rutrum pretium, sapien tortor lobortis elit, vel euismod dui dolor non leo. Praesent sodales sagittis purus quis feugiat. Praesent est massa, gravida et ultrices in, aliquet ac tortor. Nam id tempus dolor. Pellentesque lobortis porta sagittis. Phasellus malesuada pulvinar porttitor.\n\n" \
@@ -41,27 +42,46 @@ namespace CTRPluginFramework
         */
         char temp[100] = {0};
         
-        std::string ls;
+
         
+        
+        int res4 = 0;
+        int res3 = 0;
+        File    file;
+        char    buffer[0x100] = {0};
+
+        if ((File::Open(file, "Test.txt")) == 0)
+        {
+            file.WriteLine("Yeah !! This is a line written by WriteLine.");
+            file.WriteLine("Yeah !! This is a second line written by WriteLine.");
+            u64 size = file.GetSize();
+            file.Rewind();
+            file.Read(buffer, size);
+            file.Close();
+        }
+
+        std::string ls = "";        
         std::vector<std::string> lsv;
 
         Directory base;
-
-        int res1 = Directory::Open(base, "", false);
-        int res2 = base.ListFiles(lsv);
-
-        sprintf(temp, "%08X, %08X, %d", res1, res2, lsv.size());
-        ls = temp;
-        ls += "\n\n";
+        Directory::Open(base, "", false); //Open current working directory (plugin/<currentTitleID>/)
+        base.ListFiles(lsv); // listing all files in base (not directory)
+        // An other version for the example
+        base.ListFiles(lsv, ".txt"); // listing all files in base (not directory) which contains .txt in their name
+        
+        // Adding all the names in the list into ls string
         for (int i = 0; i < lsv.size(); i++)
         {
             ls += lsv[i] + "\n";
         }
+        // this add the content of the file we've read earlier in the ls string
+        ls += buffer;
+
         /*
         ** Movements codes
         ********************/
 
-        MenuFolder *folder = new MenuFolder("Movement", text);
+        MenuFolder *folder = new MenuFolder("Movement");
 
         folder->Append(new MenuEntry("MoonJump (\uE000)", MoonJump, "Press \uE000 to be free of the gravity."));
         folder->Append(new MenuEntry("Fast Move (\uE077 + \uE054)", MoveFast, "Use \uE077 while pressing \uE054 to move very fast. Be careful of the loading zone, it might put you out of bound."));
@@ -87,7 +107,7 @@ namespace CTRPluginFramework
         ** Inventory codes
         *******************/
 
-        folder = new MenuFolder("Inventory", ls);
+        folder = new MenuFolder("Inventory");
 
         MenuFolder *sword = new MenuFolder("Swords");
         sword->Append(new MenuEntry("Unlock Kokiri Sword", UnlockKokiriSword));

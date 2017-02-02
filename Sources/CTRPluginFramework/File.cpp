@@ -1,4 +1,4 @@
-#include "CTRPluginFramework/Folder.hpp"
+#include "CTRPluginFramework/Directory.hpp"
 #include "CTRPluginFramework/File.hpp"
 #include "CTRPluginFramework/Process.hpp"
 

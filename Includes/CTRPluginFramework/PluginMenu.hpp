@@ -1,5 +1,5 @@
-#ifndef CTRPLUGINFRAMEWORK_MENU_HPP
-#define CTRPLUGINFRAMEWORK_MENU_HPP
+#ifndef CTRPLUGINFRAMEWORK_PLUGINMENU_HPP
+#define CTRPLUGINFRAMEWORK_PLUGINMENU_HPP
 
 #include "Vector.hpp"
 #include "Button.hpp"
@@ -18,7 +18,7 @@ namespace CTRPluginFramework
     class Event;
     class Time;
     class Clock;
-    class Menu
+    class PluginMenu
     {
         struct MenuFlags
         {
@@ -27,8 +27,8 @@ namespace CTRPluginFramework
 
     public:
 
-        Menu(std::string name = "Cheats", std::string note = "");
-        ~Menu(void);
+        PluginMenu(std::string name = "Cheats", std::string note = "");
+        ~PluginMenu(void);
 
         void    Append(MenuItem *item);
         int     Run(void);
@@ -63,14 +63,14 @@ namespace CTRPluginFramework
         IntVector                   _startLine;
         IntVector                   _endLine;
 
-        Button<Menu, void>          _gameGuideBtn;
-        CheckedButton<Menu, void>   _showStarredBtn;
-        Button<Menu, void>          _toolsBtn;
-        Button<Menu, void>          _hidMapperBtn;
-        Button<Menu, void>          _searchBtn;
+        Button<PluginMenu, void>          _gameGuideBtn;
+        CheckedButton<PluginMenu, void>   _showStarredBtn;
+        Button<PluginMenu, void>          _toolsBtn;
+        Button<PluginMenu, void>          _hidMapperBtn;
+        Button<PluginMenu, void>          _searchBtn;
 
-        ToggleButton<Menu, void>      _AddFavoriteBtn;
-        ToggleButton<Menu, void>      _InfoBtn;
+        ToggleButton<PluginMenu, void>      _AddFavoriteBtn;
+        ToggleButton<PluginMenu, void>      _InfoBtn;
 
         TextBox                     *_noteTB;
     };

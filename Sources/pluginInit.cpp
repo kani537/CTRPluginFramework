@@ -2,7 +2,7 @@
 #include "3DS.h"
 #include <stdlib.h>
 #include <cstdio>
-#include "CTRPluginFramework/Folder.hpp"
+#include "CTRPluginFramework/Directory.hpp"
 #include "CTRPluginFramework/arm11kCommands.h"
 
 extern "C" void     abort(void);

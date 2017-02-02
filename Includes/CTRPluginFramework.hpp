@@ -7,7 +7,7 @@
 #include "CTRPluginFramework/Clock.hpp"
 #include "CTRPluginFramework/Controller.hpp"
 #include "CTRPluginFramework/Events.hpp"
-#include "CTRPluginFramework/Menu.hpp"
+#include "CTRPluginFramework/PluginMenu.hpp"
 #include "CTRPluginFramework/MenuFolder.hpp"
 #include "CTRPluginFramework/MenuEntry.hpp"
 #include "CTRPluginFramework/Process.hpp"

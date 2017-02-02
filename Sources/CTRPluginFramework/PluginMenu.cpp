@@ -10,7 +10,7 @@
 #include "CTRPluginFramework/Line.hpp"
 #include "CTRPluginFramework/Graphics/Color.hpp"
 #include "CTRPluginFramework/Graphics/Renderer.hpp"
-#include "CTRPluginFramework/Menu.hpp"
+#include "CTRPluginFramework/PluginMenu.hpp"
 #include "CTRPluginFramework/MenuFolder.hpp"
 #include "CTRPluginFramework/MenuEntry.hpp"
 #include "CTRPluginFramework/Controller.hpp"
@@ -26,18 +26,16 @@
 
 namespace CTRPluginFramework
 {
-    static MenuItem m(MenuType::Entry);
-
     bool    _shouldClose = false;
-    Menu::Menu(std::string name, std::string note) : 
+    PluginMenu::PluginMenu(std::string name, std::string note) : 
     _startLine(-1, -1), _endLine(-1, -1),
-    _showStarredBtn("Favorite", *this, &Menu::_StarMode, IntRect(30, 70, 120, 30), Icon::DrawFavorite), 
-    _gameGuideBtn("Game Guide", *this, &Menu::Null, IntRect(30, 105, 120, 30), Icon::DrawGuide),    
-    _toolsBtn("Tools", *this, &Menu::Null, IntRect(30, 140, 120, 30), Icon::DrawTools),
-    _hidMapperBtn("Mapper", *this, &Menu::Null, IntRect(165, 70, 120, 30), Icon::DrawController),
-    _searchBtn("Search", *this, &Menu::Null, IntRect(165, 105, 120, 30), Icon::DrawSearch),
-    _AddFavoriteBtn(*this, &Menu::_StarItem, IntRect(50, 30, 25, 25), Icon::DrawAddFavorite),
-    _InfoBtn(*this, &Menu::_DisplayNote, IntRect(90, 30, 25, 25), Icon::DrawInfo, false),
+    _showStarredBtn("Favorite", *this, &PluginMenu::_StarMode, IntRect(30, 70, 120, 30), Icon::DrawFavorite), 
+    _gameGuideBtn("Game Guide", *this, &PluginMenu::Null, IntRect(30, 105, 120, 30), Icon::DrawGuide),    
+    _toolsBtn("Tools", *this, &PluginMenu::Null, IntRect(30, 140, 120, 30), Icon::DrawTools),
+    _hidMapperBtn("Mapper", *this, &PluginMenu::Null, IntRect(165, 70, 120, 30), Icon::DrawController),
+    _searchBtn("Search", *this, &PluginMenu::Null, IntRect(165, 105, 120, 30), Icon::DrawSearch),
+    _AddFavoriteBtn(*this, &PluginMenu::_StarItem, IntRect(50, 30, 25, 25), Icon::DrawAddFavorite),
+    _InfoBtn(*this, &PluginMenu::_DisplayNote, IntRect(90, 30, 25, 25), Icon::DrawInfo, false),
     _noteTB(nullptr)
     {
         _isOpen = false;
@@ -52,15 +50,15 @@ namespace CTRPluginFramework
         _pluginRun = true;
     }
 
-    Menu::~Menu(void)
+    PluginMenu::~PluginMenu(void)
     {
 
     }
-    void    Menu::Null(void)
+    void    PluginMenu::Null(void)
     {
 
     } 
-    void    Menu::_StarMode(void)
+    void    PluginMenu::_StarMode(void)
     {
         static int selector = 0;
 
@@ -77,7 +75,7 @@ namespace CTRPluginFramework
         }
     }   
 
-    void    Menu::Append(MenuItem *item)
+    void    PluginMenu::Append(MenuItem *item)
     {
         _folder->Append(item);
     }
@@ -86,7 +84,7 @@ namespace CTRPluginFramework
     ** Run
     **************/
 
-    int    Menu::Run(void)
+    int    PluginMenu::Run(void)
     {
         Event           event;
         EventManager    manager;
@@ -210,7 +208,7 @@ namespace CTRPluginFramework
     // Render Menu
     //###########################################
 
-    void    Menu::_Render_Menu(void)
+    void    PluginMenu::_Render_Menu(void)
     {
                 static Color black = Color();
         static Color blank(255, 255, 255);
@@ -266,7 +264,7 @@ namespace CTRPluginFramework
     // Render Top Screen
     //###########################################
 
-    void    Menu::_RenderTop(void)
+    void    PluginMenu::_RenderTop(void)
     {
         Renderer::SetTarget(TOP);
         if (_noteTB == nullptr || !_noteTB->IsOpen())
@@ -278,7 +276,7 @@ namespace CTRPluginFramework
     //###########################################
     // Render Bottom Screen
     //###########################################
-    void    Menu::_RenderBottom(void)
+    void    PluginMenu::_RenderBottom(void)
     {
         static Color black = Color();
         static Color blank(255, 255, 255);
@@ -343,7 +341,7 @@ namespace CTRPluginFramework
     //###########################################
     // Process Event
     //###########################################
-    void    Menu::_ProcessEvent(Event &event)
+    void    PluginMenu::_ProcessEvent(Event &event)
     {
         static Clock fastScroll;
         static Clock inputClock;
@@ -491,7 +489,7 @@ namespace CTRPluginFramework
     //###########################################
     // Update menu
     //###########################################
-    void    Menu::_Update(Time delta)
+    void    PluginMenu::_Update(Time delta)
     {
         /*
         ** Scrolling
@@ -533,7 +531,7 @@ namespace CTRPluginFramework
 
     }
 
-    void    Menu::_TriggerEntry(void)
+    void    PluginMenu::_TriggerEntry(void)
     {
         MenuFolder *folder = _starMode ? _starred : _folder;
         /*
@@ -595,7 +593,7 @@ namespace CTRPluginFramework
         }
     }
 
-    void   Menu::_StarItem(void)
+    void   PluginMenu::_StarItem(void)
     {
         MenuFolder *folder = _starMode ? _starred : _folder;
 
@@ -637,7 +635,7 @@ namespace CTRPluginFramework
         }
     }
 
-    void    Menu::_DisplayNote(void)
+    void    PluginMenu::_DisplayNote(void)
     {
         if (_noteTB != nullptr)
         {
