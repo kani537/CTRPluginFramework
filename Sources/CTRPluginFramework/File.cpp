@@ -98,23 +98,45 @@ namespace CTRPluginFramework
         Result res;
 
         res = FSUSER_OpenFile(&handle, _sdmcArchive, fsPath, fsmode, 0);
-        if (R_FAILED(res) && mode & CREATE)
+        /*if (R_FAILED(res) && mode & CREATE)
         {
             res = Create(path);
-            if (R_SUCCEEDED(res))   
+            if (R_SUCCEEDED(res))  
+            {
                 res = FSUSER_OpenFile(&handle, _sdmcArchive, fsPath, fsmode, 0);
-        }
+            } 
+                
+        }*/
         if (R_FAILED(res))
             return (res);
 
-        output = File(path, handle, mode);
-        return (0);
+        output._handle = handle;
+        output._mode = mode;
+        output._path = path;
+        output._offset = 0;
+
+        if (mode & TRUNCATE)
+            FSFILE_SetSize(handle, 0);
+
+        u32     pos = path.rfind('/');
+
+        if (pos != std::string::npos)
+            path = path.substr(pos);
+
+        pos = path.rfind('.');
+        if (pos != std::string::npos)
+            output._name = path.substr(0, pos);
+        else
+            output._name = path;
+        //output = File(path, handle, mode);
+        return (res);
 
     }
 
-    File::File(std::string &path, Handle &handle, int mode) :
-    _path(path), _handle(handle), _mode(mode), _offset(0)
+    File::File(std::string &path, Handle handle, int mode) :
+    _path(path), _mode(mode), _offset(0)
     {
+        _handle = handle;
         if (mode & TRUNCATE)
             FSFILE_SetSize(handle, 0);
 
