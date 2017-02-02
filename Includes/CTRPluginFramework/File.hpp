@@ -27,8 +27,8 @@ namespace CTRPluginFramework
             CREATE = 1 << 2
         };
 
-        static int  Rename(std::string &path, std::string &newName);
-        static int  Remove(std::string &path);
+        static int  Rename(std::string path, std::string newName);
+        static int  Remove(std::string path);
         static bool IsExists(std::string &path);
         static int  Open(File &output, std::string &path, int mode = READ | WRITE | CREATE);
         
