@@ -24,7 +24,7 @@ namespace CTRPluginFramework
     
 
     Handle      keepThreadHandle;
-    Handle      keepEvent;
+    Handle      _keepEvent = 0;
     bool        keepRunning = true;
     Thread      mainThread;
 
@@ -41,8 +41,11 @@ namespace CTRPluginFramework
         // Init Framework's system constants
         System::Initialize();
         // Init Process info
-        svcCreateEvent(&keepEvent, RESET_ONESHOT);
-        Process::Initialize(keepEvent);
+        Color blue = Color(0, 255, 0);
+        Color red = Color(255, 0, 0);
+        Color c;
+
+        Process::Initialize(_keepEvent);
         u64 tid = Process::GetTitleID();
         if (tid == 0x0004000000183600)
             Sleep(Seconds(3));
@@ -52,13 +55,27 @@ namespace CTRPluginFramework
         //Sleep(Seconds(5));
         
         //svcSetThreadPriority(keepThreadHandle, 0x20);
+        svcCreateEvent(&_keepEvent, RESET_ONESHOT);
+        /*if(R_FAILED(res))
+            c = red;
+        else
+            c = blue;*/
         while (keepRunning)
         {
-            svcWaitSynchronization(keepEvent, U64_MAX);
-            svcClearEvent(keepEvent);
-            while (Process::IsPaused())
-                if (Process::IsAcquiring())
-                    Sleep(Milliseconds(10));
+            //svcWaitSynchronization(_keepEvent, U64_MAX);
+            //svcClearEvent(_keepEvent);
+            if (Process::IsPaused())
+            {
+                while (Process::IsPaused())
+                {
+                    if (Process::IsAcquiring())
+                        Sleep(Milliseconds(100));
+                }               
+            }
+            else
+            {
+                Sleep(Milliseconds(10));
+            }
         }
         threadJoin(mainThread, U64_MAX);
         exit(1);
@@ -102,6 +119,7 @@ namespace CTRPluginFramework
         //Sleep(Seconds(5));
 
         // Reduce Priority
+        //svcSignalEvent(_keepEvent);
         Process::Play(true);
 
         // Protect VRAM
@@ -125,7 +143,7 @@ namespace CTRPluginFramework
 
         // Exit loop in keep thread
         keepRunning = false;
-        svcSignalEvent(keepEvent);
+        svcSignalEvent(_keepEvent);
 
         threadExit(1);        
     }
