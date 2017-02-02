@@ -13,10 +13,10 @@ namespace CTRPluginFramework
     {
     public:
 
-        enum Seek
+        enum SeekPos
         {
             CUR,
-            BEGIN,
+            SET,
             END
         };
 
@@ -24,13 +24,16 @@ namespace CTRPluginFramework
         {
             READ = 1,
             WRITE = 1 << 1,
-            CREATE = 1 << 2
+            CREATE = 1 << 2,
+            APPEND = 1 << 3,
+            TRUNCATE = 1 << 4
         };
 
+        static int  Create(std::string path);
         static int  Rename(std::string path, std::string newName);
         static int  Remove(std::string path);
-        static bool IsExists(std::string &path);
-        static int  Open(File &output, std::string &path, int mode = READ | WRITE | CREATE);
+        static int  IsExists(std::string path);
+        static int  Open(File &output, std::string path, int mode = READ | WRITE | CREATE);
         
         ~File(){ Close(); }
 
@@ -38,23 +41,22 @@ namespace CTRPluginFramework
 
         int     Read(void *buffer, u32 length);
         int     Write(const void *data, u32 length);
-        int     WriteLine(const std::string &line);
-        int     WriteLine(const char *line);
-        int     Seek(int offset, Seek rel = CUR);
+        int     WriteLine(std::string line);
+        int     Seek(s64 offset, SeekPos rel = CUR);
+        u64     GetSize(void);
 
         int     Dump(u32 address, u32 length);
         int     Inject(u32 address, u32 length);
 
 
     private:
-        FS_Path         _fspath;
         std::string     _path;
         std::string     _name;
         Handle          _handle;
-        u32             _offset;
+        u64             _offset;
         int             _mode;
 
-        File (std::string &path, Handle &handle);
+        File (std::string &path, Handle &handle, int mode);
     };
 }
 
