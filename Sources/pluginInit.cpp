@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <cstdio>
 #include "CTRPluginFramework/Folder.hpp"
+#include "CTRPluginFramework/arm11kCommands.h"
 
 extern "C" void     abort(void);
 extern "C" void     initSystem();
@@ -33,6 +34,9 @@ namespace CTRPluginFramework
     int     main(void);
 
     void    ThreadInit(void *arg);
+
+    extern "C" u32 __ctru_heap;
+    extern "C" u32 __ctru_heap_size;
 
     void    KeepThreadMain(void *arg)
     {
@@ -78,6 +82,9 @@ namespace CTRPluginFramework
             }
         }
         threadJoin(mainThread, U64_MAX);
+        Screen::Top->Flash(blue);
+            arm11kSvcControlMemory(__ctru_heap, __ctru_heap_size, 0x201, 0x0);
+    arm11kSvcControlMemory(__ctru_heap, __ctru_heap_size, 0x001, 0x0);
         exit(1);
     }
 

@@ -12,6 +12,7 @@ initSystem:
 	str	lr, [r2,#4]
 
 	bl	__libctru_init
+	b skip
 @-----------------------------
 	ldr	r2, =fake_heap_start
 	ldr	sp, [r2]
@@ -25,6 +26,7 @@ initSystem:
 
 @---------------------------------
 @	bl	__appInit
+skip:
 	bl	__libc_init_array
 
 	ldr	r2, =saved_stack
