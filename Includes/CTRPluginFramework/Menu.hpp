@@ -59,6 +59,7 @@ namespace CTRPluginFramework
         float                       _scrollOffset;
         Clock                       _scrollClock;
         bool                        _reverseFlow;
+        bool                        _pluginRun;
         IntVector                   _startLine;
         IntVector                   _endLine;
 

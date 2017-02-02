@@ -49,6 +49,7 @@ namespace CTRPluginFramework
         _scrollOffset = 0.f;
         _maxScrollOffset = 0.f;
         _reverseFlow = false;
+        _pluginRun = true;
     }
 
     Menu::~Menu(void)
@@ -100,7 +101,7 @@ namespace CTRPluginFramework
 
         _selectedTextSize = Renderer::GetTextSize(_folder->_items[_selector]->name.c_str());
         // Main loop
-        while (1)
+        while (_pluginRun)
         {
             // Check Event
             while (manager.PollEvent(event))
@@ -149,12 +150,7 @@ namespace CTRPluginFramework
                 int posY = 10;
                 Renderer::DrawString(buf, 320, posY, blank, black);*/
                 Renderer::EndFrame(_shouldClose);
-                if (_shouldClose)
-                {
-                    Process::Play();
-                    _isOpen = false;
-                    _shouldClose = false;
-                }
+
 
                 _gameGuideBtn();
                 _showStarredBtn();
@@ -164,6 +160,18 @@ namespace CTRPluginFramework
 
                 _AddFavoriteBtn();
                 _InfoBtn();
+                if (_shouldClose)
+                {
+                    Process::Play();
+                    _isOpen = false;
+                    _shouldClose = false;
+                }
+                if (Controller::IsKeysDown(L + R + Start))
+                {
+                    Process::Play();
+                    _isOpen = false;
+                    _pluginRun = false;                   
+                }
                // while(clock.GetElapsedTime() < frameLimit);
             
             }
