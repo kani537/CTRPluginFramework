@@ -318,14 +318,14 @@ namespace CTRPluginFramework
     int     Directory::ListFiles(std::vector<std::string> &files, std::string pattern)
     {
         bool patternCheck = (pattern.size() > 0);
-        FS_DirectoryEntry   entries[MAX_ENTRIES] = {0};
-        FS_DirectoryEntry   *entry;
+       // FS_DirectoryEntry   entries[MAX_ENTRIES] = {0};
+        FS_DirectoryEntry   entry;
         Result              res;
         u32                 units;
         u32                 entriesNb = 0;
         u8                  filename[PATH_MAX + 1] = {0};
 
-        res = FSDIR_Read(_handle, &entriesNb, MAX_ENTRIES, entries);
+       /* res = FSDIR_Read(_handle, &entriesNb, MAX_ENTRIES, entries);
         if (R_FAILED(res))
             return (res);
 
@@ -342,8 +342,24 @@ namespace CTRPluginFramework
             if (patternCheck && fn.find(pattern) == std::string::npos)
                 continue;
             files.push_back(fn);
+        }*/
+        while (R_SUCCEEDED(FSDIR_Read(_handle, &entriesNb, 1, &entry)))
+        {
+            if (entriesNb == 0)
+                return (0);
+            //entry = &entries[i];
+            if (entry.attributes & 1)
+                continue;
+            std::memset(filename, 0, sizeof(filename));
+            units = utf16_to_utf8(filename, entry.name, PATH_MAX);
+            if (units < 0)
+                continue;
+            std::string fn = (char *)filename;
+            if (patternCheck && fn.find(pattern) == std::string::npos)
+                continue;
+            files.push_back(fn);           
         }
-        return (0);
+        return (res);
     }
 
     /*
@@ -352,14 +368,14 @@ namespace CTRPluginFramework
     int     Directory::ListFolders(std::vector<std::string> &folders, std::string pattern)
     {
         bool patternCheck = (pattern.size() > 0);
-        FS_DirectoryEntry   entries[MAX_ENTRIES] = {0};
-        FS_DirectoryEntry   *entry;
+        //FS_DirectoryEntry   entries[MAX_ENTRIES] = {0};
+        FS_DirectoryEntry   entry;
         Result              res;
         u32                 units;
         u32                 entriesNb = 0;
         u8                  filename[PATH_MAX + 1] = {0};
 
-        res = FSDIR_Read(_handle, &entriesNb, MAX_ENTRIES, entries);
+        /*res = FSDIR_Read(_handle, &entriesNb, MAX_ENTRIES, entries);
         if (R_FAILED(res))
             return (res);
 
@@ -376,6 +392,22 @@ namespace CTRPluginFramework
             if (patternCheck && fn.find(pattern) == std::string::npos)
                 continue;
             folders.push_back(fn);
+        }
+        return (0);*/
+        while (R_SUCCEEDED(FSDIR_Read(_handle, &entriesNb, 1, &entry)))
+        {
+            if (entriesNb == 0)
+                return (0);
+            if (!(entry.attributes & 1))
+                continue;
+            std::memset(filename, 0, sizeof(filename));
+            units = utf16_to_utf8(filename, entry.name, PATH_MAX);
+            if (units < 0)
+                continue;
+            std::string fn = (char *)filename;
+            if (patternCheck && fn.find(pattern) == std::string::npos)
+                continue;
+            folders.push_back(fn);  
         }
         return (0);
     }
