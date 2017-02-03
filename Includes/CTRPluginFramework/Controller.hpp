@@ -32,7 +32,8 @@ namespace CTRPluginFramework
         Down        = DPadDown  | CPadDown,
         Left        = DPadLeft  | CPadLeft,
         Right       = DPadRight | CPadRight,
-        CPad        = CPadLeft  | CPadRight | CPadUp | CPadDown
+        CPad        = CPadLeft  | CPadRight | CPadUp | CPadDown,
+        CStick      = CStickLeft | CStickRight | CStickUp | CStickDown
     };
     class Controller
     {
@@ -54,6 +55,9 @@ namespace CTRPluginFramework
             static bool     IsKeysReleased(u32 keys);
             // Update Controller status
             static void     Update(void);
+
+            static void     InjectTouch(u16 posX, u16 posY);
+            static void     InjectKey(u32 key);
     private:
             static u32      _keysDown;
             static u32      _keysHeld;
