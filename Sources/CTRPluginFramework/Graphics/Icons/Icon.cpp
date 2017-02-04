@@ -21,6 +21,7 @@ namespace CTRPluginFramework
     extern "C" unsigned char *FolderFilled;
     extern "C" unsigned char *Info25;
     extern "C" unsigned char *InfoFilled25;
+    extern "C" unsigned char *HandCursor15;
     extern "C" unsigned char *Maintenance15;
     extern "C" unsigned char *Search15;
     extern "C" unsigned char *Star15;
@@ -199,6 +200,15 @@ namespace CTRPluginFramework
     int     Icon::DrawGuide(int posX, int posY)
     {
         return (DrawImg(UserManualFilled15, posX, posY, 15, 15));
+    }
+
+    /*
+    ** Hand Cursor
+    ** 15px * 15px
+    ***************/
+    int     Icon::DrawHandCursor(int posX, int posY)
+    {
+        return (DrawImg(HandCursor15, posX, posY, 15, 15));
     }
 
     /*

@@ -58,6 +58,11 @@ namespace CTRPluginFramework
         static int      DrawGuide(int posX, int posY);
 
         /*
+        ** Hand Cursor
+        ** 15 px * 15 px
+        ****************/
+        static int      DrawHandCursor(int posX, int posY);
+        /*
         ** Search
         ** 15px * 15 px
         **************/
