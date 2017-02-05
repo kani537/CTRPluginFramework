@@ -21,6 +21,7 @@
 #include "CTRPluginFramework/Clock.hpp"
 #include "CTRPluginFramework/Process.hpp"
 #include "CTRPluginFramework/Graphics/Icon.hpp"
+#include "CTRPluginFramework/Graphics/OSD.hpp"
 
 #define SHOWFPS 1
 
@@ -93,13 +94,19 @@ namespace CTRPluginFramework
         Time            frameLimit = second / 30.f;
         float           framerate;
         Time            delta;
-        Color           blank(255, 0, 255);
         bool            isInit = false;
+        OSD             &osd = *(OSD::GetInstance());
 
         if (_folder != nullptr && _folder->ItemsCount() > 0)
             _selectedTextSize = Renderer::GetTextSize(_folder->_items[_selector]->name.c_str());
         else
             _selectedTextSize = 0.f;
+
+        Color black = Color();
+        Color blank = Color(255, 255, 255);
+
+        OSD::Notify("Plugin ready !", blank, black);
+
         // Main loop
         while (_pluginRun)
         {
@@ -147,8 +154,6 @@ namespace CTRPluginFramework
             #if SHOWFPS
                 char buf[40];
                 sprintf(buf, "FPS: %03.2f", framerate);
-                Color blank(255, 255, 255);
-                Color black = Color();
                 int posY = 10;
                 Renderer::DrawString(buf, 320, posY, blank, black);
             #endif
@@ -205,7 +210,8 @@ namespace CTRPluginFramework
                             _freeIndex.push(i);                    
                         }
                     }
-                }
+                }               
+                osd();
             }
         }
         return (0);

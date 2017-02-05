@@ -1,16 +1,21 @@
 #include "CTRPluginFramework.hpp"
+
 #include "CTRPluginFramework/Directory.hpp"
 #include "CTRPluginFramework/File.hpp"
+#include "ctrulib/services/hid.h"
 #include "cheats.hpp"
 #include <cstdio>
 
 #include <string>
 #include <vector>
 
+#include "ctrulib/services/gspgpu.h"
+#include "CTRPluginFramework/Graphics/Color.hpp"
+#include "CTRPluginFramework/Graphics/OSD.hpp"
+
 namespace CTRPluginFramework
 {
-
-
+    extern "C" vu32* hidSharedMem;
     // This function is called on the plugin starts, before main
     void    PatchProcess(void)
     {
@@ -28,10 +33,79 @@ namespace CTRPluginFramework
         }
     }
 
+    void    ZLCamera(MenuEntry *entry)
+    {
+        if (Controller::IsKeyDown(Key::Touchpad))
+        {
+            char buffer[60] = {0};
+            u32 Id = (u32)hidSharedMem[42 + 4];
+
+            u64 t = *((u64*)&hidSharedMem[42]);
+            u64 t1 = *((u64 *)&hidSharedMem[44]);
+
+            sprintf(buffer, "%016llX %016llX %d \n", t, t1, Id);
+            if (entry->note.size() > 500)
+                entry->note.clear();
+            entry->note += buffer;
+        }
+        if (Controller::IsKeyDown(Key::ZL))
+            Controller::InjectTouch(10, 20);
+    }
+
+    void    ZLFirstButton(MenuEntry *entry)
+    {
+        if (Controller::IsKeyDown(Key::ZL))
+            Controller::InjectTouch(300, 20);
+    }
+
+    void    ZRSecondButton(MenuEntry *entry)
+    {
+        if (Controller::IsKeyDown(Key::ZR))
+            Controller::InjectTouch(300, 210);
+    }
+
+    void    CStickToDPAD(MenuEntry *entry)
+    {
+        if (Controller::IsKeyDown(Key::CStick))
+        {
+            u32 keys = (hidKeysHeld() & Key::CStick) >> 20;
+            Controller::InjectKey(keys);
+        }
+    }
+
+    void    ZLToL(MenuEntry *entry)
+    {
+        if (Controller::IsKeyDown(Key::ZL))
+        {
+            //u32 keys = (hidKeysHeld() & Key::L);
+            Controller::InjectKey(Key::L);
+        }  
+    }
+
+    void    ZRToR(MenuEntry *entry)
+    {
+        if (Controller::IsKeyDown(Key::ZR))
+        {
+            //u32 keys = (hidKeysHeld() & Key::R);
+            Controller::InjectKey(Key::R);
+        }  
+    }
+
+    void    Overlay(MenuEntry *entry)
+    {
+        u64 tick = svcGetSystemTick();
+
+        Color black = Color();//(tick >> 8) & 0xFF, (tick >> 16) & 0xFF, (tick) & 0xFF);
+        Color blank = Color(255, 0, 0);//(tick >> 16) & 0xFF, (tick) & 0xFF, (tick >> 8) & 0xFF);
+        
+        if (Controller::IsKeyPressed(Key::A))
+            OSD::Notify("Nanquitas says Hello !", blank, black);
+    }
+
     int    main(void)
     {   
-
-        PluginMenu    menu("Zelda Ocarina Of Time 3D");
+       // PluginMenu  *m = new PluginMenu("Zelda Ocarina Of Time 3D");
+        PluginMenu    menu("Zelda Ocarina Of Time 3D");// = *m;
 
         std::string text = "";
         /*    "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus id semper ligula. Vivamus sollicitudin lacinia ligula, vel hendrerit massa posuere in. Aliquam eget euismod tortor, vel ultricies sem. Donec tempor odio vel neque suscipit finibus ac at quam. Cras pharetra, massa scelerisque rutrum pretium, sapien tortor lobortis elit, vel euismod dui dolor non leo. Praesent sodales sagittis purus quis feugiat. Praesent est massa, gravida et ultrices in, aliquet ac tortor. Nam id tempus dolor. Pellentesque lobortis porta sagittis. Phasellus malesuada pulvinar porttitor.\n\n" \
@@ -40,7 +114,7 @@ namespace CTRPluginFramework
 "unc sem eros, fermentum sed justo sit amet, condimentum tempus nunc. Mauris elementum vulputate tempus. Proin iaculis justo rhoncus, lobortis massa nec, tempus dolor. Donec et dictum erat. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; Sed convallis arcu et nisi posuere, vel fermentum est cursus. Phasellus hendrerit, tellus id bibendum auctor, odio elit blandit justo, sed porttitor diam lorem eu lacus. Phasellus ac nibh venenatis, sagittis enim ultrices, efficitur tellus. Vestibulum ullamcorper egestas nunc eget volutpat. In tempus eros eu ipsum feugiat placerat. Cras iaculis odio nec nunc faucibus, in blandit turpis lacinia.\n\n" \
 "Aenean a massa lacinia, elementum urna aliquam, sodales lorem. Vivamus hendrerit egestas orci vitae interdum. Aenean ultricies justo mi, et porta lacus placerat at. Sed faucibus nulla viverra dolor luctus, eget blandit sapien vestibulum. Duis commodo varius vulputate. Quisque ut dui lorem. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quisque quis tellus porttitor, pellentesque sem mollis, eleifend felis.\n\n";
         */
-        char temp[100] = {0};
+        //char temp[100] = {0};
         
 
         
@@ -48,16 +122,16 @@ namespace CTRPluginFramework
         int res4 = 0;
         int res3 = 0;
         File    file;
-        char    buffer[0x100] = {0};
+        //char    buffer[0x100] = {0};
 
         if ((File::Open(file, "Test.txt")) == 0)
         {
             file.WriteLine("Yeah !! This is a line written by WriteLine.");
             file.WriteLine("Yeah !! This is a second line written by WriteLine.");
-            u64 size = file.GetSize();
-            file.Rewind();
-            file.Read(buffer, size);
-            file.Close();
+            //u64 size = file.GetSize();
+            //file.Rewind();
+           // file.Read(buffer, size);
+            //file.Close();
         }
 
         std::string ls = "";        
@@ -67,7 +141,7 @@ namespace CTRPluginFramework
         Directory::Open(base, "", false); //Open current working directory (plugin/<currentTitleID>/)
         base.ListFiles(lsv); // listing all files in base (not directory)
         // An other version for the example
-        base.ListFiles(lsv, ".txt"); // listing all files in base (not directory) which contains .txt in their name
+        //base.ListFiles(lsv, ".txt"); // listing all files in base (not directory) which contains .txt in their name
         
         // Adding all the names in the list into ls string
         for (int i = 0; i < lsv.size(); i++)
@@ -75,13 +149,14 @@ namespace CTRPluginFramework
             ls += lsv[i] + "\n";
         }
         // this add the content of the file we've read earlier in the ls string
-        ls += buffer;
+        //ls += buffer;
+
 
         /*
         ** Movements codes
         ********************/
 
-        MenuFolder *folder = new MenuFolder("Movement");
+        MenuFolder *folder = new MenuFolder("Movement", ls);
 
         folder->Append(new MenuEntry("MoonJump (\uE000)", MoonJump, "Press \uE000 to be free of the gravity."));
         folder->Append(new MenuEntry("Fast Move (\uE077 + \uE054)", MoveFast, "Use \uE077 while pressing \uE054 to move very fast. Be careful of the loading zone, it might put you out of bound."));
@@ -169,7 +244,15 @@ namespace CTRPluginFramework
         folder->Append(new MenuEntry("No Damage From Falling", NeverTakeDamageFromFalling));
 
         menu.Append(folder);
-        
+        file.WriteLine("Overlay");
+        menu.Append(new MenuEntry("\uE000 to send a notification", Overlay));
+        menu.Append(new MenuEntry("ZL = Camera button", ZLCamera));
+        menu.Append(new MenuEntry("ZL = First object button", ZLFirstButton));
+        menu.Append(new MenuEntry("ZR = Second Object button", ZRSecondButton));
+        menu.Append(new MenuEntry("CStick as DPAD", CStickToDPAD));
+        menu.Append(new MenuEntry("\uE054 as \uE004", ZLToL));
+        menu.Append(new MenuEntry("\uE055 as \uE005", ZRToR));
+        file.WriteLine("Run");
         // Launch menu and mainloop
         menu.Run();
 

@@ -4,6 +4,7 @@
 #include <cstdio>
 #include "CTRPluginFramework/Directory.hpp"
 #include "CTRPluginFramework/arm11kCommands.h"
+#include "CTRPluginFramework/Graphics/OSD.hpp"
 
 extern "C" void     abort(void);
 extern "C" void     initSystem();
@@ -49,7 +50,7 @@ namespace CTRPluginFramework
         // Correction for some games like Kirby
         u64 tid = Process::GetTitleID();
         if (tid == 0x0004000000183600)
-            Sleep(Seconds(3));
+            Sleep(Seconds(5));
 
         // Init heap and newlib's syscalls
         initSystem();
@@ -61,8 +62,8 @@ namespace CTRPluginFramework
 
         while (keepRunning)
         {
-            //svcWaitSynchronization(_keepEvent, U64_MAX); //Stopped working, need to debug
-            //svcClearEvent(_keepEvent); //Stopped working, need to debug for proper sleep
+            svcWaitSynchronization(_keepEvent, U64_MAX); //Stopped working, need to debug
+            svcClearEvent(_keepEvent); //Stopped working, need to debug for proper sleep
             if (Process::IsPaused())
             {
                 while (Process::IsPaused())
@@ -73,7 +74,7 @@ namespace CTRPluginFramework
             }
             else
             {
-                Sleep(Milliseconds(10)); // temporary fix
+              //  Sleep(Milliseconds(500)); // temporary fix
             }
         }
 
@@ -99,7 +100,10 @@ namespace CTRPluginFramework
         Process::UpdateThreadHandle();
 
         // Patch process before it starts
-        PatchProcess();        
+        PatchProcess();
+
+        //Init OSD
+        OSD::_Initialize();  
     }
 
     extern "C" vu32* hidSharedMem;

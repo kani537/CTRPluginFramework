@@ -137,7 +137,7 @@ namespace CTRPluginFramework
 		_isPaused = true;
 		
 		// Waking up Init thread
-		//svcSignalEvent(_keepEvent); //<- Doesn't work anymore, need some debug
+		svcSignalEvent(_keepEvent); //<- Doesn't work anymore, need some debug
 
 		_isAcquiring = true;
 		Screen::Top->Acquire();
@@ -194,7 +194,7 @@ namespace CTRPluginFramework
 		}
         _isPaused = false;
 		while(R_FAILED(svcSetThreadPriority(gspThreadEventHandle, 0x3F)));
-		while(R_FAILED(svcSetThreadPriority(_mainThreadHandle, 0x31)));
+		while(R_FAILED(svcSetThreadPriority(_mainThreadHandle, 0x3F)));
 	}
 
     bool     Process::ProtectMemory(u32 addr, u32 size, int perm)

@@ -35,8 +35,9 @@ namespace CTRPluginFramework
         using OSDIter = std::list<OSDMessage>::const_iterator;
 
     public:
-        static OSD  *GetInstance(void);
-        static int  Notify(std::string str, Color &foreground, Color &background);
+        static OSD      *GetInstance(void);
+        static int      Notify(std::string str, Color &foreground, Color &background);
+        static void     WriteLine(int screen, std::string line, int posX, int posY, Color foreground = Color(255, 255, 255), Color background = Color());
         
 
         void    operator()(void);
