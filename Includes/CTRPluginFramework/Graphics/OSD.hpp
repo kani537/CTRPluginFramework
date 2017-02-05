@@ -32,7 +32,7 @@ namespace CTRPluginFramework
             }
         };
 
-        using OSDIter = std::list<OSDMessage>::const_iterator;
+        using OSDIter = std::list<OSDMessage>::iterator;
 
     public:
         static OSD      *GetInstance(void);

@@ -2,6 +2,8 @@
 #include "CTRPluginFramework/Screen.hpp"
 #include "font6x10Linux.h"
 
+#include <vector>
+
 namespace CTRPluginFramework
 {
     OSD     *OSD::_single = nullptr;
@@ -51,9 +53,14 @@ namespace CTRPluginFramework
         {
             iterEnd = iter;
             std::advance(iterEnd, 15);
+            OSDIter iterTemp = iterEnd;
+            for (; iterTemp != _list.end(); iterTemp++)
+                iterTemp->time.Restart();
         }
         else
             iterEnd = _list.end();
+
+        std::vector<OSDIter> remove;
 
         for (; iter != iterEnd; iter++)
         {
@@ -62,22 +69,19 @@ namespace CTRPluginFramework
 
             if (iter->time.HasTimePassed(Seconds(5)))
             {
-                OSDIter era = iter;
-                iter--;
-                _list.erase(era);
-
+                remove.push_back(iter);
             }
         }
 
         Screen::Top->Flush();
+        if (!remove.empty())
+            for (int i = remove.size() - 1; i >= 0; i--)
+            {
+                OSDIter rem = remove[i];
+                _list.erase(rem);
+            }
 
     }
-
-    /*void     DrawCharacter(int c, int posX, int posY, Color &fg, Color &bg)
-    {
-
-        
-    }*/
 
     void    OSD::_DrawMessage(OSDIter &iter, int posX, int &posY)
     {
@@ -86,7 +90,7 @@ namespace CTRPluginFramework
         Color bg = iter->background;
         int stride = Screen::Top->GetStride();
 
-        if (*(float *)(0x1FF81080) > 0)
+        if (*(float *)(0x1FF81080) > 0.f)
         {
             {
                 for (int i = 0; i < 10; i++)
@@ -194,7 +198,7 @@ namespace CTRPluginFramework
     {
         if (line.size() == 0 || posX < 0 || posY < 0 || posY > 240)
             return;
-        
+
         const char *str = line.c_str();
 
         //Bottom screen
