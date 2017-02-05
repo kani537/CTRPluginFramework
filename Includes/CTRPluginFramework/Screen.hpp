@@ -35,7 +35,7 @@ namespace CTRPluginFramework
 
         void                        Flash(Color &color);
 
-        void                        Acquire(void);
+        void                        Acquire(bool acquiringOSD = false);
         void                        SwapBuffer(bool flush = false, bool copy = false);
 
         GSPGPU_FramebufferFormats   GetFormat(void);
@@ -58,7 +58,7 @@ namespace CTRPluginFramework
         u8                          *GetRightFramebuffer(int posX, int posY, bool current);                 
         
         void                        Fade(float fade, bool copy = false);
-
+        void                        Flush(void);
         int                         Debug(int posX, int posY);
 
     private:
