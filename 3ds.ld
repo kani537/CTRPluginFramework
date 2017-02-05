@@ -13,7 +13,7 @@ PHDRS
 SECTIONS
 {
 	/* =========== CODE section =========== */
-	. = 0x07001000;
+	. = 0x00100000;
 	__start__ = . ;
 	.text ALIGN(0x4) :
 	{

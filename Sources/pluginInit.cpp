@@ -120,18 +120,21 @@ namespace CTRPluginFramework
         // Reduce Priority
         Process::Play(true);
 
-        // Protect VRAM
-        Process::ProtectRegion(0x1F000000);
-
-        // Protect HID Shared Memory in case we want to push inputs
-        Process::ProtectMemory((u32)hidSharedMem, 0x1000);
-
         // Set current working directory
         u64     tid = Process::GetTitleID();
         char    path[256] = {0};
 
         sprintf(path, "/plugin/%016llX/", tid);
         Directory::ChangeWorkingDirectory(path);
+
+        // Protect VRAM
+        Process::ProtectRegion(0x1F000000);
+
+        // Protect HID Shared Memory in case we want to push inputs
+        Process::ProtectMemory((u32)hidSharedMem, 0x1000);
+
+        if (tid != 0x0004000000183600)
+            Sleep(Seconds(5));
 
         // Start plugin
         int ret = main();

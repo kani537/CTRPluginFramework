@@ -201,7 +201,7 @@ namespace CTRPluginFramework
             _rightFramebuffersV[0] = FromPhysicalToVirtual(leftFB1);
             _rightFramebuffersV[1] = FromPhysicalToVirtual(leftFB2);
         }
-        else
+        else if (_isTopScreen)
         {
             _rightFramebuffersP[0] = REG(_LCDSetup + FramebufferB1);;
             _rightFramebuffersP[1] = REG(_LCDSetup + FramebufferB2);;
@@ -235,7 +235,8 @@ namespace CTRPluginFramework
         //memcpy((void *)_leftFramebuffersV[!_currentBuffer], (void *)_leftFramebuffersV[_currentBuffer], size);
         // Flush second buffer
         if (R_FAILED(GSPGPU_FlushDataCache((void *)_leftFramebuffersV[!_currentBuffer], size)))
-            svcFlushProcessDataCache(Process::GetHandle(), (void *)_leftFramebuffersV[!_currentBuffer], size);  
+            svcFlushProcessDataCache(Process::GetHandle(), (void *)_leftFramebuffersV[!_currentBuffer], size);
+
         if (Is3DEnabled())
         {
              if (R_FAILED(GSPGPU_FlushDataCache((void *)_rightFramebuffersV[_currentBuffer], size)))
