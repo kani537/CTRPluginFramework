@@ -40,34 +40,30 @@ namespace CTRPluginFramework
 
     void    KeepThreadMain(void *arg)
     {
-        // Wait for the game to be launched
-        //Sleep(Seconds(5));        
         // Init Framework's system constants
         System::Initialize();
+
         // Init Process info
-        Color blue = Color(0, 255, 0);
-        Color red = Color(255, 0, 0);
-        Color c;
 
         Process::Initialize(_keepEvent);
+
+        // Correction for some games like Kirby
         u64 tid = Process::GetTitleID();
         if (tid == 0x0004000000183600)
             Sleep(Seconds(3));
-        // Init heap and services
+
+        // Init heap and newlib's syscalls
         initSystem();
+
+        // Create plugin's main thread
         mainThread = threadCreate(ThreadInit, (void *)threadStack, 0x4000, 0x3F, -2, 0);
-        //Sleep(Seconds(5));
-        
-        //svcSetThreadPriority(keepThreadHandle, 0x20);
+
         svcCreateEvent(&_keepEvent, RESET_ONESHOT);
-        /*if(R_FAILED(res))
-            c = red;
-        else
-            c = blue;*/
+
         while (keepRunning)
         {
-            //svcWaitSynchronization(_keepEvent, U64_MAX);
-            //svcClearEvent(_keepEvent);
+            //svcWaitSynchronization(_keepEvent, U64_MAX); //Stopped working, need to debug
+            //svcClearEvent(_keepEvent); //Stopped working, need to debug for proper sleep
             if (Process::IsPaused())
             {
                 while (Process::IsPaused())
@@ -78,13 +74,11 @@ namespace CTRPluginFramework
             }
             else
             {
-                Sleep(Milliseconds(10));
+                Sleep(Milliseconds(10)); // temporary fix
             }
         }
+
         threadJoin(mainThread, U64_MAX);
-        Screen::Top->Flash(blue);
-            arm11kSvcControlMemory(__ctru_heap, __ctru_heap_size, 0x201, 0x0);
-    arm11kSvcControlMemory(__ctru_heap, __ctru_heap_size, 0x001, 0x0);
         exit(1);
     }
 
@@ -94,49 +88,45 @@ namespace CTRPluginFramework
     {        
         // Init Services
         __appInit();
-
-        // Init Framework's system constants
-        //System::Initialize();
         
         // Init Screen
         Screen::Initialize();
         Renderer::Initialize();
+        // could probably get swapped for lighter implement of gspevent init
         gfxInit(Screen::Top->GetFormat(), Screen::Bottom->GetFormat(), false);
 
         // Init Process info
         //Process::Initialize(keepEvent);
         Process::UpdateThreadHandle();
+
         // Patch process before it starts
         PatchProcess();        
     }
 
-    // Declared in ctrulib/hid
     extern "C" vu32* hidSharedMem;
-    FS_Archive _sdmcArchive;
+    FS_Archive  _sdmcArchive;
 
     void  ThreadInit(void *arg)
     {
         CTRPluginFramework::Initialize();
 
+        // Init sdmcArchive
         FS_Path sdmcPath = { PATH_EMPTY, 1, (u8*)"" };
         FSUSER_OpenArchive(&_sdmcArchive, ARCHIVE_SDMC, sdmcPath);
-        // Set the current working directory for file
-        // SD/plugin/titleid/
-
-        //Sleep(Seconds(5));
 
         // Reduce Priority
-        //svcSignalEvent(_keepEvent);
         Process::Play(true);
 
         // Protect VRAM
         Process::ProtectRegion(0x1F000000);
 
-        // Protect HID Shared Memory in case we want to push / redirects inputs
+        // Protect HID Shared Memory in case we want to push inputs
         Process::ProtectMemory((u32)hidSharedMem, 0x1000);
 
-        u64 tid = Process::GetTitleID();
+        // Set current working directory
+        u64     tid = Process::GetTitleID();
         char    path[256] = {0};
+
         sprintf(path, "/plugin/%016llX/", tid);
         Directory::ChangeWorkingDirectory(path);
 
