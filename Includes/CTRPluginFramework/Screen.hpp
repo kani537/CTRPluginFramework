@@ -52,9 +52,10 @@ namespace CTRPluginFramework
 
         u8                          *GetLeftFramebuffer(bool current = false);
         u8                          *GetLeftFramebuffer(int posX, int posY);
-
+        u8                          *GetLeftFramebuffer(int posX, int posY, bool second);
         u8                          *GetRightFramebuffer(bool current = false);
-        u8                          *GetRightFramebuffer(int posX, int posY);                  
+        u8                          *GetRightFramebuffer(int posX, int posY); 
+        u8                          *GetRightFramebuffer(int posX, int posY, bool current);                 
         
         void                        Fade(float fade, bool copy = false);
 

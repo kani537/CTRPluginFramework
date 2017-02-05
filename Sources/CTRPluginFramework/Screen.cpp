@@ -391,6 +391,20 @@ namespace CTRPluginFramework
         return ((u8 *)_leftFramebuffersV[!_currentBuffer] + offset);            
     }
 
+    u8      *Screen::GetLeftFramebuffer(int posX, int posY, bool second)
+    {
+        posX = std::max(posX, 0);
+        posX = std::min(posX, (_isTopScreen ? 400 : 320));
+        posY = std::max(posY, 0);
+        posY = std::min(posY, 240);
+
+        // Correct posY
+        posY += _rowSize - 240;
+
+        u32 offset = (_rowSize - 1 - posY + posX * _rowSize) * _bytesPerPixel;
+
+        return ((u8 *)_leftFramebuffersV[_currentBuffer] + offset);            
+    }
     /*
     ** Right
     *************/
@@ -418,5 +432,22 @@ namespace CTRPluginFramework
         u32 offset = (_rowSize - 1 - posY + posX * _rowSize) * _bytesPerPixel;
 
         return ((u8 *)_rightFramebuffersV[!_currentBuffer] + offset);            
+    }
+
+    u8      *Screen::GetRightFramebuffer(int posX, int posY, bool current)
+    {
+        if (!_isTopScreen)
+            return (nullptr);
+
+        posX = std::max(posX, 0);
+        posX = std::min(posX, (_isTopScreen ? 400 : 320));
+        posY = std::max(posY, 0);
+        posY = std::min(posY, 240);
+        
+        // Correct posY
+        posY += _rowSize - 240;
+        u32 offset = (_rowSize - 1 - posY + posX * _rowSize) * _bytesPerPixel;
+
+        return ((u8 *)_rightFramebuffersV[_currentBuffer] + offset);            
     }
 }
