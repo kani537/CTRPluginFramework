@@ -208,7 +208,54 @@ namespace CTRPluginFramework
     ***************/
     int     Icon::DrawHandCursor(int posX, int posY)
     {
-        return (DrawImg(HandCursor15, posX, posY, 15, 15));
+        u8      *framebuf = nullptr;
+        u8      *framebuf2 = nullptr;
+        int     rowstride;
+        int     bpp;
+
+        posY += 15;
+        GSPGPU_FramebufferFormats fmt;
+        // Get target infos
+        switch (Renderer::_target)
+        {
+            case Target::TOP:
+            {
+                framebuf = Screen::Top->GetLeftFramebuffer(posX, posY);
+                framebuf2 = Screen::Top->GetLeftFramebuffer(posX, posY, true);
+                Screen::Top->GetFramebufferInfos(rowstride, bpp, fmt);
+                break;
+            }
+            case Target::BOTTOM:
+            {
+                framebuf = Screen::Bottom->GetLeftFramebuffer(posX, posY);
+                framebuf2 = Screen::Bottom->GetLeftFramebuffer(posX, posY, true);
+                Screen::Bottom->GetFramebufferInfos(rowstride, bpp, fmt);
+                break;                
+            }
+            default:
+                return (posX);
+        }
+        if (framebuf == nullptr)
+            return (posX);
+
+        u8 *img = HandCursor15;
+        // Draw
+        for (int x = 0; x < 15; x++)
+        {
+            u8 *dst = framebuf + rowstride * x;
+            u8 *dst2 = framebuf2 + rowstride * x;
+            int y = 0;
+            while (y++ < 15)
+            {
+                Color px = Color::FromMemory(img, RGBA8);
+                Color bg = Color::FromFramebuffer(dst);
+                Color blended = bg.Blend(px, BlendMode::Alpha);
+                dst = Color::ToFramebuffer(dst, blended);
+                dst2 = Color::ToFramebuffer(dst2, blended);
+                img += 4;
+            }
+        }
+        return (posX + 15);
     }
 
     /*
