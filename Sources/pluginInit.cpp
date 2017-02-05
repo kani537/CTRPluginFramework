@@ -44,8 +44,7 @@ namespace CTRPluginFramework
         System::Initialize();
 
         // Init Process info
-
-        Process::Initialize(_keepEvent);
+        Process::Initialize();
 
         // Correction for some games like Kirby
         u64 tid = Process::GetTitleID();

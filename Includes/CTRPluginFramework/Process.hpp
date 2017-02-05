@@ -68,7 +68,7 @@ namespace CTRPluginFramework
             friend void     Initialize(void);
             friend void     KeepThreadMain(void *arg);
 
-            static void     Initialize(Handle keepEvent);
+            static void     Initialize(void);
             static void     UpdateThreadHandle(void);
             static bool     PatchProcess(u32 addr, u8 *patch, u32 length, u8 *original);
 

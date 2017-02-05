@@ -27,7 +27,8 @@ namespace CTRPluginFramework
 	bool 		Process::_isAcquiring = false;
 
     extern      Handle      _keepEvent;
-	void    Process::Initialize(Handle keepvent)
+
+	void    Process::Initialize(void)
 	{
 		char    kproc[0x100] = {0};
 		bool 	isNew3DS = System::IsNew3DS();
@@ -64,8 +65,6 @@ namespace CTRPluginFramework
 		_titleID = _kCodeSet.titleId;
 		// Create handle for this process
 		svcOpenProcess(&_processHandle, _processID);
-		// Set plugin's main thread handle
-		//_mainThreadHandle = threadGetCurrent()->handle;
 	}
 
     void    Process::UpdateThreadHandle(void)
@@ -138,7 +137,7 @@ namespace CTRPluginFramework
 		_isPaused = true;
 		
 		// Waking up Init thread
-		svcSignalEvent(_keepEvent);
+		//svcSignalEvent(_keepEvent); //<- Doesn't work anymore, need some debug
 
 		_isAcquiring = true;
 		Screen::Top->Acquire();
@@ -190,13 +189,12 @@ namespace CTRPluginFramework
 	        	Screen::Bottom->SwapBuffer(true, true);
 	        	gspWaitForVBlank();
 	        	if (System::IsNew3DS())
-	        	  while (t.GetElapsedTime() < limit); 
+	        	  while (t.GetElapsedTime() < limit); //<- On New3DS frequencies, the alpha would be too dense
 	        }			
 		}
         _isPaused = false;
 		while(R_FAILED(svcSetThreadPriority(gspThreadEventHandle, 0x3F)));
-		while(R_FAILED(svcSetThreadPriority(_mainThreadHandle, 0x3F)));
-        svcCreateEvent(&_keepEvent, RESET_ONESHOT);
+		while(R_FAILED(svcSetThreadPriority(_mainThreadHandle, 0x31)));
 	}
 
     bool     Process::ProtectMemory(u32 addr, u32 size, int perm)
