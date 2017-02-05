@@ -1,5 +1,6 @@
 /Build
 /Ressources
+/Guide
 *.plg
 *.elf
 *.zip

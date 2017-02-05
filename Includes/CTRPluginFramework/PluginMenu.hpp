@@ -20,10 +20,6 @@ namespace CTRPluginFramework
     class Clock;
     class PluginMenu
     {
-        struct MenuFlags
-        {
-            bool showFPS : 1;
-        };
 
     public:
 

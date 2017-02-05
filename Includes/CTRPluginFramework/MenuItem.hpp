@@ -22,6 +22,7 @@ namespace CTRPluginFramework
 
     private:
         friend class PluginMenu;
+        friend class Menu;
 
         bool        _IsStarred(void)
         {

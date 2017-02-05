@@ -22,13 +22,12 @@
 #include "CTRPluginFramework/Process.hpp"
 #include "CTRPluginFramework/Graphics/Icon.hpp"
 
-
+#define SHOWFPS 1
 
 namespace CTRPluginFramework
 {
     bool    _shouldClose = false;
     PluginMenu::PluginMenu(std::string name, std::string note) : 
-    _startLine(-1, -1), _endLine(-1, -1),
     _showStarredBtn("Favorite", *this, &PluginMenu::_StarMode, IntRect(30, 70, 120, 30), Icon::DrawFavorite), 
     _gameGuideBtn("Game Guide", *this, &PluginMenu::Null, IntRect(30, 105, 120, 30), Icon::DrawGuide),    
     _toolsBtn("Tools", *this, &PluginMenu::Null, IntRect(30, 140, 120, 30), Icon::DrawTools),
@@ -97,7 +96,10 @@ namespace CTRPluginFramework
         Color           blank(255, 0, 255);
         bool            isInit = false;
 
-        _selectedTextSize = Renderer::GetTextSize(_folder->_items[_selector]->name.c_str());
+        if (_folder != nullptr && _folder->ItemsCount() > 0)
+            _selectedTextSize = Renderer::GetTextSize(_folder->_items[_selector]->name.c_str());
+        else
+            _selectedTextSize = 0.f;
         // Main loop
         while (_pluginRun)
         {
@@ -141,15 +143,19 @@ namespace CTRPluginFramework
                 _RenderBottom();
                 _RenderTop();
                 
-              /*  char buf[40];
+                // FPS of plugin Menu
+            #if SHOWFPS
+                char buf[40];
                 sprintf(buf, "FPS: %03.2f", framerate);
                 Color blank(255, 255, 255);
                 Color black = Color();
                 int posY = 10;
-                Renderer::DrawString(buf, 320, posY, blank, black);*/
+                Renderer::DrawString(buf, 320, posY, blank, black);
+            #endif
+
                 Renderer::EndFrame(_shouldClose);
 
-
+                // Execute buttons
                 _gameGuideBtn();
                 _showStarredBtn();
                 _toolsBtn();
@@ -158,34 +164,35 @@ namespace CTRPluginFramework
 
                 _AddFavoriteBtn();
                 _InfoBtn();
+
                 if (_shouldClose)
                 {
                     Process::Play();
                     _isOpen = false;
                     _shouldClose = false;
                 }
+                // Exit plugin
                 if (Controller::IsKeysDown(L + R + Start))
                 {
                     Process::Play();
                     _isOpen = false;
                     _pluginRun = false;                   
                 }
-               // while(clock.GetElapsedTime() < frameLimit);
-            
+               // while(clock.GetElapsedTime() < frameLimit);            
             }
             else
             {
-                        // Draw Touch Cursor
+                // Draw Touch Cursor
                 if (isInit && Touch::IsDown())
                 {
                     UIntVector t(Touch::GetPosition());
                     int posX = t.x - 2;
                     int posY = t.y - 1;
-                    Renderer::UseDoubleBuffer(true);
+
                     Renderer::SetTarget(BOTTOM);
-                    Renderer::DrawSysString("\uE058", posX, posY, 320, blank);
-                    gspWaitForVBlank();
+                    Icon::DrawHandCursor(posX, posY);
                 } 
+
                 for (int i = 0; i < _executeLoop.size(); i++)
                 {
                     MenuEntry *entry = _executeLoop[i];
@@ -210,7 +217,7 @@ namespace CTRPluginFramework
 
     void    PluginMenu::_Render_Menu(void)
     {
-                static Color black = Color();
+        static Color black = Color();
         static Color blank(255, 255, 255);
         static Color lightGrey(190, 190, 190);
         static Color dimGrey(15, 15, 15);
@@ -237,7 +244,7 @@ namespace CTRPluginFramework
         int max = folder->ItemsCount();
         if (max == 0)
             return;
-        int i = std::max(0, _selector - 6);//(_selector / 9) * 9;
+        int i = std::max(0, _selector - 6);
         max = std::min(max, (i + 8));
         
         for (; i < max; i++)

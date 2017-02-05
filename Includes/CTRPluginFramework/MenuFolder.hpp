@@ -6,6 +6,7 @@
 
 namespace CTRPluginFramework
 {
+    class Menu;
     class MenuFolder : public MenuItem
     {
     public:
@@ -17,10 +18,11 @@ namespace CTRPluginFramework
 
     private:
         friend class PluginMenu;
+        friend class Menu;
 
         // Private methods
-        void            _Open(MenuFolder *parent, int position, bool starMode);
-        MenuFolder      *_Close(int &position, bool starMode);
+        void            _Open(MenuFolder *parent, int position, bool starMode = false);
+        MenuFolder      *_Close(int &position, bool starMode = false);
 
         // Private members
         MenuFolder              *_parent[2];

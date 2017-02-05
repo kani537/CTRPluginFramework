@@ -1,6 +1,8 @@
 #ifndef CTRPLUGINFRAMEWORK_EVENTS_HPP
 #define CTRPLUGINFRAMEWORK_EVENTS_HPP
 
+#include "CTRPluginFramework/Controller.hpp"
+
 namespace CTRPluginFramework
 {
     class Event
