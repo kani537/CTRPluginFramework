@@ -8,12 +8,22 @@
 
 namespace CTRPluginFramework
 {
-    Menu::Menu(void)
+    Menu::Menu(std::string title)
     {
         _background = IntRect(30, 20, 340, 200);
         _border = IntRect(32, 22, 336, 196);
         _selector = 0;
-        _folder = new MenuFolder("Game Guide");
+        _folder = new MenuFolder(title);
+    }
+
+    Menu::Menu(MenuFolder *folder)
+    {
+        _background = IntRect(30, 20, 340, 200);
+        _border = IntRect(32, 22, 336, 196);
+        _selector = 0;
+        _folder = folder;
+        if (_folder == nullptr)
+            _folder = new MenuFolder("Menu");
     }
 
     Menu::~Menu(void)
@@ -77,8 +87,6 @@ namespace CTRPluginFramework
 
     int     Menu::ProcessEvent(Event &event, std::string &userchoice)
     {
-        static Clock input;
-
         if (_folder->ItemsCount() == 0)
             return (-1);
 
@@ -90,25 +98,25 @@ namespace CTRPluginFramework
                 case CPadUp:
                 case DPadUp:
                 {
-                    if (!input.HasTimePassed(Milliseconds(400)))
+                    if (!_input.HasTimePassed(Milliseconds(400)))
                         break;
                     if (_selector > 0)
                         _selector--;
                     else
                         _selector = std::max(0, (int)_folder->ItemsCount() - 1);
-                    input.Restart();
+                    _input.Restart();
                     break;
                 }
                 case CPadDown:
                 case DPadDown:
                 {
-                    if (!input.HasTimePassed(Milliseconds(400)))
+                    if (!_input.HasTimePassed(Milliseconds(400)))
                         break;
-                    if (_selector < _folder->ItemsCount())
+                    if (_selector < _folder->ItemsCount() - 1)
                         _selector++;
                     else
                         _selector = 0;
-                    input.Restart();
+                    _input.Restart();
                     break;
                 }
             }            
@@ -131,6 +139,78 @@ namespace CTRPluginFramework
                     // if it's a folder
                     MenuFolder *folder = reinterpret_cast<MenuFolder *>(item);
                     folder->_Open(_folder, _selector);
+                    break;
+                }
+                case B:
+                {
+                    MenuFolder *p = _folder->_Close(_selector);
+                    if (p != nullptr)
+                        _folder = p;
+                    else
+                        return (-2);
+                    break;
+                }
+            }
+        }
+        return (-1);
+    }
+
+    int     Menu::ProcessEvent(Event &event, MenuItem **userchoice)
+    {
+        if (_folder->ItemsCount() == 0)
+            return (-1);
+
+        // Scrolling Event
+        if (event.type == Event::KeyDown)
+        {
+            switch (event.key.code)
+            {
+                case CPadUp:
+                case DPadUp:
+                {
+                    if (!_input.HasTimePassed(Milliseconds(400)))
+                        break;
+                    if (_selector > 0)
+                        _selector--;
+                    else
+                        _selector = std::max(0, (int)_folder->ItemsCount() - 1);
+                    _input.Restart();
+                    break;
+                }
+                case CPadDown:
+                case DPadDown:
+                {
+                    if (!_input.HasTimePassed(Milliseconds(400)))
+                        break;
+                    if (_selector < _folder->ItemsCount() - 1)
+                        _selector++;
+                    else
+                        _selector = 0;
+                    _input.Restart();
+                    break;
+                }
+            }            
+        }
+        // Other event
+        else if (event.type == Event::KeyPressed)
+        {
+            MenuItem *item = _folder->_items[_selector];
+            switch (event.key.code)
+            {
+                case A:
+                {
+                    // if it's not a folder
+                    if (item->_type == MenuType::Entry)
+                    {
+                        if (userchoice)
+                            *userchoice = item;
+                        return (_selector);
+                    }
+
+                    // if it's a folder
+                    MenuFolder *folder = reinterpret_cast<MenuFolder *>(item);
+                    folder->_Open(_folder, _selector);
+                    _folder = folder;
                     break;
                 }
                 case B:
