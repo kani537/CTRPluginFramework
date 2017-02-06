@@ -7,6 +7,7 @@
 #include "CheckedButton.hpp"
 #include "Clock.hpp"
 #include "CTRPluginFramework/Graphics/TextBox.hpp"
+#include "CTRPluginFramework/GuideReader.hpp"
 
 #include <queue>
 
@@ -69,6 +70,9 @@ namespace CTRPluginFramework
         ToggleButton<PluginMenu, void>      _InfoBtn;
 
         TextBox                     *_noteTB;
+        GuideReader                 _guide;
+        void                        _TriggerGuide(void);
+        int                         _mode;
     };
 }
 

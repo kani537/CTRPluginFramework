@@ -23,14 +23,14 @@
 #include "CTRPluginFramework/Graphics/Icon.hpp"
 #include "CTRPluginFramework/Graphics/OSD.hpp"
 
-#define SHOWFPS 1
+#define SHOWFPS 0
 
 namespace CTRPluginFramework
 {
     bool    _shouldClose = false;
     PluginMenu::PluginMenu(std::string name, std::string note) : 
     _showStarredBtn("Favorite", *this, &PluginMenu::_StarMode, IntRect(30, 70, 120, 30), Icon::DrawFavorite), 
-    _gameGuideBtn("Game Guide", *this, &PluginMenu::Null, IntRect(30, 105, 120, 30), Icon::DrawGuide),    
+    _gameGuideBtn("Game Guide", *this, &PluginMenu::_TriggerGuide, IntRect(30, 105, 120, 30), Icon::DrawGuide),    
     _toolsBtn("Tools", *this, &PluginMenu::Null, IntRect(30, 140, 120, 30), Icon::DrawTools),
     _hidMapperBtn("Mapper", *this, &PluginMenu::Null, IntRect(165, 70, 120, 30), Icon::DrawController),
     _searchBtn("Search", *this, &PluginMenu::Null, IntRect(165, 105, 120, 30), Icon::DrawSearch),
@@ -48,6 +48,7 @@ namespace CTRPluginFramework
         _maxScrollOffset = 0.f;
         _reverseFlow = false;
         _pluginRun = true;
+        _mode = 0;
     }
 
     PluginMenu::~PluginMenu(void)
@@ -92,7 +93,7 @@ namespace CTRPluginFramework
         Clock           inputClock;
         Time            second = Seconds(1);
         Time            frameLimit = second / 30.f;
-        float           framerate;
+        
         Time            delta;
         bool            isInit = false;
         OSD             &osd = *(OSD::GetInstance());
@@ -132,18 +133,33 @@ namespace CTRPluginFramework
                 }
                 if (_isOpen)
                 {
-                    if (_noteTB == nullptr || !_noteTB->ProcessEvent(event))
+                    switch (_mode)
                     {
-                        _InfoBtn.SetState(false);
-                        _ProcessEvent(event);
+                        case 0:
+                        {
+                            if (_noteTB == nullptr || !_noteTB->ProcessEvent(event))
+                            {
+                                _InfoBtn.SetState(false);
+                                _ProcessEvent(event);
+                            }
+                            break;
+                        }
+                        case 1:
+                        {
+                            bool exit = !_guide.ProcessEvent(event);
+                            if (exit)
+                                _mode = 0;
+                            break;
+                        }
                     }
+
                 }
             }
             
             if (_isOpen)
             {   
                 delta = clock.Restart();
-                framerate = (second.AsSeconds() / delta.AsSeconds());         
+                      
                 _Update(delta);
 
                 Renderer::StartFrame();
@@ -152,6 +168,7 @@ namespace CTRPluginFramework
                 
                 // FPS of plugin Menu
             #if SHOWFPS
+                float   framerate = (second.AsSeconds() / delta.AsSeconds());   
                 char buf[40];
                 sprintf(buf, "FPS: %03.2f", framerate);
                 int posY = 10;
@@ -187,16 +204,6 @@ namespace CTRPluginFramework
             }
             else
             {
-                // Draw Touch Cursor
-                if (isInit && Touch::IsDown())
-                {
-                    UIntVector t(Touch::GetPosition());
-                    int posX = t.x - 2;
-                    int posY = t.y - 1;
-
-                    Renderer::SetTarget(BOTTOM);
-                    Icon::DrawHandCursor(posX, posY);
-                } 
 
                 for (int i = 0; i < _executeLoop.size(); i++)
                 {
@@ -280,10 +287,22 @@ namespace CTRPluginFramework
     void    PluginMenu::_RenderTop(void)
     {
         Renderer::SetTarget(TOP);
-        if (_noteTB == nullptr || !_noteTB->IsOpen())
-            _Render_Menu();
-        else
-            _noteTB->Draw();
+        switch (_mode)
+        {
+            case 0:
+            {
+                if (_noteTB == nullptr || !_noteTB->IsOpen())
+                    _Render_Menu();
+                else
+                    _noteTB->Draw();
+                break;
+            }
+            case 1:
+            {
+                _guide.Draw();
+                break;
+            }
+        }
     }
 
     //###########################################
@@ -300,6 +319,8 @@ namespace CTRPluginFramework
         static Color silver(160, 160, 160);
         static IntRect background(20, 20, 280, 200);
         static IntRect closeIcon(275, 24, 20, 20);
+        static Clock    creditClock;
+        static bool     framework = true;
 
         Renderer::SetTarget(BOTTOM);
 
@@ -309,7 +330,16 @@ namespace CTRPluginFramework
 
 
         int posY = 205;
-        Renderer::DrawString("CTRPluginFramework", 100, posY, blank);
+        if (framework)
+            Renderer::DrawString("CTRPluginFramework", 100, posY, blank);
+        else
+            Renderer::DrawString("by Nanquitas", 124, posY, blank);
+
+        if (creditClock.HasTimePassed(Seconds(5)))
+        {
+            creditClock.Restart();
+            framework = !framework;
+        }
 
         posY = 35;
 
@@ -367,12 +397,13 @@ namespace CTRPluginFramework
         {
             case Event::KeyDown:
             {
-                if (fastScroll.HasTimePassed(Seconds(0.5f)) && inputClock.HasTimePassed(Milliseconds(400)))
+                if (inputClock.HasTimePassed(Milliseconds(400)))
                 switch (event.key.code)
                 {
                     /*
                     ** Selector
                     **************/
+                    case Key::CPadUp:
                     case Key::DPadUp:
                     {
                         if (_selector > 0)
@@ -381,6 +412,7 @@ namespace CTRPluginFramework
                             _selector = std::max((int)folder->ItemsCount() - 1, 0);
                         break;
                     }
+                    case Key::CPadDown:
                     case Key::DPadDown:
                     {
                         if (_selector < folder->ItemsCount() - 1)
@@ -397,27 +429,6 @@ namespace CTRPluginFramework
             {
                 switch (event.key.code)
                 {
-                    /*
-                    ** Selector
-                    **************/
-                    case Key::DPadUp:
-                    {
-                        if (_selector > 0)
-                            _selector--;
-                        else
-                            _selector = std::max((int)folder->ItemsCount() - 1, 0);
-                        fastScroll.Restart();    
-                        break;
-                    }
-                    case Key::DPadDown:
-                    {
-                        if (_selector < folder->ItemsCount() - 1)
-                            _selector++;
-                        else
-                            _selector = 0;
-                        fastScroll.Restart();
-                        break;
-                    }
                     /*
                     ** Trigger entry
                     ** Top Screen
@@ -451,24 +462,24 @@ namespace CTRPluginFramework
 
                 } 
                 break;
-            } // End Key::Pressed event
+            } // End Key::Pressed event       
 
-            
 
-            /*
-            ** Scrolling text variables
-            *********************************/
-            if (event.key.code != Key::Touchpad)
-            {                
-                item = folder->_items[_selector];
-                _selectedTextSize = folder->ItemsCount() > 0 ? Renderer::GetTextSize(item->name.c_str()) : 0;
-                _maxScrollOffset = (float)_selectedTextSize - 200.f;
-                _scrollClock.Restart();
-                _scrollOffset = 0.f;
-                _reverseFlow = false;               
-            }
         } // End switch
 
+        folder = _starMode ? _starred : _folder;
+        /*
+        ** Scrolling text variables
+        *********************************/
+        if (folder->ItemsCount() > 0 && event.key.code != Key::Touchpad && (event.type < Event::TouchBegan || event.type > Event::TouchSwipped))
+        {          
+            item = folder->_items[_selector];
+            _selectedTextSize = folder->ItemsCount() > 0 ? Renderer::GetTextSize(item->name.c_str()) : 0;
+            _maxScrollOffset = (float)_selectedTextSize - 200.f;
+            _scrollClock.Restart();
+            _scrollOffset = 0.f;
+            _reverseFlow = false;               
+        }
         /*
         ** Update favorite state
         **************************/
@@ -539,9 +550,24 @@ namespace CTRPluginFramework
         _toolsBtn.Update(isTouched, touchPos);
         _hidMapperBtn.Update(isTouched, touchPos);
         _searchBtn.Update(isTouched, touchPos);
+
         _InfoBtn.Update(isTouched, touchPos);
         _AddFavoriteBtn.Update(isTouched, touchPos);
 
+    }
+
+    void    PluginMenu::_TriggerGuide(void)
+    {
+        if (_guide.IsOpen())
+        {
+            _guide.Close();
+            _mode = 0;
+        }
+        else
+        {
+            _guide.Open();
+            _mode = 1;
+        }
     }
 
     void    PluginMenu::_TriggerEntry(void)
@@ -552,6 +578,7 @@ namespace CTRPluginFramework
         **************/
         if (_selector >= folder->ItemsCount())
             return;
+        
         if (folder->_items[_selector]->_type == MenuType::Entry)
         {
             MenuEntry *entry = reinterpret_cast<MenuEntry *>(folder->_items[_selector]);
