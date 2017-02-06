@@ -13,7 +13,7 @@ u32 __ctru_linear_heap_size;
 void __attribute__((weak)) __system_allocateHeaps(void) 
 {
 
-	__ctru_heap_size = 0x100000;
+	__ctru_heap_size = 0x200000;
 		//__ctru_linear_heap_size = size;
 
 	// Allocate the application heap
