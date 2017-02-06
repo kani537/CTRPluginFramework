@@ -94,20 +94,64 @@ namespace CTRPluginFramework
     void    Overlay(MenuEntry *entry)
     {
         u64 tick = svcGetSystemTick();
+        u8  c = (tick >> 2) & 0b111;
 
         Color black = Color();//(tick >> 8) & 0xFF, (tick >> 16) & 0xFF, (tick) & 0xFF);
-        Color blank = Color(255, 0, 0);//(tick >> 16) & 0xFF, (tick) & 0xFF, (tick >> 8) & 0xFF);
+        Color blank = Color(255, 255, 255);//(tick >> 16) & 0xFF, (tick) & 0xFF, (tick >> 8) & 0xFF);
         
-        if (Controller::IsKeyPressed(Key::A))
-            OSD::Notify("Nanquitas says Hello !", blank, black);
+        if (Controller::IsKeyPressed(Key::X))
+        {
+            switch (c)
+            {
+                case 1:
+                    black = Color();
+                    blank = Color(255, 255, 255);
+                    OSD::Notify("Nanquitas says Hello !", blank, black);
+                    break;
+                case 2:
+                    black = Color(0, 255, 255, 200);
+                    OSD::Notify("I wanna eat an hot dog !", blank, black);
+                    break;
+                case 3:
+                    black = Color(0, 99, 0, 150);
+                    OSD::Notify("I'm a notification", blank, black);
+                    break;
+                case 4:
+                    OSD::Notify("Whaaaaaaaaaaaaaaaaaaat !?!", blank, black);
+                    break;
+                case 5:
+                    black = Color(0, 66, 0xCC, 150);
+                    OSD::Notify("I love chocolate !", blank, black);
+                    break;
+                default:
+                    black = Color(255, 0, 0, 150);
+                    OSD::Notify("I'm an important notification", blank, black);
+                    break;                    
+            }
+            
+        }
+    }
+
+    void    TouchCursor(MenuEntry *entry)
+    {
+            // Draw Touch Cursor
+            if (Touch::IsDown())
+            {
+                UIntVector t(Touch::GetPosition());
+                int posX = t.x - 2;
+                int posY = t.y - 1;
+
+                Renderer::SetTarget(BOTTOM);
+                Icon::DrawHandCursor(posX, posY);
+                Screen::Bottom->Flush();
+            }
     }
 
     int    main(void)
     {   
-       // PluginMenu  *m = new PluginMenu("Zelda Ocarina Of Time 3D");
-        PluginMenu    menu("Zelda Ocarina Of Time 3D");// = *m;
+        PluginMenu  *m = new PluginMenu("Zelda Ocarina Of Time 3D");
+        PluginMenu    &menu = *m;
 
-        std::string text = "";
         /*    "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus id semper ligula. Vivamus sollicitudin lacinia ligula, vel hendrerit massa posuere in. Aliquam eget euismod tortor, vel ultricies sem. Donec tempor odio vel neque suscipit finibus ac at quam. Cras pharetra, massa scelerisque rutrum pretium, sapien tortor lobortis elit, vel euismod dui dolor non leo. Praesent sodales sagittis purus quis feugiat. Praesent est massa, gravida et ultrices in, aliquet ac tortor. Nam id tempus dolor. Pellentesque lobortis porta sagittis. Phasellus malesuada pulvinar porttitor.\n\n" \
 "Donec ultrices tortor sit amet nibh tincidunt dapibus. Sed interdum dignissim nibh, vel convallis velit volutpat ut. Phasellus blandit, ligula ut varius luctus, quam mi maximus massa, at mattis sem ligula ac mi. Vestibulum tempor fermentum pretium. Phasellus in metus elit. Donec eget massa eu libero lacinia accumsan. Phasellus non velit eget mauris gravida ornare. Sed sodales nulla in dictum pellentesque.\n\n" \
 "Nam magna nunc, posuere ut nisi id, cursus ultricies dui. Suspendisse efficitur id dolor sit amet rhoncus. Sed tincidunt arcu nunc, quis maximus nunc maximus a. Quisque pellentesque libero quis urna rhoncus, eget rutrum diam tincidunt. Nulla eget ultricies nisl, in condimentum nulla. Nullam nec turpis a tellus faucibus dictum ut quis eros. Etiam placerat fringilla nisl at convallis. Ut sit amet ligula accumsan, feugiat neque maximus, sollicitudin nulla. Curabitur posuere, enim ut placerat tincidunt, dui tellus ullamcorper lorem, eu feugiat dui leo quis velit. Morbi non velit eget ipsum sodales sagittis in vel urna.\n\n" \
@@ -134,7 +178,7 @@ namespace CTRPluginFramework
             //file.Close();
         }
 
-        std::string ls = "";        
+        std::string ls = "Files in the current working directory: \n";        
         std::vector<std::string> lsv;
 
         Directory base;
@@ -244,15 +288,16 @@ namespace CTRPluginFramework
         folder->Append(new MenuEntry("No Damage From Falling", NeverTakeDamageFromFalling));
 
         menu.Append(folder);
-        file.WriteLine("Overlay");
-        menu.Append(new MenuEntry("\uE000 to send a notification", Overlay));
-        menu.Append(new MenuEntry("ZL = Camera button", ZLCamera));
-        menu.Append(new MenuEntry("ZL = First object button", ZLFirstButton));
-        menu.Append(new MenuEntry("ZR = Second Object button", ZRSecondButton));
-        menu.Append(new MenuEntry("CStick as DPAD", CStickToDPAD));
+        menu.Append(new MenuEntry("\uE002 to send a notification", Overlay));
+        menu.Append(new MenuEntry("\uE054 = Camera button", ZLCamera));
+        menu.Append(new MenuEntry("\uE054 = First object button", ZLFirstButton));
+        menu.Append(new MenuEntry("\uE055 = Second Object button", ZRSecondButton));
+        menu.Append(new MenuEntry("CStick as \uE041", CStickToDPAD));
         menu.Append(new MenuEntry("\uE054 as \uE004", ZLToL));
         menu.Append(new MenuEntry("\uE055 as \uE005", ZRToR));
-        file.WriteLine("Run");
+        menu.Append(new MenuEntry ("This is an incredibly long entry. Stay here a little to make it scroll and see the entire text. \uE000 \uE001 \uE002 \uE003 \uE004 \uE005 \uE006 \uE040 \uE041 \uE042 \uE043 \uE044 \uE045"));
+        menu.Append(new MenuEntry("Display touch cursor", TouchCursor));
+        file.Close();
         // Launch menu and mainloop
         menu.Run();
 
