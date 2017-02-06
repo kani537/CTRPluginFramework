@@ -77,7 +77,7 @@ namespace CTRPluginFramework
         ** 0 : Success        
         ** Other : result value by FS
         *************************************************/
-        static int  Open(File &output, std::string path, int mode = READ | WRITE | CREATE);
+        static int  Open(File &output, std::string path, int mode = READ | WRITE);
         /*
         ** Close a file
         ** return value:     
