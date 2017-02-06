@@ -194,7 +194,7 @@ namespace CTRPluginFramework
 		}
         _isPaused = false;
 		while(R_FAILED(svcSetThreadPriority(gspThreadEventHandle, 0x3F)));
-		while(R_FAILED(svcSetThreadPriority(_mainThreadHandle, 0x3F)));
+		while(R_FAILED(svcSetThreadPriority(_mainThreadHandle, 0x31)));
 	}
 
     bool     Process::ProtectMemory(u32 addr, u32 size, int perm)
