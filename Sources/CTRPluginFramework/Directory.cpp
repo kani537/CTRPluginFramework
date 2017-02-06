@@ -3,6 +3,7 @@
 #include "ctrulib/result.h"
 #include <limits.h>
 #include <cstring>
+#include <algorithm>    
 
 namespace CTRPluginFramework
 {
@@ -261,6 +262,7 @@ namespace CTRPluginFramework
         }
         output._path = bakpath;
         output._handle = handle;
+        output._isListed = false;
 
         //output = Folders(bakpath, handle);// = Folders(bakpath, handle);
         return (res);
@@ -315,6 +317,50 @@ namespace CTRPluginFramework
     ** List files
     ***************/
     #define MAX_ENTRIES 20
+
+    bool SortByName(const FS_DirectoryEntry &lhs, const FS_DirectoryEntry &rhs) 
+    { 
+        u8      *left = (u8 *)lhs.name;
+        u8      *right = (u8 *)rhs.name;
+        u32     leftCode;
+        u32     rightCode;
+
+        do 
+        {
+            ssize_t  leftUnits = decode_utf8(&leftCode, left);
+            ssize_t  rightUnits = decode_utf8(&rightCode, right);
+
+            if (leftUnits == -1 || rightUnits == -1)
+                break;
+            left += leftUnits;
+            right += rightUnits;         
+        } while (leftCode == rightCode && leftCode != 0 && rightCode != 0);
+
+        return (leftCode < rightCode); 
+    }
+
+    int     Directory::_List(void)
+    {
+
+        FS_DirectoryEntry   entry;
+        Result              res;
+        u32                 units;
+        u32                 entriesNb = 0;
+        u8                  filename[PATH_MAX + 1] = {0};
+
+        while (R_SUCCEEDED(FSDIR_Read(_handle, &entriesNb, 1, &entry)))
+        {
+            if (entriesNb == 0)
+                return (0);
+
+            _list.push_back(entry);           
+        }
+
+        std::sort(_list.begin(), _list.end(), SortByName);
+
+        _isListed = true;
+        return (res);
+    }
     int     Directory::ListFiles(std::vector<std::string> &files, std::string pattern)
     {
         bool patternCheck = (pattern.size() > 0);
@@ -325,28 +371,12 @@ namespace CTRPluginFramework
         u32                 entriesNb = 0;
         u8                  filename[PATH_MAX + 1] = {0};
 
-       /* res = FSDIR_Read(_handle, &entriesNb, MAX_ENTRIES, entries);
-        if (R_FAILED(res))
-            return (res);
+        if (!_isListed)
+            _List();
 
-        for (int i = 0; i < entriesNb; i++)
+        for (int i = 0; i < _list.size(); i++)
         {
-            entry = &entries[i];
-            if (entry->attributes & 1)
-                continue;
-            std::memset(filename, 0, sizeof(filename));
-            units = utf16_to_utf8(filename, entry->name, PATH_MAX);
-            if (units < 0)
-                continue;
-            std::string fn = (char *)filename;
-            if (patternCheck && fn.find(pattern) == std::string::npos)
-                continue;
-            files.push_back(fn);
-        }*/
-        while (R_SUCCEEDED(FSDIR_Read(_handle, &entriesNb, 1, &entry)))
-        {
-            if (entriesNb == 0)
-                return (0);
+            entry = _list[i];
             //entry = &entries[i];
             if (entry.attributes & 1)
                 continue;
@@ -375,29 +405,13 @@ namespace CTRPluginFramework
         u32                 entriesNb = 0;
         u8                  filename[PATH_MAX + 1] = {0};
 
-        /*res = FSDIR_Read(_handle, &entriesNb, MAX_ENTRIES, entries);
-        if (R_FAILED(res))
-            return (res);
+        if (!_isListed)
+            _List();
 
-        for (int i = 0; i < entriesNb; i++)
+        for (int i = 0; i < _list.size(); i++)
         {
-            entry = &entries[i];
-            if (!(entry->attributes & 1))
-                continue;
-            std::memset(filename, 0, sizeof(filename));
-            units = utf16_to_utf8(filename, entry->name, PATH_MAX);
-            if (units < 0)
-                continue;
-            std::string fn = (char *)filename;
-            if (patternCheck && fn.find(pattern) == std::string::npos)
-                continue;
-            folders.push_back(fn);
-        }
-        return (0);*/
-        while (R_SUCCEEDED(FSDIR_Read(_handle, &entriesNb, 1, &entry)))
-        {
-            if (entriesNb == 0)
-                return (0);
+            entry = _list[i];
+
             if (!(entry.attributes & 1))
                 continue;
             std::memset(filename, 0, sizeof(filename));
