@@ -90,6 +90,16 @@ namespace CTRPluginFramework
                     }
                     break;
                 }
+                case Key::DPadLeft:
+                {
+                    _currentLine = 0;
+                    break;
+                }
+                case Key::DPadRight:
+                {
+                    _currentLine = std::max((int)_newline.size() - 1, 0);
+                    break;
+                }
                 case Key::CStickUp:
                 {
                     if (_inputClock.HasTimePassed(Milliseconds(100)))
