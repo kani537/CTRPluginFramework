@@ -277,14 +277,13 @@ namespace CTRPluginFramework
         
         if (!(str && *str))
             return (x);
-        /*static const char *_end = "\0";
-        if (end == nullptr)
-            end = _end;*/
 
-        // Correct posY
-        //int y = posY + (_rowSize[_target] - 240);
         lineCount = 1;
         xLimits = std::min(xLimits, (_target == TOP ? 400 : 320));
+
+        // Skip UTF8 sig
+        if (str[0] == 0xEF && str[1] == 0xBB && str[2] == 0xBF)
+            str += 3;
 
         do
         {
@@ -298,7 +297,7 @@ namespace CTRPluginFramework
                 }
                 else*/ break;
             }
-            if (*str == '\n')
+            if (*str == '\n' || *str == '\r')
             {
                 /*x = posX;
                 lineCount++;    
