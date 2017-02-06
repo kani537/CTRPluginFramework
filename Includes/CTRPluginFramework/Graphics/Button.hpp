@@ -29,7 +29,8 @@ namespace CTRPluginFramework
         _callback(callback), 
         _content(content), 
         _uiProperty(rect),
-        _icon(icon)
+        _icon(icon),
+        _isReady(true)
         {
             // Black
             borderColor = Color(165, 165, 165);
@@ -50,7 +51,7 @@ namespace CTRPluginFramework
         }
         ~Button(){};
 
-        virtual bool    operator ()(Args&... args)
+        bool    operator ()(Args&... args)
         {
             if (_execute)
             {
@@ -61,8 +62,8 @@ namespace CTRPluginFramework
             return (false);
         }
 
-        virtual void    Draw(void);
-        virtual void    Update(bool isTouchDown, IntVector touchPos);
+        void    Draw(void);
+        void    Update(bool isTouchDown, IntVector touchPos);
 
         Color           borderColor;
         Color           idleColor;
@@ -83,6 +84,7 @@ namespace CTRPluginFramework
         float                   _textSize;        
         bool                    _isPressed;
         bool                    _execute;
+        bool                    _isReady;
     };
 
     /*
@@ -154,8 +156,6 @@ namespace CTRPluginFramework
     template <class C, class T, class... Args>
     void    Button<C,T, Args...>::Update(bool isTouchDown, IntVector touchPos)
     {
-        static bool isReady = true;
-
         // Check if is pressed
         _isPressed = false;
 
@@ -165,13 +165,13 @@ namespace CTRPluginFramework
         }
 
         // If is ready, then execute the function
-        if (_isPressed && isReady)
+        if (_isPressed && _isReady)
         {
-            isReady = false;
+            _isReady = false;
         }
-        if (!_isPressed && !isReady)
+        if (!_isPressed && !_isReady)
         {
-            isReady = true;
+            _isReady = true;
             _execute = true;
         }
     }

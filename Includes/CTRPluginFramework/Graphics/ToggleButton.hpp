@@ -47,6 +47,7 @@ namespace CTRPluginFramework
         bool            _state;
         bool            _execute;
         bool            _enabled;
+        Clock           _clock;
     };
 
     #define TToggleButton ToggleButton<C, T, Args...>
@@ -78,15 +79,13 @@ namespace CTRPluginFramework
     template <class C, class T, class ...Args>
     void    TToggleButton::Update(bool isTouchdown, IntVector touchPos)
     {
-        static Clock clock;
-
         if (!_enabled)
             return;
-        if (clock.HasTimePassed(Seconds(0.5f)) && isTouchdown && _uiProperties.Contains(touchPos))
+        if (_clock.HasTimePassed(Seconds(0.5f)) && isTouchdown && _uiProperties.Contains(touchPos))
         {
             _state = !_state;
             _execute = true;
-            clock.Restart();
+            _clock.Restart();
         }
     }
 
