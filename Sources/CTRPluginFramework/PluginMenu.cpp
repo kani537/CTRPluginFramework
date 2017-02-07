@@ -397,7 +397,7 @@ namespace CTRPluginFramework
         {
             case Event::KeyDown:
             {
-                if (inputClock.HasTimePassed(Milliseconds(400)))
+                if (fastScroll.HasTimePassed(Milliseconds(800)) && inputClock.HasTimePassed(Milliseconds(400)))
                 switch (event.key.code)
                 {
                     /*
@@ -429,6 +429,29 @@ namespace CTRPluginFramework
             {
                 switch (event.key.code)
                 {
+                    /*
+                    ** Selector
+                    **************/
+                    case Key::CPadUp:
+                    case Key::DPadUp:
+                    {
+                        if (_selector > 0)
+                            _selector--;
+                        else
+                            _selector = std::max((int)folder->ItemsCount() - 1, 0);
+                        fastScroll.Restart();
+                        break;
+                    }
+                    case Key::CPadDown:
+                    case Key::DPadDown:
+                    {
+                        if (_selector < folder->ItemsCount() - 1)
+                            _selector++;
+                        else
+                            _selector = 0;
+                        fastScroll.Restart();
+                        break;
+                    }
                     /*
                     ** Trigger entry
                     ** Top Screen
@@ -578,7 +601,7 @@ namespace CTRPluginFramework
         **************/
         if (_selector >= folder->ItemsCount())
             return;
-        
+
         if (folder->_items[_selector]->_type == MenuType::Entry)
         {
             MenuEntry *entry = reinterpret_cast<MenuEntry *>(folder->_items[_selector]);
