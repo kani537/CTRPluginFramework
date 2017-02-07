@@ -97,7 +97,7 @@ namespace CTRPluginFramework
                 }
                 case Key::DPadRight:
                 {
-                    _currentLine = std::max((int)_newline.size() - 1, 0);
+                    _currentLine = std::max((int)(_newline.size() - _maxLines), 0);
                     break;
                 }
                 case Key::CStickUp:
