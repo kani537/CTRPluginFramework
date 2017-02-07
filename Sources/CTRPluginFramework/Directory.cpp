@@ -343,7 +343,6 @@ namespace CTRPluginFramework
     {
 
         FS_DirectoryEntry   entry;
-        Result              res;
         u32                 units;
         u32                 entriesNb = 0;
         u8                  filename[PATH_MAX + 1] = {0};
@@ -351,15 +350,37 @@ namespace CTRPluginFramework
         while (R_SUCCEEDED(FSDIR_Read(_handle, &entriesNb, 1, &entry)))
         {
             if (entriesNb == 0)
-                return (0);
+                break;
 
             _list.push_back(entry);           
         }
 
-        std::sort(_list.begin(), _list.end(), SortByName);
+        if (_list.empty())
+            return (-1);
+        
+        std::sort(_list.begin(), _list.end(), [](const FS_DirectoryEntry &lhs, const FS_DirectoryEntry &rhs )
+        {
+            u8      *left = (u8 *)lhs.name;
+            u8      *right = (u8 *)rhs.name;
+            u32     leftCode;
+            u32     rightCode;
+
+            do 
+            {
+                ssize_t  leftUnits = decode_utf8(&leftCode, left);
+                ssize_t  rightUnits = decode_utf8(&rightCode, right);
+
+                if (leftUnits == -1 || rightUnits == -1)
+                    break;
+                left += leftUnits;
+                right += rightUnits;         
+            } while (leftCode == rightCode && leftCode != 0 && rightCode != 0);
+
+            return (leftCode < rightCode);
+        });
 
         _isListed = true;
-        return (res);
+        return (0);
     }
     int     Directory::ListFiles(std::vector<std::string> &files, std::string pattern)
     {
