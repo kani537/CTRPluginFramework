@@ -36,7 +36,7 @@ namespace CTRPluginFramework
         void    _RenderTop(void);
         void    _RenderBottom(void);
         void    _ProcessEvent(Event &event);
-        void    _Update(Time delta);
+        void    _Update(Time delta);    
 
         void    _TriggerEntry(void);
         void    _StarItem(void);

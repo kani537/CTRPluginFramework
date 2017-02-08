@@ -22,8 +22,10 @@
 #include "CTRPluginFramework/Process.hpp"
 #include "CTRPluginFramework/Graphics/Icon.hpp"
 #include "CTRPluginFramework/Graphics/OSD.hpp"
+#include "CTRPluginFramework/Graphics/BMPImage.hpp"
+#include "CTRPluginFramework/Preferences.hpp"
 
-#define SHOWFPS 0
+#define SHOWFPS 1
 
 namespace CTRPluginFramework
 {
@@ -236,14 +238,21 @@ namespace CTRPluginFramework
         static Color dimGrey(15, 15, 15);
         static Color silver(160, 160, 160);
         static IntRect background(30, 20, 340, 200);
+        //static BMPImage image("top.bmp");
 
         int   posY = 25;
         int   posX = 40;
         
 
         // Draw background
-        Renderer::DrawRect2(background, black, dimGrey);
-        Renderer::DrawRect(32, 22, 336, 196, blank, false);
+        if (Preferences::topBackgroundImage->IsLoaded())
+            Preferences::topBackgroundImage->Draw(background.leftTop);
+        else
+        {
+            Renderer::DrawRect2(background, black, dimGrey);
+            Renderer::DrawRect(32, 22, 336, 196, blank, false);            
+        }
+
 
         MenuFolder *folder = _starMode ? _starred : _folder;
 
@@ -325,8 +334,14 @@ namespace CTRPluginFramework
         Renderer::SetTarget(BOTTOM);
 
         // Background
-        Renderer::DrawRect2(background, black, dimGrey);
-        Renderer::DrawRect(22, 22, 276, 196, blank, false);
+        if (Preferences::bottomBackgroundImage->IsLoaded())
+            Preferences::bottomBackgroundImage->Draw(background.leftTop);
+        else
+        {
+            Renderer::DrawRect2(background, black, dimGrey);
+            Renderer::DrawRect(22, 22, 276, 196, blank, false);            
+        }
+
 
 
         int posY = 205;

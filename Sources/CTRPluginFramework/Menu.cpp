@@ -3,6 +3,7 @@
 #include "CTRPluginFramework/Graphics/Renderer.hpp"
 #include "CTRPluginFramework/Controller.hpp"
 #include "CTRPluginFramework/Clock.hpp"
+#include "CTRPluginFramework/Preferences.hpp"
 
 #include <algorithm>
 
@@ -50,8 +51,14 @@ namespace CTRPluginFramework
         int   posX = 40;
 
         // Draw background
-        Renderer::DrawRect2(_background, black, greyblack);
-        Renderer::DrawRect(_border, blank, false);
+        if (Preferences::topBackgroundImage->IsLoaded() 
+            && (Preferences::topBackgroundImage->GetDimensions() <= _background.size))
+            Preferences::topBackgroundImage->Draw(_background.leftTop);
+        else
+        {
+            Renderer::DrawRect2(_background, black, greyblack);
+            Renderer::DrawRect(_border, blank, false);
+        }
 
         // Draw title
         int width = Renderer::DrawSysString(_folder->name.c_str(), posX, posY, XMAX, limegreen);

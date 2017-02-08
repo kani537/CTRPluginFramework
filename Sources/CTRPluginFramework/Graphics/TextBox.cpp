@@ -3,6 +3,7 @@
 #include "types.h"
 #include "ctrulib/util/utf.h"
 #include "ctrulib/font.h"
+#include "CTRPluginFramework/Preferences.hpp"
 
 #include <cstdio>
 
@@ -150,8 +151,15 @@ namespace CTRPluginFramework
         Color grey = Color(15, 15, 15);
 
         // Draw Background
-        Renderer::DrawRect2(_box, black, grey);
-        Renderer::DrawRect(_border, borderColor, false);
+        if (Preferences::topBackgroundImage->IsLoaded() 
+            && (Preferences::topBackgroundImage->GetDimensions() <= _box.size))
+            Preferences::topBackgroundImage->Draw(_box.leftTop);
+        else
+        {
+            Renderer::DrawRect2(_box, black, grey);
+            Renderer::DrawRect(_border, borderColor, false);            
+        }
+
 
         int posX = _box.leftTop.x + 5;
         int posY = _box.leftTop.y + 5;
