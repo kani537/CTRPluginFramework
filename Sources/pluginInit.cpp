@@ -5,6 +5,7 @@
 #include "CTRPluginFramework/Directory.hpp"
 #include "CTRPluginFramework/arm11kCommands.h"
 #include "CTRPluginFramework/Graphics/OSD.hpp"
+#include "CTRPluginFramework/Preferences.hpp"
 
 extern "C" void     abort(void);
 extern "C" void     initSystem();
@@ -49,6 +50,7 @@ namespace CTRPluginFramework
 
         // Correction for some games like Kirby
         u64 tid = Process::GetTitleID();
+        
         if (tid == 0x0004000000183600)
             Sleep(Seconds(5));
 
@@ -56,7 +58,7 @@ namespace CTRPluginFramework
         initSystem();
 
         // Create plugin's main thread
-        mainThread = threadCreate(ThreadInit, (void *)threadStack, 0x4000, 0x3F, -2, 0);
+        mainThread = threadCreate(ThreadInit, (void *)threadStack, 0x4000, 0x18, -2, 0);
 
         svcCreateEvent(&_keepEvent, RESET_ONESHOT);
 
@@ -113,12 +115,12 @@ namespace CTRPluginFramework
     {
         CTRPluginFramework::Initialize();
 
+        // Reduce Priority
+        Process::Play(true);
+
         // Init sdmcArchive
         FS_Path sdmcPath = { PATH_EMPTY, 1, (u8*)"" };
         FSUSER_OpenArchive(&_sdmcArchive, ARCHIVE_SDMC, sdmcPath);
-
-        // Reduce Priority
-        Process::Play(true);
 
         // Set current working directory
         u64     tid = Process::GetTitleID();
@@ -136,6 +138,8 @@ namespace CTRPluginFramework
         if (tid != 0x0004000000183600)
             Sleep(Seconds(5));
 
+        // Initialize Globals settings
+        Preferences::Initialize();
         // Start plugin
         int ret = main();
 
@@ -156,7 +160,7 @@ namespace CTRPluginFramework
 
     int   LaunchMainThread(int arg)
     {
-        svcCreateThread(&keepThreadHandle, KeepThreadMain, 0, &keepThreadStack[0x1000], 0x20, -2);
+        svcCreateThread(&keepThreadHandle, KeepThreadMain, 0, &keepThreadStack[0x1000], 0x1A, -2);
         return (0);
     }
 
