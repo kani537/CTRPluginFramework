@@ -147,10 +147,13 @@ namespace CTRPluginFramework
         posY += height;
         u8 *dst = _screen->GetLeftFramebuffer(posX + (width - tier), posY);
         u8 *rtier = dst;
+        Color black = Color(60, 60, 60);
         // Right tier
         for (int i = tier; i > 0; --i)
         {
             l.Fade(fading);
+            if (l <= black)
+                break;
             Color::ToFramebuffer(rtier, l);
             j++;
             if (j == pitch)
@@ -159,6 +162,7 @@ namespace CTRPluginFramework
                 j = 0;
             }
             rtier += rowstride;
+
         }
 
         l = Color(255, 255, 255);
@@ -174,6 +178,8 @@ namespace CTRPluginFramework
         for (int i = tier; i > 0; --i)
         {
             l.Fade(fading);
+            if (l <= black)
+                break;
             Color::ToFramebuffer(dst, l);
             dst -= rowstride;
             j++;

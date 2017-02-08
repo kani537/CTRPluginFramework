@@ -86,6 +86,7 @@ namespace CTRPluginFramework
         friend class    Icon;
 
         friend class    TextBox;
+        friend class    BMPImage;
 
         // Initalize Renderer
         static void     Initialize(void);
