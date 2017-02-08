@@ -66,7 +66,7 @@ namespace CTRPluginFramework
         ** 1 : File exists
         ** Other : result value by FS
         *************************************************/
-        static int  IsExists(std::string path);
+        static int  Exists(std::string path);
         /*
         ** Open a file
         ** output = resulting file object

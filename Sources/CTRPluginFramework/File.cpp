@@ -67,7 +67,7 @@ namespace CTRPluginFramework
         return (res);
     }
 
-    int     File::IsExists(std::string path)
+    int     File::Exists(std::string path)
     {
         FS_Path fsPath = Directory::_SdmcUtf16Path(path);
 
