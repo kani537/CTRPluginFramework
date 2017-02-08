@@ -104,6 +104,13 @@ namespace CTRPluginFramework
         return (left);
     }
 
+    template <typename T>
+    bool operator <= (Vector<T> &left, Vector<T> &right)
+    {
+        return (left.x <= right.x
+            && left.y <= right.y);
+    } 
+
     typedef Vector<unsigned int> UIntVector;
     typedef Vector<int> IntVector;
     typedef Vector<float> FloatVector;
