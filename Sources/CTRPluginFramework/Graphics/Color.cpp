@@ -264,6 +264,20 @@ namespace CTRPluginFramework
             || (a != right.a));
     }
 
+    bool Color::operator < (const Color &right) const
+    {
+        return (( r < right.r)
+            && (b < right.b)
+            && (g < right.g));
+    }
+
+    bool Color::operator <= (const Color &right) const
+    {
+        return (( r <= right.r)
+            && (b <= right.b)
+            && (g <= right.g));
+    }
+
     Color Color::operator+(const Color& right) const
     {
         u8 _r(std::min(r + right.r, 255));

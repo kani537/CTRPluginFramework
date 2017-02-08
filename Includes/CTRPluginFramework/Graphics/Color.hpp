@@ -39,6 +39,8 @@ namespace CTRPluginFramework
 
         bool operator == (const Color &right) const;
         bool operator != (const Color &right) const;
+        bool operator < (const Color &right) const;
+        bool operator <= (const Color &right) const;
         Color operator + (const Color &right) const;
         Color operator - (const Color &right) const;
         Color operator * (const Color &right) const;
