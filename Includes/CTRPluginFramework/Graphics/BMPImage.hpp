@@ -2,12 +2,17 @@
 #define CTRPLUGINFRAMEWORK_BMPIMAHE_HPP
 
 #include "types.h"
+#include "CTRPluginFramework/Graphics/Color.hpp"
+#include "CTRPluginFramework/Graphics/Renderer.hpp"
+#include "CTRPluginFramework/Screen.hpp"
 #include "CTRPluginFramework/Graphics/OSD.hpp"
 #include "CTRPluginFramework/File.hpp"
+#include "CTRPluginFramework/Vector.hpp"
 
 #include <string>
 #include <vector>
 #include <cstring>
+#include <cstdio>
 
 namespace CTRPluginFramework
 {
@@ -45,7 +50,8 @@ namespace CTRPluginFramework
         _height(0),
         _rowIncrement(0),
         _bytesPerPixel(0),
-        _channelMode(BGR_Mode)
+        _channelMode(BGR_Mode),
+        _loaded(false)
         {
             LoadBitmap();
             RGBtoBGR();
@@ -62,6 +68,15 @@ namespace CTRPluginFramework
             CreateBitmap();
         }
 
+        bool IsLoaded(void)
+        {
+            return (_loaded);
+        }
+
+        IntVector &GetDimensions(void)
+        {
+            return (_dimensions);
+        }
         /*bitmap_image(const & image) : 
         _fileName_(image.fileName),
          width_(image.width_),
@@ -103,6 +118,40 @@ namespace CTRPluginFramework
        inline void Clear(const unsigned char v = 0x00)
        {
           std::fill(_data.begin(), _data.end(), v);
+       }
+
+       void     Draw(IntVector point)
+       {
+            Draw(point.x, point.y);
+       }
+
+       void     Draw(int x, int y)
+       {    
+            bool topScreen = Renderer::_target == 1;
+            Screen *scr = topScreen ? Screen::Top : Screen::Bottom;
+
+            int posX = topScreen ? x + (340 - _width) / 2 : x + (280 - _width) / 2;
+            int posY = y + (200 - _height) / 2;
+
+            
+            u8 *img = (u8 *)data();
+            int width = _width;
+            int height = _height;
+            int stride = scr->GetStride();
+
+            for (int y = 0; y < height; y++)
+            {
+                u8 *framebuf = scr->GetLeftFramebuffer(posX, posY + y);
+                for (int x = 0; x < width; x++)
+                {
+                    Color imgc = Color::FromMemory(img);
+                    Color::ToFramebuffer(framebuf, imgc);
+                    framebuf += stride;
+                    img += 3;
+                }
+            }
+
+
        }
 /*
        inline unsigned char RedChannel(const unsigned int x, const unsigned int y) const
@@ -893,6 +942,17 @@ namespace CTRPluginFramework
             _width  = bih.width;
             _height = bih.height;
 
+            if (_width > 340 || _height > 200)
+            {
+                bfh.Clear();
+                bih.Clear();
+
+                file.Close();   
+
+                OSD::Notify("BMP Error: file should not be higher than 340px * 200px", red, black);
+                return;             
+            }
+            _dimensions = IntVector(_width, _height);
             _bytesPerPixel = bih.bit_count >> 3;
 
             unsigned int padding = (4 - ((3 * _width) % 4)) % 4;
@@ -924,6 +984,7 @@ namespace CTRPluginFramework
                 file.Read(paddingData, padding);
             }
             file.Close();
+            _loaded = true;
        }
 
        template <typename T>
@@ -944,6 +1005,8 @@ namespace CTRPluginFramework
        unsigned int     _bytesPerPixel;
        ChannelMode      _channelMode;
        std::vector<unsigned char>   _data;
+       IntVector        _dimensions;
+       bool             _loaded;
     };
 }
 
