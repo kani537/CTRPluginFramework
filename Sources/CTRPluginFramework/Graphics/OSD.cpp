@@ -93,27 +93,19 @@ namespace CTRPluginFramework
         if (*(float *)(0x1FF81080) > 0.f)
         {
             {
-                for (int i = 0; i < 10; i++)
+                for (int x = -2; x < 0; x++)
                 {
-                    u8  *framebuf0 = Screen::Top->GetLeftFramebuffer(posX - 1, posY + i);
-                    u8  *framebuf1 = Screen::Top->GetLeftFramebuffer(posX - 1, posY + i, true);
-                    u8  *framebuf2 = Screen::Top->GetRightFramebuffer(posX - 11, posY + i);
-                    u8  *framebuf3 = Screen::Top->GetRightFramebuffer(posX - 11, posY + i, true);
-                    //Color bg =  Color::FromFramebuffer(framebuf0);
-                    //bg = bg.Blend(background, BlendMode::Alpha);
-                    Color::ToFramebuffer(framebuf0, bg);
-
-                    //bg =  Color::FromFramebuffer(framebuf1);
-                    //bg = bg.Blend(background, BlendMode::Alpha);
-                    Color::ToFramebuffer(framebuf1, bg);
-
-                    //bg =  Color::FromFramebuffer(framebuf2);
-                    //bg = bg.Blend(background, BlendMode::Alpha);                    
-                    Color::ToFramebuffer(framebuf2, bg);
-
-                    //bg =  Color::FromFramebuffer(framebuf3);
-                    //bg = bg.Blend(background, BlendMode::Alpha);
-                    Color::ToFramebuffer(framebuf3, bg);                  
+                    for (int i = 0; i < 10; i++)
+                    {
+                        u8  *framebuf0 = Screen::Top->GetLeftFramebuffer(posX + x, posY + i);
+                        u8  *framebuf1 = Screen::Top->GetLeftFramebuffer(posX + x, posY + i, true);                            
+                        u8  *framebuf2 = Screen::Top->GetRightFramebuffer(posX - 11, posY + i);
+                        u8  *framebuf3 = Screen::Top->GetRightFramebuffer(posX - 11, posY + i, true);
+                        Color::ToFramebuffer(framebuf0, bg);
+                        Color::ToFramebuffer(framebuf1, bg);
+                        Color::ToFramebuffer(framebuf2, bg);
+                        Color::ToFramebuffer(framebuf3, bg);            
+                    }                    
                 }
             }
             while (*str)
@@ -133,41 +125,17 @@ namespace CTRPluginFramework
                     {
                         if ((charPos >> xx) & 1)
                         {
-                           // Color bg =  Color::FromFramebuffer(framebuf0);
-                           // bg = bg.Blend(foreground, BlendMode::Alpha);
                             Color::ToFramebuffer(framebuf0, fg);
-
-                           // bg =  Color::FromFramebuffer(framebuf1);
-                           // bg = bg.Blend(foreground, BlendMode::Alpha);
-                            Color::ToFramebuffer(framebuf1, fg);
-
-                            //bg =  Color::FromFramebuffer(framebuf2);
-                            //bg = bg.Blend(foreground, BlendMode::Alpha);                    
+                            Color::ToFramebuffer(framebuf1, fg);                   
                             Color::ToFramebuffer(framebuf2, fg);
-
-                            //bg =  Color::FromFramebuffer(framebuf3);
-                           // bg = bg.Blend(foreground, BlendMode::Alpha);
                             Color::ToFramebuffer(framebuf3, fg);
-                            //_DrawPixel(posX + x, posY + yy, fg);
                         }
                         else
                         {
-                            //Color bg =  Color::FromFramebuffer(framebuf0);
-                            //bg = bg.Blend(background, BlendMode::Alpha);
                             Color::ToFramebuffer(framebuf0, bg);
-
-                           // bg =  Color::FromFramebuffer(framebuf1);
-                            //bg = bg.Blend(background, BlendMode::Alpha);
-                            Color::ToFramebuffer(framebuf1, bg);
-
-                            //bg =  Color::FromFramebuffer(framebuf2);
-                            //bg = bg.Blend(background, BlendMode::Alpha);                    
+                            Color::ToFramebuffer(framebuf1, bg);                    
                             Color::ToFramebuffer(framebuf2, bg);
-
-                            //bg =  Color::FromFramebuffer(framebuf3);
-                           // bg = bg.Blend(background, BlendMode::Alpha);
                             Color::ToFramebuffer(framebuf3, bg);
-                            //_DrawPixel(posX + x, posY + yy, bg);
                         }
                         framebuf0 += stride;
                         framebuf1 += stride;
@@ -182,18 +150,17 @@ namespace CTRPluginFramework
         else
         {
             {
-                for (int i = 0; i < 10; i++)
+                for (int x = -2; x < 0; x++)
                 {
-                    u8  *framebuf0 = Screen::Top->GetLeftFramebuffer(posX - 1, posY + i);
-                    u8  *framebuf1 = Screen::Top->GetLeftFramebuffer(posX - 1, posY + i, true);
-                    //Color bg =  Color::FromFramebuffer(framebuf0);
-                    //bg = bg.Blend(background, BlendMode::Alpha);
-                    Color::ToFramebuffer(framebuf0, bg);
-
-                    //bg =  Color::FromFramebuffer(framebuf1);
-                    //bg = bg.Blend(background, BlendMode::Alpha);
-                    Color::ToFramebuffer(framebuf1, bg);              
+                    for (int i = 0; i < 10; i++)
+                    {
+                        u8  *framebuf0 = Screen::Top->GetLeftFramebuffer(posX + x, posY + i);
+                        u8  *framebuf1 = Screen::Top->GetLeftFramebuffer(posX + x, posY + i, true);
+                        Color::ToFramebuffer(framebuf0, bg);
+                        Color::ToFramebuffer(framebuf1, bg);              
+                    }                    
                 }
+
             }
             while (*str)
             {
@@ -211,25 +178,13 @@ namespace CTRPluginFramework
                     {
                         if ((charPos >> xx) & 1)
                         {
-                            //Color bg =  Color::FromFramebuffer(framebuf0);
-                            //bg = bg.Blend(foreground, BlendMode::Alpha);
                             Color::ToFramebuffer(framebuf0, fg);
-
-                            //bg =  Color::FromFramebuffer(framebuf1);
-                            //bg = bg.Blend(foreground, BlendMode::Alpha);
                             Color::ToFramebuffer(framebuf1, fg);
-                            //_DrawPixel(posX + x, posY + yy, fg);
                         }
                         else
                         {
-                            //Color bg =  Color::FromFramebuffer(framebuf0);
-                            //bg = bg.Blend(background, BlendMode::Alpha);
                             Color::ToFramebuffer(framebuf0, bg);
-
-                            //bg =  Color::FromFramebuffer(framebuf1);
-                            //bg = bg.Blend(background, BlendMode::Alpha);
                             Color::ToFramebuffer(framebuf1, bg); 
-                            //_DrawPixel(posX + x, posY + yy, bg);
                         }
                         framebuf0 += stride;
                         framebuf1 += stride;
@@ -238,8 +193,7 @@ namespace CTRPluginFramework
                 str++;
                 posX += 6;       
             } 
-        }
-        
+        }        
         posY += 15;
     }
 
@@ -406,5 +360,4 @@ namespace CTRPluginFramework
             }
         }
     }
-
 }
