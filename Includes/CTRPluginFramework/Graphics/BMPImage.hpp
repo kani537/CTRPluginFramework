@@ -33,13 +33,16 @@ namespace CTRPluginFramework
             RedPlane   = 2
         };
 
+        ~BMPImage(){}
+
         BMPImage(void) : 
         _fileName(""),
         _width(0),
         _height(0),
         _rowIncrement(0),
         _bytesPerPixel(3),
-        _channelMode(BGR_Mode)
+        _channelMode(BGR_Mode),
+        _loaded(false)
         {
 
         }
@@ -63,7 +66,8 @@ namespace CTRPluginFramework
         _height(height),
         _rowIncrement(0),
         _bytesPerPixel(3),
-        _channelMode(BGR_Mode)
+        _channelMode(BGR_Mode),
+        _loaded(false)
         {
             CreateBitmap();
         }
@@ -294,42 +298,42 @@ namespace CTRPluginFramework
              image.copy_from(tile, 0, 2 * height_);
           }
        }*/
-    /*
-       inline unsigned int width() const
+    
+       inline unsigned int Width(void) const
        {
-          return width_;
+          return _width;
        }
 
-       inline unsigned int height() const
+       inline unsigned int Height(void) const
        {
-          return height_;
+          return _height;
        }
 
-       inline unsigned int bytes_per_pixel() const
+       inline unsigned int BytesPerPixel(void) const
        {
-          return bytes_per_pixel_;
+          return _bytesPerPixel;
        }
 
-       inline unsigned int pixel_count() const
+       inline unsigned int PixelCount(void) const
        {
-          return width_ *  height_;
+          return _width *  _height;
        }
 
-       inline void setwidth_height(const unsigned int width,
+       inline void SetWidthHeight(const unsigned int width,
                                    const unsigned int height,
                                    const bool clear = false)
        {
-          data_.clear();
-          width_  = width;
-          height_ = height;
+          _data.clear();
+          _width  = width;
+          _height = height;
 
-          create_bitmap();
+          CreateBitmap();
 
           if (clear)
           {
-             std::fill(data_.begin(),data_.end(),0x00);
+             std::fill(_data.begin(), _data.end(), 0x00);
           }
-       }*/
+       }
 
         void    SaveImage(const std::string &fileName) const
         {
@@ -622,16 +626,16 @@ namespace CTRPluginFramework
                 }
              }
           }
-       }
-    /*
-       inline void upsample(bitmap_image& dest)
+       }*/
+    
+       inline void UpSample(BMPImage &dest)
        {
           /*
              2x up-sample of original image.
           */
-    /*
-          dest.setwidth_height(2 * width_ ,2 * height_);
-          dest.clear();
+    
+          dest.SetWidthHeight(2 * _width , 2 * _height);
+          dest.Clear();
 
           const unsigned char* s_itr[3];
                 unsigned char*  itr1[3];
@@ -645,31 +649,31 @@ namespace CTRPluginFramework
           itr1[1] = dest.data() + 1;
           itr1[2] = dest.data() + 2;
 
-          itr2[0] = dest.data() + dest.row_increment_ + 0;
-          itr2[1] = dest.data() + dest.row_increment_ + 1;
-          itr2[2] = dest.data() + dest.row_increment_ + 2;
+          itr2[0] = dest.data() + dest._rowIncrement + 0;
+          itr2[1] = dest.data() + dest._rowIncrement + 1;
+          itr2[2] = dest.data() + dest._rowIncrement + 2;
 
-          for (unsigned int j = 0; j < height_; ++j)
+          for (unsigned int j = 0; j < _height; ++j)
           {
-             for (unsigned int i = 0; i < width_; ++i)
+             for (unsigned int i = 0; i < _width; ++i)
              {
-                for (unsigned int k = 0; k < bytes_per_pixel_; s_itr[k] += bytes_per_pixel_, ++k)
+                for (unsigned int k = 0; k < _bytesPerPixel; s_itr[k] += _bytesPerPixel, ++k)
                 {
-                   *(itr1[k]) = *(s_itr[k]); itr1[k] += bytes_per_pixel_;
-                   *(itr1[k]) = *(s_itr[k]); itr1[k] += bytes_per_pixel_;
+                   *(itr1[k]) = *(s_itr[k]); itr1[k] += _bytesPerPixel;
+                   *(itr1[k]) = *(s_itr[k]); itr1[k] += _bytesPerPixel;
 
-                   *(itr2[k]) = *(s_itr[k]); itr2[k] += bytes_per_pixel_;
-                   *(itr2[k]) = *(s_itr[k]); itr2[k] += bytes_per_pixel_;
+                   *(itr2[k]) = *(s_itr[k]); itr2[k] += _bytesPerPixel;
+                   *(itr2[k]) = *(s_itr[k]); itr2[k] += _bytesPerPixel;
                 }
              }
 
-             for (unsigned int k = 0; k < bytes_per_pixel_; ++k)
+             for (unsigned int k = 0; k < _bytesPerPixel; ++k)
              {
-                itr1[k] += dest.row_increment_;
-                itr2[k] += dest.row_increment_;
+                itr1[k] += dest._rowIncrement;
+                itr2[k] += dest._rowIncrement;
              }
           }
-       }*/
+       }
 
        /*inline unsigned int offset(const color_plane color)
        {
@@ -709,6 +713,37 @@ namespace CTRPluginFramework
              std::swap(*(itr + 0),*(itr + 2));
           }
        }
+
+        inline bool     Region(const u32 &x, const u32 &y,
+                               const u32 &width, const u32 &height,
+                               BMPImage &destImage)
+        {
+            if ((x + width) > _width)
+                return (false);
+            if ((y + height) > _height)
+                return (false);
+
+            if ((destImage._width< _width) || (destImage._height < _height))
+                destImage.SetWidthHeight(width, height);
+
+            for (u32 r = 0; r < height; ++r)
+            {
+                u8 *itr1     = Row(r + y) + x * _bytesPerPixel;
+                u8 *itr1_end = itr1 + (width * _bytesPerPixel);
+                u8 *itr2  = destImage.Row(r);
+
+                std::copy(itr1, itr1_end, itr2);
+            }
+            destImage._loaded = true;
+            return (true);
+        }
+
+        inline bool RoiFromCenter(const u32 cx, const u32 cy,
+                                  const u32 &width, const u32 &height,
+                                  BMPImage &destImage)
+        {
+            return (Region(cx - (width / 2), cy - (height / 2), width, height, destImage));
+        }
 
     private:
 
@@ -803,24 +838,28 @@ namespace CTRPluginFramework
        }*/
 
         template <typename T>
-        inline void ReadFromFile(File &file, T &t)
+        inline int ReadFromFile(File &file, T &t)
         {
-            file.Read(reinterpret_cast<char *>(&t), sizeof(T));
+            return (file.Read(reinterpret_cast<char *>(&t), sizeof(T)));
         }
 
         template <typename T>
-        inline void WriteToFile(File &file, const T &t) const
+        inline int WriteToFile(File &file, const T &t) const
         {
-            file.Write(reinterpret_cast<const char *>(&t), sizeof(T));
+            return (file.Write(reinterpret_cast<const char *>(&t), sizeof(T)));
         }
 
-        inline void     ReadBFH(File &file, BitmapFileHeader &bfh)
+        inline int     ReadBFH(File &file, BitmapFileHeader &bfh)
         {
-            ReadFromFile(file, bfh.type);
-            ReadFromFile(file, bfh.size);
-            ReadFromFile(file, bfh.reserved1);
-            ReadFromFile(file, bfh.reserved2);
-            ReadFromFile(file, bfh.off_bits);
+            if (ReadFromFile(file, bfh.type)) goto error;
+            if (ReadFromFile(file, bfh.size)) goto error;
+            if (ReadFromFile(file, bfh.reserved1)) goto error;
+            if (ReadFromFile(file, bfh.reserved2)) goto error;
+            if (ReadFromFile(file, bfh.off_bits)) goto error;
+
+            return (0);
+        error:
+            return (-1);
         }
 
         inline void     WriteBFH(File &file, const BitmapFileHeader &bfh) const
@@ -832,19 +871,23 @@ namespace CTRPluginFramework
             WriteToFile(file, bfh.off_bits);
         }
 
-        inline void     ReadBIH(File &file, BitmapInformationHeader &bih)
+        inline int     ReadBIH(File &file, BitmapInformationHeader &bih)
         {
-            ReadFromFile(file, bih.size            );
-            ReadFromFile(file, bih.width           );
-            ReadFromFile(file, bih.height          );
-            ReadFromFile(file, bih.planes          );
-            ReadFromFile(file, bih.bit_count       );
-            ReadFromFile(file, bih.compression     );
-            ReadFromFile(file, bih.size_image      );
-            ReadFromFile(file, bih.x_pels_per_meter);
-            ReadFromFile(file, bih.y_pels_per_meter);
-            ReadFromFile(file, bih.clr_used        );
-            ReadFromFile(file, bih.clr_important   );
+            if (ReadFromFile(file, bih.size            )) goto error;
+            if (ReadFromFile(file, bih.width           )) goto error;
+            if (ReadFromFile(file, bih.height          )) goto error;
+            if (ReadFromFile(file, bih.planes          )) goto error;
+            if (ReadFromFile(file, bih.bit_count       )) goto error;
+            if (ReadFromFile(file, bih.compression     )) goto error;
+            if (ReadFromFile(file, bih.size_image      )) goto error;
+            if (ReadFromFile(file, bih.x_pels_per_meter)) goto error;
+            if (ReadFromFile(file, bih.y_pels_per_meter)) goto error;
+            if (ReadFromFile(file, bih.clr_used        )) goto error;
+            if (ReadFromFile(file, bih.clr_important   )) goto error;
+
+            return (0);
+        error:
+            return (-1);
         }
 
         inline void     WriteBIH(File &file, const BitmapInformationHeader &bih) const
@@ -862,10 +905,15 @@ namespace CTRPluginFramework
             WriteToFile(file, bih.clr_important   );
         }
 
-       void     CreateBitmap(void)
+       int     CreateBitmap(void)
        {
           _rowIncrement = _width * _bytesPerPixel;
           _data.resize(_height * _rowIncrement);
+
+          u32 cap = _data.capacity();
+          if (cap != _height * _rowIncrement)
+            return (-1);
+        return (0);
        }
 
        void     LoadBitmap(void)
@@ -882,7 +930,7 @@ namespace CTRPluginFramework
                 return;
             }
 
-            u32 res = File::Open(file, _fileName);
+            u32 res = File::Open(file, _fileName, File::READ);
             if (res != 0)
             {
                 sprintf(buffer, "Error opening: %s, code: %08X", _fileName.c_str(), res);
@@ -899,8 +947,20 @@ namespace CTRPluginFramework
             bfh.Clear();
             bih.Clear();
 
-            ReadBFH(file, bfh);
-            ReadBIH(file, bih);
+            if (ReadBFH(file, bfh))
+            {
+                file.Close();
+
+                OSD::Notify("BMP Error: Error while reading BFH", red, black);
+                return;                
+            }
+            if (ReadBIH(file, bih))
+            {
+                file.Close();
+
+                OSD::Notify("BMP Error: Error while reading BIH", red, black);
+                return;                    
+            }
 
             if (bfh.type != 19778)
             {
@@ -942,7 +1002,7 @@ namespace CTRPluginFramework
             _width  = bih.width;
             _height = bih.height;
 
-            if (_width > 340 || _height > 200)
+           /* if (_width > 340 || _height > 200)
             {
                 bfh.Clear();
                 bih.Clear();
@@ -951,7 +1011,7 @@ namespace CTRPluginFramework
 
                 OSD::Notify("BMP Error: file should not be higher than 340px * 200px", red, black);
                 return;             
-            }
+            }*/
             _dimensions = IntVector(_width, _height);
             _bytesPerPixel = bih.bit_count >> 3;
 
@@ -959,6 +1019,18 @@ namespace CTRPluginFramework
             char paddingData[4] = {0,0,0,0};
 
             std::size_t bitmapFileSize = file.GetSize();
+
+            if (bitmapFileSize >= 0x50000)
+            {
+                bfh.Clear();
+                bih.Clear();
+
+                file.Close();
+
+                OSD::Notify("BMP Error: The file is too big.", red, black);
+
+                return;                
+            }
 
             std::size_t bitmapLogicalSize = (_height * _width * _bytesPerPixel) + (_height * padding) + bih.StructSize() + bfh.StructSize();
 
@@ -974,7 +1046,17 @@ namespace CTRPluginFramework
                 return;
             }
 
-            CreateBitmap();
+            if (CreateBitmap())
+            {
+                bfh.Clear();
+                bih.Clear();
+
+                file.Close();
+
+                OSD::Notify("BMP Error: Error while allocating requiered space.", red, black);
+                _data.resize(0);
+                return;                
+            }
 
             for (unsigned int i = 0; i < _height; ++i)
             {
