@@ -113,8 +113,9 @@ DEPENDS	:=	$(OFILES:.o=.d)
 # main targets
 #---------------------------------------------------------------------------------
 EXCLUDE := main.o cheats.o
-$(OUTPUT).a	:	$(filter-out $(EXCLUDE), $(OFILES))
 $(OUTPUT).plg : $(OUTPUT).elf
+$(OUTPUT).a	:	$(filter-out $(EXCLUDE), $(OFILES))
+
 
 $(OUTPUT).elf :	$(OFILES)
 

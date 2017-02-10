@@ -128,8 +128,7 @@ namespace CTRPluginFramework
                     black = Color(255, 0, 0, 150);
                     OSD::Notify("I'm an important notification", blank, black);
                     break;                    
-            }
-            
+            }            
         }
     }
 
@@ -148,89 +147,10 @@ namespace CTRPluginFramework
             }
     }
 
-    u32     findNearestSTMFD(u32 base, u32 pos) 
-    {
-        if (pos < base)
-        {
-            return 0;
-        }
-        pos = pos - pos % 4;
-        u32 term = pos - 0x1000;
-        if (term < base)
-        {
-            term = base;
-        }
-        while (pos >= term) {
-            if (*(u16*)(pos + 2) == 0xe92d){
-                return pos;
-            }
-            pos -= 4;
-        }
-        return 0;
-    }
-
-u32     searchBytes(u32 startAddr, u32 endAddr, u8* pat, int patlen, int step)
-{
-    u32 lastPage = 0;
-    u32 pat0 = ((u32*)pat)[0];
-
-    while (1)
-    {
-        if (startAddr + patlen >= endAddr)
-        {
-                return 0;
-        }
-        if (*((u32*)(startAddr)) == pat0)
-        {
-            if (memcmp((u32*) startAddr, pat, patlen) == 0)
-            {
-                return startAddr;
-            }
-        }
-        startAddr += step;
-    }
-    return 0;
-}
-
-    u32     locateSwapBuffer(u32 startAddr, u32 endAddr) 
-    {
-        
-        static u32 pat[] = { 0xe1833000, 0xe2044cff, 0xe3c33cff, 0xe1833004, 0xe1824f93 };
-        static u32 pat2[] = { 0xe8830e60, 0xee078f9a, 0xe3a03001, 0xe7902104 };
-        static u32 pat3[] = { 0xee076f9a, 0xe3a02001, 0xe7901104, 0xe1911f9f, 0xe3c110ff};
-
-        u32 addr = searchBytes(startAddr, endAddr, (u8 *)pat, sizeof(pat), 4);
-        if (!addr) 
-        {
-            addr = searchBytes(startAddr, endAddr, (u8 *)pat2, sizeof(pat2), 4);
-        }
-        if (!addr) 
-        {
-            addr = searchBytes(startAddr, endAddr, (u8 *)pat3, sizeof(pat3), 4);
-        }
-        return (findNearestSTMFD(startAddr, addr));
-    }
-
     int    main(void)
     {   
         PluginMenu  *m = new PluginMenu("Zelda Ocarina Of Time 3D");
-        PluginMenu    &menu = *m;
-
-        /*    "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus id semper ligula. Vivamus sollicitudin lacinia ligula, vel hendrerit massa posuere in. Aliquam eget euismod tortor, vel ultricies sem. Donec tempor odio vel neque suscipit finibus ac at quam. Cras pharetra, massa scelerisque rutrum pretium, sapien tortor lobortis elit, vel euismod dui dolor non leo. Praesent sodales sagittis purus quis feugiat. Praesent est massa, gravida et ultrices in, aliquet ac tortor. Nam id tempus dolor. Pellentesque lobortis porta sagittis. Phasellus malesuada pulvinar porttitor.\n\n" \
-"Donec ultrices tortor sit amet nibh tincidunt dapibus. Sed interdum dignissim nibh, vel convallis velit volutpat ut. Phasellus blandit, ligula ut varius luctus, quam mi maximus massa, at mattis sem ligula ac mi. Vestibulum tempor fermentum pretium. Phasellus in metus elit. Donec eget massa eu libero lacinia accumsan. Phasellus non velit eget mauris gravida ornare. Sed sodales nulla in dictum pellentesque.\n\n" \
-"Nam magna nunc, posuere ut nisi id, cursus ultricies dui. Suspendisse efficitur id dolor sit amet rhoncus. Sed tincidunt arcu nunc, quis maximus nunc maximus a. Quisque pellentesque libero quis urna rhoncus, eget rutrum diam tincidunt. Nulla eget ultricies nisl, in condimentum nulla. Nullam nec turpis a tellus faucibus dictum ut quis eros. Etiam placerat fringilla nisl at convallis. Ut sit amet ligula accumsan, feugiat neque maximus, sollicitudin nulla. Curabitur posuere, enim ut placerat tincidunt, dui tellus ullamcorper lorem, eu feugiat dui leo quis velit. Morbi non velit eget ipsum sodales sagittis in vel urna.\n\n" \
-"unc sem eros, fermentum sed justo sit amet, condimentum tempus nunc. Mauris elementum vulputate tempus. Proin iaculis justo rhoncus, lobortis massa nec, tempus dolor. Donec et dictum erat. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; Sed convallis arcu et nisi posuere, vel fermentum est cursus. Phasellus hendrerit, tellus id bibendum auctor, odio elit blandit justo, sed porttitor diam lorem eu lacus. Phasellus ac nibh venenatis, sagittis enim ultrices, efficitur tellus. Vestibulum ullamcorper egestas nunc eget volutpat. In tempus eros eu ipsum feugiat placerat. Cras iaculis odio nec nunc faucibus, in blandit turpis lacinia.\n\n" \
-"Aenean a massa lacinia, elementum urna aliquam, sodales lorem. Vivamus hendrerit egestas orci vitae interdum. Aenean ultricies justo mi, et porta lacus placerat at. Sed faucibus nulla viverra dolor luctus, eget blandit sapien vestibulum. Duis commodo varius vulputate. Quisque ut dui lorem. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quisque quis tellus porttitor, pellentesque sem mollis, eleifend felis.\n\n";
-        */
-        //char temp[100] = {0};
-        
-        MemInfo minfo;
-        PageInfo pinfo;
-
-        svcQueryMemory(&minfo, &pinfo, 0x100000);
-
-        u32   addr = locateSwapBuffer(minfo.base_addr, minfo.base_addr + minfo.size);
-        
+        PluginMenu    &menu = *m;       
         
         int res4 = 0;
         int res3 = 0;
@@ -246,7 +166,8 @@ u32     searchBytes(u32 startAddr, u32 endAddr, u8* pat, int patlen, int step)
            // file.Read(buffer, size);
             //file.Close();
         }
-
+            // Enable New3DS CPU Frequencies
+        osSetSpeedupEnable(true);
         std::string ls = "Files in the current working directory: \n";        
         std::vector<std::string> lsv;
 
