@@ -12,6 +12,7 @@
 #include "ctrulib/services/gspgpu.h"
 #include "CTRPluginFramework/Graphics/Color.hpp"
 #include "CTRPluginFramework/Graphics/OSD.hpp"
+#include "3DS.h"
 
 namespace CTRPluginFramework
 {
@@ -147,6 +148,69 @@ namespace CTRPluginFramework
             }
     }
 
+    u32     findNearestSTMFD(u32 base, u32 pos) 
+    {
+        if (pos < base)
+        {
+            return 0;
+        }
+        pos = pos - pos % 4;
+        u32 term = pos - 0x1000;
+        if (term < base)
+        {
+            term = base;
+        }
+        while (pos >= term) {
+            if (*(u16*)(pos + 2) == 0xe92d){
+                return pos;
+            }
+            pos -= 4;
+        }
+        return 0;
+    }
+
+u32     searchBytes(u32 startAddr, u32 endAddr, u8* pat, int patlen, int step)
+{
+    u32 lastPage = 0;
+    u32 pat0 = ((u32*)pat)[0];
+
+    while (1)
+    {
+        if (startAddr + patlen >= endAddr)
+        {
+                return 0;
+        }
+        if (*((u32*)(startAddr)) == pat0)
+        {
+            if (memcmp((u32*) startAddr, pat, patlen) == 0)
+            {
+                return startAddr;
+            }
+        }
+        startAddr += step;
+    }
+    return 0;
+}
+
+    u32     locateSwapBuffer(u32 startAddr, u32 endAddr) 
+    {
+        
+        static u32 pat[] = { 0xe1833000, 0xe2044cff, 0xe3c33cff, 0xe1833004, 0xe1824f93 };
+        static u32 pat2[] = { 0xe8830e60, 0xee078f9a, 0xe3a03001, 0xe7902104 };
+        static u32 pat3[] = { 0xee076f9a, 0xe3a02001, 0xe7901104, 0xe1911f9f, 0xe3c110ff};
+
+        u32 addr = searchBytes(startAddr, endAddr, (u8 *)pat, sizeof(pat), 4);
+        if (!addr) 
+        {
+            addr = searchBytes(startAddr, endAddr, (u8 *)pat2, sizeof(pat2), 4);
+        }
+        if (!addr) 
+        {
+            addr = searchBytes(startAddr, endAddr, (u8 *)pat3, sizeof(pat3), 4);
+        }
+        return (findNearestSTMFD(startAddr, addr));
+    }
+
     int    main(void)
     {   
         PluginMenu  *m = new PluginMenu("Zelda Ocarina Of Time 3D");
@@ -160,7 +224,12 @@ namespace CTRPluginFramework
         */
         //char temp[100] = {0};
         
+        MemInfo minfo;
+        PageInfo pinfo;
 
+        svcQueryMemory(&minfo, &pinfo, 0x100000);
+
+        u32   addr = locateSwapBuffer(minfo.base_addr, minfo.base_addr + minfo.size);
         
         
         int res4 = 0;
@@ -192,6 +261,11 @@ namespace CTRPluginFramework
         {
             ls += lsv[i] + "\n";
         }
+
+        char buffer[100];
+
+        sprintf(buffer, "outaddr: %08X", addr);
+        ls += buffer;
         // this add the content of the file we've read earlier in the ls string
         //ls += buffer;
 

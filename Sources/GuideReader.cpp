@@ -1,5 +1,6 @@
 #include "CTRPluginFramework/GuideReader.hpp"
 #include "CTRPluginFramework/Rect.hpp"
+#include "CTRPluginFramework/Preferences.hpp"
 
 namespace CTRPluginFramework
 {

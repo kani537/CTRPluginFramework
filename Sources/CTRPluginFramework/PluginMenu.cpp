@@ -117,6 +117,7 @@ namespace CTRPluginFramework
             while (manager.PollEvent(event))
             {
                 // If Select is pressed
+                //if (Controller::IsKeysDown(Key::L | Key::R) && inputClock.HasTimePassed(Milliseconds(500)))
                 if (event.key.code == Key::Select && inputClock.HasTimePassed(Milliseconds(500)))
                 {
                     if (_isOpen)

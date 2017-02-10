@@ -7,7 +7,7 @@ endif
 TOPDIR ?= $(CURDIR)
 include $(TOPDIR)/3ds_rules
 
-
+LIB 		:=  CTRPluginFramework.a
 TARGET		:= 	$(notdir $(CURDIR))
 BUILD		:= 	Build
 INCLUDES	:= 	Includes \
@@ -103,6 +103,8 @@ re:
 	make
 #---------------------------------------------------------------------------------
 
+lib: $(BUILD)
+
 else
 
 DEPENDS	:=	$(OFILES:.o=.d)
@@ -110,10 +112,12 @@ DEPENDS	:=	$(OFILES:.o=.d)
 #---------------------------------------------------------------------------------
 # main targets
 #---------------------------------------------------------------------------------
-
+EXCLUDE := main.o cheats.o
+$(OUTPUT).a	:	$(filter-out $(EXCLUDE), $(OFILES))
 $(OUTPUT).plg : $(OUTPUT).elf
 
 $(OUTPUT).elf :	$(OFILES)
+
 
 
 #---------------------------------------------------------------------------------
