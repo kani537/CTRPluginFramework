@@ -153,7 +153,7 @@ namespace CTRPluginFramework
         // Draw Background
         if (Preferences::topBackgroundImage->IsLoaded() 
             && (Preferences::topBackgroundImage->GetDimensions() <= _box.size))
-            Preferences::topBackgroundImage->Draw(_box.leftTop);
+            Preferences::topBackgroundImage->Draw(_box, -0.3f);
         else
         {
             Renderer::DrawRect2(_box, black, grey);
