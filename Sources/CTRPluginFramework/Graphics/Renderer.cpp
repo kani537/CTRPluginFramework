@@ -132,7 +132,7 @@ namespace CTRPluginFramework
             {   
                 Color c = Color::FromFramebuffer(dst);
 
-                c.Fade(0.1f);
+                c.Fade(0.2f);
                 Color::ToFramebuffer(dst, c);
                 dst -= bpp;
             }
