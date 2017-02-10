@@ -31,7 +31,7 @@ namespace CTRPluginFramework
 
         /*
         ** Create a file
-        ** path = the path of the create file
+        ** path = the path of the file to create
         ** return value:
         ** -1 : Invalid Path
         ** Other : result value by FS
