@@ -8,6 +8,7 @@
 #include "CTRPluginFramework/Graphics/OSD.hpp"
 #include "CTRPluginFramework/File.hpp"
 #include "CTRPluginFramework/Vector.hpp"
+#include "CTRPluginFramework/Rect.hpp"
 
 #include <string>
 #include <vector>
@@ -154,7 +155,56 @@ namespace CTRPluginFramework
                     img += 3;
                 }
             }
+       }
 
+        void     Draw(IntRect &area, float fade = 0.f)
+       {    
+            bool topScreen = Renderer::_target == 1;
+            Screen *scr = topScreen ? Screen::Top : Screen::Bottom;
+
+            int posX = area.leftTop.x;
+            int posY = area.leftTop.y;
+
+            int xOffset = ((_width - area.size.x) / 2) * 3;
+            int startY = (_height - area.size.y) / 2;
+
+            
+            int width = area.size.x;
+            int height = area.size.y;
+            int stride = scr->GetStride();
+
+            if (fade == 0.f)
+            {
+                for (int y = 0; y < height; y++)
+                {
+                    u8 *framebuf = scr->GetLeftFramebuffer(posX, posY + y);
+                    u8 *img = Row(startY + y) + xOffset;
+
+                    for (int x = 0; x < width; x++)
+                    {
+                        Color imgc = Color::FromMemory(img);
+                        Color::ToFramebuffer(framebuf, imgc);
+                        framebuf += stride;
+                        img += 3;
+                    }
+                }               
+            }
+            else
+            {
+                for (int y = 0; y < height; y++)
+                {
+                    u8 *framebuf = scr->GetLeftFramebuffer(posX, posY + y);
+                    u8 *img = Row(startY + y) + xOffset;
+
+                    for (int x = 0; x < width; x++)
+                    {
+                        Color imgc = Color::FromMemory(img);
+                        Color::ToFramebuffer(framebuf, imgc.Fade(fade));
+                        framebuf += stride;
+                        img += 3;
+                    }
+                }               
+            }
 
        }
 /*
