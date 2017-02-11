@@ -1,7 +1,7 @@
 #include "types.h"
 
-#include "CTRPluginFramework/MenuItem.hpp"
-#include "CTRPluginFramework/MenuEntry.hpp"
+#include "CTRPluginFrameworkImpl/Menu/MenuItem.hpp"
+#include "CTRPluginFrameworkImpl/Menu/MenuEntry.hpp"
 
 namespace CTRPluginFramework
 {

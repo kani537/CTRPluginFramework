@@ -1,15 +1,16 @@
 #ifndef CTRPLUGINFRAMEWORK_MENUENTRY_HPP
 #define CTRPLUGINFRAMEWORK_MENUENTRY_HPP
 
-#include "CTRPluginFramework/MenuItem.hpp"
+#include "CTRPluginFrameworkImpl/Menu/MenuItem.hpp"
+#include <string>
 
 namespace CTRPluginFramework
 {
-    class MenuEntry;
+    class MenuEntryImpl;
     
-    using FuncPointer = void (*)(MenuEntry*);
+    using FuncPointer = void (*)(MenuEntryImpl*);
     
-    class MenuEntry : public MenuItem
+    class MenuEntryImpl : public MenuItem
     {
         struct Flags
         {
@@ -19,9 +20,9 @@ namespace CTRPluginFramework
         };
 
     public:
-        MenuEntry(std::string name, std::string note = "");
-        MenuEntry(std::string name, FuncPointer func, std::string note = "");
-        ~MenuEntry();
+        MenuEntryImpl(std::string name, std::string note = "");
+        MenuEntryImpl(std::string name, FuncPointer func, std::string note = "");
+        ~MenuEntryImpl(){};
 
         // Disable the entry
         void    Disable(void);
@@ -41,7 +42,7 @@ namespace CTRPluginFramework
         FuncPointer     MenuFunc;
 
     private:
-        friend class PluginMenu;
+        friend class PluginMenuImpl;
 
         // Functions used by the menu
         bool    _TriggerState(void);

@@ -4,8 +4,6 @@
 #include "CTRPluginFramework/Screen.hpp"
 #include "font6x10Linux.h"
 
-#include <vector>
-
 namespace CTRPluginFramework
 {
 

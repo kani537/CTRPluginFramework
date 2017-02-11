@@ -1,9 +1,10 @@
 #ifndef CTRPLUGINFRAMEWORK_MENUFOLDER_HPP
 #define CTRPLUGINFRAMEWORK_MENUFOLDER_HPP
 
-#include "CTRPluginFramework/MenuItem.hpp"
-#include <vector>
+#include "CTRPluginFrameworkImpl/Menu/MenuItem.hpp"
 
+#include <vector>
+#include <string>
 namespace CTRPluginFramework
 {
     class Menu;
@@ -25,9 +26,9 @@ namespace CTRPluginFramework
         MenuFolder      *_Close(int &position, bool starMode = false);
 
         // Private members
-        MenuFolder              *_parent[2];
-        std::vector<MenuItem *>   _items;
-        int                     _position[2];
+        MenuFolder                  *_parent[2];
+        std::vector<MenuItem *>     _items;
+        int                         _position[2];
 
     };
 }
