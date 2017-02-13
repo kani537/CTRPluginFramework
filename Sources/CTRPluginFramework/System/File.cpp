@@ -1,6 +1,6 @@
-#include "CTRPluginFramework/Directory.hpp"
-#include "CTRPluginFramework/File.hpp"
-#include "CTRPluginFramework/Process.hpp"
+#include "CTRPluginFramework/System/Directory.hpp"
+#include "CTRPluginFramework/System/File.hpp"
+#include "CTRPluginFramework/System/Process.hpp"
 
 #include "ctrulib/util/utf.h"
 #include "ctrulib/result.h"

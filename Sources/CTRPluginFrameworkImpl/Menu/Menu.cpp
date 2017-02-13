@@ -3,7 +3,7 @@
 #include "CTRPluginFramework/Graphics/Renderer.hpp"
 #include "CTRPluginFramework/Controller.hpp"
 #include "CTRPluginFramework/Clock.hpp"
-#include "CTRPluginFramework/Preferences.hpp"
+#include "CTRPluginFrameworkImpl/Preferences.hpp"
 
 #include <algorithm>
 

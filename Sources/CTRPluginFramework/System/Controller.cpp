@@ -1,7 +1,7 @@
 #include "types.h"
 #include "ctrulib/services/hid.h"
 #include "ctrulib/svc.h"
-#include "CTRPluginFramework/Controller.hpp"
+#include "CTRPluginFramework/System/Controller.hpp"
 
 namespace CTRPluginFramework
 {

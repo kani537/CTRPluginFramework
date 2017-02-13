@@ -1,13 +1,8 @@
 #include "types.h"
 #include "ctrulib/services/gspgpu.h"
 
-#include "CTRPluginFramework/Vector.hpp"
-#include "CTRPluginFramework/Graphics/Color.hpp"
-#include "CTRPluginFramework/Graphics/Icon.hpp"
-#include "CTRPluginFramework/Screen.hpp"
-#include "CTRPluginFramework/Graphics/Renderer.hpp"
-
-
+#include "CTRPluginFramework/Graphics.hpp"
+#include "CTRPluginFrameworkImpl/Graphics.hpp"
 
 namespace CTRPluginFramework
 {
@@ -65,10 +60,10 @@ namespace CTRPluginFramework
             int y = 0;
             while (y++ < sizeY)
             {
-                Color px = Color::FromMemory(img, RGBA8);
-                Color bg = Color::FromFramebuffer(dst);
+                Color px = PrivColor::FromMemory(img, RGBA8);
+                Color bg = PrivColor::FromFramebuffer(dst);
                 Color blended = bg.Blend(px, BlendMode::Alpha);
-                dst = Color::ToFramebuffer(dst, blended);
+                dst = PrivColor::ToFramebuffer(dst, blended);
                 img += 4;
             }
         }
@@ -247,11 +242,11 @@ namespace CTRPluginFramework
             int y = 0;
             while (y++ < 15)
             {
-                Color px = Color::FromMemory(img, RGBA8);
-                Color bg = Color::FromFramebuffer(dst);
+                Color px = PrivColor::FromMemory(img, RGBA8);
+                Color bg = PrivColor::FromFramebuffer(dst);
                 Color blended = bg.Blend(px, BlendMode::Alpha);
-                dst = Color::ToFramebuffer(dst, blended);
-                dst2 = Color::ToFramebuffer(dst2, blended);
+                dst = PrivColor::ToFramebuffer(dst, blended);
+                dst2 = PrivColor::ToFramebuffer(dst2, blended);
                 img += 4;
             }
         }

@@ -1,11 +1,8 @@
 #include "types.h"
 
-#include "CTRPluginFramework/Graphics/Color.hpp"
-#include "CTRPluginFramework/Graphics/Renderer.hpp"
-#include "CTRPluginFramework/Screen.hpp"
-#include "CTRPluginFramework/Vector.hpp"
-#include "CTRPluginFramework/Rect.hpp"
-#include "CTRPluginFramework/Line.hpp"
+#include "CTRPluginFrameworkImpl/Graphics.hpp"
+#include "CTRPluginFramework/Graphics.hpp"
+
 #include <algorithm>
 #include <queue>
 
@@ -26,7 +23,7 @@ namespace CTRPluginFramework
             u8 *dd = dst;
             for (int y = 0; y < height; y++)
             {
-                dd = Color::ToFramebuffer(dd, color);
+                dd = PrivColor::ToFramebuffer(dd, color);
             }
             dst += stride;
         }
@@ -47,7 +44,7 @@ namespace CTRPluginFramework
             u8 *dd = dst;
             for (int y = 0; y < height; y++)
             {
-                dd = Color::ToFramebuffer(dd, color);
+                dd = PrivColor::ToFramebuffer(dd, color);
             }
             dst += stride;
         }

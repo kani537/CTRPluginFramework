@@ -1,14 +1,13 @@
 #ifndef CTRPLUGINFRAMEWORK_DIRECTORY_HPP
 #define CTRPLUGINFRAMEWORK_DIRECTORY_HPP
 
-#include "CTRPluginFramework/File.hpp"
 #include "types.h"
-#include "3DS.h"
 #include <string>
 #include <vector>
 
 namespace CTRPluginFramework
 {
+    class File;
     class Directory
     {
     public:
@@ -104,6 +103,7 @@ namespace CTRPluginFramework
         std::string     _path;
         Handle          _handle;
 
+        struct FS_DirectoryEntry;
         std::vector<FS_DirectoryEntry>    _list;
         bool                              _isListed;
     };

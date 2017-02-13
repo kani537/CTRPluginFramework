@@ -1,9 +1,9 @@
-#ifndef CTRPLUGINFRAMEWORK_SYSTEM_HPP
-#define CTRPLUGINFRAMEWORK_SYSTEM_HPP
+#ifndef CTRPLUGINFRAMEWORKIMPL_SYSTEMIMPL_HPP
+#define CTRPLUGINFRAMEWORKIMPL_SYSTEMIMPL_HPP
 
 namespace CTRPluginFramework
 {    
-    class System
+    class SystemImpl
     {
     public:
         static void    Initialize(void);
@@ -11,10 +11,9 @@ namespace CTRPluginFramework
         static u32     GetIOBaseLCD(void);
         static u32     GetIOBasePAD(void);
         static u32     GetIOBasePDC(void);
-        static bool    IsNew3DS(void);
 
     private:
-        System(){}
+        friend class System;
         static bool     _isInit;
         static bool     _isNew3DS;
         static u32      _IOBaseLCD;

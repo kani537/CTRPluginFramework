@@ -2,11 +2,8 @@
 #include "ctrulib/services/gspgpu.h"
 #include "ctrulib/util/utf.h"
 
-#include "CTRPluginFramework/Graphics/Color.hpp"
-#include "CTRPluginFramework/Screen.hpp"
-#include "CTRPluginFramework/Graphics/Renderer.hpp"
-#include "CTRPluginFramework/Graphics/Icon.hpp"
-
+#include "CTRPluginFramework/Graphics.hpp"
+#include "CTRPluginFrameworkImpl/Graphics.hpp"
 #include <algorithm>
 #include <cmath>
 
@@ -76,14 +73,14 @@ namespace CTRPluginFramework
                         u8 *left = (u8 *)_screen->GetLeftFramebuffer(px, py);
                         //u8 *right = (u8 *)_screens[_target]->GetRightFramebuffer(px, py) + offset;
                         GSPGPU_FramebufferFormats fmt = _format;
-                        Color l = Color::FromFramebuffer(left);
+                        Color l = PrivColor::FromFramebuffer(left);
                         int aneg = 0x0F - alpha;
                         int apos = alpha + 1;
                         Color res;
                         res.b = (l.b * aneg + color.b * apos) >> 4;  
                         res.g = (l.g * aneg + color.g * apos) >> 4;
                         res.r = (l.r * aneg + color.r * apos) >> 4;
-                        Color::ToFramebuffer(left, res);
+                        PrivColor::ToFramebuffer(left, res);
                         /*if (_useDoubleBuffer)
                         {
                             u8 *right = (u8 *)_screen->GetLeftFramebuffer(true);

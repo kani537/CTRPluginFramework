@@ -1,7 +1,7 @@
 #ifndef CTRPLUGINFRAMREWORK_CLOCK_HPP
 #define CTRPLUGINFRAMREWORK_CLOCK_HPP
 
-#include "CTRPluginFramework/Time.hpp"
+#include "CTRPluginFramework/System/Time.hpp"
 
 namespace CTRPluginFramework
 {

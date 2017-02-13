@@ -2,10 +2,8 @@
 #include "ctrulib/services/gspgpu.h"
 
 
-#include "CTRPluginFramework/Graphics/Color.hpp"
-#include "CTRPluginFramework/Screen.hpp"
-#include "CTRPluginFramework/Graphics/Renderer.hpp"
-
+#include "CTRPluginFramework/Graphics.hpp"
+#include "CTRPluginFrameworkImpl/Graphics.hpp"
 #include <cstdio>
 #include <cmath>
 
@@ -130,10 +128,10 @@ namespace CTRPluginFramework
             u8 *dst = left + rowstride * w;
             while (--h >= 0)
             {   
-                Color c = Color::FromFramebuffer(dst);
+                Color c = PrivColor::FromFramebuffer(dst);
 
                 c.Fade(0.2f);
-                Color::ToFramebuffer(dst, c);
+                PrivColor::ToFramebuffer(dst, c);
                 dst -= bpp;
             }
         }
@@ -154,7 +152,7 @@ namespace CTRPluginFramework
             l.Fade(fading);
             if (l <= black)
                 break;
-            Color::ToFramebuffer(rtier, l);
+            PrivColor::ToFramebuffer(rtier, l);
             j++;
             if (j == pitch)
             {
@@ -169,7 +167,7 @@ namespace CTRPluginFramework
         // Middle tier
         for (int i = 0; i < tier; ++i)
         {
-            Color::ToFramebuffer(dst, l);
+            PrivColor::ToFramebuffer(dst, l);
             dst -= rowstride;
         }
         fading = 0.0f;
@@ -180,7 +178,7 @@ namespace CTRPluginFramework
             l.Fade(fading);
             if (l <= black)
                 break;
-            Color::ToFramebuffer(dst, l);
+            PrivColor::ToFramebuffer(dst, l);
             dst -= rowstride;
             j++;
             if (j == pitch)

@@ -5,24 +5,13 @@
 #include <vector>
 #include <cstdio>
 
-#include "CTRPluginFramework/Vector.hpp"
-#include "CTRPluginFramework/Rect.hpp"
-#include "CTRPluginFramework/Line.hpp"
-#include "CTRPluginFramework/Graphics/Color.hpp"
-#include "CTRPluginFramework/Graphics/Renderer.hpp"
+#include "CTRPluginFrameworkImpl/Graphics.hpp"
+#include "CTRPluginFramework/Graphics.hpp"
 
 #include "CTRPluginFrameworkImpl/Menu.hpp"
-#include "CTRPluginFramework/Controller.hpp"
-#include "CTRPluginFramework/Touch.hpp"
-#include "CTRPluginFramework/Events.hpp"
-#include "CTRPluginFramework/EventManager.hpp"
-#include "CTRPluginFramework/Time.hpp"
-#include "CTRPluginFramework/Clock.hpp"
-#include "CTRPluginFramework/Process.hpp"
-#include "CTRPluginFramework/Graphics/Icon.hpp"
-#include "CTRPluginFramework/Graphics/OSD.hpp"
-#include "CTRPluginFramework/Graphics/BMPImage.hpp"
-#include "CTRPluginFramework/Preferences.hpp"
+#include "CTRPluginFrameworkImpl/System.hpp"
+#include "CTRPluginFramework/System.hpp"
+#include "CTRPluginFrameworkImpl/Preferences.hpp"
 
 #define SHOWFPS 1
 

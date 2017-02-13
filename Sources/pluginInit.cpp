@@ -1,11 +1,9 @@
+#include "CTRPluginFrameworkImpl.hpp"
 #include "CTRPluginFramework.hpp"
 #include "3DS.h"
 #include <stdlib.h>
 #include <cstdio>
-#include "CTRPluginFramework/Directory.hpp"
-#include "CTRPluginFramework/arm11kCommands.h"
-#include "CTRPluginFramework/Graphics/OSD.hpp"
-#include "CTRPluginFramework/Preferences.hpp"
+#include "CTRPluginFrameworkImpl/arm11kCommands.h"
 
 extern "C" void     abort(void);
 extern "C" void     initSystem();
@@ -46,7 +44,7 @@ namespace CTRPluginFramework
         System::Initialize();
 
         // Init Process info
-        Process::Initialize();
+        ProcessImpl::Initialize();
 
         // Correction for some games like Kirby
         u64 tid = Process::GetTitleID();
@@ -67,9 +65,9 @@ namespace CTRPluginFramework
             svcWaitSynchronization(_keepEvent, U64_MAX); 
             svcClearEvent(_keepEvent);
 
-            while (Process::IsPaused())
+            while (ProcessImpl::IsPaused())
             {
-                if (Process::IsAcquiring())
+                if (ProcessImpl::IsAcquiring())
                     Sleep(Milliseconds(100));
             }               
         }
@@ -93,13 +91,13 @@ namespace CTRPluginFramework
 
         // Init Process info
         //Process::Initialize(keepEvent);
-        Process::UpdateThreadHandle();
+        ProcessImpl::UpdateThreadHandle();
 
         // Patch process before it starts
         PatchProcess();
 
         //Init OSD
-        OSD::_Initialize();  
+        OSDImpl::_Initialize();  
     }
 
     extern "C" vu32* hidSharedMem;
@@ -110,7 +108,7 @@ namespace CTRPluginFramework
         CTRPluginFramework::Initialize();
 
         // Reduce Priority
-        Process::Play(true);
+        ProcessImpl::Play(true);
 
         // Init sdmcArchive
         FS_Path sdmcPath = { PATH_EMPTY, 1, (u8*)"" };
@@ -138,7 +136,7 @@ namespace CTRPluginFramework
         int ret = main();
 
         // Release process in case it was forgotten
-        Process::Play(true);
+        ProcessImpl::Play(true);
 
         gfxExit();
 

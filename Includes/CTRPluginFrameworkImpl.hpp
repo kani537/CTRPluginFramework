@@ -3,8 +3,8 @@
 
 #include "types.h"
 
-#include "CTRPluginFrameworkImpl/GraphicsImpl.hpp"
-#include "CTRPluginFrameworkImpl/MenuImpl.hpp"
-#include "CTRPluginFrameworkImpl/SystemImpl.hpp"
+#include "CTRPluginFrameworkImpl/Graphics.hpp"
+#include "CTRPluginFrameworkImpl/Menu.hpp"
+#include "CTRPluginFrameworkImpl/System.hpp"
 
 #endif

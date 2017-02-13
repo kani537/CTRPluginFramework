@@ -1,9 +1,9 @@
-#include "CTRPluginFramework/Graphics/Textbox.hpp"
-#include "CTRPluginFramework/Clock.hpp"
+#include "CTRPluginFrameworkImpl/Graphics/Textbox.hpp"
+#include "CTRPluginFramework/System/Clock.hpp"
 #include "types.h"
 #include "ctrulib/util/utf.h"
 #include "ctrulib/font.h"
-#include "CTRPluginFramework/Preferences.hpp"
+#include "CTRPluginFrameworkImpl/Preferences.hpp"
 
 #include <cstdio>
 

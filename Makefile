@@ -11,8 +11,6 @@ LIB 		:=  CTRPluginFramework.a
 TARGET		:= 	$(notdir $(CURDIR))
 BUILD		:= 	Build
 INCLUDES	:= 	Includes \
-				Includes\CTRPluginFramework \
-				Includes\CTRPluginFramework\Graphics \
 				Includes\ctrulib \
 				Includes\ctrulib\allocator \
 				Includes\ctrulib\gpu \
@@ -25,7 +23,13 @@ LIBDIRS		:= 	$(TOPDIR)\Lib
 SOURCES 	:= 	Sources \
 				Sources\CTRPluginFramework \
 				Sources\CTRPluginFramework\Graphics \
-				Sources\CTRPluginFramework\Graphics\Icons \
+				Sources\CTRPluginFramework\Menu \
+				Sources\CTRPluginFramework\System \
+				Sources\CTRPluginFrameworkImpl \
+				Sources\CTRPluginFrameworkImpl\Graphics \
+				Sources\CTRPluginFrameworkImpl\Graphics\Icons \
+				Sources\CTRPluginFrameworkImpl\Menu \
+				Sources\CTRPluginFrameworkImpl\System \
 				Sources\ctrulib \
 				Sources\ctrulib\allocator \
 				Sources\ctrulib\gpu \

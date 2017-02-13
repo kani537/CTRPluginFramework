@@ -1,8 +1,8 @@
 #include "types.h"
 #include "ctrulib/services/hid.h"
 
-#include "CTRPluginFramework/Controller.hpp"
-#include "CTRPluginFramework/Touch.hpp"
+#include "CTRPluginFramework/System/Controller.hpp"
+#include "CTRPluginFramework/System/Touch.hpp"
 
 namespace CTRPluginFramework
 {

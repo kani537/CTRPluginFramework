@@ -2,8 +2,6 @@
 #define CTRPLUGINFRAMEWORK_FILE_HPP
 
 #include "types.h"
-#include "ctrulib/services/fs.h"
-
 #include <string>
 #include <vector>
 

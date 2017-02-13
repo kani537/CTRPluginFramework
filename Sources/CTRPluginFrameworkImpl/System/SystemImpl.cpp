@@ -1,6 +1,6 @@
 #include "types.h"
 #include "3DS.h"
-#include "CTRPluginFramework/System.hpp"
+#include "CTRPluginFrameworkImpl/System/System.hpp"
 
 namespace CTRPluginFramework
 {
@@ -51,10 +51,5 @@ namespace CTRPluginFramework
     u32     System::GetIOBasePDC(void)
     {
         return (_IOBasePDC);
-    }
-
-    bool    System::IsNew3DS(void)
-    {
-        return (_isNew3DS);
     }
 }

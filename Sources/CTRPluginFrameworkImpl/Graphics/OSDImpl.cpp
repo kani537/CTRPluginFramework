@@ -1,5 +1,5 @@
 #include "CTRPluginFramework/Graphics/OSDImpl.hpp"
-#include "CTRPluginFramework/Screen.hpp"
+#include "CTRPluginFrameworkImpl/System/Screen.hpp"
 #include "font6x10Linux.h"
 
 #include <vector>

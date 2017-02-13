@@ -1,13 +1,10 @@
 #include "types.h"
 #include "3DS.h"
 
-#include "CTRPluginFramework/Graphics/Color.hpp"
-#include "CTRPluginFramework/Graphics/Renderer.hpp"
-#include "CTRPluginFramework/Screen.hpp"
+#include "CTRPluginFramework/Graphics.hpp"
+#include "CTRPluginFrameworkImpl/Graphics.hpp"
 #include "CTRPluginFramework/System.hpp"
-#include "CTRPluginFramework/Process.hpp"
-#include "CTRPluginFramework/Time.hpp"
-#include "CTRPluginFramework/Sleep.hpp"
+#include "CTRPluginFrameworkImpl/System.hpp"
 
 #include <cstdio>
 

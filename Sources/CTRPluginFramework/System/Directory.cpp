@@ -1,4 +1,4 @@
-#include "CTRPluginFramework/Directory.hpp"
+#include "CTRPluginFramework/System/Directory.hpp"
 #include "ctrulib/util/utf.h"
 #include "ctrulib/result.h"
 #include <limits.h>

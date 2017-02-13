@@ -1,7 +1,5 @@
 #include "types.h"
 
-#include "CTRPluginFramework/Graphics/Color.hpp"
-#include "CTRPluginFramework/Screen.hpp"
 #include "CTRPluginFramework/Graphics/Renderer.hpp"
 
 namespace CTRPluginFramework

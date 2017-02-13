@@ -1,7 +1,5 @@
-#include "CTRPluginFrameworkImpl/Menu/MenuItem.hpp"
-#include "CTRPluginFrameworkImpl/MenuEntryImpl.hpp"
-#include "CTRPluginFramework/MenuFolderImpl.hpp"
-#include "CTRPluginFramework/MenuFolder.hpp"
+#include "CTRPluginFramework/Menu.hpp"
+#include "CTRPluginFrameworkImpl/Menu.hpp"
 
 
 namespace CTRPluginFramework

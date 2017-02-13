@@ -1,6 +1,5 @@
 #include "types.h"
-#include "CTRPluginFramework/Graphics/Color.hpp"
-#include "CTRPluginFramework/Graphics/Renderer.hpp"
+#include "CTRPluginFrameworkImpl/Graphics/Renderer.hpp"
 #include "font6x10Linux.h"
 
 namespace CTRPluginFramework
