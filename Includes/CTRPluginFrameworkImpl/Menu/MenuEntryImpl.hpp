@@ -43,8 +43,8 @@ namespace CTRPluginFramework
         FuncPointer     MenuFunc;
 
     private:
-        friend class PluginMenuImpl;
-
+        friend class PluginMenuHome;
+        friend class PluginMenuExecuteLoop;
         // Functions used by the menu
         bool    _TriggerState(void);
         bool    _MustBeRemoved(void);

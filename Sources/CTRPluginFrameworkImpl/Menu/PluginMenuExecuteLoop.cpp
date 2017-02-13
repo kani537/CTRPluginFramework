@@ -4,22 +4,26 @@
 
 namespace CTRPluginFramework
 {
+    PluginMenuExecuteLoop *PluginMenuExecuteLoop::_firstInstance = nullptr;
+
     PluginMenuExecuteLoop::PluginMenuExecuteLoop(void)
     {
-
+        _firstInstance = this;
     }
 
     void    PluginMenuExecuteLoop::Add(MenuEntryImpl *entry)
     {
-        _executeLoop.push_back(entry);
+        entry->_executeIndex = _firstInstance->_executeLoop.size();
+        _firstInstance->_executeLoop.push_back(entry);
     }
 
     void    PluginMenuExecuteLoop::Remove(MenuEntryImpl *entry)
     {
-        _executeLoop.erase(entry->_executeIndex);
+        _firstInstance->_executeLoop.erase(_firstInstance->_executeLoop.begin() + (int)entry->_executeIndex);
+        entry->_executeIndex = -1;
     }
 
-    bool    operator()(void)
+    bool    PluginMenuExecuteLoop::operator()(void)
     {
         std::queue<int> toRemove;
 
@@ -36,10 +40,10 @@ namespace CTRPluginFramework
         }
         while (!toRemove.empty())
         {
-            int i = toRemove.front;
+            int i = toRemove.front();
             toRemove.pop();
-            _executeLoop.erase(i);
-        }          
+            _executeLoop.erase(_executeLoop.begin() + i);
+        }
+        return (false);
     }
-    return (false);
 }

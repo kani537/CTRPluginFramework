@@ -53,7 +53,8 @@ namespace CTRPluginFramework
         {
             if (_execute)
             {
-                (_caller.*(_callback))(args...);
+                if (_callback != nullptr)
+                    (_caller.*(_callback))(args...);
                 _execute = false;
                 return (true);
             }
@@ -159,7 +160,9 @@ namespace CTRPluginFramework
 
         if (isTouchDown)
         {
-            _isPressed = _uiProperty.Contains(touchPos); 
+            _isPressed = _uiProperty.Contains(touchPos);
+            if (!_isReady && !_isPressed)
+                _isReady = true;
         }
 
         // If is ready, then execute the function
@@ -167,7 +170,7 @@ namespace CTRPluginFramework
         {
             _isReady = false;
         }
-        if (!_isPressed && !_isReady)
+        if (!isTouchDown && !_isReady)
         {
             _isReady = true;
             _execute = true;

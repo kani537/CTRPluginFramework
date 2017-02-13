@@ -45,6 +45,7 @@ namespace CTRPluginFramework
         bool                    _state;
         bool                    _isPressed;
         bool                    _execute;
+        bool                    _isWaiting;
         float                   _textSize;
     };
 
@@ -57,6 +58,7 @@ namespace CTRPluginFramework
     {
         _state = false;
         _execute = false;
+        _isWaiting = false;
 
         // LightGrey
         borderColor = Color(165, 165, 165);
@@ -138,18 +140,25 @@ namespace CTRPluginFramework
     template <class C, class T, class ...Args>
     void    TCheckedButton::Update(bool isTouchDown, IntVector touchPos)
     {
+        if (!isTouchDown && _isWaiting)
+        {
+            _state = !_state;
+            _execute = true;
+            _isWaiting = false;
+        }
 
-        if (isTouchDown && _uiProperties.Contains(touchPos))
+        if (isTouchDown)
         {            
-            if (_isPressed != isTouchDown)
-            {
-                _state = !_state;
-                _execute = true;
-            }
-            _isPressed = true;
+            _isPressed = _uiProperties.Contains(touchPos);
+            if (_isPressed)
+                _isWaiting = true;
+            else if (_isWaiting)
+                _isWaiting = false;
         }
         else
             _isPressed = false;
+
+        
     }
 
     // Operator
@@ -158,7 +167,8 @@ namespace CTRPluginFramework
     {
         if (_execute)
         {
-            (_caller.*_callback)(args...);
+            if (_callback != nullptr)
+                (_caller.*_callback)(args...);
             _execute = false;
             return (true);
         }

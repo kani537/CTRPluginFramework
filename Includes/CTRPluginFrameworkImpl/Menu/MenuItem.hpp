@@ -21,7 +21,7 @@ namespace CTRPluginFramework
         std::string     note;
 
     private:
-        friend class PluginMenuImpl;
+        friend class PluginMenuHome;
         friend class Menu;
 
         bool        _IsStarred(void)

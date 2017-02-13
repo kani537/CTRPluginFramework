@@ -1,25 +1,26 @@
-#ifndef CTRPLUGINFRAMEWORK_PLUGINMENUEXECUTELOOP
-#define CTRPLUGINFRAMEWORK_PLUGINMENUEXECUTELOOP
+#ifndef CTRPLUGINFRAMEWORKIMPL_PLUGINMENUEXECUTELOOP
+#define CTRPLUGINFRAMEWORKIMPL_PLUGINMENUEXECUTELOOP
 
 #include "CTRPluginFrameworkImpl/Menu/MenuEntryImpl.hpp"
 
 #include <vector>
 
-namespace CTRPluginFramwork
+namespace CTRPluginFramework
 {
+    class MenuEntryImpl;
     class PluginMenuExecuteLoop
-    {
+    {   
     public:
         PluginMenuExecuteLoop(void);
         ~PluginMenuExecuteLoop(void) {};
 
-        void    Add(MenuEntryImpl *entry);
-        void    Remove(MenuEntryImpl *entry);
+        static void    Add(MenuEntryImpl *entry);
+        static void    Remove(MenuEntryImpl *entry);
 
         bool    operator()(void);
 
     private:
-
+        static PluginMenuExecuteLoop    *_firstInstance;
         std::vector<MenuEntryImpl *>    _executeLoop;
     };
 }

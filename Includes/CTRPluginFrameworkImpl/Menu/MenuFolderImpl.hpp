@@ -19,7 +19,7 @@ namespace CTRPluginFramework
         u32     ItemsCount(void);
 
     private:
-        friend class PluginMenuImpl;
+        friend class PluginMenuHome;
         friend class Menu;
 
         // Private methods
