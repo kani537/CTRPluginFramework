@@ -3,12 +3,8 @@
 #include "ctrulib/services/hid.h"
 
 #include <queue>
-#include "CTRPluginFramework/Controller.hpp"
-#include "CTRPluginFramework/Touch.hpp"
-#include "CTRPluginFramework/Events.hpp"
-#include "CTRPluginFramework/EventManager.hpp"
-#include "CTRPluginFramework/Sleep.hpp"
-#include "CTRPluginFramework/Time.hpp"
+#include "CTRPluginFramework/System.hpp"
+#include "CTRPluginFrameworkImpl/System.hpp"
 
 namespace CTRPluginFramework
 {
@@ -148,33 +144,51 @@ namespace CTRPluginFramework
             event.touch.y = _lastTouch.py;
             PushEvent(event);
 
-            Event::SwipDirection swip = Event::None;
+            event.type = Event::TouchSwipped;
+            event.swip.direction = Event::None;
             if (ABS(horizontalOffset) > 10 || ABS(verticalOffset) > 10)
             {
-                if (horizontalOffset > 0 && verticalOffset == 0)
-                    swip = Event::Right;
-                else if (horizontalOffset < 0 && verticalOffset == 0)
-                    swip = Event::Left;
-                else if (verticalOffset > 0 && horizontalOffset == 0)
-                    swip = Event::Up;
-                else if (verticalOffset < 0 && horizontalOffset == 0)
-                    swip = Event::Down;
-                else if (horizontalOffset < 0 && verticalOffset > 0)
-                    swip = Event::LeftUp;
-                else if (horizontalOffset > 0 && verticalOffset > 0)
-                    swip = Event::RightUp;
-                else if (horizontalOffset < 0 && verticalOffset < 0)
-                    swip = Event::LeftDown;
-                else if (horizontalOffset > 0 && verticalOffset < 0)
-                    swip = Event::RightDown;
-            }
-            if (swip != Event::None)
-            {
-                event.type = Event::TouchSwipped;
-                event.swip.direction = swip;
-                PushEvent(event);
+                if (horizontalOffset > 0)
+                {
+                    event.swip.direction = Event::Right;
+                    PushEvent(event);
+                }
+                if (horizontalOffset < 0)
+                {
+                    event.swip.direction = Event::Left;
+                    PushEvent(event);
+                }
+                if (verticalOffset > 0)
+                {
+                    event.swip.direction = Event::Up;
+                    PushEvent(event);
+                }
+                if (verticalOffset < 0)
+                {
+                    event.swip.direction = Event::Down;
+                    PushEvent(event);
+                }
+                if (horizontalOffset < 0 && verticalOffset > 0)
+                {
+                    event.swip.direction = Event::LeftUp;
+                    PushEvent(event);
+                }
+                if (horizontalOffset > 0 && verticalOffset > 0)
+                {
+                    event.swip.direction = Event::RightUp;
+                    PushEvent(event);
+                }
+                if (horizontalOffset < 0 && verticalOffset < 0)
+                {
+                    event.swip.direction = Event::LeftDown;
+                    PushEvent(event);
+                }
+                if (horizontalOffset > 0 && verticalOffset < 0)
+                {
+                    event.swip.direction = Event::RightDown;
+                    PushEvent(event);
+                }
             }
         }
     }
-
 }
