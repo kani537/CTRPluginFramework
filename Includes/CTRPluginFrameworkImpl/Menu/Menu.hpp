@@ -2,8 +2,7 @@
 #define CTRPLUGINFRAMEWORK_MENU_HPP
 
 #include "types.h"
-#include "CTRPluginFramework/MenuItem.hpp"
-#include "CTRPluginFramework/MenuFolder.hpp"
+#include "CTRPluginFrameworkImpl/Menu.hpp"
 #include "CTRPluginFramework/Events.hpp"
 #include "CTRPluginFramework/Vector.hpp"
 #include "CTRPluginFramework/Rect.hpp"
@@ -18,7 +17,7 @@ namespace CTRPluginFramework
     public:
 
         Menu(std::string title);
-        Menu(MenuFolder *folder);
+        Menu(MenuFolderImpl *folder);
         ~Menu(void);
 
         void    Append(MenuItem *item);
@@ -36,7 +35,7 @@ namespace CTRPluginFramework
         int     ProcessEvent(Event &event);
 
     private:
-        MenuFolder  *_folder;
+        MenuFolderImpl  *_folder;
         IntRect     _background;
         IntRect     _border;
         Clock       _input;

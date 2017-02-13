@@ -10,9 +10,8 @@
 #include "CTRPluginFramework/Line.hpp"
 #include "CTRPluginFramework/Graphics/Color.hpp"
 #include "CTRPluginFramework/Graphics/Renderer.hpp"
-#include "CTRPluginFramework/PluginMenu.hpp"
-#include "CTRPluginFramework/MenuFolder.hpp"
-#include "CTRPluginFramework/MenuEntry.hpp"
+
+#include "CTRPluginFrameworkImpl/Menu.hpp"
 #include "CTRPluginFramework/Controller.hpp"
 #include "CTRPluginFramework/Touch.hpp"
 #include "CTRPluginFramework/Events.hpp"
@@ -30,7 +29,7 @@
 namespace CTRPluginFramework
 {
     bool    _shouldClose = false;
-    PluginMenu::PluginMenu(std::string name, std::string note) : 
+    PluginMenuImpl::PluginMenuImpl(std::string name, std::string note) : 
     _showStarredBtn("Favorite", *this, &PluginMenu::_StarMode, IntRect(30, 70, 120, 30), Icon::DrawFavorite), 
     _gameGuideBtn("Game Guide", *this, &PluginMenu::_TriggerGuide, IntRect(30, 105, 120, 30), Icon::DrawGuide),    
     _toolsBtn("Tools", *this, &PluginMenu::Null, IntRect(30, 140, 120, 30), Icon::DrawTools),
@@ -42,8 +41,8 @@ namespace CTRPluginFramework
     {
         _isOpen = false;
         _starMode = false;
-        _folder = new MenuFolder(name, note);
-        _starred = new MenuFolder("Favorites");
+        _folder = new MenuFolderImpl(name, note);
+        _starred = new MenuFolderImpl("Favorites");
         _selector = 0;
         _selectedTextSize = 0;
         _scrollOffset = 0.f;
@@ -53,15 +52,15 @@ namespace CTRPluginFramework
         _mode = 0;
     }
 
-    PluginMenu::~PluginMenu(void)
+    PluginMenuImpl::~PluginMenuImpl(void)
     {
 
     }
-    void    PluginMenu::Null(void)
+    void    PluginMenuImpl::Null(void)
     {
 
     } 
-    void    PluginMenu::_StarMode(void)
+    void    PluginMenuImpl::_StarMode(void)
     {
         static int selector = 0;
 
@@ -78,7 +77,7 @@ namespace CTRPluginFramework
         }
     }   
 
-    void    PluginMenu::Append(MenuItem *item)
+    void    PluginMenuImpl::Append(MenuItem *item)
     {
         _folder->Append(item);
     }
@@ -87,7 +86,7 @@ namespace CTRPluginFramework
     ** Run
     **************/
 
-    int    PluginMenu::Run(void)
+    int    PluginMenuImpl::Run(void)
     {
         Event           event;
         EventManager    manager;
@@ -210,7 +209,7 @@ namespace CTRPluginFramework
 
                 for (int i = 0; i < _executeLoop.size(); i++)
                 {
-                    MenuEntry *entry = _executeLoop[i];
+                    MenuEntryImpl *entry = _executeLoop[i];
                     if (entry)
                     {
                         if (entry->_Execute())
@@ -231,7 +230,7 @@ namespace CTRPluginFramework
     // Render Menu
     //###########################################
 
-    void    PluginMenu::_Render_Menu(void)
+    void    PluginMenuImpl::_Render_Menu(void)
     {
         static Color black = Color();
         static Color blank(255, 255, 255);
@@ -255,7 +254,7 @@ namespace CTRPluginFramework
         }
 
 
-        MenuFolder *folder = _starMode ? _starred : _folder;
+        MenuFolderImpl *folder = _starMode ? _starred : _folder;
 
         // Draw Title
         int width;
@@ -279,7 +278,7 @@ namespace CTRPluginFramework
             }
             if (item->_type == MenuType::Entry)
             {
-                MenuEntry *entry = reinterpret_cast<MenuEntry *>(item);
+                MenuEntryImpl *entry = reinterpret_cast<MenuEntryImpl *>(item);
                 Renderer::DrawSysCheckBox(entry->name.c_str(), posX, posY, 350, i == _selector ? blank : silver, entry->IsActivated(), i == _selector ? _scrollOffset : 0.f);  
             }
             else
@@ -294,7 +293,7 @@ namespace CTRPluginFramework
     // Render Top Screen
     //###########################################
 
-    void    PluginMenu::_RenderTop(void)
+    void    PluginMenuImpl::_RenderTop(void)
     {
         Renderer::SetTarget(TOP);
         switch (_mode)
@@ -318,7 +317,7 @@ namespace CTRPluginFramework
     //###########################################
     // Render Bottom Screen
     //###########################################
-    void    PluginMenu::_RenderBottom(void)
+    void    PluginMenuImpl::_RenderBottom(void)
     {
         static Color black = Color();
         static Color blank(255, 255, 255);
@@ -400,13 +399,13 @@ namespace CTRPluginFramework
     //###########################################
     // Process Event
     //###########################################
-    void    PluginMenu::_ProcessEvent(Event &event)
+    void    PluginMenuImpl::_ProcessEvent(Event &event)
     {
         static Clock fastScroll;
         static Clock inputClock;
         static MenuItem *last = nullptr;
 
-        MenuFolder *folder = _starMode ? _starred : _folder;
+        MenuFolderImpl *folder = _starMode ? _starred : _folder;
         MenuItem *item;
 
         switch (event.type)
@@ -482,7 +481,7 @@ namespace CTRPluginFramework
                     ********************/
                     case Key::B:
                     {
-                        MenuFolder *p = folder->_Close(_selector, _starMode);
+                        MenuFolderImpl *p = folder->_Close(_selector, _starMode);
                         if (p != nullptr)
                         {
                             if (_starMode)
@@ -552,7 +551,7 @@ namespace CTRPluginFramework
     //###########################################
     // Update menu
     //###########################################
-    void    PluginMenu::_Update(Time delta)
+    void    PluginMenuImpl::_Update(Time delta)
     {
         /*
         ** Scrolling
@@ -595,7 +594,7 @@ namespace CTRPluginFramework
 
     }
 
-    void    PluginMenu::_TriggerGuide(void)
+    void    PluginMenuImpl::_TriggerGuide(void)
     {
         if (_guide.IsOpen())
         {
@@ -609,18 +608,18 @@ namespace CTRPluginFramework
         }
     }
 
-    void    PluginMenu::_TriggerEntry(void)
+    void    PluginMenuImpl::_TriggerEntry(void)
     {
-        MenuFolder *folder = _starMode ? _starred : _folder;
+        MenuFolderImpl *folder = _starMode ? _starred : _folder;
         /*
-        ** MenuEntry
+        ** MenuEntryImpl
         **************/
         if (_selector >= folder->ItemsCount())
             return;
 
         if (folder->_items[_selector]->_type == MenuType::Entry)
         {
-            MenuEntry *entry = reinterpret_cast<MenuEntry *>(folder->_items[_selector]);
+            MenuEntryImpl *entry = reinterpret_cast<MenuEntryImpl *>(folder->_items[_selector]);
             // Change the state
             bool state = entry->_TriggerState();
             // If the entry has a valid funcpointer
@@ -658,11 +657,11 @@ namespace CTRPluginFramework
             }
         }
         /*
-        ** MenuFolder
+        ** MenuFolderImpl
         ****************/
         else
         {
-            MenuFolder *p = reinterpret_cast<MenuFolder *>(folder->_items[_selector]);
+            MenuFolderImpl *p = reinterpret_cast<MenuFolderImpl *>(folder->_items[_selector]);
             p->_Open(folder, _selector, _starMode);
             if (_starMode)
                 _starred = p;
@@ -672,9 +671,9 @@ namespace CTRPluginFramework
         }
     }
 
-    void   PluginMenu::_StarItem(void)
+    void   PluginMenuImpl::_StarItem(void)
     {
-        MenuFolder *folder = _starMode ? _starred : _folder;
+        MenuFolderImpl *folder = _starMode ? _starred : _folder;
 
         if (_selector >= folder->ItemsCount())
             return;
@@ -714,7 +713,7 @@ namespace CTRPluginFramework
         }
     }
 
-    void    PluginMenu::_DisplayNote(void)
+    void    PluginMenuImpl::_DisplayNote(void)
     {
         if (_noteTB != nullptr)
         {

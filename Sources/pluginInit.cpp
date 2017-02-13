@@ -64,20 +64,14 @@ namespace CTRPluginFramework
 
         while (keepRunning)
         {
-            svcWaitSynchronization(_keepEvent, U64_MAX); //Stopped working, need to debug
-            svcClearEvent(_keepEvent); //Stopped working, need to debug for proper sleep
-            if (Process::IsPaused())
+            svcWaitSynchronization(_keepEvent, U64_MAX); 
+            svcClearEvent(_keepEvent);
+
+            while (Process::IsPaused())
             {
-                while (Process::IsPaused())
-                {
-                    if (Process::IsAcquiring())
-                        Sleep(Milliseconds(100));
-                }               
-            }
-            else
-            {
-              //  Sleep(Milliseconds(500)); // temporary fix
-            }
+                if (Process::IsAcquiring())
+                    Sleep(Milliseconds(100));
+            }               
         }
 
         threadJoin(mainThread, U64_MAX);
@@ -155,8 +149,6 @@ namespace CTRPluginFramework
         threadExit(1);        
     }
 
-    // For the linker to find the function
-    extern "C" int LaunchMainThread(int arg);
 
     int   LaunchMainThread(int arg)
     {

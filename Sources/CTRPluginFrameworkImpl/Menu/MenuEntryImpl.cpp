@@ -1,11 +1,11 @@
 #include "types.h"
 
 #include "CTRPluginFrameworkImpl/Menu/MenuItem.hpp"
-#include "CTRPluginFrameworkImpl/Menu/MenuEntry.hpp"
+#include "CTRPluginFrameworkImpl/Menu/MenuEntryImpl.hpp"
 
 namespace CTRPluginFramework
 {
-    MenuEntry::MenuEntry(std::string name, std::string note) : MenuItem(MenuType::Entry)
+    MenuEntryImpl::MenuEntryImpl(std::string name, std::string note) : MenuItem(MenuType::Entry)
     {
         this->name = name;
         this->note = note;
@@ -17,7 +17,7 @@ namespace CTRPluginFramework
         this->_radioId = -1;
     }
 
-    MenuEntry::MenuEntry(std::string name, FuncPointer func, std::string note) : MenuItem(MenuType::Entry)
+    MenuEntryImpl::MenuEntryImpl(std::string name, FuncPointer func, std::string note) : MenuItem(MenuType::Entry)
     {
         this->name = name;
         this->note = note;
@@ -29,43 +29,43 @@ namespace CTRPluginFramework
         this->_radioId = -1;
     }
 
-    MenuEntry::~MenuEntry() {}
+    MenuEntryImpl::~MenuEntryImpl() {}
 
-    void    MenuEntry::Disable(void)
+    void    MenuEntryImpl::Disable(void)
     {
         _flags.state = 0;
         _flags.justChanged = 1;
     }
 
-    void    MenuEntry::SetRadio(int id)
+    void    MenuEntryImpl::SetRadio(int id)
     {
         _flags.isRadio = 1;
         _radioId = id;
     }
 
-    void    MenuEntry::SetArg(void *arg)
+    void    MenuEntryImpl::SetArg(void *arg)
     {
         _arg = arg;
     }
 
-    void    *MenuEntry::GetArg(void)
+    void    *MenuEntryImpl::GetArg(void)
     {
         return (_arg);
     }
 
-    bool    MenuEntry::WasJustActivated(void)
+    bool    MenuEntryImpl::WasJustActivated(void)
     {
         return (_flags.state && _flags.justChanged);
     }
 
-    bool    MenuEntry::IsActivated(void)
+    bool    MenuEntryImpl::IsActivated(void)
     {
         return (_flags.state);
     }
 
     //##############################################################
 
-    bool    MenuEntry::_TriggerState(void)
+    bool    MenuEntryImpl::_TriggerState(void)
     {
         if (_flags.state)
         {
@@ -81,7 +81,7 @@ namespace CTRPluginFramework
         }
     }
 
-    bool    MenuEntry::_MustBeRemoved(void)
+    bool    MenuEntryImpl::_MustBeRemoved(void)
     {
         if (_flags.state)
             return (false);
@@ -90,7 +90,7 @@ namespace CTRPluginFramework
         return (true);
     }
 
-    bool    MenuEntry::_Execute(void)
+    bool    MenuEntryImpl::_Execute(void)
     {
         Flags fl = _flags;
         if (GameFunc != nullptr)

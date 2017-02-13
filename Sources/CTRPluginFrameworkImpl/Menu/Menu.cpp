@@ -1,4 +1,4 @@
-#include "CTRPluginFramework/Menu.hpp"
+#include "CTRPluginFrameworkImpl/Menu.hpp"
 #include "CTRPluginFramework/Graphics/Color.hpp"
 #include "CTRPluginFramework/Graphics/Renderer.hpp"
 #include "CTRPluginFramework/Controller.hpp"
@@ -14,17 +14,17 @@ namespace CTRPluginFramework
         _background = IntRect(30, 20, 340, 200);
         _border = IntRect(32, 22, 336, 196);
         _selector = 0;
-        _folder = new MenuFolder(title);
+        _folder = new MenuFolderImpl(title);
     }
 
-    Menu::Menu(MenuFolder *folder)
+    Menu::Menu(MenuFolderImpl *folder)
     {
         _background = IntRect(30, 20, 340, 200);
         _border = IntRect(32, 22, 336, 196);
         _selector = 0;
         _folder = folder;
         if (_folder == nullptr)
-            _folder = new MenuFolder("Menu");
+            _folder = new MenuFolderImpl("Menu");
     }
 
     Menu::~Menu(void)
@@ -144,13 +144,13 @@ namespace CTRPluginFramework
                     }
 
                     // if it's a folder
-                    MenuFolder *folder = reinterpret_cast<MenuFolder *>(item);
+                    MenuFolderImpl *folder = reinterpret_cast<MenuFolderImpl *>(item);
                     folder->_Open(_folder, _selector);
                     break;
                 }
                 case B:
                 {
-                    MenuFolder *p = _folder->_Close(_selector);
+                    MenuFolderImpl *p = _folder->_Close(_selector);
                     if (p != nullptr)
                         _folder = p;
                     else
@@ -215,14 +215,14 @@ namespace CTRPluginFramework
                     }
 
                     // if it's a folder
-                    MenuFolder *folder = reinterpret_cast<MenuFolder *>(item);
+                    MenuFolderImpl *folder = reinterpret_cast<MenuFolderImpl *>(item);
                     folder->_Open(_folder, _selector);
                     _folder = folder;
                     break;
                 }
                 case B:
                 {
-                    MenuFolder *p = _folder->_Close(_selector);
+                    MenuFolderImpl *p = _folder->_Close(_selector);
                     if (p != nullptr)
                         _folder = p;
                     else

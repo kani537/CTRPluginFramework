@@ -1,12 +1,10 @@
 #include "types.h"
 
-#include "CTRPluginFramework/MenuItem.hpp"
-#include "CTRPluginFramework/MenuEntry.hpp"
-#include "CTRPluginFramework/MenuFolder.hpp"
+#include "CTRPluginFrameworkImpl/Menu.hpp"
 
 namespace CTRPluginFramework
 {
-    MenuFolder::MenuFolder(std::string name, std::string note) :
+    MenuFolderImpl::MenuFolderImpl(std::string name, std::string note) :
     MenuItem(MenuType::Folder)
     {
         this->name = name;
@@ -17,32 +15,32 @@ namespace CTRPluginFramework
         this->_parent[1] = nullptr;
     }
 
-    MenuFolder::~MenuFolder()
+    MenuFolderImpl::~MenuFolderImpl()
     {
 
     }
 
-    void    MenuFolder::Append(MenuItem *item)
+    void    MenuFolderImpl::Append(MenuItem *item)
     {
         _items.push_back(item);
 
     }
 
-    u32    MenuFolder::ItemsCount(void)
+    u32    MenuFolderImpl::ItemsCount(void)
     {
         return (_items.size());
     }
 
     //#######################################################################
 
-    void    MenuFolder::_Open(MenuFolder *parent, int position, bool starMode)
+    void    MenuFolderImpl::_Open(MenuFolderImpl *parent, int position, bool starMode)
     {
         int index = starMode ? 1 : 0;
         _parent[index] = parent;
         _position[index] = position;
     }
 
-    MenuFolder  *MenuFolder::_Close(int &position, bool starMode)
+    MenuFolderImpl  *MenuFolderImpl::_Close(int &position, bool starMode)
     {
         int index = starMode ? 1 : 0;
         if (_parent[index] != nullptr && _position[index] != -1)
