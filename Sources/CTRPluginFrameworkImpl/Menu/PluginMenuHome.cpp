@@ -70,6 +70,21 @@ namespace CTRPluginFramework
             static int bak = 0;
             std::swap(bak, _selector);
             _starMode = !_starMode;
+
+            MenuFolderImpl *f = _starMode ? _starred : _folder;
+            if (f->ItemsCount() == 0)
+            {
+                _InfoBtn.Enable(false);
+                _AddFavoriteBtn.Enable(false);
+            }
+            else
+            {
+                MenuEntryImpl *e = reinterpret_cast<MenuEntryImpl *>(f->_items[_selector]);
+                _InfoBtn.Enable(e->note.size() > 0);
+                _AddFavoriteBtn.Enable(true);
+                _AddFavoriteBtn.SetState(e->_IsStarred());
+            }
+
         }
 
         /*
@@ -118,31 +133,33 @@ namespace CTRPluginFramework
         {
             case Event::KeyDown:
             {
-                if (fastScroll.HasTimePassed(Milliseconds(800)) && inputClock.HasTimePassed(Milliseconds(400)))
-                switch (event.key.code)
+                if (fastScroll.HasTimePassed(Milliseconds(800)) && inputClock.HasTimePassed(Milliseconds(100)))
                 {
-                    /*
-                    ** Selector
-                    **************/
-                    case Key::CPadUp:
-                    case Key::DPadUp:
+                    switch (event.key.code)
                     {
-                        if (_selector > 0)
-                            _selector--;
-                        else
-                            _selector = std::max((int)folder->ItemsCount() - 1, 0);
-                        break;
-                    }
-                    case Key::CPadDown:
-                    case Key::DPadDown:
-                    {
-                        if (_selector < folder->ItemsCount() - 1)
-                            _selector++;
-                        else
-                            _selector = 0;
-                        break;
-                    }
-                    inputClock.Restart();                  
+                        /*
+                        ** Selector
+                        **************/
+                        case Key::CPadUp:
+                        case Key::DPadUp:
+                        {
+                            if (_selector > 0)
+                                _selector--;
+                            else
+                                _selector = std::max((int)folder->ItemsCount() - 1, 0);
+                            break;
+                        }
+                        case Key::CPadDown:
+                        case Key::DPadDown:
+                        {
+                            if (_selector < folder->ItemsCount() - 1)
+                                _selector++;
+                            else
+                                _selector = 0;
+                            break;
+                        } 
+                    }                    
+                    inputClock.Restart(); 
                 }
                 break;
             } // Event::KeyDown
