@@ -1,14 +1,9 @@
 #ifndef CTRPLUGINFRAMEWORK_CHECKEDBUTTON_HPP
 #define CTRPLUGINFRAMEWORK_CHECKEDBUTTON_HPP
 
-#include "CTRPluginFramework/Line.hpp"
-#include "CTRPluginFramework/Rect.hpp"
-#include "CTRPluginFramework/Screen.hpp"
-#include "CTRPluginFramework/Touch.hpp"
-#include "CTRPluginFramework/Graphics/Renderer.hpp"
+#include "CTRPluginFrameworkImpl/Graphics.hpp"
 #include "CTRPluginFramework/Graphics/Color.hpp"
-#include "CTRPluginFramework/Clock.hpp"
-#include "CTRPluginFramework/Graphics/Icon.hpp"
+#include "CTRPluginFramework/System/Clock.hpp"
 
 #include <vector>
 #include <string>

@@ -1,14 +1,11 @@
-#ifndef CTRPLUGINFRAMEWORK_MENU_HPP
-#define CTRPLUGINFRAMEWORK_MENU_HPP
+#ifndef CTRPLUGINFRAMEWORKIMPL_MENUIMPL_HPP
+#define CTRPLUGINFRAMEWORKIMPL_MENUIMPL_HPP
 
 #include "types.h"
-#include "CTRPluginFrameworkImpl/Menu.hpp"
-#include "CTRPluginFramework/Events.hpp"
-#include "CTRPluginFramework/Vector.hpp"
-#include "CTRPluginFramework/Rect.hpp"
-#include "CTRPluginFramework/Clock.hpp"
-
-#include "CTRPluginFramework/Time.hpp"
+#include "CTRPluginFrameworkImpl/Graphics.hpp"
+#include "CTRPluginFrameworkImpl/Menu/MenuFolderImpl.hpp"
+#include "CTRPluginFrameworkImpl/System/Events.hpp"
+#include "CTRPluginFramework/System/Time.hpp"
 
 namespace CTRPluginFramework
 {

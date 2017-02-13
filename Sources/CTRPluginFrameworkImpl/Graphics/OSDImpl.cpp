@@ -1,4 +1,4 @@
-#include "CTRPluginFramework/Graphics/OSDImpl.hpp"
+#include "CTRPluginFrameworkImpl/Graphics/OSDImpl.hpp"
 #include "CTRPluginFrameworkImpl/System/Screen.hpp"
 #include "font6x10Linux.h"
 
@@ -16,10 +16,10 @@ namespace CTRPluginFramework
     {
         if (_single != nullptr)
             return;
-        _single = new OSD();
+        _single = new OSDImpl();
     }
 
-    OSD     *OSDImpl::GetInstance(void)
+    OSDImpl     *OSDImpl::GetInstance(void)
     {
         return (_single);
     }

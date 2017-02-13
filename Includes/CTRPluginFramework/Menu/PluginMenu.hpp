@@ -9,6 +9,7 @@
 
 namespace CTRPluginFramework
 {
+    class PluginMenuImpl;
     class PluginMenu
     {
 
@@ -22,8 +23,9 @@ namespace CTRPluginFramework
         int     Run(void);
 
     private:
-        class PluginMenuImpl;
-        std::unique_ptr<PluginMenuImpl> _menu;
+        
+        PluginMenuImpl *_menu;
+        //std::unique_ptr<PluginMenuImpl> _menu;
     };
 }
 

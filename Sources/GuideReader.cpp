@@ -1,14 +1,14 @@
-#include "CTRPluginFramework/GuideReader.hpp"
-#include "CTRPluginFramework/Rect.hpp"
-#include "CTRPluginFramework/Preferences.hpp"
+#include "CTRPluginFrameworkImpl/Menu/GuideReader.hpp"
+#include "CTRPluginFrameworkImpl/Graphics/Rect.hpp"
+#include "CTRPluginFrameworkImpl/Preferences.hpp"
 
 namespace CTRPluginFramework
 {
-    MenuFolder *CreateFolder(std::string path)
+    MenuFolderImpl *CreateFolder(std::string path)
     {
         u32                         pos = path.rfind("/");
         std::string                 name = pos != std::string::npos ? path.substr(pos + 1) : path;
-        MenuFolder                  *mFolder = new MenuFolder(name);
+        MenuFolderImpl                  *mFolder = new MenuFolderImpl(name);
         Directory                   folder;
         std::vector<std::string>    directories;
         std::vector<std::string>    files;
@@ -22,7 +22,7 @@ namespace CTRPluginFramework
         {
             for (int i = 0; i < directories.size(); i++)
             {
-                MenuFolder *subMFolder = CreateFolder(path + "/" + directories[i]);
+                MenuFolderImpl *subMFolder = CreateFolder(path + "/" + directories[i]);
                 if (subMFolder != nullptr)
                     mFolder->Append(subMFolder);
             }
@@ -36,7 +36,7 @@ namespace CTRPluginFramework
             {
                 u32 fpos = files[i].rfind(".txt");
                 std::string fname = fpos != std::string::npos ? files[i].substr(0, fpos) : files[i];
-                MenuEntry *entry = new MenuEntry(fname, path);
+                MenuEntryImpl *entry = new MenuEntryImpl(fname, path);
                 mFolder->Append(entry);
             }
         }
@@ -99,7 +99,7 @@ namespace CTRPluginFramework
 
             if (ret >= 0)
             {
-                MenuEntry *entry = (MenuEntry *)item;
+                MenuEntryImpl *entry = (MenuEntryImpl *)item;
                 if (entry != _last)
                 {
                     _last = entry;

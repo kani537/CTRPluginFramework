@@ -1,7 +1,7 @@
 #ifndef CTRPLUGINFRAMEWORK_RECT_HPP
 #define CTRPLUGINFRAMEWORK_RECT_HPP
 
-#include <Vector.hpp>
+#include "CTRPluginFrameworkImpl/Graphics/Vector.hpp"
 #include <algorithm>
 
 namespace CTRPluginFramework

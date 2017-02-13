@@ -1,8 +1,8 @@
 #include "CTRPluginFrameworkImpl/Menu.hpp"
 #include "CTRPluginFramework/Graphics/Color.hpp"
-#include "CTRPluginFramework/Graphics/Renderer.hpp"
-#include "CTRPluginFramework/Controller.hpp"
-#include "CTRPluginFramework/Clock.hpp"
+#include "CTRPluginFrameworkImpl/Graphics/Renderer.hpp"
+#include "CTRPluginFramework/System/Controller.hpp"
+#include "CTRPluginFramework/System/Clock.hpp"
 #include "CTRPluginFrameworkImpl/Preferences.hpp"
 
 #include <algorithm>

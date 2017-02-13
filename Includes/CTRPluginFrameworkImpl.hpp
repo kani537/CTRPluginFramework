@@ -7,4 +7,6 @@
 #include "CTRPluginFrameworkImpl/Menu.hpp"
 #include "CTRPluginFrameworkImpl/System.hpp"
 
+#include "CTRPluginFrameworkImpl/Preferences.hpp"
+
 #endif

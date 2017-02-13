@@ -3,12 +3,13 @@
 
 #include "types.h"
 #include "CTRPluginFramework/Graphics/Color.hpp"
-#include "CTRPluginFramework/Graphics/Renderer.hpp"
-#include "CTRPluginFramework/Screen.hpp"
+#include "CTRPluginFrameworkImpl/Graphics/PrivColor.hpp"
+#include "CTRPluginFrameworkImpl/Graphics/Renderer.hpp"
+#include "CTRPluginFrameworkImpl/System/Screen.hpp"
 #include "CTRPluginFramework/Graphics/OSD.hpp"
-#include "CTRPluginFramework/File.hpp"
-#include "CTRPluginFramework/Vector.hpp"
-#include "CTRPluginFramework/Rect.hpp"
+#include "CTRPluginFramework/System/File.hpp"
+#include "CTRPluginFrameworkImpl/Graphics/Vector.hpp"
+#include "CTRPluginFrameworkImpl/Graphics/Rect.hpp"
 
 #include <string>
 #include <vector>
@@ -130,6 +131,15 @@ namespace CTRPluginFramework
             Draw(point.x, point.y);
        }
 
+       struct Pixel
+       {
+          u8 b;
+          u8 g;
+          u8 r;
+       };
+
+
+
        void     Draw(int x, int y)
        {    
             bool topScreen = Renderer::_target == 1;
@@ -149,8 +159,9 @@ namespace CTRPluginFramework
                 u8 *framebuf = scr->GetLeftFramebuffer(posX, posY + y);
                 for (int x = 0; x < width; x++)
                 {
-                    Color imgc = Color::FromMemory(img);
-                    Color::ToFramebuffer(framebuf, imgc);
+                    Pixel *pix = (Pixel *)img;
+                    Color imgc(pix->r, pix->g, pix->b);
+                    PrivColor::ToFramebuffer(framebuf, imgc);
                     framebuf += stride;
                     img += 3;
                 }
@@ -182,8 +193,9 @@ namespace CTRPluginFramework
 
                     for (int x = 0; x < width; x++)
                     {
-                        Color imgc = Color::FromMemory(img);
-                        Color::ToFramebuffer(framebuf, imgc);
+                        Pixel *pix = (Pixel *)img;
+                        Color imgc(pix->r, pix->g, pix->b);
+                        PrivColor::ToFramebuffer(framebuf, imgc);
                         framebuf += stride;
                         img += 3;
                     }
@@ -198,8 +210,9 @@ namespace CTRPluginFramework
 
                     for (int x = 0; x < width; x++)
                     {
-                        Color imgc = Color::FromMemory(img);
-                        Color::ToFramebuffer(framebuf, imgc.Fade(fade));
+                        Pixel *pix = (Pixel *)img;
+                        Color imgc(pix->r, pix->g, pix->b);
+                        PrivColor::ToFramebuffer(framebuf, imgc.Fade(fade));
                         framebuf += stride;
                         img += 3;
                     }

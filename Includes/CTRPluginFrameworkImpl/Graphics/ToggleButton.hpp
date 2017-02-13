@@ -1,13 +1,12 @@
 #ifndef CTRPLUGINFRAMEWORK_TOGGLEBUTTON_HPP
 #define CTRPLUGINFRAMEWORK_TOGGLEBUTTON_HPP
 
-#include "CTRPluginFramework/Line.hpp"
-#include "CTRPluginFramework/Rect.hpp"
-#include "CTRPluginFramework/Screen.hpp"
-#include "CTRPluginFramework/Touch.hpp"
-#include "CTRPluginFramework/Graphics/Renderer.hpp"
+
 #include "CTRPluginFramework/Graphics/Color.hpp"
-#include "CTRPluginFramework/Clock.hpp"
+#include "CTRPluginFrameworkImpl/Graphics.hpp"
+
+#include "CTRPluginFramework/System/Touch.hpp"
+#include "CTRPluginFramework/System/Clock.hpp"
 
 
 namespace CTRPluginFramework

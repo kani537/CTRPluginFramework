@@ -1,6 +1,8 @@
 #ifndef CTRPLUGINFRAMEWORK_EVENTMANAGER_HPP
 #define CTRPLUGINFRAMEWORK_EVENTMANAGER_HPP
 
+#include <queue>
+
 namespace CTRPluginFramework
 {
     class Event;

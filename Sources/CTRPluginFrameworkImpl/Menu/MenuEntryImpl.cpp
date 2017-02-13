@@ -5,7 +5,7 @@
 
 namespace CTRPluginFramework
 {
-    MenuEntryImpl::MenuEntryImpl(std::string name, std::string note) : MenuItem(MenuType::Entry)
+    MenuEntryImpl::MenuEntryImpl(std::string name, std::string note, MenuEntry *owner) : MenuItem(MenuType::Entry)
     {
         this->name = name;
         this->note = note;
@@ -15,9 +15,10 @@ namespace CTRPluginFramework
         this->_executeIndex = -1;
         this->_flags = {0};
         this->_radioId = -1;
+        this->_owner = owner;
     }
 
-    MenuEntryImpl::MenuEntryImpl(std::string name, FuncPointer func, std::string note) : MenuItem(MenuType::Entry)
+    MenuEntryImpl::MenuEntryImpl(std::string name, FuncPointer func, std::string note, MenuEntry *owner) : MenuItem(MenuType::Entry)
     {
         this->name = name;
         this->note = note;
@@ -27,9 +28,8 @@ namespace CTRPluginFramework
         this->_executeIndex = -1;        
         this->_flags = {0};        
         this->_radioId = -1;
+        this->_owner = owner;
     }
-
-    MenuEntryImpl::~MenuEntryImpl() {}
 
     void    MenuEntryImpl::Disable(void)
     {
@@ -94,7 +94,7 @@ namespace CTRPluginFramework
     {
         Flags fl = _flags;
         if (GameFunc != nullptr)
-            GameFunc(this);
+            GameFunc(_owner);
         
         if (_flags.state && _flags.justChanged)
             _flags.justChanged = 0;

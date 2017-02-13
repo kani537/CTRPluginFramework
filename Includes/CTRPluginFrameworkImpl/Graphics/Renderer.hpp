@@ -4,10 +4,13 @@
 #include "types.h"
 
 #include "ctrulib/font.h"
-#include "CTRPluginFramework/Vector.hpp"
-#include "CTRPluginFramework/Rect.hpp"
-#include "CTRPluginFramework/Line.hpp"
+#include "ctrulib/gfx.h"
+
 #include "CTRPluginFramework/Graphics/Color.hpp"
+#include "CTRPluginFrameworkImpl/Graphics/Vector.hpp"
+#include "CTRPluginFrameworkImpl/Graphics/Rect.hpp"
+#include "CTRPluginFrameworkImpl/Graphics/Line.hpp"
+
 #include <algorithm>
 
 namespace CTRPluginFramework
@@ -121,12 +124,6 @@ namespace CTRPluginFramework
         static void         RenderRGB565(int posX, int posY, Color &color);
         static void         RenderRGB5A1(int posX, int posY, Color &color);
         static void         RenderRGBA4(int posX, int posY, Color &color);
-
-        static void         RenderRGBA8(int posX, int posY, u8 *data, int height);
-        static void         RenderBGR8(int posX, int posY, u8 *data, int height);
-        static void         RenderRGB565(int posX, int posY, u8 *data, int height);
-        static void         RenderRGB5A1(int posX, int posY, u8 *data, int height);
-        static void         RenderRGBA4(int posX, int posY, u8 *data, int height);
 
         
         static DrawDataP    _DrawData;

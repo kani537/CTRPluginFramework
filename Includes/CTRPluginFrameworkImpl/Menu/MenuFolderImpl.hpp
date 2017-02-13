@@ -1,15 +1,15 @@
-#ifndef CTRPLUGINFRAMEWORK_MENUFOLDER_HPP
-#define CTRPLUGINFRAMEWORK_MENUFOLDER_HPP
+#ifndef CTRPLUGINFRAMEWORKIMPL_MENUFOLDERIMPL_HPP
+#define CTRPLUGINFRAMEWORKIMPL_MENUFOLDERIMPL_HPP
 
 #include "CTRPluginFrameworkImpl/Menu/MenuItem.hpp"
-
+#include "CTRPluginFrameworkImpl/Menu/MenuFolderImpl.hpp"
 #include <vector>
 #include <string>
 
 namespace CTRPluginFramework
 {
     class Menu;
-    class MenuFolder : public MenuItem
+    class MenuFolderImpl : public MenuItem
     {
     public:
         MenuFolderImpl(std::string name, std::string note = "");

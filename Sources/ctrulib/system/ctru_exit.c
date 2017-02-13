@@ -1,5 +1,5 @@
 #include <3DS.h>
-#include "CTRPluginFramework/arm11kCommands.h"
+#include "CTRPluginFrameworkImpl/arm11kCommands.h"
 
 extern u32 __ctru_heap;
 extern u32 __ctru_heap_size;

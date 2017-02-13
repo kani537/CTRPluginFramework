@@ -1,11 +1,11 @@
-#ifndef CTRPLUGINFRAMEWORK_OSD_HPP
-#define CTRPLUGINFRAMEWORK_OSD_HPP
+#ifndef CTRPLUGINFRAMEWORKIMPL_OSDIMPL_HPP
+#define CTRPLUGINFRAMEWORKIMPL_OSDIMPL_HPP
 
 #include "types.h"
 
 #include "CTRPluginFramework/Graphics/Color.hpp"
 #include "CTRPluginFrameworkImpl/Graphics/PrivColor.hpp"
-#include "CTRPluginFramework/Clock.hpp"
+#include "CTRPluginFramework/System/Clock.hpp"
 
 #include <iterator>
 #include <string>
@@ -42,6 +42,7 @@ namespace CTRPluginFramework
 
     private:
         friend class PluginMenu;
+        friend class OSD;
         friend void  Initialize(void);
 
         static  void    _Initialize(void);

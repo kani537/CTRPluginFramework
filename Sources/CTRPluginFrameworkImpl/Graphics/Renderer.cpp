@@ -71,23 +71,23 @@ namespace CTRPluginFramework
         {
             case GSP_RGBA8_OES:
                 _DrawPixel = RenderRGBA8;
-                _DrawData = RenderRGBA8;
+             //   _DrawData = RenderRGBA8;
                 break;
             case GSP_BGR8_OES:
                 _DrawPixel = RenderBGR8;
-                _DrawData = RenderBGR8;
+             //   _DrawData = RenderBGR8;
                 break;
             case GSP_RGB565_OES:
                 _DrawPixel = RenderRGB565;
-                _DrawData = RenderRGB565;
+             //   _DrawData = RenderRGB565;
                 break;
             case GSP_RGB5_A1_OES:
                 _DrawPixel = RenderRGB5A1;
-                _DrawData = RenderRGB5A1;
+             //   _DrawData = RenderRGB5A1;
                 break;
             case GSP_RGBA4_OES:
                 _DrawPixel = RenderRGBA4;
-                _DrawData = RenderRGBA4;
+             //   _DrawData = RenderRGBA4;
                 break;        
         }
     }

@@ -1,6 +1,7 @@
 #include "types.h"
 
-#include "CTRPluginFramework/Graphics/Renderer.hpp"
+#include "CTRPluginFrameworkImpl/Graphics/Renderer.hpp"
+#include "CTRPluginFrameworkImpl/System/Screen.hpp"
 
 namespace CTRPluginFramework
 {

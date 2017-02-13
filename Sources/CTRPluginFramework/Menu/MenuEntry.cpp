@@ -1,19 +1,17 @@
 #include "types.h"
 
-#include "CTRPluginFramework/MenuEntry.hpp"
+#include "CTRPluginFramework/Menu/MenuEntry.hpp"
 #include "CTRPluginFrameworkImpl/Menu/MenuEntryImpl.hpp"
 
 namespace CTRPluginFramework
 {
     MenuEntry::MenuEntry(std::string name, std::string note) : 
-        _item(new MenuEntryImpl(name, note))
-    {
-        name = _item->name;
-        note = _item->note;
+        _item(new MenuEntryImpl(name, note, this))
+    {   
     }
     
     MenuEntry::MenuEntry(std::string name, FuncPointer func, std::string note) : 
-        _item(new MenuEntryImpl(name, func, note))
+        _item(new MenuEntryImpl(name, func, note, this))
     {
 
     }
@@ -56,5 +54,15 @@ namespace CTRPluginFramework
     void    MenuEntry::SetMenuFunc(FuncPointer func)
     {
         _item->MenuFunc = func;
+    }
+
+    std::string &MenuEntry::Name(void)
+    {
+        return (_item->name);
+    }
+
+    std::string &MenuEntry::Note(void)
+    {
+        return (_item->note);
     }
 }

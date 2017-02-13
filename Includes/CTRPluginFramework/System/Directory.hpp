@@ -5,6 +5,9 @@
 #include <string>
 #include <vector>
 
+#include "ctrulib/services/fs.h"
+#include "CTRPluginFramework/System/File.hpp"
+
 namespace CTRPluginFramework
 {
     class File;
@@ -94,7 +97,6 @@ namespace CTRPluginFramework
     private:
 
         friend class File;
-
         static  std::string     _workingDirectory;
         static  int             _SdmcFixPath(std::string &path);
         static  FS_Path         _SdmcUtf16Path(std::string path);
@@ -102,8 +104,6 @@ namespace CTRPluginFramework
         Directory  (std::string &path, Handle &handle);
         std::string     _path;
         Handle          _handle;
-
-        struct FS_DirectoryEntry;
         std::vector<FS_DirectoryEntry>    _list;
         bool                              _isListed;
     };

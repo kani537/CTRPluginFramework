@@ -134,8 +134,8 @@ namespace CTRPluginFramework
 
     void    Screen::Initialize(void)
     {
-        Screen::Top = new Screen(System::GetIOBasePDC() + 0x400, System::GetIOBaseLCD() + 0x204, true);
-        Screen::Bottom = new Screen(System::GetIOBasePDC() + 0x500, System::GetIOBaseLCD() + 0xA04);
+        Screen::Top = new Screen(SystemImpl::GetIOBasePDC() + 0x400, SystemImpl::GetIOBaseLCD() + 0x204, true);
+        Screen::Bottom = new Screen(SystemImpl::GetIOBasePDC() + 0x500, SystemImpl::GetIOBaseLCD() + 0xA04);
     }
 
 
@@ -147,10 +147,10 @@ namespace CTRPluginFramework
 
         for (int i = size; i > 0; i--)
         {
-            Color c = Color::FromFramebuffer(framebuf);
+            Color c = PrivColor::FromFramebuffer(framebuf);
             
             c.Fade(fade);
-            framebuf = Color::ToFramebuffer(framebuf, c);
+            framebuf = PrivColor::ToFramebuffer(framebuf, c);
         }
     }
 
@@ -171,7 +171,7 @@ namespace CTRPluginFramework
         _currentBuffer = *_currentBufferReg;
         // Get format
         _format = (GSPGPU_FramebufferFormats)(REG(_LCDSetup + LCDSetup::Format) & 0b111);
-        Color::_SetFormat(_format);
+        PrivColor::_SetFormat(_format);
         // Get width & height
         u32 wh = REG(_LCDSetup + LCDSetup::WidthHeight);
         _height = (u16)(wh & 0xFFFF);

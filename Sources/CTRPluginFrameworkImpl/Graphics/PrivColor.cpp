@@ -5,8 +5,8 @@
 
 namespace CTRPluginFramework
 {
-    FCPointer   Color::FromFramebuffer = _ReadBGR8;
-    F8Pointer   Color::ToFramebuffer = _WriteBGR8;
+    FCPointer   PrivColor::FromFramebuffer = _ReadBGR8;
+    F8Pointer   PrivColor::ToFramebuffer = _WriteBGR8;
 
     /*
     ** Private

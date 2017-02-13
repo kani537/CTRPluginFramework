@@ -1,5 +1,5 @@
-#ifndef CTRPLUGINFRAMEWORK_MENUITEM_HPP
-#define CTRPLUGINFRAMEWORK_MENUITEM_HPP
+#ifndef CTRPLUGINFRAMEWORKIMPL_MENUITEMIMPL_HPP
+#define CTRPLUGINFRAMEWORKIMPL_MENUITEMIMPL_HPP
 
 #include <string>
 
@@ -21,7 +21,7 @@ namespace CTRPluginFramework
         std::string     note;
 
     private:
-        friend class PluginMenu;
+        friend class PluginMenuImpl;
         friend class Menu;
 
         bool        _IsStarred(void)

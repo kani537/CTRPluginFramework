@@ -1,9 +1,9 @@
-#include "CTRPluginFrameworkImpl.hpp"
-#include "CTRPluginFramework.hpp"
 #include "3DS.h"
 #include <stdlib.h>
 #include <cstdio>
 #include "CTRPluginFrameworkImpl/arm11kCommands.h"
+#include "CTRPluginFrameworkImpl.hpp"
+#include "CTRPluginFramework.hpp"
 
 extern "C" void     abort(void);
 extern "C" void     initSystem();
@@ -41,7 +41,7 @@ namespace CTRPluginFramework
     void    KeepThreadMain(void *arg)
     {
         // Init Framework's system constants
-        System::Initialize();
+        SystemImpl::Initialize();
 
         // Init Process info
         ProcessImpl::Initialize();
@@ -147,7 +147,7 @@ namespace CTRPluginFramework
         threadExit(1);        
     }
 
-
+    extern "C" int LaunchMainThread(int arg);
     int   LaunchMainThread(int arg)
     {
         svcCreateThread(&keepThreadHandle, KeepThreadMain, 0, &keepThreadStack[0x1000], 0x1A, -2);

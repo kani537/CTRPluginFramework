@@ -1,4 +1,4 @@
-#include "CTRPluginFramework/arm11kCommands.h"
+#include "CTRPluginFrameworkImpl/arm11kCommands.h"
 #include "3DS.h"
 
 u32     g_kernelParams[32];

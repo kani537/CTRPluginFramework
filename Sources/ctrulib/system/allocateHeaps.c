@@ -1,5 +1,5 @@
 #include <3DS.h>
-#include "CTRPluginFramework/arm11kCommands.h"
+#include "CTRPluginFrameworkImpl/arm11kCommands.h"
 extern char* fake_heap_start;
 extern char* fake_heap_end;
 

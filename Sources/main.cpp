@@ -1,7 +1,6 @@
 #include "CTRPluginFramework.hpp"
 
-#include "CTRPluginFramework/Directory.hpp"
-#include "CTRPluginFramework/File.hpp"
+#include "CTRPluginFramework.hpp"
 #include "ctrulib/services/hid.h"
 #include "cheats.hpp"
 #include <cstdio>
@@ -10,8 +9,6 @@
 #include <vector>
 
 #include "ctrulib/services/gspgpu.h"
-#include "CTRPluginFramework/Graphics/Color.hpp"
-#include "CTRPluginFramework/Graphics/OSD.hpp"
 #include "3DS.h"
 
 namespace CTRPluginFramework
@@ -45,9 +42,9 @@ namespace CTRPluginFramework
             u64 t1 = *((u64 *)&hidSharedMem[44]);
 
             sprintf(buffer, "%016llX %016llX %d \n", t, t1, Id);
-            if (entry->note.size() > 500)
-                entry->note.clear();
-            entry->note += buffer;
+            if (entry->Note().size() > 500)
+                entry->Note().clear();
+            entry->Note() += buffer;
         }
         if (Controller::IsKeyDown(Key::ZL))
             Controller::InjectTouch(10, 20);
@@ -135,7 +132,7 @@ namespace CTRPluginFramework
     void    TouchCursor(MenuEntry *entry)
     {
             // Draw Touch Cursor
-            if (Touch::IsDown())
+          /*  if (Touch::IsDown())
             {
                 UIntVector t(Touch::GetPosition());
                 int posX = t.x - 2;
@@ -144,7 +141,7 @@ namespace CTRPluginFramework
                 Renderer::SetTarget(BOTTOM);
                 Icon::DrawHandCursor(posX, posY);
                 Screen::Bottom->Flush();
-            }
+            }*/
     }
 
     int    main(void)
@@ -182,11 +179,6 @@ namespace CTRPluginFramework
         {
             ls += lsv[i] + "\n";
         }
-
-        char buffer[100];
-
-        sprintf(buffer, "outaddr: %08X", addr);
-        ls += buffer;
         // this add the content of the file we've read earlier in the ls string
         //ls += buffer;
 

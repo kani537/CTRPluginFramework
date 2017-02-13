@@ -1,17 +1,17 @@
 #include "types.h"
 #include "3DS.h"
-#include "CTRPluginFrameworkImpl/System/System.hpp"
+#include "CTRPluginFrameworkImpl/System/SystemImpl.hpp"
 
 namespace CTRPluginFramework
 {
-    bool    System::_isInit = false;
-    bool    System::_isNew3DS = false;
-    u32     System::_IOBaseLCD = 0;
-    u32     System::_IOBasePAD = 0;
-    u32     System::_IOBasePDC = 0;
+    bool    SystemImpl::_isInit = false;
+    bool    SystemImpl::_isNew3DS = false;
+    u32     SystemImpl::_IOBaseLCD = 0;
+    u32     SystemImpl::_IOBasePAD = 0;
+    u32     SystemImpl::_IOBasePDC = 0;
     extern "C" u32     g_KProcessPIDOffset;
 
-    void    System::Initialize(void)
+    void    SystemImpl::Initialize(void)
     {
         if (_isInit)
             return;
@@ -38,17 +38,17 @@ namespace CTRPluginFramework
         _isInit = true;
     }
 
-    u32     System::GetIOBaseLCD(void)
+    u32     SystemImpl::GetIOBaseLCD(void)
     {
         return (_IOBaseLCD);
     }
 
-    u32     System::GetIOBasePAD(void)
+    u32     SystemImpl::GetIOBasePAD(void)
     {
         return (_IOBasePAD);
     }
 
-    u32     System::GetIOBasePDC(void)
+    u32     SystemImpl::GetIOBasePDC(void)
     {
         return (_IOBasePDC);
     }

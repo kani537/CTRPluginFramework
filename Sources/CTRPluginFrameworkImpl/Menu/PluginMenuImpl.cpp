@@ -19,13 +19,13 @@ namespace CTRPluginFramework
 {
     bool    _shouldClose = false;
     PluginMenuImpl::PluginMenuImpl(std::string name, std::string note) : 
-    _showStarredBtn("Favorite", *this, &PluginMenu::_StarMode, IntRect(30, 70, 120, 30), Icon::DrawFavorite), 
-    _gameGuideBtn("Game Guide", *this, &PluginMenu::_TriggerGuide, IntRect(30, 105, 120, 30), Icon::DrawGuide),    
-    _toolsBtn("Tools", *this, &PluginMenu::Null, IntRect(30, 140, 120, 30), Icon::DrawTools),
-    _hidMapperBtn("Mapper", *this, &PluginMenu::Null, IntRect(165, 70, 120, 30), Icon::DrawController),
-    _searchBtn("Search", *this, &PluginMenu::Null, IntRect(165, 105, 120, 30), Icon::DrawSearch),
-    _AddFavoriteBtn(*this, &PluginMenu::_StarItem, IntRect(50, 30, 25, 25), Icon::DrawAddFavorite),
-    _InfoBtn(*this, &PluginMenu::_DisplayNote, IntRect(90, 30, 25, 25), Icon::DrawInfo, false),
+    _showStarredBtn("Favorite", *this, &PluginMenuImpl::_StarMode, IntRect(30, 70, 120, 30), Icon::DrawFavorite), 
+    _gameGuideBtn("Game Guide", *this, &PluginMenuImpl::_TriggerGuide, IntRect(30, 105, 120, 30), Icon::DrawGuide),    
+    _toolsBtn("Tools", *this, &PluginMenuImpl::Null, IntRect(30, 140, 120, 30), Icon::DrawTools),
+    _hidMapperBtn("Mapper", *this, &PluginMenuImpl::Null, IntRect(165, 70, 120, 30), Icon::DrawController),
+    _searchBtn("Search", *this, &PluginMenuImpl::Null, IntRect(165, 105, 120, 30), Icon::DrawSearch),
+    _AddFavoriteBtn(*this, &PluginMenuImpl::_StarItem, IntRect(50, 30, 25, 25), Icon::DrawAddFavorite),
+    _InfoBtn(*this, &PluginMenuImpl::_DisplayNote, IntRect(90, 30, 25, 25), Icon::DrawInfo, false),
     _noteTB(nullptr)
     {
         _isOpen = false;
@@ -86,7 +86,7 @@ namespace CTRPluginFramework
         
         Time            delta;
         bool            isInit = false;
-        OSD             &osd = *(OSD::GetInstance());
+        OSDImpl             &osd = *(OSDImpl::GetInstance());
 
         if (_folder != nullptr && _folder->ItemsCount() > 0)
             _selectedTextSize = Renderer::GetTextSize(_folder->_items[_selector]->name.c_str());
@@ -110,14 +110,14 @@ namespace CTRPluginFramework
                 {
                     if (_isOpen)
                     {
-                        Process::Play();
+                        ProcessImpl::Play();
                         _isOpen = false;
                         isInit = true;
                     }
                     else
                     {
                         Renderer::UseDoubleBuffer(false);
-                        Process::Pause();
+                        ProcessImpl::Pause();
                         _isOpen = true;
                     }
                     inputClock.Restart();   
@@ -180,14 +180,14 @@ namespace CTRPluginFramework
 
                 if (_shouldClose)
                 {
-                    Process::Play();
+                    ProcessImpl::Play();
                     _isOpen = false;
                     _shouldClose = false;
                 }
                 // Exit plugin
                 if (Controller::IsKeysDown(L + R + Start))
                 {
-                    Process::Play();
+                    ProcessImpl::Play();
                     _isOpen = false;
                     _pluginRun = false;                   
                 }

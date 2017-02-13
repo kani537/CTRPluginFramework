@@ -1,8 +1,8 @@
 #ifndef CTRPLUGINFRAMEWORK_TOUCH_HPP
 #define CTRPLUGINFRAMEWORK_TOUCH_HPP
 
-#include "CTRPluginFramework/Vector.hpp"
 #include "ctrulib/services/hid.h"
+#include "CTRPluginFrameworkImpl/Graphics/Vector.hpp"
 
 namespace CTRPluginFramework
 {

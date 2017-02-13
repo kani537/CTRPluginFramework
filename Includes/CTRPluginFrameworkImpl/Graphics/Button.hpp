@@ -1,12 +1,10 @@
 #ifndef CTRPLUGINFRAMEWORK_BUTTON_H
 #define CTRPLUGINFRAMEWORK_BUTTON_H
 
-#include "CTRPluginFramework/Line.hpp"
-#include "CTRPluginFramework/Rect.hpp"
-#include "CTRPluginFramework/Screen.hpp"
-#include "CTRPluginFramework/Touch.hpp"
-#include "CTRPluginFramework/Graphics/Renderer.hpp"
+
 #include "CTRPluginFramework/Graphics/Color.hpp"
+#include "CTRPluginFramework/System/Touch.hpp"
+#include "CTRPluginFrameworkImpl/Graphics.hpp"
 
 #include <string>
 #include <vector>

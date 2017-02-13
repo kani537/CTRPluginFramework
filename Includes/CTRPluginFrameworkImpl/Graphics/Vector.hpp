@@ -1,4 +1,5 @@
-﻿#pragma once
+﻿#ifndef CTRPLUGINFRAMEWORKIMPL_VECTOR_HPP
+#define CTRPLUGINFRAMEWORKIMPL_VECTOR_HPP
 
 #include "types.h"
 
@@ -122,3 +123,5 @@ namespace CTRPluginFramework
     typedef Vector<int> IntVector;
     typedef Vector<float> FloatVector;
 }
+
+#endif

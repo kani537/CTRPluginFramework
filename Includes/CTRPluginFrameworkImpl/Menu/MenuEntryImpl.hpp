@@ -1,14 +1,15 @@
-#ifndef CTRPLUGINFRAMEWORK_MENUENTRY_HPP
-#define CTRPLUGINFRAMEWORK_MENUENTRY_HPP
+#ifndef CTRPLUGINFRAMEWORKIMPL_MENUENTRYIMPL_HPP
+#define CTRPLUGINFRAMEWORKIMPL_MENUENTRYIMPL_HPP
 
 #include "CTRPluginFrameworkImpl/Menu/MenuItem.hpp"
+#include "CTRPluginFramework/Menu/MenuEntry.hpp"
 #include <string>
 
 namespace CTRPluginFramework
 {
     class MenuEntryImpl;
     
-    using FuncPointer = void (*)(MenuEntryImpl*);
+    using FuncPointer = void (*)(MenuEntry*);
     
     class MenuEntryImpl : public MenuItem
     {
@@ -20,8 +21,8 @@ namespace CTRPluginFramework
         };
 
     public:
-        MenuEntryImpl(std::string name, std::string note = "");
-        MenuEntryImpl(std::string name, FuncPointer func, std::string note = "");
+        MenuEntryImpl(std::string name, std::string note = "", MenuEntry *owner = nullptr);
+        MenuEntryImpl(std::string name, FuncPointer func, std::string note = "", MenuEntry *owner = nullptr);
         ~MenuEntryImpl(){};
 
         // Disable the entry
@@ -49,6 +50,7 @@ namespace CTRPluginFramework
         bool    _MustBeRemoved(void);
         bool    _Execute(void);
         int     _executeIndex;
+        MenuEntry *_owner;
 
         Flags       _flags;
         int         _radioId;

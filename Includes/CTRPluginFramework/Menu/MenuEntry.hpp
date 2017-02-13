@@ -9,7 +9,8 @@ namespace CTRPluginFramework
     class MenuEntry;
     
     using FuncPointer = void (*)(MenuEntry*);
-    
+
+    class MenuEntryImpl;
     class MenuEntry
     {
 
@@ -35,13 +36,14 @@ namespace CTRPluginFramework
         void    SetGameFunc(FuncPointer func);
         void    SetMenuFunc(FuncPointer func);
 
-        std::string &name;
-        std::string &note;
+        std::string &Name(void);
+        std::string &Note(void);
 
     private:
         friend class MenuFolder;
-        class MenuEntryImpl;
-        std::unique_ptr<MenuEntryImpl>  _item;
+        friend class PluginMenu;
+        MenuEntryImpl       *_item;
+        //std::unique_ptr<MenuEntryImpl>  _item;
     };
 }
 

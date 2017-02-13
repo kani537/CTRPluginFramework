@@ -21,7 +21,7 @@ namespace CTRPluginFramework
     {
         MenuFolderImpl *folder = item->_item;
 
-        _item->Append(item);
+        _item->Append(folder);
     }
 
     u32    MenuFolder::ItemsCount(void)

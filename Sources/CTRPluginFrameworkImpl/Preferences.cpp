@@ -1,4 +1,4 @@
-#include "CTRPluginFramework/Preferences.hpp"
+#include "CTRPluginFrameworkImpl/Preferences.hpp"
 
 namespace CTRPluginFramework
 {

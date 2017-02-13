@@ -1,7 +1,7 @@
 #ifndef CTRPLUGINFRAMEWORK_EVENTS_HPP
 #define CTRPLUGINFRAMEWORK_EVENTS_HPP
 
-#include "CTRPluginFramework/Controller.hpp"
+#include "CTRPluginFramework/System/Controller.hpp"
 
 namespace CTRPluginFramework
 {

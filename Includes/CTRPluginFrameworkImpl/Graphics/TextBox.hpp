@@ -1,15 +1,9 @@
 #ifndef CTRPLUGINFRAMEWORK_TEXTBOX_HPP
 #define CTRPLUGINFRAMEWORK_TEXTBOX_HPP
 
-
-#include "CTRPluginFramework/Vector.hpp"
-#include "CTRPluginFramework/Rect.hpp"
-#include "CTRPluginFramework/Screen.hpp"
-#include "CTRPluginFramework/Controller.hpp"
-#include "CTRPluginFramework/Events.hpp"
-#include "CTRPluginFramework/Graphics/Renderer.hpp"
 #include "CTRPluginFramework/Graphics/Color.hpp"
-#include "CTRPluginFramework/Clock.hpp"
+#include "CTRPluginFrameworkImpl/Graphics.hpp"
+#include "CTRPluginFrameworkImpl/System.hpp"
 
 #include <string>
 #include <vector>

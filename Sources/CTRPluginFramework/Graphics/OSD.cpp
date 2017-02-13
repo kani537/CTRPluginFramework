@@ -1,20 +1,20 @@
 #include "CTRPluginFramework/Graphics/OSD.hpp"
 #include "CTRPluginFrameworkImpl/Graphics/OSDImpl.hpp"
 #include "CTRPluginFrameworkImpl/Graphics/PrivColor.hpp"
-#include "CTRPluginFramework/Screen.hpp"
+#include "CTRPluginFrameworkImpl/System/Screen.hpp"
 #include "font6x10Linux.h"
 
 namespace CTRPluginFramework
 {
 
-    int     OSD::Notify(std::string str, Color &fg, Color &bg)
+    int     OSD::Notify(std::string str, Color fg, Color bg)
     {
         OSDImpl *inst = OSDImpl::GetInstance();
 
         if (inst == nullptr || inst->_list.size() >= 50)
             return (-1);
 
-        int->_list.push_back(OSDImpl::OSDMessage(str, fg, bg));
+        inst->_list.push_back(OSDImpl::OSDMessage(str, fg, bg));
         return (0);
     }
 

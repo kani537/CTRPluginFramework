@@ -1,7 +1,7 @@
 #include "3DS.h"
 #include "CTRPluginFramework/System.hpp"
 #include "CTRPluginFrameworkImpl/System.hpp"
-#include "CTRPluginFramework/arm11kCommands.h"
+#include "CTRPluginFrameworkImpl/arm11kCommands.h"
 
 #include <cstdio>
 #include <cstring>
@@ -146,7 +146,7 @@ namespace CTRPluginFramework
 		while(R_FAILED(svcSetThreadPriority(_mainThreadHandle, 0x31)));
 	}
 
-    bool     ProcessImpl::PatchProcess(u32 , u8 *patch, u32 length, u8 *original)
+    bool     ProcessImpl::PatchProcess(u32 addr, u8 *patch, u32 length, u8 *original)
     {
         if (!(Process::ProtectMemory(((addr / 0x1000) * 0x1000), 0x1000))) goto error;
  

@@ -24,6 +24,14 @@ namespace CTRPluginFramework
 
     #define RGBA8 GSP_RGBA8_OES
 
+    struct Pixel
+    {
+        u8 a;
+        u8 b;
+        u8 g;
+        u8 r;
+    };
+
     inline int Icon::DrawImg(u8 *img, int posX, int posY, int sizeX, int sizeY)
     {
         u8      *framebuf = nullptr;
@@ -60,9 +68,10 @@ namespace CTRPluginFramework
             int y = 0;
             while (y++ < sizeY)
             {
-                Color px = PrivColor::FromMemory(img, RGBA8);
+                Pixel *pix = (Pixel *)img;
+                Color px(pix->r, pix->g, pix->b, pix->a);// = PrivColor::FromMemory(img, RGBA8);
                 Color bg = PrivColor::FromFramebuffer(dst);
-                Color blended = bg.Blend(px, BlendMode::Alpha);
+                Color blended = bg.Blend(px, Color::BlendMode::Alpha);
                 dst = PrivColor::ToFramebuffer(dst, blended);
                 img += 4;
             }
@@ -242,9 +251,10 @@ namespace CTRPluginFramework
             int y = 0;
             while (y++ < 15)
             {
-                Color px = PrivColor::FromMemory(img, RGBA8);
+                Pixel *pix = (Pixel *)img;
+                Color px(pix->r, pix->g, pix->b, pix->a);//PrivColor::FromMemory(img, RGBA8);
                 Color bg = PrivColor::FromFramebuffer(dst);
-                Color blended = bg.Blend(px, BlendMode::Alpha);
+                Color blended = bg.Blend(px, Color::BlendMode::Alpha);
                 dst = PrivColor::ToFramebuffer(dst, blended);
                 dst2 = PrivColor::ToFramebuffer(dst2, blended);
                 img += 4;

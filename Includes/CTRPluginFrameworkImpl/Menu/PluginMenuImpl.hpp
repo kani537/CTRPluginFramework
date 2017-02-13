@@ -1,31 +1,21 @@
-#ifndef CTRPLUGINFRAMEWORK_PLUGINMENU_HPP
-#define CTRPLUGINFRAMEWORK_PLUGINMENU_HPP
+#ifndef CTRPLUGINFRAMEWORKIMPL_PLUGINMENUIMPL_HPP
+#define CTRPLUGINFRAMEWORKIMPL_PLUGINMENUIMPL_HPP
 
-#include "Vector.hpp"
-#include "Button.hpp"
-#include "ToggleButton.hpp"
-#include "CheckedButton.hpp"
-#include "Clock.hpp"
-#include "CTRPluginFramework/Graphics/TextBox.hpp"
-#include "CTRPluginFramework/GuideReader.hpp"
+#include "CTRPluginFramework.hpp"
+#include "CTRPluginFrameworkImpl.hpp"
+#include "CTRPluginFrameworkImpl/Menu/GuideReader.hpp"
 
 #include <queue>
 
 namespace CTRPluginFramework
 {
-    class MenuEntry;
-    class MenuItem;
-    class MenuFolder;
-    class Event;
-    class Time;
-    class Clock;
-    class PluginMenu
+    class PluginMenuImpl
     {
 
     public:
 
-        PluginMenu(std::string name = "Cheats", std::string note = "");
-        ~PluginMenu(void);
+        PluginMenuImpl(std::string name = "Cheats", std::string note = "");
+        ~PluginMenuImpl(void);
 
         void    Append(MenuItem *item);
         int     Run(void);
@@ -43,10 +33,10 @@ namespace CTRPluginFramework
         void    _StarMode(void);
         void    _DisplayNote(void);
 
-        std::vector<MenuEntry *>    _executeLoop;
+        std::vector<MenuEntryImpl *>    _executeLoop;
         std::queue<int>             _freeIndex;
-        MenuFolder                  *_folder;
-        MenuFolder                  *_starred;
+        MenuFolderImpl             *_folder;
+        MenuFolderImpl             *_starred;
         bool                        _isOpen;
         bool                        _starMode;
 
@@ -60,14 +50,14 @@ namespace CTRPluginFramework
         IntVector                   _startLine;
         IntVector                   _endLine;
 
-        Button<PluginMenu, void>          _gameGuideBtn;
-        CheckedButton<PluginMenu, void>   _showStarredBtn;
-        Button<PluginMenu, void>          _toolsBtn;
-        Button<PluginMenu, void>          _hidMapperBtn;
-        Button<PluginMenu, void>          _searchBtn;
+        Button<PluginMenuImpl, void>          _gameGuideBtn;
+        CheckedButton<PluginMenuImpl, void>   _showStarredBtn;
+        Button<PluginMenuImpl, void>          _toolsBtn;
+        Button<PluginMenuImpl, void>          _hidMapperBtn;
+        Button<PluginMenuImpl, void>          _searchBtn;
 
-        ToggleButton<PluginMenu, void>      _AddFavoriteBtn;
-        ToggleButton<PluginMenu, void>      _InfoBtn;
+        ToggleButton<PluginMenuImpl, void>      _AddFavoriteBtn;
+        ToggleButton<PluginMenuImpl, void>      _InfoBtn;
 
         TextBox                     *_noteTB;
         GuideReader                 _guide;
