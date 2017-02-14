@@ -71,6 +71,9 @@ namespace CTRPluginFramework
 
     }
 
+    /*
+    ** Operator ()
+    *********************/
     bool    GuideReader::operator()(EventList &eventList, Time &delta)
     {
         _isOpen = true;
@@ -151,12 +154,13 @@ namespace CTRPluginFramework
             }
 
             // If folder changed
-            if (ret == MenuEvent::FolderChanged)
+            else if (ret == MenuEvent::FolderChanged)
             {
                 delete _image;
                 _image = nullptr;
                 _currentBMP = -1;
                 _bmpList.clear();
+                _currentDirectory.Close();
                 if (item != nullptr && Directory::Open(_currentDirectory, item->note) == 0)
                 {
                     _currentDirectory.ListFiles(_bmpList, ".bmp");
@@ -168,7 +172,7 @@ namespace CTRPluginFramework
                 }
             }
             // If an file entry was selected by user
-            if (ret == MenuEvent::EntrySelected)
+            else if (ret == MenuEvent::EntrySelected)
             {
                 MenuEntryImpl *entry = (MenuEntryImpl *)item;
                 if (entry != _last)
@@ -212,9 +216,8 @@ namespace CTRPluginFramework
             }
         }
 
-        // Process Event
-        if (_currentBMP != -1)
-        if (event.type == Event::EventType::TouchSwipped)
+        // Change image on touch swip
+        if (event.type == Event::EventType::TouchSwipped && _currentBMP != -1)
         {
             switch (event.swip.direction)
             {
@@ -238,8 +241,9 @@ namespace CTRPluginFramework
                     }
                     break;
                 }
-            }
+            }         
         }
+        
         return (true);
     }
 
