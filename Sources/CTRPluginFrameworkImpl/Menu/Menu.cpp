@@ -226,6 +226,8 @@ namespace CTRPluginFramework
                     if (p != nullptr)
                     {
                         _folder = p;
+                        if (userchoice)
+                            *userchoice = reinterpret_cast<MenuItem *>(p);
                         return (MenuEvent::FolderChanged);
                     }
                     else
