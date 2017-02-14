@@ -47,6 +47,21 @@ namespace CTRPluginFramework
         return (mFolder);
     }
 
+
+    BMPImage *SubSampleUntilItFits(BMPImage *img, int maxX, int maxY)
+    {
+        if (img->Width() <= maxX && img->Height() <= maxY)
+            return (img);
+        BMPImage *temp = new BMPImage(img->Width() / 2, img->Height() / 2);
+
+        img->SubSample(*temp);
+        delete img;
+
+        if (temp->Width() > maxX || temp->Height() > maxY)
+            return (SubSampleUntilItFits(temp, maxX, maxY));
+        return (temp);
+    }
+
     GuideReader::GuideReader(void) :
     _text(""), _isOpen(false), _guideTB(nullptr), _last(nullptr), _menu(CreateFolder("Guide")),
     _closeBtn(*this, nullptr, IntRect(275, 24, 20, 20), Icon::DrawClose)
@@ -60,6 +75,7 @@ namespace CTRPluginFramework
             {
                 _currentBMP = 0;
                 _image = new BMPImage("Guide/" + _bmpList[0]);
+                _image = SubSampleUntilItFits(_image, 280, 200);
             }
             else
                 _currentBMP = -1;
@@ -167,7 +183,8 @@ namespace CTRPluginFramework
                     if (!_bmpList.empty())
                     {
                         _currentBMP = 0;
-                        _image = new BMPImage(item->note + "/" + _bmpList[0]);
+                        _image = new BMPImage(item->note + "/" + _bmpList[0]);                        
+                        _image = SubSampleUntilItFits(_image, 280, 200);
                     }
                 }
             }
@@ -228,6 +245,7 @@ namespace CTRPluginFramework
                         _currentBMP--;
                         delete _image;
                         _image = new BMPImage(_currentDirectory.GetPath() + "/" + _bmpList[_currentBMP]);
+                        _image = SubSampleUntilItFits(_image, 280, 200);
                     }
                     break;
                 }
@@ -238,6 +256,7 @@ namespace CTRPluginFramework
                         _currentBMP++;
                         delete _image;
                         _image = new BMPImage(_currentDirectory.GetPath() + "/" + _bmpList[_currentBMP]);
+                        _image = SubSampleUntilItFits(_image, 280, 200);
                     }
                     break;
                 }

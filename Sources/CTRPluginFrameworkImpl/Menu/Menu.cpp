@@ -95,7 +95,9 @@ namespace CTRPluginFramework
     int     Menu::ProcessEvent(Event &event, std::string &userchoice)
     {
         if (_folder->ItemsCount() == 0)
+        {
             return (-1);
+        }
 
         // Scrolling Event
         if (event.type == Event::KeyDown)
@@ -165,7 +167,22 @@ namespace CTRPluginFramework
     int     Menu::ProcessEvent(Event &event, MenuItem **userchoice)
     {
         if (_folder->ItemsCount() == 0)
+        {
+            if (event.type == Event::KeyPressed &&event.key.code == Key::B)
+            {
+                MenuFolderImpl *p = _folder->_Close(_selector);
+                if (p != nullptr)
+                {
+                    _folder = p;
+                    if (userchoice)
+                        *userchoice = reinterpret_cast<MenuItem *>(p);
+                    return (MenuEvent::FolderChanged);
+                }
+                else
+                    return (MenuEvent::MenuClose);
+            }
             return (MenuEvent::Error);
+        }
 
         // Scrolling Event
         if (event.type == Event::KeyDown)
