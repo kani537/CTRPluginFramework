@@ -44,6 +44,7 @@ namespace CTRPluginFramework
             _scrollCursorSize = cursorSize;
             _scrollPadding = padding * 16.f;
             _scrollPosition = 0.f;
+            _displayScrollbar = true;
         }
         Color blank(255, 255, 255);
         titleColor = blank;
