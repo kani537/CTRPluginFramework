@@ -287,33 +287,42 @@ namespace CTRPluginFramework
         }
 
         // Change image on touch swip
-        if (event.type == Event::EventType::TouchSwipped && _currentBMP != -1)
+        if (_currentBMP != -1)
         {
-            switch (event.swip.direction)
+            if (event.type == Event::KeyPressed)
             {
-                case Event::SwipDirection::Left:
+                if (event.key.code == Key::L && _currentBMP > 0)
                 {
-                    if (_currentBMP > 0)
-                    {
-                        _currentBMP--;
-                        delete _image;
-                        _image = new BMPImage(_currentDirectory.GetPath() + "/" + _bmpList[_currentBMP]);
-                        _image = SubSampleUntilItFits(_image, 280, 200);
-                    }
-                    break;
+                    _currentBMP--;
+                    delete _image;
+                    _image = new BMPImage(_currentDirectory.GetPath() + "/" + _bmpList[_currentBMP]);
+                    _image = SubSampleUntilItFits(_image, 280, 200);
                 }
-                case Event::SwipDirection::Right:
+                else if (event.key.code == Key::R && _currentBMP < _bmpList.size() -1)
                 {
-                    if (_currentBMP < _bmpList.size() - 1)
-                    {
-                        _currentBMP++;
-                        delete _image;
-                        _image = new BMPImage(_currentDirectory.GetPath() + "/" + _bmpList[_currentBMP]);
-                        _image = SubSampleUntilItFits(_image, 280, 200);
-                    }
-                    break;
+                    _currentBMP++;
+                    delete _image;
+                    _image = new BMPImage(_currentDirectory.GetPath() + "/" + _bmpList[_currentBMP]);
+                    _image = SubSampleUntilItFits(_image, 280, 200);            
                 }
-            }         
+            }
+            else if (event.type == Event::TouchSwipped)
+            {
+                if (event.swip.direction == Event::SwipDirection::Left && _currentBMP > 0)
+                {
+                    _currentBMP--;
+                    delete _image;
+                    _image = new BMPImage(_currentDirectory.GetPath() + "/" + _bmpList[_currentBMP]);
+                    _image = SubSampleUntilItFits(_image, 280, 200);
+                }
+                else if (event.swip.direction == Event::SwipDirection::Right && _currentBMP < _bmpList.size() -1)
+                {
+                    _currentBMP++;
+                    delete _image;
+                    _image = new BMPImage(_currentDirectory.GetPath() + "/" + _bmpList[_currentBMP]);
+                    _image = SubSampleUntilItFits(_image, 280, 200);            
+                }  
+            }
         }
         
         return (true);
