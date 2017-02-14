@@ -1,6 +1,6 @@
 #include "CTRPluginFrameworkImpl/Menu/GuideReader.hpp"
 #include "CTRPluginFrameworkImpl/Preferences.hpp"
-
+#include <math.h>
 namespace CTRPluginFramework
 {
     MenuFolderImpl *CreateFolder(std::string path)
@@ -48,10 +48,11 @@ namespace CTRPluginFramework
     }
 
 
-    BMPImage *SubSampleUntilItFits(BMPImage *img, int maxX, int maxY)
+    /*BMPImage *SubSampleUntilItFits(BMPImage *img, int maxX, int maxY)
     {
         if (img->Width() <= maxX && img->Height() <= maxY)
             return (img);
+
         BMPImage *temp = new BMPImage(img->Width() / 2, img->Height() / 2);
 
         img->SubSample(*temp);
@@ -59,6 +60,51 @@ namespace CTRPluginFramework
 
         if (temp->Width() > maxX || temp->Height() > maxY)
             return (SubSampleUntilItFits(temp, maxX, maxY));
+        return (temp);
+    }*/
+    #define ABS(x) x >= 0 ? 0 : -x
+
+    float GetRatio(int width, int height)
+    {
+       /* int xDiff = ABS(width - 280);
+        int yDiff = ABS(height - 200);
+
+        if (width > 280 && height <= 200)
+            goto xratio;
+
+        if (height > 200 && width <= 280)
+            goto yratio;
+
+        if (xDiff > yDiff)
+            goto xratio;
+
+        goto yratio;*/
+
+    xratio:
+        if (width >= height)
+            return ((float)width / 280.f);
+    yratio:
+        return ((float)height / 200.f);
+    }
+
+    BMPImage *SubSampleUntilItFits(BMPImage *img, int maxX, int maxY)
+    {
+        int width = img->Width();
+        int height = img->Height();
+
+        if (width <= maxX && height <= maxY)
+            return (img);
+
+        float ratio = GetRatio(width, height);
+
+        int newWidth = (int)(ceilf((float)width / ratio));
+        int newHeight = (int)(ceilf((float)height / ratio));
+
+        BMPImage *temp = new BMPImage(newWidth, newHeight);
+
+        img->Resample(*temp, newWidth, newHeight);
+        delete img;
+
         return (temp);
     }
 
@@ -132,7 +178,14 @@ namespace CTRPluginFramework
         static Color    dimGrey(15, 15, 15);
 
         if (_image != nullptr && _image->IsLoaded())
+        {
+            if (_image->Height() < 200 || _image->Width() < 280)
+            {
+                Renderer::DrawRect2(background, black, dimGrey);
+                Renderer::DrawRect(22, 22, 276, 196, blank, false);                
+            }
             _image->Draw(background);
+        }
         else
         {
             Renderer::DrawRect2(background, black, dimGrey);
