@@ -9,19 +9,20 @@
 
 namespace CTRPluginFramework
 {
+    enum MenuEvent
+    {
+        Error = -1,
+        EntrySelected = -2,
+        FolderChanged = -3,
+        MenuClose = -4,
+        SelectorChanged = -5,
+        Nothing = -6
+    };
     class Menu
     {
     public:
 
-        enum MenuEvent
-        {
-            Error = -1,
-            EntrySelected = -2,
-            FolderChanged = -3,
-            MenuClose = -4,
-            SelectorChanged = -5,
-            Nothing = -6
-        };
+
 
         Menu(std::string title);
         Menu(MenuFolderImpl *folder);
