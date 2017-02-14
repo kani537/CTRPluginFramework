@@ -13,6 +13,16 @@ namespace CTRPluginFramework
     {
     public:
 
+        enum MenuEvent
+        {
+            Error = -1,
+            EntrySelected = -2,
+            FolderChanged = -3,
+            MenuClose = -4,
+            SelectorChanged = -5,
+            Nothing = -6
+        };
+
         Menu(std::string title);
         Menu(MenuFolderImpl *folder);
         ~Menu(void);
@@ -28,6 +38,7 @@ namespace CTRPluginFramework
         ** >= 0 : user choice (irrelevant on menu using folders, so prefer using an overload returning the object)
         *******************************************/
         int     ProcessEvent(Event &event, std::string &userchoice);
+        // This return a menuEvent value
         int     ProcessEvent(Event &event, MenuItem **userchoice);
         int     ProcessEvent(Event &event);
 

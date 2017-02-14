@@ -106,7 +106,7 @@ namespace CTRPluginFramework
                 case DPadUp:
                 {
                     if (!_input.HasTimePassed(Milliseconds(400)))
-                        break;
+                        return (MenuEvent::SelectorChanged);
                     if (_selector > 0)
                         _selector--;
                     else
@@ -165,7 +165,7 @@ namespace CTRPluginFramework
     int     Menu::ProcessEvent(Event &event, MenuItem **userchoice)
     {
         if (_folder->ItemsCount() == 0)
-            return (-1);
+            return (MenuEvent::Error);
 
         // Scrolling Event
         if (event.type == Event::KeyDown)
@@ -182,7 +182,7 @@ namespace CTRPluginFramework
                     else
                         _selector = std::max(0, (int)_folder->ItemsCount() - 1);
                     _input.Restart();
-                    break;
+                    return (MenuEvent::SelectorChanged);
                 }
                 case CPadDown:
                 case DPadDown:
@@ -194,7 +194,7 @@ namespace CTRPluginFramework
                     else
                         _selector = 0;
                     _input.Restart();
-                    break;
+                    return (MenuEvent::SelectorChanged);
                 }
             }            
         }
@@ -202,6 +202,8 @@ namespace CTRPluginFramework
         else if (event.type == Event::KeyPressed)
         {
             MenuItem *item = _folder->_items[_selector];
+            if (userchoice)
+                *userchoice = item;
             switch (event.key.code)
             {
                 case A:
@@ -209,28 +211,29 @@ namespace CTRPluginFramework
                     // if it's not a folder
                     if (item->_type == MenuType::Entry)
                     {
-                        if (userchoice)
-                            *userchoice = item;
-                        return (_selector);
+                        return (MenuEvent::EntrySelected);
                     }
 
                     // if it's a folder
                     MenuFolderImpl *folder = reinterpret_cast<MenuFolderImpl *>(item);
                     folder->_Open(_folder, _selector);
                     _folder = folder;
-                    break;
+                    return (MenuEvent::FolderChanged);
                 }
                 case B:
                 {
                     MenuFolderImpl *p = _folder->_Close(_selector);
                     if (p != nullptr)
+                    {
                         _folder = p;
+                        return (MenuEvent::FolderChanged);
+                    }
                     else
-                        return (-2);
-                    break;
+                        return (MenuEvent::MenuClose);
+                    
                 }
             }
         }
-        return (-1);
+        return (MenuEvent::Nothing);
     }
 }
