@@ -42,6 +42,7 @@ namespace CTRPluginFramework
                 if (_noteTB->ProcessEvent(eventList[i]) == false)
                 {
                     note = 0;
+                     _InfoBtn.SetState(false);
                     break;
                 }        
         }
