@@ -97,9 +97,8 @@ namespace CTRPluginFramework
         }
 
         // Touch Event
-        static bool  isTouching = false;        
-        static int horizontalOffset = 0;
-        static int verticalOffset = 0;
+        static bool  isTouching = false;     
+        static touchPosition firstTouch;
 
         touchPosition touchPos;
         hidTouchRead(&touchPos);
@@ -114,20 +113,11 @@ namespace CTRPluginFramework
                 if (isTouching)
                 {
                     event.type = Event::TouchMoved;
-                    if (touchPos.px > _lastTouch.px)
-                        horizontalOffset += (touchPos.px - _lastTouch.px);
-                    else
-                        horizontalOffset -= (_lastTouch.px - touchPos.px);
-                    if (touchPos.py > _lastTouch.py)
-                        verticalOffset += (touchPos.py - _lastTouch.py);
-                    else
-                        verticalOffset -= (_lastTouch.py - touchPos.py);
                 }
                 else
                 {
                     event.type = Event::TouchBegan;
-                    horizontalOffset = 0;
-                    verticalOffset = 0;
+                    firstTouch = touchPos;
                 }
                 isTouching = true;
                 event.touch.x = touchPos.px;
@@ -144,9 +134,12 @@ namespace CTRPluginFramework
             event.touch.y = _lastTouch.py;
             PushEvent(event);
 
+            int horizontalOffset = firstTouch.px - _lastTouch.px;
+            int verticalOffset = firstTouch.py - _lastTouch.py;
+
             event.type = Event::TouchSwipped;
             event.swip.direction = Event::None;
-            if (ABS(horizontalOffset) > 10 || ABS(verticalOffset) > 10)
+            if (ABS(horizontalOffset) > 20 || ABS(verticalOffset) > 20)
             {
                 if (horizontalOffset > 0)
                 {
