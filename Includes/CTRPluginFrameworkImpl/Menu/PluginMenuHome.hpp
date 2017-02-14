@@ -35,7 +35,8 @@ namespace CTRPluginFramework
         // Members
 
         MenuFolderImpl                  *_folder;
-        MenuFolderImpl                  *_starred;
+        MenuFolderImpl                  *_starred;        
+        MenuFolderImpl                  *_starredConst;
 
         bool                        _starMode;
         int                         _selector;

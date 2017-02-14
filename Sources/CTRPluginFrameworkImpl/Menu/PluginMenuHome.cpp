@@ -19,6 +19,7 @@ namespace CTRPluginFramework
     {
         _folder = new MenuFolderImpl(name);
         _starred = new MenuFolderImpl("Favorites");
+        _starredConst = _starred;
 
         _starMode = false;
         _selector = 0;
@@ -511,24 +512,24 @@ namespace CTRPluginFramework
             bool star = item->_TriggerStar();
 
             if (star)
-                _starred->Append(item);
+                _starredConst->Append(item);
             else
             {
-                int count = _starred->ItemsCount();
+                int count = _starredConst->ItemsCount();
 
                 if (count == 1)
                 {
-                    _starred->_items.clear();
+                    _starredConst->_items.clear();
                 }
                 else
                 {
                     for (int i = 0; i < count; i++)
                     {
-                        MenuItem *it = _starred->_items[i];
+                        MenuItem *it = _starredConst->_items[i];
 
                         if (it == item)
                         {
-                            _starred->_items.erase(_starred->_items.begin() + i);
+                            _starredConst->_items.erase(_starredConst->_items.begin() + i);
                             break;
                         }
                     }                    
