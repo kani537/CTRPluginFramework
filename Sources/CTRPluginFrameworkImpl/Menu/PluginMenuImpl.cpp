@@ -17,7 +17,6 @@
 
 namespace CTRPluginFramework
 {
-    bool    _shouldClose = false;
     PluginMenuImpl::PluginMenuImpl(std::string name, std::string note) : 
 
     _home(new PluginMenuHome(name)),
@@ -44,14 +43,17 @@ namespace CTRPluginFramework
 
     int    PluginMenuImpl::Run(void)
     {
-        Event           event;
-        EventManager    manager;
-        Clock           clock;
-        Clock           inputClock;
-        int             mode = 0;
-        PluginMenuHome  &home = *_home;
-        GuideReader     &guide = *_guide;
-        PluginMenuExecuteLoop &executer = *_executeLoop;
+        Event                   event;
+        EventManager            manager;
+        Clock                   clock;
+        Clock                   inputClock;
+        int                     mode = 0;
+        bool                    shouldClose = false;
+
+        // Component
+        PluginMenuHome          &home = *_home;
+        GuideReader             &guide = *_guide;
+        PluginMenuExecuteLoop   &executer = *_executeLoop;
 
     #if SHOWFPS
         Time            second = Seconds(1);
@@ -73,7 +75,7 @@ namespace CTRPluginFramework
             while (manager.PollEvent(event))
             {
                 // If Select is pressed
-                if (event.key.code == Key::Select && inputClock.HasTimePassed(Milliseconds(500)))
+                if (event.type == Event::KeyPressed && event.key.code == Key::Select && inputClock.HasTimePassed(Milliseconds(500)))
                 {
                     if (_isOpen)
                     {
@@ -101,7 +103,7 @@ namespace CTRPluginFramework
 
                 if (mode == 0)
                 {
-                    _shouldClose = home(eventList, mode, delta);
+                    shouldClose = home(eventList, mode, delta);
                 }
                 else if (mode == 2)
                 {
@@ -119,27 +121,24 @@ namespace CTRPluginFramework
                 int posY = 10;
                 Renderer::DrawString(buf, 250, posY, blank, black);
             #endif
-                Renderer::EndFrame(_shouldClose);
+
+                // End frame
+                Renderer::EndFrame(shouldClose);
                 delta = clock.Restart();
-                if (_shouldClose)
+
+                // Close menu
+                if (shouldClose)
                 {
                     ProcessImpl::Play();
                     _isOpen = false;
-                    _shouldClose = false;
-                }
-                // Exit plugin
-               /* if (Controller::IsKeysDown(L + R + Start))
-                {
-                    ProcessImpl::Play();
-                    _isOpen = false;
-                    _pluginRun = false;                   
-                }*/          
+                    shouldClose = false;
+                }         
             }
             else
             {
                 // Execute activate cheat
                 executer();
-                // Disaply notifications
+                // Display notifications
                 osd();
             }
         }
