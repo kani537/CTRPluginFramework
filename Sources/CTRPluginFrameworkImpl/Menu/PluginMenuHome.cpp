@@ -370,9 +370,6 @@ namespace CTRPluginFramework
 
         posY = 35;
 
-        bool isTouchDown = Touch::IsDown();
-        IntVector touchPos(Touch::GetPosition());
-
         // Draw buttons
         _showStarredBtn.Draw();
         _gameGuideBtn.Draw();
@@ -384,17 +381,6 @@ namespace CTRPluginFramework
         _InfoBtn.Draw();
 
         _closeBtn.Draw();
-
-        // Draw Touch Cursor
-        if (isTouchDown && background.Contains(touchPos))
-        {
-            int posX = touchPos.x - 2;
-            int posY = touchPos.y - 1;
-            touchPos.x += 10;
-            touchPos.y += 15;
-            if (background.Contains(touchPos))
-                Renderer::DrawSysString("\uE058", posX, posY, 320, blank);
-        }
     }
 
     //###########################################

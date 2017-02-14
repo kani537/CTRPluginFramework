@@ -49,6 +49,8 @@ namespace CTRPluginFramework
         Clock                   inputClock;
         int                     mode = 0;
         bool                    shouldClose = false;
+        IntRect                 background(20, 20, 280, 200);
+        Color                   blank(255, 255, 255);
 
         // Component
         PluginMenuHome          &home = *_home;
@@ -110,6 +112,20 @@ namespace CTRPluginFramework
                     if (guide(eventList, delta))
                         mode = 0;
                 }
+
+                bool isTouchDown = Touch::IsDown();
+                IntVector touchPos(Touch::GetPosition());
+
+                // Draw Touch Cursor
+                if (isTouchDown && background.Contains(touchPos))
+                {
+                    int posX = touchPos.x - 2;
+                    int posY = touchPos.y - 1;
+                    touchPos.x += 10;
+                    touchPos.y += 15;
+                    if (background.Contains(touchPos))
+                        Renderer::DrawSysString("\uE058", posX, posY, 320, blank);
+                }
                 
                 // FPS of plugin Menu
             #if SHOWFPS
@@ -121,6 +137,8 @@ namespace CTRPluginFramework
                 int posY = 10;
                 Renderer::DrawString(buf, 250, posY, blank, black);
             #endif
+
+
 
                 // End frame
                 Renderer::EndFrame(shouldClose);
