@@ -151,7 +151,7 @@ namespace CTRPluginFramework
         *************************************************/
         int     Dump(u32 address, u32 length);
         /*
-        ** Inject a file into ememory
+        ** Inject a file into memory
         ** address to inject the file to
         ** length = length to inject
         ** return value:
@@ -160,6 +160,7 @@ namespace CTRPluginFramework
         ** Other : result value by FS
         *************************************************/
         int     Inject(u32 address, u32 length);
+        
         File (){}
 
     private:

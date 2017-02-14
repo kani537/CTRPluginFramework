@@ -93,7 +93,7 @@ namespace CTRPluginFramework
         int     ListFiles(std::vector<std::string> &files, std::string pattern = "");
         int     ListFolders(std::vector<std::string> &folders, std::string pattern = "");
 
-
+        std::string &GetPath(void);
     private:
 
         friend class File;

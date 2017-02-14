@@ -309,7 +309,7 @@ namespace CTRPluginFramework
             mode |= File::CREATE; 
         
         int res;
-        //res = File::Open(output, fullPath, mode);
+        res = File::Open(output, fullPath, mode);
         return (res);
     }
 
@@ -445,5 +445,10 @@ namespace CTRPluginFramework
             folders.push_back(fn);  
         }
         return (0);
+    }
+
+    std::string &Directory::GetPath(void)
+    {
+        return (_path);
     }
 }
