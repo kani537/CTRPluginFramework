@@ -1,5 +1,4 @@
 #include "CTRPluginFrameworkImpl/Menu/GuideReader.hpp"
-#include "CTRPluginFrameworkImpl/Graphics/Rect.hpp"
 #include "CTRPluginFrameworkImpl/Preferences.hpp"
 
 namespace CTRPluginFramework
@@ -14,7 +13,12 @@ namespace CTRPluginFramework
         std::vector<std::string>    files;
 
         if (Directory::Open(folder, path) != 0)
+        {
+            delete mFolder;
             return (nullptr);
+        }
+
+        mFolder->note = path;
 
         // List all directories
         folder.ListFolders(directories);
@@ -44,11 +48,40 @@ namespace CTRPluginFramework
     }
 
     GuideReader::GuideReader(void) :
-    _text(""), _isOpen(false), _guideTB(nullptr), _last(nullptr), _menu(CreateFolder("Guide"))
+    _text(""), _isOpen(false), _guideTB(nullptr), _last(nullptr), _menu(CreateFolder("Guide")),
+    _closeBtn(*this, nullptr, IntRect(275, 24, 20, 20), Icon::DrawClose)
     {
         _isOpen = false;
+        _image = nullptr;
+        if (Directory::Open(_currentDirectory, "Guide") == 0)
+        {
+            _currentDirectory.ListFiles(_bmpList, ".bmp");
+            if (!_bmpList.empty())
+            {
+                _currentBMP = 0;
+                _image = new BMPImage("Guide/" + _bmpList[0]);
+            }
+            else
+                _currentBMP = -1;
+        }
+        else
+        {
+            _currentBMP = -1;
+        }
+
     }
 
+    bool    GuideReader::operator()(EventList &eventList, Time &delta)
+    {
+        _isOpen = true;
+        // Process event
+        for (int i = 0; i < eventList.size(); i++)
+            _ProcessEvent(eventList[i]);
+
+        // Draw
+        Draw();
+        return (_closeBtn() || !_isOpen);
+    }
 
     bool    GuideReader::Draw(void)
     {
@@ -58,7 +91,7 @@ namespace CTRPluginFramework
         /*
         ** Top Screen
         **************************************************/
-
+        Renderer::SetTarget(TOP);
         // If a textbox exist
         if (_guideTB != nullptr && _guideTB->IsOpen())
         {
@@ -68,36 +101,74 @@ namespace CTRPluginFramework
         {
             _menu.Draw();
         }
-        return (true);
 
         /*
         ** Bottom Screen
         **************************************************/
+        Renderer::SetTarget(BOTTOM);
 
-        // TODO close button
+        static IntRect  background(20, 20, 280, 200);
+        static Color    black = Color();
+        static Color    blank(255, 255, 255);
+        static Color    dimGrey(15, 15, 15);
+
+        if (_image != nullptr && _image->IsLoaded())
+            _image->Draw(background);
+        else
+        {
+            Renderer::DrawRect2(background, black, dimGrey);
+            Renderer::DrawRect(22, 22, 276, 196, blank, false);
+        }
+
+        bool isTouchDown = Touch::IsDown();
+        IntVector touchPos(Touch::GetPosition());
+        _closeBtn.Update(isTouchDown, touchPos);
+        _closeBtn.Draw();
+
     }
 
-    bool    GuideReader::ProcessEvent(Event &event)
+    bool    GuideReader::_ProcessEvent(Event &event)
     {
         if (!_isOpen)
             return (false);
 
+        // Process TextBox Event
         if (_guideTB != nullptr && _guideTB->IsOpen())
         {
             _guideTB->ProcessEvent(event);
         }
         else
         {
-            MenuItem *item;
+            MenuItem *item = nullptr;
+            // Process Menu Event
             int ret = _menu.ProcessEvent(event, &item);
 
-            if (ret == -2)
+            // If menu ask for close
+            if (ret == MenuEvent::MenuClose)
             {
                 Close();
                 return (false);
             }
 
-            if (ret >= 0)
+            // If folder changed
+            if (ret == MenuEvent::FolderChanged)
+            {
+                delete _image;
+                _image = nullptr;
+                _currentBMP = -1;
+                _bmpList.clear();
+                if (item != nullptr && Directory::Open(_currentDirectory, item->note) == 0)
+                {
+                    _currentDirectory.ListFiles(_bmpList, ".bmp");
+                    if (!_bmpList.empty())
+                    {
+                        _currentBMP = 0;
+                        _image = new BMPImage(item->note + "/" + _bmpList[0]);
+                    }
+                }
+            }
+            // If an file entry was selected by user
+            if (ret == MenuEvent::EntrySelected)
             {
                 MenuEntryImpl *entry = (MenuEntryImpl *)item;
                 if (entry != _last)
@@ -138,6 +209,35 @@ namespace CTRPluginFramework
                 }
                 else
                     _guideTB->Open();
+            }
+        }
+
+        // Process Event
+        if (_currentBMP != -1)
+        if (event.type == Event::EventType::TouchSwipped)
+        {
+            switch (event.swip.direction)
+            {
+                case Event::SwipDirection::Left:
+                {
+                    if (_currentBMP > 0)
+                    {
+                        _currentBMP--;
+                        delete _image;
+                        _image = new BMPImage(_currentDirectory.GetPath() + "/" + _bmpList[_currentBMP]);
+                    }
+                    break;
+                }
+                case Event::SwipDirection::Right:
+                {
+                    if (_currentBMP < _bmpList.size() - 1)
+                    {
+                        _currentBMP++;
+                        delete _image;
+                        _image = new BMPImage(_currentDirectory.GetPath() + "/" + _bmpList[_currentBMP]);
+                    }
+                    break;
+                }
             }
         }
         return (true);
