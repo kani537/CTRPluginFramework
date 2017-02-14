@@ -31,7 +31,7 @@ namespace CTRPluginFramework
         
         PluginMenuHome              *_home;
         PluginMenuExecuteLoop       *_executeLoop;
-        //GuideReader                 _guide;
+        GuideReader                *_guide;
         void                        _TriggerGuide(void);
     };
 }

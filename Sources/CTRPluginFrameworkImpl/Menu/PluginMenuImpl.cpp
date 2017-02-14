@@ -21,7 +21,8 @@ namespace CTRPluginFramework
     PluginMenuImpl::PluginMenuImpl(std::string name, std::string note) : 
 
     _home(new PluginMenuHome(name)),
-    _executeLoop(new PluginMenuExecuteLoop())
+    _executeLoop(new PluginMenuExecuteLoop()),
+    _guide(new GuideReader)
     {
         _isOpen = false;
         _pluginRun = true;
@@ -49,6 +50,7 @@ namespace CTRPluginFramework
         Clock           inputClock;
         int             mode = 0;
         PluginMenuHome  &home = *_home;
+        GuideReader     &guide = *_guide;
         PluginMenuExecuteLoop &executer = *_executeLoop;
 
     #if SHOWFPS
@@ -103,8 +105,8 @@ namespace CTRPluginFramework
                 }
                 else if (mode == 2)
                 {
-                    mode = 0;
-                    //_guide(eventList, mode, delta);
+                    if (guide(eventList, delta))
+                        mode = 0;
                 }
                 
                 // FPS of plugin Menu
