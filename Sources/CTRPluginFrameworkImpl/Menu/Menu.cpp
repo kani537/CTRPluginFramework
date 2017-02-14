@@ -9,20 +9,22 @@
 
 namespace CTRPluginFramework
 {
-    Menu::Menu(std::string title)
+    Menu::Menu(std::string title, IconCallback iconCallback)
     {
         _background = IntRect(30, 20, 340, 200);
         _border = IntRect(32, 22, 336, 196);
         _selector = 0;
         _folder = new MenuFolderImpl(title);
+        _iconCallback = iconCallback;
     }
 
-    Menu::Menu(MenuFolderImpl *folder)
+    Menu::Menu(MenuFolderImpl *folder, IconCallback iconCallback)
     {
         _background = IntRect(30, 20, 340, 200);
         _border = IntRect(32, 22, 336, 196);
         _selector = 0;
         _folder = folder;
+        _iconCallback = iconCallback;
         if (_folder == nullptr)
             _folder = new MenuFolderImpl("Menu");
     }
@@ -73,23 +75,53 @@ namespace CTRPluginFramework
 
         max = std::min(max, i + 8);
 
-        for (; i < max; i++)
+        if (_iconCallback != nullptr)
         {
-            Color &c = i == _selector ? blank : silver;
-            MenuItem *item = _folder->_items[i];
-
-            if (i == _selector)
+            for (; i < max; i++)
             {
-                Renderer::MenuSelector(posX - 5, posY - 3, 320, 20);
-            }
+                Color &c = i == _selector ? blank : silver;
+                MenuItem *item = _folder->_items[i];
 
-            if (item->_type == MenuType::Entry)
-                Renderer::DrawSysString(item->name.c_str(), posX + 20, posY, XMAX, c);
-            else
-                Renderer::DrawSysFolder(item->name.c_str(), posX, posY, XMAX, c);
+                if (i == _selector)
+                {
+                    Renderer::MenuSelector(posX - 5, posY - 3, 320, 20);
+                }
 
-            posY += 4;
+                if (item->_type == MenuType::Entry)
+                {
+                    _iconCallback(posX, posY);
+                    Renderer::DrawSysString(item->name.c_str(), posX + 20, posY, XMAX, c);
+                }
+                else
+                    Renderer::DrawSysFolder(item->name.c_str(), posX, posY, XMAX, c);
+
+                posY += 4;
+            }            
         }
+        else
+        {
+            for (; i < max; i++)
+            {
+                Color &c = i == _selector ? blank : silver;
+                MenuItem *item = _folder->_items[i];
+
+                if (i == _selector)
+                {
+                    Renderer::MenuSelector(posX - 5, posY - 3, 320, 20);
+                }
+
+                if (item->_type == MenuType::Entry)
+                {
+                    Renderer::DrawSysString(item->name.c_str(), posX + 20, posY, XMAX, c);
+                }
+                else
+                    Renderer::DrawSysFolder(item->name.c_str(), posX, posY, XMAX, c);
+
+                posY += 4;
+            }      
+        }
+
+
     }
 
     int     Menu::ProcessEvent(Event &event, std::string &userchoice)

@@ -20,12 +20,13 @@ namespace CTRPluginFramework
     };
     class Menu
     {
+        using IconCallback = int (*)(int, int);
     public:
 
 
 
-        Menu(std::string title);
-        Menu(MenuFolderImpl *folder);
+        Menu(std::string title, IconCallback iconCallback = nullptr);
+        Menu(MenuFolderImpl *folder, IconCallback iconCallback = nullptr);
         ~Menu(void);
 
         void    Append(MenuItem *item);
@@ -48,6 +49,7 @@ namespace CTRPluginFramework
         IntRect     _background;
         IntRect     _border;
         Clock       _input;
+        IconCallback    _iconCallback;
 
         int         _selector;
     };
