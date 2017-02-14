@@ -139,7 +139,7 @@ namespace CTRPluginFramework
 
             event.type = Event::TouchSwipped;
             event.swip.direction = Event::None;
-            if (ABS(horizontalOffset) > 20 || ABS(verticalOffset) > 20)
+            if (ABS(horizontalOffset) > 50 || ABS(verticalOffset) > 50)
             {
                 if (horizontalOffset > 0)
                 {
