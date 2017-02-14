@@ -181,24 +181,25 @@ namespace CTRPluginFramework
             int xOffset = 0;
             int startY = 0;
 
-            if (_width < area.size.x)
+            if (_width < width)
             {
-              posX += (area.size.x - _width) / 2;
+              posX += (width - _width) / 2;
               width = _width;
             }
-            else
+            else if (_width > width)
               xOffset = ((_width - area.size.x) / 2) * 3;
 
             if (_height < area.size.y)
             {
-              posY += (area.size.y - _height) / 2;
+              posY += (height - _height) / 2;
               height = _height;
             }
-            else
-              startY = (_height - area.size.y) / 2;
+            else if (_height > height)
+              startY = (_height - height) / 2;
 
           
-
+            if (xOffset < 0)
+              xOffset = 0;
             int stride = scr->GetStride();
 
             if (fade == 0.f)
@@ -578,40 +579,82 @@ namespace CTRPluginFramework
                 }
             }
         }
+        // Perform a basic 'pixel' enlarging resample.
+        inline bool Resample(BMPImage &dest, int newWidth, int newHeight)
+        {
+            //if(_data == NULL) return false;
+            //
+            // Get a new buuffer to interpolate into
+          if (!_loaded)
+                return (false);
+            dest._loaded = true;
 
-    /*
-       inline void subsample(bitmap_image& dest)
+          dest.SetWidthHeight(newWidth, newHeight);
+          dest.Clear();
+
+            unsigned char *newData = dest.data();//new unsigned char [newWidth * newHeight * 3];
+
+            double scaleWidth =  (double)newWidth / (double)_width;
+            double scaleHeight = (double)newHeight / (double)_height;
+
+            for(int cy = 0; cy < newHeight; cy++)
+            {
+                for(int cx = 0; cx < newWidth; cx++)
+                {
+                    int pixel = (cy * (newWidth *3)) + (cx*3);
+                    int nearestMatch =  (((int)(cy / scaleHeight) * (_width *3)) + ((int)(cx / scaleWidth) *3) );
+                    
+                    newData[pixel    ] =  _data[nearestMatch    ];
+                    newData[pixel + 1] =  _data[nearestMatch + 1];
+                    newData[pixel + 2] =  _data[nearestMatch + 2];
+                }
+            }
+
+            //
+            //delete[] _data;
+            //_data = newData;
+            //_width = newWidth;
+            //_height = newHeight; 
+
+            return true;
+        }
+
+    
+       inline void SubSample(BMPImage& dest)
        {
           /*
              Half sub-sample of original image.
           */
-     /*     unsigned int w = 0;
+          if (!_loaded)
+            return;
+          dest._loaded = true;
+          unsigned int w = 0;
           unsigned int h = 0;
 
           bool odd_width = false;
           bool odd_height = false;
 
-          if (0 == (width_ % 2))
-             w = width_ / 2;
+          if (0 == (_width % 2))
+             w = _width / 2;
           else
           {
-             w = 1 + (width_ / 2);
+             w = 1 + (_width / 2);
              odd_width = true;
           }
 
-          if (0 == (height_ % 2))
-             h = height_ / 2;
+          if (0 == (_height % 2))
+             h = _height / 2;
           else
           {
-             h = 1 + (height_ / 2);
+             h = 1 + (_height / 2);
              odd_height = true;
           }
 
           unsigned int horizontal_upper = (odd_width)  ? (w - 1) : w;
           unsigned int vertical_upper   = (odd_height) ? (h - 1) : h;
 
-          dest.setwidth_height(w,h);
-          dest.clear();
+          dest.SetWidthHeight(w,h);
+          dest.Clear();
 
                 unsigned char* s_itr[3];
           const unsigned char*  itr1[3];
@@ -625,9 +668,9 @@ namespace CTRPluginFramework
           itr1[1] = data() + 1;
           itr1[2] = data() + 2;
 
-          itr2[0] = data() + row_increment_ + 0;
-          itr2[1] = data() + row_increment_ + 1;
-          itr2[2] = data() + row_increment_ + 2;
+          itr2[0] = data() + _rowIncrement + 0;
+          itr2[1] = data() + _rowIncrement + 1;
+          itr2[2] = data() + _rowIncrement + 2;
 
           unsigned int total = 0;
 
@@ -635,7 +678,7 @@ namespace CTRPluginFramework
           {
              for (unsigned int i = 0; i < horizontal_upper; ++i)
              {
-                for (unsigned int k = 0; k < bytes_per_pixel_; s_itr[k] += bytes_per_pixel_, ++k)
+                for (unsigned int k = 0; k < _bytesPerPixel; s_itr[k] += _bytesPerPixel, ++k)
                 {
                    total = 0;
                    total += *(itr1[k]);
@@ -643,10 +686,10 @@ namespace CTRPluginFramework
                    total += *(itr2[k]);
                    total += *(itr2[k]);
 
-                   itr1[k] += bytes_per_pixel_;
-                   itr1[k] += bytes_per_pixel_;
-                   itr2[k] += bytes_per_pixel_;
-                   itr2[k] += bytes_per_pixel_;
+                   itr1[k] += _bytesPerPixel;
+                   itr1[k] += _bytesPerPixel;
+                   itr2[k] += _bytesPerPixel;
+                   itr2[k] += _bytesPerPixel;
 
                    *(s_itr[k]) = static_cast<unsigned char>(total >> 2);
                 }
@@ -654,29 +697,29 @@ namespace CTRPluginFramework
 
              if (odd_width)
              {
-                for (unsigned int k = 0; k < bytes_per_pixel_; s_itr[k] += bytes_per_pixel_, ++k)
+                for (unsigned int k = 0; k < _bytesPerPixel; s_itr[k] += _bytesPerPixel, ++k)
                 {
                    total = 0;
                    total += *(itr1[k]);
                    total += *(itr2[k]);
 
-                   itr1[k] += bytes_per_pixel_;
-                   itr2[k] += bytes_per_pixel_;
+                   itr1[k] += _bytesPerPixel;
+                   itr2[k] += _bytesPerPixel;
 
                    *(s_itr[k]) = static_cast<unsigned char>(total >> 1);
                 }
              }
 
-             for (unsigned int k = 0; k < bytes_per_pixel_; ++k)
+             for (unsigned int k = 0; k < _bytesPerPixel; ++k)
              {
-                itr1[k] += row_increment_;
+                itr1[k] += _rowIncrement;
              }
 
              if (j != (vertical_upper - 1))
              {
-                for (unsigned int k = 0; k < bytes_per_pixel_; ++k)
+                for (unsigned int k = 0; k < _bytesPerPixel; ++k)
                 {
-                   itr2[k] += row_increment_;
+                   itr2[k] += _rowIncrement;
                 }
              }
           }
@@ -685,14 +728,14 @@ namespace CTRPluginFramework
           {
              for (unsigned int i = 0; i < horizontal_upper; ++i)
              {
-                for (unsigned int k = 0; k < bytes_per_pixel_; s_itr[k] += bytes_per_pixel_, ++k)
+                for (unsigned int k = 0; k < _bytesPerPixel; s_itr[k] += _bytesPerPixel, ++k)
                 {
                    total = 0;
                    total += *(itr1[k]);
                    total += *(itr2[k]);
 
-                   itr1[k] += bytes_per_pixel_;
-                   itr2[k] += bytes_per_pixel_;
+                   itr1[k] += _bytesPerPixel;
+                   itr2[k] += _bytesPerPixel;
 
                    *(s_itr[k]) = static_cast<unsigned char>(total >> 1);
                 }
@@ -700,13 +743,13 @@ namespace CTRPluginFramework
 
              if (odd_width)
              {
-                for (unsigned int k = 0; k < bytes_per_pixel_; ++k)
+                for (unsigned int k = 0; k < _bytesPerPixel; ++k)
                 {
                    (*(s_itr[k])) = *(itr1[k]);
                 }
              }
           }
-       }*/
+       }
     
        inline void UpSample(BMPImage &dest)
        {
@@ -1067,7 +1110,7 @@ namespace CTRPluginFramework
                 return;
             }
 
-            if (bih.size != bih.StructSize())
+            /*if (bih.size != bih.StructSize())
             {
                 bfh.Clear();
                 bih.Clear();
@@ -1077,7 +1120,7 @@ namespace CTRPluginFramework
                 sprintf(buffer, "BMP Error: Invalid BIH size: %X, expected; %X", bih.size, bih.StructSize());
                 OSD::Notify(buffer, red, black);
                 return;
-            }
+            }*/
 
             _width  = bih.width;
             _height = bih.height;
@@ -1094,6 +1137,7 @@ namespace CTRPluginFramework
             }*/
             _dimensions = IntVector(_width, _height);
             _bytesPerPixel = bih.bit_count >> 3;
+            file.Seek(bfh.off_bits, File::SET);
 
             unsigned int padding = (4 - ((3 * _width) % 4)) % 4;
             char paddingData[4] = {0,0,0,0};
@@ -1112,7 +1156,7 @@ namespace CTRPluginFramework
                 return;                
             }
 
-            std::size_t bitmapLogicalSize = (_height * _width * _bytesPerPixel) + (_height * padding) + bih.StructSize() + bfh.StructSize();
+           /* std::size_t bitmapLogicalSize = (_height * _width * _bytesPerPixel) + (_height * padding) + bih.StructSize() + bfh.StructSize();
 
             if (bitmapFileSize != bitmapLogicalSize)
             {
@@ -1124,7 +1168,7 @@ namespace CTRPluginFramework
                 OSD::Notify("BMP Error: Mismatch between logical and physical sizes of BMP.", red, black);
 
                 return;
-            }
+            }*/
 
             if (CreateBitmap())
             {
@@ -1142,8 +1186,10 @@ namespace CTRPluginFramework
             {
                 unsigned char *dataPtr = Row(_height - i - 1); // read in inverted row order
 
-                file.Read(dataPtr, sizeof(char) * _bytesPerPixel * _width);
-                file.Read(paddingData, padding);
+                file.Read(dataPtr, 3 * _width);
+                if (padding > 0)
+                  file.Seek(padding, File::CUR); // Should be faster
+                  //file.Read(paddingData, padding);
             }
             file.Close();
             _loaded = true;
