@@ -243,7 +243,8 @@ namespace CTRPluginFramework
 
         Result res;
         Handle handle = 0;
-
+        output._list.clear();
+        output._isListed = false;
         res = FSUSER_OpenDirectory(&handle, _sdmcArchive, fsPath);
         if (R_FAILED(res) && create)
         {
@@ -262,7 +263,6 @@ namespace CTRPluginFramework
         }
         output._path = bakpath;
         output._handle = handle;
-        output._isListed = false;
 
         //output = Folders(bakpath, handle);// = Folders(bakpath, handle);
         return (res);

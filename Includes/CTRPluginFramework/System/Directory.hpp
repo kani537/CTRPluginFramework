@@ -74,7 +74,7 @@ namespace CTRPluginFramework
         ** Other : Result value by FS
         **********************************************/
         static int     Open(Directory &output, std::string path, bool create = false);
-        Directory(){}
+        Directory() : _path(""), _handle(0), _isListed(false){}
         ~Directory() { Close(); }
 
         int     Close(void);
@@ -101,7 +101,9 @@ namespace CTRPluginFramework
         static  int             _SdmcFixPath(std::string &path);
         static  FS_Path         _SdmcUtf16Path(std::string path);
         int                     _List(void);
+
         Directory  (std::string &path, Handle &handle);
+
         std::string     _path;
         Handle          _handle;
         std::vector<FS_DirectoryEntry>    _list;
