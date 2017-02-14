@@ -151,32 +151,32 @@ namespace CTRPluginFramework
                     event.swip.direction = Event::Left;
                     PushEvent(event);
                 }
-                if (verticalOffset > 0)
+                if (verticalOffset < 0)
                 {
                     event.swip.direction = Event::Up;
                     PushEvent(event);
                 }
-                if (verticalOffset < 0)
+                if (verticalOffset > 0)
                 {
                     event.swip.direction = Event::Down;
                     PushEvent(event);
                 }
-                if (horizontalOffset < 0 && verticalOffset > 0)
+                if (horizontalOffset < 0 && verticalOffset < 0)
                 {
                     event.swip.direction = Event::LeftUp;
                     PushEvent(event);
                 }
-                if (horizontalOffset > 0 && verticalOffset > 0)
+                if (horizontalOffset > 0 && verticalOffset < 0)
                 {
                     event.swip.direction = Event::RightUp;
                     PushEvent(event);
                 }
-                if (horizontalOffset < 0 && verticalOffset < 0)
+                if (horizontalOffset < 0 && verticalOffset > 0)
                 {
                     event.swip.direction = Event::LeftDown;
                     PushEvent(event);
                 }
-                if (horizontalOffset > 0 && verticalOffset < 0)
+                if (horizontalOffset > 0 && verticalOffset > 0)
                 {
                     event.swip.direction = Event::RightDown;
                     PushEvent(event);
