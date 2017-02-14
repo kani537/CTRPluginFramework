@@ -14,6 +14,7 @@ namespace CTRPluginFramework
     extern "C" unsigned char *CloseWindowFilled20;
     extern "C" unsigned char *Controller15;
     extern "C" unsigned char *FolderFilled;
+    extern "C" unsigned char *File15;
     extern "C" unsigned char *Info25;
     extern "C" unsigned char *InfoFilled25;
     extern "C" unsigned char *HandCursor15;
@@ -173,6 +174,15 @@ namespace CTRPluginFramework
     {
         return (DrawImg(Star15, posX, posY, 15, 15));
     } 
+
+    /*
+    ** File
+    ** 15px * 15px
+    **************/
+    int     Icon::DrawFile(int posX, int posY)
+    {
+        return (DrawImg(File15, posX, posY, 15, 15));
+    }
 
     /*
     ** Info

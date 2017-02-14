@@ -44,6 +44,12 @@ namespace CTRPluginFramework
         static int      DrawFavorite(int posX, int posY);
 
         /*
+        ** File
+        ** 15px * 15px
+        *************/
+        static int      DrawFile(int posX, int posY);
+
+        /*
         ** Info
         ** 25px * 25px
         ***********/
