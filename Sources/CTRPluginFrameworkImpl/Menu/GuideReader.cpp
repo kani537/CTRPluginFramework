@@ -109,7 +109,7 @@ namespace CTRPluginFramework
     }
 
     GuideReader::GuideReader(void) :
-    _text(""), _isOpen(false), _guideTB(nullptr), _last(nullptr), _menu(CreateFolder("Guide")),
+    _text(""), _isOpen(false), _guideTB(nullptr), _last(nullptr), _menu(CreateFolder("Guide"), Icon::DrawFile),
     _closeBtn(*this, nullptr, IntRect(275, 24, 20, 20), Icon::DrawClose)
     {
         _isOpen = false;
