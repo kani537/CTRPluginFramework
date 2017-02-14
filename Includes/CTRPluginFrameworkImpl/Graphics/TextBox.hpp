@@ -46,9 +46,14 @@ namespace CTRPluginFramework
         IntRect                 _box;
         IntRect                 _border;
         bool                    _isOpen;
+        bool                    _displayScrollbar;
 
         u32                     _currentLine;
         u32                     _maxLines;
+        u32                     _scrollbarSize;
+        u32                     _scrollCursorSize;
+        float                   _scrollPadding;
+        float                   _scrollPosition;
         Clock                   _inputClock;
     };
 }

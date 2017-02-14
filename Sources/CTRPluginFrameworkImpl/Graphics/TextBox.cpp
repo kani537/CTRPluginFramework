@@ -21,8 +21,30 @@ namespace CTRPluginFramework
         _border = IntRect(box.leftTop.x + 2, box.leftTop.y + 2, box.size.x - 4, box.size.y - 4);
         _GetTextInfos();
         if (_newline.size() < _maxLines)
+        {
             _maxLines = _newline.size();
+            _displayScrollbar = false;
+        }
+        else
+        {
+            int height = _box.size.y;
 
+            height -= 10;
+
+            int lines = _newline.size() + 1;
+            int lsize = 16 * lines;
+
+            float padding = (float)height / (float)lsize;
+            int cursorSize =  padding * height;
+            _scrollbarSize = height;
+
+            if (cursorSize < 5)
+                cursorSize = 5;
+
+            _scrollCursorSize = cursorSize;
+            _scrollPadding = padding * 16.f;
+            _scrollPosition = 0.f;
+        }
         Color blank(255, 255, 255);
         titleColor = blank;
         textColor = blank;
@@ -71,7 +93,10 @@ namespace CTRPluginFramework
                     if (_inputClock.HasTimePassed(Milliseconds(100)))
                     {
                         if (_currentLine > 0)
+                        {
                             _currentLine--;
+                            _scrollPosition -= _scrollPadding;; //_scrollPadding;
+                        }
                         //else
                          //   _currentLine = _newline.size() - _maxLines;
                         _inputClock.Restart();
@@ -84,7 +109,10 @@ namespace CTRPluginFramework
                     if (_inputClock.HasTimePassed(Milliseconds(100)))
                     {   
                         if (_currentLine < _newline.size() - _maxLines)
+                        {
                             _currentLine++;
+                            _scrollPosition += _scrollPadding;
+                        }
                         //else
                         //    _currentLine = 0;
                         _inputClock.Restart();
@@ -93,11 +121,13 @@ namespace CTRPluginFramework
                 }
                 case Key::DPadLeft:
                 {
+                    _scrollPosition = 0.f;
                     _currentLine = 0;
                     break;
                 }
                 case Key::DPadRight:
                 {
+                    _scrollPosition = (_newline.size() - _maxLines) * _scrollPadding;
                     _currentLine = std::max((int)(_newline.size() - _maxLines), 0);
                     break;
                 }
@@ -106,7 +136,10 @@ namespace CTRPluginFramework
                     if (_inputClock.HasTimePassed(Milliseconds(100)))
                     {
                         if (_currentLine > 1)
+                        {
                             _currentLine -= 2;
+                            _scrollPosition -= _scrollPadding * 2;
+                        }
                         //else
                          //   _currentLine = _newline.size() - _maxLines;
                         _inputClock.Restart();
@@ -118,7 +151,10 @@ namespace CTRPluginFramework
                     if (_inputClock.HasTimePassed(Milliseconds(100)))
                     {   
                         if (_currentLine < _newline.size() - _maxLines)
+                        {
                             _currentLine += 2;
+                            _scrollPosition += _scrollPadding * 2;
+                        }
                         //else
                         //    _currentLine = 0;
                         _inputClock.Restart();
@@ -174,11 +210,30 @@ namespace CTRPluginFramework
         // Draw Text
         for (int i = _currentLine; i < max; i++)
         {
-            //char *start = _newline[i];
-            //char *end = i == max - 1 ? nullptr :  _newline[i + 1];
             Renderer::DrawSysString(_newline[i], posX, posY, xLimit, textColor, 0, _newline[i + 1]);
-
         }
+
+        if (!_displayScrollbar)
+            return;
+
+        // Draw scroll bar
+        static Color dimGrey(105, 105, 105);
+        static Color silver(192, 192, 192);
+
+        // Background
+        posX = _box.leftTop.x + _box.size.x - 8;
+        posY = _box.leftTop.y + 5;
+
+        Renderer::DrawLine(posX, posY + 1, 1, silver, _scrollbarSize - 2);
+        Renderer::DrawLine(posX + 1, posY, 1, silver, _scrollbarSize);
+        Renderer::DrawLine(posX + 2, posY + 1, 1, silver, _scrollbarSize - 2);
+
+        posY += (int)(_scrollPosition);// * _scrollbarSize);
+
+        Renderer::DrawLine(posX, posY + 1, 1, dimGrey, _scrollCursorSize - 2);
+        Renderer::DrawLine(posX + 1, posY, 1, dimGrey, _scrollCursorSize);
+        Renderer::DrawLine(posX + 2, posY + 1, 1, dimGrey, _scrollCursorSize - 2);        
+
     }
 
     /*
