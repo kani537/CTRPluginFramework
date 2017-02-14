@@ -168,20 +168,37 @@ namespace CTRPluginFramework
             }
        }
 
-        void     Draw(IntRect &area, float fade = 0.f)
+       void     Draw(IntRect &area, float fade = 0.f)
        {    
             bool topScreen = Renderer::_target == 1;
             Screen *scr = topScreen ? Screen::Top : Screen::Bottom;
 
             int posX = area.leftTop.x;
             int posY = area.leftTop.y;
-
-            int xOffset = ((_width - area.size.x) / 2) * 3;
-            int startY = (_height - area.size.y) / 2;
-
-            
             int width = area.size.x;
             int height = area.size.y;
+
+            int xOffset = 0;
+            int startY = 0;
+
+            if (_width < area.size.x)
+            {
+              posX += (area.size.x - _width) / 2;
+              width = _width;
+            }
+            else
+              xOffset = ((_width - area.size.x) / 2) * 3;
+
+            if (_height < area.size.y)
+            {
+              posY += (area.size.y - _height) / 2;
+              height = _height;
+            }
+            else
+              startY = (_height - area.size.y) / 2;
+
+          
+
             int stride = scr->GetStride();
 
             if (fade == 0.f)
