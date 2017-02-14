@@ -233,7 +233,7 @@ namespace CTRPluginFramework
         if (position < 0 && offset < -position)
             return (-1);
 
-        _offset = offset;
+        _offset = offset + position;
         return (0);
     }
 
