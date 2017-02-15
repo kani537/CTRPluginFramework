@@ -15,6 +15,8 @@ namespace CTRPluginFramework
     extern "C" unsigned char *CloseWindow20;
     extern "C" unsigned char *CloseWindowFilled20;
     extern "C" unsigned char *Controller15;
+    extern "C" unsigned char *EnterKey15;
+    extern "C" unsigned char *EnterKeyFilled15;
     extern "C" unsigned char *FolderFilled;
     extern "C" unsigned char *File15;
     extern "C" unsigned char *Info25;
@@ -144,6 +146,17 @@ namespace CTRPluginFramework
     int     Icon::DrawController(int posX, int posY)
     {
         return (DrawImg(Controller15, posX, posY, 15, 15));
+    }
+
+    /*
+    ** Enter Key
+    ** 15px * 15px
+    **************/
+    int     Icon::DrawEnterKey(int posX, int posY, bool filled)
+    {
+        u8 *img = filled ? EnterKeyFilled15 : EnterKey15;
+
+        return (DrawImg(img, posX, posY, 15, 15));
     }
 
     /*

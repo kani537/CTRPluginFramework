@@ -34,6 +34,12 @@ namespace CTRPluginFramework
         static int      DrawController(int posX, int posY);
 
         /*
+        ** Enter Key
+        ** 15px * 15px
+        ************/
+        static int      DrawEnterKey(int posX, int posY, bool filled);
+
+        /*
         ** Folder
         ** 15px * 15px
         ************/
