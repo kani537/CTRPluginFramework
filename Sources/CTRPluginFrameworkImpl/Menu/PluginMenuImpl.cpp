@@ -63,7 +63,6 @@ namespace CTRPluginFramework
     #endif
 
         Time            delta;
-        bool            isInit = false;
         OSDImpl         &osd = *(OSDImpl::GetInstance());
         std::vector<Event>     eventList;
 
@@ -83,7 +82,6 @@ namespace CTRPluginFramework
                     {
                         ProcessImpl::Play();
                         _isOpen = false;
-                        isInit = true;
                     }
                     else
                     {
@@ -150,7 +148,15 @@ namespace CTRPluginFramework
                     ProcessImpl::Play();
                     _isOpen = false;
                     shouldClose = false;
-                }         
+                }    
+
+                if (Controller::IsKeysDown((L + R + Start)))
+                {
+                    ProcessImpl::Play();
+                    _pluginRun = false;                    
+                    _isOpen = false;     
+                }
+
             }
             else
             {
