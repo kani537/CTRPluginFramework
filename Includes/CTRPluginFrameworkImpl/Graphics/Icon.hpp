@@ -80,6 +80,13 @@ namespace CTRPluginFramework
         ** 15 px * 15 px
         ****************/
         static int      DrawHandCursor(int posX, int posY);
+
+        /*
+        ** Keyboard
+        ** 25px * 25px
+        **************/
+        static int      DrawKeyboard(int posX, int posY, bool filled);
+        
         /*
         ** Search
         ** 15px * 15 px
