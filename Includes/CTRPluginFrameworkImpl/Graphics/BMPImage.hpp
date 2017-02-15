@@ -74,6 +74,19 @@ namespace CTRPluginFramework
             CreateBitmap();
         }
 
+        BMPImage(const BMPImage &src, const unsigned int width, const unsigned int height) :
+        _fileName(src._fileName),
+        _width(width),
+        _height(height),
+        _rowIncrement(0),
+        _bytesPerPixel(3),
+        _channelMode(BGR_Mode),
+        _loaded(false)
+        {
+            CreateBitmap();
+            FillWithImg(src);
+        }
+
         bool IsLoaded(void)
         {
             return (_loaded);
@@ -83,6 +96,7 @@ namespace CTRPluginFramework
         {
             return (_dimensions);
         }
+
         /*bitmap_image(const & image) : 
         _fileName_(image.fileName),
          width_(image.width_),
@@ -468,6 +482,36 @@ namespace CTRPluginFramework
             }
 
             file.Close();
+        }
+
+        void FillWithImg(const BMPImage &src)
+        {
+            if (!src._loaded)
+              return;
+            _loaded = true;
+            int   startX = 0;
+            int   startY = 0;
+            int   offsetX = 0;
+
+            int   srcWidth = src._width;
+            int   srcHeight = src._height;
+
+            if (srcWidth < _width)
+              offsetX = (_width - srcWidth) / 2 * 3;
+            if (src._height < _height)
+              startY = (_height - srcHeight) / 2;
+
+            for (int y = 0; y < srcHeight; y++)
+            {
+                unsigned char  *imgSrc = src.Row(y);
+                unsigned char  *imgDst = Row(y + startY) + offsetX;
+                for (int x = 0; x < srcWidth; x++)
+                {
+                   *imgDst++ = *imgSrc++;
+                   *imgDst++ = *imgSrc++;
+                   *imgDst++ = *imgSrc++;
+                }
+            }
         }
 
      /*  
