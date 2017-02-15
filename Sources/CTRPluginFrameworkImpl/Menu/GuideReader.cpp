@@ -66,34 +66,18 @@ namespace CTRPluginFramework
 
     float GetRatio(int width, int height)
     {
-       /* int xDiff = ABS(width - 280);
-        int yDiff = ABS(height - 200);
-
-        if (width > 280 && height <= 200)
-            goto xratio;
-
-        if (height > 200 && width <= 280)
-            goto yratio;
-
-        if (xDiff > yDiff)
-            goto xratio;
-
-        goto yratio;*/
-
-    xratio:
         if (width >= height)
             return ((float)width / 280.f);
-    yratio:
         return ((float)height / 200.f);
     }
 
-    BMPImage *SubSampleUntilItFits(BMPImage *img, int maxX, int maxY)
+    BMPImage *PostProcess(BMPImage *img)
     {
         int width = img->Width();
         int height = img->Height();
 
-        if (width <= maxX && height <= maxY)
-            return (img);
+        /*if (width <= maxX && height <= maxY)
+            return (img);*/
 
         float ratio = GetRatio(width, height);
 
@@ -104,6 +88,13 @@ namespace CTRPluginFramework
 
         img->Resample(*temp, newWidth, newHeight);
         delete img;
+
+        if (newWidth != 280 || newHeight != 240)
+        {
+            BMPImage *res = new BMPImage(*temp, 280, 240);
+            delete temp;
+            return res;
+        }        
 
         return (temp);
     }
@@ -121,7 +112,7 @@ namespace CTRPluginFramework
             {
                 _currentBMP = 0;
                 _image = new BMPImage("Guide/" + _bmpList[0]);
-                _image = SubSampleUntilItFits(_image, 280, 200);
+                _image = PostProcess(_image);
             }
             else
                 _currentBMP = -1;
@@ -179,11 +170,11 @@ namespace CTRPluginFramework
 
         if (_image != nullptr && _image->IsLoaded())
         {
-            if (_image->Height() < 200 || _image->Width() < 280)
+           /* if (_image->Height() < 200 || _image->Width() < 280)
             {
                 Renderer::DrawRect2(background, black, dimGrey);
                 Renderer::DrawRect(22, 22, 276, 196, blank, false);                
-            }
+            }*/
             _image->Draw(background);
         }
         else
@@ -237,7 +228,7 @@ namespace CTRPluginFramework
                     {
                         _currentBMP = 0;
                         _image = new BMPImage(item->note + "/" + _bmpList[0]);                        
-                        _image = SubSampleUntilItFits(_image, 280, 200);
+                        _image = PostProcess(_image);
                     }
                 }
             }
@@ -296,14 +287,14 @@ namespace CTRPluginFramework
                     _currentBMP--;
                     delete _image;
                     _image = new BMPImage(_currentDirectory.GetPath() + "/" + _bmpList[_currentBMP]);
-                    _image = SubSampleUntilItFits(_image, 280, 200);
+                    _image = PostProcess(_image);
                 }
                 else if (event.key.code == Key::R && _currentBMP < _bmpList.size() -1)
                 {
                     _currentBMP++;
                     delete _image;
                     _image = new BMPImage(_currentDirectory.GetPath() + "/" + _bmpList[_currentBMP]);
-                    _image = SubSampleUntilItFits(_image, 280, 200);            
+                    _image = PostProcess(_image);            
                 }
             }
             else if (event.type == Event::TouchSwipped)
@@ -313,14 +304,14 @@ namespace CTRPluginFramework
                     _currentBMP--;
                     delete _image;
                     _image = new BMPImage(_currentDirectory.GetPath() + "/" + _bmpList[_currentBMP]);
-                    _image = SubSampleUntilItFits(_image, 280, 200);
+                    _image = PostProcess(_image);
                 }
                 else if (event.swip.direction == Event::SwipDirection::Right && _currentBMP < _bmpList.size() -1)
                 {
                     _currentBMP++;
                     delete _image;
                     _image = new BMPImage(_currentDirectory.GetPath() + "/" + _bmpList[_currentBMP]);
-                    _image = SubSampleUntilItFits(_image, 280, 200);            
+                    _image = PostProcess(_image);           
                 }  
             }
         }

@@ -30,7 +30,7 @@ namespace CTRPluginFramework
         return (temp);
     }
 
-    BMPImage *UpSampleThenCrop(BMPImage *img, int maxX, int maxY)
+    /*BMPImage *UpSampleThenCrop(BMPImage *img, int maxX, int maxY)
     {
         BMPImage *temp = UpSampleUntilItsEnough(img, maxX, maxY);
 
@@ -44,6 +44,38 @@ namespace CTRPluginFramework
         delete temp;
 
         return (res);        
+    }*/
+
+    float GetRatio(int width, int height, int maxX, int maxY)
+    {
+        if (width >= height)
+            return ((float)width / maxX);
+        return ((float)height / maxY);
+    }
+
+    BMPImage *PostProcess(BMPImage *img, int maxX, int maxY)
+    {
+        int width = img->Width();
+        int height = img->Height();
+
+        float ratio = GetRatio(width, height, maxX, maxY);
+
+        int newWidth = (int)(ceilf((float)width / ratio));
+        int newHeight = (int)(ceilf((float)height / ratio));
+
+        BMPImage *temp = new BMPImage(newWidth, newHeight);
+
+        img->Resample(*temp, newWidth, newHeight);
+        delete img;
+
+        if (newWidth != maxX || newHeight != maxY)
+        {
+            BMPImage *res = new BMPImage(*temp, maxX, maxY);
+            delete temp;
+            return res;
+        }        
+
+        return (temp);
     }
 
     void    Preferences::Initialize(void)
@@ -52,10 +84,11 @@ namespace CTRPluginFramework
 
         if (topBackgroundImage->IsLoaded())
         {
-            if (topBackgroundImage->Width() > 340 || topBackgroundImage->Height() > 200)
+            topBackgroundImage = PostProcess(topBackgroundImage, 340, 200);
+          /*  if (topBackgroundImage->Width() > 340 || topBackgroundImage->Height() > 200)
                 topBackgroundImage = RegionFromCenter(topBackgroundImage, 340, 200);
             else if (topBackgroundImage->Width() < 340 || topBackgroundImage->Height() < 200)
-                topBackgroundImage = UpSampleThenCrop(topBackgroundImage, 340, 200);            
+                topBackgroundImage = UpSampleThenCrop(topBackgroundImage, 340, 200);      */      
         }
 
 
@@ -63,10 +96,11 @@ namespace CTRPluginFramework
 
         if (bottomBackgroundImage->IsLoaded())
         {
-            if (bottomBackgroundImage->Width() > 280 || bottomBackgroundImage->Height() > 200)
+            bottomBackgroundImage = PostProcess(bottomBackgroundImage, 280, 200);
+            /*if (bottomBackgroundImage->Width() > 280 || bottomBackgroundImage->Height() > 200)
                 bottomBackgroundImage = RegionFromCenter(bottomBackgroundImage, 280, 200);
             else if (bottomBackgroundImage->Width() < 280 || bottomBackgroundImage->Height() < 200)
-                bottomBackgroundImage = UpSampleThenCrop(bottomBackgroundImage, 280, 200);            
+                bottomBackgroundImage = UpSampleThenCrop(bottomBackgroundImage, 280, 200);   */         
         }
     }
 }
