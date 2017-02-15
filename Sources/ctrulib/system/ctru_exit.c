@@ -21,9 +21,10 @@ void __attribute__((weak)) __attribute__((noreturn)) __libctru_exit(int rc)
 	u32 tmp=0;
 
 	// Unmap the linear heap
-	//svcControlMemory(&tmp, __ctru_linear_heap, 0x0, __ctru_linear_heap_size, MEMOP_FREE, 0x0);
+	arm11kSvcControlMemory(&tmp, __ctru_linear_heap, __ctru_linear_heap_size, MEMOP_FREE, 0x0);
 
 	// Unmap the application heap
+	arm11kSvcControlMemory(&tmp, __ctru_heap, __ctru_heap_size, MEMOP_FREE, 0x0);
 /*
 	arm11kSvcControlMemory(__ctru_heap, __ctru_heap_size, 0x201, 0x0);
 	arm11kSvcControlMemory(__ctru_heap, __ctru_heap_size, 0x001, 0x0);
