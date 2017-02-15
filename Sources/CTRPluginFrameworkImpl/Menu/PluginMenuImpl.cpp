@@ -13,7 +13,7 @@
 #include "CTRPluginFramework/System.hpp"
 #include "CTRPluginFrameworkImpl/Preferences.hpp"
 
-#define SHOWFPS 1
+#define SHOWFPS 0
 
 namespace CTRPluginFramework
 {

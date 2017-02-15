@@ -1,7 +1,17 @@
 #include "CTRPluginFrameworkImpl/Graphics/BMPImage.hpp"
+#include "ctrulib/allocator/linear.h"
 #include "3DS.h"
 namespace CTRPluginFramework
 {
+    BMPImage::~BMPImage()
+    {
+        if (_data != nullptr)
+        {
+            linearFree(_data);
+            _data = nullptr;
+        }
+    }
+
     void    BMPImage::SaveImage(const std::string &fileName) const
     {
         File file;
@@ -61,6 +71,9 @@ namespace CTRPluginFramework
         if (!src._loaded)
           return;
         _loaded = true;
+
+        std::memset(_data, 0, _dataSize);
+        
         int   startX = 0;
         int   startY = 0;
         int   offsetX = 0;
@@ -187,11 +200,21 @@ namespace CTRPluginFramework
     int     BMPImage::CreateBitmap(void)
     {
       _rowIncrement = _width * _bytesPerPixel;
-      _data.resize(_height * _rowIncrement);
+      if (_data != nullptr)
+        linearFree(_data);
 
-      u32 cap = _data.capacity();
-      if (cap != _height * _rowIncrement)
+      _dataSize = _height * _rowIncrement;
+      _data = (unsigned char *)linearAlloc(_dataSize);
+      //_data.resize(_height * _rowIncrement);
+
+      //u32 cap = _data.capacity();
+      //if (cap != _height * _rowIncrement)
+      if (_data == nullptr)
+      {
+        _dataSize = 0;
         return (-1);
+      }
+        
     return (0);
     }
 
@@ -334,7 +357,7 @@ namespace CTRPluginFramework
             file.Close();
 
             OSD::Notify("BMP Error: Error while allocating requiered space.", red, black);
-            _data.resize(0);
+            //_data.resize(0);
             return;                
         }
 
@@ -344,7 +367,9 @@ namespace CTRPluginFramework
         int   totalwidth = rows * rowWidth;
         int   oddRows = rows * 5;
 
-        unsigned char *buf = new unsigned char[totalwidth];
+        unsigned char *buf = (unsigned char *)linearAlloc(totalwidth);//new unsigned char[totalwidth];
+        if (buf == nullptr)
+            return;
         int i = 0;
         for (i = 0; i < oddRows; )
         {
@@ -370,7 +395,7 @@ namespace CTRPluginFramework
             std::memcpy(dataPtr, bufPtr, _rowIncrement);
         }
 
-        delete[] buf;
+        linearFree(buf);//delete[] buf;
         file.Close();
         _loaded = true;
     }

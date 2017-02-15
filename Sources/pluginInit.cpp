@@ -107,9 +107,6 @@ namespace CTRPluginFramework
     {
         CTRPluginFramework::Initialize();
 
-        // Reduce Priority
-        ProcessImpl::Play(true);
-
         // Init sdmcArchive
         FS_Path sdmcPath = { PATH_EMPTY, 1, (u8*)"" };
         FSUSER_OpenArchive(&_sdmcArchive, ARCHIVE_SDMC, sdmcPath);
@@ -122,12 +119,15 @@ namespace CTRPluginFramework
         Directory::ChangeWorkingDirectory(path);
 
         // Protect VRAM
-        Process::ProtectRegion(0x1F000000);
+        Process::ProtectRegion(0x1F000000, 3);
 
         // Protect HID Shared Memory in case we want to push inputs
         Process::ProtectMemory((u32)hidSharedMem, 0x1000);
 
-        if (tid != 0x0004000000183600)
+        // Reduce Priority
+        ProcessImpl::Play(true);
+
+        //if (tid != 0x0004000000183600)
             Sleep(Seconds(5));
 
         // Initialize Globals settings

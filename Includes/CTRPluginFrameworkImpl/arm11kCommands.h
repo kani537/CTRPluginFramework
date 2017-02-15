@@ -31,7 +31,7 @@ u32     arm11kGetKProcessState(u32 kProcessState);
 void arm11kMemcpy(u32 dst, u32 src, u32 size);
 
 //
-Result  arm11kSvcControlMemory(u32 addr, u32 size, u32 op, u32 perm);
+Result  arm11kSvcControlMemory(u32 *addr, u32 addr1, u32 size, u32 op, u32 perm);
 
 
 u32 getKernelObjectPtr(void *KProcessHandleTable, Handle processHandle);

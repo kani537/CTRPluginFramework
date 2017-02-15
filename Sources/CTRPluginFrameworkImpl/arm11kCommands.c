@@ -55,7 +55,7 @@ void arm11kMemcpy(u32 dst, u32 src, u32 size)
   return;
 }
 
-Result  arm11kSvcControlMemory(u32 addr, u32 size, u32 op, u32 perm)
+Result  arm11kSvcControlMemory(u32 *addr, u32 addr1, u32 size, u32 op, u32 perm)
 {
   u32 currentKProcess;
   u32 currentPID;
@@ -64,7 +64,7 @@ Result  arm11kSvcControlMemory(u32 addr, u32 size, u32 op, u32 perm)
   currentKProcess = arm11kGetCurrentKProcess();
   currentPID = arm11kSetKProcessId(currentKProcess, 1);
   u32 temp;
-  res = svcControlMemory(&temp, addr, 0x0, size, op, perm);
+  res = svcControlMemory(addr, addr1, 0x0, size, op, perm);
   arm11kSetKProcessId(currentKProcess, currentPID);
   return (res);
 }

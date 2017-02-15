@@ -144,41 +144,19 @@ namespace CTRPluginFramework
             }*/
     }
 
+extern "C" u32 __ctru_heap;
+extern "C" u32 __ctru_heap_size;
+extern "C" u32 __ctru_linear_heap;
+extern "C" u32 __ctru_linear_heap_size;
+
     int    main(void)
     {   
         PluginMenu  *m = new PluginMenu("Zelda Ocarina Of Time 3D");
         PluginMenu    &menu = *m;       
-        
-        int res4 = 0;
-        int res3 = 0;
-        File    file;
-        //char    buffer[0x100] = {0};
 
-        if ((File::Open(file, "Test.txt")) == 0)
-        {
-            file.WriteLine("Yeah !! This is a line written by WriteLine.");
-            file.WriteLine("Yeah !! This is a second line written by WriteLine.");
-            //u64 size = file.GetSize();
-            //file.Rewind();
-           // file.Read(buffer, size);
-            //file.Close();
-        }
-            // Enable New3DS CPU Frequencies
-        osSetSpeedupEnable(true);
-        std::string ls = "Files in the current working directory: \n";        
-        std::vector<std::string> lsv;
+        char buffer[0x200];
+        sprintf(buffer, "%08X -> %08X\n%08X -> %08X", __ctru_heap, __ctru_heap_size, __ctru_linear_heap, __ctru_linear_heap_size);
 
-        Directory base;
-        Directory::Open(base, "", false); //Open current working directory (plugin/<currentTitleID>/)
-        base.ListFiles(lsv); // listing all files in base (not directory)
-        // An other version for the example
-        //base.ListFiles(lsv, ".txt"); // listing all files in base (not directory) which contains .txt in their name
-        
-        // Adding all the names in the list into ls string
-        for (int i = 0; i < lsv.size(); i++)
-        {
-            ls += lsv[i] + "\n";
-        }
         // this add the content of the file we've read earlier in the ls string
         //ls += buffer;
 
@@ -210,7 +188,7 @@ namespace CTRPluginFramework
         ** Movements codes
         ********************/
 
-        MenuFolder *folder = new MenuFolder("Movement", ls);
+        MenuFolder *folder = new MenuFolder("Movement", buffer);
 
         folder->Append(new MenuEntry("MoonJump (\uE000)", MoonJump, "Press \uE000 to be free of the gravity."));
         folder->Append(new MenuEntry("Fast Move (\uE077 + \uE054)", MoveFast, "Use \uE077 while pressing \uE054 to move very fast. Be careful of the loading zone, it might put you out of bound."));
@@ -307,7 +285,7 @@ namespace CTRPluginFramework
         menu.Append(new MenuEntry("\uE055 as \uE005", ZRToR));
         menu.Append(new MenuEntry ("This is an incredibly long entry. Stay here a little to make it scroll and see the entire text. \uE000 \uE001 \uE002 \uE003 \uE004 \uE005 \uE006 \uE040 \uE041 \uE042 \uE043 \uE044 \uE045"));
         menu.Append(new MenuEntry("Display touch cursor", TouchCursor));
-        file.Close();
+
         // Launch menu and mainloop
         menu.Run();
 

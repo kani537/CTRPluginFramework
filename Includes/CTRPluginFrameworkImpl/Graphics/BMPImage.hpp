@@ -35,9 +35,11 @@ namespace CTRPluginFramework
             RedPlane   = 2
         };
 
-        ~BMPImage(){}
+        ~BMPImage();
 
-        BMPImage(void) : 
+        BMPImage(void) :
+        _data(nullptr),
+        _dataSize(0),
         _fileName(""),
         _width(0),
         _height(0),
@@ -49,7 +51,9 @@ namespace CTRPluginFramework
 
         }
 
-        BMPImage(const std::string &filename) : 
+        BMPImage(const std::string &filename) :
+        _data(nullptr),
+        _dataSize(0),
         _fileName(filename),
         _width(0),
         _height(0),
@@ -63,6 +67,8 @@ namespace CTRPluginFramework
         }
 
         BMPImage(const unsigned int width, const unsigned int height) : 
+        _data(nullptr),
+        _dataSize(0),
         _fileName(""),
         _width(width),
         _height(height),
@@ -75,6 +81,8 @@ namespace CTRPluginFramework
         }
 
         BMPImage(const BMPImage &src, const unsigned int width, const unsigned int height) :
+        _data(nullptr),
+        _dataSize(0),
         _fileName(src._fileName),
         _width(width),
         _height(height),
@@ -137,7 +145,8 @@ namespace CTRPluginFramework
 
        inline void Clear(const unsigned char v = 0x00)
        {
-          std::fill(_data.begin(), _data.end(), v);
+          DataClear();
+          //std::fill(_data.begin(), _data.end(), v);
        }
 
        void     Draw(IntVector point)
@@ -322,7 +331,7 @@ namespace CTRPluginFramework
                                    const unsigned int height,
                                    const bool clear = false)
        {
-          _data.clear();
+          DataClear();
           _width  = width;
           _height = height;
 
@@ -330,8 +339,14 @@ namespace CTRPluginFramework
 
           if (clear)
           {
-             std::fill(_data.begin(), _data.end(), 0x00);
+             //std::fill(_data.begin(), _data.end(), 0x00);
+            std::memset(_data, 0, _dataSize);
           }
+       }
+
+       inline void DataClear(void)
+       {
+        std::memset(_data, 0, _dataSize);
        }
 
         void    SaveImage(const std::string &fileName) const;
@@ -365,12 +380,12 @@ namespace CTRPluginFramework
 
         inline const unsigned char   *data() const
         {
-            return _data.data();
+            return _data;
         }
 
         inline unsigned char     *data()
         {
-            return const_cast<unsigned char*>(_data.data());
+            return const_cast<unsigned char*>(_data);
         }
 
         inline void BGRtoRGB(void)
@@ -740,12 +755,12 @@ namespace CTRPluginFramework
 
        inline const unsigned char* end() const
        {
-          return _data.data() + _data.size();
+          return _data + _dataSize;
        }
 
        inline unsigned char* end()
        {
-          return const_cast<unsigned char*>(data() + _data.size());
+          return const_cast<unsigned char*>(_data + _dataSize);
        }
 
         struct BitmapFileHeader
@@ -906,7 +921,9 @@ namespace CTRPluginFramework
        unsigned int     _rowIncrement;
        unsigned int     _bytesPerPixel;
        ChannelMode      _channelMode;
-       std::vector<unsigned char>   _data;
+       //std::vector<unsigned char>   _data;
+       unsigned char    *_data;
+       unsigned int     _dataSize;
        IntVector        _dimensions;
        bool             _loaded;
     };

@@ -7,12 +7,12 @@ namespace CTRPluginFramework
     {
         u32                         pos = path.rfind("/");
         std::string                 name = pos != std::string::npos ? path.substr(pos + 1) : path;
-        MenuFolderImpl                  *mFolder = new MenuFolderImpl(name);
+        MenuFolderImpl              *mFolder = new MenuFolderImpl(name);
         Directory                   folder;
         std::vector<std::string>    directories;
         std::vector<std::string>    files;
 
-        if (Directory::Open(folder, path) != 0)
+        if (mFolder == nullptr || Directory::Open(folder, path) != 0)
         {
             delete mFolder;
             return (nullptr);
@@ -31,7 +31,7 @@ namespace CTRPluginFramework
                     mFolder->Append(subMFolder);
             }
         }
-
+        directories.clear();
         // List all files
         folder.ListFiles(files, ".txt");
         if (!files.empty())
@@ -44,6 +44,7 @@ namespace CTRPluginFramework
                 mFolder->Append(entry);
             }
         }
+        folder.Close();
         return (mFolder);
     }
 

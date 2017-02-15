@@ -245,6 +245,7 @@ namespace CTRPluginFramework
         Handle handle = 0;
         output._list.clear();
         output._isListed = false;
+        output._isInit = false;
         res = FSUSER_OpenDirectory(&handle, _sdmcArchive, fsPath);
         if (R_FAILED(res) && create)
         {
@@ -263,6 +264,7 @@ namespace CTRPluginFramework
         }
         output._path = bakpath;
         output._handle = handle;
+        output._isInit = true;
 
         //output = Folders(bakpath, handle);// = Folders(bakpath, handle);
         return (res);
@@ -318,27 +320,6 @@ namespace CTRPluginFramework
     ***************/
     #define MAX_ENTRIES 20
 
-    bool SortByName(const FS_DirectoryEntry &lhs, const FS_DirectoryEntry &rhs) 
-    { 
-        u8      *left = (u8 *)lhs.name;
-        u8      *right = (u8 *)rhs.name;
-        u32     leftCode;
-        u32     rightCode;
-
-        do 
-        {
-            ssize_t  leftUnits = decode_utf8(&leftCode, left);
-            ssize_t  rightUnits = decode_utf8(&rightCode, right);
-
-            if (leftUnits == -1 || rightUnits == -1)
-                break;
-            left += leftUnits;
-            right += rightUnits;         
-        } while (leftCode == rightCode && leftCode != 0 && rightCode != 0);
-
-        return (leftCode < rightCode); 
-    }
-
     int     Directory::_List(void)
     {
 
@@ -384,6 +365,9 @@ namespace CTRPluginFramework
     }
     int     Directory::ListFiles(std::vector<std::string> &files, std::string pattern)
     {
+        if (!_isInit)
+            return (-1);
+
         bool patternCheck = (pattern.size() > 0);
        // FS_DirectoryEntry   entries[MAX_ENTRIES] = {0};
         FS_DirectoryEntry   entry;
@@ -418,6 +402,9 @@ namespace CTRPluginFramework
     *****************/
     int     Directory::ListFolders(std::vector<std::string> &folders, std::string pattern)
     {
+        if (!_isInit)
+            return (-1);
+
         bool patternCheck = (pattern.size() > 0);
         //FS_DirectoryEntry   entries[MAX_ENTRIES] = {0};
         FS_DirectoryEntry   entry;
