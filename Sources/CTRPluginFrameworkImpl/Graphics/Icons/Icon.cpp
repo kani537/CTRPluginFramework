@@ -10,6 +10,8 @@ namespace CTRPluginFramework
     extern "C" unsigned char *AddFavoriteFilled25;
     extern "C" unsigned char *CheckedCheckbox;
     extern "C" unsigned char *UnCheckedCheckbox;
+    extern "C" unsigned char *ClearSymbol15;
+    extern "C" unsigned char *ClearSymbolFilled15;
     extern "C" unsigned char *CloseWindow20;
     extern "C" unsigned char *CloseWindowFilled20;
     extern "C" unsigned char *Controller15;
@@ -98,6 +100,17 @@ namespace CTRPluginFramework
     {
         // Define which version to draw
         u8 *img = isChecked ? CheckedCheckbox : UnCheckedCheckbox;
+
+        return (DrawImg(img, posX, posY, 15, 15));
+    }
+
+    /*
+    ** ClearSymbol
+    ** 15px * 15px
+    **********/
+    int     Icon::DrawClearSymbol(int posX, int posY, bool filled)
+    {
+        u8 *img = filled ? ClearSymbolFilled15 : ClearSymbol15;
 
         return (DrawImg(img, posX, posY, 15, 15));
     }

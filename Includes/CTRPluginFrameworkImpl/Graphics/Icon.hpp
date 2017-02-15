@@ -15,6 +15,12 @@ namespace CTRPluginFramework
         static int      DrawCheckBox(int posX, int posY, bool isChecked);
 
         /*
+        ** Clear Symbol
+        ** 15px * 15px
+        *************/
+        static int      DrawClearSymbol(int posX, int posY, bool filled);
+
+        /*
         ** Close
         ** 20px * 20px
         ************/
