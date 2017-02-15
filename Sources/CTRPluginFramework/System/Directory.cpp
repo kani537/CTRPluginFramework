@@ -66,7 +66,7 @@ namespace CTRPluginFramework
             path = fixPath;
         }
 
-        if(path.size() >= PATH_MAX)
+        if(path.size() >= 0x1000)
         {
             //__fixedpath[PATH_MAX] = 0;
             //r->_errno = ENAMETOOLONG;
@@ -79,20 +79,20 @@ namespace CTRPluginFramework
     {
         ssize_t     units;
         FS_Path     fspath;
-        static      uint16_t    utf16Path[PATH_MAX + 1] = {0};
+        static      uint16_t    utf16Path[0x1000 + 1] = {0};
 
         fspath.data = nullptr;
 
         if(_SdmcFixPath(path) == -1)
             return (fspath);
 
-        units = utf8_to_utf16(utf16Path, (const uint8_t*)path.c_str(), PATH_MAX);
+        units = utf8_to_utf16(utf16Path, (const uint8_t*)path.c_str(), 0x1000);
         if(units < 0)
         {
             //r->_errno = EILSEQ;
             return (fspath);
         }
-        if(units >= PATH_MAX)
+        if(units >= 0x1000)
         {
             //r->_errno = ENAMETOOLONG;
             return (fspath);
