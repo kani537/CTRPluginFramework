@@ -309,7 +309,7 @@ namespace CTRPluginFramework
     {
         u8 *img = filled ? KeyboardFilled25 : Keyboard25;
 
-        return (DrawImg(img, posX, posY));
+        return (DrawImg(img, posX, posY, 25, 25));
     }
 
     /*
