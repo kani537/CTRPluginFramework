@@ -22,7 +22,7 @@ void __attribute__((weak)) __system_allocateHeaps(void)
 	__ctru_heap = 0x07500000;
 	arm11kSvcControlMemory(&__ctru_heap, __ctru_heap,  __ctru_heap_size, 0x203u, MEMPERM_READ | MEMPERM_WRITE | MEMPERM_EXECUTE);
 
-	arm11kSvcControlMemory(&__ctru_linear_heap, 0x0,  __ctru_linear_heap_size, 0x10003u, MEMPERM_READ | MEMPERM_WRITE | MEMPERM_EXECUTE);
+	arm11kSvcControlMemory(&__ctru_linear_heap, 0x0,  __ctru_linear_heap_size, 0x10203u, MEMPERM_READ | MEMPERM_WRITE | MEMPERM_EXECUTE);
 	/*if (R_FAILED(arm11kSvcControlMemory(__ctru_heap, __ctru_heap_size, 0x203u, MEMPERM_READ | MEMPERM_WRITE | MEMPERM_EXECUTE)))
 	{
 		__ctru_heap = 0x07500000;
