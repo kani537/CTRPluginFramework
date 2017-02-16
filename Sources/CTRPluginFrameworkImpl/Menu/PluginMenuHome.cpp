@@ -451,10 +451,6 @@ namespace CTRPluginFramework
                 {
                     PluginMenuExecuteLoop::Add(entry);
                 }
-                else
-                {
-                    PluginMenuExecuteLoop::Remove(entry);
-                }
             }
         }
         /*
