@@ -15,6 +15,31 @@ namespace CTRPluginFramework
     {
         entry->_executeIndex = _firstInstance->_executeLoop.size();
         _firstInstance->_executeLoop.push_back(entry);
+
+        if (entry->_flags.isRadio)
+        {
+            int id = entry->_radioId;
+            std::vector<MenuEntryImpl *> &vector = _firstInstance->_executeLoop;
+
+            if (vector.size() - 1 > 0)
+            {
+                for (int i = 0; i < vector.size() - 1; i++)
+                {
+                    MenuEntryImpl *v = vector[i];
+
+                    if (v == entry)
+                        continue;
+                    if (v->_flags.isRadio && v->_radioId == id)
+                    {
+                        if (v->_flags.state)
+                        {
+                            v->_TriggerState();
+                        }
+                    }
+                }                
+            }
+
+        }
     }
 
     void    PluginMenuExecuteLoop::Remove(MenuEntryImpl *entry)
