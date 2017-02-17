@@ -18,6 +18,7 @@ namespace CTRPluginFramework
 
         MenuEntry(std::string name, std::string note = "");
         MenuEntry(std::string name, FuncPointer func, std::string note = "");
+        MenuEntry(int radioGroup, std::string name, FuncPointer func, std::string note = "");
         ~MenuEntry(){};
 
         // Disable the entry

@@ -16,6 +16,12 @@ namespace CTRPluginFramework
 
     }
 
+    MenuEntry::MenuEntry(int radioId, std::string name, FuncPointer func, std::string note) : 
+        _item(new MenuEntryImpl(name, func, note, this))
+    {
+        _item->SetRadio(radioId);
+    }
+
     void    MenuEntry::Disable(void)
     {
         _item->Disable();
