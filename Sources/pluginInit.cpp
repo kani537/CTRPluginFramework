@@ -49,7 +49,7 @@ namespace CTRPluginFramework
         // Correction for some games like Kirby
         u64 tid = Process::GetTitleID();
         
-        if (tid == 0x0004000000183600)
+        //if (tid == 0x0004000000183600)
             Sleep(Seconds(5));
 
         // Init heap and newlib's syscalls
@@ -128,7 +128,7 @@ namespace CTRPluginFramework
         ProcessImpl::Play(true);
 
         //if (tid != 0x0004000000183600)
-            Sleep(Seconds(5));
+        //Sleep(Seconds(5));
 
         // Initialize Globals settings
         Preferences::Initialize();

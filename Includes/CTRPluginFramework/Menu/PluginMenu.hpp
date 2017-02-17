@@ -12,7 +12,7 @@ namespace CTRPluginFramework
     class PluginMenuImpl;
     class PluginMenu
     {
-
+        using CallbackPointer = void (*)(void);
     public:
 
         PluginMenu(std::string name = "Cheats", std::string note = "");
@@ -20,6 +20,7 @@ namespace CTRPluginFramework
 
         void    Append(MenuEntry *item);
         void    Append(MenuFolder *item);
+        void    Callback(CallbackPointer callback);
         int     Run(void);
 
     private:

@@ -3,6 +3,8 @@
 
 #include "types.h"
 
+using CallbackPointer = void (*)(void);
+
 #include "CTRPluginFramework/Graphics.hpp"
 #include "CTRPluginFramework/Menu.hpp"
 #include "CTRPluginFramework/System.hpp"

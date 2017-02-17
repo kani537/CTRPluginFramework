@@ -432,16 +432,21 @@ namespace CTRPluginFramework
     void    PluginMenuHome::_TriggerEntry(void)
     {
         MenuFolderImpl *folder = _starMode ? _starred : _folder;
-        /*
-        ** MenuEntryImpl
-        **************/
+
+
         if (_selector >= folder->ItemsCount())
             return;
 
-        if (folder->_items[_selector]->_type == MenuType::Entry)
+        MenuItem    *item = folder->_items[_selector];
+
+        /*
+        ** MenuEntryImpl
+        **************/
+        if (item->_type == MenuType::Entry)
         {
-            MenuEntryImpl *entry = reinterpret_cast<MenuEntryImpl *>(folder->_items[_selector]);
+            MenuEntryImpl *entry = reinterpret_cast<MenuEntryImpl *>(item);
             // Change the state
+            bool just = entry->_flags.justChanged;
             bool state = entry->_TriggerState();
             // If the entry has a valid funcpointer
             if (entry->GameFunc != nullptr)
@@ -451,6 +456,10 @@ namespace CTRPluginFramework
                 {
                     PluginMenuExecuteLoop::Add(entry);
                 }
+                else if (just)
+                {
+                    PluginMenuExecuteLoop::Remove(entry);
+                }
             }
         }
         /*
@@ -458,7 +467,7 @@ namespace CTRPluginFramework
         ****************/
         else
         {
-            MenuFolderImpl *p = reinterpret_cast<MenuFolderImpl *>(folder->_items[_selector]);
+            MenuFolderImpl *p = reinterpret_cast<MenuFolderImpl *>(item);
             p->_Open(folder, _selector, _starMode);
             if (_starMode)
                 _starred = p;

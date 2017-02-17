@@ -13,7 +13,9 @@ namespace CTRPluginFramework
         this->MenuFunc = nullptr;
         this->_arg = nullptr;
         this->_executeIndex = -1;
-        this->_flags = {0};
+        this->_flags.state = false;
+        this->_flags.justChanged = false;
+        this->_flags.isRadio = false;  
         this->_radioId = -1;
         this->_owner = owner;
     }
@@ -26,7 +28,9 @@ namespace CTRPluginFramework
         this->MenuFunc = nullptr;
         this->_arg = nullptr;
         this->_executeIndex = -1;        
-        this->_flags = {0};        
+        this->_flags.state = false;
+        this->_flags.justChanged = false;
+        this->_flags.isRadio = false;        
         this->_radioId = -1;
         this->_owner = owner;
     }
@@ -39,7 +43,7 @@ namespace CTRPluginFramework
 
     void    MenuEntryImpl::SetRadio(int id)
     {
-        _flags.isRadio = 1;
+        _flags.isRadio = true;
         _radioId = id;
     }
 
@@ -93,6 +97,7 @@ namespace CTRPluginFramework
     bool    MenuEntryImpl::_Execute(void)
     {
         Flags fl = _flags;
+
         if (GameFunc != nullptr)
             GameFunc(_owner);
         

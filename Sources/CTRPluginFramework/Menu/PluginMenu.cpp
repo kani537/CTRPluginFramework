@@ -21,6 +21,11 @@ namespace CTRPluginFramework
         _menu->Append(folder);
     }
 
+    void    PluginMenu::Callback(CallbackPointer callback)
+    {
+        _menu->Callback(callback);
+    }
+
     int    PluginMenu::Run(void)
     {
        return (_menu->Run());

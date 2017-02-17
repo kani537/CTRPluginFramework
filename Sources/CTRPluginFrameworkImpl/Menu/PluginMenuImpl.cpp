@@ -37,6 +37,11 @@ namespace CTRPluginFramework
         _home->Append(item);
     }
 
+    void    PluginMenuImpl::Callback(CallbackPointer callback)
+    {
+        _callbacks.push_back(callback);
+    }
+
     /*
     ** Run
     **************/
@@ -57,7 +62,7 @@ namespace CTRPluginFramework
         GuideReader             &guide = *_guide;
         PluginMenuExecuteLoop   &executer = *_executeLoop;
 
-    #if SHOWFPS
+    #if SHOWFPS 
         Time            second = Seconds(1);
         Time            frameLimit = second / 30.f;
     #endif
@@ -162,6 +167,11 @@ namespace CTRPluginFramework
             {
                 // Execute activate cheat
                 executer();
+                // Execute callbacks
+                for (int i = 0; i < _callbacks.size(); i++)
+                {
+                    _callbacks[i]();
+                }
                 // Display notifications
                 osd();
             }

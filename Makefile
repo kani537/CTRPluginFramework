@@ -38,6 +38,9 @@ SOURCES 	:= 	Sources \
 				Sources\ctrulib\util\utf \
 				Sources\ctrulib\util\rbtree \
 				Sources\NTR
+FTP_HOST 	:=	"192.168.137.116"
+FTP_PORT	:=	"5000"
+FTP_PATH	:=	"plugin/0004000000033600/"
 
 #---------------------------------------------------------------------------------
 # options for code generation
@@ -105,6 +108,10 @@ clean:
 re:
 	@rm $(OUTPUT).plg $(OUTPUT).elf
 	make
+
+send:
+	@echo "Sending the plugin over FTP"
+	@$(TOPDIR)/sendfile.py $(TARGET).plg $(FTP_PATH) $(FTP_HOST) $(FTP_PORT)
 #---------------------------------------------------------------------------------
 
 lib: $(OUTPUT).a
@@ -118,10 +125,11 @@ DEPENDS	:=	$(OFILES:.o=.d)
 #---------------------------------------------------------------------------------
 EXCLUDE := main.o cheats.o
 
+$(OUTPUT).plg : $(OUTPUT).elf
 $(OUTPUT).a	:	$(filter-out $(EXCLUDE), $(OFILES))
 
 
-$(OUTPUT).plg : $(OUTPUT).elf
+
 
 
 $(OUTPUT).elf :	$(OFILES)

@@ -150,9 +150,15 @@ extern "C" u32 __ctru_linear_heap;
 extern "C" u32 __ctru_linear_heap_size;
 
     int    main(void)
-    {   
-        PluginMenu  *m = new PluginMenu("Zelda Ocarina Of Time 3D");
-        PluginMenu    &menu = *m;       
+    {  
+        File    log;
+        File::Open(log, "log.txt", File::READ | File::WRITE | File::CREATE);
+
+        log.WriteLine("Menu");
+
+        PluginMenu      *m = new PluginMenu("Zelda Ocarina Of Time 3D");
+        PluginMenu      &menu = *m;
+    
 
         char buffer[0x200];
         sprintf(buffer, "%08X -> %08X\n%08X -> %08X", __ctru_heap, __ctru_heap_size, __ctru_linear_heap, __ctru_linear_heap_size);
@@ -160,7 +166,8 @@ extern "C" u32 __ctru_linear_heap_size;
         // this add the content of the file we've read earlier in the ls string
         //ls += buffer;
 
-        std::string t = \
+        std::string t = "";
+        /*
         "Qu'est-ce que le Lorem Ipsum? \n" \
         "Le Lorem Ipsum est simplement du faux texte" \
         " employé dans la composition et la mise en page " \
@@ -183,17 +190,25 @@ extern "C" u32 __ctru_linear_heap_size;
         "recherche pour 'Lorem Ipsum' vous conduira vers de nombreux sites qui n'en sont encore qu'à " \
         "leur phase de construction. Plusieurs versions sont apparues avec le temps, parfois par accident, " \
         " souvent intentionnellement (histoire d'y rajouter de petits clins d'oeil, voire des phrases embarassantes).";
-
+        */
+        
         /*
         ** Movements codes
         ********************/
+        log.WriteLine("Movement");
 
         MenuFolder *folder = new MenuFolder("Movement", buffer);
 
-        folder->Append(new MenuEntry("MoonJump (\uE000)", MoonJump, "Press \uE000 to be free of the gravity."));
-        folder->Append(new MenuEntry("Fast Move (\uE077 + \uE054)", MoveFast, "Use \uE077 while pressing \uE054 to move very fast. Be careful of the loading zone, it might put you out of bound."));
+        MenuEntry *entry = new MenuEntry("MoonJump (\uE000)", MoonJump, "Press \uE000 to be free of the gravity.");
+        entry->SetRadio(1);
+        folder->Append(entry);
+
+        entry = new MenuEntry("Fast Move (\uE077 + \uE054)", MoveFast, "Use \uE077 while pressing \uE054 to move very fast. Be careful of the loading zone, it might put you out of bound.");
+        entry->SetRadio(1);
+        folder->Append(entry);
         menu.Append(folder);
 
+        log.WriteLine("Battle");
         /*
         ** Battle codes
         ******************/
@@ -210,11 +225,12 @@ extern "C" u32 __ctru_linear_heap_size;
 
         menu.Append(folder);
 
+        log.WriteLine("Inventory");
         /*
         ** Inventory codes
         *******************/
 
-        folder = new MenuFolder("Inventory", t);
+        folder = new MenuFolder("Inventory");
 
         MenuFolder *sword = new MenuFolder("Swords");
         sword->Append(new MenuEntry("Unlock Kokiri Sword", UnlockKokiriSword));
@@ -250,8 +266,10 @@ extern "C" u32 __ctru_linear_heap_size;
         folder->Append(shield);
         folder->Append(suits);
         folder->Append(items);
+
         menu.Append(folder);
 
+        log.WriteLine("Time");
         /*
         Time codes
         ***********/
@@ -260,6 +278,7 @@ extern "C" u32 __ctru_linear_heap_size;
 
         menu.Append(folder);
 
+        log.WriteLine("Misc");
         /*
         ** Misc codes
         *************/
@@ -277,15 +296,16 @@ extern "C" u32 __ctru_linear_heap_size;
 
         menu.Append(folder);
         menu.Append(new MenuEntry("\uE002 to send a notification", Overlay));
-        menu.Append(new MenuEntry("\uE054 = Camera button", ZLCamera));
+       /* menu.Append(new MenuEntry("\uE054 = Camera button", ZLCamera));
         menu.Append(new MenuEntry("\uE054 = First object button", ZLFirstButton));
         menu.Append(new MenuEntry("\uE055 = Second Object button", ZRSecondButton));
         menu.Append(new MenuEntry("CStick as \uE041", CStickToDPAD));
         menu.Append(new MenuEntry("\uE054 as \uE004", ZLToL));
         menu.Append(new MenuEntry("\uE055 as \uE005", ZRToR));
         menu.Append(new MenuEntry ("This is an incredibly long entry. Stay here a little to make it scroll and see the entire text. \uE000 \uE001 \uE002 \uE003 \uE004 \uE005 \uE006 \uE040 \uE041 \uE042 \uE043 \uE044 \uE045"));
-        menu.Append(new MenuEntry("Display touch cursor", TouchCursor));
+        menu.Append(new MenuEntry("Display touch cursor", TouchCursor));*/
 
+        log.WriteLine("Run");
         // Launch menu and mainloop
         menu.Run();
 

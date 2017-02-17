@@ -4,6 +4,7 @@
 #include "CTRPluginFrameworkImpl/Menu/MenuEntryImpl.hpp"
 
 #include <vector>
+#include <queue>
 
 namespace CTRPluginFramework
 {
@@ -22,6 +23,8 @@ namespace CTRPluginFramework
     private:
         static PluginMenuExecuteLoop    *_firstInstance;
         std::vector<MenuEntryImpl *>    _executeLoop;
+        std::queue<int>                 _availableIndex;
+
     };
 }
 

@@ -4,6 +4,8 @@
 
 namespace CTRPluginFramework
 {
+    using ExecuteIterator = std::vector<MenuEntryImpl *>::iterator;
+
     PluginMenuExecuteLoop *PluginMenuExecuteLoop::_firstInstance = nullptr;
 
     PluginMenuExecuteLoop::PluginMenuExecuteLoop(void)
@@ -13,62 +15,94 @@ namespace CTRPluginFramework
 
     void    PluginMenuExecuteLoop::Add(MenuEntryImpl *entry)
     {
-        entry->_executeIndex = _firstInstance->_executeLoop.size();
-        _firstInstance->_executeLoop.push_back(entry);
+        if (_firstInstance == nullptr)
+            return;
 
-        if (entry->_flags.isRadio)
-        {
-            int id = entry->_radioId;
-            std::vector<MenuEntryImpl *> &vector = _firstInstance->_executeLoop;
+        std::vector<MenuEntryImpl*> &vector = _firstInstance->_executeLoop;
+        std::queue<int>             &queue = _firstInstance->_availableIndex;
 
-            if (vector.size() - 1 > 0)
+        int id = entry->_radioId;
+
+        // If it's a radio entry
+        if (entry->_flags.isRadio && id != -1 && !vector.empty())
+        { 
+            for (int i = 0; i < vector.size(); i++)
             {
-                for (int i = 0; i < vector.size() - 1; i++)
+                MenuEntryImpl *e = vector[i];
+                if (e != nullptr)
                 {
-                    MenuEntryImpl *v = vector[i];
-
-                    if (v == entry)
-                        continue;
-                    if (v->_flags.isRadio && v->_radioId == id)
+                    if (e->_flags.state && e->_flags.isRadio && e->_radioId == id)
                     {
-                        if (v->_flags.state)
-                        {
-                            v->_TriggerState();
-                        }
+                        if (e->_flags.justChanged)
+                            Remove(e);
+                        else
+                            e->_TriggerState();
                     }
-                }                
-            }
+                }
+            }            
+        }
 
+        // If queue is empty
+        if (queue.empty())
+        {
+            entry->_executeIndex = vector.size();
+            vector.push_back(entry);            
+        }
+        else
+        {
+            int i = queue.front();
+            queue.pop();
+
+            vector[i] = entry;
+            entry->_executeIndex = i;
         }
     }
 
+
     void    PluginMenuExecuteLoop::Remove(MenuEntryImpl *entry)
     {
-        _firstInstance->_executeLoop.erase(_firstInstance->_executeLoop.begin() + (int)entry->_executeIndex);
+        if (_firstInstance == nullptr)
+            return;
+
+        if (_firstInstance->_executeLoop.empty())
+            return;
+
+
+        std::vector<MenuEntryImpl *>    &vector = _firstInstance->_executeLoop;        
+        std::queue<int>                 &queue = _firstInstance->_availableIndex;
+
+        int id = entry->_executeIndex;
+
+        if (id == -1)
+            return;
+
         entry->_executeIndex = -1;
+        entry->_flags.state = false;
+        entry->_flags.justChanged = false;
+        vector[id] = nullptr;
+
+        queue.push(id);
     }
 
     bool    PluginMenuExecuteLoop::operator()(void)
     {
-        std::queue<int> toRemove;
+        if (_executeLoop.empty())
+            return (false);
 
         for (int i = 0; i < _executeLoop.size(); i++)
         {
             MenuEntryImpl *entry = _executeLoop[i];
-            if (entry)
+
+            if (entry != nullptr)
             {
                 if (entry->_Execute())
                 {
-                    toRemove.push(i);                   
+                    Remove(entry);                 
                 }
             }
         }
-        while (!toRemove.empty())
-        {
-            int i = toRemove.front();
-            toRemove.pop();
-            _executeLoop.erase(_executeLoop.begin() + i);
-        }
+
         return (false);
     }
 }
+
