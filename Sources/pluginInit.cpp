@@ -37,6 +37,7 @@ namespace CTRPluginFramework
 
     extern "C" u32 __ctru_heap;
     extern "C" u32 __ctru_heap_size;
+    extern "C" u32 __linearOp;
 
     void    KeepThreadMain(void *arg)
     {
@@ -48,7 +49,10 @@ namespace CTRPluginFramework
 
         // Correction for some games like Kirby
         u64 tid = Process::GetTitleID();
-        
+
+        // Pokemon Sun & Moon
+        if (tid == 0x0004000000175E00 || tid == 0x0004000000164800)
+            __linearOp = 0x10203u;
         //if (tid == 0x0004000000183600)
             Sleep(Seconds(5));
 
