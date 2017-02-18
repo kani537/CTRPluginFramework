@@ -34,6 +34,9 @@ namespace CTRPluginFramework
     int     KeyboardImpl::Run(void)
     {
         _isOpen = true;
+        _userAbort = false;
+        _errorMessage = false;
+        _askForExit = false;
 
         bool    mustRelease = false;
         // Check if Process is paused
@@ -58,6 +61,12 @@ namespace CTRPluginFramework
             while (manager.PollEvent(event))
             {
                 _ProcessEvent(event);                
+            }
+
+            if (_userAbort)
+            {
+                ret = USER_ABORT;
+                goto exit;
             }
 
             // Update current keys
@@ -155,6 +164,30 @@ namespace CTRPluginFramework
         for (; iter != _keys.end(); iter++)
         {
             (*iter).Draw();
+        }
+    }
+
+    void    KeyboardImpl::_ProcessEvent(Event &event)
+    {
+        if (event.type == Event::KeyPressed)
+        {
+            if (event.key.code == Key::B)
+            {
+                _userAbort = true;
+            }
+        }
+    }
+
+    void    KeyboardImpl::_Update(void)
+    {
+        KeyIter iter = _keys.begin();
+
+        bool isTouchDown = Touch::IsDown();
+        IntVector touchPos(Touch::GetPosition());
+
+        for (; iter != _keys.end(); iter++)
+        {
+            (*iter).Update(isTouchDown, touchPos);
         }
     }
 

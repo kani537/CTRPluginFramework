@@ -1,8 +1,9 @@
 #ifndef CTRPLUGINFRAMEWORKIMPL_KEYBOARD_HPP
 #define CTRPLUGINFRAMEWORKIMPL_KEYBOARD_HPP
 
-#include "CTRPluginFramework/System/Touch.hpp"
+#include "CTRPluginFrameworkImpl/Graphics.hpp"
 #include "CTRPluginFrameworkImpl/Graphics/TouchKey.hpp"
+#include "CTRPluginFrameworkImpl/System.hpp"
 
 #include <vector>
 
@@ -51,6 +52,7 @@ namespace CTRPluginFramework
         bool                    _isOpen;
         bool                    _askForExit;
         bool                    _errorMessage;
+        bool                    _userAbort;
         Layout                  _layout;
 
         CompareCallback         _compare;
