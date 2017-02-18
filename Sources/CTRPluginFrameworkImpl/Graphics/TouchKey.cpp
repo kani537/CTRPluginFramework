@@ -3,7 +3,7 @@
 
 namespace CTRPluginFramework
 {
-    TouchKey::TouchKey(char character, IntRect ui, bool isEnabled)
+    TouchKey::TouchKey(int character, IntRect ui, bool isEnabled)
     {
         _character = character;
         _icon = nullptr;
@@ -14,7 +14,7 @@ namespace CTRPluginFramework
         _execute = false;
     }  
 
-    TouchKey::TouchKey(char value, IconCallback icon, IntRect ui, bool isEnabled)
+    TouchKey::TouchKey(int value, IconCallback icon, IntRect ui, bool isEnabled)
     {
         _character = value;
         _icon = icon;
@@ -23,6 +23,11 @@ namespace CTRPluginFramework
 
         _isPressed = false;
         _execute = false;
+    }
+
+    void    TouchKey::Enable(bool isEnabled)
+    {
+        _enabled = isEnabled;
     }
 
     void    TouchKey::DrawCharacter(const IntRect &rect, char c, Color &color)
@@ -39,7 +44,7 @@ namespace CTRPluginFramework
         index = fontGlyphIndexFromCodePoint(glyphCode);
         Renderer::FontCalcGlyphPos(&glyphPos, &cwi, index, 0.5f, 0.5f);
 
-        float  width = glyphPos.xAdvance / 2.f;
+        float  width = (glyphPos.xAdvance + 1 / 2.f);
 
         int posX = ((rect.size.x - (int)width) / 2) + rect.leftTop.x;
         int posY = ((rect.size.y - 16) / 2) + rect.leftTop.y;
@@ -102,25 +107,25 @@ namespace CTRPluginFramework
 
         bool    isTouched = _uiProperties.Contains(touchPos);
 
-        if (isTouchDown)
-        {
-            if (isTouched)
-                _isPressed = true;
-            else
-                _isPressed = false;
-        }
-        else if (_isPressed)
+        if (_isPressed && !isTouchDown)
         {            
             _isPressed = false;
             _execute = true;
-        }      
+        } 
+
+        if (isTouchDown && isTouched)
+        {
+            _isPressed = true;
+        }
+        else
+            _isPressed = false;   
     }
 
-    char    TouchKey::operator()(void)
+    int      TouchKey::operator()(void)
     {
         if (_enabled && _execute)
         {
-            _execute= false;
+            _execute = false;
             return (_character);
         }
         return (-1);

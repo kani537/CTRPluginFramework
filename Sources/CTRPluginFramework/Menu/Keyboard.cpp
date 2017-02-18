@@ -13,7 +13,8 @@ namespace CTRPluginFramework
     {
         static u8   temp = 0;
 
-        temp = static_cast<u8>(std::stoul(input, nullptr, isHex ? 16 : 10));
+        if (input.length() > 0)
+            temp = static_cast<u8>(std::stoul(input, nullptr, isHex ? 16 : 10));
         return ((void *)&temp);
     }
 
@@ -21,7 +22,8 @@ namespace CTRPluginFramework
     {
         static u16   temp = 0;
 
-        temp = static_cast<u16>(std::stoul(input, nullptr, isHex ? 16 : 10));
+        if (input.length() > 0)
+            temp = static_cast<u16>(std::stoul(input, nullptr, isHex ? 16 : 10));
         return ((void *)&temp);
     }
 
@@ -29,7 +31,8 @@ namespace CTRPluginFramework
     {
         static u32   temp = 0;
 
-        temp = static_cast<u32>(std::stoul(input, nullptr, isHex ? 16 : 10));
+        if (input.length() > 0)
+            temp = static_cast<u32>(std::stoul(input, nullptr, isHex ? 16 : 10));
         return ((void *)&temp);
     }
 
@@ -37,7 +40,8 @@ namespace CTRPluginFramework
     {
         static u64   temp = 0;
 
-        temp = static_cast<u64>(std::stoull(input, nullptr, isHex ? 16 : 10));
+        if (input.length() > 0)
+            temp = static_cast<u64>(std::stoull(input, nullptr, isHex ? 16 : 10));
         return ((void *)&temp);
     }
 
@@ -45,7 +49,8 @@ namespace CTRPluginFramework
     {
         static float   temp = 0;
 
-        temp = static_cast<float>(std::stof(input, nullptr));
+        if (input.length() > 0)
+            temp = static_cast<float>(std::stof(input, nullptr));
         return ((void *)&temp);
     }
 
@@ -53,7 +58,8 @@ namespace CTRPluginFramework
     {
         static double   temp = 0;
 
-        temp = static_cast<double>(std::stod(input, nullptr));
+        if (input.length() > 0)
+            temp = static_cast<double>(std::stod(input, nullptr));
         return ((void *)&temp);
     }
 
@@ -61,7 +67,7 @@ namespace CTRPluginFramework
     ** Compare
     ***********/
 
-    Keyboard::Keyboard(void) : _keyboard(new KeyboardImpl())
+    Keyboard::Keyboard(std::string text) : _keyboard(new KeyboardImpl(text))
     {
 
     }

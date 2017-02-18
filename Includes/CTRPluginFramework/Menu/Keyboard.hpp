@@ -1,6 +1,7 @@
 #ifndef CTRPLUGINFRAMEWORK_KEYBOARD_HPP
 #define CTRPLUGINFRAMEWORK_KEYBOARD_HPP
 
+#include "types.h"
 #include <string>
 #include <memory>
 
@@ -11,7 +12,7 @@ namespace CTRPluginFramework
     {
         using   CompareCallback = bool (*)(const void *, std::string&);
     public:
-        Keyboard(void);
+        Keyboard(std::string text = "");
         ~Keyboard(void);
 
         /*

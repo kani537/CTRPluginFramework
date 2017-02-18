@@ -16,9 +16,9 @@ namespace CTRPluginFramework
         using IconCallback = int (*)(int, int, bool);
 
         // Key with char
-        TouchKey(char character, IntRect ui, bool enabled = true);
+        TouchKey(int character, IntRect ui, bool enabled = true);
         // Key with Icon
-        TouchKey(char value, IconCallback, IntRect ui, bool enabled = true);
+        TouchKey(int value, IconCallback, IntRect ui, bool enabled = true);
 
         ~TouchKey(){}
 
@@ -34,12 +34,12 @@ namespace CTRPluginFramework
 
         // Executer
         // Return -1 if not pressed, _character value otherwise
-        char    operator()(void);
+        int    operator()(void);
 
 
 
     private:
-        char            _character;
+        int              _character;
         IconCallback    _icon;
         IntRect         _uiProperties;
 

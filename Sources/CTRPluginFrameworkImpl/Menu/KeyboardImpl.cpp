@@ -9,9 +9,9 @@ namespace CTRPluginFramework
     #define KEY_ENTER 0xA
     #define KEY_BACKSPACE 0x8
 
-    KeyboardImpl::KeyboardImpl(void)
+    KeyboardImpl::KeyboardImpl(std::string text)
     {
-        _text = "";
+        _text = text;
         _error = "";
         _userInput = "";
 
@@ -77,7 +77,7 @@ namespace CTRPluginFramework
         if (!ProcessImpl::IsPaused())
         {
             mustRelease  = true;
-            ProcessImpl::Pause();
+            ProcessImpl::Pause(false);
         }
 
         int                 ret = -2;
@@ -133,7 +133,7 @@ namespace CTRPluginFramework
 
     exit:
         if (mustRelease)
-            ProcessImpl::Play();
+            ProcessImpl::Play(false);
         return (ret);
     }
 
@@ -160,7 +160,7 @@ namespace CTRPluginFramework
         }
 
         // Should be replaced with a function with auto return
-        posY = Renderer::DrawSysString(_text.c_str(), posX, posY, 350, blank);
+        Renderer::DrawSysString(_text.c_str(), posX, posY, 350, blank);
 
         // IF error
         if (_errorMessage && _error.size() > 0)
@@ -179,18 +179,18 @@ namespace CTRPluginFramework
 
         Renderer::SetTarget(BOTTOM);
 
-        // Background
+        /*// Background
         if (Preferences::bottomBackgroundImage->IsLoaded())
             Preferences::bottomBackgroundImage->Draw(background.leftTop);
         else
-        {
-            Renderer::DrawRect2(background, black, dimGrey);
-            Renderer::DrawRect(22, 22, 276, 196, blank, false);            
-        }
+        {*/
+            Renderer::DrawRect(background, black);
+           // Renderer::DrawRect(22, 22, 276, 196, blank, false);            
+        //}
 
         // Draw current input
 
-        int   posY = 25;
+        int   posY = 20;
         int   posX = 25;
 
         Renderer::DrawSysString(_userInput.c_str(), posX, posY, 300, blank);    
@@ -350,11 +350,12 @@ namespace CTRPluginFramework
 
     bool    KeyboardImpl::_CheckKeys(void)
     {
-        char ret = -1;
+        int ret = -1;
 
         for (int i = 0; i < _keys.size(); i++)
         {
             ret = _keys[i]();
+
             if (ret != -1)
             {
                 if (ret == KEY_ENTER)
@@ -364,15 +365,22 @@ namespace CTRPluginFramework
                 }
                 else if (ret == KEY_BACKSPACE)
                 {
-                    _userInput.pop_back();
+                    if (_userInput.length() > 1)
+                        _userInput.pop_back();
+                    else if (_userInput.length() == 1)
+                        _userInput.clear();
+                    else
+                        return (false);
                     return (true);
                 }
                 else
                 {
-                    if (_max == 0 || _userInput.size() < _max)
+                    if (_userInput.length() == 0 && ret == '.')
+                        _userInput += "0.";
+                    else if (_max == 0 || _userInput.size() < _max)
                         _userInput += ret;
                     return (true); 
-                }                
+                }
             }
         }
         return (false);
@@ -389,7 +397,7 @@ namespace CTRPluginFramework
             void *convertedInput = _convert(_userInput, false);
             return (_compare(convertedInput, _error));
         }
-        else
+        else if (_compare != nullptr && _convert != nullptr)
         {
             void *convertedInput = _convert(_userInput, _isHex ? true : false);
             return (_compare(convertedInput, _error));            

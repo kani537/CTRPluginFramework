@@ -56,6 +56,7 @@ namespace CTRPluginFramework
         Button<PluginMenuHome, void>          _toolsBtn;
         
         IconButton<PluginMenuHome, void>          _closeBtn;
+        IconButton<PluginMenuHome, void>          _keyboardBtn;
 
         // Entry button
         ToggleButton<PluginMenuHome, void>      _AddFavoriteBtn;

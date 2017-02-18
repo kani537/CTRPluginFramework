@@ -15,7 +15,8 @@ namespace CTRPluginFramework
         _AddFavoriteBtn(*this, &PluginMenuHome::_StarItem, IntRect(50, 30, 25, 25), Icon::DrawAddFavorite),
         _InfoBtn(*this, &PluginMenuHome::_DisplayNote, IntRect(90, 30, 25, 25), Icon::DrawInfo, false),
 
-        _closeBtn(*this, nullptr, IntRect(275, 24, 20, 20), Icon::DrawClose)
+        _closeBtn(*this, nullptr, IntRect(275, 24, 20, 20), Icon::DrawClose),
+        _keyboardBtn(*this, nullptr, IntRect(130, 30, 25, 25), Icon::DrawKeyboard, false)
     {
         _folder = new MenuFolderImpl(name);
         _starred = new MenuFolderImpl("Favorites");
@@ -110,6 +111,13 @@ namespace CTRPluginFramework
             note = !note;
 
         _AddFavoriteBtn();
+
+        if (_keyboardBtn())
+        {
+            MenuFolderImpl *f = _starMode ? _starred : _folder;
+            MenuEntryImpl *e = reinterpret_cast<MenuEntryImpl *>(f->_items[_selector]);
+            e->MenuFunc(e->_owner);
+        }
 
         return (_closeBtn());
     }
@@ -241,7 +249,7 @@ namespace CTRPluginFramework
             _maxScrollOffset = (float)_selectedTextSize - 200.f;
             _scrollClock.Restart();
             _scrollOffset = 0.f;
-            _reverseFlow = false;               
+            _reverseFlow = false;      
         }
         /*
         ** Update favorite state
@@ -254,6 +262,12 @@ namespace CTRPluginFramework
             
             if (last != item)
             {
+                if (item->_type == MenuType::Entry)
+                {
+                    MenuEntryImpl *e = reinterpret_cast<MenuEntryImpl *>(item);
+                    _keyboardBtn.Enable(e->MenuFunc != nullptr);
+                }
+                 
                 last = item;
                 if (_noteTB != nullptr)
                 {
@@ -379,6 +393,7 @@ namespace CTRPluginFramework
 
         _AddFavoriteBtn.Draw();
         _InfoBtn.Draw();
+        _keyboardBtn.Draw();
 
         _closeBtn.Draw();
     }
@@ -426,6 +441,7 @@ namespace CTRPluginFramework
 
         _InfoBtn.Update(isTouched, touchPos);
         _AddFavoriteBtn.Update(isTouched, touchPos);
+        _keyboardBtn.Update(isTouched, touchPos);
         _closeBtn.Update(isTouched, touchPos);
     }
 

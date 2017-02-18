@@ -38,7 +38,8 @@ SOURCES 	:= 	Sources \
 				Sources\ctrulib\util\utf \
 				Sources\ctrulib\util\rbtree \
 				Sources\NTR
-FTP_HOST 	:=	"192.168.137.116"
+IP			:=  190
+FTP_HOST 	:=	192.168.137.
 FTP_PORT	:=	"5000"
 FTP_PATH	:=	"plugin/0004000000033600/"
 
@@ -111,7 +112,7 @@ re:
 
 send:
 	@echo "Sending the plugin over FTP"
-	@$(TOPDIR)/sendfile.py $(TARGET).plg $(FTP_PATH) $(FTP_HOST) $(FTP_PORT)
+	@$(TOPDIR)/sendfile.py $(TARGET).plg $(FTP_PATH) "$(FTP_HOST)$(IP)" $(FTP_PORT)
 #---------------------------------------------------------------------------------
 
 lib: $(OUTPUT).a

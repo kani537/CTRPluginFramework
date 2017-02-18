@@ -200,6 +200,30 @@ extern "C" u32 __ctru_linear_heap_size;
         MenuFolder *folder = new MenuFolder("Movement", buffer);
 
         MenuEntry *entry = new MenuEntry("MoonJump (\uE000)", MoonJump, "Press \uE000 to be free of the gravity.");
+        entry->SetMenuFunc([](MenuEntry *entry)
+        {
+            Keyboard keyboard("Enter any number :");
+
+            u32  out = 0;
+
+            keyboard.SetCompareCallback([](const void *input, std::string &error)
+            {
+                u32 in = *static_cast<const u32 *>(input);
+
+                if (in < 100)
+                {
+                    error = "The value can't be inferior to 100";
+                    return (false);
+                }
+                return (true);
+            });
+
+            if (keyboard.Open(out) != -1)
+            {
+                entry->Name() = "MoonJump (\uE000)" + std::to_string(out);
+            }
+        });
+
         entry->SetRadio(1);
         folder->Append(entry);
 

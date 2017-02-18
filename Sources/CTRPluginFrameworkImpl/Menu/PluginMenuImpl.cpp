@@ -85,13 +85,13 @@ namespace CTRPluginFramework
                 {
                     if (_isOpen)
                     {
-                        ProcessImpl::Play();
+                        ProcessImpl::Play(true);
                         _isOpen = false;
                     }
                     else
                     {
                         Renderer::UseDoubleBuffer(false);
-                        ProcessImpl::Pause();
+                        ProcessImpl::Pause(true);
                         _isOpen = true;
                     }
                     inputClock.Restart();   
@@ -150,14 +150,14 @@ namespace CTRPluginFramework
                 // Close menu
                 if (shouldClose)
                 {
-                    ProcessImpl::Play();
+                    ProcessImpl::Play(true);
                     _isOpen = false;
                     shouldClose = false;
                 }    
 
                 if (Controller::IsKeysDown((L + R + Start)))
                 {
-                    ProcessImpl::Play();
+                    ProcessImpl::Play(true);
                     _pluginRun = false;                    
                     _isOpen = false;     
                 }

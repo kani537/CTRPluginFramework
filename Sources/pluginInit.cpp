@@ -129,7 +129,7 @@ namespace CTRPluginFramework
         Process::ProtectMemory((u32)hidSharedMem, 0x1000);
 
         // Reduce Priority
-        ProcessImpl::Play(true);
+        ProcessImpl::Play(false);
 
         //if (tid != 0x0004000000183600)
         //Sleep(Seconds(5));
@@ -140,7 +140,7 @@ namespace CTRPluginFramework
         int ret = main();
 
         // Release process in case it was forgotten
-        ProcessImpl::Play(true);
+        ProcessImpl::Play(false);
 
         gfxExit();
 

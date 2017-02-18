@@ -77,7 +77,7 @@ namespace CTRPluginFramework
 		return (_isAcquiring);
 	}
 
-	void 	ProcessImpl::Pause(void)
+	void 	ProcessImpl::Pause(bool useFading)
 	{
 		// Raising priority of Event Thread
 		while (R_FAILED(svcSetThreadPriority(gspThreadEventHandle, 0x19)));
@@ -93,7 +93,8 @@ namespace CTRPluginFramework
         Screen::Bottom->Acquire();
 		_isAcquiring = false;
 
-
+        if (!useFading)
+            return;
 
         float fade = 0.03f;
         Clock t = Clock();
@@ -117,14 +118,14 @@ namespace CTRPluginFramework
         }       
 	}
 
-	void 	ProcessImpl::Play(bool isInit)
+	void 	ProcessImpl::Play(bool useFading)
 	{	
 		Time limit = Seconds(1) / 10.f;
 		Time delta;
         float pitch = 0.10f;
         Clock t = Clock();
 
-		if (!isInit)
+		if (useFading)
 		{
 	        float fade = -0.1f;
 	        while (fade >= -0.9f)

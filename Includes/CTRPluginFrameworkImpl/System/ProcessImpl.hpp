@@ -33,9 +33,9 @@ namespace CTRPluginFramework
     {
         public:
             // Pause the current process
-            static void     Pause(void);
+            static void     Pause(bool useFading);
             // Unpause the current process
-            static void     Play(bool isInit = false);
+            static void     Play(bool useFading);
             
             static bool     IsPaused(void);
             static bool     IsAcquiring(void);
