@@ -86,6 +86,7 @@ namespace CTRPluginFramework
     private:
 
         friend void     Initialize(void);
+        friend class    TouchKey;
         friend class    Icon;
 
         friend class    TextBox;
