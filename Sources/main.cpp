@@ -14,6 +14,8 @@
 namespace CTRPluginFramework
 {
     extern "C" vu32* hidSharedMem;
+    #define READU32(addr) *(u32 *)(addr)
+    #define WRITEU32(addr, v) *(u32 *)(addr) = (u32)v
     // This function is called on the plugin starts, before main
     void    PatchProcess(void)
     {
@@ -127,6 +129,46 @@ namespace CTRPluginFramework
                     break;                    
             }            
         }
+    }
+
+    bool    CheckRupeeInput(void *input, std::string &error)
+    {
+        // Cast the input into the appropriate type (must match the type provided to Open)
+        u32  in = *static_cast<u32 *>(input);
+
+        // Check the value
+        if (in > 999)
+        {
+            error = "The value must be between 0 - 999";
+            // Return that the value isn't valid
+            return (false);
+        }
+
+        // The value is valid
+        return (true);
+    }
+
+    void    CustomRupee(MenuEntry *entry)
+    {
+        // If L + X is pressed
+        if (Controller::IsKeysDown(Key::L + Key::X))
+        {
+            // New keyboard, hint being:
+            Keyboard keyboard("How many rupees do you want ?");
+
+            // Add the function to check the input entered by the user
+            keyboard.SetCompareCallback(CheckRupeeInput);
+
+            // Set the keyboard as decimal (hexadecimal by default)
+            keyboard.IsHexadecimal(false);
+
+            u32 output = READU32(0x005879A0);
+
+            // Set the input to the current count of rupees and open the keyboard
+            // If the function return -1, then the user canceled the keyboard, so do nothing
+            if (keyboard.Open(output, output) != -1)
+                WRITEU32(0x005879A0, output);            
+        }        
     }
 
     void    TouchCursor(MenuEntry *entry)
@@ -320,6 +362,7 @@ extern "C" u32 __ctru_linear_heap_size;
 
         menu.Append(folder);
         menu.Append(new MenuEntry("\uE002 to send a notification", Overlay));
+        menu.Append(new MenuEntry("Custom rupee count", KeyboardTest));
        /* menu.Append(new MenuEntry("\uE054 = Camera button", ZLCamera));
         menu.Append(new MenuEntry("\uE054 = First object button", ZLFirstButton));
         menu.Append(new MenuEntry("\uE055 = Second Object button", ZRSecondButton));

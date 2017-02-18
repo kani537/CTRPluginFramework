@@ -69,7 +69,7 @@ namespace CTRPluginFramework
 
     Keyboard::Keyboard(std::string text) : _keyboard(new KeyboardImpl(text))
     {
-
+        _hexadecimal = true;
     }
 
     Keyboard::~Keyboard(void)
