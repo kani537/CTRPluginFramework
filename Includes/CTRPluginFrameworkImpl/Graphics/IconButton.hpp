@@ -46,7 +46,6 @@ namespace CTRPluginFramework
         bool            _state;
         bool            _execute;
         bool            _enabled;
-        Clock           _clock;
     };
 
     #define TIconButton IconButton<C, T, Args...>
