@@ -1,5 +1,6 @@
 #include "CTRPluginFrameworkImpl/Menu/Keyboard.hpp"
 #include "CTRPluginFrameworkImpl/System/ProcessImpl.hpp"
+#include "CTRPluginFrameworkImpl/Preferences.hpp"
 
 namespace CTRPluginFramework
 {
@@ -90,9 +91,71 @@ namespace CTRPluginFramework
         return (ret);
     }
 
+    void    KeyboardImpl::_RenderTop(void)
+    {
+        static Color    black = Color();
+        static Color    red = Color(255, 0, 0);
+        static Color    blank(255, 255, 255);
+        static Color    dimGrey(15, 15, 15);
+        static IntRect  background(30, 20, 340, 200);
+
+        int   posY = 25;
+        int   posX = 40;
+
+        Renderer::SetTarget(TOP);
+
+        // Draw background
+        if (Preferences::topBackgroundImage->IsLoaded())
+            Preferences::topBackgroundImage->Draw(background.leftTop);
+        else
+        {
+            Renderer::DrawRect2(background, black, dimGrey);
+            Renderer::DrawRect(32, 22, 336, 196, blank, false);            
+        }
+
+        // Should be replaced with a function with auto return
+        posY = Renderer::DrawSysString(_text.c_str(), posX, posY, 350, blank);
+
+        // IF error
+        if (_errorMessage && _error.size() > 0)
+        {
+            posY += 48;
+            Renderer::DrawSysString(_error.c_str(), posX, posY, 350, red);
+        }
+    }
+
     void    KeyboardImpl::_RenderBottom(void)
     {
+        static Color    black = Color();
+        static Color    blank(255, 255, 255);
+        static Color    dimGrey(15, 15, 15);
         static IntRect  background(20, 20, 280, 200);
+
+        Renderer::SetTarget(BOTTOM);
+
+        // Background
+        if (Preferences::bottomBackgroundImage->IsLoaded())
+            Preferences::bottomBackgroundImage->Draw(background.leftTop);
+        else
+        {
+            Renderer::DrawRect2(background, black, dimGrey);
+            Renderer::DrawRect(22, 22, 276, 196, blank, false);            
+        }
+
+        // Draw current input
+
+        int   posY = 25;
+        int   posX = 25;
+
+        Renderer::DrawSysString(_userInput.c_str(), posX, posY, 300, blank);    
+
+        // Draw keys
+        KeyIter iter = _keys.begin();
+
+        for (; iter != _keys.end(); iter++)
+        {
+            (*iter).Draw();
+        }
     }
 
     void    KeyboardImpl::_Qwerty(void)
