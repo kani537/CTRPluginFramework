@@ -19,6 +19,9 @@ namespace CTRPluginFramework
         _errorMessage = false;
         _askForExit = false;
         _layout = HEXADECIMAL;
+
+        _convert = nullptr;
+        _compare = nullptr;
     }
 
     KeyboardImpl::~KeyboardImpl(void)
@@ -29,6 +32,21 @@ namespace CTRPluginFramework
     void    KeyboardImpl::SetLayout(Layout layout)
     {
         _layout = layout;
+    }
+
+    std::string &KeyboardImpl::GetInput(void)
+    {
+        return(_input);
+    }
+
+    void    KeyboardImpl::SetConvertCallback(ConvertCallback callback)
+    {
+        _convert = callback;
+    }
+    
+    void    KeyboardImpl::SetCompareCallback(CompareCallback callback)
+    {
+        _compare = callback;
     }
 
     int     KeyboardImpl::Run(void)

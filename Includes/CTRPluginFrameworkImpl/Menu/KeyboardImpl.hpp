@@ -26,7 +26,10 @@ namespace CTRPluginFramework
         KeyboardImpl(void);
         ~KeyboardImpl(void);
 
-        void    SetLayout(Layout layout);
+        void        SetLayout(Layout layout);
+        std::string &GetInput(void);
+        void        SetConvertCallback(ConvertCallback callback);
+        void        SetCompareCallback(CompareCallback callback);
 
         int     Run(void);
     private:
