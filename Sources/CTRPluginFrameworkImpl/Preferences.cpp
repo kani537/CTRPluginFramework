@@ -1,4 +1,5 @@
 #include "CTRPluginFrameworkImpl/Preferences.hpp"
+#include <math.h>
 
 namespace CTRPluginFramework
 {

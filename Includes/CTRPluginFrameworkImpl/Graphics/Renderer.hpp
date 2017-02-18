@@ -12,6 +12,7 @@
 #include "CTRPluginFrameworkImpl/Graphics/Line.hpp"
 
 #include <algorithm>
+#include <vector>
 
 namespace CTRPluginFramework
 {

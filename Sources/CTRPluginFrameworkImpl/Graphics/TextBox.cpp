@@ -6,6 +6,7 @@
 #include "CTRPluginFrameworkImpl/Preferences.hpp"
 
 #include <cstdio>
+#include <math.h>
 
 namespace CTRPluginFramework
 {

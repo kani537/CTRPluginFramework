@@ -19,7 +19,7 @@ namespace CTRPluginFramework
         _errorMessage = false;
         _askForExit = false;
         _isHex = false;
-        _maxInput = 0;
+        _max = 0;
         _layout = HEXADECIMAL;
 
         _convert = nullptr;
@@ -52,7 +52,7 @@ namespace CTRPluginFramework
 
     std::string &KeyboardImpl::GetInput(void)
     {
-        return(_input);
+        return(_userInput);
     }
 
     void    KeyboardImpl::SetConvertCallback(ConvertCallback callback)
@@ -123,7 +123,10 @@ namespace CTRPluginFramework
                 _errorMessage = !_CheckInput();
 
             if (_askForExit && !_errorMessage)
+            {
                 _isOpen = false;
+                ret = 0;
+            }
             else if (_askForExit && _errorMessage)
                 _askForExit = false;
         }
@@ -379,7 +382,7 @@ namespace CTRPluginFramework
     {
         if (_layout == QWERTY && _compare != nullptr)
         {
-            return (_compare(_userInput, _error));
+            return (_compare((void *)&_userInput, _error));
         }
         else if (_layout == DECIMAL && _compare != nullptr && _convert != nullptr)
         {

@@ -10,19 +10,19 @@
 
 namespace CTRPluginFramework
 {
+    enum Layout
+    {
+        QWERTY,
+        DECIMAL,
+        HEXADECIMAL
+    };
+
     class KeyboardImpl
     {
         using   CompareCallback = bool (*)(const void *, std::string&);
         using   ConvertCallback = void *(*)(std::string&, bool);
         using   KeyIter  = std::vector<TouchKey>::iterator;
     public:
-
-        enum Layout
-        {
-            QWERTY,
-            DECIMAL,
-            HEXADECIMAL
-        };
 
         KeyboardImpl(void);
         ~KeyboardImpl(void);
@@ -60,7 +60,7 @@ namespace CTRPluginFramework
         bool                    _errorMessage;
         bool                    _userAbort;
         bool                    _isHex;
-        int                     _maxInput;
+        int                     _max;
         Layout                  _layout;
 
         CompareCallback         _compare;

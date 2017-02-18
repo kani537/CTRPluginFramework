@@ -60,7 +60,7 @@ LDFLAGS		:= -pie -T $(TOPDIR)/3ds.ld $(ARCH) -O2 -Wl,-Map,$(notdir $*.map),--gc-
 # ,-d,--emit-relocs,--use-blx,--print-gc-sections
 # --gc-sections -Map=$(TARGET).map 
 
-LIBS	:= -lntr -lctr -lg -lsysbase  -lc -lm -lgcc -lgcov
+#LIBS	:= -lntr -lctr -lg -lsysbase  -lc -lm -lgcc -lgcov
 
 #---------------------------------------------------------------------------------
 # no real need to edit anything past this point unless you need to add additional
