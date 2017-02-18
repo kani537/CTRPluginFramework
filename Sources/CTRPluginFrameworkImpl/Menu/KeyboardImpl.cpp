@@ -18,6 +18,8 @@ namespace CTRPluginFramework
         _isOpen = false;
         _errorMessage = false;
         _askForExit = false;
+        _isHex = false;
+        _maxInput = 0;
         _layout = HEXADECIMAL;
 
         _convert = nullptr;
@@ -32,6 +34,20 @@ namespace CTRPluginFramework
     void    KeyboardImpl::SetLayout(Layout layout)
     {
         _layout = layout;
+        if (layout == HEXADECIMAL)
+            _isHex = true;
+        else
+            _isHex = false;
+    }
+
+    void    KeyboardImpl::SetHexadecimal(bool isHex)
+    {
+        _isHex = isHex;
+    }
+
+    void    KeyboardImpl::SetMaxInput(int max)
+    {
+        _max = max;
     }
 
     std::string &KeyboardImpl::GetInput(void)
@@ -316,6 +332,17 @@ namespace CTRPluginFramework
 
         // Disable dot key
         _keys.at(17).Enable(false);
+
+        // Disable Hex keys if users asks so
+        if (!_isHex)
+        {
+            KeyIter  iter = _keys.begin();
+            KeyIter  end = iter;
+            std::advance(end, 6);
+
+            for (; iter != end; iter++)
+                (*iter).Enable(false);
+        }
     }
 
     bool    KeyboardImpl::_CheckKeys(void)
@@ -339,7 +366,8 @@ namespace CTRPluginFramework
                 }
                 else
                 {
-                    _userInput += ret;
+                    if (_max == 0 || _userInput.size() < _max)
+                        _userInput += ret;
                     return (true); 
                 }                
             }
@@ -349,10 +377,19 @@ namespace CTRPluginFramework
 
     bool    KeyboardImpl::_CheckInput(void)
     {
-        if (_compare != nullptr && _convert != nullptr)
+        if (_layout == QWERTY && _compare != nullptr)
         {
-            void *convertedInput = _convert(_userInput);
+            return (_compare(_userInput, _error));
+        }
+        else if (_layout == DECIMAL && _compare != nullptr && _convert != nullptr)
+        {
+            void *convertedInput = _convert(_userInput, false);
             return (_compare(convertedInput, _error));
+        }
+        else
+        {
+            void *convertedInput = _convert(_userInput, _isHex ? true : false);
+            return (_compare(convertedInput, _error));            
         }
         // In case there's no callback, always consider input as valid
         return (true);

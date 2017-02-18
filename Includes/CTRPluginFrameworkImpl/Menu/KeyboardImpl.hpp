@@ -6,13 +6,14 @@
 #include "CTRPluginFrameworkImpl/System.hpp"
 
 #include <vector>
+#include <string>
 
 namespace CTRPluginFramework
 {
     class KeyboardImpl
     {
         using   CompareCallback = bool (*)(const void *, std::string&);
-        using   ConvertCallback = void *(*)(std::string&);
+        using   ConvertCallback = void *(*)(std::string&, bool);
         using   KeyIter  = std::vector<TouchKey>::iterator;
     public:
 
@@ -27,6 +28,8 @@ namespace CTRPluginFramework
         ~KeyboardImpl(void);
 
         void        SetLayout(Layout layout);
+        void        SetHexadecimal(bool isHex);
+        void        SetMaxInput(int max);
         std::string &GetInput(void);
         void        SetConvertCallback(ConvertCallback callback);
         void        SetCompareCallback(CompareCallback callback);
@@ -56,6 +59,8 @@ namespace CTRPluginFramework
         bool                    _askForExit;
         bool                    _errorMessage;
         bool                    _userAbort;
+        bool                    _isHex;
+        int                     _maxInput;
         Layout                  _layout;
 
         CompareCallback         _compare;
