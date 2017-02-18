@@ -1,4 +1,4 @@
-#include "CTRPluginFrameworkImpl/Menu/Keyboard.hpp"
+#include "CTRPluginFrameworkImpl/Menu/KeyboardImpl.hpp"
 #include "CTRPluginFrameworkImpl/System/ProcessImpl.hpp"
 #include "CTRPluginFrameworkImpl/Preferences.hpp"
 
@@ -285,7 +285,8 @@ namespace CTRPluginFramework
 
         // Disable Hex keys
         KeyIter  iter = _keys.begin();
-        KeyIter  end = std::advance(iter, 6);
+        KeyIter  end = iter;
+        std::advance(end, 6);
 
         for (; iter != end; iter++)
             (*iter).Enable(false);

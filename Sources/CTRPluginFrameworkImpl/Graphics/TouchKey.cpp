@@ -1,4 +1,4 @@
-#include "CTRPluginFrameworkImpl/Graphics/Key.hpp"
+#include "CTRPluginFrameworkImpl/Graphics/TouchKey.hpp"
 #include "ctrulib/util/utf.h"
 
 namespace CTRPluginFramework

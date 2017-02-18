@@ -58,7 +58,7 @@ namespace CTRPluginFramework
         CompareCallback         _compare;
         ConvertCallback         _convert;
 
-        std:vector<TouchKey>    _keys;
+        std::vector<TouchKey>    _keys;
 
     };
 }
