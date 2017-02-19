@@ -14,9 +14,9 @@ namespace CTRPluginFramework
 
         _contentLength = Renderer::GetTextSize(_content.c_str());
 
-        while ((int)(_contentLength) < ui.size.x)
+        while ((int)(_contentLength) > ui.size.x)
         {
-            if (content.length() < 1)
+            if (_content.size() < 1)
                 break;
             _content.pop_back();
             _contentLength = Renderer::GetTextSize(_content.c_str());
