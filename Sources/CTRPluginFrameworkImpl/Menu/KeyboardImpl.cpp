@@ -159,14 +159,14 @@ namespace CTRPluginFramework
             Renderer::DrawRect(32, 22, 336, 196, blank, false);            
         }
 
-        // Should be replaced with a function with auto return
-        Renderer::DrawSysString(_text.c_str(), posX, posY, 350, blank);
+        Renderer::DrawSysStringReturn(_text.c_str(), posX, posY, 350, blank);
 
         // IF error
         if (_errorMessage && _error.size() > 0)
         {
-            posY += 48;
-            Renderer::DrawSysString(_error.c_str(), posX, posY, 350, red);
+            if (posY < 120)
+                posY += 48;
+            Renderer::DrawSysStringReturn(_error.c_str(), posX, posY, 350, red);
         }
     }
 
