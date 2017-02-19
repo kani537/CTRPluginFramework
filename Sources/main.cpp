@@ -248,7 +248,7 @@ extern "C" u32 __ctru_linear_heap_size;
             Keyboard keyboard("Select something");
 
             // The keyboard's entries
-            std::vector<std::string> vector = {"Test", "PLop", "rEALLY ?", "Yeah", "Awesome", "Weapon"};
+            std::vector<std::string> vector = {"Test", "PLop", "rEALLY ?", "Yeah", "Awesome", "Weapon", "Armor", "Head", "Hand", "Boot", "Tools", "Ring", "Jewel", "Item", "Object"};
             u32  out = 0;
 
             // Assign the entries to the keyboard
@@ -265,6 +265,23 @@ extern "C" u32 __ctru_linear_heap_size;
         folder->Append(entry);
 
         entry = new MenuEntry("Fast Move (\uE077 + \uE054)", MoveFast, "Use \uE077 while pressing \uE054 to move very fast. Be careful of the loading zone, it might put you out of bound.");
+        entry->SetMenuFunc([](MenuEntry *entry)
+        {
+            Keyboard keyboard("Select something");
+
+            // The keyboard's entries
+            std::vector<std::string> vector = {"Test", "PLop", "rEALLY ?", "Yeah", "Awesome"};
+            u32  out = 0;
+
+            // Assign the entries to the keyboard
+            keyboard.Populate(vector);
+
+            // wait for a user input
+            if ((out = keyboard.Open()) != -1)
+            {
+                entry->Name() = "Fast Move (\uE077 + \uE054) " + vector[out];
+            }
+        });        
         entry->SetRadio(1);
         folder->Append(entry);
         menu.Append(folder);

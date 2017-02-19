@@ -81,13 +81,38 @@ namespace CTRPluginFramework
         _customKeyboard = true;
         _strKeys.clear();
 
-        IntRect box(60, 26, 200, 30);
+        int posY = 30;
+        int count = input.size();
+        if (count < 6)
+        {
+            posY = 20 + (200 - ((30 * count) + 6 * (count - 1))) / 2;
+            _displayScrollbar = false;
+        }
+        else
+        {
+            int height = 190;
+
+            
+            int lsize = 26 * count;
+
+            float padding = (float)height / (float)lsize;
+            int cursorSize =  padding * height;
+            _scrollbarSize = height;
+
+            if (cursorSize < 5)
+                cursorSize = 5;
+
+            _scrollCursorSize = cursorSize;
+            _scrollPosition = 0.f;
+            _displayScrollbar = true;
+        }
+
+        IntRect box(60, posY, 200, 30);
 
         for (int i = 0; i < input.size(); i++)
         {
             _strKeys.push_back(TouchKeyString(input[i], box));
-            //if (i < 6)
-                box.leftTop.y += 36;
+            box.leftTop.y += 36;
         }
     }
 
@@ -225,7 +250,10 @@ namespace CTRPluginFramework
     {
         static Color    black = Color();
         static Color    blank(255, 255, 255);
+        static Color    grey(15, 15, 15);
         static IntRect  background(20, 20, 280, 200);
+        static IntRect  background2(22, 22, 276, 196);
+        static IntRect  background3(22, 25, 270, 190);
 
         Renderer::SetTarget(BOTTOM);
 
@@ -234,7 +262,7 @@ namespace CTRPluginFramework
             Preferences::bottomBackgroundImage->Draw(background.leftTop);
         else
         {*/
-            Renderer::DrawRect(background, black);
+            
            // Renderer::DrawRect(22, 22, 276, 196, blank, false);            
         //}
 
@@ -245,6 +273,7 @@ namespace CTRPluginFramework
             int   posY = 20;
             int   posX = 25;
 
+            Renderer::DrawRect(background, black);
             Renderer::DrawSysString(_userInput.c_str(), posX, posY, 300, blank);    
 
             // Draw keys
@@ -257,9 +286,12 @@ namespace CTRPluginFramework
         }
         else
         {
+            Renderer::DrawRect2(background, black, grey);
+            Renderer::DrawRect(background2, blank, false);
+
             int max = _strKeys.size() - _currentPosition;
             max = std::min(max, 6);
-            PrivColor::UseClamp(true, background);
+            PrivColor::UseClamp(true, background3);
             for (int i = _currentPosition; i < max && i < _strKeys.size(); i++)
             {
                 _strKeys[i].Draw();
@@ -300,6 +332,9 @@ namespace CTRPluginFramework
             }
         }
 
+        if (!_displayScrollbar)
+            return;
+
         static IntRect  buttons(60, 26, 200, 200);
         // Touch / Scroll
         if (event.type == Event::TouchBegan)
@@ -328,15 +363,15 @@ namespace CTRPluginFramework
         {
             if (!buttons.Contains(event.touch.x, event.touch.y))
             {
-                if (_touchTimer.GetElapsedTime().AsSeconds() > 0.3f)
-                    _inertialVelocity = 0.f;
+                //if (_touchTimer.GetElapsedTime().AsSeconds() > 0.3f)
+                   // _inertialVelocity = 0.f;
             }
         }
     }
 
     #define INERTIA_SCROLL_FACTOR 0.9f
     #define INERTIA_ACCELERATION 0.98f
-    #define INERTIA_THRESHOLD 1.f
+    #define INERTIA_THRESHOLD 0.03f
 
     void    KeyboardImpl::_Update(float delta)
     {
@@ -354,20 +389,33 @@ namespace CTRPluginFramework
         }
         else
         {
-            // Scroll stuff
-            _scrollSize = _inertialVelocity * INERTIA_SCROLL_FACTOR * delta;
-            _scrollPosition += _scrollSize;
-            _inertialVelocity *= INERTIA_ACCELERATION * delta;
-            if (std::abs(_inertialVelocity) < INERTIA_THRESHOLD)
-                _inertialVelocity = 0.f;
-
-            KeyStringIter iter = _strKeys.begin();
-
-            for (; iter != _strKeys.end(); iter++)
+            if (_displayScrollbar)
             {
-                (*iter).Update(isTouchDown, touchPos);
-                (*iter).ScrollDown((int)_scrollSize);
+                // Scroll stuff
+                _scrollSize = _inertialVelocity * INERTIA_SCROLL_FACTOR * delta;
+                _scrollPosition += (int)-_scrollSize; // Revert
+                _inertialVelocity *= INERTIA_ACCELERATION * delta;
+                if (std::abs(_inertialVelocity) < INERTIA_THRESHOLD)
+                    _inertialVelocity = 0.f;
+
+                KeyStringIter iter = _strKeys.begin();
+
+                for (; iter != _strKeys.end(); iter++)
+                {                
+                    (*iter).Scroll((int)_scrollSize);
+                    (*iter).Update(isTouchDown, touchPos);
+                }                
             }
+            else
+            {
+                KeyStringIter iter = _strKeys.begin();
+
+                for (; iter != _strKeys.end(); iter++)
+                {                
+                    (*iter).Update(isTouchDown, touchPos);
+                }                 
+            }
+
         }
 
     }
