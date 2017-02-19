@@ -72,13 +72,14 @@ namespace CTRPluginFramework
         _errorMessage = false;
         _askForExit = false;
 
-        bool    mustRelease = false;
         // Check if Process is paused
         if (!ProcessImpl::IsPaused())
         {
-            mustRelease  = true;
+            _mustRelease  = true;
             ProcessImpl::Pause(false);
         }
+        else
+            _mustRelease = false;
 
         int                 ret = -2;
         Event               event;
@@ -132,7 +133,7 @@ namespace CTRPluginFramework
         }
 
     exit:
-        if (mustRelease)
+        if (_mustRelease)
             ProcessImpl::Play(false);
         return (ret);
     }
@@ -143,30 +144,35 @@ namespace CTRPluginFramework
         static Color    red = Color(255, 0, 0);
         static Color    blank(255, 255, 255);
         static Color    dimGrey(15, 15, 15);
-        static IntRect  background(30, 20, 340, 200);
+        static IntRect  background1(30, 20, 340, 200);
+        static IntRect  background2(50, 30, 300, 180);
 
-        int   posY = 25;
-        int   posX = 40;
+        IntRect &background = _mustRelease ? background2 : background1;
+        int     maxX = background.leftTop.x + background.size.x;
+        int     maxY = background.leftTop.y + background.size.y;
+
+        int   posY =  background.leftTop.y + 5;
+        int   posX =  background.leftTop.x + 5;
 
         Renderer::SetTarget(TOP);
 
         // Draw background
         if (Preferences::topBackgroundImage->IsLoaded())
-            Preferences::topBackgroundImage->Draw(background.leftTop);
+            Preferences::topBackgroundImage->Draw(background);
         else
         {
             Renderer::DrawRect2(background, black, dimGrey);
-            Renderer::DrawRect(32, 22, 336, 196, blank, false);            
+            //Renderer::DrawRect(32, 22, 336, 196, blank, false);            
         }
 
-        Renderer::DrawSysStringReturn(_text.c_str(), posX, posY, 350, blank);
+        Renderer::DrawSysStringReturn(_text.c_str(), posX, posY, maxX, blank, maxY);
 
         // IF error
         if (_errorMessage && _error.size() > 0)
         {
             if (posY < 120)
                 posY += 48;
-            Renderer::DrawSysStringReturn(_error.c_str(), posX, posY, 350, red);
+            Renderer::DrawSysStringReturn(_error.c_str(), posX, posY, maxX, red, maxY);
         }
     }
 

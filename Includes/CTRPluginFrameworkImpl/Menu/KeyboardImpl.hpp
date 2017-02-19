@@ -60,6 +60,7 @@ namespace CTRPluginFramework
         bool                    _errorMessage;
         bool                    _userAbort;
         bool                    _isHex;
+        bool                    _mustRelease;
         int                     _max;
         Layout                  _layout;
 
