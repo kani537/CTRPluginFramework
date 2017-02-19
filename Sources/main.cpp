@@ -363,7 +363,7 @@ extern "C" u32 __ctru_linear_heap_size;
 
         menu.Append(folder);
         menu.Append(new MenuEntry("\uE002 to send a notification", Overlay));
-        menu.Append(new MenuEntry("Custom rupee count", CustomRupee));
+        menu.Append(new MenuEntry("Press \uE004 + \uE002 to enter the wanted number of rupees", CustomRupee));
        /* menu.Append(new MenuEntry("\uE054 = Camera button", ZLCamera));
         menu.Append(new MenuEntry("\uE054 = First object button", ZLFirstButton));
         menu.Append(new MenuEntry("\uE055 = Second Object button", ZRSecondButton));

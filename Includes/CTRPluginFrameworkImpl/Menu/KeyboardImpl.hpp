@@ -3,6 +3,7 @@
 
 #include "CTRPluginFrameworkImpl/Graphics.hpp"
 #include "CTRPluginFrameworkImpl/Graphics/TouchKey.hpp"
+#include "CTRPluginFrameworkImpl/Graphics/TouchKeyString.hpp"
 #include "CTRPluginFrameworkImpl/System.hpp"
 
 #include <vector>
@@ -22,6 +23,7 @@ namespace CTRPluginFramework
         using   CompareCallback = bool (*)(const void *, std::string&);
         using   ConvertCallback = void *(*)(std::string&, bool);
         using   KeyIter  = std::vector<TouchKey>::iterator;
+        using   KeyStringIter  = std::vector<TouchKeyString>::iterator;
     public:
 
         KeyboardImpl(std::string text = "");
@@ -33,6 +35,7 @@ namespace CTRPluginFramework
         std::string &GetInput(void);
         void        SetConvertCallback(ConvertCallback callback);
         void        SetCompareCallback(CompareCallback callback);
+        void        Populate(std::vector<std::string> &input);
 
         int     Run(void);
     private:
@@ -40,7 +43,7 @@ namespace CTRPluginFramework
         void    _RenderTop(void);
         void    _RenderBottom(void);
         void    _ProcessEvent(Event &event);
-        void    _Update(void);
+        void    _Update(Time delta);
 
         // Keyboard layout constructor
         void    _Qwerty(void);
@@ -50,6 +53,8 @@ namespace CTRPluginFramework
 
         bool    _CheckKeys(void); //<- Return if input have changed
         bool    _CheckInput(void); //<- Call compare callback, return true if the input is valid
+
+        bool    _CheckButtons(int &ret); //<- for string button
 
         std::string             _text;
         std::string             _error;
@@ -68,6 +73,18 @@ namespace CTRPluginFramework
         ConvertCallback         _convert;
 
         std::vector<TouchKey>    _keys;
+
+        // Custom keyboard stuff
+        bool                    _customKeyboard;
+        bool                    _displayScrollbar;
+        int                     _currentPosition;      
+        u32                     _scrollbarSize;
+        u32                     _scrollCursorSize;
+        float                   _scrollPadding;
+        float                   _scrollPosition;
+        float                   _inertialVelocity;
+
+        std::vector<TouchKeyString> _strKeys;
 
     };
 }

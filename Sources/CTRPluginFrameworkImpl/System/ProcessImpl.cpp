@@ -93,8 +93,6 @@ namespace CTRPluginFramework
         Screen::Bottom->Acquire(false);
 		_isAcquiring = false;
 
-        gspWaitForVBlank();
-
         if (!useFading)
             return;
 

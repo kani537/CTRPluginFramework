@@ -24,6 +24,15 @@ namespace CTRPluginFramework
 
         _convert = nullptr;
         _compare = nullptr;
+
+        _customKeyboard  = false;
+        _displayScrollbar = false;
+        _currentPosition = 0;
+        _scrollbarSize = 0;
+        _scrollCursorSize = 0;
+        _scrollPadding = 0.f;
+        _scrollPosition = 0.f;
+        _inertialVelocity = 0.f;
     }
 
     KeyboardImpl::~KeyboardImpl(void)
@@ -65,6 +74,21 @@ namespace CTRPluginFramework
         _compare = callback;
     }
 
+    void    KeyboardImpl::Populate(std::vector<std::string> &input)
+    {
+        _customKeyboard = true;
+        _strKeys.clear();
+
+        IntRect box(60, 25, 200, 30);
+
+        for (int i = 0; i < input.size(); i++)
+        {
+            _strKeys.push_back(TouchKeyString(input[i], box));
+            if (i < 6)
+                box.leftTop.y += 35;
+        }
+    }
+
     int     KeyboardImpl::Run(void)
     {
         _isOpen = true;
@@ -84,6 +108,7 @@ namespace CTRPluginFramework
         int                 ret = -2;
         Event               event;
         EventManager        manager;
+        Clock               clock;
 
         // Construct keyboard
         if (_layout == QWERTY) { ret = -1; goto exit; }//<-- Currently unsupported
@@ -105,7 +130,7 @@ namespace CTRPluginFramework
             }
 
             // Update current keys
-            _Update();
+            _Update(clock.Restart());
 
             Renderer::StartFrame();
             // Render Top Screen
@@ -114,22 +139,37 @@ namespace CTRPluginFramework
             _RenderBottom();
             Renderer::EndFrame();
 
-            // Check keys
-            bool inputChanged = _CheckKeys();
-
-            if (_errorMessage && inputChanged)
-                _errorMessage = false;
-
-            if (inputChanged && _compare != nullptr)
-                _errorMessage = !_CheckInput();
-
-            if (_askForExit && !_errorMessage)
+            // if it's a standard keyboard
+            if (!_customKeyboard)
             {
-                _isOpen = false;
-                ret = 0;
+                // Check keys
+                bool inputChanged = _CheckKeys();
+
+                if (_errorMessage && inputChanged)
+                    _errorMessage = false;
+
+                if (inputChanged && _compare != nullptr)
+                    _errorMessage = !_CheckInput();
+
+                if (_askForExit && !_errorMessage)
+                {
+                    _isOpen = false;
+                    ret = 0;
+                }
+                else if (_askForExit && _errorMessage)
+                    _askForExit = false;                
             }
-            else if (_askForExit && _errorMessage)
-                _askForExit = false;
+            else
+            {
+                int  choice = -1;
+                bool isSelected = _CheckButtons(choice);
+
+                if (isSelected)
+                {
+                    ret = choice;
+                    _isOpen = false;
+                }
+            }
         }
 
     exit:
@@ -196,18 +236,31 @@ namespace CTRPluginFramework
 
         // Draw current input
 
-        int   posY = 20;
-        int   posX = 25;
-
-        Renderer::DrawSysString(_userInput.c_str(), posX, posY, 300, blank);    
-
-        // Draw keys
-        KeyIter iter = _keys.begin();
-
-        for (; iter != _keys.end(); iter++)
+        if (!_customKeyboard)
         {
-            (*iter).Draw();
+            int   posY = 20;
+            int   posX = 25;
+
+            Renderer::DrawSysString(_userInput.c_str(), posX, posY, 300, blank);    
+
+            // Draw keys
+            KeyIter iter = _keys.begin();
+
+            for (; iter != _keys.end(); iter++)
+            {
+                (*iter).Draw();
+            }            
         }
+        else
+        {
+            int max = _strKeys.size() - _currentPosition;
+            max = std::min(max, 6);
+            for (int i = _currentPosition; i < 6; i++)
+            {
+                _strKeys[i].Draw();
+            }
+        }
+
     }
 
     void    KeyboardImpl::_ProcessEvent(Event &event)
@@ -221,17 +274,32 @@ namespace CTRPluginFramework
         }
     }
 
-    void    KeyboardImpl::_Update(void)
+    void    KeyboardImpl::_Update(Time delta)
     {
-        KeyIter iter = _keys.begin();
+        
 
         bool isTouchDown = Touch::IsDown();
         IntVector touchPos(Touch::GetPosition());
 
-        for (; iter != _keys.end(); iter++)
+        if (!_customKeyboard)
         {
-            (*iter).Update(isTouchDown, touchPos);
+            KeyIter iter = _keys.begin();
+
+            for (; iter != _keys.end(); iter++)
+            {
+                (*iter).Update(isTouchDown, touchPos);
+            }            
         }
+        else
+        {
+            KeyStringIter iter = _strKeys.begin();
+
+            for (; iter != _strKeys.end(); iter++)
+            {
+                (*iter).Update(isTouchDown, touchPos);
+            } 
+        }
+
     }
 
     void    KeyboardImpl::_Qwerty(void)
@@ -410,5 +478,19 @@ namespace CTRPluginFramework
         }
         // In case there's no callback, always consider input as valid
         return (true);
+    }
+
+    bool    KeyboardImpl::_CheckButtons(int &ret)
+    {
+        for (int i = 0; i < _strKeys.size(); i++)
+        {
+            ret = _strKeys[i]();
+            if (ret != -1)
+            {
+                return (true);
+            }
+        }
+
+        return (false);
     }
 }
