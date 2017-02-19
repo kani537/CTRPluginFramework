@@ -247,21 +247,14 @@ extern "C" u32 __ctru_linear_heap_size;
         {
             Keyboard keyboard("Select something");
 
+            // The keyboard's entries
             std::vector<std::string> vector = {"Test", "PLop", "rEALLY ?", "Yeah", "Awesome", "Weapon"};
             u32  out = 0;
 
-            /*keyboard.SetCompareCallback([](const void *input, std::string &error)
-            {
-                u32 in = *static_cast<const u32 *>(input);
-
-                if (in < 100)
-                {
-                    error = "The value can't be inferior to 100";
-                    return (false);
-                }
-                return (true);
-            });*/
+            // Assign the entries to the keyboard
             keyboard.Populate(vector);
+
+            // wait for a user input
             if ((out = keyboard.Open()) != -1)
             {
                 entry->Name() = "MoonJump (\uE000) " + vector[out];
