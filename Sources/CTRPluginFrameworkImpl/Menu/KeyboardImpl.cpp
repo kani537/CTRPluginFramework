@@ -81,13 +81,13 @@ namespace CTRPluginFramework
         _customKeyboard = true;
         _strKeys.clear();
 
-        IntRect box(60, 25, 200, 30);
+        IntRect box(60, 26, 200, 30);
 
         for (int i = 0; i < input.size(); i++)
         {
             _strKeys.push_back(TouchKeyString(input[i], box));
             //if (i < 6)
-                box.leftTop.y += 35;
+                box.leftTop.y += 36;
         }
     }
 
@@ -328,8 +328,6 @@ namespace CTRPluginFramework
 
     void    KeyboardImpl::_Update(float delta)
     {
-        
-
         bool isTouchDown = Touch::IsDown();
         IntVector touchPos(Touch::GetPosition());
 
@@ -352,11 +350,11 @@ namespace CTRPluginFramework
                 _inertialVelocity = 0.f;
 
             KeyStringIter iter = _strKeys.begin();
-            
+
             for (; iter != _strKeys.end(); iter++)
             {
                 (*iter).Update(isTouchDown, touchPos);
-                //(*iter).ScrollDown((int)_scrollSize);
+                (*iter).ScrollDown((int)_scrollSize);
             }
         }
 
@@ -547,6 +545,7 @@ namespace CTRPluginFramework
             ret = _strKeys[i]();
             if (ret != -1)
             {
+                ret = i;
                 return (true);
             }
         }
