@@ -286,26 +286,16 @@ namespace CTRPluginFramework
         {
             if (x >= xLimits || str == end)
             {
-                /*if (autoReturn)
-                {
-                    x = posX;
-                    lineCount++;
-                    posY += 16;
-                }
-                else*/ break;
+                break;
             }
             if (*str == '\n' || *str == '\r')
             {
-                /*x = posX;
-                lineCount++;    
-                posY += 16;
-                str++;*/
                 str++;
                 continue;
             }       
             if (posY >= 240)
                 break;
-            glyphcode = 0;
+
             units = decode_utf8(&glyphcode, (const u8 *)str);
             if (units == -1)
                 break;
@@ -328,6 +318,71 @@ namespace CTRPluginFramework
             }      
             x += DrawGlyph(glyphPos, cwi, x, posY, color, offset);
             offset = 0;
+        } while (glyphcode > 0 && *str);
+
+        posY += 16 * lineCount;
+        return (x);
+    }
+
+    int Renderer::DrawSysStringReturn(const char *str, int posX, int &posY, int xLimits, Color color)
+    {
+        u32             glyphcode;
+        int             units;
+        int             lineCount;
+        size_t          i;
+        fontGlyphPos_s  glyphPos;
+        int             x = posX;
+        
+        if (!(str && *str))
+            return (x);
+
+        lineCount = 1;
+        xLimits = std::min(xLimits, (_target == TOP ? 400 : 320));
+
+        // Skip UTF8 sig
+        if (str[0] == 0xEF && str[1] == 0xBB && str[2] == 0xBF)
+            str += 3;
+
+        do
+        {
+            if (x >= xLimits)
+            {
+
+                x = posX;
+                lineCount++;
+                posY += 16;
+            }
+            if (*str == '\r')
+                str++;
+            if (*str == '\n')
+            {
+                x = posX;
+                lineCount++;    
+                posY += 16;
+                str++;
+                continue;
+            }       
+            if (posY >= 200)
+                break;
+
+            units = decode_utf8(&glyphcode, (const u8 *)str);
+            if (units == -1)
+                break;
+
+            str += units;
+
+            u32 index = fontGlyphIndexFromCodePoint(glyphcode);
+            charWidthInfo_s *cwi;
+            FontCalcGlyphPos(&glyphPos, &cwi, index, 0.5f, 0.5f);
+
+            if (x + glyphPos.xAdvance + 1 > xLimits)
+            {
+                x+= glyphPos.xAdvance + 1;
+                str -= units;
+                continue;
+            }      
+            x += DrawGlyph(glyphPos, cwi, x, posY, color, 0);
+
         } while (glyphcode > 0 && *str);
 
         posY += 16 * lineCount;
