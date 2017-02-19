@@ -70,6 +70,7 @@ namespace CTRPluginFramework
     Keyboard::Keyboard(std::string text) : _keyboard(new KeyboardImpl(text))
     {
         _hexadecimal = true;
+        _isPopulated = false;
     }
 
     Keyboard::~Keyboard(void)
@@ -85,6 +86,18 @@ namespace CTRPluginFramework
     void    Keyboard::SetCompareCallback(CompareCallback callback)
     {
         _keyboard->SetCompareCallback(callback);
+    }
+
+    void    Keyboard::Populate(std::vector<std::string> &input)
+    {
+        _keyboard->Populate(input);
+    }
+
+    int     Keyboard::Open(void)
+    {
+        if (!_isPopulated)
+            return (-1);
+        return (_keyboard->Run());
     }
 
     /*

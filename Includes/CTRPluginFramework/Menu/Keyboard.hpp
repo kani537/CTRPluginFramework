@@ -3,6 +3,7 @@
 
 #include "types.h"
 #include <string>
+#include <vector>
 #include <memory>
 
 namespace CTRPluginFramework
@@ -26,6 +27,9 @@ namespace CTRPluginFramework
         ***************************************************************/
         void    SetCompareCallback(CompareCallback callback);
 
+        void    Populate(std::vector<std::string> &input);
+
+        int     Open(void);
         /*
         ** Open the keyboard and wait for user input
         ** Return value: 0 = success, -1 = user abort
@@ -50,6 +54,7 @@ namespace CTRPluginFramework
     private:
         std::unique_ptr<KeyboardImpl>   _keyboard;
         bool                            _hexadecimal;
+        bool                            _isPopulated;
     };
 }
 
