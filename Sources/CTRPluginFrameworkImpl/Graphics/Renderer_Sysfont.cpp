@@ -324,7 +324,7 @@ namespace CTRPluginFramework
         return (x);
     }
 
-    int Renderer::DrawSysStringReturn(const char *str, int posX, int &posY, int xLimits, Color color)
+    int Renderer::DrawSysStringReturn(const char *str, int posX, int &posY, int xLimits, Color color, int maxY)
     {
         u32             glyphcode;
         int             units;
@@ -362,7 +362,7 @@ namespace CTRPluginFramework
                 str++;
                 continue;
             }       
-            if (posY >= 200)
+            if (posY >= maxY)
                 break;
 
             units = decode_utf8(&glyphcode, (const u8 *)str);

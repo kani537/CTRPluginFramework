@@ -74,7 +74,7 @@ namespace CTRPluginFramework
         // System Font
         //#############################################################################################
         static int      DrawSysString(const char *str, int posX, int &posY, int max, Color color, float offset = 0, const char *end = nullptr);
-        static int      DrawSysStringReturn(const char *str, int posX, int &posY, int xLimits, Color color);
+        static int      DrawSysStringReturn(const char *str, int posX, int &posY, int xLimits, Color color, int maxY = 200);
         static float    GetTextSize(const char *text);
         static int      GetLineCount(const char *text, float maxWidth);
 
