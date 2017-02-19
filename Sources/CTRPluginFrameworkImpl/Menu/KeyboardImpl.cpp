@@ -310,7 +310,7 @@ namespace CTRPluginFramework
         {
             Time delta = _touchTimer.Restart();
 
-            float moveDistance = (float)(_lastTouch.y - event.touch.y);
+            float moveDistance = (float)(event.touch.y - _lastTouch.y);
             _inertialVelocity = moveDistance / delta.AsSeconds();
             _lastTouch = IntVector(event.touch.x, event.touch.y);
         }
