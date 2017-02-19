@@ -91,6 +91,7 @@ namespace CTRPluginFramework
     void    Keyboard::Populate(std::vector<std::string> &input)
     {
         _keyboard->Populate(input);
+        _isPopulated = true;
     }
 
     int     Keyboard::Open(void)

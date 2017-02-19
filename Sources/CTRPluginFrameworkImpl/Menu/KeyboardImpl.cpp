@@ -113,9 +113,12 @@ namespace CTRPluginFramework
         Clock               clock;
 
         // Construct keyboard
-        if (_layout == QWERTY) { ret = -1; goto exit; }//<-- Currently unsupported
-        else if (_layout == DECIMAL) _Decimal();
-        else if (_layout == HEXADECIMAL) _Hexadecimal();
+        if (!_customKeyboard)
+        {
+            if (_layout == QWERTY) { ret = -1; goto exit; }//<-- Currently unsupported
+            else if (_layout == DECIMAL) _Decimal();
+            else if (_layout == HEXADECIMAL) _Hexadecimal();            
+        }
 
         // Loop until exit
         while (_isOpen)
@@ -256,7 +259,7 @@ namespace CTRPluginFramework
         {
             int max = _strKeys.size() - _currentPosition;
             max = std::min(max, 6);
-            for (int i = _currentPosition; i < 6; i++)
+            for (int i = _currentPosition; i < max && i < _strKeys.size(); i++)
             {
                 _strKeys[i].Draw();
             }
@@ -341,9 +344,6 @@ namespace CTRPluginFramework
         }
         else
         {
-            KeyStringIter iter = _strKeys.begin();
-
-
             // Scroll stuff
             _scrollSize = _inertialVelocity * INERTIA_SCROLL_FACTOR * delta;
             _scrollPosition += _scrollSize;
@@ -351,10 +351,12 @@ namespace CTRPluginFramework
             if (std::abs(_inertialVelocity) < INERTIA_THRESHOLD)
                 _inertialVelocity = 0.f;
 
+            KeyStringIter iter = _strKeys.begin();
+            
             for (; iter != _strKeys.end(); iter++)
             {
                 (*iter).Update(isTouchDown, touchPos);
-                (*iter).ScrollDown((int)_scrollSize);
+                //(*iter).ScrollDown((int)_scrollSize);
             }
         }
 
