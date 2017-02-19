@@ -440,6 +440,7 @@ namespace CTRPluginFramework
 
     u8      *Screen::GetLeftFramebuffer(int posX, int posY)
     {
+
         posX = std::max(posX, 0);
         posX = std::min(posX, (_isTopScreen ? 400 : 320));
         posY = std::max(posY, 0);

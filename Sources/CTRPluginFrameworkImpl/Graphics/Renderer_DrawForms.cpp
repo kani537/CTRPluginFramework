@@ -15,6 +15,20 @@ namespace CTRPluginFramework
 
     void        Renderer::DrawLine(int posX, int posY, int width, Color color, int height)
     {  
+        if (posY < 0)
+        {
+            if (posY + height < 0)
+                return;
+            height += posY;
+            posY = 0;
+        }
+        while (posY + height > 240)
+        {
+            if (height <= 0)
+                return;
+            height--;
+        }
+
         u8 *dst = _screen->GetLeftFramebuffer(posX, posY + height - 1);
         u32 stride = _rowstride;
 
@@ -35,6 +49,13 @@ namespace CTRPluginFramework
         int posY = start.y;
         int width = end.x - posX; // 50 - 10 = 40
         int height = 1 + end.y - posY;// 1 
+
+        while (posY + height > 240)
+        {
+            if (height <= 0)
+                return;
+            height--;
+        }
 
         u8 *dst = _screen->GetLeftFramebuffer(posX, posY + height - 1);
         u32 stride = _rowstride;
