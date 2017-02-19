@@ -512,4 +512,12 @@ namespace CTRPluginFramework
 
         return ((u8 *)_rightFramebuffersV[_currentBuffer] + offset);            
     }
+
+    void    Screen::GetPosFromAddress(u32 addr, int &posX, int &posY)
+    {
+        addr -= _leftFramebuffersV[!_currentBuffer];
+
+        posX = addr / (_rowSize * _bytesPerPixel);
+        posY = _rowSize - 1 - ((addr / _bytesPerPixel) - (_rowSize * posX));
+    }
 }

@@ -3,6 +3,7 @@
 
 #include "ctrulib/gfx.h"
 #include "CTRPluginFramework/Graphics/Color.hpp"
+#include "CTRPluginFrameworkImpl/Graphics/Rect.hpp"
 
 namespace CTRPluginFramework
 {
@@ -15,6 +16,8 @@ namespace CTRPluginFramework
     public:
         static FCPointer FromFramebuffer;
         static F8Pointer ToFramebuffer;
+
+        static void    UseClamp(bool willUse, IntRect rect = IntRect());
 
     private:
         friend class Screen;
@@ -32,6 +35,16 @@ namespace CTRPluginFramework
         static u8       *_WriteRGB565(u8 *dst, Color &color);
         static u8       *_WriteRGB5A1(u8 *dst, Color &color);
         static u8       *_WriteRGBA4(u8 *dst,  Color &color);
+
+        static u8       *_WriteRGBA8Clamp(u8 *dst, Color &color);
+        static u8       *_WriteBGR8Clamp(u8 *dst, Color &color);
+        static u8       *_WriteRGB565Clamp(u8 *dst, Color &color);
+        static u8       *_WriteRGB5A1Clamp(u8 *dst, Color &color);
+        static u8       *_WriteRGBA4Clamp(u8 *dst,  Color &color);
+
+        static bool     _useClamp;
+        static IntRect  _clampArea;
+        static GSPGPU_FramebufferFormats _format;
     };
 }
 

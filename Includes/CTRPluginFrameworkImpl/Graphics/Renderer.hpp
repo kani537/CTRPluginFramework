@@ -90,6 +90,7 @@ namespace CTRPluginFramework
         friend void     Initialize(void);
         friend class    TouchKey;
         friend class    Icon;
+        friend class    PrivColor;
 
         friend class    TextBox;
         friend class    BMPImage;

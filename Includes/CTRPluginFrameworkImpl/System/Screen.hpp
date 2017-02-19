@@ -56,7 +56,8 @@ namespace CTRPluginFramework
         u8                          *GetRightFramebuffer(bool current = false);
         u8                          *GetRightFramebuffer(int posX, int posY); 
         u8                          *GetRightFramebuffer(int posX, int posY, bool current);                 
-        
+        void                        GetPosFromAddress(u32 address, int &posX, int &posY);
+
         void                        Fade(float fade, bool copy = false);
         void                        Flush(void);
         void                        Copy(void);

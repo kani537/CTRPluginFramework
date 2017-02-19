@@ -1,5 +1,7 @@
 #include "types.h"
 
+#include "CTRPluginFrameworkImpl/Graphics/Renderer.hpp"
+#include "CTRPluginFrameworkImpl/System/Screen.hpp"
 #include "CTRPluginFrameworkImpl/Graphics/PrivColor.hpp"
 #include "ctrulib/services/gspgpu.h"
 
@@ -7,7 +9,15 @@ namespace CTRPluginFramework
 {
     FCPointer   PrivColor::FromFramebuffer = _ReadBGR8;
     F8Pointer   PrivColor::ToFramebuffer = _WriteBGR8;
+    bool        PrivColor::_useClamp = false;
+    IntRect     PrivColor::_clampArea;
+    GSPGPU_FramebufferFormats PrivColor::_format = GSP_BGR8_OES;
 
+    void    PrivColor::UseClamp(bool willUse, IntRect rect)
+    {
+        _useClamp = willUse;
+        _SetFormat(_format);
+    }
     /*
     ** Private
     *****************/
@@ -17,23 +27,23 @@ namespace CTRPluginFramework
         {
             case GSP_RGBA8_OES:
                 FromFramebuffer = _ReadRGBA8;
-                ToFramebuffer = _WriteRGBA8;
+                ToFramebuffer = _useClamp ? _WriteRGBA8Clamp : _WriteRGBA8;
                 break;
             case GSP_BGR8_OES:
                 FromFramebuffer = _ReadBGR8;
-                ToFramebuffer = _WriteBGR8;
+                ToFramebuffer = _useClamp ? _WriteBGR8Clamp : _WriteBGR8;
                 break;
             case GSP_RGB565_OES:
                 FromFramebuffer = _ReadRGB565;
-                ToFramebuffer = _WriteRGB565;
+                ToFramebuffer = _useClamp ? _WriteRGB565Clamp : _WriteRGB565;
                 break;
             case GSP_RGB5_A1_OES:
                 FromFramebuffer = _ReadRGB5A1;
-                ToFramebuffer = _WriteRGB5A1;
+                ToFramebuffer = _useClamp ? _WriteRGB5A1Clamp : _WriteRGB5A1;
                 break;
             case GSP_RGBA4_OES:
                 FromFramebuffer = _ReadRGBA4;
-                ToFramebuffer = _WriteRGBA4;
+                ToFramebuffer = _useClamp ? _WriteRGBA4Clamp : _WriteRGBA4;
                 break;            
         }
     }
@@ -171,6 +181,134 @@ namespace CTRPluginFramework
 
     u8      *PrivColor::_WriteRGBA4(u8 *dst, Color &color)
     {
+        union
+        {
+            u16     u;
+            char    b[2];
+        }           half;
+
+        half.u  = (color.b & 0xF0) << 8;
+        half.u |= (color.g & 0xF0) << 4;
+        half.u |= (color.r & 0xF0);
+        half.u |= 0x0F;
+
+        *(dst++) = half.b[0];
+        *(dst++) = half.b[1];
+        return (dst);
+    }
+
+    /*
+    ** Clamp
+    ************/
+    u8      *PrivColor::_WriteRGBA8Clamp(u8 *dst, Color &color)
+    {
+        int posX;
+        int posY;
+
+        if (Renderer::_target == BOTTOM)
+            Screen::Bottom->GetPosFromAddress((u32)dst, posX, posY);
+        else
+            Screen::Top->GetPosFromAddress((u32)dst, posX, posY);
+
+        if (!_clampArea.Contains(posX, posY))
+            return (dst);
+
+        *dst++ = color.a;
+        *dst++ = color.b;
+        *dst++ = color.g;
+        *dst++ = color.r;
+        return (dst);
+    }
+
+    u8      *PrivColor::_WriteBGR8Clamp(u8 *dst, Color &color)
+    {
+        int posX;
+        int posY;
+
+        if (Renderer::_target == BOTTOM)
+            Screen::Bottom->GetPosFromAddress((u32)dst, posX, posY);
+        else
+            Screen::Top->GetPosFromAddress((u32)dst, posX, posY);
+
+        if (!_clampArea.Contains(posX, posY))
+            return (dst);
+
+        *dst++ = color.b;
+        *dst++ = color.g;
+        *dst++ = color.r;
+        return (dst);
+    }
+
+    u8      *PrivColor::_WriteRGB565Clamp(u8 *dst, Color &color)
+    {
+        int posX;
+        int posY;
+
+        if (Renderer::_target == BOTTOM)
+            Screen::Bottom->GetPosFromAddress((u32)dst, posX, posY);
+        else
+            Screen::Top->GetPosFromAddress((u32)dst, posX, posY);
+
+        if (!_clampArea.Contains(posX, posY))
+            return (dst);
+
+        union
+        {
+            u16     u;
+            char    b[2];
+        }           half;
+
+        half.u  = (color.r & 0xF8) << 8;
+        half.u |= (color.g & 0xFC) << 3;
+        half.u |= (color.b & 0xF8) >> 3;
+
+        *(dst++) = half.b[0];
+        *(dst++) = half.b[1];
+        return (dst);
+    }
+
+    u8      *PrivColor::_WriteRGB5A1Clamp(u8 *dst, Color &color)
+    {
+        int posX;
+        int posY;
+
+        if (Renderer::_target == BOTTOM)
+            Screen::Bottom->GetPosFromAddress((u32)dst, posX, posY);
+        else
+            Screen::Top->GetPosFromAddress((u32)dst, posX, posY);
+
+        if (!_clampArea.Contains(posX, posY))
+            return (dst);
+
+        union
+        {
+            u16     u;
+            char    b[2];
+        }           half;
+
+        half.u  = (color.b & 0xF8) << 8;
+        half.u |= (color.g & 0xF8) << 3;
+        half.u |= (color.r & 0xF8) >> 2;
+        half.u |= 1;
+
+        *(dst++) = half.b[0];
+        *(dst++) = half.b[1];
+        return (dst);
+    }
+
+    u8      *PrivColor::_WriteRGBA4Clamp(u8 *dst, Color &color)
+    {
+        int posX;
+        int posY;
+
+        if (Renderer::_target == BOTTOM)
+            Screen::Bottom->GetPosFromAddress((u32)dst, posX, posY);
+        else
+            Screen::Top->GetPosFromAddress((u32)dst, posX, posY);
+
+        if (!_clampArea.Contains(posX, posY))
+            return (dst);
+        
         union
         {
             u16     u;
