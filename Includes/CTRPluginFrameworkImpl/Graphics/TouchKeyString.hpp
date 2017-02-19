@@ -30,8 +30,7 @@ namespace CTRPluginFramework
         void    Update(bool touchIsDown, IntVector touchPos);
 
         // Scrolls
-        void    ScrollUp(int amount);
-        void    ScrollDown(int amount);
+        void    Scroll(int amount);
 
         // Executer
         // Return -1 if not pressed, 1 otherwise

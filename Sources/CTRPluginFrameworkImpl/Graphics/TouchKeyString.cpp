@@ -82,15 +82,8 @@ namespace CTRPluginFramework
         else
             _isPressed = false;   
     }
-
-    void    TouchKeyString::ScrollUp(int amount)
-    {
-        int &posY = _uiProperties.leftTop.y;
-
-        posY -= amount;
-    }
-
-    void    TouchKeyString::ScrollDown(int amount)
+    
+    void    TouchKeyString::Scroll(int amount)
     {
         int &posY = _uiProperties.leftTop.y;
 
