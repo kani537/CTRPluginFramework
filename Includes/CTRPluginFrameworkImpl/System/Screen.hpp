@@ -59,6 +59,7 @@ namespace CTRPluginFramework
         
         void                        Fade(float fade, bool copy = false);
         void                        Flush(void);
+        void                        Copy(void);
         int                         Debug(int posX, int posY);
 
     private:

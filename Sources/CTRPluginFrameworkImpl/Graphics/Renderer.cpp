@@ -4,6 +4,7 @@
 
 #include "CTRPluginFramework/Graphics.hpp"
 #include "CTRPluginFrameworkImpl/Graphics.hpp"
+#include "CTRPluginFramework/System/Touch.hpp"
 #include <cstdio>
 #include <cmath>
 
@@ -99,6 +100,21 @@ namespace CTRPluginFramework
 
     void        Renderer::EndFrame(bool copy)
     {
+        static IntRect                 background(20, 20, 280, 200);
+        static Color                   blank(255, 255, 255);
+        bool isTouchDown = Touch::IsDown();
+        IntVector touchPos(Touch::GetPosition());
+
+        // Draw Touch Cursor
+        if (isTouchDown && background.Contains(touchPos))
+        {
+            int posX = touchPos.x - 2;
+            int posY = touchPos.y - 1;
+            touchPos.x += 10;
+            touchPos.y += 15;
+            if (background.Contains(touchPos))
+                DrawSysString("\uE058", posX, posY, 320, blank);
+        }
 
         Screen::Bottom->SwapBuffer(true, copy);
         Screen::Top->SwapBuffer(true, copy);

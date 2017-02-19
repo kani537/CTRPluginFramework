@@ -89,9 +89,11 @@ namespace CTRPluginFramework
 		svcSignalEvent(_keepEvent);
 
 		_isAcquiring = true;
-		Screen::Top->Acquire();
-        Screen::Bottom->Acquire();
+		Screen::Top->Acquire(false);
+        Screen::Bottom->Acquire(false);
 		_isAcquiring = false;
+
+        gspWaitForVBlank();
 
         if (!useFading)
             return;

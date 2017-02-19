@@ -162,13 +162,14 @@ namespace CTRPluginFramework
             // Set the keyboard as decimal (hexadecimal by default)
             keyboard.IsHexadecimal(false);
 
+            // Read the current value of rupees
             u32 output = READU32(0x005879A0);
 
             // Set the input to the current count of rupees and open the keyboard
             // If the function return -1, then the user canceled the keyboard, so do nothing
             if (keyboard.Open(output, output) != -1)
                 WRITEU32(0x005879A0, output);            
-        }        
+        }      
     }
 
     void    TouchCursor(MenuEntry *entry)

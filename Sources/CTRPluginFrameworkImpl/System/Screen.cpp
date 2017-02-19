@@ -212,6 +212,9 @@ namespace CTRPluginFramework
             // Flush currentBuffer
             if (R_FAILED(GSPGPU_FlushDataCache((void *)_leftFramebuffersV[_currentBuffer], size)))
                 svcFlushProcessDataCache(Process::GetHandle(), (void *)_leftFramebuffersV[_currentBuffer], size);
+
+            // Invalidate other buffeer
+            svcInvalidateProcessDataCache(Process::GetHandle(), (void *)_leftFramebuffersV[!_currentBuffer], size);
             // Copy current buffer in the other one
             memcpy((void *)_leftFramebuffersV[!_currentBuffer], (void *)_leftFramebuffersV[_currentBuffer], size);
             // Flush second buffer
@@ -229,9 +232,7 @@ namespace CTRPluginFramework
             // Flush second buffer
             if (R_FAILED(GSPGPU_InvalidateDataCache((void *)_leftFramebuffersV[!_currentBuffer], size)))
                 svcInvalidateProcessDataCache(Process::GetHandle(), (void *)_leftFramebuffersV[!_currentBuffer], size);             
-        }
-        
-
+        }      
     }
 
     void    Screen::Flush(void)
@@ -257,6 +258,22 @@ namespace CTRPluginFramework
                 svcFlushProcessDataCache(Process::GetHandle(), (void *)_rightFramebuffersV[!_currentBuffer], size); 
                        
         }
+    }
+
+    void    Screen::Copy(void)
+    {
+        u32 size = GetFramebufferSize();
+
+        // Flush currentBuffer
+        if (R_FAILED(GSPGPU_FlushDataCache((void *)_leftFramebuffersV[_currentBuffer], size)))
+            svcFlushProcessDataCache(Process::GetHandle(), (void *)_leftFramebuffersV[_currentBuffer], size);
+
+
+        // Copy current buffer in the other one
+        memcpy((void *)_leftFramebuffersV[!_currentBuffer], (void *)_leftFramebuffersV[_currentBuffer], size);
+        // Flush second buffer
+        if (R_FAILED(GSPGPU_FlushDataCache((void *)_leftFramebuffersV[!_currentBuffer], size)))
+            svcFlushProcessDataCache(Process::GetHandle(), (void *)_leftFramebuffersV[!_currentBuffer], size);         
     }
 
     bool    Screen::IsTopScreen(void)
