@@ -51,7 +51,9 @@ namespace CTRPluginFramework
         u64 tid = Process::GetTitleID();
 
         // Pokemon Sun & Moon
-        if (tid == 0x0004000000175E00 || tid == 0x0004000000164800)
+        if (tid == 0x0004000000175E00 || tid == 0x0004000000164800
+        // ACNL
+        ||  tid == 0x0004000000086300 || tid == 0x0004000000086400 || tid == 0x0004000000086200)
             __linearOp = 0x10203u;
         //if (tid == 0x0004000000183600)
             Sleep(Seconds(5));

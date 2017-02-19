@@ -127,8 +127,6 @@ namespace CTRPluginFramework
                 Renderer::DrawString(buf, 250, posY, blank, black);
             #endif
 
-
-
                 // End frame
                 Renderer::EndFrame(shouldClose);
                 delta = clock.Restart();
