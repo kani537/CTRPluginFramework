@@ -519,5 +519,6 @@ namespace CTRPluginFramework
 
         posX = addr / (_rowSize * _bytesPerPixel);
         posY = _rowSize - 1 - ((addr / _bytesPerPixel) - (_rowSize * posX));
+        posY -= _rowSize - 240;
     }
 }

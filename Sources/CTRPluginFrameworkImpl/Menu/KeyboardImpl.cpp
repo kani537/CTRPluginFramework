@@ -259,11 +259,13 @@ namespace CTRPluginFramework
         {
             int max = _strKeys.size() - _currentPosition;
             max = std::min(max, 6);
+            PrivColor::UseClamp(true, background);
             for (int i = _currentPosition; i < max && i < _strKeys.size(); i++)
             {
                 _strKeys[i].Draw();
             }
 
+            PrivColor::UseClamp(false);
             if (!_displayScrollbar)
                 return;
 

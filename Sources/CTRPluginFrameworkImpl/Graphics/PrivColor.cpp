@@ -16,6 +16,7 @@ namespace CTRPluginFramework
     void    PrivColor::UseClamp(bool willUse, IntRect rect)
     {
         _useClamp = willUse;
+        _clampArea = rect;
         _SetFormat(_format);
     }
     /*
@@ -211,7 +212,7 @@ namespace CTRPluginFramework
             Screen::Top->GetPosFromAddress((u32)dst, posX, posY);
 
         if (!_clampArea.Contains(posX, posY))
-            return (dst);
+            return (dst + 4);
 
         *dst++ = color.a;
         *dst++ = color.b;
@@ -231,7 +232,7 @@ namespace CTRPluginFramework
             Screen::Top->GetPosFromAddress((u32)dst, posX, posY);
 
         if (!_clampArea.Contains(posX, posY))
-            return (dst);
+            return (dst + 3);
 
         *dst++ = color.b;
         *dst++ = color.g;
@@ -250,7 +251,7 @@ namespace CTRPluginFramework
             Screen::Top->GetPosFromAddress((u32)dst, posX, posY);
 
         if (!_clampArea.Contains(posX, posY))
-            return (dst);
+            return (dst + 2);
 
         union
         {
@@ -278,7 +279,7 @@ namespace CTRPluginFramework
             Screen::Top->GetPosFromAddress((u32)dst, posX, posY);
 
         if (!_clampArea.Contains(posX, posY))
-            return (dst);
+            return (dst + 2);
 
         union
         {
@@ -307,8 +308,8 @@ namespace CTRPluginFramework
             Screen::Top->GetPosFromAddress((u32)dst, posX, posY);
 
         if (!_clampArea.Contains(posX, posY))
-            return (dst);
-        
+            return (dst + 2);
+
         union
         {
             u16     u;
