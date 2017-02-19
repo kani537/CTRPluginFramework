@@ -131,10 +131,10 @@ namespace CTRPluginFramework
         }
     }
 
-    bool    CheckRupeeInput(void *input, std::string &error)
+    bool    CheckRupeeInput(const void *input, std::string &error)
     {
         // Cast the input into the appropriate type (must match the type provided to Open)
-        u32  in = *static_cast<u32 *>(input);
+        u32  in = *static_cast<const u32 *>(input);
 
         // Check the value
         if (in > 999)
@@ -363,7 +363,7 @@ extern "C" u32 __ctru_linear_heap_size;
 
         menu.Append(folder);
         menu.Append(new MenuEntry("\uE002 to send a notification", Overlay));
-        menu.Append(new MenuEntry("Custom rupee count", KeyboardTest));
+        menu.Append(new MenuEntry("Custom rupee count", CustomRupee));
        /* menu.Append(new MenuEntry("\uE054 = Camera button", ZLCamera));
         menu.Append(new MenuEntry("\uE054 = First object button", ZLFirstButton));
         menu.Append(new MenuEntry("\uE055 = Second Object button", ZRSecondButton));
