@@ -43,7 +43,7 @@ namespace CTRPluginFramework
         void    _RenderTop(void);
         void    _RenderBottom(void);
         void    _ProcessEvent(Event &event);
-        void    _Update(Time delta);
+        void    _Update(float delta);
 
         // Keyboard layout constructor
         void    _Qwerty(void);
@@ -80,9 +80,11 @@ namespace CTRPluginFramework
         int                     _currentPosition;      
         u32                     _scrollbarSize;
         u32                     _scrollCursorSize;
-        float                   _scrollPadding;
+        float                   _scrollSize;
         float                   _scrollPosition;
         float                   _inertialVelocity;
+        IntVector               _lastTouch;
+        Clock                   _touchTimer;
 
         std::vector<TouchKeyString> _strKeys;
 

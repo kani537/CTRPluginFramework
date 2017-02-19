@@ -2,6 +2,8 @@
 #include "CTRPluginFrameworkImpl/System/ProcessImpl.hpp"
 #include "CTRPluginFrameworkImpl/Preferences.hpp"
 
+#include <cmath>
+
 namespace CTRPluginFramework
 {
     #define USER_VALID  0
@@ -29,8 +31,8 @@ namespace CTRPluginFramework
         _displayScrollbar = false;
         _currentPosition = 0;
         _scrollbarSize = 0;
-        _scrollCursorSize = 0;
-        _scrollPadding = 0.f;
+        _scrollCursorSize = 10;
+        _scrollSize = 0.f;
         _scrollPosition = 0.f;
         _inertialVelocity = 0.f;
     }
@@ -84,7 +86,7 @@ namespace CTRPluginFramework
         for (int i = 0; i < input.size(); i++)
         {
             _strKeys.push_back(TouchKeyString(input[i], box));
-            if (i < 6)
+            //if (i < 6)
                 box.leftTop.y += 35;
         }
     }
@@ -130,7 +132,7 @@ namespace CTRPluginFramework
             }
 
             // Update current keys
-            _Update(clock.Restart());
+            _Update(clock.Restart().AsSeconds());
 
             Renderer::StartFrame();
             // Render Top Screen
@@ -220,7 +222,6 @@ namespace CTRPluginFramework
     {
         static Color    black = Color();
         static Color    blank(255, 255, 255);
-        static Color    dimGrey(15, 15, 15);
         static IntRect  background(20, 20, 280, 200);
 
         Renderer::SetTarget(BOTTOM);
@@ -259,9 +260,30 @@ namespace CTRPluginFramework
             {
                 _strKeys[i].Draw();
             }
-        }
 
+            if (!_displayScrollbar)
+                return;
+
+            // Draw scroll bar
+            static Color dimGrey(105, 105, 105);
+            static Color silver(192, 192, 192);
+
+            // Background
+            int posX = 282;
+            int posY = 25;
+
+            Renderer::DrawLine(posX, posY + 1, 1, silver, _scrollbarSize - 2);
+            Renderer::DrawLine(posX + 1, posY, 1, silver, _scrollbarSize);
+            Renderer::DrawLine(posX + 2, posY + 1, 1, silver, _scrollbarSize - 2);
+
+            posY += (int)(_scrollPosition);// * _scrollbarSize);
+
+            Renderer::DrawLine(posX, posY + 1, 1, dimGrey, _scrollCursorSize - 2);
+            Renderer::DrawLine(posX + 1, posY, 1, dimGrey, _scrollCursorSize);
+            Renderer::DrawLine(posX + 2, posY + 1, 1, dimGrey, _scrollCursorSize - 2); 
+        }
     }
+
 
     void    KeyboardImpl::_ProcessEvent(Event &event)
     {
@@ -272,9 +294,36 @@ namespace CTRPluginFramework
                 _userAbort = true;
             }
         }
+
+        // Touch / Scroll
+        if (event.type == Event::TouchBegan)
+        {
+            _inertialVelocity = 0;
+            _lastTouch = IntVector(event.touch.x, event.touch.y);
+            _touchTimer.Restart();
+        }
+
+        if (event.type == Event::TouchMoved)
+        {
+            Time delta = _touchTimer.Restart();
+
+            float moveDistance = (float)(_lastTouch.y - event.touch.y);
+            _inertialVelocity = moveDistance / delta.AsSeconds();
+            _lastTouch = IntVector(event.touch.x, event.touch.y);
+        }
+
+        if (event.type == Event::TouchEnded)
+        {
+            if (_touchTimer.GetElapsedTime().AsSeconds() > 0.3f)
+                _inertialVelocity = 0.f;
+        }
     }
 
-    void    KeyboardImpl::_Update(Time delta)
+    #define INERTIA_SCROLL_FACTOR 0.9f
+    #define INERTIA_ACCELERATION 0.98f
+    #define INERTIA_THRESHOLD 1.f
+
+    void    KeyboardImpl::_Update(float delta)
     {
         
 
@@ -294,10 +343,19 @@ namespace CTRPluginFramework
         {
             KeyStringIter iter = _strKeys.begin();
 
+
+            // Scroll stuff
+            _scrollSize = _inertialVelocity * INERTIA_SCROLL_FACTOR * delta;
+            _scrollPosition += _scrollSize;
+            _inertialVelocity *= INERTIA_ACCELERATION * delta;
+            if (std::abs(_inertialVelocity) < INERTIA_THRESHOLD)
+                _inertialVelocity = 0.f;
+
             for (; iter != _strKeys.end(); iter++)
             {
                 (*iter).Update(isTouchDown, touchPos);
-            } 
+                (*iter).ScrollDown((int)_scrollSize);
+            }
         }
 
     }
