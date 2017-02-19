@@ -245,11 +245,12 @@ extern "C" u32 __ctru_linear_heap_size;
         MenuEntry *entry = new MenuEntry("MoonJump (\uE000)", MoonJump, "Press \uE000 to be free of the gravity.");
         entry->SetMenuFunc([](MenuEntry *entry)
         {
-            Keyboard keyboard("Enter any number :");
+            Keyboard keyboard("Select something");
 
+            std::vector<std::string> vector = {"Test", "PLop", "rEALLY ?", "Yeah", "Awesome", "Weapon"};
             u32  out = 0;
 
-            keyboard.SetCompareCallback([](const void *input, std::string &error)
+            /*keyboard.SetCompareCallback([](const void *input, std::string &error)
             {
                 u32 in = *static_cast<const u32 *>(input);
 
@@ -259,11 +260,11 @@ extern "C" u32 __ctru_linear_heap_size;
                     return (false);
                 }
                 return (true);
-            });
-
-            if (keyboard.Open(out) != -1)
+            });*/
+            keyboard.Populate(vector);
+            if ((out = keyboard.Open()) != -1)
             {
-                entry->Name() = "MoonJump (\uE000)" + std::to_string(out);
+                entry->Name() = "MoonJump (\uE000) " + vector[out];
             }
         });
 
