@@ -300,27 +300,37 @@ namespace CTRPluginFramework
             }
         }
 
+        static IntRect  buttons(60, 26, 200, 200);
         // Touch / Scroll
         if (event.type == Event::TouchBegan)
         {
-            _inertialVelocity = 0;
-            _lastTouch = IntVector(event.touch.x, event.touch.y);
-            _touchTimer.Restart();
+            if (!buttons.Contains(event.touch.x, event.touch.y))
+            {
+                _inertialVelocity = 0;
+                _lastTouch = IntVector(event.touch.x, event.touch.y);
+                _touchTimer.Restart();                
+            }
         }
 
         if (event.type == Event::TouchMoved)
         {
-            Time delta = _touchTimer.Restart();
+            if (!buttons.Contains(event.touch.x, event.touch.y))
+            {  
+                Time delta = _touchTimer.Restart();
 
-            float moveDistance = (float)(event.touch.y - _lastTouch.y);
-            _inertialVelocity = moveDistance / delta.AsSeconds();
-            _lastTouch = IntVector(event.touch.x, event.touch.y);
+                float moveDistance = (float)(event.touch.y - _lastTouch.y);
+                _inertialVelocity = moveDistance / delta.AsSeconds();
+                _lastTouch = IntVector(event.touch.x, event.touch.y);
+            }
         }
 
         if (event.type == Event::TouchEnded)
         {
-            if (_touchTimer.GetElapsedTime().AsSeconds() > 0.3f)
-                _inertialVelocity = 0.f;
+            if (!buttons.Contains(event.touch.x, event.touch.y))
+            {
+                if (_touchTimer.GetElapsedTime().AsSeconds() > 0.3f)
+                    _inertialVelocity = 0.f;
+            }
         }
     }
 
