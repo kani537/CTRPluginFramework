@@ -168,6 +168,20 @@ namespace CTRPluginFramework
                                 _selector = 0;
                             break;
                         } 
+                        case Key::CPadLeft:
+                        case Key::DPadLeft:
+                        {
+                            if (_selector > 0)
+                                _selector = std::max(0, (int)(_selector - 4));
+                            break;
+                        }
+                        case Key::CPadRight:
+                        case Key::DPadRight:
+                        {
+                            if (_selector < folder->ItemsCount() - 1)
+                                _selector = std::min((int)(folder->ItemsCount() - 1), (int)(_selector + 4));
+                            break;
+                        } 
                     }                    
                     inputClock.Restart(); 
                 }
@@ -197,6 +211,22 @@ namespace CTRPluginFramework
                             _selector++;
                         else
                             _selector = 0;
+                        fastScroll.Restart();
+                        break;
+                    }
+                    case Key::CPadLeft:
+                    case Key::DPadLeft:
+                    {
+                        if (_selector > 0)
+                            _selector = std::max(0, (int)(_selector - 4));
+                        fastScroll.Restart();
+                        break;
+                    }
+                    case Key::CPadRight:
+                    case Key::DPadRight:
+                    {
+                        if (_selector < folder->ItemsCount() - 1)
+                            _selector = std::min((int)(folder->ItemsCount() - 1), (int)(_selector + 4));
                         fastScroll.Restart();
                         break;
                     }
