@@ -27,8 +27,18 @@ namespace CTRPluginFramework
         ***************************************************************/
         void    SetCompareCallback(CompareCallback callback);
 
+        /*
+        ** Populate a keyboard with strings
+        ************************************************/
         void    Populate(std::vector<std::string> &input);
 
+        /*
+        ** Open(void)
+        ** Only usable with a keyboard that you populated with strings
+        ** Return value: 
+        **    -1 : user abort / not populated
+        **    >= 0 : index of the user choice in the vector
+        ************************************************/
         int     Open(void);
         /*
         ** Open the keyboard and wait for user input
