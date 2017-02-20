@@ -161,14 +161,14 @@ namespace CTRPluginFramework
         {
             while (manager.PollEvent(event))
             {
-                _ProcessEvent(event);                
+                _ProcessEvent(event);
+                if (_userAbort)
+                {
+                    ret = USER_ABORT;
+                    goto exit;
+                }           
             }
 
-            if (_userAbort)
-            {
-                ret = USER_ABORT;
-                goto exit;
-            }
 
             // Update current keys
             _Update(clock.Restart().AsSeconds());
@@ -341,6 +341,7 @@ namespace CTRPluginFramework
             if (event.key.code == Key::B)
             {
                 _userAbort = true;
+                return;
             }
         }
 
