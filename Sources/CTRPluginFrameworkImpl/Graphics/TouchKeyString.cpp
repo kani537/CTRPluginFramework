@@ -7,6 +7,7 @@ namespace CTRPluginFramework
     {
         _content = content;
         _uiProperties = ui;
+        _posY = _uiProperties.leftTop.y;
         _enabled = isEnabled;
 
         _isPressed = false;
@@ -82,12 +83,14 @@ namespace CTRPluginFramework
         else
             _isPressed = false;   
     }
-    
-    void    TouchKeyString::Scroll(int amount)
+
+    void    TouchKeyString::Scroll(float amount)
     {
+        _posY += amount;
+
         int &posY = _uiProperties.leftTop.y;
 
-        posY += amount;
+        posY = _posY;
     }
 
     int     TouchKeyString::operator()(void)

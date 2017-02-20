@@ -30,7 +30,7 @@ namespace CTRPluginFramework
         void    Update(bool touchIsDown, IntVector touchPos);
 
         // Scrolls
-        void    Scroll(int amount);
+        void    Scroll(float amount);
 
         // Executer
         // Return -1 if not pressed, 1 otherwise
@@ -46,6 +46,7 @@ namespace CTRPluginFramework
         bool            _execute;
         bool            _enabled;
         float           _contentLength;
+        float           _posY;
     };
 }
 
