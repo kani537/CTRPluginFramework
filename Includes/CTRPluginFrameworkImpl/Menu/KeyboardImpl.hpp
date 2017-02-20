@@ -83,6 +83,7 @@ namespace CTRPluginFramework
         float                   _scrollSize;
         float                   _scrollPosition;
         float                   _scrollPadding;
+        float                   _scrollJump;
         float                   _inertialVelocity;
         float                   _scrollStart;
         float                   _scrollEnd;

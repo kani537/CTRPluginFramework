@@ -97,10 +97,15 @@ namespace CTRPluginFramework
             int height = 190;
 
             
-            float lsize = 36.f * (float)count;
+            float lsize = 36.f * (float)count + 1;
 
             float padding = (float)height / lsize;
             int cursorSize =  padding * height;
+            float scrollTrackSpace = lsize - height;
+            float scrollThumbSpace = height - cursorSize;
+
+
+            _scrollJump = scrollTrackSpace / scrollThumbSpace;
             _scrollbarSize = height;
 
             if (cursorSize < 5)
@@ -295,7 +300,7 @@ namespace CTRPluginFramework
             Renderer::DrawRect2(background, black, grey);
             Renderer::DrawRect(background2, blank, false);
 
-            int max = _strKeys.size() - _currentPosition;
+            int max = _strKeys.size();
             max = std::min(max, _currentPosition + 6);
             PrivColor::UseClamp(true, background3);
 
@@ -313,7 +318,7 @@ namespace CTRPluginFramework
             static Color silver(192, 192, 192);
 
             // Background
-            int posX = 282;
+            int posX = 292;
             int posY = 25;
 
             Renderer::DrawLine(posX, posY + 1, 1, silver, _scrollbarSize - 2);
@@ -370,15 +375,15 @@ namespace CTRPluginFramework
         {
             if (!buttons.Contains(event.touch.x, event.touch.y))
             {
-                //if (_touchTimer.GetElapsedTime().AsSeconds() > 0.3f)
-                   // _inertialVelocity = 0.f;
+                if (_touchTimer.GetElapsedTime().AsSeconds() > 0.3f)
+                    _inertialVelocity = 0.f;
             }
         }
     }
 
     #define INERTIA_SCROLL_FACTOR 0.9f
-    #define INERTIA_ACCELERATION 0.98f
-    #define INERTIA_THRESHOLD 0.03f
+    #define INERTIA_ACCELERATION 0.75f
+    #define INERTIA_THRESHOLD 1.0f
 
     void    KeyboardImpl::_Update(float delta)
     {
@@ -398,31 +403,39 @@ namespace CTRPluginFramework
         {
             if (_displayScrollbar)
             {
-                // Scroll stuff
-                _scrollSize = _scrollPadding * (_inertialVelocity * INERTIA_SCROLL_FACTOR * delta);
-                if (_scrollPosition + _scrollSize < 0.f)
-                {
-                    _scrollSize = -_scrollPosition;
-                    _scrollPosition = 0.f;
-                }
-                else if (_scrollPosition + _scrollSize >= _scrollEnd)
-                {
-                    _scrollSize = _scrollEnd - _scrollPosition;
-                    _scrollPosition = _scrollEnd;
-                }
-                else
-                    _scrollPosition += _scrollSize;
-                _inertialVelocity *= INERTIA_ACCELERATION * delta;
+                _scrollSize = (_inertialVelocity * INERTIA_SCROLL_FACTOR * delta);
 
-                _currentPosition = (_scrollPosition / _scrollPadding) / 36;
+                _scrollPosition += _scrollSize;
+
+                if (_scrollPosition <= 0.f)
+                {
+                    _scrollSize = _scrollSize - _scrollPosition;
+                    _scrollPosition = 0.f;
+                    _inertialVelocity = 0.f;
+                }
+                else if (_scrollPosition >= _scrollEnd)
+                {
+                    _scrollSize -= (_scrollPosition - _scrollEnd);
+                    _scrollPosition = _scrollEnd;
+                    _inertialVelocity = 0.f;
+                }
+                    
+
+                _inertialVelocity += (0.98f ) * delta;
+
+                _inertialVelocity *= INERTIA_ACCELERATION;
+
+                _currentPosition = (_scrollPosition * _scrollJump) / 36; //(_scrollPosition / 36);
                 if (std::abs(_inertialVelocity) < INERTIA_THRESHOLD)
                     _inertialVelocity = 0.f;
 
                 KeyStringIter iter = _strKeys.begin();
 
+                float scr = -_scrollSize * _scrollJump;
+
                 for (; iter != _strKeys.end(); iter++)
                 {                
-                    (*iter).Scroll((int)-_scrollSize); // revert
+                    (*iter).Scroll(scr);
                     (*iter).Update(isTouchDown, touchPos);
                 }                
             }
