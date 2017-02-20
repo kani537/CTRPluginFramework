@@ -54,6 +54,9 @@ namespace CTRPluginFramework
 
     bool     Process::ProtectMemory(u32 addr, u32 size, int perm)
     {
+        addr  &= ~0xFFF;
+        size  += 0x1000;
+        size &= ~0xFFF;
     	if (R_FAILED(svcControlProcessMemory(ProcessImpl::_processHandle, addr, addr, size, 6, perm)))
         	return (false);
         return (true);
