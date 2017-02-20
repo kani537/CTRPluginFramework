@@ -82,7 +82,10 @@ namespace CTRPluginFramework
         u32                     _scrollCursorSize;
         float                   _scrollSize;
         float                   _scrollPosition;
+        float                   _scrollPadding;
         float                   _inertialVelocity;
+        float                   _scrollStart;
+        float                   _scrollEnd;
         IntVector               _lastTouch;
         Clock                   _touchTimer;
 

@@ -32,9 +32,12 @@ namespace CTRPluginFramework
         _currentPosition = 0;
         _scrollbarSize = 0;
         _scrollCursorSize = 10;
+        _scrollPadding = 0.f;
         _scrollSize = 0.f;
         _scrollPosition = 0.f;
         _inertialVelocity = 0.f;
+        _scrollStart = 0.f;
+        _scrollEnd = 0.f;
     }
 
     KeyboardImpl::~KeyboardImpl(void)
@@ -83,6 +86,7 @@ namespace CTRPluginFramework
 
         int posY = 30;
         int count = input.size();
+
         if (count < 6)
         {
             posY = 20 + (200 - ((30 * count) + 6 * (count - 1))) / 2;
@@ -93,17 +97,19 @@ namespace CTRPluginFramework
             int height = 190;
 
             
-            int lsize = 26 * count;
+            float lsize = 36.f * (float)count;
 
-            float padding = (float)height / (float)lsize;
+            float padding = (float)height / lsize;
             int cursorSize =  padding * height;
             _scrollbarSize = height;
 
             if (cursorSize < 5)
                 cursorSize = 5;
 
+            _scrollPadding = padding;
             _scrollCursorSize = cursorSize;
             _scrollPosition = 0.f;
+            _scrollEnd = _scrollbarSize - _scrollCursorSize;
             _displayScrollbar = true;
         }
 
@@ -290,8 +296,9 @@ namespace CTRPluginFramework
             Renderer::DrawRect(background2, blank, false);
 
             int max = _strKeys.size() - _currentPosition;
-            max = std::min(max, 6);
+            max = std::min(max, _currentPosition + 6);
             PrivColor::UseClamp(true, background3);
+
             for (int i = _currentPosition; i < max && i < _strKeys.size(); i++)
             {
                 _strKeys[i].Draw();
@@ -353,7 +360,7 @@ namespace CTRPluginFramework
             {  
                 Time delta = _touchTimer.Restart();
 
-                float moveDistance = (float)(event.touch.y - _lastTouch.y);
+                float moveDistance = (float)(_lastTouch.y - event.touch.y);
                 _inertialVelocity = moveDistance / delta.AsSeconds();
                 _lastTouch = IntVector(event.touch.x, event.touch.y);
             }
@@ -392,9 +399,22 @@ namespace CTRPluginFramework
             if (_displayScrollbar)
             {
                 // Scroll stuff
-                _scrollSize = _inertialVelocity * INERTIA_SCROLL_FACTOR * delta;
-                _scrollPosition += (int)-_scrollSize; // Revert
+                _scrollSize = _scrollPadding * (_inertialVelocity * INERTIA_SCROLL_FACTOR * delta);
+                if (_scrollPosition + _scrollSize < 0.f)
+                {
+                    _scrollSize = -_scrollPosition;
+                    _scrollPosition = 0.f;
+                }
+                else if (_scrollPosition + _scrollSize >= _scrollEnd)
+                {
+                    _scrollSize = _scrollEnd - _scrollPosition;
+                    _scrollPosition = _scrollEnd;
+                }
+                else
+                    _scrollPosition += _scrollSize;
                 _inertialVelocity *= INERTIA_ACCELERATION * delta;
+
+                _currentPosition = (_scrollPosition / _scrollPadding) / 36;
                 if (std::abs(_inertialVelocity) < INERTIA_THRESHOLD)
                     _inertialVelocity = 0.f;
 
@@ -402,7 +422,7 @@ namespace CTRPluginFramework
 
                 for (; iter != _strKeys.end(); iter++)
                 {                
-                    (*iter).Scroll((int)_scrollSize);
+                    (*iter).Scroll((int)-_scrollSize); // revert
                     (*iter).Update(isTouchDown, touchPos);
                 }                
             }
