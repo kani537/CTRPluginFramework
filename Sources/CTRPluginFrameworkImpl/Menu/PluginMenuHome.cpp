@@ -267,6 +267,8 @@ namespace CTRPluginFramework
                     MenuEntryImpl *e = reinterpret_cast<MenuEntryImpl *>(item);
                     _keyboardBtn.Enable(e->MenuFunc != nullptr);
                 }
+                else
+                    _keyboardBtn.Enable(false);
                  
                 last = item;
                 if (_noteTB != nullptr)
