@@ -172,7 +172,7 @@ namespace CTRPluginFramework
         }      
     }
 
-    void    TouchCursor(MenuEntry *entry)
+    void    TouchCursor(MenuEntry *entry) 
     {
             // Draw Touch Cursor
           /*  if (Touch::IsDown())
@@ -192,6 +192,26 @@ extern "C" u32 __ctru_heap_size;
 extern "C" u32 __ctru_linear_heap;
 extern "C" u32 __ctru_linear_heap_size;
 
+    void    backup(MenuEntry *entry)
+    {
+        File file;
+        if (!entry->IsActivated())
+        return;
+        int ret = File::Open(file, "savedata.dat", File::READ | File::WRITE | File::CREATE);
+
+        if (ret == 0)
+        {
+            int res = file.Dump(0x14000000, 0x5B98);
+            file.Close(); 
+            entry->Disable();
+
+            char buffer[0x200];
+
+            sprintf(buffer, "%08X  %08X", ret, res);
+            OSD::Notify(buffer);
+        }
+    }
+
     int    main(void)
     {  
         File    log;
@@ -209,6 +229,7 @@ extern "C" u32 __ctru_linear_heap_size;
         // this add the content of the file we've read earlier in the ls string
         //ls += buffer;
 
+        menu.Append(new MenuEntry("Dump", backup));
         std::string t = "";
         /*
         "Qu'est-ce que le Lorem Ipsum? \n" \
