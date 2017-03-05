@@ -115,26 +115,19 @@ send:
 	@$(TOPDIR)/sendfile.py $(TARGET).plg $(FTP_PATH) "$(FTP_HOST)$(IP)" $(FTP_PORT)
 #---------------------------------------------------------------------------------
 
-lib: $(OUTPUT).a
 
 else
 
-DEPENDS	:=	$(OFILES:.o=.d)
+
 
 #---------------------------------------------------------------------------------
 # main targets
 #---------------------------------------------------------------------------------
+
+DEPENDS	:=	$(OFILES:.o=.d)
 EXCLUDE := main.o cheats.o
-
-$(OUTPUT).a	:	$(filter-out $(EXCLUDE), $(OFILES))
 $(OUTPUT).plg : $(OUTPUT).elf
-
-
-
-
-
-
-
+$(OUTPUT).a	:	$(filter-out $(EXCLUDE), $(OFILES))
 
 
 $(OUTPUT).elf :	$(OFILES)

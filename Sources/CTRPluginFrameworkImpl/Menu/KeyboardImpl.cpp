@@ -302,6 +302,7 @@ namespace CTRPluginFramework
 
             int max = _strKeys.size();
             max = std::min(max, _currentPosition + 6);
+            
             PrivColor::UseClamp(true, background3);
 
             for (int i = _currentPosition; i < max && i < _strKeys.size(); i++)

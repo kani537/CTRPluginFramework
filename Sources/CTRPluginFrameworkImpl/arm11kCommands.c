@@ -73,3 +73,4 @@ u32 getKernelObjectPtr(void *KProcessHandleTable, Handle processHandle)
 {
   return *(u32 *)(*(u32 *)KProcessHandleTable + (8 * (processHandle & 0x3FFFF)) + 4);
 }
+

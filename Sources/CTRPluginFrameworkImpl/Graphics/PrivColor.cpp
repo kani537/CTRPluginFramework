@@ -24,6 +24,7 @@ namespace CTRPluginFramework
     *****************/
     void    PrivColor::_SetFormat(GSPGPU_FramebufferFormats format)
     {
+        _format = format;
         switch (format)
         {
             case GSP_RGBA8_OES:
