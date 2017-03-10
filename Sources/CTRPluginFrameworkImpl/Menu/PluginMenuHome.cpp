@@ -102,11 +102,13 @@ namespace CTRPluginFramework
         else if (_searchBtn())
             mode = 3;
         */
-
         /*
-        else if (_toolsBtn())
+        else if (_arBtn())
             mode = 4;
         */
+
+        else if (_toolsBtn())
+            mode = 5;
 
         if (_InfoBtn())
             note = !note;

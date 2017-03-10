@@ -20,8 +20,9 @@ namespace CTRPluginFramework
     PluginMenuImpl::PluginMenuImpl(std::string name, std::string note) : 
 
     _home(new PluginMenuHome(name)),
+    _tools(new PluginMenuTools()),
     _executeLoop(new PluginMenuExecuteLoop()),
-    _guide(new GuideReader)
+    _guide(new GuideReader())
     {
         _isOpen = false;
         _pluginRun = true;
@@ -57,6 +58,7 @@ namespace CTRPluginFramework
 
         // Component
         PluginMenuHome          &home = *_home;
+        PluginMenuTools         &tools = *_tools;
         GuideReader             &guide = *_guide;
         PluginMenuExecuteLoop   &executer = *_executeLoop;
 
@@ -105,15 +107,37 @@ namespace CTRPluginFramework
             {   
 
                 if (mode == 0)
-                {
+                { /* Home */
                     shouldClose = home(eventList, mode, delta);
                 }
+                /*
+                else if (mode == 1)
+                { /* Mapper *
+    
+                }
+                */
                 else if (mode == 2)
-                {
+                { /* Guide */
                     if (guide(eventList, delta))
                         mode = 0;
                 }
-
+                /*
+                else if (mode == 3)
+                { /* Search *
+    
+                }
+                */
+                /*
+                else if (mode == 4)
+                { /* ActionReplay  *
+    
+                }
+                */
+                else if (mode == 5)
+                { /* Tools  */
+                    if (tools(eventList, delta))
+                        mode = 0;
+                }
                 
                 
                 // FPS of plugin Menu

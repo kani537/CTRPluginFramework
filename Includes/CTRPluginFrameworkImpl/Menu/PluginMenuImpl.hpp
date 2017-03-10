@@ -6,6 +6,7 @@
 #include "CTRPluginFrameworkImpl/Menu/GuideReader.hpp"
 
 #include "CTRPluginFrameworkImpl/Menu/PluginMenuHome.hpp"
+#include "CTRPluginFrameworkImpl/Menu/PluginMenuTools.hpp"
 #include "CTRPluginFrameworkImpl/Menu/PluginMenuExecuteLoop.hpp"
 
 #include <vector>
@@ -30,8 +31,9 @@ namespace CTRPluginFramework
         bool                        _pluginRun;
         
         PluginMenuHome              *_home;
+        PluginMenuTools             *_tools;
         PluginMenuExecuteLoop       *_executeLoop;
-        GuideReader                *_guide;
+        GuideReader                 *_guide;
         void                        _TriggerGuide(void);
         std::vector<CallbackPointer>     _callbacks;
     };
