@@ -422,6 +422,7 @@ namespace CTRPluginFramework
         // Draw buttons
         _showStarredBtn.Draw();
         _gameGuideBtn.Draw();
+        _arBtn.Draw();
         _toolsBtn.Draw();
         _hidMapperBtn.Draw();
         _searchBtn.Draw();
@@ -470,6 +471,7 @@ namespace CTRPluginFramework
 
         _showStarredBtn.Update(isTouched, touchPos);
         _gameGuideBtn.Update(isTouched, touchPos);
+        _arBtn.Update(isTouched, touchPos);
         _toolsBtn.Update(isTouched, touchPos);
         _hidMapperBtn.Update(isTouched, touchPos);
         _searchBtn.Update(isTouched, touchPos);
