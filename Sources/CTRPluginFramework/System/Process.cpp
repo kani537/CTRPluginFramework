@@ -3,7 +3,7 @@
 #include "CTRPluginFramework/System.hpp"
 #include "CTRPluginFrameworkImpl/System.hpp"
 #include "CTRPluginFramework/System.hpp"
-
+#include "CTRPluginFramework/Graphics/OSD.hpp"
 #include <cstdio>
 #include <cstring>
 
@@ -60,7 +60,6 @@ namespace CTRPluginFramework
             size  += 0x1000;
             size &= ~0xFFF;            
         }
-
     	if (R_FAILED(svcControlProcessMemory(ProcessImpl::_processHandle, addr, addr, size, 6, perm)))
         	return (false);
         return (true);
@@ -80,6 +79,31 @@ namespace CTRPluginFramework
         return (false);
     }
 
+    void     Process::ProtectRegionInRange(u32 startAddress, u32 endAddress, int perm)
+    {
+        MemInfo     minfo;
+        PageInfo    pinfo;
+
+        while (startAddress < endAddress)
+        {
+            if (R_SUCCEEDED(svcQueryProcessMemory(&minfo, &pinfo, ProcessImpl::_processHandle, startAddress)))
+            {
+                if (minfo.state != MEMSTATE_FREE)
+                {
+                    if (startAddress >= minfo.base_addr && startAddress <= minfo.base_addr + minfo.size)
+                    {   
+                        if (ProtectMemory(minfo.base_addr, minfo.size, perm))
+                        {
+                            startAddress += minfo.size;
+                            continue;
+                        }
+                    }
+                }
+            }
+            startAddress += 0x1000;
+        }
+    }
+
     bool     Process::CopyMemory(void *dst, void *src, u32 size)
     {
         if (R_FAILED(svcFlushProcessDataCache(ProcessImpl::_processHandle, src, size))) goto error;
@@ -88,6 +112,129 @@ namespace CTRPluginFramework
         svcInvalidateProcessDataCache(ProcessImpl::_processHandle, dst, size);
         return (true);
     error:
+        return (false);
+    }
+
+    bool    Process::CheckAddress(u32 address, u32 perm)
+    {
+        Result         res;
+        PageInfo       pInfo = {0};
+        MemInfo        mInfo = {0};
+
+        res = svcQueryProcessMemory(&mInfo, &pInfo, ProcessImpl::_processHandle, address);
+        if (R_SUCCEEDED(res) && mInfo.base_addr <= address && mInfo.base_addr + mInfo.size > address)
+        {
+            if ((mInfo.perm & perm) != perm)
+            {
+                perm |= mInfo.perm;
+                res = svcControlProcessMemory(ProcessImpl::_processHandle, mInfo.base_addr, mInfo.base_addr, mInfo.size, 6, perm);
+                if (R_SUCCEEDED(res))
+                    return (true);
+                else
+                    return (false);
+            }
+            return (true);
+        }
+        return (false);
+    }
+
+    bool    Process::Write(u32 address, u64 value)
+    {
+        if (CheckAddress(address, MEMPERM_WRITE))
+        {
+            *(u64 *)address = value;
+            return (true);
+        }
+        return (false);
+    }
+
+    bool    Process::Write(u32 address, u32 value)
+    {
+        if (CheckAddress(address, MEMPERM_WRITE))
+        {
+            *(u32 *)address = value;
+            return (true);
+        }
+        return (false);
+    }
+
+    bool    Process::Write(u32 address, u16 value)
+    {
+        if (CheckAddress(address, MEMPERM_WRITE))
+        {
+            *(u16 *)address = value;
+            return (true);
+        }
+        return (false);
+    }
+
+    bool    Process::Write(u32 address, u8 value)
+    {
+        if (CheckAddress(address, MEMPERM_WRITE))
+        {
+            *(u8 *)address = value;
+            return (true);
+        }
+        return (false);
+    }
+
+    bool    Process::Write(u32 address, float value)
+    {
+        if (CheckAddress(address, MEMPERM_WRITE))
+        {
+            *(float *)address = value;
+            return (true);
+        }
+        return (false);
+    }
+
+    bool    Process::Read(u32 address, u64 &value)
+    {
+        if (CheckAddress(address, MEMPERM_READ))
+        {
+            value = *(u64 *)address;
+            return (true);
+        }
+        return (false);
+    }
+
+    bool    Process::Read(u32 address, u32 &value)
+    {
+        if (CheckAddress(address, MEMPERM_READ))
+        {
+            value = *(u32 *)address;
+            return (true);
+        }
+        return (false);
+    }
+
+    bool    Process::Read(u32 address, u16 &value)
+    {
+        if (CheckAddress(address, MEMPERM_READ))
+        {
+            value = *(u16 *)address;
+            return (true);
+        }
+        return (false);
+    }
+
+    bool    Process::Read(u32 address, u8 &value)
+    {
+        if (CheckAddress(address, MEMPERM_READ))
+        {
+            value = *(u8 *)address;
+            return (true);
+        }
+        return (false);
+    }
+
+    bool    Process::Read(u32 address, float &value)
+    {
+        if (CheckAddress(address, MEMPERM_READ))
+        {
+            value = *(float *)address;
+            return (true);
+        }
         return (false);
     }
 }

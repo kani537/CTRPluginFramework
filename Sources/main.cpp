@@ -16,6 +16,7 @@ namespace CTRPluginFramework
     extern "C" vu32* hidSharedMem;
     #define READU32(addr) *(u32 *)(addr)
     #define WRITEU32(addr, v) *(u32 *)(addr) = (u32)v
+    
     // This function is called on the plugin starts, before main
     void    PatchProcess(void)
     {
@@ -407,6 +408,8 @@ extern "C" u32 __ctru_linear_heap_size;
 
         log.WriteLine("Run");
         // Launch menu and mainloop
+        Process::ProtectRegion(0x100000);
+        Process::ProtectRegion(0x101000);
         menu.Run();
 
         // Exit plugin

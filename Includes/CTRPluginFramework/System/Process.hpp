@@ -31,8 +31,38 @@ namespace CTRPluginFramework
             // Protect the entire region where addr belongs to
             // Return false if the addr doesn't exists or if the protect operation failed
             static bool     ProtectRegion(u32 addr, int perm = (MEMPERM_READ | MEMPERM_WRITE |MEMPERM_EXECUTE));
+
+            // Protect all regions within the provided range
+            static void     ProtectRegionInRange(u32 startAddress, u32 endAddress, int perm = (MEMPERM_READ | MEMPERM_WRITE |MEMPERM_EXECUTE));
             // Safely copy the current process memory
-            static bool     CopyMemory(void *dst, void *src, u32 size);    
+            static bool     CopyMemory(void *dst, void *src, u32 size);
+
+            // Check if the address is available and have the corresponding permission
+            // If the address exists but don't have the requiered permissions, it tries to change the permission
+            // Return true if it exists and possess the permissions, else return false
+            static bool     CheckAddress(u32 address, u32 perm = MEMPERM_READ | MEMPERM_WRITE);
+
+            // Safely write 64 bits, return true on success, false otherwise
+            static bool     Write(u32 address, u64 value);
+            // Safely write 32 bits, return true on success, false otherwise
+            static bool     Write(u32 address, u32 value);
+            // Safely write 16 bits, return true on success, false otherwise
+            static bool     Write(u32 address, u16 value);
+            // Safely write 8 bits, return true on success, false otherwise
+            static bool     Write(u32 address, u8 value);
+            // Safely write a float value, return true on success, false otherwise
+            static bool     Write(u32 address, float value);
+
+            // Safely read 64 bits, return true on success, false otherwise
+            static bool     Read(u32 address, u64 &value);
+            // Safely read 32 bits, return true on success, false otherwise
+            static bool     Read(u32 address, u32 &value);
+            // Safely read 16 bits, return true on success, false otherwise
+            static bool     Read(u32 address, u16 &value);
+            // Safely read 8 bits, return true on success, false otherwise
+            static bool     Read(u32 address, u8 &value);
+            // Safely read float value, return true on success, false otherwise
+            static bool     Read(u32 address, float &value);
     };
 }
 
