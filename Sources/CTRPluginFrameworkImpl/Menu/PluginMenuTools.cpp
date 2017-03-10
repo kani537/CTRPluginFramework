@@ -90,8 +90,8 @@ namespace CTRPluginFramework
             Renderer::DrawRect(22, 22, 276, 196, blank, false);            
         }
 
-        int posY = 35;
-        Renderer::DrawString("CTRPluginFramework Alpha V.0.0.2", 35, posY, blank);
+        int posY = 205;
+        Renderer::DrawString((char *)"CTRPluginFramework Alpha V.0.0.2", 40, posY, blank);
 
         // Draw buttons
         _closeBtn.Draw();
