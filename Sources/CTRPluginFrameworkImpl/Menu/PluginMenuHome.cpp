@@ -407,9 +407,9 @@ namespace CTRPluginFramework
 
         int posY = 205;
         if (framework)
-            Renderer::DrawString("CTRPluginFramework", 100, posY, blank);
+            Renderer::DrawString((char *)"CTRPluginFramework", 100, posY, blank);
         else
-            Renderer::DrawString("by Nanquitas", 124, posY, blank);
+            Renderer::DrawString((char *)"by Nanquitas", 124, posY, blank);
 
         if (creditClock.HasTimePassed(Seconds(5)))
         {
