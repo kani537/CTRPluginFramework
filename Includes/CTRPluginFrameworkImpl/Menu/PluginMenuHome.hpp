@@ -52,7 +52,8 @@ namespace CTRPluginFramework
         CheckedButton<PluginMenuHome, void>   _showStarredBtn;        
         Button<PluginMenuHome, void>          _hidMapperBtn;
         Button<PluginMenuHome, void>          _gameGuideBtn;        
-        Button<PluginMenuHome, void>          _searchBtn;        
+        Button<PluginMenuHome, void>          _searchBtn;
+        Button<PluginMenuHome, void>          _arBtn;       
         Button<PluginMenuHome, void>          _toolsBtn;
         
         IconButton<PluginMenuHome, void>          _closeBtn;
