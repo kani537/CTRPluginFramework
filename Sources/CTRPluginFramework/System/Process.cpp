@@ -138,7 +138,7 @@ namespace CTRPluginFramework
         return (false);
     }
 
-    bool    Process::Write(u32 address, u64 value)
+    bool    Process::Write64(u32 address, u64 value)
     {
         if (CheckAddress(address, MEMPERM_WRITE))
         {
@@ -148,7 +148,7 @@ namespace CTRPluginFramework
         return (false);
     }
 
-    bool    Process::Write(u32 address, u32 value)
+    bool    Process::Write32(u32 address, u32 value)
     {
         if (CheckAddress(address, MEMPERM_WRITE))
         {
@@ -158,7 +158,7 @@ namespace CTRPluginFramework
         return (false);
     }
 
-    bool    Process::Write(u32 address, u16 value)
+    bool    Process::Write16(u32 address, u16 value)
     {
         if (CheckAddress(address, MEMPERM_WRITE))
         {
@@ -168,7 +168,7 @@ namespace CTRPluginFramework
         return (false);
     }
 
-    bool    Process::Write(u32 address, u8 value)
+    bool    Process::Write8(u32 address, u8 value)
     {
         if (CheckAddress(address, MEMPERM_WRITE))
         {
@@ -178,7 +178,7 @@ namespace CTRPluginFramework
         return (false);
     }
 
-    bool    Process::Write(u32 address, float value)
+    bool    Process::WriteFloat(u32 address, float value)
     {
         if (CheckAddress(address, MEMPERM_WRITE))
         {
@@ -188,7 +188,7 @@ namespace CTRPluginFramework
         return (false);
     }
 
-    bool    Process::Read(u32 address, u64 &value)
+    bool    Process::Read64(u32 address, u64 &value)
     {
         if (CheckAddress(address, MEMPERM_READ))
         {
@@ -198,7 +198,7 @@ namespace CTRPluginFramework
         return (false);
     }
 
-    bool    Process::Read(u32 address, u32 &value)
+    bool    Process::Read32(u32 address, u32 &value)
     {
         if (CheckAddress(address, MEMPERM_READ))
         {
@@ -208,7 +208,7 @@ namespace CTRPluginFramework
         return (false);
     }
 
-    bool    Process::Read(u32 address, u16 &value)
+    bool    Process::Read16(u32 address, u16 &value)
     {
         if (CheckAddress(address, MEMPERM_READ))
         {
@@ -218,7 +218,7 @@ namespace CTRPluginFramework
         return (false);
     }
 
-    bool    Process::Read(u32 address, u8 &value)
+    bool    Process::Read8(u32 address, u8 &value)
     {
         if (CheckAddress(address, MEMPERM_READ))
         {
@@ -228,7 +228,7 @@ namespace CTRPluginFramework
         return (false);
     }
 
-    bool    Process::Read(u32 address, float &value)
+    bool    Process::ReadFloat(u32 address, float &value)
     {
         if (CheckAddress(address, MEMPERM_READ))
         {

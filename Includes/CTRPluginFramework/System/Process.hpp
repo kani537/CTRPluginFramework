@@ -43,26 +43,26 @@ namespace CTRPluginFramework
             static bool     CheckAddress(u32 address, u32 perm = MEMPERM_READ | MEMPERM_WRITE);
 
             // Safely write 64 bits, return true on success, false otherwise
-            static bool     Write(u32 address, u64 value);
+            static bool     Write64(u32 address, u64 value);
             // Safely write 32 bits, return true on success, false otherwise
-            static bool     Write(u32 address, u32 value);
+            static bool     Write32(u32 address, u32 value);
             // Safely write 16 bits, return true on success, false otherwise
-            static bool     Write(u32 address, u16 value);
+            static bool     Write16(u32 address, u16 value);
             // Safely write 8 bits, return true on success, false otherwise
-            static bool     Write(u32 address, u8 value);
+            static bool     Write8(u32 address, u8 value);
             // Safely write a float value, return true on success, false otherwise
-            static bool     Write(u32 address, float value);
+            static bool     WriteFloat(u32 address, float value);
 
             // Safely read 64 bits, return true on success, false otherwise
-            static bool     Read(u32 address, u64 &value);
+            static bool     Read64(u32 address, u64 &value);
             // Safely read 32 bits, return true on success, false otherwise
-            static bool     Read(u32 address, u32 &value);
+            static bool     Read32(u32 address, u32 &value);
             // Safely read 16 bits, return true on success, false otherwise
-            static bool     Read(u32 address, u16 &value);
+            static bool     Read16(u32 address, u16 &value);
             // Safely read 8 bits, return true on success, false otherwise
-            static bool     Read(u32 address, u8 &value);
+            static bool     Read8(u32 address, u8 &value);
             // Safely read float value, return true on success, false otherwise
-            static bool     Read(u32 address, float &value);
+            static bool     ReadFloat(u32 address, float &value);
     };
 }
 
