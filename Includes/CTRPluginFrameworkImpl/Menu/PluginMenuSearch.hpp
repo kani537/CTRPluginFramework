@@ -4,11 +4,10 @@
 #include "CTRPluginFrameworkImpl/Graphics.hpp"
 #include "CTRPluginFrameworkImpl/System.hpp"
 #include "CTRPluginFrameworkImpl/Menu/Menu.hpp"
-#include "CTRPluginFrameworkImpl/Menu/MenuFolderImpl.hpp"
-#include "CTRPluginFrameworkImpl/Menu/MenuEntryImpl.hpp"
-#include "CTRPluginFrameworkImpl/Menu/MenuItem.hpp"
+#include "CTRPluginFrameworkImpl/Menu/PluginMenuSearchStructs.hpp"
 
 #include <vector>
+#include <list>
 
 namespace CTRPluginFramework
 {
@@ -28,11 +27,14 @@ namespace CTRPluginFramework
         void    _RenderBottom(void);
         void    _Update(Time delta);
 
+        void    _DoSearch(void);
+
 
 
         // Members
-        //Menu                            _menu;
+        std::list<SearchBase *>             _searchHistory;
 
+        SearchBase                          *_currentSearch;
 
         // Buttons        
         IconButton<PluginMenuSearch, void>          _closeBtn;

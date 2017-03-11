@@ -6,7 +6,7 @@ namespace CTRPluginFramework
     PluginMenuSearch::PluginMenuSearch() :
     _closeBtn(*this, nullptr, IntRect(275, 24, 20, 20), Icon::DrawClose)
     {
-
+        _currentSearch = nullptr;
     }
 
     bool    PluginMenuSearch::operator()(EventList &eventList, Time &delta)
@@ -92,8 +92,6 @@ namespace CTRPluginFramework
 
         int posY = 35;
 
-        Renderer::DrawString((char *)"CTRPluginFramework Alpha V.0.0.2", 40, posY, blank);
-
         // Draw buttons
         _closeBtn.Draw();
     }
@@ -110,5 +108,22 @@ namespace CTRPluginFramework
         IntVector   touchPos(Touch::GetPosition());
 
         _closeBtn.Update(isTouched, touchPos);
+    }
+
+    /*
+    ** DoSearch
+    ************/
+    void    PluginMenuSearch::_DoSearch(void)
+    {
+        if (_currentSearch == nullptr) return;
+
+        bool isFinished = _currentSearch->DoSearch();
+
+        // if finished, write results to file
+        if (isFinished)
+        {
+            //_currentSearch->file.Write(_currentSearch->)
+        }
+
     }
 }
