@@ -31,7 +31,10 @@ namespace CTRPluginFramework
         GreaterThan,
         GreaterOrEqual,
         LesserThan,
-        LesserOrEqual
+        LesserOrEqual,
+        DifferentBy,
+        DifferentByLess,
+        DifferentByMore
     };
 
     template<typename T>
@@ -57,116 +60,102 @@ namespace CTRPluginFramework
 
         File    file; //<- File associated for read / Write
 
+        SearchBase *previousSearch;  
+
+        SearchBase(SearchBase *prev)
+        {
+            previousSearch = prev;
+            currentPosition = 0;
+        }
+
         virtual bool DoSearch(void) = 0;
         virtual bool ResultsToFile(void) = 0;
-        virtual u32  GetHeaderSize(void) = 0;   
+        virtual u32  GetHeaderSize(void) = 0;
 
     };
 
     template<typename T>
     struct Search : SearchBase
     {
-        T       value; //<- Value to find       
-
+        using ResultIter = typename std::vector<SearchResult<T>>::Iterator;
+        /*
+        ** Members
+        ***********/
+        T       checkValue; //<- Value to compare with
         std::vector<SearchResult<T>> results; //<- Hold the results
 
-        // Return if search is done
+        /*
+        ** Methods
+        ***********/
+        void    FirstExactSearch(u32 &start, u32 end, u32 maxResult);
+        bool    Compare(T old, T newer);
+
+
+        /*
+        ** Search
+        ** Return if search is done
+        ****************************/
         bool    DoSearch(void)
         {
-            u32 start = currentPosition >= endRange ? startRange : currentPosition;
-            u32 end = start + std::min((u32)(endRange - start), (u32)0x1000);
-
-            if (type == SearchType::ExactValue)
+            // First Search ?
+            if (previousSearch == nullptr)
             {
-                switch (compare)
+                u32 start = currentPosition >= endRange ? startRange : currentPosition;
+                u32 maxResult = 0x1000 / GetResultStructSize();
+                u32 end = start + std::min((u32)(endRange - start), (u32)0x1000);
+
+                if (type == SearchType::ExactValue)
                 {
-                    case CompareType::Equal:
+                    FirstExactSearch(start, end, maxResult);
+                }                
+                else // Unknown value
+                {
+                    for (; start < end; start += alignment)
                     {
-                        for (; start <= end; start += alignment)
-                        {
-                            T v = *(static_cast<T *>(start));
-                            if (v == value)
-                            {
-                                resultCount++;
-                                results.push_back(SearchResult<T>(start, v));
-                            }
-                        }
-                        break;
+                        T v = *(static_cast<T *>(start));
+
+                        resultCount++;
+                        results.push_back(SearchResult<T>(start, v));
+                        if (results.size() >= maxResult)
+                            break;
                     }
-                    case CompareType::NotEqual:
-                    {
-                        for (; start <= end; start += alignment)
-                        {
-                            T v = *(static_cast<T *>(start));
-                            if (v != value)
-                            {
-                                resultCount++;
-                                results.push_back(SearchResult<T>(start, v));
-                            }
-                        }
-                        break;
-                    }
-                    case CompareType::GreaterThan:
-                    {
-                        for (; start <= end; start += alignment)
-                        {
-                            T v = *(static_cast<T *>(start));
-                            if (v > value)
-                            {
-                                resultCount++;
-                                results.push_back(SearchResult<T>(start, v));
-                            }
-                        }
-                        break;
-                    }
-                    case CompareType::GreaterOrEqual:
-                    {
-                        for (; start <= end; start += alignment)
-                        {
-                            T v = *(static_cast<T *>(start));
-                            if (v >= value)
-                            {
-                                resultCount++;
-                                results.push_back(SearchResult<T>(start, v));
-                            }
-                        }
-                        break;
-                    }
-                    case CompareType::LesserThan:
-                    {
-                        for (; start <= end; start += alignment)
-                        {
-                            T v = *(static_cast<T *>(start));
-                            if (v < value)
-                            {
-                                resultCount++;
-                                results.push_back(SearchResult<T>(start, v));
-                            }
-                        }
-                        break;
-                    }
-                    case CompareType::LesserOrEqual:
-                    {
-                        for (; start <= end; start += alignment)
-                        {   
-                            T v = *(static_cast<T *>(start));
-                            if (v <= value)
-                            {
-                                resultCount++;
-                                results.push_back(SearchResult<T>(start, v));
-                            }
-                        }
-                        break;
-                    }
-                } // End switch
+
+                    // Update position
+                    currentPosition = start;
+                }
             }
-            // Unknown value
+            // Second search
             else
             {
-                return (true);
-            }
+                
+                std::vector<SearchResult<T>>    oldResults;
 
-            currentPosition = start;
+                u32 maxResult = 0x1000 / GetResultStructSize();
+
+                // First get the results from the file
+                if (ReadResults(oldResults, currentPosition, maxResult))
+                {
+                    ResultIter iter = oldResults.begin();
+                    ResultIter end = oldResults.end();
+
+                    for (; iter != end; iter++)
+                    {
+                        T val = *static_cast<T *>(iter.address);
+                        T oldVal = iter.value;
+                        if (Compare(oldVal, val, checkValue))
+                        {
+                            resultCount++;
+                            results.push_back(SearchResult<T>(iter.address, val));
+                        }
+                    }
+
+                    // Update position
+                    currentPosition += oldResults.size();
+                }
+
+
+
+            }
 
             if (currentPosition >= endRange)
                 return (true);
@@ -202,7 +191,7 @@ namespace CTRPluginFramework
             ret |= WriteToFile(file, GetHeaderSize());
             u32 size = sizeof(u32) + sizeof(T);
             ret |= WriteToFile(file, size);
-            ret |= WriteToFile(file, value);
+            ret |= WriteToFile(file, checkValue);
 
             if (offset != 0)
                 file.Seek(offset, File::SeekPos::SET);
@@ -216,7 +205,7 @@ namespace CTRPluginFramework
         u32     GetHeaderSize(void)
         {
             return 
-            ( 
+            (  
                 sizeof(type)
                 + sizeof(compare)
                 + sizeof(startRange)
@@ -231,15 +220,47 @@ namespace CTRPluginFramework
             );
         }
 
+        u32     GetResultStructSize(void)
+        {
+            return 
+            (
+                sizeof(u32) // address
+                + sizeof(T)
+            );
+        }
+
         bool    ResultsToFile(void)
         {
+            // Write Header
+            WriteHeaderToFile();
 
+            // Write all results
+            file.Write(results.data(), results.size() * GetResultStructSize());
         }
 
-        bool    ReadResultsFromFile(std::vector<SearchResult<T>> &output, u32 size)
+        bool    ReadResults(std::vector<SearchResult<T>> &out, u32 index, u32 count)
         {
-            
+            if (index > resultCount)
+                return (false);
+
+            if (index + count > resultCount)
+                count = resultCount - index;
+
+            u64 offset = GetHeaderSize() + GetResultStructSize() * index;
+
+            // Go to the file offset
+            file.Seek(offset, File::SeekPos::SET);
+
+            // Reserve memory and create default object
+            out.Resize(count);
+
+            //Read results
+            if (file.Read((void *)out.data(), count * GetResultStructSize()) != 0)
+                return (true);
+
+            return (false);
         }
+
     };
 }
 
