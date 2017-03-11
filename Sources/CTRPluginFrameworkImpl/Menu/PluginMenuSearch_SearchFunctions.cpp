@@ -1,7 +1,7 @@
 #include "CTRPluginFrameworkImpl/Menu/PluginMenuSearchStructs.hpp"
 #include "CTRPluginFramework/System/Directory.hpp"
 #include "CTRPluginFramework/System/Process.hpp"
-#include <ctime.hpp>
+#include <time.h>
 
 #include <string>
 
@@ -12,12 +12,12 @@ namespace CTRPluginFramework
     ** SearchBase
     *******************/
 
-    SearchBase::SearchBase(u32 start, u32 end, u32 alignement, SearchBase *previous) :
-    _startRange(start), _endRange(end), _alignment(alignement), _previousSearch(previous)
+    SearchBase::SearchBase(u32 start, u32 end, u32 alignment, SearchBase *previous) :
+    _startRange(start), _endRange(end), _alignment(alignment), _previousSearch(previous)
     {
         // Init search variables
         _currentPosition = 0;
-        resultCount = 0;
+        ResultCount = 0;
 
         // Default search parameters
         Type = SearchType::ExactValue;
@@ -29,7 +29,8 @@ namespace CTRPluginFramework
         // Open file
         char    tid[17] = {0};
         Process::GetTitleID(tid);
-        std::string path = tid + "-Step" + to_string(_step) + ".bin";
+        std::string path = tid;
+        path += "-Step" + std::to_string(_step) + ".bin";
 
 
         // Open current directory
@@ -46,20 +47,27 @@ namespace CTRPluginFramework
     ************/
 
     template <typename T>
-    void      Search<T>::FirstExactSearch(u32 &start, u32 end, u32 maxResult)
+    Search<T>::Search(T value, u32 start, u32 end, u32 alignment, SearchBase *prev) :
+    SearchBase(start, end, alignment, prev)
     {
-        switch (compare)
+        _checkValue = value;
+    }
+
+    template <typename T>
+    void      Search<T>::_FirstExactSearch(u32 &start, u32 end, u32 maxResult)
+    {
+        switch (Compare)
         {
             case CompareType::Equal:
             {
-                for (; start < end; start += alignment)
+                for (; start < end; start += _alignment)
                 {
-                    T v = *(static_cast<T *>(start));
-                    if (v == checkValue)
+                    T value = *(static_cast<T *>(start));
+                    if (value == _checkValue)
                     {
-                        resultCount++;
-                        results.push_back(SearchResult<T>(start, v));
-                        if (results.size() >= maxResult)
+                        ResultCount++;
+                        _results.push_back(SearchResult<T>(start, value));
+                        if (_results.size() >= maxResult)
                             break;
                     }
                 }
@@ -67,14 +75,14 @@ namespace CTRPluginFramework
             }
             case CompareType::NotEqual:
             {
-                for (; start < end; start += alignment)
+                for (; start < end; start += _alignment)
                 {
-                    T v = *(static_cast<T *>(start));
-                    if (v != checkValue)
+                    T value = *(static_cast<T *>(start));
+                    if (value != _checkValue)
                     {
-                        resultCount++;
-                        results.push_back(SearchResult<T>(start, v));
-                        if (results.size() >= maxResult)
+                        ResultCount++;
+                        _results.push_back(SearchResult<T>(start, value));
+                        if (_results.size() >= maxResult)
                             break;
                     }
                 }
@@ -82,14 +90,14 @@ namespace CTRPluginFramework
             }
             case CompareType::GreaterThan:
             {
-                for (; start < end; start += alignment)
+                for (; start < end; start += _alignment)
                 {
-                    T v = *(static_cast<T *>(start));
-                    if (v > checkValue)
+                    T value = *(static_cast<T *>(start));
+                    if (value > _checkValue)
                     {
-                        resultCount++;
-                        results.push_back(SearchResult<T>(start, v));
-                        if (results.size() >= maxResult)
+                        ResultCount++;
+                        _results.push_back(SearchResult<T>(start, value));
+                        if (_results.size() >= maxResult)
                             break;
                     }
                 }
@@ -97,14 +105,14 @@ namespace CTRPluginFramework
             }
             case CompareType::GreaterOrEqual:
             {
-                for (; start < end; start += alignment)
+                for (; start < end; start += _alignment)
                 {
-                    T v = *(static_cast<T *>(start));
-                    if (v >= checkValue)
+                    T value = *(static_cast<T *>(start));
+                    if (value >= _checkValue)
                     {
-                        resultCount++;
-                        results.push_back(SearchResult<T>(start, v));
-                        if (results.size() >= maxResult)
+                        ResultCount++;
+                        _results.push_back(SearchResult<T>(start, value));
+                        if (_results.size() >= maxResult)
                             break;
                     }
                 }
@@ -112,14 +120,14 @@ namespace CTRPluginFramework
             }
             case CompareType::LesserThan:
             {
-                for (; start < end; start += alignment)
+                for (; start < end; start += _alignment)
                 {
-                    T v = *(static_cast<T *>(start));
-                    if (v < checkValue)
+                    T value = *(static_cast<T *>(start));
+                    if (value < _checkValue)
                     {
-                        resultCount++;
-                        results.push_back(SearchResult<T>(start, v));
-                        if (results.size() >= maxResult)
+                        ResultCount++;
+                        _results.push_back(SearchResult<T>(start, value));
+                        if (_results.size() >= maxResult)
                             break;
                     }
                 }
@@ -127,14 +135,14 @@ namespace CTRPluginFramework
             }
             case CompareType::LesserOrEqual:
             {
-                for (; start < end; start += alignment)
-                {   
-                    T v = *(static_cast<T *>(start));
-                    if (v <= checkValue)
+                for (; start < end; start += _alignment)
+                {
+                    T value = *(static_cast<T *>(start));
+                    if (value <= _checkValue)
                     {
-                        resultCount++;
-                        results.push_back(SearchResult<T>(start, v));
-                        if (results.size() >= maxResult)
+                        ResultCount++;
+                        _results.push_back(SearchResult<T>(start, value));
+                        if (_results.size() >= maxResult)
                             break;
                     }
                 }
@@ -145,22 +153,181 @@ namespace CTRPluginFramework
         } // End switch
     }
 
-    // Return if it matches the condition   
+    // Return if it matches the condition
     template<typename T>
-    bool    Search<T>::Compare(T older, T newer)
+    bool    Search<T>::_Compare(T older, T newer)
     {
-        switch (compare)
+        switch (Compare)
         {
-            case CompareType::Equal: return (checkValue == newer);
-            case CompareType::NotEqual: return (checkValue != newer);
-            case CompareType::GreaterThan: return (newer > checkValue);
-            case CompareType::GreaterOrEqual: return (newer >= checkValue);
-            case CompareType::LesserThan: return (newer < checkValue);
-            case CompareType::LesserOrEqual: return (newer <= checkValue);
-            case CompareType::DifferentBy: return (newer == (older + checkValue) || newer == (older - checkValue));
-            case CompareType::DifferentByLess: return ((older - checkValue) < newer && newer < (older + checkValue));
-            case CompareType::DifferentByMore: return (newer < (older - checkValue) || newer > (older + checkValue));
+            case CompareType::Equal: return (_checkValue == newer);
+            case CompareType::NotEqual: return (_checkValue != newer);
+            case CompareType::GreaterThan: return (newer > _checkValue);
+            case CompareType::GreaterOrEqual: return (newer >= _checkValue);
+            case CompareType::LesserThan: return (newer < _checkValue);
+            case CompareType::LesserOrEqual: return (newer <= _checkValue);
+            case CompareType::DifferentBy: return (newer == (older + _checkValue) || newer == (older - _checkValue));
+            case CompareType::DifferentByLess: return ((older - _checkValue) < newer && newer < (older + _checkValue));
+            case CompareType::DifferentByMore: return (newer < (older - _checkValue) || newer > (older + _checkValue));
             default: return (false);
         }
+    }
+
+    template<typename T>
+    bool    Search<T>::DoSearch(void)
+    {
+        // First Search ?
+        if (_previousSearch == nullptr)
+        {
+            u32 start = _currentPosition >= _endRange ? _startRange : _currentPosition;
+            u32 maxResult = 0x1000 / _GetResultStructSize();
+            u32 end = start + std::min((u32)(_endRange - start), (u32)0x1000);
+
+            if (Type == SearchType::ExactValue)
+            {
+                _FirstExactSearch(start, end, maxResult);
+            }                
+            else // Unknown value
+            {
+                for (; start < end; start += _alignment)
+                {
+                    T value = *(static_cast<T *>(start));
+
+                    ResultCount++;
+                    _results.push_back(SearchResult<T>(start, value));
+                    if (_results.size() >= maxResult)
+                        break;
+                }
+
+                // Update position
+                _currentPosition = start;
+            }
+        }
+        // Second search
+        else if (_previousSearch != nullptr)
+        {
+            
+            std::vector<SearchResult<T>>    oldResults;
+
+            u32 maxResult = 0x1000 / _GetResultStructSize();
+
+            // First get the results from the file
+            if (reinterpret_cast<Search<T> *>(_previousSearch)->_ReadResults(oldResults, _currentPosition, maxResult))
+            {
+                ResultIter iter = oldResults.begin();
+                ResultIter end = oldResults.end();
+
+                for (; iter != end; iter++)
+                {
+                    T val = *static_cast<T *>(iter.address);
+                    T oldVal = iter.value;
+                    if (_Compare(oldVal, val))
+                    {
+                        ResultCount++;
+                        _results.push_back(SearchResult<T>(iter.address, val));
+                    }
+                }
+
+                // Update position
+                _currentPosition += oldResults.size();
+            }
+        }
+
+        if (_currentPosition >= _endRange)
+            return (true);
+
+        return (false);
+    }
+
+    template <typename T>
+    bool    Search<T>::_WriteHeaderToFile(void)
+    {
+        u64     offset = _file.Tell();
+        int     ret = 0;
+
+        _file.Rewind();
+
+        ret |= WriteToFile(_file, Type);
+        ret |= WriteToFile(_file, Compare);
+        ret |= WriteToFile(_file, _startRange);
+        ret |= WriteToFile(_file, _endRange);
+        ret |= WriteToFile(_file, _alignment);
+        ret |= WriteToFile(_file, ResultCount);
+        ret |= WriteToFile(_file, Size);
+        ret |= WriteToFile(_file, sizeof(T));
+        ret |= WriteToFile(_file, _GetHeaderSize());
+        u32 size = sizeof(u32) + sizeof(T);
+        ret |= WriteToFile(_file, size);
+        ret |= WriteToFile(_file, _checkValue);
+
+        if (offset != 0)
+            _file.Seek(offset, File::SeekPos::SET);
+
+        if (ret != 0)
+            return (false);
+
+        return (true);
+    }
+
+    template <typename T>
+    u32     Search<T>::_GetHeaderSize(void)
+    {
+        return 
+        (  
+            sizeof(Type)
+            + sizeof(Compare)
+            + sizeof(_startRange)
+            + sizeof(_endRange)
+            + sizeof(_alignment)
+            + sizeof(ResultCount)
+            + sizeof(Size)
+            + sizeof(T)
+            + sizeof(u32) // offset in file where results starts
+            + sizeof(u32) // SearchResultSize
+            + sizeof(T) // value compared with
+        );
+    }
+
+    template <typename T>
+    u32     Search<T>::_GetResultStructSize(void)
+    {
+        return 
+        (
+            sizeof(u32) // address
+            + sizeof(T)
+        );
+    }
+
+    template <typename T>
+    bool    Search<T>::ResultsToFile(void)
+    {
+        // Write Header
+        _WriteHeaderToFile();
+
+        // Write all results
+        _file.Write(_results.data(), _results.size() * _GetResultStructSize());
+    }
+
+    template <typename T>
+    bool    Search<T>::_ReadResults(std::vector<SearchResult<T>> &out, u32 index, u32 count)
+    {
+        if (index > ResultCount)
+            return (false);
+
+        if (index + count > ResultCount)
+            count = ResultCount - index;
+
+        u64 offset = _GetHeaderSize() + _GetResultStructSize() * index;
+
+        // Go to the file offset
+        _file.Seek(offset, File::SeekPos::SET);
+
+        // Reserve memory and create default object
+        out.Resize(count);
+
+        //Read results
+        if (_file.Read((void *)out.data(), count * _GetResultStructSize()) != 0)
+            return (true);
+
+        return (false);
     }
 }
