@@ -46,36 +46,44 @@ namespace CTRPluginFramework
         T       value;
     };
 
-    struct SearchBase
+    class   SearchBase
     {
-        u32     startRange; //<- Start address
-        u32     endRange; //<- End address
-        u32     currentPosition; //<- Current position in the search range
-        u8      alignment; //<- search alignment
-        u32     resultCount; //<- results counts
+    public:
 
-        SearchType  type;
-        SearchSize  size;
-        CompareType compare;
+        SearchBase(u32 start, u32 end, u32 alignment, SearchBase *prev);
+        ~SearchBase(){}
 
-        File    file; //<- File associated for read / Write
+        virtual bool    DoSearch(void) = 0;
+        virtual bool    ResultsToFile(void) = 0;
+        virtual u32     GetHeaderSize(void) = 0;
 
-        SearchBase *previousSearch;  
+        SearchType      Type; 
+        SearchSize      Size;
+        CompareType     Compare;
 
-        SearchBase(SearchBase *prev)
-        {
-            previousSearch = prev;
-            currentPosition = 0;
-        }
+        u32             ResultCount; //<- results counts
 
-        virtual bool DoSearch(void) = 0;
-        virtual bool ResultsToFile(void) = 0;
-        virtual u32  GetHeaderSize(void) = 0;
+    private:
+
+        u32     _step; //<- current step in the search process
+        u32     _startRange; //<- Start address
+        u32     _endRange; //<- End address
+        u32     _currentPosition; //<- Current position in the search range
+        u8      _alignment; //<- search alignment
+        
+
+
+
+        File    _file; //<- File associated for read / Write
+
+        SearchBase *_previousSearch;  
+
+
 
     };
 
     template<typename T>
-    struct Search : SearchBase
+    class Search : SearchBase
     {
         using ResultIter = typename std::vector<SearchResult<T>>::Iterator;
         /*

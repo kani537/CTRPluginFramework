@@ -1,8 +1,50 @@
 #include "CTRPluginFrameworkImpl/Menu/PluginMenuSearchStructs.hpp"
+#include "CTRPluginFramework/System/Directory.hpp"
 #include "CTRPluginFramework/System/Process.hpp"
+#include <ctime.hpp>
+
+#include <string>
 
 namespace CTRPluginFramework
 {
+
+    /*
+    ** SearchBase
+    *******************/
+
+    SearchBase::SearchBase(u32 start, u32 end, u32 alignement, SearchBase *previous) :
+    _startRange(start), _endRange(end), _alignment(alignement), _previousSearch(previous)
+    {
+        // Init search variables
+        _currentPosition = 0;
+        resultCount = 0;
+
+        // Default search parameters
+        Type = SearchType::ExactValue;
+        Size = SearchSize::Bits32;
+        Compare = CompareType::Equal;
+
+        _step = _previousSearch == nullptr ? 0 : _previousSearch->_step + 1;
+
+        // Open file
+        char    tid[17] = {0};
+        Process::GetTitleID(tid);
+        std::string path = tid + "-Step" + to_string(_step) + ".bin";
+
+
+        // Open current directory
+        Directory dir;
+        if (Directory::Open(dir, "Search", true) == 0)
+        {
+            // Open file
+            File::Open(_file, path, File::READ | File::WRITE | File::CREATE);
+        }
+    }
+
+    /*
+    ** Search : SearchBase
+    ************/
+
     template <typename T>
     void      Search<T>::FirstExactSearch(u32 &start, u32 end, u32 maxResult)
     {
