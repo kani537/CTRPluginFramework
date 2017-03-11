@@ -198,6 +198,10 @@ namespace CTRPluginFramework
             ret |= WriteToFile(file, alignment);
             ret |= WriteToFile(file, resultCount);
             ret |= WriteToFile(file, size);
+            ret |= WriteToFile(file, sizeof(T));
+            ret |= WriteToFile(file, GetHeaderSize());
+            u32 size = sizeof(u32) + sizeof(T);
+            ret |= WriteToFile(file, size);
             ret |= WriteToFile(file, value);
 
             if (offset != 0)
@@ -221,6 +225,9 @@ namespace CTRPluginFramework
                 + sizeof(resultCount)
                 + sizeof(size)
                 + sizeof(T)
+                + sizeof(u32) // offset in file where results starts
+                + sizeof(u32) // SearchResultSize
+                + sizeof(T) // value compared with
             );
         }
 
@@ -231,7 +238,7 @@ namespace CTRPluginFramework
 
         bool    ReadResultsFromFile(std::vector<SearchResult<T>> &output, u32 size)
         {
-
+            
         }
     };
 }
