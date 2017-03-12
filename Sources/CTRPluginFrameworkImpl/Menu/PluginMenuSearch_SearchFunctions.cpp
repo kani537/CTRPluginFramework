@@ -29,7 +29,8 @@ namespace CTRPluginFramework
         // Open file
         char    tid[17] = {0};
         Process::GetTitleID(tid);
-        std::string path = tid;
+        std::string path = "Search/";
+        path += tid;
         path += "-Step" + std::to_string(_step) + ".bin";
 
 
@@ -51,6 +52,7 @@ namespace CTRPluginFramework
     SearchBase(start, end, alignment, prev)
     {
         _checkValue = value;
+        _WriteHeaderToFile();
     }
 
     template <typename T>
@@ -62,7 +64,7 @@ namespace CTRPluginFramework
             {
                 for (; start < end; start += _alignment)
                 {
-                    T value = *(reinterpret_cast<T *>(start));
+                    T value = *((T *)(start));
                     if (value == _checkValue)
                     {
                         ResultCount++;
@@ -195,16 +197,21 @@ namespace CTRPluginFramework
     template<typename T>
     bool    Search<T>::DoSearch(void)
     {
+        _results.clear();
+
         // First Search ?
         if (_previousSearch == nullptr)
         {
-            u32 start = _currentPosition >= _endRange ? _startRange : _currentPosition;
-            u32 maxResult = 0x1000 / _GetResultStructSize();
-            u32 end = start + std::min((u32)(_endRange - start), (u32)0x1000);
+            u32 start = _currentPosition == 0 ? _startRange : _currentPosition;
+            u32 maxResult = 0x2000 / _GetResultStructSize();
+            u32 end = start + std::min((u32)(_endRange - start), (u32)0x2000);
 
             if (Type == SearchType::ExactValue)
             {
                 _FirstExactSearch(start, end, maxResult);
+
+                if (_results.size())
+                    ResultsToFile();
 
                 // Update position
                 _currentPosition = start;
@@ -226,8 +233,8 @@ namespace CTRPluginFramework
             }
 
             // Calculate progress
-            float chunk = (_endRange - _startRange) / 100;
-            Progress = (float)(_currentPosition - _startRange) / chunk;
+            //float chunk = (_endRange - _startRange);
+            Progress = ((100.0f * (float)(_currentPosition - _startRange)) / (_endRange - _startRange));
         }
         // Second search
         else if (_previousSearch != nullptr)
@@ -235,7 +242,7 @@ namespace CTRPluginFramework
             
             std::vector<SearchResult<T>>    oldResults;
 
-            u32 maxResult = 0x1000 / _GetResultStructSize();
+            u32 maxResult = 0x2000 / _GetResultStructSize();
 
             // First get the results from the file
             if (reinterpret_cast<Search<T> *>(_previousSearch)->_ReadResults(oldResults, _currentPosition, maxResult))

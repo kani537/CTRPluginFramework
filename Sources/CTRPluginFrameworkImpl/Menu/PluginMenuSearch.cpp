@@ -76,6 +76,14 @@ namespace CTRPluginFramework
         // Render Bottom
         _RenderBottom();
 
+        // Do search
+        if (_inSearch)
+        {
+            bool finish = _currentSearch->DoSearch();
+            _inSearch = !finish;
+            return (false);
+        }
+
         // Check buttons
 
         if (_closeBtn())
@@ -348,6 +356,8 @@ namespace CTRPluginFramework
         {
             "\uE020", "\uE021", "\uE022", "\uE023", "\uE024", "\uE025", "\uE026", "\uE027"
         };
+
+        Renderer::SetTarget(TOP);
 
         // Draw "window" background
         Renderer::DrawRect2(background, black, dimGrey);
