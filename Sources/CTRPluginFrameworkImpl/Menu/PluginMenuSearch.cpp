@@ -77,6 +77,7 @@ namespace CTRPluginFramework
                 case 4: _alignmentTextBox.SetValue((u32)(4)); _valueTextBox.ValueType = NumericTextBox::Type::Float; break;
                 case 5: _alignmentTextBox.SetValue((u32)(8)); _valueTextBox.ValueType = NumericTextBox::Type::Double; break;
             }
+            _valueTextBox.Clear();
         }
         _searchType();
         _compareType();
