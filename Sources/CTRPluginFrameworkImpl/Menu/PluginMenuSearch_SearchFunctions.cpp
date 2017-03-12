@@ -175,6 +175,8 @@ namespace CTRPluginFramework
         }
         else
         {
+            switch (Compare)
+            {
                 case CompareType::Equal: return (older == newer);
                 case CompareType::NotEqual: return (older != newer);
                 case CompareType::GreaterThan: return (newer > older);
@@ -183,7 +185,9 @@ namespace CTRPluginFramework
                 case CompareType::LesserOrEqual: return (newer <= older);
                 case CompareType::DifferentBy: return (newer == (older + _checkValue) || newer == (older - _checkValue));
                 case CompareType::DifferentByLess: return ((older - _checkValue) < newer && newer < (older + _checkValue));
-                case CompareType::DifferentByMore: return (newer < (older - _checkValue) || newer > (older + _checkValue)); 
+                case CompareType::DifferentByMore: return (newer < (older - _checkValue) || newer > (older + _checkValue));
+                default: return (false);
+            }
         }
 
     }

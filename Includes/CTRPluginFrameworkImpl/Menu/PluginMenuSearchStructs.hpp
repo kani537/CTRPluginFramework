@@ -29,7 +29,7 @@ namespace CTRPluginFramework
         Equal = 0,
         NotEqual,
         GreaterThan,
-        GreaterOrEqual,
+        GreaterOrEqual, 
         LesserThan,
         LesserOrEqual,
         DifferentBy,
