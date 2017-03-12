@@ -157,19 +157,35 @@ namespace CTRPluginFramework
     template<typename T>
     bool    Search<T>::_Compare(T older, T newer)
     {
-        switch (Compare)
+        if (Type == SearchType::ExactValue)
         {
-            case CompareType::Equal: return (_checkValue == newer);
-            case CompareType::NotEqual: return (_checkValue != newer);
-            case CompareType::GreaterThan: return (newer > _checkValue);
-            case CompareType::GreaterOrEqual: return (newer >= _checkValue);
-            case CompareType::LesserThan: return (newer < _checkValue);
-            case CompareType::LesserOrEqual: return (newer <= _checkValue);
-            case CompareType::DifferentBy: return (newer == (older + _checkValue) || newer == (older - _checkValue));
-            case CompareType::DifferentByLess: return ((older - _checkValue) < newer && newer < (older + _checkValue));
-            case CompareType::DifferentByMore: return (newer < (older - _checkValue) || newer > (older + _checkValue));
-            default: return (false);
+            switch (Compare)
+            {
+                case CompareType::Equal: return (_checkValue == newer);
+                case CompareType::NotEqual: return (_checkValue != newer);
+                case CompareType::GreaterThan: return (newer > _checkValue);
+                case CompareType::GreaterOrEqual: return (newer >= _checkValue);
+                case CompareType::LesserThan: return (newer < _checkValue);
+                case CompareType::LesserOrEqual: return (newer <= _checkValue);
+                case CompareType::DifferentBy: return (newer == (older + _checkValue) || newer == (older - _checkValue));
+                case CompareType::DifferentByLess: return ((older - _checkValue) < newer && newer < (older + _checkValue));
+                case CompareType::DifferentByMore: return (newer < (older - _checkValue) || newer > (older + _checkValue));
+                default: return (false);
+            } 
         }
+        else
+        {
+                case CompareType::Equal: return (older == newer);
+                case CompareType::NotEqual: return (older != newer);
+                case CompareType::GreaterThan: return (newer > older);
+                case CompareType::GreaterOrEqual: return (newer >= older);
+                case CompareType::LesserThan: return (newer < older);
+                case CompareType::LesserOrEqual: return (newer <= older);
+                case CompareType::DifferentBy: return (newer == (older + _checkValue) || newer == (older - _checkValue));
+                case CompareType::DifferentByLess: return ((older - _checkValue) < newer && newer < (older + _checkValue));
+                case CompareType::DifferentByMore: return (newer < (older - _checkValue) || newer > (older + _checkValue)); 
+        }
+
     }
 
     template<typename T>
