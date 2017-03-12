@@ -14,6 +14,7 @@ namespace CTRPluginFramework
         ComboBox(int posX, int posY, int width, int height);
 
         void    Add(std::string item);
+        void    Clear(void);
         void    Draw(void);
         void    Update(bool isTouchDown, IntVector touchPos);
         bool    operator()(void);

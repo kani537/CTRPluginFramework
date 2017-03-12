@@ -23,6 +23,12 @@ namespace CTRPluginFramework
             SelectedItem = 0;
     }
 
+    void    ComboBox::Clear(void)
+    {
+        _items.clear();
+        SelectedItem = -1;
+    }
+
     void    ComboBox::Draw(void)
     {
        // static Color    blank = Color(255, 255, 255);
