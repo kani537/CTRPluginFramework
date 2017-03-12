@@ -22,7 +22,7 @@ namespace CTRPluginFramework
         using EventCallback = T (C::*)(Args...);
         using IconCallback = int (*)(int, int);
 
-        Button(std::string content, C &caller, T(C::*callback)(Args...), IntRect rect, IconCallback icon = nullptr) :
+        Button(std::string content, C &caller, T(C::*callback)(Args...), IntRect rect, int round, IconCallback icon = nullptr) :
         _caller(caller), 
         _callback(callback), 
         _content(content), 
@@ -43,7 +43,7 @@ namespace CTRPluginFramework
             if (icon != nullptr)
                 _textSize += 18.f;
 
-            Renderer::ComputeRoundedRectangle(_lines, _uiProperty, 7, 50);
+            Renderer::ComputeRoundedRectangle(_lines, _uiProperty, round, 50);
             _isPressed = false;
             _execute = false;
         }

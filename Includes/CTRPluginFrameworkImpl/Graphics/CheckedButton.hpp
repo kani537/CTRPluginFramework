@@ -17,7 +17,7 @@ namespace CTRPluginFramework
         using EventCallback = T (C::*)(Args...);
         using IconCallback = int (*)(int, int);
 
-        CheckedButton(std::string content, C &caller, EventCallback callback, IntRect ui, IconCallback icon = nullptr);
+        CheckedButton(std::string content, C &caller, EventCallback callback, IntRect ui, int round, IconCallback icon = nullptr);
         ~CheckedButton(){}
 
         // Draw
@@ -53,7 +53,7 @@ namespace CTRPluginFramework
 
     //Constructor
     template <class C, class T, class ...Args>
-    TCheckedButton::CheckedButton(std::string content, C &caller, EventCallback callback, IntRect ui, IconCallback icon) :
+    TCheckedButton::CheckedButton(std::string content, C &caller, EventCallback callback, IntRect ui, int round, IconCallback icon) :
     _content(content), _caller(caller), _callback(callback), _uiProperties(ui), _icon(icon)
     {
         _state = false;
@@ -78,7 +78,7 @@ namespace CTRPluginFramework
         if (icon != nullptr)
             _textSize += 18.f;
 
-        Renderer::ComputeRoundedRectangle(_lines, _uiProperties, 7, 50);
+        Renderer::ComputeRoundedRectangle(_lines, _uiProperties, round, 50);
     }
 
     //Draw

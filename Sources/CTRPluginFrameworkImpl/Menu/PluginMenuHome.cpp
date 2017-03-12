@@ -6,12 +6,12 @@
 namespace CTRPluginFramework
 {
     PluginMenuHome::PluginMenuHome(std::string name) :
-        _showStarredBtn("Favorite", *this, nullptr, IntRect(30, 70, 120, 30), Icon::DrawFavorite),
-        _hidMapperBtn("Mapper", *this, nullptr, IntRect(165, 70, 120, 30), Icon::DrawController),
-        _gameGuideBtn("Game Guide", *this, nullptr, IntRect(30, 105, 120, 30), Icon::DrawGuide),        
-        _searchBtn("Search", *this, nullptr, IntRect(165, 105, 120, 30), Icon::DrawSearch),  
-        _arBtn("ActionReplay", *this, nullptr, IntRect(30, 140, 120, 30)),
-        _toolsBtn("Tools", *this, nullptr, IntRect(165, 140, 120, 30), Icon::DrawTools),
+        _showStarredBtn("Favorite", *this, nullptr, IntRect(30, 70, 120, 30), 7, Icon::DrawFavorite),
+        _hidMapperBtn("Mapper", *this, nullptr, IntRect(165, 70, 120, 30), 7, Icon::DrawController),
+        _gameGuideBtn("Game Guide", *this, nullptr, IntRect(30, 105, 120, 30), 7, Icon::DrawGuide),        
+        _searchBtn("Search", *this, nullptr, IntRect(165, 105, 120, 30), 7, Icon::DrawSearch),  
+        _arBtn("ActionReplay", *this, nullptr, IntRect(30, 140, 120, 30), 7),
+        _toolsBtn("Tools", *this, nullptr, IntRect(165, 140, 120, 30), 7, Icon::DrawTools),
 
         _AddFavoriteBtn(*this, &PluginMenuHome::_StarItem, IntRect(50, 30, 25, 25), Icon::DrawAddFavorite),
         _InfoBtn(*this, &PluginMenuHome::_DisplayNote, IntRect(90, 30, 25, 25), Icon::DrawInfo, false),
