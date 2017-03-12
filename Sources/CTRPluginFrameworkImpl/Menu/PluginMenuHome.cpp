@@ -98,10 +98,8 @@ namespace CTRPluginFramework
 
         else if (_gameGuideBtn())
             mode = 2;
-        /*
         else if (_searchBtn())
             mode = 3;
-        */
         /*
         else if (_arBtn())
             mode = 4;

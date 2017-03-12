@@ -20,6 +20,7 @@ namespace CTRPluginFramework
     PluginMenuImpl::PluginMenuImpl(std::string name, std::string note) : 
 
     _home(new PluginMenuHome(name)),
+    _search(new PluginMenuSearch()),
     _tools(new PluginMenuTools()),
     _executeLoop(new PluginMenuExecuteLoop()),
     _guide(new GuideReader())
@@ -59,6 +60,7 @@ namespace CTRPluginFramework
         // Component
         PluginMenuHome          &home = *_home;
         PluginMenuTools         &tools = *_tools;
+        PluginMenuSearch        &search = *_search;
         GuideReader             &guide = *_guide;
         PluginMenuExecuteLoop   &executer = *_executeLoop;
 
@@ -121,12 +123,11 @@ namespace CTRPluginFramework
                     if (guide(eventList, delta))
                         mode = 0;
                 }
-                /*
                 else if (mode == 3)
-                { /* Search *
-    
-                }
-                */
+                { /* Search */
+                    if (search(eventList, delta))
+                        mode = 0;
+                }                
                 /*
                 else if (mode == 4)
                 { /* ActionReplay  *
