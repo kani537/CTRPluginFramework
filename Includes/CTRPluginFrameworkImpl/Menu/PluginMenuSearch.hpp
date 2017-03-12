@@ -33,7 +33,10 @@ namespace CTRPluginFramework
         void    _RenderBottom(void);
         void    _Update(Time delta);
 
+        void    _ListRegion(void);
+
         void    _searchBtn_OnClick(void);
+
         void    _ShowProgressWindow(void);
 
 
@@ -44,6 +47,7 @@ namespace CTRPluginFramework
         SearchBase                          *_currentSearch;
 
         bool                                _inSearch;
+        bool                                _firstRegionInit;
 
         // UIComponent
         ComboBox                            _memoryRegions;

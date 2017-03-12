@@ -1,5 +1,7 @@
 #include "CTRPluginFrameworkImpl/Menu/PluginMenuSearch.hpp"
 #include "CTRPluginFrameworkImpl/Preferences.hpp"
+#include "CTRPluginFramework/System/Process.hpp"
+#include "3DS.h"
 
 namespace CTRPluginFramework
 {
@@ -14,7 +16,8 @@ namespace CTRPluginFramework
     _searchBtn("Search", *this, &PluginMenuSearch::_searchBtn_OnClick, IntRect(35, 195, 80, 15)),
     _undoBtn("Undo", *this, nullptr, IntRect(120, 195, 80, 15)),
     _resetBtn("Reset", *this, nullptr, IntRect(205, 195, 80, 15)),
-    _inSearch(false)
+    _inSearch(false),
+    _firstRegionInit(false)
     {
         _currentSearch = nullptr;
 
@@ -53,6 +56,13 @@ namespace CTRPluginFramework
 
     bool    PluginMenuSearch::operator()(EventList &eventList, Time &delta)
     {
+        // If we're on first search
+        if (!_firstRegionInit)
+        {
+            _ListRegion();
+            _firstRegionInit = true;
+        }
+
         // Process Event
         for (int i = 0; i < eventList.size(); i++)
             _ProcessEvent(eventList[i]); 
@@ -328,7 +338,7 @@ namespace CTRPluginFramework
         static Color    gainsboro(225, 225, 225);
         static Color    dimGrey(15, 15, 15);
         static Color    silver(160, 160, 160);
-        static IntRect  background(125, 70, 150, 100);
+        static IntRect  background(125, 80, 150, 70);
         static Color    skyblue(0, 191, 255);
         static Color    limegreen(50, 205, 50);
         //static Clock    timer;
@@ -342,33 +352,90 @@ namespace CTRPluginFramework
         // Draw "window" background
         Renderer::DrawRect2(background, black, dimGrey);
 
-        int posY = 75;
+        int posY = 90;
 
         // Draw logobackground
-        Renderer::DrawSysString("\uE021", 217, posY, 300, silver); //Top
-        Renderer::DrawSysString("\uE025", 217, posY, 300, silver); //Bottom
+       // Renderer::DrawSysString("\uE021", 192, posY, 300, silver); //Top
+       // posY = 85;
+       // Renderer::DrawSysString("\uE025", 192, posY, 300, silver); //Bottom
+       // posY = 85;
 
         // Draw logo phase
-        Renderer::DrawSysString(waitLogo[phase].c_str(), 217, posY, 300, skyblue);
+        Renderer::DrawSysString(waitLogo[phase].c_str(), 192, posY, 300, skyblue);
 
         phase++;
         if (phase > 7) phase = 0;
 
+        posY += 10;
+
         // Progressbar
         // Draw border
-        IntRect progBarBorder = IntRect(130, 150, 140, 15);
+        IntRect progBarBorder = IntRect(130, posY, 140, 15);
         Renderer::DrawRect(progBarBorder, gainsboro, false);
 
         float percent = 138.f / 100.f;
         float prog = _currentSearch->Progress * percent;      
 
         // Draw progress fill
-        IntRect progBarFill = IntRect(131, 151, (u32)prog, 13);
+        IntRect progBarFill = IntRect(131, posY + 1, (u32)prog, 13);
         Renderer::DrawRect(progBarFill, limegreen);
-
         // Draw Result count
         std::string res = "Result(s): " + std::to_string(_currentSearch->ResultCount);
-        posY = 148;
+        posY += 20;
         Renderer::DrawString((char *)res.c_str(), 131, posY, blank);
+    }
+
+    void    PluginMenuSearch::_ListRegion(void)
+    {
+
+        Handle      target = Process::GetHandle();
+        PageInfo    page_info;
+        MemInfo     meminfo;
+        u32         save_addr;
+        int         i;
+        Result      ret;
+
+        _regionsList.clear();
+        _memoryRegions.Clear();
+
+        svcQueryProcessMemory(&meminfo, &page_info, target, 0x00100000);
+        save_addr = meminfo.base_addr + meminfo.size + 1;
+        i = 1;
+        while (save_addr < 0x50000000)
+        {
+            if (i >= 99)
+                break;
+            ret = svcQueryProcessMemory(&meminfo, &page_info, target, save_addr);//, "svc_queryProcessMemory");
+            if (R_FAILED(ret))
+            {
+                if (meminfo.base_addr >= 0x50000000)
+                    break;
+                if (save_addr >= meminfo.base_addr + meminfo.size + 1)
+                    save_addr += 0x1000;
+                else
+                    save_addr = meminfo.base_addr + meminfo.size + 1;
+                continue;
+            }
+            save_addr = meminfo.base_addr + meminfo.size + 1;
+            if (meminfo.state != 0x0 && meminfo.state != 0x2 && meminfo.state != 0x3 && meminfo.state != 0x6)
+            {
+                if (meminfo.perm & MEMPERM_READ)
+                {
+                    Region reg = (Region){meminfo.base_addr, meminfo.base_addr + meminfo.size};
+                    _regionsList.push_back(reg);
+                    char    buffer[0x100] = {0};
+
+                    sprintf(buffer, "%08X-%08X", reg.startAddress, reg.endAddress);
+                    _memoryRegions.Add(buffer);
+                    i++;
+                }
+            }
+            
+            if (meminfo.base_addr >= 0x50000000)
+                break;
+        }
+        //if (meminfo[i].state == 0x0)
+        //  i--;
+        i++;
     }
 }
