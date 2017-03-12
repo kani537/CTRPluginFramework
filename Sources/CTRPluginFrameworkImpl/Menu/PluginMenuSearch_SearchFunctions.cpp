@@ -13,7 +13,7 @@ namespace CTRPluginFramework
     *******************/
 
     SearchBase::SearchBase(u32 start, u32 end, u32 alignment, SearchBase *previous) :
-    _startRange(start), _endRange(end), _alignment(alignment), _previousSearch(previous)
+    _startRange(start), _endRange(end), _alignment(alignment), _previousSearch(previous), Progress(0.0f)
     {
         // Init search variables
         _currentPosition = 0;
@@ -205,6 +205,9 @@ namespace CTRPluginFramework
             if (Type == SearchType::ExactValue)
             {
                 _FirstExactSearch(start, end, maxResult);
+
+                // Update position
+                _currentPosition = start;
             }                
             else // Unknown value
             {
@@ -221,6 +224,10 @@ namespace CTRPluginFramework
                 // Update position
                 _currentPosition = start;
             }
+
+            // Calculate progress
+            float chunk = (_endRange - _startRange) / 100;
+            Progress = (float)(_currentPosition - _startRange) / chunk;
         }
         // Second search
         else if (_previousSearch != nullptr)
@@ -249,6 +256,10 @@ namespace CTRPluginFramework
 
                 // Update position
                 _currentPosition += oldResults.size();
+
+                // Calculate progress
+                float chunk = _previousSearch->ResultCount / 100;
+                Progress = (float)(_currentPosition) / chunk;
             }
         }
 
