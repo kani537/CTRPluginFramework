@@ -62,10 +62,9 @@ namespace CTRPluginFramework
         CompareType     Compare;
 
         u32             ResultCount; //<- results counts
-
+        float           Progress; //<- current progression of the search in %
     private: 
-
-        u32     _step; //<- current step in the search process
+        u32     _step; //<- current step
         u32     _startRange; //<- Start address
         u32     _endRange; //<- End address
         u32     _currentPosition; //<- Current position in the search range
