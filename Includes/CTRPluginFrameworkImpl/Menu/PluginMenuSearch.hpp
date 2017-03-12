@@ -33,7 +33,6 @@ namespace CTRPluginFramework
 
         // Members
         std::list<SearchBase *>             _searchHistory;
-
         SearchBase                          *_currentSearch;
 
         // Buttons        

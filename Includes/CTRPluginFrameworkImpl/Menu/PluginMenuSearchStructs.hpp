@@ -112,7 +112,7 @@ namespace CTRPluginFramework
 
         void        _FirstExactSearch(u32 &start, u32 end, u32 maxResult);
         // Return true if the value matches the search settings
-        bool        _Compare(T old, T newer);        
+        bool        _Compare(T old, T newer);
         
         bool        _WriteHeaderToFile(void);
         u32         _GetHeaderSize(void);

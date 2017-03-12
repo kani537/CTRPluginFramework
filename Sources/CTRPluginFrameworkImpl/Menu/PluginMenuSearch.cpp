@@ -67,7 +67,7 @@ namespace CTRPluginFramework
             Renderer::DrawRect(32, 22, 336, 196, blank, false);            
         }
     }
-
+    
     /*
     ** Render Bottom
     *****************/
@@ -91,6 +91,14 @@ namespace CTRPluginFramework
         }
 
         int posY = 35;
+        int textPosX = 30;
+        int choicePosX = 150;
+
+        // Value type choice
+        Renderer::DrawString("Type to search:", textPosX, posY, blank);
+        
+
+
 
         // Draw buttons
         _closeBtn.Draw();
