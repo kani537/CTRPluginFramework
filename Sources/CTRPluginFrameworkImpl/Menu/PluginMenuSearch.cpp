@@ -10,7 +10,10 @@ namespace CTRPluginFramework
     _searchType(150, 90, 130, 15),
     _compareType(150, 110, 130, 15),
     _alignmentTextBox(150, 130, 130, 15),
-    _valueTextBox(150, 150, 130, 15)
+    _valueTextBox(150, 150, 130, 15),
+    _searchBtn("Search", *this, nullptr, IntRect(50, 170, 80, 15), 0),
+    _undoBtn("Undo", *this, nullptr, IntRect(135, 170, 80, 15), 0),
+    _resetBtn("Reset", *this, nullptr, IntRect(220, 170, 80, 15), 0)
     {
         _currentSearch = nullptr;
 
@@ -35,6 +38,11 @@ namespace CTRPluginFramework
         _compareType.Add("Different By");
         _compareType.Add("Different By Less");
         _compareType.Add("Different By More");
+
+        // Init buttons
+        _searchBtn.UseSysFont(false);
+        _undoBtn.UseSysFont(false);
+        _resetBtn.UseSysFont(false);
 
         // Set 4 Bytes as default
         u32   al = 4;
@@ -62,6 +70,10 @@ namespace CTRPluginFramework
 
         if (_closeBtn())
             return (true);
+
+        _searchBtn();
+        _undoBtn();
+        _resetBtn();
 
         // Check ComboBox
 
@@ -198,6 +210,9 @@ namespace CTRPluginFramework
 
         // Draw buttons
         _closeBtn.Draw();
+        _searchBtn.Draw();
+        _undoBtn.Draw();
+        _resetBtn.Draw();
     }
 
     /*
@@ -223,6 +238,9 @@ namespace CTRPluginFramework
 
         // Update buttons
         _closeBtn.Update(isTouched, touchPos);
+        _searchBtn.Update(isTouched, touchPos);
+        _undoBtn.Update(isTouched, touchPos);
+        _resetBtn.Update(isTouched, touchPos);
     }
 
     /*
