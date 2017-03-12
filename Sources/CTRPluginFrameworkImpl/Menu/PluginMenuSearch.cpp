@@ -11,9 +11,9 @@ namespace CTRPluginFramework
     _compareType(150, 110, 130, 15),
     _alignmentTextBox(150, 130, 130, 15),
     _valueTextBox(150, 150, 130, 15),
-    _searchBtn("Search", *this, nullptr, IntRect(50, 170, 80, 15), 0),
-    _undoBtn("Undo", *this, nullptr, IntRect(135, 170, 80, 15), 0),
-    _resetBtn("Reset", *this, nullptr, IntRect(220, 170, 80, 15), 0)
+    _searchBtn("Search", *this, nullptr, IntRect(40, 170, 80, 15), 0),
+    _undoBtn("Undo", *this, nullptr, IntRect(125, 170, 80, 15), 0),
+    _resetBtn("Reset", *this, nullptr, IntRect(210, 170, 80, 15), 0)
     {
         _currentSearch = nullptr;
 
@@ -93,7 +93,35 @@ namespace CTRPluginFramework
             }
             _valueTextBox.Clear();
         }
-        _searchType();
+
+        // Search type changed
+        if (_searchType())
+        {
+            // Specified value
+            if (_searchType.SelectedItem == 0)
+            {
+                _valueTextBox.IsEnabled = true;
+                _compareType.IsEnabled = true;
+            }
+            // Unknown search
+            else
+            {
+                // First search
+                if (_currentSearch == nullptr)
+                {
+                    _compareType.IsEnabled = false;
+                    _valueTextBox.IsEnabled = false;
+                }
+                else
+                {
+                    _compareType.IsEnabled = true;
+                    if (_compareType.SelectedItem <= 5 && _searchType.SelectedItem == 1)
+                        _valueTextBox.IsEnabled = false;
+                    else
+                        _valueTextBox.IsEnabled = true;
+                }
+            }
+        }
 
         // Compare type changed
         if (_compareType())
