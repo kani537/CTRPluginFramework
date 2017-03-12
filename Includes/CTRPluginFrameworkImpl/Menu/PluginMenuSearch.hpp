@@ -41,6 +41,8 @@ namespace CTRPluginFramework
         ComboBox                            _searchType; // Unknown / Exact
         ComboBox                            _compareType; // Compare
 
+        NumericTextBox                      _alignmentTextBox;
+        NumericTextBox                      _valueTextBox;
 
         // Buttons        
         IconButton<PluginMenuSearch, void>          _closeBtn;

@@ -8,7 +8,9 @@ namespace CTRPluginFramework
     _memoryRegions(150, 50, 130, 15),
     _searchSize(150, 70, 130, 15),
     _searchType(150, 90, 130, 15),
-    _compareType(150, 110, 130, 15)
+    _compareType(150, 110, 130, 15),
+    _alignmentTextBox(150, 130, 130, 15),
+    _valueTextBox(150, 150, 130, 15)
     {
         _currentSearch = nullptr;
 
@@ -62,6 +64,10 @@ namespace CTRPluginFramework
         _searchSize();
         _searchType();
         _compareType();
+
+        // Check NumericTextBoxes
+        _alignmentTextBox();
+        _valueTextBox();
 
         return (false);
     }
@@ -129,27 +135,27 @@ namespace CTRPluginFramework
         int choicePosX = 150;
 
         // MemRegion
-        Renderer::DrawString("MemRegion:", textPosX, posY, blank);
+        Renderer::DrawString((char *)"MemRegion:", textPosX, posY, blank);
         posY = 72;
 
         // Value Type
-        Renderer::DrawString("Value Type:", textPosX, posY, blank);
+        Renderer::DrawString((char *)"Value Type:", textPosX, posY, blank);
         posY = 92;
 
         // Search Type
-        Renderer::DrawString("Search Type:", textPosX, posY, blank);
+        Renderer::DrawString((char *)"Search Type:", textPosX, posY, blank);
         posY = 112;
 
         // Scan Type
-        Renderer::DrawString("Scan Type:", textPosX, posY, blank);
+        Renderer::DrawString((char *)"Scan Type:", textPosX, posY, blank);
         posY = 132;
 
         // Alignment
-        Renderer::DrawString("Alignment:", textPosX, posY, blank);
+        Renderer::DrawString((char *)"Alignment:", textPosX, posY, blank);
         posY = 152;
 
         // Value
-        Renderer::DrawString("Value:", textPosX, posY, blank);
+        Renderer::DrawString((char *)"Value:", textPosX, posY, blank);
         posY = 172;
 
 
@@ -158,6 +164,10 @@ namespace CTRPluginFramework
         _searchSize.Draw();
         _searchType.Draw();
         _compareType.Draw();
+
+        // Draw NumericTextBoxes
+        _alignmentTextBox.Draw();
+        _valueTextBox.Draw();
 
         // Draw buttons
         _closeBtn.Draw();
@@ -179,6 +189,10 @@ namespace CTRPluginFramework
         _searchSize.Update(isTouched, touchPos);
         _searchType.Update(isTouched, touchPos);
         _compareType.Update(isTouched, touchPos);
+
+        // Update NumericTextBoxes
+        _alignmentTextBox.Update(isTouched, touchPos);
+        _valueTextBox.Update(isTouched, touchPos);
 
         // Update buttons
         _closeBtn.Update(isTouched, touchPos);
