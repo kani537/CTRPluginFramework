@@ -28,7 +28,8 @@ namespace CTRPluginFramework
         _content(content), 
         _uiProperty(rect),
         _icon(icon),
-        _isReady(true)
+        _isReady(true),
+        _useSysfont(true)
         {
             // Black
             borderColor = Color(165, 165, 165);
@@ -63,11 +64,13 @@ namespace CTRPluginFramework
 
         void    Draw(void);
         void    Update(bool isTouchDown, IntVector touchPos);
+        void    UseSysFont(bool use);
 
         Color           borderColor;
         Color           idleColor;
         Color           pressedColor;
         Color           contentColor;
+
     private:
 
         
@@ -84,7 +87,29 @@ namespace CTRPluginFramework
         bool                    _isPressed;
         bool                    _execute;
         bool                    _isReady;
+        bool                    _useSysfont;
     };
+
+    /*
+    ** Select sysfont or not
+    ************************/
+    template <class C, class T, class... Args>
+    void    Button<C, T, Args...>::UseSysFont(bool use)
+    {
+        _useSysfont = use;
+
+        if (use)
+        {
+            _textSize = Renderer::GetTextSize(_content.c_str());  
+        }
+        else
+        {
+            _textSize = 6.f * _content.size();
+        }
+
+        if (_icon != nullptr)
+            _textSize += 18.f;
+    }
 
     /*
     ** Draw
@@ -145,8 +170,10 @@ namespace CTRPluginFramework
         {
             posX = _icon(posX, posY) + 3;
         }
-        //Renderer::DrawString((char *)_content.c_str(), posX, posY, contentColor);
-        Renderer::DrawSysString(_content.c_str(), posX, posY, limit, contentColor);        
+        if (_useSysfont)
+            Renderer::DrawSysString(_content.c_str(), posX, posY, limit, contentColor);
+        else
+            Renderer::DrawString((char *)_content.c_str(), posX, posY, contentColor);  
     }
 
     /*
