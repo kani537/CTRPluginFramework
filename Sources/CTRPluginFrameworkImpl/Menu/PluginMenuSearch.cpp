@@ -5,10 +5,10 @@ namespace CTRPluginFramework
 {
     PluginMenuSearch::PluginMenuSearch() :
     _closeBtn(*this, nullptr, IntRect(275, 24, 20, 20), Icon::DrawClose),
-    _memoryRegions(250, 50, 50, 15),
-    _searchSize(250, 70, 50, 15),
-    _searchType(250, 90, 50, 15),
-    _compareType(250, 110, 50, 15)
+    _memoryRegions(150, 50, 130, 15),
+    _searchSize(150, 70, 130, 15),
+    _searchType(150, 90, 130, 15),
+    _compareType(150, 110, 130, 15)
     {
         _currentSearch = nullptr;
 
@@ -124,12 +124,25 @@ namespace CTRPluginFramework
             Renderer::DrawRect(22, 22, 276, 196, blank, false);            
         }
 
-        int posY = 35;
+        int posY = 52;
         int textPosX = 30;
         int choicePosX = 150;
 
-        // Value type choice
-        Renderer::DrawString("Type to search:", textPosX, posY, blank);
+        // MemRegion
+        Renderer::DrawString("MemRegion:", textPosX, posY, blank);
+        posY = 72;
+
+        // Value Type
+        Renderer::DrawString("Value Type:", textPosX, posY, blank);
+        posY = 92;
+
+        // Search Type
+        Renderer::DrawString("Search Type:", textPosX, posY, blank);
+        posY = 112;
+
+        // Scan Type
+        Renderer::DrawString("Scan Type:", textPosX, posY, blank);
+        posY = 132;
 
 
         // Draw ComboBoxes
