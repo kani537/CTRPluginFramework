@@ -66,6 +66,8 @@ namespace CTRPluginFramework
         // Check ComboBox
 
         _memoryRegions();
+
+        // Value type changed
         if (_searchSize())
         {
             switch (_searchSize.SelectedItem)
@@ -80,7 +82,15 @@ namespace CTRPluginFramework
             _valueTextBox.Clear();
         }
         _searchType();
-        _compareType();
+
+        // Compare type changed
+        if (_compareType())
+        {
+            if (_compareType.SelectedItem <= 5 && _searchType.SelectedItem == 1)
+                _valueTextBox.IsEnabled = false;
+            else
+                _valueTextBox.IsEnabled = true;
+        }
 
         // Check NumericTextBoxes
         _alignmentTextBox();
