@@ -11,9 +11,9 @@ namespace CTRPluginFramework
     _compareType(150, 110, 130, 15),
     _alignmentTextBox(150, 130, 130, 15),
     _valueTextBox(150, 150, 130, 15),
-    _searchBtn("Search", *this, nullptr, IntRect(40, 170, 80, 15), 0),
-    _undoBtn("Undo", *this, nullptr, IntRect(125, 170, 80, 15), 0),
-    _resetBtn("Reset", *this, nullptr, IntRect(210, 170, 80, 15), 0)
+    _searchBtn("Search", *this, nullptr, IntRect(40, 170, 80, 15)),
+    _undoBtn("Undo", *this, nullptr, IntRect(125, 170, 80, 15)),
+    _resetBtn("Reset", *this, nullptr, IntRect(210, 170, 80, 15))
     {
         _currentSearch = nullptr;
 

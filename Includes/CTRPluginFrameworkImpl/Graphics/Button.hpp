@@ -22,14 +22,15 @@ namespace CTRPluginFramework
         using EventCallback = T (C::*)(Args...);
         using IconCallback = int (*)(int, int);
 
-        Button(std::string content, C &caller, T(C::*callback)(Args...), IntRect rect, int round, IconCallback icon = nullptr) :
+        Button(std::string content, C &caller, T(C::*callback)(Args...), IntRect rect, IconCallback icon = nullptr) :
         _caller(caller), 
         _callback(callback), 
         _content(content), 
         _uiProperty(rect),
         _icon(icon),
         _isReady(true),
-        _useSysfont(true)
+        _useSysfont(true),
+        _useRounded(false)
         {
             // Black
             borderColor = Color(165, 165, 165);
@@ -44,7 +45,6 @@ namespace CTRPluginFramework
             if (icon != nullptr)
                 _textSize += 18.f;
 
-            Renderer::ComputeRoundedRectangle(_lines, _uiProperty, round, 50);
             _isPressed = false;
             _execute = false;
         }
@@ -65,6 +65,19 @@ namespace CTRPluginFramework
         void    Draw(void);
         void    Update(bool isTouchDown, IntVector touchPos);
         void    UseSysFont(bool use);
+        void    RoundedRatio(u32 ratio)
+        {
+            if (ratio == 0)
+            {
+                _lines.clear();
+                _useRounded = false;
+            }
+            else
+            {
+                _useRounded = true;
+                Renderer::ComputeRoundedRectangle(_lines, _uiProperty, ratio, 50);
+            }
+        }
 
         Color           borderColor;
         Color           idleColor;
@@ -88,6 +101,7 @@ namespace CTRPluginFramework
         bool                    _execute;
         bool                    _isReady;
         bool                    _useSysfont;
+        bool                    _useRounded;
     };
 
     /*
@@ -121,33 +135,43 @@ namespace CTRPluginFramework
         //Renderer::RoundedRectangle(_uiProperty, 7, 50, borderColor, true, isPressed ? pressedColor : idleColor);
         
         Color &fillColor = _isPressed ? pressedColor : idleColor;
-        int bMax = _lines.size() - 5;
         int i;
 
-        for (i = 0; i < bMax; i++)
+        if (_useRounded)
         {
+            int bMax = _lines.size() - 5;
+
+            for (i = 0; i < bMax; i++)
+            {
+                IntLine &line = _lines[i];
+                // Draw border
+                Renderer::_DrawPixel(line.start.x, line.start.y, borderColor);
+                Renderer::_DrawPixel(line.end.x, line.end.y, borderColor);
+
+                // Fill line
+                IntVector left(line.start);
+                IntVector right(line.end);
+                left.x++;
+                right.x;
+                Renderer::DrawLine(left, right, fillColor);
+            }
+
+            for (; i < _lines.size() - 1; i++)
+            {
+                IntLine &line = _lines[i];
+
+                Renderer::DrawLine(line.start.x, line.start.y, line.end.x, borderColor, line.end.y);
+            }
+
             IntLine &line = _lines[i];
-            // Draw border
-            Renderer::_DrawPixel(line.start.x, line.start.y, borderColor);
-            Renderer::_DrawPixel(line.end.x, line.end.y, borderColor);
-
-            // Fill line
-            IntVector left(line.start);
-            IntVector right(line.end);
-            left.x++;
-            right.x;
-            Renderer::DrawLine(left, right, fillColor);
+            Renderer::DrawLine(line.start.x, line.start.y, line.end.x, fillColor, line.end.y);
         }
-
-        for (; i < _lines.size() - 1; i++)
+        else
         {
-            IntLine &line = _lines[i];
-
-            Renderer::DrawLine(line.start.x, line.start.y, line.end.x, borderColor, line.end.y);
+            Renderer::DrawRect(_uiProperty, fillColor);
+            Renderer::DrawRect(_uiProperty, borderColor, false);
         }
-
-        IntLine &line = _lines[i];
-        Renderer::DrawLine(line.start.x, line.start.y, line.end.x, fillColor, line.end.y);
+        
 
         int posX = _uiProperty.leftTop.x;
         int posY = _uiProperty.leftTop.y;
@@ -156,22 +180,24 @@ namespace CTRPluginFramework
         int width = _uiProperty.size.x;
         int limit = posX + width;
 
-        posY += (height - 16) / 2;
+        if (_useSysfont)
+            posY += (height - 16) / 2;
+        else
+            posY += (height - 10) / 2;
 
         int posXI = 0;
 
-        
-        //posY += (height - 10) / 2;
         int x = (width - _textSize) / 2;
         if (x > 0)
             posX += x;
 
         if (_icon != nullptr)
-        {
             posX = _icon(posX, posY) + 3;
-        }
+
         if (_useSysfont)
+        {
             Renderer::DrawSysString(_content.c_str(), posX, posY, limit, contentColor);
+        }
         else
             Renderer::DrawString((char *)_content.c_str(), posX, posY, contentColor);  
     }
