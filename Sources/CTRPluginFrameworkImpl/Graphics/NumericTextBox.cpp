@@ -15,7 +15,7 @@ namespace CTRPluginFramework
     ValueType(Type::Bits32),
     Bits64(0)
     {
-
+        Clear();
     }
 
     void    NumericTextBox::Clear(void)
