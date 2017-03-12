@@ -28,6 +28,7 @@ namespace CTRPluginFramework
         void    _Update(Time delta);
 
         void    _DoSearch(void);
+        void    _ShowProgressWindow(void);
 
 
 

@@ -48,7 +48,6 @@ namespace CTRPluginFramework
         u32   al = 4;
         _alignmentTextBox.SetValue(al);
         _searchSize.SelectedItem = 2;
-
     }
 
     bool    PluginMenuSearch::operator()(EventList &eventList, Time &delta)
@@ -286,5 +285,56 @@ namespace CTRPluginFramework
             //_currentSearch->file.Write(_currentSearch->)
         }
 
+    }
+
+    void    PluginMenuSearch::_ShowProgressWindow(void)
+    {
+        static Color    black = Color();
+        static Color    blank(255, 255, 255);
+        static Color    gainsboro(225, 225, 225);
+        static Color    dimGrey(15, 15, 15);
+        static Color    silver(160, 160, 160);
+        static IntRect  background(125, 70, 150, 100);
+        static Color    skyblue(0, 191, 255);
+        static Color    limegreen(50, 205, 50);
+        //static Clock    timer;
+        static int      phase = 0;
+
+        std::string     waitLogo[] = 
+        {
+            "\uE020", "\uE021", "\uE022", "\uE023", "\uE024", "\uE025", "\uE026", "\uE027"
+        };
+
+        // Draw "window" background
+        Renderer::DrawRect2(background, black, dimGrey);
+
+        int posY = 75;
+
+        // Draw logobackground
+        Renderer::DrawSysString("\uE021", 217, posY, 300, silver); //Top
+        Renderer::DrawSysString("\uE025", 217, posY, 300, silver); //Bottom
+
+        // Draw logo phase
+        Renderer::DrawSysString(waitLogo[phase].c_str(), 217, posY, 300, skyblue);
+
+        phase++;
+        if (phase > 7) phase = 0;
+
+        // Progressbar
+        // Draw border
+        IntRect progBarBorder = IntRect(130, 150, 140, 15);
+        Renderer::DrawRect(progBarBorder, gainsboro, false);
+
+        float percent = 138.f / 100.f;
+        float prog = _currentSearch->Progress * percent;      
+
+        // Draw progress fill
+        IntRect progBarFill = IntRect(131, 151, (u32)prog, 13);
+        Renderer::DrawRect(progBarFill, limegreen);
+
+        // Draw Result count
+        std::string res = "Result(s): " + std::to_string(_currentSearch->ResultCount);
+        posY = 148;
+        Renderer::DrawString((char *)res.c_str(), 131, posY, blank);
     }
 }
