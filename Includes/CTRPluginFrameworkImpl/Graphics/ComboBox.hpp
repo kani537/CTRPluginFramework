@@ -18,7 +18,10 @@ namespace CTRPluginFramework
         void    Update(bool isTouchDown, IntVector touchPos);
         bool    operator()(void);
 
+        bool    IsEnabled;
+        bool    IsVisible;
         int     SelectedItem;
+
 
     private:
         bool                        _execute;

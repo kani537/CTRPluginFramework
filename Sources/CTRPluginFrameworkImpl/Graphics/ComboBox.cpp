@@ -8,6 +8,8 @@ namespace CTRPluginFramework
     _rectPos(IntRect(posX, posY, width, height)),
     _execute(false),
     _isTouched(false),
+    IsEnabled(true),
+    IsVisible(true),
     SelectedItem(-1)
     {
 
@@ -26,9 +28,13 @@ namespace CTRPluginFramework
        // static Color    blank = Color(255, 255, 255);
         static Color    black = Color();
         static Color    gainsboro = Color(255, 255, 255);
+        static Color    grey = Color(128, 128, 128);
+
+        if (!IsVisible)
+            return;
 
         // Draw background
-        Renderer::DrawRect(_rectPos, gainsboro);
+        Renderer::DrawRect(_rectPos, IsEnabled ? gainsboro : grey);
 
 
         if (SelectedItem == -1)
@@ -45,7 +51,7 @@ namespace CTRPluginFramework
 
     void    ComboBox::Update(bool isTouchDown, IntVector touchPos)
     {
-        if (!_items.size())
+        if (!_items.size() || !IsEnabled)
             return;
         if (!_isTouched && isTouchDown && _rectPos.Contains(touchPos))
             _isTouched = true;
@@ -62,7 +68,7 @@ namespace CTRPluginFramework
 
     bool    ComboBox::operator()(void)
     {
-        if (_items.size() && _execute)
+        if (_items.size() && IsEnabled && _execute)
         {
             Keyboard  keyboard;
 
