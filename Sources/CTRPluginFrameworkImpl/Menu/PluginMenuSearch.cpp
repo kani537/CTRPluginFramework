@@ -36,6 +36,11 @@ namespace CTRPluginFramework
         _compareType.Add("Different By Less");
         _compareType.Add("Different By More");
 
+        // Set 4 Bytes as default
+        u32   al = 4;
+        _alignmentTextBox.SetValue(al);
+        _searchSize.SelectedItem = 2;
+
     }
 
     bool    PluginMenuSearch::operator()(EventList &eventList, Time &delta)
@@ -61,7 +66,18 @@ namespace CTRPluginFramework
         // Check ComboBox
 
         _memoryRegions();
-        _searchSize();
+        if (_searchSize())
+        {
+            switch (_searchSize.SelectedItem)
+            {
+                case 0: _alignmentTextBox.SetValue((u32)(1)); _valueTextBox.ValueType = NumericTextBox::Type::Bits8; break;
+                case 1: _alignmentTextBox.SetValue((u32)(2)); _valueTextBox.ValueType = NumericTextBox::Type::Bits16; break;
+                case 2: _alignmentTextBox.SetValue((u32)(4)); _valueTextBox.ValueType = NumericTextBox::Type::Bits32; break;
+                case 3: _alignmentTextBox.SetValue((u32)(8)); _valueTextBox.ValueType = NumericTextBox::Type::Bits64; break;
+                case 4: _alignmentTextBox.SetValue((u32)(4)); _valueTextBox.ValueType = NumericTextBox::Type::Float; break;
+                case 5: _alignmentTextBox.SetValue((u32)(8)); _valueTextBox.ValueType = NumericTextBox::Type::Double; break;
+            }
+        }
         _searchType();
         _compareType();
 
