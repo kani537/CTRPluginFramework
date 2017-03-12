@@ -18,10 +18,8 @@ namespace CTRPluginFramework
         Clear();
     }
 
-    void    NumericTextBox::Clear(void)
+    void    NumericTextBox::_UpdateVal(void)
     {
-        Bits64 = 0;
-
         char buffer[17] = {0};
 
         switch (ValueType)
@@ -34,6 +32,61 @@ namespace CTRPluginFramework
             case Type::Double: sprintf(buffer, "%.4lf", Double); break;
         }
         _text = buffer;
+    }
+
+    void    NumericTextBox::SetValue(u8 val)
+    {
+        ValueType = Type::Bits8;
+        Bits8 = val;
+        
+        _UpdateVal();
+    }
+
+    void    NumericTextBox::SetValue(u16 val)
+    {
+        ValueType = Type::Bits16;
+        Bits16 = val;
+
+        _UpdateVal();
+    }
+
+    void    NumericTextBox::SetValue(u32 val)
+    {
+        ValueType = Type::Bits32;
+        Bits32 = val;
+
+        _UpdateVal();
+    }
+
+    void    NumericTextBox::SetValue(u64 val)
+    {
+        ValueType = Type::Bits64;
+        Bits64 = val;
+
+        _UpdateVal();
+    }
+
+    void    NumericTextBox::SetValue(float val)
+    {
+        ValueType = Type::Float;
+        Single = val;
+
+        _UpdateVal();
+    }
+
+    void    NumericTextBox::SetValue(double val)
+    {
+        ValueType = Type::Double;
+        Double = val;
+
+        _UpdateVal();
+    }
+
+    void    NumericTextBox::Clear(void)
+    {
+        Bits64 = 0;
+
+        _UpdateVal();
     }
 
     void    NumericTextBox::Draw(void)

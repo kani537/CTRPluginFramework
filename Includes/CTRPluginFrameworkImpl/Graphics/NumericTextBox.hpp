@@ -24,6 +24,13 @@ namespace CTRPluginFramework
 
         NumericTextBox(int posX, int posY, int width, int height);
 
+        void    SetValue(u8 val);
+        void    SetValue(u16 val);
+        void    SetValue(u32 val);
+        void    SetValue(u64 val);
+        void    SetValue(float val);
+        void    SetValue(double val);
+
         void    Clear(void);
         void    Draw(void);
         void    Update(bool isTouchDown, IntVector touchPos);
@@ -48,6 +55,8 @@ namespace CTRPluginFramework
         bool                        _isTouched;
         IntRect                     _rectPos;
         std::string                 _text;
+
+        void    _UpdateVal(void);
 
     };
 }
