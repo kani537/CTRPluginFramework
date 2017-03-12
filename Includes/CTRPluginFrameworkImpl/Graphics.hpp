@@ -11,6 +11,7 @@
 #include "CTRPluginFrameworkImpl/Graphics/ComboBox.hpp"
 #include "CTRPluginFrameworkImpl/Graphics/Icon.hpp"
 #include "CTRPluginFrameworkImpl/Graphics/IconButton.hpp"
+#include "CTRPluginFrameworkImpl/Graphics/NumericTextBox.hpp"
 #include "CTRPluginFrameworkImpl/Graphics/OSDImpl.hpp"
 #include "CTRPluginFrameworkImpl/Graphics/PrivColor.hpp"
 #include "CTRPluginFrameworkImpl/Graphics/Renderer.hpp"

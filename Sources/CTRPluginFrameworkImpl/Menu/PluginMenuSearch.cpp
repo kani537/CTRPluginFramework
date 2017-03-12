@@ -144,6 +144,14 @@ namespace CTRPluginFramework
         Renderer::DrawString("Scan Type:", textPosX, posY, blank);
         posY = 132;
 
+        // Alignment
+        Renderer::DrawString("Alignment:", textPosX, posY, blank);
+        posY = 152;
+
+        // Value
+        Renderer::DrawString("Value:", textPosX, posY, blank);
+        posY = 172;
+
 
         // Draw ComboBoxes
         _memoryRegions.Draw();
