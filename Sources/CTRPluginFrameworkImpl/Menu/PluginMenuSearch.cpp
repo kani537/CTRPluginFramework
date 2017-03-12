@@ -4,9 +4,36 @@
 namespace CTRPluginFramework
 {
     PluginMenuSearch::PluginMenuSearch() :
-    _closeBtn(*this, nullptr, IntRect(275, 24, 20, 20), Icon::DrawClose)
+    _closeBtn(*this, nullptr, IntRect(275, 24, 20, 20), Icon::DrawClose),
+    _memoryRegions(250, 50, 50, 15),
+    _searchSize(250, 70, 50, 15),
+    _searchType(250, 90, 50, 15),
+    _compareType(250, 110, 50, 15)
     {
         _currentSearch = nullptr;
+
+        // Init ComboBoxes
+
+        _searchSize.Add("1 Byte");
+        _searchSize.Add("2 Bytes");
+        _searchSize.Add("4 Bytes");
+        _searchSize.Add("8 Bytes");
+        _searchSize.Add("Float");
+        _searchSize.Add("Double");
+
+        _searchType.Add("Specified value");
+        _searchType.Add("Unknown search");
+
+        _compareType.Add("Equal");
+        _compareType.Add("Not Equal");
+        _compareType.Add("Greater Than");
+        _compareType.Add("Greater Or Equal");
+        _compareType.Add("Lesser Than");
+        _compareType.Add("Lesser Or Equal");
+        _compareType.Add("Different By");
+        _compareType.Add("Different By Less");
+        _compareType.Add("Different By More");
+
     }
 
     bool    PluginMenuSearch::operator()(EventList &eventList, Time &delta)
@@ -28,6 +55,13 @@ namespace CTRPluginFramework
 
         if (_closeBtn())
             return (true);
+
+        // Check ComboBox
+
+        _memoryRegions();
+        _searchSize();
+        _searchType();
+        _compareType();
 
         return (false);
     }
@@ -67,7 +101,7 @@ namespace CTRPluginFramework
             Renderer::DrawRect(32, 22, 336, 196, blank, false);            
         }
     }
-    
+
     /*
     ** Render Bottom
     *****************/
@@ -96,9 +130,13 @@ namespace CTRPluginFramework
 
         // Value type choice
         Renderer::DrawString("Type to search:", textPosX, posY, blank);
-        
 
 
+        // Draw ComboBoxes
+        _memoryRegions.Draw();
+        _searchSize.Draw();
+        _searchType.Draw();
+        _compareType.Draw();
 
         // Draw buttons
         _closeBtn.Draw();
@@ -115,6 +153,13 @@ namespace CTRPluginFramework
         bool        isTouched = Touch::IsDown();
         IntVector   touchPos(Touch::GetPosition());
 
+        // Update ComboBoxes
+        _memoryRegions.Update(isTouched, touchPos);
+        _searchSize.Update(isTouched, touchPos);
+        _searchType.Update(isTouched, touchPos);
+        _compareType.Update(isTouched, touchPos);
+
+        // Update buttons
         _closeBtn.Update(isTouched, touchPos);
     }
 

@@ -35,6 +35,13 @@ namespace CTRPluginFramework
         std::list<SearchBase *>             _searchHistory;
         SearchBase                          *_currentSearch;
 
+        // UIComponent
+        ComboBox                            _memoryRegions;
+        ComboBox                            _searchSize; // Variable type
+        ComboBox                            _searchType; // Unknown / Exact
+        ComboBox                            _compareType; // Compare
+
+
         // Buttons        
         IconButton<PluginMenuSearch, void>          _closeBtn;
 
