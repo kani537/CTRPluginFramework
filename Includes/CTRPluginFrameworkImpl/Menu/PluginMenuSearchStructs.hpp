@@ -5,6 +5,7 @@
 
 #include "CTRPluginFramework/System/File.hpp"
 #include <vector>
+#include <iterator>
 
 namespace CTRPluginFramework
 {
@@ -37,9 +38,10 @@ namespace CTRPluginFramework
         DifferentByMore
     };
 
-    template<typename T>
+    template <typename T>
     struct SearchResult
     {
+        SearchResult() : address(0), value(0) {}
         SearchResult(u32 addr, T v) : address(addr), value(v) {}
 
         u32     address;
@@ -55,7 +57,7 @@ namespace CTRPluginFramework
 
         virtual bool    DoSearch(void) = 0;
         virtual bool    ResultsToFile(void) = 0;
-        virtual u32     GetHeaderSize(void) = 0;
+        //virtual u32     GetHeaderSize(void) = 0;
 
         SearchType      Type; 
         SearchSize      Size;
@@ -63,7 +65,7 @@ namespace CTRPluginFramework
 
         u32             ResultCount; //<- results counts
         float           Progress; //<- current progression of the search in %
-    private: 
+    protected: 
         u32     _step; //<- current step
         u32     _startRange; //<- Start address
         u32     _endRange; //<- End address
@@ -77,10 +79,11 @@ namespace CTRPluginFramework
 
     };
 
-    template<typename T>
-    class Search : SearchBase
+    //#define ResultIter typename std::vector<SearchResult<T>>::iterator
+    template <typename T>
+    class Search : public SearchBase
     {
-        using ResultIter = typename std::vector<SearchResult<T>>::Iterator;
+        using ResultIter = typename std::vector<SearchResult<T>>::iterator;
 
     public:
 
@@ -119,14 +122,16 @@ namespace CTRPluginFramework
         
         bool        _ReadResults(std::vector<SearchResult<T>> &out, u32 index, u32 count);
 
-        inline int ReadFromFile(File &file, T &t)
+        template <typename U>
+        inline int ReadFromFile(File &file, U &t)
         {
-            return (file.Read(reinterpret_cast<char *>(&t), sizeof(T)));
+            return (file.Read(reinterpret_cast<char *>(&t), sizeof(U)));
         }
 
-        inline int WriteToFile(File &file, const T &t) const
+        template <typename U>
+        inline int WriteToFile(File &file, const U &t) const
         {
-            return (file.Write(reinterpret_cast<const char *>(&t), sizeof(T)));
+            return (file.Write(reinterpret_cast<const char *>(&t), sizeof(U)));
         }
 
     };

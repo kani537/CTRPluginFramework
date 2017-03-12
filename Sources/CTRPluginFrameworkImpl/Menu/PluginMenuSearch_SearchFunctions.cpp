@@ -62,7 +62,7 @@ namespace CTRPluginFramework
             {
                 for (; start < end; start += _alignment)
                 {
-                    T value = *(static_cast<T *>(start));
+                    T value = *(reinterpret_cast<T *>(start));
                     if (value == _checkValue)
                     {
                         ResultCount++;
@@ -77,7 +77,7 @@ namespace CTRPluginFramework
             {
                 for (; start < end; start += _alignment)
                 {
-                    T value = *(static_cast<T *>(start));
+                    T value = *(reinterpret_cast<T *>(start));
                     if (value != _checkValue)
                     {
                         ResultCount++;
@@ -92,7 +92,7 @@ namespace CTRPluginFramework
             {
                 for (; start < end; start += _alignment)
                 {
-                    T value = *(static_cast<T *>(start));
+                    T value = *(reinterpret_cast<T *>(start));
                     if (value > _checkValue)
                     {
                         ResultCount++;
@@ -107,7 +107,7 @@ namespace CTRPluginFramework
             {
                 for (; start < end; start += _alignment)
                 {
-                    T value = *(static_cast<T *>(start));
+                    T value = *(reinterpret_cast<T *>(start));
                     if (value >= _checkValue)
                     {
                         ResultCount++;
@@ -122,7 +122,7 @@ namespace CTRPluginFramework
             {
                 for (; start < end; start += _alignment)
                 {
-                    T value = *(static_cast<T *>(start));
+                    T value = *(reinterpret_cast<T *>(start));
                     if (value < _checkValue)
                     {
                         ResultCount++;
@@ -137,7 +137,7 @@ namespace CTRPluginFramework
             {
                 for (; start < end; start += _alignment)
                 {
-                    T value = *(static_cast<T *>(start));
+                    T value = *(reinterpret_cast<T *>(start));
                     if (value <= _checkValue)
                     {
                         ResultCount++;
@@ -213,7 +213,7 @@ namespace CTRPluginFramework
             {
                 for (; start < end; start += _alignment)
                 {
-                    T value = *(static_cast<T *>(start));
+                    T value = *(reinterpret_cast<T *>(start));
 
                     ResultCount++;
                     _results.push_back(SearchResult<T>(start, value));
@@ -245,12 +245,12 @@ namespace CTRPluginFramework
 
                 for (; iter != end; iter++)
                 {
-                    T val = *static_cast<T *>(iter.address);
-                    T oldVal = iter.value;
+                    T val = *reinterpret_cast<T *>((*iter).address);
+                    T oldVal = (*iter).value;
                     if (_Compare(oldVal, val))
                     {
                         ResultCount++;
-                        _results.push_back(SearchResult<T>(iter.address, val));
+                        _results.push_back(SearchResult<T>((*iter).address, val));
                     }
                 }
 
@@ -353,7 +353,7 @@ namespace CTRPluginFramework
         _file.Seek(offset, File::SeekPos::SET);
 
         // Reserve memory and create default object
-        out.Resize(count);
+        out.resize(count);
 
         //Read results
         if (_file.Read((void *)out.data(), count * _GetResultStructSize()) != 0)
@@ -361,4 +361,11 @@ namespace CTRPluginFramework
 
         return (false);
     }
+
+    template class Search<u8>;
+    template class Search<u16>;
+    template class Search<u32>;
+    template class Search<u64>;
+    template class Search<float>;
+    template class Search<double>;
 }
