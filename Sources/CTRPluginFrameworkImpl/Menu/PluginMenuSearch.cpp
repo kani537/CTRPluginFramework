@@ -11,9 +11,10 @@ namespace CTRPluginFramework
     _compareType(150, 110, 130, 15),
     _alignmentTextBox(150, 130, 130, 15),
     _valueTextBox(150, 150, 130, 15),
-    _searchBtn("Search", *this, nullptr, IntRect(35, 195, 80, 15)),
+    _searchBtn("Search", *this, &PluginMenuSearch::_searchBtn_OnClick, IntRect(35, 195, 80, 15)),
     _undoBtn("Undo", *this, nullptr, IntRect(120, 195, 80, 15)),
-    _resetBtn("Reset", *this, nullptr, IntRect(205, 195, 80, 15))
+    _resetBtn("Reset", *this, nullptr, IntRect(205, 195, 80, 15)),
+    _inSearch(false)
     {
         _currentSearch = nullptr;
 
@@ -164,6 +165,12 @@ namespace CTRPluginFramework
         // Enable renderer
         Renderer::SetTarget(TOP);
 
+        if (_inSearch)
+        {
+            _ShowProgressWindow();
+            return;
+        }
+
         // Draw background
         if (Preferences::topBackgroundImage->IsLoaded())
             Preferences::topBackgroundImage->Draw(background.leftTop);
@@ -186,6 +193,9 @@ namespace CTRPluginFramework
 
         // Enable renderer
         Renderer::SetTarget(BOTTOM);
+
+        if (_inSearch)
+            return;
 
         // Background
         if (Preferences::bottomBackgroundImage->IsLoaded())
@@ -271,20 +281,44 @@ namespace CTRPluginFramework
     }
 
     /*
-    ** DoSearch
+    ** Search button On_Click
     ************/
-    void    PluginMenuSearch::_DoSearch(void)
+    void    PluginMenuSearch::_searchBtn_OnClick(void)
     {
-        if (_currentSearch == nullptr) return;
+        // If it's not the first research, add it to the history
+        if (_currentSearch != nullptr)
+            _searchHistory.push_back(_currentSearch);
 
-        bool isFinished = _currentSearch->DoSearch();
+        if (_memoryRegions.SelectedItem == -1 || _memoryRegions.SelectedItem >= _regionsList.size())
+            return;
 
-        // if finished, write results to file
-        if (isFinished)
+        u32     startRange = _regionsList[_memoryRegions.SelectedItem].startAddress;
+        u32     endRange = _regionsList[_memoryRegions.SelectedItem].endAddress;
+        u32     step = _searchHistory.size();
+
+
+
+        // Create search object and set SearchSize
+        switch (_searchSize.SelectedItem)
         {
-            //_currentSearch->file.Write(_currentSearch->)
+            case 0: _currentSearch = new Search<u8>(_valueTextBox.Bits8, startRange, endRange, _alignmentTextBox.Bits32, _currentSearch);  _currentSearch->Size = SearchSize::Bits8; break;
+            case 1: _currentSearch = new Search<u16>(_valueTextBox.Bits16, startRange, endRange, _alignmentTextBox.Bits32, _currentSearch); _currentSearch->Size = SearchSize::Bits16; break;
+            case 2: _currentSearch = new Search<u32>(_valueTextBox.Bits32, startRange, endRange, _alignmentTextBox.Bits32, _currentSearch); _currentSearch->Size = SearchSize::Bits32; break;
+            case 3: _currentSearch = new Search<u64>(_valueTextBox.Bits64, startRange, endRange, _alignmentTextBox.Bits32, _currentSearch); _currentSearch->Size = SearchSize::Bits64; break;
+            case 4: _currentSearch = new Search<float>(_valueTextBox.Single, startRange, endRange, _alignmentTextBox.Bits32, _currentSearch); _currentSearch->Size = SearchSize::FloatingPoint; break;
+            case 5: _currentSearch = new Search<double>(_valueTextBox.Double, startRange, endRange, _alignmentTextBox.Bits32, _currentSearch); _currentSearch->Size = SearchSize::Double; break;
         }
 
+        // Set Search Type
+        _currentSearch->Type = static_cast<SearchType>(_searchType.SelectedItem);
+
+        // Set CompareType
+        _currentSearch->Compare = static_cast<CompareType>(_compareType.SelectedItem);
+
+        // Lock memoy region
+        _memoryRegions.IsEnabled = false;
+
+        _inSearch = true;
     }
 
     void    PluginMenuSearch::_ShowProgressWindow(void)

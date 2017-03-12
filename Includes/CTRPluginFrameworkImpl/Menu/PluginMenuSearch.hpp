@@ -11,6 +11,12 @@
 
 namespace CTRPluginFramework
 {
+    struct Region
+    {
+        u32 startAddress;
+        u32 endAddress;
+    };
+
     class PluginMenuSearch
     {
         using EventList = std::vector<Event>;
@@ -27,14 +33,17 @@ namespace CTRPluginFramework
         void    _RenderBottom(void);
         void    _Update(Time delta);
 
-        void    _DoSearch(void);
+        void    _searchBtn_OnClick(void);
         void    _ShowProgressWindow(void);
 
 
 
         // Members
+        std::vector<Region>                 _regionsList;
         std::list<SearchBase *>             _searchHistory;
         SearchBase                          *_currentSearch;
+
+        bool                                _inSearch;
 
         // UIComponent
         ComboBox                            _memoryRegions;
