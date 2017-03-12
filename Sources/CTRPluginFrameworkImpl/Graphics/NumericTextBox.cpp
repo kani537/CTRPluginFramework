@@ -60,7 +60,7 @@ namespace CTRPluginFramework
 
     void    NumericTextBox::Update(bool isTouchDown, IntVector touchPos)
     {
-        if (IsEnabled)
+        if (!IsEnabled)
             return;
         if (!_isTouched && isTouchDown && _rectPos.Contains(touchPos))
             _isTouched = true;
