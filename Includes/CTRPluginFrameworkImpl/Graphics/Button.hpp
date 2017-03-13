@@ -30,7 +30,8 @@ namespace CTRPluginFramework
         _icon(icon),
         _isReady(true),
         _useSysfont(true),
-        _useRounded(false)
+        _useRounded(false),
+        IsEnabled(true)
         {
             // Black
             borderColor = Color(165, 165, 165);
@@ -52,7 +53,7 @@ namespace CTRPluginFramework
 
         bool    operator ()(Args&... args)
         {
-            if (_execute)
+            if (IsEnabled && _execute)
             {
                 if (_callback != nullptr)
                     (_caller.*(_callback))(args...);
@@ -83,6 +84,7 @@ namespace CTRPluginFramework
         Color           idleColor;
         Color           pressedColor;
         Color           contentColor;
+        bool            IsEnabled;
 
     private:
 
@@ -133,7 +135,9 @@ namespace CTRPluginFramework
     void    Button<C, T, Args...>::Draw(void)
     {
         //Renderer::RoundedRectangle(_uiProperty, 7, 50, borderColor, true, isPressed ? pressedColor : idleColor);
-        
+        if (!IsEnabled)
+            return;
+
         Color &fillColor = _isPressed ? pressedColor : idleColor;
         int i;
 
@@ -208,6 +212,9 @@ namespace CTRPluginFramework
     template <class C, class T, class... Args>
     void    Button<C,T, Args...>::Update(bool isTouchDown, IntVector touchPos)
     {
+        if (!IsEnabled)
+            return;
+
         // Check if is pressed
         _isPressed = false;
 
