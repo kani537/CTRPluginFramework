@@ -113,8 +113,12 @@ namespace CTRPluginFramework
         if (_buildResult)
         {
             _buildResult = false;
-            trigger = true;
+            trigger = true;   
+            return (false);  
         }
+
+        if (_waitForUser)
+            return (false);
 
         // Check buttons
 
@@ -124,6 +128,7 @@ namespace CTRPluginFramework
         _searchBtn();
         _undoBtn();
         _resetBtn();
+
 
         // Check ComboBox
 
@@ -391,7 +396,7 @@ namespace CTRPluginFramework
     void    PluginMenuSearch::_resetBtn_OnClick(void)
     {
         // Clear history
-        if (_searchHistory.size())
+        if (_searchHistory.size() > 0)
         {
             for (auto it = _searchHistory.begin(); it != _searchHistory.end(); it++)
                 delete *it;            
@@ -454,6 +459,7 @@ namespace CTRPluginFramework
         static Color    dimGrey(15, 15, 15);
         static Color    silver(160, 160, 160);
         static IntRect  background(125, 80, 150, 70);
+        static IntRect  background2(125, 80, 150, 85);
         static Color    skyblue(0, 191, 255);
         static Color    limegreen(50, 205, 50);
         static Clock    timer;
@@ -467,7 +473,7 @@ namespace CTRPluginFramework
         Renderer::SetTarget(TOP);
 
         // Draw "window" background
-        Renderer::DrawRect2(background, black, dimGrey);
+        Renderer::DrawRect2(_inSearch ? background : background2, black, dimGrey);
 
         int posY = 90;
 
@@ -504,14 +510,21 @@ namespace CTRPluginFramework
         // Draw progress fill
         IntRect progBarFill = IntRect(131, posY + 1, (u32)prog, 13);
         Renderer::DrawRect(progBarFill, limegreen);
-        // Draw Result count
-        std::string res = "Result(s): " + std::to_string(_currentSearch->ResultCount);
         posY += 20;
-        Renderer::DrawString((char *)res.c_str(), 131, posY, blank);
 
+        if (_inSearch)
+        {
+            // Draw Result count
+            std::string res = "Hit(s): " + std::to_string(_currentSearch->ResultCount);            
+            Renderer::DrawString((char *)res.c_str(), 131, posY, blank);
+        }
         if (!_inSearch)
         {
-            posY -= 12;
+            std::string res = std::to_string(_currentSearch->ResultCount) + " hit(s) found";
+            std::string res2 =  "in " + std::to_string(_currentSearch->SearchTime.AsSeconds()) + "s";            
+            Renderer::DrawString((char *)res.c_str(), 131, posY, blank);
+            Renderer::DrawString((char *)res2.c_str(), 131, posY, blank);
+            posY -= 10;
             Renderer::DrawSysString("\uE000", 255, posY, 300, skyblue);
         }
     }
@@ -531,8 +544,8 @@ namespace CTRPluginFramework
 
         int posY = 107;
 
-        float   length = Renderer::GetTextSize("Build result(s) list...");
-        Renderer::DrawSysString("Build result(s) list...", 125 + ((150 - length) /2), posY, 300, skyblue);
+        float   length = Renderer::GetTextSize("Build hit(s) list...");
+        Renderer::DrawSysString("Build hit(s) list...", 125 + ((150 - length) /2), posY, 300, skyblue);
     }
 
     void    PluginMenuSearch::_ListRegion(void)
@@ -566,7 +579,11 @@ namespace CTRPluginFramework
                     save_addr = meminfo.base_addr + meminfo.size + 1;
                 continue;
             }
+            
             save_addr = meminfo.base_addr + meminfo.size + 1;
+            if (meminfo.base_addr == 0x06000000 || meminfo.base_addr == 0x07000000 || meminfo.base_addr == 0x07500000)
+                continue;
+
             if (meminfo.state != 0x0 && meminfo.state != 0x2 && meminfo.state != 0x3 && meminfo.state != 0x6)
             {
                 if (meminfo.perm & MEMPERM_READ)
