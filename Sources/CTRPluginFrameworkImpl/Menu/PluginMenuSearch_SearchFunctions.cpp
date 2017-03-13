@@ -197,21 +197,18 @@ namespace CTRPluginFramework
     template<typename T>
     bool    Search<T>::DoSearch(void)
     {
-        _results.clear();
+        u32 maxResult = 0x2000 / _GetResultStructSize();
 
         // First Search ?
         if (_previousSearch == nullptr)
         {
             u32 start = _currentPosition == 0 ? _startRange : _currentPosition;
-            u32 maxResult = 0x2000 / _GetResultStructSize();
+            
             u32 end = start + std::min((u32)(_endRange - start), (u32)0x2000);
 
             if (Type == SearchType::ExactValue)
             {
                 _FirstExactSearch(start, end, maxResult);
-
-                if (_results.size())
-                    ResultsToFile();
 
                 // Update position
                 _currentPosition = start;
@@ -233,16 +230,19 @@ namespace CTRPluginFramework
             }
 
             // Calculate progress
-            //float chunk = (_endRange - _startRange);
             Progress = ((100.0f * (float)(_currentPosition - _startRange)) / (_endRange - _startRange));
+
+            // Finish
+            if (_currentPosition >= _endRange)
+            {
+                ResultsToFile();
+                return (true);
+            }
         }
         // Second search
-        else if (_previousSearch != nullptr)
-        {
-            
+        else
+        {            
             std::vector<SearchResult<T>>    oldResults;
-
-            u32 maxResult = 0x2000 / _GetResultStructSize();
 
             // First get the results from the file
             if (reinterpret_cast<Search<T> *>(_previousSearch)->_ReadResults(oldResults, _currentPosition, maxResult))
@@ -252,12 +252,12 @@ namespace CTRPluginFramework
 
                 for (; iter != end; iter++)
                 {
-                    T val = *reinterpret_cast<T *>((*iter).address);
-                    T oldVal = (*iter).value;
-                    if (_Compare(oldVal, val))
+                    T   newval = *reinterpret_cast<T *>((*iter).address);
+                    T   oldVal = (*iter).value;
+                    if (_Compare(oldVal, newval))
                     {
                         ResultCount++;
-                        _results.push_back(SearchResult<T>((*iter).address, val));
+                        _results.push_back(SearchResult<T>((*iter).address, newval));
                     }
                 }
 
@@ -265,13 +265,21 @@ namespace CTRPluginFramework
                 _currentPosition += oldResults.size();
 
                 // Calculate progress
-                float chunk = _previousSearch->ResultCount / 100;
-                Progress = (float)(_currentPosition) / chunk;
+                Progress = (100.f * (float)(_currentPosition)) / _previousSearch->ResultCount;
+            }
+
+            // Finish
+            if (_currentPosition >= ResultCount)
+            {
+                ResultsToFile();
+                return (true);
             }
         }
 
-        if (_currentPosition >= _endRange)
-            return (true);
+
+
+        if (_results.size() >= maxResult)
+            ResultsToFile();
 
         return (false);
     }
@@ -343,6 +351,9 @@ namespace CTRPluginFramework
 
         // Write all results
         _file.Write(_results.data(), _results.size() * _GetResultStructSize());
+
+        // Clear results vector
+        _results.clear();
     }
 
     template <typename T>
@@ -362,8 +373,8 @@ namespace CTRPluginFramework
         // Reserve memory and create default object
         out.resize(count);
 
-        //Read results
-        if (_file.Read((void *)out.data(), count * _GetResultStructSize()) != 0)
+        // Read results
+        if (_file.Read((void *)out.data(), count * _GetResultStructSize()) == 0)
             return (true);
 
         return (false);

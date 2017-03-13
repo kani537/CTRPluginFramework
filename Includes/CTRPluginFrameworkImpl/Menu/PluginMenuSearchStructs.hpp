@@ -92,14 +92,14 @@ namespace CTRPluginFramework
         /*
         ** DoSearch
         ** Override SearchBase's
-        ** Return if search is done
+        ** Return true if search is done
         ****************************/
         bool    DoSearch(void);
 
         /*
         ** ResultsToFile
         ** Override SearchBase's
-        ** Return if search is done
+        ** Return true if suceeded
         ****************************/
         bool    ResultsToFile(void);
 
