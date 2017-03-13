@@ -4,7 +4,6 @@
 
 #include "CTRPluginFrameworkImpl/Graphics.hpp"
 #include "CTRPluginFrameworkImpl/System.hpp"
-#include "CTRPluginFrameworkImpl/Menu.hpp"
 #include "CTRPluginFrameworkImpl/Menu/PluginMenuSearchStructs.hpp"
 
 #include <string>
