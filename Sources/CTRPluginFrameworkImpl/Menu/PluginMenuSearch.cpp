@@ -95,6 +95,7 @@ namespace CTRPluginFramework
                 _resetBtn.IsEnabled = true;
                 if (_step > 1)
                     _undoBtn.IsEnabled = true;
+                _searchMenu.Update();
             }
             return (false);
         }
@@ -382,6 +383,7 @@ namespace CTRPluginFramework
         _step = 0;
 
         _resetBtn.IsEnabled = false;
+        _searchMenu.Update();
     }
 
     void    PluginMenuSearch::_undoBtn_OnClick(void)
@@ -404,6 +406,7 @@ namespace CTRPluginFramework
 
         if (_step == 0)
             _undoBtn.IsEnabled = false;
+        _searchMenu.Update();
     }
 
     void    PluginMenuSearch::_ShowProgressWindow(void)
