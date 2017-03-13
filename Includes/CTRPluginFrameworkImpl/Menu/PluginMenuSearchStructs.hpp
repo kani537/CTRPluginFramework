@@ -4,6 +4,7 @@
 #include "types.h"
 
 #include "CTRPluginFramework/System/File.hpp"
+#include "CTRPluginFramework/System/Clock.hpp"
 #include <vector>
 #include <iterator>
 
@@ -68,7 +69,7 @@ namespace CTRPluginFramework
 
         u32             ResultCount; //<- results counts
         float           Progress; //<- current progression of the search in %
-
+        Time            SearchTime;
     protected: 
         friend class SearchMenu;
         u32     _step; //<- current step
@@ -76,6 +77,7 @@ namespace CTRPluginFramework
         u32     _endRange; //<- End address
         u32     _currentPosition; //<- Current position in the search range
         u8      _alignment; //<- search alignment
+        Clock   _clock;
         
 
         File    _file; //<- File associated for read / Write

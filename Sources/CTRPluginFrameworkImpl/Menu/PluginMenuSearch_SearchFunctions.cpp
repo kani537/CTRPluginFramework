@@ -197,7 +197,11 @@ namespace CTRPluginFramework
     template<typename T>
     bool    Search<T>::DoSearch(void)
     {
-        u32 maxResult = 0x2000 / _GetResultStructSize();
+        u32 maxResult = 1000;//0x2000 / _GetResultStructSize();
+
+        //Just started search ?
+        if (_currentPosition == 0)
+            _clock.Restart();
 
         // First Search ?
         if (_previousSearch == nullptr)
@@ -236,6 +240,7 @@ namespace CTRPluginFramework
             if (_currentPosition >= _endRange)
             {
                 ResultsToFile();
+                SearchTime = _clock.Restart();
                 return (true);
             }
         }
@@ -272,6 +277,7 @@ namespace CTRPluginFramework
             if (_currentPosition >= _previousSearch->ResultCount)
             {
                 ResultsToFile();
+                SearchTime = _clock.Restart();
                 return (true);
             }
         }
@@ -319,12 +325,12 @@ namespace CTRPluginFramework
     {
         return 
         (  
-            sizeof(Type)
-            + sizeof(Compare)
-            + sizeof(_startRange)
-            + sizeof(_endRange)
-            + sizeof(_alignment)
-            + sizeof(ResultCount)
+            sizeof(Type) // u8
+            + sizeof(Compare) // u8
+            + sizeof(_startRange) // u32
+            + sizeof(_endRange) //u32
+            + sizeof(_alignment) // u32
+            + sizeof(ResultCount) //u32
             + sizeof(Size)
             + sizeof(T)
             + sizeof(u32) // offset in file where results starts
@@ -422,8 +428,8 @@ namespace CTRPluginFramework
             std::vector<SearchResult<T>>    oldResults;
             int                             oldIndex = 0;
 
-            reinterpret_cast<Search<T> *>(_previousSearch)->_ReadResults(oldResults, oldIndex, 100);
-            oldIndex = 100;
+            reinterpret_cast<Search<T> *>(_previousSearch)->_ReadResults(oldResults, oldIndex, 1000);
+            oldIndex = 1000;
 
             for (int i = 0; i < newResults.size(); i++)
             {
@@ -455,12 +461,12 @@ namespace CTRPluginFramework
 
                     if (oldResults[y].address == tofind)
                         break;
-                    if (!reinterpret_cast<Search<T> *>(_previousSearch)->_ReadResults(oldResults, oldIndex, 100))
+                    if (!reinterpret_cast<Search<T> *>(_previousSearch)->_ReadResults(oldResults, oldIndex, 1000))
                     {
                         y = -1;
                         break;
                     }
-                    oldIndex += 100;
+                    oldIndex += 1000;
                 }
 
                 if (y == -1)
