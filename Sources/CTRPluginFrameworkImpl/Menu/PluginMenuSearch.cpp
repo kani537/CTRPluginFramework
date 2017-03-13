@@ -6,6 +6,7 @@
 namespace CTRPluginFramework
 {
     PluginMenuSearch::PluginMenuSearch() :
+    _searchMenu(_currentSearch),
     _closeBtn(*this, nullptr, IntRect(275, 24, 20, 20), Icon::DrawClose),
     _memoryRegions(150, 50, 130, 15),
     _searchSize(150, 70, 130, 15),
@@ -14,10 +15,11 @@ namespace CTRPluginFramework
     _alignmentTextBox(150, 130, 130, 15),
     _valueTextBox(150, 150, 130, 15),
     _searchBtn("Search", *this, &PluginMenuSearch::_searchBtn_OnClick, IntRect(35, 195, 80, 15)),
-    _undoBtn("Undo", *this, nullptr, IntRect(120, 195, 80, 15)),
-    _resetBtn("Reset", *this, nullptr, IntRect(205, 195, 80, 15)),
+    _undoBtn("Undo", *this, &PluginMenuSearch::_undoBtn_OnClick, IntRect(120, 195, 80, 15)),
+    _resetBtn("Reset", *this, &PluginMenuSearch::_resetBtn_OnClick, IntRect(205, 195, 80, 15)),
     _inSearch(false),
-    _firstRegionInit(false)
+    _firstRegionInit(false),
+    _step(0)
     {
         _currentSearch = nullptr;
 
@@ -46,7 +48,9 @@ namespace CTRPluginFramework
         // Init buttons
         _searchBtn.UseSysFont(false);
         _undoBtn.UseSysFont(false);
+        _undoBtn.IsEnabled = false;
         _resetBtn.UseSysFont(false);
+        _resetBtn.IsEnabled = false;
 
         // Set 4 Bytes as default
         u32   al = 4;
@@ -63,9 +67,13 @@ namespace CTRPluginFramework
             _firstRegionInit = true;
         }
 
+
         // Process Event
+        _searchMenu.ProcessEvent(eventList, delta);
         for (int i = 0; i < eventList.size(); i++)
-            _ProcessEvent(eventList[i]); 
+        {
+            _ProcessEvent(eventList[i]);
+        }
 
         // Update
         _Update(delta);
@@ -81,6 +89,13 @@ namespace CTRPluginFramework
         {
             bool finish = _currentSearch->DoSearch();
             _inSearch = !finish;
+            if (finish)
+            {
+                _compareType.IsEnabled = true;
+                _resetBtn.IsEnabled = true;
+                if (_step > 1)
+                    _undoBtn.IsEnabled = true;
+            }
             return (false);
         }
 
@@ -197,6 +212,8 @@ namespace CTRPluginFramework
             Renderer::DrawRect2(background, black, dimGrey);
             Renderer::DrawRect(32, 22, 336, 196, blank, false);            
         }
+
+        _searchMenu.Draw();
     }
 
     /*
@@ -211,9 +228,6 @@ namespace CTRPluginFramework
 
         // Enable renderer
         Renderer::SetTarget(BOTTOM);
-
-        if (_inSearch)
-            return;
 
         // Background
         if (Preferences::bottomBackgroundImage->IsLoaded())
@@ -333,10 +347,63 @@ namespace CTRPluginFramework
         // Set CompareType
         _currentSearch->Compare = static_cast<CompareType>(_compareType.SelectedItem);
 
-        // Lock memoy region
+        // Lock memory region
         _memoryRegions.IsEnabled = false;
+        // Lock search size
+        _searchSize.IsEnabled = false;
 
         _inSearch = true;
+
+        _step++;
+    }
+
+    void    PluginMenuSearch::_resetBtn_OnClick(void)
+    {
+        // Clear history
+        for (auto it = _searchHistory.begin(); it != _searchHistory.end(); it++)
+            delete *it;
+
+        if (_currentSearch != nullptr)
+            delete _currentSearch;
+
+        // Reset _currentSearch
+        _currentSearch = nullptr;
+
+        // Update memory regions
+        _ListRegion();
+
+        // Unlock memory rgions
+        _memoryRegions.IsEnabled = true;
+
+        // Unlock search size
+        _searchSize.IsEnabled = true;
+
+        // Reset step
+        _step = 0;
+
+        _resetBtn.IsEnabled = false;
+    }
+
+    void    PluginMenuSearch::_undoBtn_OnClick(void)
+    {
+        // Reset _currentSearch
+        if (_currentSearch != nullptr)
+            delete _currentSearch;
+
+        // Get last search data
+        if (_searchHistory.size())
+        {
+            _currentSearch = (_searchHistory.back());
+            _searchHistory.pop_back();
+        }
+        else
+            _currentSearch = nullptr;
+
+        // Reset step
+        _step--;
+
+        if (_step == 0)
+            _undoBtn.IsEnabled = false;
     }
 
     void    PluginMenuSearch::_ShowProgressWindow(void)

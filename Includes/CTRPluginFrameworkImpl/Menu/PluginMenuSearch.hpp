@@ -5,6 +5,7 @@
 #include "CTRPluginFrameworkImpl/System.hpp"
 #include "CTRPluginFrameworkImpl/Menu/Menu.hpp"
 #include "CTRPluginFrameworkImpl/Menu/PluginMenuSearchStructs.hpp"
+#include "CTRPluginFrameworkImpl/Menu/PluginMenu_SearchMenu.hpp"
 
 #include <vector>
 #include <list>
@@ -36,6 +37,8 @@ namespace CTRPluginFramework
         void    _ListRegion(void);
 
         void    _searchBtn_OnClick(void);
+        void    _resetBtn_OnClick(void);
+        void    _undoBtn_OnClick(void);
 
         void    _ShowProgressWindow(void);
 
@@ -48,8 +51,10 @@ namespace CTRPluginFramework
 
         bool                                _inSearch;
         bool                                _firstRegionInit;
+        int                                 _step;
 
         // UIComponent
+        SearchMenu                          _searchMenu;
         ComboBox                            _memoryRegions;
         ComboBox                            _searchSize; // Variable type
         ComboBox                            _searchType; // Unknown / Exact
