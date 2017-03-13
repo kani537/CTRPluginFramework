@@ -65,7 +65,9 @@ namespace CTRPluginFramework
 
         u32             ResultCount; //<- results counts
         float           Progress; //<- current progression of the search in %
+
     protected: 
+        friend class SearchMenu;
         u32     _step; //<- current step
         u32     _startRange; //<- Start address
         u32     _endRange; //<- End address
@@ -79,7 +81,6 @@ namespace CTRPluginFramework
 
     };
 
-    //#define ResultIter typename std::vector<SearchResult<T>>::iterator
     template <typename T>
     class Search : public SearchBase
     {
