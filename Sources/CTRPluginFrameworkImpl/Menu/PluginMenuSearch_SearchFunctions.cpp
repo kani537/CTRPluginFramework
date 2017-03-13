@@ -1,6 +1,7 @@
 #include "CTRPluginFrameworkImpl/Menu/PluginMenuSearchStructs.hpp"
 #include "CTRPluginFramework/System/Directory.hpp"
 #include "CTRPluginFramework/System/Process.hpp"
+#include "ctrulib/allocator/linear.h"
 #include <time.h>
 
 #include <string>
@@ -53,11 +54,61 @@ namespace CTRPluginFramework
     {
         _checkValue = value;
         _WriteHeaderToFile();
+
+        //_results.reserve(0x1000);
+        //_maxResult = 1000;//_results.capacity() == 0x1000 ? 0x1000 : 1000;
+        _resultsArray = (SearchResult<T>*)linearAlloc(0x8000);//new SearchResult<T>[0x8000]; //32k
+        _maxResult = (0x8000 / sizeof(SearchResult<T>));
+        _resultsEnd = _resultsArray + _maxResult;
+        _resultsP = _resultsArray;
+    }
+
+    /*
+    **
+    *****************************/
+
+    template <typename T>
+    void    Search<T>::_UpdateCompare(void)
+    {
+        if (Type == SearchType::ExactValue)
+        {
+            switch (Compare)
+            {
+                case CompareType::Equal: _compare = &Search<T>::_CompareE; break;
+                case CompareType::NotEqual: _compare = &Search<T>::_CompareNE; break;
+                case CompareType::GreaterThan: _compare = &Search<T>::_CompareGT; break;
+                case CompareType::GreaterOrEqual: _compare = &Search<T>::_CompareGE; break;
+                case CompareType::LesserThan: _compare = &Search<T>::_CompareLT; break;
+                case CompareType::LesserOrEqual: _compare = &Search<T>::_CompareLE; break;
+                case CompareType::DifferentBy: _compare = &Search<T>::_CompareDB; break;
+                case CompareType::DifferentByLess: _compare = &Search<T>::_CompareDBL; break;
+                case CompareType::DifferentByMore: _compare = &Search<T>::_CompareDBM; break;
+                default: _compare = &Search<T>::_CompareE; break;
+            } 
+        }
+        else
+        {
+            switch (Compare)
+            {
+                case CompareType::Equal: _compare = &Search<T>::_CompareUnknownE; break;
+                case CompareType::NotEqual: _compare = &Search<T>::_CompareUnknownNE; break;
+                case CompareType::GreaterThan: _compare = &Search<T>::_CompareUnknownGT; break;
+                case CompareType::GreaterOrEqual: _compare = &Search<T>::_CompareUnknownGE; break;
+                case CompareType::LesserThan: _compare = &Search<T>::_CompareUnknownLT; break;
+                case CompareType::LesserOrEqual: _compare = &Search<T>::_CompareUnknownLE; break;
+                case CompareType::DifferentBy: _compare = &Search<T>::_CompareDB; break;
+                case CompareType::DifferentByLess: _compare = &Search<T>::_CompareDBL; break;
+                case CompareType::DifferentByMore: _compare = &Search<T>::_CompareDBM; break;
+                default: _compare = &Search<T>::_CompareUnknownE; break;
+            }
+        }
     }
 
     template <typename T>
     void      Search<T>::_FirstExactSearch(u32 &start, u32 end, u32 maxResult)
     {
+        Clock timer;
+
         switch (Compare)
         {
             case CompareType::Equal:
@@ -68,8 +119,10 @@ namespace CTRPluginFramework
                     if (value == _checkValue)
                     {
                         ResultCount++;
-                        _results.push_back(SearchResult<T>(start, value));
-                        if (_results.size() >= maxResult)
+                        _resultsP->address = start;
+                        _resultsP->value = value;
+                        _resultsP++;
+                        if (_resultsP >= _resultsEnd)
                             break;
                     }
                 }
@@ -83,8 +136,10 @@ namespace CTRPluginFramework
                     if (value != _checkValue)
                     {
                         ResultCount++;
-                        _results.push_back(SearchResult<T>(start, value));
-                        if (_results.size() >= maxResult)
+                        _resultsP->address = start;
+                        _resultsP->value = value;
+                        _resultsP++;
+                        if (_resultsP >= _resultsEnd)
                             break;
                     }
                 }
@@ -98,8 +153,10 @@ namespace CTRPluginFramework
                     if (value > _checkValue)
                     {
                         ResultCount++;
-                        _results.push_back(SearchResult<T>(start, value));
-                        if (_results.size() >= maxResult)
+                        _resultsP->address = start;
+                        _resultsP->value = value;
+                        _resultsP++;
+                        if (_resultsP >= _resultsEnd)
                             break;
                     }
                 }
@@ -113,8 +170,10 @@ namespace CTRPluginFramework
                     if (value >= _checkValue)
                     {
                         ResultCount++;
-                        _results.push_back(SearchResult<T>(start, value));
-                        if (_results.size() >= maxResult)
+                        _resultsP->address = start;
+                        _resultsP->value = value;
+                        _resultsP++;
+                        if (_resultsP >= _resultsEnd)
                             break;
                     }
                 }
@@ -128,8 +187,10 @@ namespace CTRPluginFramework
                     if (value < _checkValue)
                     {
                         ResultCount++;
-                        _results.push_back(SearchResult<T>(start, value));
-                        if (_results.size() >= maxResult)
+                        _resultsP->address = start;
+                        _resultsP->value = value;
+                        _resultsP++;
+                        if (_resultsP >= _resultsEnd)
                             break;
                     }
                 }
@@ -143,8 +204,10 @@ namespace CTRPluginFramework
                     if (value <= _checkValue)
                     {
                         ResultCount++;
-                        _results.push_back(SearchResult<T>(start, value));
-                        if (_results.size() >= maxResult)
+                        _resultsP->address = start;
+                        _resultsP->value = value;
+                        _resultsP++;
+                        if (_resultsP >= _resultsEnd)
                             break;
                     }
                 }
@@ -155,53 +218,15 @@ namespace CTRPluginFramework
         } // End switch
     }
 
-    // Return if it matches the condition
-    template<typename T>
-    bool    Search<T>::_Compare(T older, T newer)
-    {
-        if (Type == SearchType::ExactValue)
-        {
-            switch (Compare)
-            {
-                case CompareType::Equal: return (_checkValue == newer);
-                case CompareType::NotEqual: return (_checkValue != newer);
-                case CompareType::GreaterThan: return (newer > _checkValue);
-                case CompareType::GreaterOrEqual: return (newer >= _checkValue);
-                case CompareType::LesserThan: return (newer < _checkValue);
-                case CompareType::LesserOrEqual: return (newer <= _checkValue);
-                case CompareType::DifferentBy: return (newer == (older + _checkValue) || newer == (older - _checkValue));
-                case CompareType::DifferentByLess: return ((older - _checkValue) < newer && newer < (older + _checkValue));
-                case CompareType::DifferentByMore: return (newer < (older - _checkValue) || newer > (older + _checkValue));
-                default: return (false);
-            } 
-        }
-        else
-        {
-            switch (Compare)
-            {
-                case CompareType::Equal: return (older == newer);
-                case CompareType::NotEqual: return (older != newer);
-                case CompareType::GreaterThan: return (newer > older);
-                case CompareType::GreaterOrEqual: return (newer >= older);
-                case CompareType::LesserThan: return (newer < older);
-                case CompareType::LesserOrEqual: return (newer <= older);
-                case CompareType::DifferentBy: return (newer == (older + _checkValue) || newer == (older - _checkValue));
-                case CompareType::DifferentByLess: return ((older - _checkValue) < newer && newer < (older + _checkValue));
-                case CompareType::DifferentByMore: return (newer < (older - _checkValue) || newer > (older + _checkValue));
-                default: return (false);
-            }
-        }
-
-    }
-
     template<typename T>
     bool    Search<T>::DoSearch(void)
     {
-        u32 maxResult = 1000;//0x2000 / _GetResultStructSize();
-
         //Just started search ?
         if (_currentPosition == 0)
+        {
+            _UpdateCompare();
             _clock.Restart();
+        }
 
         // First Search ?
         if (_previousSearch == nullptr)
@@ -212,20 +237,23 @@ namespace CTRPluginFramework
 
             if (Type == SearchType::ExactValue)
             {
-                _FirstExactSearch(start, end, maxResult);
+                _FirstExactSearch(start, end, _maxResult);
 
                 // Update position
                 _currentPosition = start;
             }                
             else // Unknown value
-            {
+            {             
                 for (; start < end; start += _alignment)
                 {
                     T value = *(reinterpret_cast<T *>(start));
 
                     ResultCount++;
-                    _results.push_back(SearchResult<T>(start, value));
-                    if (_results.size() >= maxResult)
+                    _resultsP->address = start;
+                    _resultsP->value = value;
+                    _resultsP++;
+                    //_results.push_back(SearchResult<T>(start, value));   _results.size() >= _maxResult
+                    if (_resultsP >= _resultsEnd)
                         break;
                 }
 
@@ -241,6 +269,9 @@ namespace CTRPluginFramework
             {
                 ResultsToFile();
                 SearchTime = _clock.Restart();
+
+                // Free buffer
+                linearFree(_resultsArray);
                 return (true);
             }
         }
@@ -250,19 +281,27 @@ namespace CTRPluginFramework
             std::vector<SearchResult<T>>    oldResults;
 
             // First get the results from the file
-            if (reinterpret_cast<Search<T> *>(_previousSearch)->_ReadResults(oldResults, _currentPosition, maxResult))
+            if (reinterpret_cast<Search<T> *>(_previousSearch)->_ReadResults(oldResults, _currentPosition, _maxResult))
             {
                 ResultIter iter = oldResults.begin();
                 ResultIter end = oldResults.end();
 
                 for (; iter != end; iter++)
                 {
-                    T   newval = *reinterpret_cast<T *>((*iter).address);
+                    u32 addr = (*iter).address;
+                    T   newval = *reinterpret_cast<T *>(addr);
                     T   oldVal = (*iter).value;
-                    if (_Compare(oldVal, newval))
+
+                    if ((this->*_compare)(oldVal, newval))
                     {
                         ResultCount++;
-                        _results.push_back(SearchResult<T>((*iter).address, newval));
+                        _resultsP->address = addr;
+                        _resultsP->value = newval;
+                        _resultsP++;
+
+                    if (_resultsP >= _resultsEnd)
+                        break;
+                        //_results.push_back(SearchResult<T>((*iter).address, newval));
                     }
                 }
 
@@ -278,13 +317,18 @@ namespace CTRPluginFramework
             {
                 ResultsToFile();
                 SearchTime = _clock.Restart();
+
+                // Free buffer
+                linearFree(_resultsArray);
+
                 return (true);
             }
         }
 
 
 
-        if (_results.size() >= maxResult)
+        //if (_results.size() >= _maxResult)
+        if (_resultsP >= _resultsEnd)
             ResultsToFile();
 
         return (false);
@@ -298,18 +342,18 @@ namespace CTRPluginFramework
 
         _file.Rewind();
 
-        ret |= WriteToFile(_file, Type);
-        ret |= WriteToFile(_file, Compare);
-        ret |= WriteToFile(_file, _startRange);
-        ret |= WriteToFile(_file, _endRange);
-        ret |= WriteToFile(_file, _alignment);
-        ret |= WriteToFile(_file, ResultCount);
-        ret |= WriteToFile(_file, Size);
-        ret |= WriteToFile(_file, sizeof(T));
-        ret |= WriteToFile(_file, _GetHeaderSize());
-        u32 size = sizeof(u32) + sizeof(T);
-        ret |= WriteToFile(_file, size);
-        ret |= WriteToFile(_file, _checkValue);
+        ret |= WriteToFile(_file, Type);                // u8
+        ret |= WriteToFile(_file, Compare);             // u8
+        ret |= WriteToFile(_file, _startRange);         // u32
+        ret |= WriteToFile(_file, _endRange);           // u32
+        ret |= WriteToFile(_file, _alignment);          // u8
+        ret |= WriteToFile(_file, ResultCount);         // u32
+        ret |= WriteToFile(_file, Size);                // u8
+        ret |= WriteToFile(_file, (u8)sizeof(T));       // u8
+        ret |= WriteToFile(_file, _GetHeaderSize());    // u32
+        u32 size = _GetResultStructSize();// sizeof(u32) + sizeof(T);        
+        ret |= WriteToFile(_file, size);                // u32
+        ret |= WriteToFile(_file, _checkValue);         // T
 
         if (offset != 0)
             _file.Seek(offset, File::SeekPos::SET);
@@ -329,10 +373,10 @@ namespace CTRPluginFramework
             + sizeof(Compare) // u8
             + sizeof(_startRange) // u32
             + sizeof(_endRange) //u32
-            + sizeof(_alignment) // u32
+            + sizeof(_alignment) // u8
             + sizeof(ResultCount) //u32
-            + sizeof(Size)
-            + sizeof(T)
+            + sizeof(Size) // u8
+            + sizeof(u8) // u8 //sizeof(T)
             + sizeof(u32) // offset in file where results starts
             + sizeof(u32) // SearchResultSize
             + sizeof(T) // value compared with
@@ -342,11 +386,10 @@ namespace CTRPluginFramework
     template <typename T>
     u32     Search<T>::_GetResultStructSize(void)
     {
-        return 
-        (
-            sizeof(u32) // address
-            + sizeof(T)
-        );
+        u32 size = sizeof(u32) + sizeof(T);
+
+        size += size % 4;
+        return (size);
     }
 
     template <typename T>
@@ -356,10 +399,11 @@ namespace CTRPluginFramework
         _WriteHeaderToFile();
 
         // Write all results
-        _file.Write(_results.data(), _results.size() * _GetResultStructSize());
-
+        //_file.Write(_results.data(), _results.size() * _GetResultStructSize());
+        _file.Write(_resultsArray, (_resultsP - _resultsArray) * _GetResultStructSize());
+        _resultsP = _resultsArray;
         // Clear results vector
-        _results.clear();
+        //_results.clear();
     }
 
     template <typename T>
@@ -485,6 +529,114 @@ namespace CTRPluginFramework
                 oldvalue.push_back(buffer);
             } 
         }
+    }
+
+    // Return if it matches the condition
+    template<typename T>
+    bool    Search<T>::_CompareE(T older, T newer)
+    {
+        return (_checkValue == newer);
+    }
+
+    // Return if it matches the condition
+    template<typename T>
+    bool    Search<T>::_CompareNE(T older, T newer)
+    {
+        return (_checkValue != newer);
+    }
+
+    // Return if it matches the condition
+    template<typename T>
+    bool    Search<T>::_CompareGT(T older, T newer)
+    {
+        return (newer > _checkValue);
+    }
+
+    // Return if it matches the condition
+    template<typename T>
+    bool    Search<T>::_CompareGE(T older, T newer)
+    {
+        return (newer >= _checkValue);
+    }
+
+    // Return if it matches the condition
+    template<typename T>
+    bool    Search<T>::_CompareLT(T older, T newer)
+    {
+        return (newer < _checkValue);
+    }
+
+    // Return if it matches the condition
+    template<typename T>
+    bool    Search<T>::_CompareLE(T older, T newer)
+    {
+        return (newer <= _checkValue);
+    }
+
+    // Return if it matches the condition
+    template<typename T>
+    bool    Search<T>::_CompareDB(T older, T newer)
+    {
+        return (newer == (older + _checkValue) || newer == (older - _checkValue));
+    }
+
+        // Return if it matches the condition
+    template<typename T>
+    bool    Search<T>::_CompareDBL(T older, T newer)
+    {
+        return ((older - _checkValue) < newer && newer < (older + _checkValue));
+    }
+
+        // Return if it matches the condition
+    template<typename T>
+    bool    Search<T>::_CompareDBM(T older, T newer)
+    {
+        return (newer < (older - _checkValue) || newer > (older + _checkValue));
+    }
+
+    /*
+    ** Unknown
+    *************/
+    // Return if it matches the condition
+    template<typename T>
+    bool    Search<T>::_CompareUnknownE(T older, T newer)
+    {
+        return (older == newer);
+    }
+
+    // Return if it matches the condition
+    template<typename T>
+    bool    Search<T>::_CompareUnknownNE(T older, T newer)
+    {
+        return (older != newer);
+    }
+
+    // Return if it matches the condition
+    template<typename T>
+    bool    Search<T>::_CompareUnknownGT(T older, T newer)
+    {
+        return (newer > older);
+    }
+
+    // Return if it matches the condition
+    template<typename T>
+    bool    Search<T>::_CompareUnknownGE(T older, T newer)
+    {
+        return (newer >= older);
+    }
+
+    // Return if it matches the condition
+    template<typename T>
+    bool    Search<T>::_CompareUnknownLT(T older, T newer)
+    {
+        return (newer < older);
+    }
+
+    // Return if it matches the condition
+    template<typename T>
+    bool    Search<T>::_CompareUnknownLE(T older, T newer)
+    {
+        return (newer <= older);
     }
 
     template class Search<u8>;

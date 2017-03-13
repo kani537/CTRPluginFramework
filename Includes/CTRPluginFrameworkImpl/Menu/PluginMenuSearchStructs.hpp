@@ -85,12 +85,17 @@ namespace CTRPluginFramework
         SearchBase *_previousSearch; 
 
     };
+    
+    //template <typename T>
+    
 
     template <typename T>
     class Search : public SearchBase
     {
         using ResultIter = typename std::vector<SearchResult<T>>::iterator;
         using stringvector = std::vector<std::string>;
+        
+        using CmpFunc = bool (Search<T>::*)(T, T);
 
     public:
 
@@ -114,16 +119,39 @@ namespace CTRPluginFramework
 
     private:
 
-        std::vector<SearchResult<T>>    _results; //<- Hold the results
+        //std::vector<SearchResult<T>>    _results; //<- Hold the results
         T                               _checkValue; //<- Value to compare with
+        u32                             _maxResult;
+        SearchResult<T>                 *_resultsArray;
+        SearchResult<T>                 *_resultsEnd;
+        SearchResult<T>                 *_resultsP;
+        CmpFunc                         _compare;
 
         /*
         ** Methods
         ***********/
 
         void        _FirstExactSearch(u32 &start, u32 end, u32 maxResult);
+        void        _UpdateCompare(void);
         // Return true if the value matches the search settings
-        bool        _Compare(T old, T newer);
+        //bool        _Compare(T old, T newer);
+
+        bool        _CompareE(T old, T newer);
+        bool        _CompareNE(T old, T newer);
+        bool        _CompareGT(T old, T newer);
+        bool        _CompareGE(T old, T newer);
+        bool        _CompareLT(T old, T newer);
+        bool        _CompareLE(T old, T newer);
+        bool        _CompareDB(T old, T newer);
+        bool        _CompareDBL(T old, T newer);
+        bool        _CompareDBM(T old, T newer);
+
+        bool        _CompareUnknownE(T old, T newer);
+        bool        _CompareUnknownNE(T old, T newer);
+        bool        _CompareUnknownGT(T old, T newer);
+        bool        _CompareUnknownGE(T old, T newer);
+        bool        _CompareUnknownLT(T old, T newer);
+        bool        _CompareUnknownLE(T old, T newer);
         
         bool        _WriteHeaderToFile(void);
         u32         _GetHeaderSize(void);
