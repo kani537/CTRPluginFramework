@@ -269,7 +269,7 @@ namespace CTRPluginFramework
             }
 
             // Finish
-            if (_currentPosition >= ResultCount)
+            if (_currentPosition >= _previousSearch->ResultCount)
             {
                 ResultsToFile();
                 return (true);
@@ -469,12 +469,12 @@ namespace CTRPluginFramework
                 // old Value
                 switch (Size)
                 {
-                    case SearchSize::Bits8: sprintf(buffer, "%02X", oldResults[i].value); break;
-                    case SearchSize::Bits16: sprintf(buffer, "%04X", oldResults[i].value); break;
-                    case SearchSize::Bits32: sprintf(buffer, "%08X", oldResults[i].value); break;
-                    case SearchSize::Bits64: sprintf(buffer, "%016llX", oldResults[i].value); break;
-                    case SearchSize::FloatingPoint: sprintf(buffer, "%8.7f", oldResults[i].value); break;
-                    case SearchSize::Double: sprintf(buffer, "%8.7g", oldResults[i].value); break;
+                    case SearchSize::Bits8: sprintf(buffer, "%02X", oldResults[y].value); break;
+                    case SearchSize::Bits16: sprintf(buffer, "%04X", oldResults[y].value); break;
+                    case SearchSize::Bits32: sprintf(buffer, "%08X", oldResults[y].value); break;
+                    case SearchSize::Bits64: sprintf(buffer, "%016llX", oldResults[y].value); break;
+                    case SearchSize::FloatingPoint: sprintf(buffer, "%8.7f", oldResults[y].value); break;
+                    case SearchSize::Double: sprintf(buffer, "%8.7g", oldResults[y].value); break;
                 }
                 oldvalue.push_back(buffer);
             } 

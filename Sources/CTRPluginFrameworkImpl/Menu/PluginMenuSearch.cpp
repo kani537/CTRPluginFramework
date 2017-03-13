@@ -329,7 +329,8 @@ namespace CTRPluginFramework
         u32     endRange = _regionsList[_memoryRegions.SelectedItem].endAddress;
         u32     step = _searchHistory.size();
 
-
+        //Flush memory
+        svcFlushProcessDataCache(Process::GetHandle(), (void *)startRange, endRange - startRange);
 
         // Create search object and set SearchSize
         switch (_searchSize.SelectedItem)
@@ -352,6 +353,8 @@ namespace CTRPluginFramework
         _memoryRegions.IsEnabled = false;
         // Lock search size
         _searchSize.IsEnabled = false;
+        // Lock alignment
+        _alignmentTextBox.IsEnabled = false;
 
         _inSearch = true;
 
@@ -361,8 +364,11 @@ namespace CTRPluginFramework
     void    PluginMenuSearch::_resetBtn_OnClick(void)
     {
         // Clear history
-        for (auto it = _searchHistory.begin(); it != _searchHistory.end(); it++)
-            delete *it;
+        if (_searchHistory.size())
+        {
+            for (auto it = _searchHistory.begin(); it != _searchHistory.end(); it++)
+                delete *it;            
+        }
 
         if (_currentSearch != nullptr)
             delete _currentSearch;
@@ -378,6 +384,9 @@ namespace CTRPluginFramework
 
         // Unlock search size
         _searchSize.IsEnabled = true;
+
+        // Unlock alignment
+        _alignmentTextBox.IsEnabled = true;
 
         // Reset step
         _step = 0;
@@ -404,7 +413,7 @@ namespace CTRPluginFramework
         // Reset step
         _step--;
 
-        if (_step == 0)
+        if (_step <= 1)
             _undoBtn.IsEnabled = false;
         _searchMenu.Update();
     }
@@ -419,7 +428,7 @@ namespace CTRPluginFramework
         static IntRect  background(125, 80, 150, 70);
         static Color    skyblue(0, 191, 255);
         static Color    limegreen(50, 205, 50);
-        //static Clock    timer;
+        static Clock    timer;
         static int      phase = 0;
 
         std::string     waitLogo[] = 
@@ -443,7 +452,12 @@ namespace CTRPluginFramework
         // Draw logo phase
         Renderer::DrawSysString(waitLogo[phase].c_str(), 192, posY, 300, skyblue);
 
-        phase++;
+        if (timer.HasTimePassed(Seconds(0.125f)))
+        {
+            phase++;
+            timer.Restart();
+        }
+        
         if (phase > 7) phase = 0;
 
         posY += 10;
