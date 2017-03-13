@@ -19,7 +19,7 @@ void abort(void)
 namespace CTRPluginFramework
 {
     static u32 threadStack[0x4000] ALIGN(8);
-    extern "C" u32 keepThreadStack[0x1000];
+    //extern "C" u32 keepThreadStack[0x1000];
     u32 keepThreadStack[0x1000] ALIGN(8);
 
     
