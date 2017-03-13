@@ -370,6 +370,9 @@ namespace CTRPluginFramework
         // Go to the file offset
         _file.Seek(offset, File::SeekPos::SET);
 
+        // Clean results
+        out.clear();
+
         // Reserve memory and create default object
         out.resize(count);
 
@@ -377,7 +380,105 @@ namespace CTRPluginFramework
         if (_file.Read((void *)out.data(), count * _GetResultStructSize()) == 0)
             return (true);
 
+        // Clean results
+        out.clear();
+
         return (false);
+    }
+
+    template <typename T>
+    bool    Search<T>::FetchResults(stringvector &address, stringvector &newval, stringvector &oldvalue)
+    {
+        std::vector<SearchResult<T>>    newResults;
+        char   buffer[20] = {0};
+
+        // Fetch new results
+        if (!_ReadResults(newResults, 0, 100))
+            return (false);
+
+        if (_previousSearch == nullptr)
+        {
+            for (int i = 0; i < newResults.size(); i++)
+            {
+                // Address
+                sprintf(buffer, "%08X", newResults[i].address);
+                address.push_back(buffer);
+
+                // Value
+                switch (Size)
+                {
+                    case SearchSize::Bits8: sprintf(buffer, "%02X", newResults[i].value); break;
+                    case SearchSize::Bits16: sprintf(buffer, "%04X", newResults[i].value); break;
+                    case SearchSize::Bits32: sprintf(buffer, "%08X", newResults[i].value); break;
+                    case SearchSize::Bits64: sprintf(buffer, "%016llX", newResults[i].value); break;
+                    case SearchSize::FloatingPoint: sprintf(buffer, "%8.7f", newResults[i].value); break;
+                    case SearchSize::Double: sprintf(buffer, "%8.7g", newResults[i].value); break;
+                }
+                newval.push_back(buffer);
+            } 
+        }
+        else
+        {        
+            std::vector<SearchResult<T>>    oldResults;
+            int                             oldIndex = 0;
+
+            reinterpret_cast<Search<T> *>(_previousSearch)->_ReadResults(oldResults, oldIndex, 100);
+            oldIndex = 100;
+
+            for (int i = 0; i < newResults.size(); i++)
+            {
+                // Address
+                sprintf(buffer, "%08X", newResults[i].address);
+                address.push_back(buffer);
+
+                // new Value
+                switch (Size)
+                {
+                    case SearchSize::Bits8: sprintf(buffer, "%02X", newResults[i].value); break;
+                    case SearchSize::Bits16: sprintf(buffer, "%04X", newResults[i].value); break;
+                    case SearchSize::Bits32: sprintf(buffer, "%08X", newResults[i].value); break;
+                    case SearchSize::Bits64: sprintf(buffer, "%016llX", newResults[i].value); break;
+                    case SearchSize::FloatingPoint: sprintf(buffer, "%8.7f", newResults[i].value); break;
+                    case SearchSize::Double: sprintf(buffer, "%8.7g", newResults[i].value); break;
+                }
+                newval.push_back(buffer);
+
+                u32 tofind = newResults[i].address;
+
+                // Find same address in old results
+                int y = 0;
+                while (1)
+                {
+                    for (y = 0; y < oldResults.size(); y++)
+                        if (oldResults[y].address == tofind)
+                            break;
+
+                    if (oldResults[y].address == tofind)
+                        break;
+                    if (!reinterpret_cast<Search<T> *>(_previousSearch)->_ReadResults(oldResults, oldIndex, 100))
+                    {
+                        y = -1;
+                        break;
+                    }
+                    oldIndex += 100;
+                }
+
+                if (y == -1)
+                    continue;
+
+                // old Value
+                switch (Size)
+                {
+                    case SearchSize::Bits8: sprintf(buffer, "%02X", oldResults[i].value); break;
+                    case SearchSize::Bits16: sprintf(buffer, "%04X", oldResults[i].value); break;
+                    case SearchSize::Bits32: sprintf(buffer, "%08X", oldResults[i].value); break;
+                    case SearchSize::Bits64: sprintf(buffer, "%016llX", oldResults[i].value); break;
+                    case SearchSize::FloatingPoint: sprintf(buffer, "%8.7f", oldResults[i].value); break;
+                    case SearchSize::Double: sprintf(buffer, "%8.7g", oldResults[i].value); break;
+                }
+                oldvalue.push_back(buffer);
+            } 
+        }
     }
 
     template class Search<u8>;

@@ -50,6 +50,8 @@ namespace CTRPluginFramework
 
     class   SearchBase
     {
+        using stringvector = std::vector<std::string>;
+
     public:
 
         SearchBase(u32 start, u32 end, u32 alignment, SearchBase *prev);
@@ -57,6 +59,7 @@ namespace CTRPluginFramework
 
         virtual bool    DoSearch(void) = 0;
         virtual bool    ResultsToFile(void) = 0;
+        virtual bool    FetchResults(stringvector &address, stringvector &newval, stringvector &oldvalue) = 0;
         //virtual u32     GetHeaderSize(void) = 0;
 
         SearchType      Type; 
@@ -85,6 +88,7 @@ namespace CTRPluginFramework
     class Search : public SearchBase
     {
         using ResultIter = typename std::vector<SearchResult<T>>::iterator;
+        using stringvector = std::vector<std::string>;
 
     public:
 
@@ -103,6 +107,8 @@ namespace CTRPluginFramework
         ** Return true if suceeded
         ****************************/
         bool    ResultsToFile(void);
+
+        bool    FetchResults(stringvector &address, stringvector &newval, stringvector &oldvalue);
 
     private:
 
