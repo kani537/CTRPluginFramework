@@ -19,7 +19,9 @@ namespace CTRPluginFramework
     _resetBtn("Reset", *this, &PluginMenuSearch::_resetBtn_OnClick, IntRect(205, 195, 80, 15)),
     _inSearch(false),
     _firstRegionInit(false),
-    _step(0)
+    _step(0),
+    _waitForUser(false),
+    _buildResult(false)
     {
         _currentSearch = nullptr;
 
@@ -60,6 +62,14 @@ namespace CTRPluginFramework
 
     bool    PluginMenuSearch::operator()(EventList &eventList, Time &delta)
     {
+        static bool trigger = false;
+
+        if (trigger)
+        {
+            trigger = false;
+            _searchMenu.Update();
+        }
+
         // If we're on first search
         if (!_firstRegionInit)
         {
@@ -91,13 +101,19 @@ namespace CTRPluginFramework
             _inSearch = !finish;
             if (finish)
             {
+                _waitForUser = true;
                 _compareType.IsEnabled = true;
                 _resetBtn.IsEnabled = true;
                 if (_step > 1)
                     _undoBtn.IsEnabled = true;
-                _searchMenu.Update();
             }
             return (false);
+        }
+
+        if (_buildResult)
+        {
+            _buildResult = false;
+            trigger = true;
         }
 
         // Check buttons
@@ -178,7 +194,12 @@ namespace CTRPluginFramework
     *****************/
     void    PluginMenuSearch::_ProcessEvent(Event &event)
     {
-
+        // Close result window
+        if (_waitForUser && event.type == Event::KeyDown && event.key.code == Key::A)
+        {
+            _waitForUser = false;
+            _buildResult = true;
+        }
     }
 
     /*
@@ -199,9 +220,15 @@ namespace CTRPluginFramework
         // Enable renderer
         Renderer::SetTarget(TOP);
 
-        if (_inSearch)
+        if (_inSearch || _waitForUser)
         {
             _ShowProgressWindow();
+            return;
+        }
+
+        if (_buildResult)
+        {
+            _ShowBuildResultWindow();
             return;
         }
 
@@ -392,6 +419,7 @@ namespace CTRPluginFramework
         _step = 0;
 
         _resetBtn.IsEnabled = false;
+        _undoBtn.IsEnabled = false;
         _searchMenu.Update();
     }
 
@@ -450,7 +478,10 @@ namespace CTRPluginFramework
        // posY = 85;
 
         // Draw logo phase
-        Renderer::DrawSysString(waitLogo[phase].c_str(), 192, posY, 300, skyblue);
+        if (_inSearch)
+            Renderer::DrawSysString(waitLogo[phase].c_str(), 192, posY, 300, skyblue);
+        else
+            Renderer::DrawSysString("Done", 173, posY, 300, skyblue);
 
         if (timer.HasTimePassed(Seconds(0.125f)))
         {
@@ -468,7 +499,7 @@ namespace CTRPluginFramework
         Renderer::DrawRect(progBarBorder, gainsboro, false);
 
         float percent = 138.f / 100.f;
-        float prog = _currentSearch->Progress * percent;      
+        float prog = _inSearch ? _currentSearch->Progress * percent : 138.f;      
 
         // Draw progress fill
         IntRect progBarFill = IntRect(131, posY + 1, (u32)prog, 13);
@@ -477,6 +508,31 @@ namespace CTRPluginFramework
         std::string res = "Result(s): " + std::to_string(_currentSearch->ResultCount);
         posY += 20;
         Renderer::DrawString((char *)res.c_str(), 131, posY, blank);
+
+        if (!_inSearch)
+        {
+            posY -= 12;
+            Renderer::DrawSysString("\uE000", 255, posY, 300, skyblue);
+        }
+    }
+
+
+    void    PluginMenuSearch::_ShowBuildResultWindow(void)
+    {
+        static Color    black = Color();
+        static Color    dimGrey(15, 15, 15);
+        static IntRect  background(125, 80, 150, 70);
+        static Color    skyblue(0, 191, 255);
+
+        Renderer::SetTarget(TOP);
+
+        // Draw "window" background
+        Renderer::DrawRect2(background, black, dimGrey);
+
+        int posY = 107;
+
+        float   length = Renderer::GetTextSize("Build result(s) list...");
+        Renderer::DrawSysString("Build result(s) list...", 125 + ((150 - length) /2), posY, 300, skyblue);
     }
 
     void    PluginMenuSearch::_ListRegion(void)

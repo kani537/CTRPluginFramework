@@ -41,6 +41,7 @@ namespace CTRPluginFramework
         void    _undoBtn_OnClick(void);
 
         void    _ShowProgressWindow(void);
+        void    _ShowBuildResultWindow(void);
 
 
 
@@ -51,6 +52,8 @@ namespace CTRPluginFramework
 
         bool                                _inSearch;
         bool                                _firstRegionInit;
+        bool                                _waitForUser;
+        bool                                _buildResult;
         int                                 _step;
 
         // UIComponent
