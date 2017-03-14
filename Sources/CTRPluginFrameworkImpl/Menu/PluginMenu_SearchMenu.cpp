@@ -14,10 +14,14 @@ namespace CTRPluginFramework
     ****************/
     bool    SearchMenu::ProcessEvent(EventList &eventList, Time &delta)
     {
+        static Clock    _fastScroll;
+        static Clock    _startFastScroll;
+
         for (int i = 0; i < eventList.size(); i++)
         {
             Event &event = eventList[i];
 
+            // Pressed
             if (event.type == Event::EventType::KeyPressed)
             {
                 if (_currentSearch != nullptr)
@@ -26,25 +30,71 @@ namespace CTRPluginFramework
                     {
                         case Key::DPadUp:
                         {
-                            _selector = std::max((u32)(_selector - 1),(u32)(0));
+                            _selector = std::max((int)(_selector - 1),(int)(0));
+                            _startFastScroll.Restart();
                             break;
                         }
                         case Key::DPadDown:
                         {
-                            _selector = std::min((u32)(_selector + 1),(u32)(499));                            
+                            _selector = std::min((int)(_selector + 1),(int)(499));
+                            if (_index + _selector > _currentSearch->ResultCount)
+                                _selector = _currentSearch->ResultCount % 500; 
+                            _startFastScroll.Restart();               
                             break;
                         }
                         case Key::DPadLeft:
                         {
                             _selector = 0;
-                            _index = std::max((u32)(_index - 500),(u32)(0));
+                            _index = std::max((int)(_index - 500), (int)(0));
+                            _startFastScroll.Restart();
                             Update();
                             break;
                         }
                         case Key::DPadRight:
                         {
                             _selector = 0;
-                            _index = std::min((u32)(_index + 500),(u32)(_currentSearch->ResultCount / 500 * 500));
+                            _index = std::min((int)(_index + 500),(int)(_currentSearch->ResultCount / 500 * 500));
+                            _startFastScroll.Restart();
+                            Update();
+                            break;
+                        }
+                    } // end switch
+                } // end if
+            }
+            // Hold
+            else if (event.type == Event::EventType::KeyDown)
+            {
+                if (_currentSearch != nullptr && _startFastScroll.HasTimePassed(Seconds(0.5f)) && _fastScroll.HasTimePassed(Seconds(0.1f)))
+                {
+                    switch (event.key.code)
+                    {
+                        case Key::DPadUp:
+                        {
+                            _selector = std::max((int)(_selector - 1),(int)(0));
+                            _fastScroll.Restart();
+                            break;
+                        }
+                        case Key::DPadDown:
+                        {
+                            _selector = std::min((int)(_selector + 1),(int)(499));
+                            if (_index + _selector > _currentSearch->ResultCount)
+                                _selector = _currentSearch->ResultCount % 500;
+                            _fastScroll.Restart();              
+                            break;
+                        }
+                        case Key::DPadLeft:
+                        {
+                            _selector = 0;
+                            _index = std::max((int)(_index - 500),(int)(0));
+                            _fastScroll.Restart();
+                            Update();
+                            break;
+                        }
+                        case Key::DPadRight:
+                        {
+                            _selector = 0;
+                            _index = std::min((int)(_index + 500),(int)(_currentSearch->ResultCount / 500 * 500));
+                            _fastScroll.Restart();
                             Update();
                             break;
                         }

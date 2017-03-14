@@ -38,12 +38,12 @@ namespace CTRPluginFramework
         _searchType.Add("Specified value");
         _searchType.Add("Unknown search");
 
-        _compareType.Add("Equal");
-        _compareType.Add("Not Equal");
-        _compareType.Add("Greater Than");
-        _compareType.Add("Greater Or Equal");
-        _compareType.Add("Lesser Than");
-        _compareType.Add("Lesser Or Equal");
+        _compareType.Add("Equal To");
+        _compareType.Add("Not Equal To");
+        _compareType.Add("Bigger Than");
+        _compareType.Add("Bigger Or Equal");
+        _compareType.Add("Smaller Than");
+        _compareType.Add("Smaller Or Equal");
         _compareType.Add("Different By");
         _compareType.Add("Different By Less");
         _compareType.Add("Different By More");
