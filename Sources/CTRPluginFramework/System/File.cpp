@@ -198,7 +198,7 @@ namespace CTRPluginFramework
 
     int     File::WriteLine(std::string line)
     {
-        line += "\n";
+        line += "\r\n";
         return (Write(line.c_str(), line.size()));
     }
 
