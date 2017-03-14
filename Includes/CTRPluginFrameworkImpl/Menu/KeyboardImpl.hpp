@@ -38,6 +38,8 @@ namespace CTRPluginFramework
         void        Populate(std::vector<std::string> &input);
 
         int     Run(void);
+
+        bool        DisplayTopScreen;
     private:
 
         void    _RenderTop(void);

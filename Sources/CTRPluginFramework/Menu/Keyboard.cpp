@@ -71,6 +71,7 @@ namespace CTRPluginFramework
     {
         _hexadecimal = true;
         _isPopulated = false;
+        DisplayTopScreen = true;
     }
 
     Keyboard::~Keyboard(void)
@@ -114,6 +115,7 @@ namespace CTRPluginFramework
             _keyboard->SetMaxInput(2);
         }
         _keyboard->SetConvertCallback(ConvertToU8);
+        _keyboard->DisplayTopScreen = DisplayTopScreen;
 
         int ret = _keyboard->Run();
 
@@ -144,7 +146,7 @@ namespace CTRPluginFramework
             input = buffer;
         }
         _keyboard->SetConvertCallback(ConvertToU8);
-
+        _keyboard->DisplayTopScreen = DisplayTopScreen;
 
         int ret = _keyboard->Run();
 
@@ -168,6 +170,7 @@ namespace CTRPluginFramework
             _keyboard->SetMaxInput(4);
         }
         _keyboard->SetConvertCallback(ConvertToU16);
+        _keyboard->DisplayTopScreen = DisplayTopScreen;
 
         int ret = _keyboard->Run();
 
@@ -198,6 +201,7 @@ namespace CTRPluginFramework
             input = buffer;
         }
         _keyboard->SetConvertCallback(ConvertToU16);
+        _keyboard->DisplayTopScreen = DisplayTopScreen;
 
         int ret = _keyboard->Run();
 
@@ -221,6 +225,7 @@ namespace CTRPluginFramework
             _keyboard->SetMaxInput(8);
         }
         _keyboard->SetConvertCallback(ConvertToU32);
+        _keyboard->DisplayTopScreen = DisplayTopScreen;
 
         int ret = _keyboard->Run();
 
@@ -251,6 +256,7 @@ namespace CTRPluginFramework
             input = buffer;
         }
         _keyboard->SetConvertCallback(ConvertToU32);
+        _keyboard->DisplayTopScreen = DisplayTopScreen;
 
         int ret = _keyboard->Run();
 
@@ -274,6 +280,7 @@ namespace CTRPluginFramework
             _keyboard->SetMaxInput(16);
         }
         _keyboard->SetConvertCallback(ConvertToU64);
+        _keyboard->DisplayTopScreen = DisplayTopScreen;
 
         int ret = _keyboard->Run();
 
@@ -304,6 +311,7 @@ namespace CTRPluginFramework
             input = buffer;
         }
         _keyboard->SetConvertCallback(ConvertToU64);
+        _keyboard->DisplayTopScreen = DisplayTopScreen;
 
         int ret = _keyboard->Run();
 
@@ -322,6 +330,7 @@ namespace CTRPluginFramework
     {
         _keyboard->SetLayout(DECIMAL);
         _keyboard->SetConvertCallback(ConvertToFloat);
+        _keyboard->DisplayTopScreen = DisplayTopScreen;
 
         int ret = _keyboard->Run();
 
@@ -337,6 +346,7 @@ namespace CTRPluginFramework
     {
         _keyboard->SetLayout(DECIMAL);
         _keyboard->SetConvertCallback(ConvertToFloat);
+        _keyboard->DisplayTopScreen = DisplayTopScreen;
 
         char buffer[0x100];
         snprintf(buffer, 0x100, "%f", start);
@@ -360,6 +370,7 @@ namespace CTRPluginFramework
     {
         _keyboard->SetLayout(DECIMAL);
         _keyboard->SetConvertCallback(ConvertToDouble);
+        _keyboard->DisplayTopScreen = DisplayTopScreen;
 
         int ret = _keyboard->Run();
 
@@ -375,6 +386,7 @@ namespace CTRPluginFramework
     {
         _keyboard->SetLayout(DECIMAL);
         _keyboard->SetConvertCallback(ConvertToDouble);
+        _keyboard->DisplayTopScreen = DisplayTopScreen;
 
         char buffer[0x100];
         snprintf(buffer, 0x100, "%lf", start);

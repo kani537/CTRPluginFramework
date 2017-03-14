@@ -38,6 +38,8 @@ namespace CTRPluginFramework
         _inertialVelocity = 0.f;
         _scrollStart = 0.f;
         _scrollEnd = 0.f;
+
+        DisplayTopScreen = true;
     }
 
     KeyboardImpl::~KeyboardImpl(void)
@@ -175,7 +177,8 @@ namespace CTRPluginFramework
 
             Renderer::StartFrame();
             // Render Top Screen
-            _RenderTop();
+            if (DisplayTopScreen)
+                _RenderTop();
             // Render Bottom Screen
             _RenderBottom();
             Renderer::EndFrame();
@@ -450,9 +453,7 @@ namespace CTRPluginFramework
                     (*iter).Update(isTouchDown, touchPos);
                 }                 
             }
-
         }
-
     }
 
     void    KeyboardImpl::_Qwerty(void)

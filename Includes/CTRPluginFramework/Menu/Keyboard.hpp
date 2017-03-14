@@ -61,6 +61,8 @@ namespace CTRPluginFramework
         int     Open(std::string &output); //<- Not yet implemented
         int     Open(std::string &output, std::string start); //<- Not yet implemented
 
+
+        bool    DisplayTopScreen;
     private:
         std::unique_ptr<KeyboardImpl>   _keyboard;
         bool                            _hexadecimal;
