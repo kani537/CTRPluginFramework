@@ -37,7 +37,8 @@ namespace CTRPluginFramework
         void        SetCompareCallback(CompareCallback callback);
         void        Populate(std::vector<std::string> &input);
 
-        int     Run(void);
+        int         Run(void);
+        bool        operator()(int &out);
 
         bool        DisplayTopScreen;
     private:

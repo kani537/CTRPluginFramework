@@ -648,4 +648,19 @@ namespace CTRPluginFramework
 
         return (false);
     }
+
+    // WIll only be used in the hex editor, so no need to do a full implementation
+    bool    KeyboardImpl::operator()(int &out)
+    {
+        _Update(0.f);
+        if (!_CheckKeys())
+            return (false);
+        if (_userInput.size())
+        {
+            out = (int)_userInput[0];
+            _userInput.pop_back();
+            return (true);
+        }
+        return (false);
+    }
 }
