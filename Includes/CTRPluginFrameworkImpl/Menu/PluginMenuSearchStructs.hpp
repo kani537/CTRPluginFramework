@@ -61,7 +61,7 @@ namespace CTRPluginFramework
         virtual void    Cancel(void) = 0;
         virtual bool    DoSearch(void) = 0;
         virtual bool    ResultsToFile(void) = 0;
-        virtual bool    FetchResults(stringvector &address, stringvector &newval, stringvector &oldvalue) = 0;
+        virtual bool    FetchResults(stringvector &address, stringvector &newval, stringvector &oldvalue, int index, int count) = 0;
         //virtual u32     GetHeaderSize(void) = 0;
 
         SearchType      Type; 
@@ -121,7 +121,7 @@ namespace CTRPluginFramework
         ****************************/
         bool    ResultsToFile(void);
 
-        bool    FetchResults(stringvector &address, stringvector &newval, stringvector &oldvalue);
+        bool    FetchResults(stringvector &address, stringvector &newval, stringvector &oldvalue, int index, int count);
 
     private:
 

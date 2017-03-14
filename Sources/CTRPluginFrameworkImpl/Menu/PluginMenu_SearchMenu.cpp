@@ -6,6 +6,7 @@ namespace CTRPluginFramework
     SearchMenu::SearchMenu(SearchBase* &curSearch) : _currentSearch(curSearch)
     {
         _index = 0;
+        _selector = 0;
     }
 
     /*
@@ -13,7 +14,44 @@ namespace CTRPluginFramework
     ****************/
     bool    SearchMenu::ProcessEvent(EventList &eventList, Time &delta)
     {
+        for (int i = 0; i < eventList.size(); i++)
+        {
+            Event &event = eventList[i];
 
+            if (event.type == Event::EventType::KeyPressed)
+            {
+                if (_currentSearch != nullptr)
+                {
+                    switch (event.key.code)
+                    {
+                        case Key::DPadUp:
+                        {
+                            _selector = std::max((u32)(_selector - 1),(u32)(0));
+                            break;
+                        }
+                        case Key::DPadDown:
+                        {
+                            _selector = std::min((u32)(_selector + 1),(u32)(499));                            
+                            break;
+                        }
+                        case Key::DPadLeft:
+                        {
+                            _selector = 0;
+                            _index = std::max((u32)(_index - 500),(u32)(0));
+                            Update();
+                            break;
+                        }
+                        case Key::DPadRight:
+                        {
+                            _selector = 0;
+                            _index = std::min((u32)(_index + 500),(u32)(_currentSearch->ResultCount / 500 * 500));
+                            Update();
+                            break;
+                        }
+                    } // end switch
+                } // end if
+            }
+        }
     }
 
     /*
@@ -27,6 +65,7 @@ namespace CTRPluginFramework
         static Color    darkgrey(169, 169, 169);
         static Color    gainsboro(220, 220, 220);
         static Color    skyblue(0, 191, 255);
+        static Color    silver(192, 192, 192);
         //static IntRect  background(30, 20, 340, 200);
 
         /*330
@@ -86,10 +125,18 @@ namespace CTRPluginFramework
         int posX2 = 113;
         int posX3 = 239;
 
-        for (int i = 0; i < 10; i++)
+        int start = std::max((int)0, (int)_selector - 5);
+
+        int end = std::min((int)_resultsAddress.size(), (int)(start + 10));
+
+        for (int i = start; i < end; i++)
         {
             if (i >= _resultsAddress.size())
                 return;
+
+            // Selector
+            if (i == _selector)
+                Renderer::DrawRect(35, 95 + (i - start) * 10, 330, 10, silver);
 
             int pos = posX1;
             int posy = posY;
@@ -115,7 +162,8 @@ namespace CTRPluginFramework
             Renderer::DrawString((char *)oval.c_str(), pos, posY, black);
         }
 
-        std::string str = std::to_string(_index) + "-" + std::to_string(std::min((u32)(_index + 10), (u32)_currentSearch->ResultCount))
+        start += _index;
+        std::string str = std::to_string(start) + "-" + std::to_string(std::min((u32)(start + 10), (u32)_currentSearch->ResultCount))
                     + " / " + std::to_string(_currentSearch->ResultCount);
         posY = 196;
         Renderer::DrawString((char *)str.c_str(), 38, posY, blank);
@@ -135,6 +183,6 @@ namespace CTRPluginFramework
         if (_currentSearch == nullptr)
             return;
 
-        _currentSearch->FetchResults(_resultsAddress, _resultsNewValue, _resultsOldValue);
+        _currentSearch->FetchResults(_resultsAddress, _resultsNewValue, _resultsOldValue, _index, 500);
     }
 }

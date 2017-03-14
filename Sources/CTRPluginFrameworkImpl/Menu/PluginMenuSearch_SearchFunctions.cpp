@@ -40,7 +40,7 @@ namespace CTRPluginFramework
         if (Directory::Open(dir, "Search", true) == 0)
         {
             // Open file
-            File::Open(_file, path, File::READ | File::WRITE | File::CREATE);
+            File::Open(_file, path, File::READ | File::WRITE | File::CREATE | File::TRUNCATE);
         }
     }
 
@@ -486,13 +486,13 @@ namespace CTRPluginFramework
     }
 
     template <typename T>
-    bool    Search<T>::FetchResults(stringvector &address, stringvector &newval, stringvector &oldvalue)
+    bool    Search<T>::FetchResults(stringvector &address, stringvector &newval, stringvector &oldvalue, int index, int count)
     {
         std::vector<SearchResult<T>>    newResults;
         char   buffer[20] = {0};
 
         // Fetch new results
-        if (!_ReadResults(newResults, 0, 100))
+        if (!_ReadResults(newResults, index, count))
             return (false);
 
         if (_previousSearch == nullptr)
@@ -519,10 +519,11 @@ namespace CTRPluginFramework
         else
         {        
             std::vector<SearchResult<T>>    oldResults;
-            int                             oldIndex = 0;
+            int                             oldIndex = index;
 
             reinterpret_cast<Search<T> *>(_previousSearch)->_ReadResults(oldResults, oldIndex, 1000);
             oldIndex = 1000;
+            int y = 0;
 
             for (int i = 0; i < newResults.size(); i++)
             {
@@ -545,10 +546,10 @@ namespace CTRPluginFramework
                 u32 tofind = newResults[i].address;
 
                 // Find same address in old results
-                int y = 0;
+                
                 while (1)
                 {
-                    for (y = 0; y < oldResults.size(); y++)
+                    for (; y < oldResults.size(); y++)
                         if (oldResults[y].address == tofind)
                             break;
 
@@ -559,6 +560,8 @@ namespace CTRPluginFramework
                         y = -1;
                         break;
                     }
+                    else
+                        y = 0;
                     oldIndex += 1000;
                 }
 

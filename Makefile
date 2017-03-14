@@ -38,8 +38,8 @@ SOURCES 	:= 	Sources \
 				Sources\ctrulib\util\utf \
 				Sources\ctrulib\util\rbtree \
 				Sources\NTR
-IP			:=  190
-FTP_HOST 	:=	192.168.137.
+IP			:=  99
+FTP_HOST 	:=	192.168.1.
 FTP_PORT	:=	"5000"
 FTP_PATH	:=	"plugin/0004000000033600/"
 
