@@ -5,7 +5,7 @@ namespace CTRPluginFramework
 {
     SearchMenu::SearchMenu(SearchBase* &curSearch) : _currentSearch(curSearch)
     {
-
+        _index = 0;
     }
 
     /*
@@ -24,21 +24,10 @@ namespace CTRPluginFramework
         static Color    black = Color();
         static Color    blank(255, 255, 255);
         static Color    dimGrey(15, 15, 15);
-        static Color    silver(160, 160, 160);
-        static Color    gainsboro(225, 225, 225);
+        static Color    darkgrey(169, 169, 169);
+        static Color    gainsboro(220, 220, 220);
+        static Color    skyblue(0, 191, 255);
         //static IntRect  background(30, 20, 340, 200);
-
-        //Draw sheet
-
-        IntRect     rect = IntRect(35, 25, 330, 190);
-
-        // Big rect
-        Renderer::DrawRect(rect, gainsboro, false);
-
-        // Column name underlight
-        Renderer::DrawLine(35, 45, 330, gainsboro);
-
-        // Column separator
 
         /*330
         ADDRESS (8 * 6) = 48 + 10   = 58 + 20
@@ -46,33 +35,58 @@ namespace CTRPluginFramework
         NEW (16 * 6) = 96 + 10      = 106 + 20
                                     = 270 = 330*/
 
-        // Name | New  35 + 58 = 93 + 20 = 113
-        Renderer::DrawLine(113, 25, 1, gainsboro, 190);
+        int posY = 25;
+        int xx = Renderer::DrawSysString("Search", 35, posY, 330, blank);
+        Renderer::DrawLine(35, posY, xx, skyblue);
 
-        // New | Old  113 + 106 = 219 + 20 = 239
-        Renderer::DrawLine(239, 25, 1, gainsboro, 190);
+        posY += 10;
 
-        int posY = 30;
-        // Column names
-        Renderer::DrawString((char *)"Address", 53, posY, blank);
+        if (_currentSearch != nullptr)
+        {
+            std::string str = "Step: " + std::to_string(_currentSearch->Step);
+            Renderer::DrawString((char *)str.c_str(), 35, posY, blank);
+            str = "Hit(s): " + std::to_string(_currentSearch->ResultCount);
+            Renderer::DrawString((char *)str.c_str(), 35, posY, blank);
+        }
 
-        posY = 30;
-        Renderer::DrawString((char *)"New Value", 149, posY, blank);
+        posY = 80;
+        /*************     Columns headers    ********************************/
+        /**/    // Name
+        /**/    Renderer::DrawRect(35, 75, 78, 20, darkgrey);
+        /**/    Renderer::DrawString((char *)"Address", 53, posY, black);
+        /**/    posY = 80;
+        /**/
+        /**/    // New value
+        /**/    Renderer::DrawRect(113, 75, 126, 20, darkgrey);
+        /**/    Renderer::DrawString((char *)"New Value", 149, posY, black);
+        /**/    posY = 80;
+        /**/
+        /**/    // OldValue
+        /**/    Renderer::DrawRect(239, 75, 126, 20, darkgrey);
+        /**/    Renderer::DrawString((char *)"Old Value", 275, posY, black);
+        /**/
+        /**********************************************************************/
 
-        posY = 30;
-        Renderer::DrawString((char *)"Old Value", 275, posY, blank);
+        posY = 95;
+        /*************************     Grid    ********************************/
+        /**/    for (int i = 0; i < 10; i++)
+        /**/    {
+        /**/        Color &c = i % 2 ? gainsboro : blank;
+        /**/        Renderer::DrawRect(35, posY, 330, 10, c);
+        /**/        posY += 10;
+        /**/    }
+        /**/
+        /**********************************************************************/
 
-        if (_resultsAddress.size() == 0 || _resultsNewValue.size() == 0)
+        if (_currentSearch == nullptr || _resultsAddress.size() == 0 || _resultsNewValue.size() == 0)
             return;
 
-        // Draw values
-
-        posY = 50;
+        posY = 95;
         int posX1 = 47;
-        int posX2 = 118;
-        int posX3 = 244;
+        int posX2 = 113;
+        int posX3 = 239;
 
-        for (int i = 0; i < 15; i++)
+        for (int i = 0; i < 10; i++)
         {
             if (i >= _resultsAddress.size())
                 return;
@@ -81,13 +95,13 @@ namespace CTRPluginFramework
             int posy = posY;
 
             // Address
-            Renderer::DrawString((char *)_resultsAddress[i].c_str(), pos, posy, blank);
+            Renderer::DrawString((char *)_resultsAddress[i].c_str(), pos, posy, black);
 
             // newval
             posy = posY;
             std::string &nval = _resultsNewValue[i];
             pos = posX2 + (126 - (nval.size() * 6)) / 2;
-            Renderer::DrawString((char *)nval.c_str(), pos, posy, blank);
+            Renderer::DrawString((char *)nval.c_str(), pos, posy, black);
 
             if (i >= _resultsOldValue.size())
             {
@@ -98,8 +112,18 @@ namespace CTRPluginFramework
             // oldval
             std::string &oval = _resultsOldValue[i];
             pos = posX3 + (126 - (oval.size() * 6)) / 2;
-            Renderer::DrawString((char *)oval.c_str(), pos, posY, blank);
+            Renderer::DrawString((char *)oval.c_str(), pos, posY, black);
         }
+
+        std::string str = std::to_string(_index) + "-" + std::to_string(std::min((u32)(_index + 10), (u32)_currentSearch->ResultCount))
+                    + " / " + std::to_string(_currentSearch->ResultCount);
+        posY = 196;
+        Renderer::DrawString((char *)str.c_str(), 38, posY, blank);
+
+        posY = 205;
+        Renderer::DrawString((char *)"Options:", 260, posY, blank);
+        posY -= 13;
+        Renderer::DrawSysString((char *)"\uE002", 313, posY, 330, blank);
     }
 
     void    SearchMenu::Update(void)

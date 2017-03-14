@@ -30,6 +30,8 @@ namespace CTRPluginFramework
         std::vector<std::string>    _resultsNewValue;
         std::vector<std::string>    _resultsOldValue;
 
+        u32                         _index;
+
 
     };
 }
