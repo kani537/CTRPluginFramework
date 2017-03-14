@@ -58,6 +58,7 @@ namespace CTRPluginFramework
         SearchBase(u32 start, u32 end, u32 alignment, SearchBase *prev);
         ~SearchBase(){}
 
+        virtual void    Cancel(void) = 0;
         virtual bool    DoSearch(void) = 0;
         virtual bool    ResultsToFile(void) = 0;
         virtual bool    FetchResults(stringvector &address, stringvector &newval, stringvector &oldvalue) = 0;
@@ -101,6 +102,10 @@ namespace CTRPluginFramework
 
         Search(T value, u32 start, u32 end, u32 alignment, SearchBase *previous);
 
+        /*
+        ** Cancel
+        */
+        void    Cancel(void);
         /*
         ** DoSearch
         ** Override SearchBase's

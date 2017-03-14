@@ -16,6 +16,7 @@ namespace CTRPluginFramework
     _valueTextBox(150, 150, 130, 15),
     _searchBtn("Search", *this, &PluginMenuSearch::_searchBtn_OnClick, IntRect(35, 195, 80, 15)),
     _undoBtn("Undo", *this, &PluginMenuSearch::_undoBtn_OnClick, IntRect(120, 195, 80, 15)),
+    _cancelBtn("Cancel", *this, &PluginMenuSearch::_cancelBtn_OnClick, IntRect(120, 195, 80, 15)),
     _resetBtn("Reset", *this, &PluginMenuSearch::_resetBtn_OnClick, IntRect(205, 195, 80, 15)),
     _inSearch(false),
     _firstRegionInit(false),
@@ -53,6 +54,8 @@ namespace CTRPluginFramework
         _undoBtn.IsEnabled = false;
         _resetBtn.UseSysFont(false);
         _resetBtn.IsEnabled = false;
+        _cancelBtn.UseSysFont(false);
+        _cancelBtn.IsEnabled = false;
 
         // Set 4 Bytes as default
         u32   al = 4;
@@ -97,15 +100,15 @@ namespace CTRPluginFramework
         // Do search
         if (_inSearch)
         {
+            if (_cancelBtn())
+                return (false);
+
             bool finish = _currentSearch->DoSearch();
             _inSearch = !finish;
             if (finish)
             {
                 _waitForUser = true;
                 _compareType.IsEnabled = true;
-                _resetBtn.IsEnabled = true;
-                if (_step > 1)
-                    _undoBtn.IsEnabled = true;
             }
             return (false);
         }
@@ -204,6 +207,10 @@ namespace CTRPluginFramework
         {
             _waitForUser = false;
             _buildResult = true;
+            _cancelBtn.IsEnabled = false;
+            _resetBtn.IsEnabled = true;
+            if (_step > 1)
+                _undoBtn.IsEnabled = true;
         }
     }
 
@@ -313,6 +320,7 @@ namespace CTRPluginFramework
         // Draw buttons
         _closeBtn.Draw();
         _searchBtn.Draw();
+        _cancelBtn.Draw();
         _undoBtn.Draw();
         _resetBtn.Draw();
     }
@@ -341,6 +349,7 @@ namespace CTRPluginFramework
         // Update buttons
         _closeBtn.Update(isTouched, touchPos);
         _searchBtn.Update(isTouched, touchPos);
+        _cancelBtn.Update(isTouched, touchPos);
         _undoBtn.Update(isTouched, touchPos);
         _resetBtn.Update(isTouched, touchPos);
     }
@@ -388,9 +397,21 @@ namespace CTRPluginFramework
         // Lock alignment
         _alignmentTextBox.IsEnabled = false;
 
+        // Enable Cancel button
+        _cancelBtn.IsEnabled = true;
+
         _inSearch = true;
 
         _step++;
+    }
+
+    void    PluginMenuSearch::_cancelBtn_OnClick(void)
+    {
+            _currentSearch->Cancel();
+            _inSearch = false;
+            _waitForUser = true;
+            _compareType.IsEnabled = true;
+            _cancelBtn.IsEnabled = false;
     }
 
     void    PluginMenuSearch::_resetBtn_OnClick(void)

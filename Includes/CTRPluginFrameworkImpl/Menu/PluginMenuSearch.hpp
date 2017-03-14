@@ -39,6 +39,7 @@ namespace CTRPluginFramework
         void    _searchBtn_OnClick(void);
         void    _resetBtn_OnClick(void);
         void    _undoBtn_OnClick(void);
+        void    _cancelBtn_OnClick(void);
 
         void    _ShowProgressWindow(void);
         void    _ShowBuildResultWindow(void);
@@ -70,6 +71,7 @@ namespace CTRPluginFramework
         IconButton<PluginMenuSearch, void>          _closeBtn;
 
         Button<PluginMenuSearch, void>              _searchBtn;
+        Button<PluginMenuSearch, void>              _cancelBtn;
         Button<PluginMenuSearch, void>              _undoBtn;
         Button<PluginMenuSearch, void>              _resetBtn;
 

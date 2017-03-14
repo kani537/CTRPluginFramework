@@ -437,6 +437,16 @@ namespace CTRPluginFramework
     }
 
     template <typename T>
+    void    Search<T>::Cancel(void)
+    {
+        ResultsToFile();
+        SearchTime = _clock.Restart();
+
+        // Free buffer
+        linearFree(_resultsArray);
+    }
+
+    template <typename T>
     bool    Search<T>::FetchResults(stringvector &address, stringvector &newval, stringvector &oldvalue)
     {
         std::vector<SearchResult<T>>    newResults;
