@@ -57,8 +57,8 @@ namespace CTRPluginFramework
 
         //_results.reserve(0x1000);
         //_maxResult = 1000;//_results.capacity() == 0x1000 ? 0x1000 : 1000;
-        _resultsArray = (SearchResult<T>*)linearAlloc(0x4000);//new SearchResult<T>[0x8000]; //32k
-        _maxResult = (0x4000 / sizeof(SearchResult<T>));
+        _resultsArray = (SearchResult<T>*)linearAlloc(0x32000);//new SearchResult<T>[0x8000]; //32k
+        _maxResult = (0x32000 / sizeof(SearchResult<T>)) - 1;
         _resultsEnd = _resultsArray + _maxResult;
         _resultsP = _resultsArray;
     }
@@ -225,6 +225,7 @@ namespace CTRPluginFramework
         if (_currentPosition == 0)
         {
             _UpdateCompare();
+            _WriteHeaderToFile();
             _clock.Restart();
         }
 
@@ -233,7 +234,7 @@ namespace CTRPluginFramework
         {
             u32 start = _currentPosition == 0 ? _startRange : _currentPosition;
             
-            u32 end = start + std::min((u32)(_endRange - start), (u32)0x1000);
+            u32 end = start + std::min((u32)(_endRange - start), (u32)0x32000);
 
             if (Type == SearchType::ExactValue)
             {
@@ -268,6 +269,7 @@ namespace CTRPluginFramework
             if (_currentPosition >= _endRange)
             {
                 ResultsToFile();
+                _WriteHeaderToFile();
                 SearchTime = _clock.Restart();
 
                 // Free buffer
@@ -285,8 +287,9 @@ namespace CTRPluginFramework
             {
                 ResultIter iter = oldResults.begin();
                 ResultIter end = oldResults.end();
+                u32 count = 0;
 
-                for (; iter != end; iter++)
+                for (; iter != end; iter++, count++)
                 {
                     u32 addr = (*iter).address;
                     T   newval = *reinterpret_cast<T *>(addr);
@@ -299,14 +302,16 @@ namespace CTRPluginFramework
                         _resultsP->value = newval;
                         _resultsP++;
 
-                    if (_resultsP >= _resultsEnd)
-                        break;
+                        if (_resultsP >= _resultsEnd)
+                        {
+                            count++;
+                            break;
+                        }                        
                         //_results.push_back(SearchResult<T>((*iter).address, newval));
                     }
                 }
-
                 // Update position
-                _currentPosition += oldResults.size();
+                _currentPosition += count;
 
                 // Calculate progress
                 Progress = (100.f * (float)(_currentPosition)) / _previousSearch->ResultCount;
@@ -316,6 +321,7 @@ namespace CTRPluginFramework
             if (_currentPosition >= _previousSearch->ResultCount)
             {
                 ResultsToFile();
+                _WriteHeaderToFile();
                 SearchTime = _clock.Restart();
 
                 // Free buffer
@@ -335,6 +341,22 @@ namespace CTRPluginFramework
     }
 
     template <typename T>
+    struct Header
+    {
+        u8      type;
+        u8      compare;
+        u32     startRange;
+        u32     endRange;
+        u8      alignment;
+        u32     resultcount;
+        u8      size;
+        u8      valuesize;
+        u32     offset;
+        u32     resultSize;
+        T       value;
+    };
+
+    template <typename T>
     bool    Search<T>::_WriteHeaderToFile(void)
     {
         u64     offset = _file.Tell();
@@ -342,7 +364,21 @@ namespace CTRPluginFramework
 
         _file.Rewind();
 
-        ret |= WriteToFile(_file, Type);                // u8
+        Header<T>   header;
+
+        header.type = (u8)Type;
+        header.compare = (u8)Compare;
+        header.startRange = _startRange;
+        header.endRange = _endRange;
+        header.alignment = _alignment;
+        header.resultcount = ResultCount;
+        header.size = (u8)Size;
+        header.valuesize = sizeof(T);
+        header.offset = sizeof(Header<T>);
+        header.resultSize = sizeof(SearchResult<T>);
+        header.value = _checkValue;
+
+        /*ret |= WriteToFile(_file, Type);                // u8
         ret |= WriteToFile(_file, Compare);             // u8
         ret |= WriteToFile(_file, _startRange);         // u32
         ret |= WriteToFile(_file, _endRange);           // u32
@@ -353,7 +389,9 @@ namespace CTRPluginFramework
         ret |= WriteToFile(_file, _GetHeaderSize());    // u32
         u32 size = _GetResultStructSize();// sizeof(u32) + sizeof(T);        
         ret |= WriteToFile(_file, size);                // u32
-        ret |= WriteToFile(_file, _checkValue);         // T
+        ret |= WriteToFile(_file, _checkValue);         // T*/
+
+        ret = WriteToFile(_file, header);
 
         if (offset != 0)
             _file.Seek(offset, File::SeekPos::SET);
@@ -369,7 +407,7 @@ namespace CTRPluginFramework
     {
         return 
         (  
-            sizeof(Type) // u8
+           /* sizeof(Type) // u8
             + sizeof(Compare) // u8
             + sizeof(_startRange) // u32
             + sizeof(_endRange) //u32
@@ -379,24 +417,25 @@ namespace CTRPluginFramework
             + sizeof(u8) // u8 //sizeof(T)
             + sizeof(u32) // offset in file where results starts
             + sizeof(u32) // SearchResultSize
-            + sizeof(T) // value compared with
+            + sizeof(T) // value compared with*/
+            sizeof(Header<T>)
         );
     }
 
     template <typename T>
     u32     Search<T>::_GetResultStructSize(void)
     {
-        u32 size = sizeof(u32) + sizeof(T);
+        /*u32 size = sizeof(u32) + sizeof(T);
 
-        size += size % 4;
-        return (size);
+        size += size % 4;*/
+        return (sizeof(SearchResult<T>));
     }
 
     template <typename T>
     bool    Search<T>::ResultsToFile(void)
     {
         // Write Header
-        _WriteHeaderToFile();
+        //_WriteHeaderToFile();
 
         // Write all results
         //_file.Write(_results.data(), _results.size() * _GetResultStructSize());

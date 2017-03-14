@@ -122,8 +122,8 @@ namespace CTRPluginFramework
 
         posY = 205;
         Renderer::DrawString((char *)"Options:", 260, posY, blank);
-        posY -= 13;
-        Renderer::DrawSysString((char *)"\uE002", 313, posY, 330, blank);
+        posY -= 14;
+        Renderer::DrawSysString((char *)"\uE002", 314, posY, 330, blank);
     }
 
     void    SearchMenu::Update(void)
