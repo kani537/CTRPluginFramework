@@ -62,6 +62,9 @@ namespace CTRPluginFramework
         posY = 30;
         Renderer::DrawString((char *)"Old Value", 275, posY, blank);
 
+        if (_resultsAddress.size() == 0 || _resultsNewValue.size() == 0)
+            return;
+
         // Draw values
 
         posY = 50;

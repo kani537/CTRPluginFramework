@@ -399,7 +399,8 @@ namespace CTRPluginFramework
         if (_searchHistory.size() > 0)
         {
             for (auto it = _searchHistory.begin(); it != _searchHistory.end(); it++)
-                delete *it;            
+                delete *it;
+            _searchHistory.clear();         
         }
 
         if (_currentSearch != nullptr)
@@ -579,7 +580,7 @@ namespace CTRPluginFramework
                     save_addr = meminfo.base_addr + meminfo.size + 1;
                 continue;
             }
-            
+
             save_addr = meminfo.base_addr + meminfo.size + 1;
             if (meminfo.base_addr == 0x06000000 || meminfo.base_addr == 0x07000000 || meminfo.base_addr == 0x07500000)
                 continue;
