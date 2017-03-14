@@ -80,6 +80,8 @@ namespace CTRPluginFramework
 
             keyboard.Populate(_items);
 
+            keyboard.DisplayTopScreen = false;
+
             int  out = keyboard.Open();
 
             if (out != -1)

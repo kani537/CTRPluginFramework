@@ -384,6 +384,8 @@ namespace CTRPluginFramework
 
         Keyboard keyboard;
 
+        keyboard.DisplayTopScreen = false;
+
         u32 address = strtoul(_resultsAddress[_selector].c_str(), NULL, 16);
 
         switch (_currentSearch->Size)

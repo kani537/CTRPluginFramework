@@ -134,6 +134,8 @@ namespace CTRPluginFramework
         {
             Keyboard  keyboard;
 
+            keyboard.DisplayTopScreen = false;
+
            int  out = -1;
 
            switch (ValueType)
