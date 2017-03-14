@@ -25,14 +25,14 @@ namespace CTRPluginFramework
         Size = SearchSize::Bits32;
         Compare = CompareType::Equal;
 
-        _step = _previousSearch == nullptr ? 0 : _previousSearch->_step + 1;
+        Step = _previousSearch == nullptr ? 0 : _previousSearch->Step + 1;
 
         // Open file
         char    tid[17] = {0};
         Process::GetTitleID(tid);
         std::string path = "Search/";
         path += tid;
-        path += "-Step" + std::to_string(_step) + ".bin";
+        path += "-Step" + std::to_string(Step) + ".bin";
 
 
         // Open current directory
