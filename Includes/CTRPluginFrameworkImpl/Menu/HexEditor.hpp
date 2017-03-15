@@ -31,12 +31,15 @@ namespace CTRPluginFramework
         
         void    _ApplyChanges(void);
         void    _DiscardChanges(void);
+        void    _JumpTo(void);
 
-        std::string     _GetChar(int offset);
+        void    _GetChar(u8 *buffer, int offset);
 
         bool                                _invalid;
         bool                                _isModified;
         u8                                  *_memoryAddress;
+        u32                                 _startRegion;
+        u32                                 _endRegion;
         int                                 _cursor;
         // Buffer for memory
         u8                                  _memory[256];

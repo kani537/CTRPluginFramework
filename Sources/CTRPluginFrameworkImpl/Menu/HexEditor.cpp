@@ -1,5 +1,9 @@
 #include "CTRPluginFrameworkImpl/Menu/HexEditor.hpp"
 #include "CTRPluginFrameworkImpl/Preferences.hpp"
+#include "CTRPluginFramework/System/Process.hpp"
+#include "CTRPluginFramework/Menu/Keyboard.hpp"
+
+#include "3DS.h"
 
 namespace CTRPluginFramework
 {   
@@ -46,6 +50,8 @@ namespace CTRPluginFramework
         // Init variables
         _invalid = true;
         _isModified = false;
+        _startRegion = 0;
+        _endRegion = false;
         _cursor = 0;
 
         // Clean buffer
@@ -75,9 +81,25 @@ namespace CTRPluginFramework
         int out;
         if (_keyboard(out))
         {
-            _isModified = true;
-            // Handle out
+            if (!_invalid)
+            {
+                _isModified = true;
 
+                u8 value = (u8)out;
+                if (_cursor % 2 == 0)
+                {
+                    value = (_memory[_cursor / 2] & 0b1111) | (value << 4);
+                    _memory[_cursor / 2] = value;
+                }
+                else
+                {
+                    value = (_memory[_cursor / 2] & 0b11110000) | (value & 0b1111);
+                    _memory[_cursor / 2] = value;
+                }
+
+                if (_cursor < 159)
+                    _cursor++;
+            }            
         }
 
         // Render TopScreen
@@ -126,7 +148,53 @@ namespace CTRPluginFramework
                     _cursor = std::min((int)(_cursor + 16), (int)((_cursor & 15) + 144));
                     break;
                 }
+
+                case Key::A:
+                {
+                    if (_isModified)
+                    {
+                        _ApplyChanges();
+                    }
+                    break;
+                }
+                case Key::B:
+                {
+                    if (_isModified)
+                    {
+                        _DiscardChanges();
+                    }
+                    break;
+                }
+
+                case Key::X:
+                {
+                    if (!_isModified)
+                    {
+                        _JumpTo();
+                        break;
+                    }
+                }
             }
+        }
+        static Clock timer;
+
+        if (!_isModified && event.type == Event::KeyDown && timer.HasTimePassed(Seconds(0.2f)))
+        {
+            timer.Restart();
+            switch (event.key.code)
+            {
+                case Key::CPadUp:
+                {
+                    Goto((u32)_memoryAddress - 8);
+                    break;
+                }
+
+                case Key::CPadDown:
+                {
+                    Goto((u32)_memoryAddress + 8);
+                    break;
+                }
+            }  
         }
     }
 
@@ -143,6 +211,7 @@ namespace CTRPluginFramework
         static Color    dodgerblue(30, 144, 255);
         static Color    silver(192, 192, 192);
         static Color    coral(255, 127, 80);
+        static Color    red(255, 0, 0);
         static IntRect  background(30, 20, 340, 200);
 
         u32     address = (u32)_memoryAddress;
@@ -232,29 +301,69 @@ namespace CTRPluginFramework
 
                 address += 8;
             }
-            return;
         }
-
-        for (int i = 0; i < 10; i++)
+        else
         {
-            // Convert value
-            sprintf(buffer, "%08X : %02X %02X %02X %02X  %02X %02X %02X %02X", address, 
-                    _memory[OFF(0)], _memory[OFF(1)], _memory[OFF(2)], _memory[OFF(3)],
-                    _memory[OFF(4)], _memory[OFF(5)], _memory[OFF(6)], _memory[OFF(7)]);
+            int     xPos;
+            int     yPos = posY - 10;
 
-            std::string str = buffer;
-            str += _GetChar(i);
+            // Address & data
+            for (int i = 0; i < 10; i++)
+            {
+                int yy = posY;
+                sprintf(buffer, "%08X", address);
+                Renderer::DrawString(buffer, 50, posY, black);
+                address += 8;
 
-            // Draw it
-            Renderer::DrawString((char *)str.c_str(), posX, posY, blank);
+                _GetChar((u8 *)buffer, i * 8);
+                Renderer::DrawString(buffer, 295, yy, black);
+            }
 
-            address += 8;
+            // Values
+            for (int i = 0; i < 80; i++)
+            {
+                if (i % 8 == 0)
+                {
+                    xPos = 116;
+                    yPos += 10;
+                }
+
+                posY = yPos;
+                u8   original = _memoryAddress[i];
+                u8   buf = _memory[i];
+
+                Color &c = original == buf ? black : red;
+
+                // Convert value
+                sprintf(buffer, "%02X ", buf);
+                Renderer::DrawString(buffer, xPos, posY, c);
+
+                xPos += 21;
+                if (i % 8 == 3)
+                    xPos += 7;                
+            } 
         }
-
+        
         if (_isModified)
         {
-            Renderer::DrawSysString("\uE000: Apply changes  \uE001: Discard changes", posX, posY, 330, blank);
+            posY += 5;
+            Renderer::DrawString((char *)"Apply changes: ", 40, posY, blank);
+            posY -= 14;
+            Renderer::DrawSysString("\uE000", 145, posY, 330, blank);
+
+            posY +=2;
+            Renderer::DrawString((char *)"Discard changes: ", 40, posY, blank);
+            posY -= 14;
+            Renderer::DrawSysString("\uE001", 159, posY, 330, blank);
         }
+        else
+        {
+            posY += 5;
+            Renderer::DrawString((char *)"Jump to address: ", 40, posY, blank);
+            posY -= 14;
+            Renderer::DrawSysString("\uE002", 162, posY, 330, blank);  
+        }
+        
     }
 
     void    HexEditor::_RenderBottom(void)
@@ -291,52 +400,133 @@ namespace CTRPluginFramework
 
     void    HexEditor::Goto(u32 address)
     {
-       /* bool retry = false;
+        MemInfo mInfo;
+        PageInfo pInfo;
+
+        u32 addrBak = address;
 
         address &= ~3;
         if (address % 8)
             address -= 4;
-        if (!Process::CopyMemory(_modified, (void *)address, 80));
+
+        if (address >= _startRegion && address <= _endRegion)
         {
-            MemInfo mInfo;
-            PageInfo pInfo;
+            if (address + 80 > _endRegion)
+                address = _endRegion - 80;
 
-            svcQueryProcessMemoryInfo(Process::GetHandle(), &mInfo, &pInfo, address);
+            _memoryAddress = (u8 *)address;
 
-            if (mInfo.state != 0)
-            {
-                address = (mInfo.base_addr + mInfo.size) - 80;
-            }
-            _invalid = true;
+            _cursor = (addrBak - address) * 2;
+
+            if (!_invalid)
+                if (!Process::CopyMemory(_memory, (void *)address, 80))
+                    _invalid = true;
             return;
-        }*/
+        }
+
+        if (R_SUCCEEDED(svcQueryProcessMemory(&mInfo, &pInfo, Process::GetHandle(), address)))
+        {
+            if (mInfo.state == 0)
+            {
+                goto invalid;
+            }
+
+            if ((mInfo.perm & (MEMPERM_READ | MEMPERM_WRITE) != MEMPERM_READ | MEMPERM_WRITE))
+            {
+                if (!Process::ProtectMemory(mInfo.base_addr, mInfo.size, mInfo.perm | (MEMPERM_READ | MEMPERM_WRITE)))
+                {
+                    goto invalid;
+                }
+            }
+        }
+        else
+            goto invalid;
+        
+    copy:
+        svcFlushProcessDataCache(Process::GetHandle(), (void *)address, 80);
+        std::memcpy(_memory, (void*)address, 80);
+
+        _memoryAddress = (u8 *)address;
+        _invalid = false;
+        _startRegion = mInfo.base_addr;
+        _endRegion = _startRegion + mInfo.size;
+        _cursor = (addrBak - address) * 2;
+
+        return;
+    invalid:
+        _memoryAddress = (u8 *)address;
+        _invalid = true;
+        _startRegion = mInfo.base_addr;
+        _endRegion = _startRegion + mInfo.size;
+        _cursor = (addrBak - address) * 2;
+        return;
 
     }
 
     void    HexEditor::_ApplyChanges(void)
     {
-
+        std::memcpy(_memoryAddress, _memory, 80);
+        svcFlushProcessDataCache(Process::GetHandle(), (void *)_memoryAddress, 80);
+        svcInvalidateProcessDataCache(Process::GetHandle(), (void *)_memoryAddress, 80);
+        _isModified = false;
     }
 
     void    HexEditor::_DiscardChanges(void)
     {
-
+        _isModified = false;
+        svcFlushProcessDataCache(Process::GetHandle(), (void *)_memoryAddress, 80);
+        std::memcpy(_memory, _memoryAddress, 80);
     }
 
-    std::string     HexEditor::_GetChar(int offset)
+    void    HexEditor::_JumpTo(void)
     {
-        std::string ret = "";
+        Keyboard    keyboard;
 
+        static Color    black = Color();
+        static Color    dimGrey(15, 15, 15);
+        static IntRect  background(93, 95, 213, 50);
+        static Color    skyblue(0, 191, 255);
+
+        Renderer::SetTarget(TOP);
+
+        // Draw "window" background
+        Renderer::DrawRect2(background, black, dimGrey);
+
+        int posY = 115;
+
+        Renderer::DrawString((char *)"Enter the address to jump to:", 98, posY, skyblue);
+
+        Renderer::EndFrame();
+
+        Renderer::SetTarget(TOP);
+
+        // Draw "window" background
+        Renderer::DrawRect2(background, black, dimGrey);
+
+        posY = 115;
+
+        Renderer::DrawString((char *)"Enter the address to jump to:", 98, posY, skyblue);
+
+
+        keyboard.DisplayTopScreen = false;
+
+        u32 address = (u32)_memoryAddress;
+        if (keyboard.Open(address, address) != -1)
+        {
+            Goto(address);
+        }
+    }
+
+    void    HexEditor::_GetChar(u8 *buffer, int offset)
+    {
         for (int i = 0; i < 8; i++)
         {
             u8 c = _memory[i + offset];
 
             if (c >= 32 && c <= 126)
-                ret += c;
+                buffer[i] = c;
             else
-                ret += '.';
+                buffer[i] = '.';
         }
-
-        return (ret);
     }
 }
