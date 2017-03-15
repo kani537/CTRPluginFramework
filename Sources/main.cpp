@@ -230,7 +230,7 @@ extern "C" u32 __ctru_linear_heap_size;
         // this add the content of the file we've read earlier in the ls string
         //ls += buffer;
 
-        menu.Append(new MenuEntry("Dump", backup));
+        //menu.Append(new MenuEntry("Dump", backup));
         std::string t = "";
         /*
         "Qu'est-ce que le Lorem Ipsum? \n" \
