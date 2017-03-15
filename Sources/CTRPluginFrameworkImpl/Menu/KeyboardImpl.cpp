@@ -658,6 +658,10 @@ namespace CTRPluginFramework
         if (_userInput.size())
         {
             out = (int)_userInput[0];
+            if (out >= '0' && out <= '9')
+                out -= '0';
+            if (out >= 'A' && out <= 'F')
+                out = 10 + out - 'A';
             _userInput.pop_back();
             return (true);
         }
