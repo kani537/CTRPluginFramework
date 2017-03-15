@@ -303,6 +303,7 @@ namespace CTRPluginFramework
         _resultsAddress.clear();
         _resultsNewValue.clear();
         _resultsOldValue.clear();
+        _isSubmenuOpen = false;
 
         if (_currentSearch == nullptr)
             return;
