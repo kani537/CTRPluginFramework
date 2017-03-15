@@ -3,6 +3,7 @@
 
 
 #include "CTRPluginFrameworkImpl/Menu/GuideReader.hpp"
+#include "CTRPluginFrameworkImpl/Menu/HexEditor.hpp"
 #include "CTRPluginFrameworkImpl/Menu/MenuItem.hpp"
 #include "CTRPluginFrameworkImpl/Menu/MenuEntryImpl.hpp"
 #include "CTRPluginFrameworkImpl/Menu/MenuFolderImpl.hpp"
