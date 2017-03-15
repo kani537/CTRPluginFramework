@@ -8,7 +8,10 @@
 
 namespace CTRPluginFramework
 {
-    SearchMenu::SearchMenu(SearchBase* &curSearch) : _currentSearch(curSearch)
+    SearchMenu::SearchMenu(SearchBase* &curSearch, HexEditor &hexEditor, bool &inEditor) : 
+    _currentSearch(curSearch),
+    _hexEditor(hexEditor),
+    _inEditor(inEditor)
     {
         _index = 0;
         _selector = 0;
@@ -475,6 +478,11 @@ namespace CTRPluginFramework
     void    SearchMenu::_JumpInEditor(void)
     {
         _action = true;
+
+        u32 address = strtoul(_resultsAddress[_selector].c_str(), NULL, 16);
+
+        _hexEditor.Goto(address);
+        _inEditor = true;
     }
 
     void    SearchMenu::_Export(void)

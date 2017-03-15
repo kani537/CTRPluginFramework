@@ -6,7 +6,8 @@
 namespace CTRPluginFramework
 {
     PluginMenuSearch::PluginMenuSearch() :
-    _searchMenu(_currentSearch),
+    _hexEditor(0),
+    _searchMenu(_currentSearch, _hexEditor, _inEditor),
     _closeBtn(*this, nullptr, IntRect(275, 24, 20, 20), Icon::DrawClose),
     _memoryRegions(150, 50, 130, 15),
     _searchSize(150, 70, 130, 15),
@@ -22,7 +23,8 @@ namespace CTRPluginFramework
     _firstRegionInit(false),
     _step(0),
     _waitForUser(false),
-    _buildResult(false)
+    _buildResult(false),
+    _inEditor(false)
     {
         _currentSearch = nullptr;
 
@@ -66,6 +68,13 @@ namespace CTRPluginFramework
     bool    PluginMenuSearch::operator()(EventList &eventList, Time &delta)
     {
         static bool trigger = false;
+
+        if (_inEditor)
+        {
+            if (_hexEditor(eventList))
+                _inEditor = false;
+            return (false);
+        }
 
         if (trigger)
         {

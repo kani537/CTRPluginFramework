@@ -50,8 +50,10 @@ namespace CTRPluginFramework
         std::vector<Region>                 _regionsList;
         std::list<SearchBase *>             _searchHistory;
         SearchBase                          *_currentSearch;
+        HexEditor                           _hexEditor;
 
         bool                                _inSearch;
+        bool                                _inEditor;
         bool                                _firstRegionInit;
         bool                                _waitForUser;
         bool                                _buildResult;

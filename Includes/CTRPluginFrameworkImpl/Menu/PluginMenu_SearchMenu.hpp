@@ -5,6 +5,7 @@
 #include "CTRPluginFrameworkImpl/Graphics.hpp"
 #include "CTRPluginFrameworkImpl/System.hpp"
 #include "CTRPluginFrameworkImpl/Menu/PluginMenuSearchStructs.hpp"
+#include "CTRPluginFrameworkImpl/Menu/HexEditor.hpp"
 #include "CTRPluginFramework/System/File.hpp"
 
 #include <string>
@@ -17,7 +18,7 @@ namespace CTRPluginFramework
         using EventList = std::vector<Event>;
     public:
 
-        SearchMenu(SearchBase* &curSearch);
+        SearchMenu(SearchBase* &curSearch, HexEditor &hexEditor, bool &inEditor);
         ~SearchMenu(){};
 
         bool    ProcessEvent(EventList &eventList, Time &delta);
@@ -25,7 +26,7 @@ namespace CTRPluginFramework
         void    Update(void);
 
     private:
-
+        HexEditor                   &_hexEditor;
         SearchBase*                 &_currentSearch;
         std::vector<std::string>    _resultsAddress;
         std::vector<std::string>    _resultsNewValue;
@@ -38,6 +39,7 @@ namespace CTRPluginFramework
         bool                        _isSubmenuOpen;
         bool                        _action;
         bool                        _alreadyExported;
+        bool                        &_inEditor;
         Clock                       _buttonFade;
         File                        _export;
 
