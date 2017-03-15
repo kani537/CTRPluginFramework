@@ -42,6 +42,7 @@ namespace CTRPluginFramework
 
         bool        DisplayTopScreen;
     private:
+        friend class HexEditor;
 
         void    _RenderTop(void);
         void    _RenderBottom(void);

@@ -63,7 +63,14 @@ namespace CTRPluginFramework
         if (!_enabled)
         {
             Renderer::DrawRect(_uiProperties, background);
-            DrawCharacter(_uiProperties, _character, characterDis);
+            if (_icon != nullptr)
+            {
+                int posX = ((_uiProperties.size.x - 15) / 2) + _uiProperties.leftTop.x;
+                int posY = ((_uiProperties.size.y - 15) / 2) + _uiProperties.leftTop.y;
+                _icon(posX, posY, false);
+            }
+            else
+                DrawCharacter(_uiProperties, _character, characterDis);
         }
         else if (_isPressed)
         {
