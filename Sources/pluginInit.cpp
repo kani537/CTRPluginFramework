@@ -4,6 +4,7 @@
 #include "CTRPluginFrameworkImpl/arm11kCommands.h"
 #include "CTRPluginFrameworkImpl.hpp"
 #include "CTRPluginFramework.hpp"
+#include "CTRPluginFrameworkImpl/Graphics/Font.hpp"
 
 extern "C" void     abort(void);
 extern "C" void     initSystem();
@@ -92,6 +93,7 @@ namespace CTRPluginFramework
         // Init Screen
         Screen::Initialize();
         Renderer::Initialize();
+        Font::Initialize();
         // could probably get swapped for lighter implement of gspevent init
         gfxInit(Screen::Top->GetFormat(), Screen::Bottom->GetFormat(), false);
 

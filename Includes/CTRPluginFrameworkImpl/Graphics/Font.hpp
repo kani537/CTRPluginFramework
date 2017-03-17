@@ -17,7 +17,7 @@ namespace CTRPluginFramework
     {
     public:
 
-        static Glyph    *GetGlyph(u8 c);
+        static Glyph    *GetGlyph(u8* &c);
         //static float    GetStringSize(const std::string &str);
     private:
         friend void     Initialize(void);
@@ -26,7 +26,7 @@ namespace CTRPluginFramework
         static void     Initialize(void);
 
         // Cache a new glyph
-        static Glyph    *CacheGlyph(int code);
+        static Glyph    *CacheGlyph(u32 glyphIndex);
     };
 }
 

@@ -2,12 +2,13 @@
 #include "ctrulib/allocator/linear.h"
 #include "ctrulib/font.h"
 
+#include <cmath>
 namespace CTRPluginFramework
 {
     extern "C" CFNT_s* g_sharedFont;
     extern "C" int charPerSheet;
 
-    Glyph           *defaultSysFont = nullptr;
+    Glyph           **defaultSysFont = nullptr;
     static Glyph    _emptyGlyph;
 
     void    Font::Initialize(void)
@@ -16,7 +17,7 @@ namespace CTRPluginFramework
         if (defaultSysFont != nullptr)
             linearFree(defaultSysFont);
 
-        defaultSysFont = (Glyph *)linearAlloc(sizeof(Glyph) * 7505);
+        defaultSysFont = (Glyph **)linearAlloc(sizeof(Glyph) * 7505);
         memset(defaultSysFont, 0, sizeof(Glyph) * 7505);
 
         _emptyGlyph.xOffset = 0.f;
@@ -26,7 +27,7 @@ namespace CTRPluginFramework
         memset(_emptyGlyph.glyph, 0, 240);
     }
 
-    Glyph   *Font::GetGlyph(u8 c)
+    Glyph   *Font::GetGlyph(u8* &c)
     {
         u32     code;
         u32     glyphIndex;
@@ -37,11 +38,12 @@ namespace CTRPluginFramework
         if (units == -1) 
             return (&_emptyGlyph);
 
+        c += units;
         if (code > 0)
         {
             glyphIndex = fontGlyphIndexFromCodePoint(code);
             if (defaultSysFont[glyphIndex] != 0)
-                return (&defaultSysFont[glyphIndex]);
+                return (defaultSysFont[glyphIndex]);
             return (CacheGlyph(glyphIndex));
         }
         return (&_emptyGlyph);
@@ -124,7 +126,7 @@ namespace CTRPluginFramework
         }
     }
 
-    void    ShrinkGlyph(u8 *dst, int dheight, u8 *src)
+    void    ShrinkGlyph(u8 *dest, int dheight, u8 *src)
     {
       int   x, y;
       int   i, ii;
@@ -132,9 +134,9 @@ namespace CTRPluginFramework
       float xfrag, yfrag, xfrag2, yfrag2;
       float xt, yt, dx, dy;
       int   xi, yi;
-      float sheight = 32.f;
-      float swidth = 25.f;
-      float ratio = ((float)dheight) / sheight;
+      int sheight = 32;
+      int swidth = 25;
+      float ratio = ((float)dheight) / 32.f;
       int   dwidth = (swidth * ratio);
 
       dx = ((float)swidth)/dwidth;
@@ -212,8 +214,8 @@ namespace CTRPluginFramework
     Glyph   *Font::CacheGlyph(u32 glyphIndex)
     {
         // if the glyph already exists
-        if (defaultSysFont[glyphIndex] != 0)
-            return (&defaultSysFont[glyphIndex]);
+        if (defaultSysFont[glyphIndex] != nullptr)
+            return (defaultSysFont[glyphIndex]);
 
         u8  *originalGlyph = GetOriginalGlyph(glyphIndex);
         // 16px * 13px = 208
@@ -240,7 +242,7 @@ namespace CTRPluginFramework
         glyph->glyph = newGlyph;
 
         // Add Glyph to defaultSysFont
-        defaultSysFont[code] = glyph;
+        defaultSysFont[glyphIndex] = glyph;
 
         return (glyph);
     }
