@@ -1,0 +1,27 @@
+FONT
+Version: 50331648
+File size: 3124592
+nBlock: 26
+FINF Magic: 1179535686
+FINF Section Size: 32
+FINF Font Type: 1
+FINF Height: 30
+FINF Width: 25
+FINF Ascent: 25
+FINF Line feed:30
+FINF Alter Character Index: 7318
+FINF Default Width, Left: 0
+FINF Default Glyph Width: 24
+FINF Default Character Width: 24
+FINF Encoding: 1
+TLGP Cell width: 24
+TLGP Cell height: 30
+TLGP BaseLine Pos: 25
+TLGP Max Char Width: 24
+TLGP Sheet Size: 2048
+TLGP Sheets Count:1501
+TLGP Sheet Format:11
+TLGP Glyph Per Row: 5
+TLGP Glyph Rows Per Sheet: 1
+TLGP Sheet Width: 128
+TLGP Sheet Height: 32
