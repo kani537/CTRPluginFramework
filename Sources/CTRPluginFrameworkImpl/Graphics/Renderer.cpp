@@ -5,6 +5,7 @@
 #include "CTRPluginFramework/Graphics.hpp"
 #include "CTRPluginFrameworkImpl/Graphics.hpp"
 #include "CTRPluginFramework/System/Touch.hpp"
+#include "CTRPluginFramework/System/Clock.hpp"
 #include <cstdio>
 #include <cmath>
 
@@ -100,8 +101,11 @@ namespace CTRPluginFramework
 
     void        Renderer::EndFrame(bool copy)
     {
-        static IntRect                 background(20, 20, 280, 200);
-        static Color                   blank(255, 255, 255);
+        static IntRect                  background(20, 20, 280, 200);
+        static Color                    blank(255, 255, 255);
+        static Color                    black;
+        static Clock                    fpsCounter;
+
         bool isTouchDown = Touch::IsDown();
         IntVector touchPos(Touch::GetPosition());
 
@@ -116,6 +120,13 @@ namespace CTRPluginFramework
                 DrawSysString("\uE058", posX, posY, 320, blank);
         }
 
+        // Draw fps counter
+        char buffer[20] = {0};
+        Time delta = fpsCounter.Restart();
+
+        sprintf(buffer, "FPS: %.02f", Seconds(1.f).AsSeconds() / delta.AsSeconds());
+        int posY = 30;
+        DrawString(buffer, 200, posY, blank, black);
         Screen::Bottom->SwapBuffer(true, copy);
         Screen::Top->SwapBuffer(true, copy);
         gspWaitForVBlank();

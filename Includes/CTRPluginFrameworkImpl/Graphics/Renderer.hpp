@@ -80,7 +80,12 @@ namespace CTRPluginFramework
 
         static void     DrawSysCheckBox(const char *str, int posX, int &posY, int xLimits, Color color, bool isChecked = false,  float offset = 0);
         static void     DrawSysFolder(const char *str, int posX, int &posY, int xLimits, Color color, float offset = 0);
-
+        static void     DrawChar(char c, int posX, int posY);
+        static void     GetAlpha(char c);
+        static void     DrawArray(void);
+        static void     ScaleFont(void);
+        static void     DrawArray2(void);
+        static void     DrawArr(u8 *src, int posXX, int height, int width);
         // Misc
         //#############################################################################################
         static void     DrawBuffer(u8 *buffer, int posX, int posY, int width, int height);

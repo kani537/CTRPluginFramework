@@ -6,7 +6,8 @@ namespace CTRPluginFramework
     PluginMenuTools::PluginMenuTools() :
     _closeBtn(*this, nullptr, IntRect(275, 24, 20, 20), Icon::DrawClose)
     {
-
+        Renderer::GetAlpha('A');
+        Renderer::ScaleFont();
     }
 
     bool    PluginMenuTools::operator()(EventList &eventList, Time &delta)
@@ -88,6 +89,19 @@ namespace CTRPluginFramework
         {
             Renderer::DrawRect2(background, black, dimGrey);
             Renderer::DrawRect(22, 22, 276, 196, blank, false);            
+        }
+
+        static bool type = false;
+
+        if (Controller::IsKeyPressed(Key::X))
+            type = !type;
+
+        if (!type)
+            Renderer::DrawChar('A', 150, 100);
+        else
+        {
+            Renderer::DrawArray();
+            Renderer::DrawArray2();
         }
 
         int posY = 205;

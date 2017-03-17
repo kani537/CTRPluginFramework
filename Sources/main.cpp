@@ -188,6 +188,58 @@ namespace CTRPluginFramework
             }*/
     }
 
+    void    TestDraw(MenuEntry *entry)
+    {
+        //Renderer::DrawChar('A', 150, 100);
+    }
+
+    std::string     GetFontInfo(void)
+    {
+        std::string str = "";
+        CFNT_s  *cfnt = fontGetFont();
+        FINF_s  *finf = fontGetInfo();
+        TGLP_s  *tglp = fontGetGlyphInfo();
+        charWidthInfo_s *cwi = &finf->defaultWidth;
+
+        str += "FONT\nVersion: " + std::to_string(cfnt->version);
+        str += "\nFile size: " + std::to_string(cfnt->fileSize);
+        str += "\nnBlock: " + std::to_string(cfnt->nBlocks);
+
+        str += "\nFINF Magic: " + std::to_string(finf->signature);
+        str += "\nFINF Section Size: " + std::to_string(finf->sectionSize);
+        str += "\nFINF Font Type: " + std::to_string(finf->fontType);
+        str += "\nFINF Height: " + std::to_string(finf->height);
+        str += "\nFINF Width: " + std::to_string(finf->width);
+        str += "\nFINF Ascent: " + std::to_string(finf->ascent);
+        str += "\nFINF Line feed:" + std::to_string(finf->lineFeed);
+        str += "\nFINF Alter Character Index: " + std::to_string(finf->alterCharIndex);
+        str += "\nFINF Default Width, Left: "  + std::to_string(cwi->left);
+        str += "\nFINF Default Glyph Width: " + std::to_string(cwi->glyphWidth);
+        str += "\nFINF Default Character Width: " + std::to_string(cwi->charWidth);
+        str += "\nFINF Encoding: " + std::to_string(finf->encoding);
+
+        str += "\nTLGP Cell width: " + std::to_string(tglp->cellWidth);
+        str += "\nTLGP Cell height: " + std::to_string(tglp->cellHeight);
+        str += "\nTLGP BaseLine Pos: " + std::to_string(tglp->baselinePos);
+        str += "\nTLGP Max Char Width: " + std::to_string(tglp->maxCharWidth);
+        str += "\nTLGP Sheet Size: " + std::to_string(tglp->sheetSize);
+        str += "\nTLGP Sheets Count:" + std::to_string(tglp->nSheets);
+        str += "\nTLGP Sheet Format:" + std::to_string(tglp->sheetFmt);
+        str += "\nTLGP Glyph Per Row: " + std::to_string(tglp->nRows);
+        str += "\nTLGP Glyph Rows Per Sheet: "  + std::to_string(tglp->nLines);
+        str += "\nTLGP Sheet Width: " + std::to_string(tglp->sheetWidth);
+        str += "\nTLGP Sheet Height: " + std::to_string(tglp->sheetHeight);
+
+        File file;
+
+        if (!File::Open(file, "FontData.txt", File::READ | File::WRITE | File::CREATE))
+        {
+            file.WriteLine(str);
+            file.Close();
+        }
+        return str;
+
+    }
 extern "C" u32 __ctru_heap;
 extern "C" u32 __ctru_heap_size;
 extern "C" u32 __ctru_linear_heap;
@@ -216,13 +268,14 @@ extern "C" u32 __ctru_linear_heap_size;
     int    main(void)
     {  
         File    log;
-        File::Open(log, "log.txt", File::READ | File::WRITE | File::CREATE);
+        //File::Open(log, "log.txt", File::READ | File::WRITE | File::CREATE);
 
-        log.WriteLine("Menu");
+        //log.WriteLine("Menu");
 
         PluginMenu      *m = new PluginMenu("Zelda Ocarina Of Time 3D");
         PluginMenu      &menu = *m;
     
+
 
         char buffer[0x200];
         sprintf(buffer, "%08X -> %08X\n%08X -> %08X", __ctru_heap, __ctru_heap_size, __ctru_linear_heap, __ctru_linear_heap_size);
@@ -230,8 +283,10 @@ extern "C" u32 __ctru_linear_heap_size;
         // this add the content of the file we've read earlier in the ls string
         //ls += buffer;
 
-        //menu.Append(new MenuEntry("Dump", backup));
-        std::string t = "";
+        /*MenuEntry *entryy = new MenuEntry("Test");
+        entryy->SetMenuFunc(TestDraw);
+        menu.Append(entryy);*/
+        std::string t = GetFontInfo();
         /*
         "Qu'est-ce que le Lorem Ipsum? \n" \
         "Le Lorem Ipsum est simplement du faux texte" \
@@ -260,9 +315,9 @@ extern "C" u32 __ctru_linear_heap_size;
         /*
         ** Movements codes
         ********************/
-        log.WriteLine("Movement");
+        //log.WriteLine("Movement");
 
-        MenuFolder *folder = new MenuFolder("Movement", buffer);
+        MenuFolder *folder = new MenuFolder("Movement", t);
 
         MenuEntry *entry = new MenuEntry("MoonJump (\uE000)", MoonJump, "Press \uE000 to be free of the gravity.");
         entry->SetMenuFunc([](MenuEntry *entry)
@@ -408,8 +463,7 @@ extern "C" u32 __ctru_linear_heap_size;
 
         log.WriteLine("Run");
         // Launch menu and mainloop
-        Process::ProtectRegion(0x100000);
-        Process::ProtectRegion(0x101000);
+
         menu.Run();
 
         // Exit plugin
