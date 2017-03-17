@@ -96,6 +96,7 @@ namespace CTRPluginFramework
         friend class    TouchKey;
         friend class    Icon;
         friend class    PrivColor;
+        friend class    Font;
 
         friend class    TextBox;
         friend class    BMPImage;
