@@ -1,15 +1,16 @@
 #include "CTRPluginFrameworkImpl/Graphics/Font.hpp"
 #include "ctrulib/allocator/linear.h"
 #include "ctrulib/font.h"
-
+#include "ctrulib/util/utf.h"
+#include <cstring>
 #include <cmath>
+#include "CTRPluginFrameworkImpl/Graphics/Renderer.hpp"
 namespace CTRPluginFramework
 {
     extern "C" CFNT_s* g_sharedFont;
     extern "C" int charPerSheet;
 
-    Glyph           **defaultSysFont = nullptr;
-    static Glyph    _emptyGlyph;
+    u32            *defaultSysFont = nullptr;
 
     void    Font::Initialize(void)
     {
@@ -17,14 +18,8 @@ namespace CTRPluginFramework
         if (defaultSysFont != nullptr)
             linearFree(defaultSysFont);
 
-        defaultSysFont = (Glyph **)linearAlloc(sizeof(Glyph) * 7505);
-        memset(defaultSysFont, 0, sizeof(Glyph) * 7505);
-
-        _emptyGlyph.xOffset = 0.f;
-        _emptyGlyph.xAdvance = 0.f;
-        // 16 * 13
-        _emptyGlyph.glyph = (u8 *)linearAlloc(240);
-        memset(_emptyGlyph.glyph, 0, 240);
+        defaultSysFont = (u32 *)linearAlloc(sizeof(u32) * 7505);
+        std::memset(defaultSysFont, 0, sizeof(u32) * 7505);
     }
 
     Glyph   *Font::GetGlyph(u8* &c)
@@ -33,20 +28,19 @@ namespace CTRPluginFramework
         u32     glyphIndex;
         ssize_t units;
 
-
         units = decode_utf8(&code, c);
         if (units == -1) 
-            return (&_emptyGlyph);
+            return (nullptr);
 
         c += units;
         if (code > 0)
         {
             glyphIndex = fontGlyphIndexFromCodePoint(code);
             if (defaultSysFont[glyphIndex] != 0)
-                return (defaultSysFont[glyphIndex]);
+                return ((Glyph *)defaultSysFont[glyphIndex]);
             return (CacheGlyph(glyphIndex));
         }
-        return (&_emptyGlyph);
+        return (nullptr);
     }
 
     u8    *GetOriginalGlyph(u32 glyphIndex)
@@ -72,13 +66,14 @@ namespace CTRPluginFramework
 
         // Allocate buffer
         ret = (u8 *)linearAlloc(800);
-        memset(ret, 0, 800);
+        std::memset(ret, 0, 800);
 
         // Sheet is composed of 8x8 pixel tiles
         for (int tileY = 0; tileY < tileHeight; tileY++)
         {
-            int start = index * (tileWidth / 5);
-            int end = start + (tileWidth / 5);
+            int w = std::round(tileWidth / 5);
+            int start = std::round(index * w);
+            int end = start + w;
             for (int tileX = start; tileX < end; tileX++)
             {
                 // Tile is composed of 2x2 sub-tiles
@@ -124,6 +119,7 @@ namespace CTRPluginFramework
                 }
             }
         }
+        return (ret);
     }
 
     void    ShrinkGlyph(u8 *dest, int dheight, u8 *src)
@@ -137,10 +133,10 @@ namespace CTRPluginFramework
       int sheight = 32;
       int swidth = 25;
       float ratio = ((float)dheight) / 32.f;
-      int   dwidth = (swidth * ratio);
+      int   dwidth = std::round((float)(swidth) * ratio);
 
-      dx = ((float)swidth)/dwidth;
-      dy = ((float)sheight)/dheight;
+      dx = std::round(((float)swidth)/dwidth);
+      dy = std::round(((float)sheight)/dheight);
 
       for(yt= 0, y=0;y<dheight;y++, yt += dy)
         {
@@ -214,13 +210,13 @@ namespace CTRPluginFramework
     Glyph   *Font::CacheGlyph(u32 glyphIndex)
     {
         // if the glyph already exists
-        if (defaultSysFont[glyphIndex] != nullptr)
-            return (defaultSysFont[glyphIndex]);
+        if (defaultSysFont[glyphIndex] != 0)
+            return ((Glyph *)defaultSysFont[glyphIndex]);
 
         u8  *originalGlyph = GetOriginalGlyph(glyphIndex);
-        // 16px * 13px = 208
+        // 16px * 14px = 224
         u8  *newGlyph = (u8 *)linearAlloc(208);
-        memset(newGlyph, 0, 208);
+        std::memset(newGlyph, 0, 208);
 
         // Shrink glyph data to the requiered size
         ShrinkGlyph(newGlyph, 16, originalGlyph);
@@ -230,19 +226,19 @@ namespace CTRPluginFramework
 
         // Allocate new Glyph
         Glyph *glyph = (Glyph *)linearAlloc(sizeof(Glyph));
-        memset(glyph, 0, sizeof(Glyph));
+        std::memset(glyph, 0, sizeof(Glyph));
 
         // Get Glyph data
         charWidthInfo_s     *cwi;
         fontGlyphPos_s      glyphPos;
         Renderer::FontCalcGlyphPos(&glyphPos, &cwi, glyphIndex, 0.5f, 0.5f);
 
-        glyph->xOffset = glyphPos.xOffset;
-        glyph->xAdvance = glyphPos.xAdvance;
+        glyph->xOffset =  (glyphIndex == 0) ? glyphPos.xOffset : std::round(glyphPos.xOffset);
+        glyph->xAdvance = (glyphIndex == 0) ? glyphPos.xAdvance : std::round(glyphPos.xAdvance);
         glyph->glyph = newGlyph;
 
         // Add Glyph to defaultSysFont
-        defaultSysFont[glyphIndex] = glyph;
+        defaultSysFont[glyphIndex] = (u32)glyph;
 
         return (glyph);
     }
