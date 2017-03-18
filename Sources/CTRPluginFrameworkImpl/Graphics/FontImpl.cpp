@@ -47,7 +47,8 @@ namespace CTRPluginFramework
     {
         TGLP_s  *tglp = fontGetGlyphInfo();
         u8      *data = (u8 *)fontGetGlyphSheetTex(glyphIndex / charPerSheet);
-        u8      *ret = nullptr;
+        u8      *glyph = nullptr;
+        u8      *tileData = nullptr;
 
         int     width = tglp->sheetWidth;
         int     height = tglp->sheetHeight;
@@ -64,17 +65,20 @@ namespace CTRPluginFramework
         int tileWidth = width / 8;
         int tileHeight = height / 8;
 
-        // Allocate buffer
-        ret = (u8 *)linearAlloc(800);
-        std::memset(ret, 0, 800);
+        // Allocate buffers
+        tileData = (u8 *)linearAlloc(4096);
+        glyph = (u8 *)linearAlloc(800);
+        std::memset(tileData, 0, 4096);
+        std::memset(glyph, 0, 800);
+
 
         // Sheet is composed of 8x8 pixel tiles
         for (int tileY = 0; tileY < tileHeight; tileY++)
         {
-            int w = std::round(tileWidth / 5);
-            int start = std::round(index * w);
-            int end = start + w;
-            for (int tileX = start; tileX < end; tileX++)
+            //int w = std::round(tileWidth / 5);
+            //int start = std::round(index * w);
+            //int end = start + w;
+            for (int tileX = 0; tileX < tileWidth; tileX++)
             {
                 // Tile is composed of 2x2 sub-tiles
                 for (int y = 0; y < 2; y++)
@@ -98,19 +102,19 @@ namespace CTRPluginFramework
                                         if (tileX + x + xx + xxx >= dataWidth)
                                             continue;
 
-                                        int pixelX = (xxx + (xx * 2) + (x * 4) + ((tileX - start) * 8));
+                                        int pixelX = (xxx + (xx * 2) + (x * 4) + ((tileX) * 8));
                                         int pixelY = (yyy + (yy * 2) + (y * 4) + (tileY * 8));
 
                                         int dataX = (xxx + (xx * 4) + (x * 16) + (tileX * 64));
                                         int dataY = ((yyy * 2) + (yy * 8) + (y * 32) + (tileY * width * 8));
 
                                         int dataPos = dataX + dataY;
-                                        int bmpPos = pixelX + (pixelY * 25);
+                                        int bmpPos = pixelX + (pixelY * width);
 
                                         u8 byte = data[dataPos / 2];
                                         int shift = (dataPos & 1) * 4;
 
-                                        ret[bmpPos] = ((byte >> shift) & 0x0F) * 0x11;
+                                        tileData[bmpPos] = ((byte >> shift) & 0x0F) * 0x11;
                                     }
                                 }
                             }
@@ -119,7 +123,24 @@ namespace CTRPluginFramework
                 }
             }
         }
-        return (ret);
+
+        // Get the part we're interested in
+        fontGlyphPos_s glyphPos;
+        fontCalcGlyphPos(&glyphPos, glyphIndex, 0, 1.f, 1.f);
+        int w = std::round(width / 5);
+        int start = std::round(index * w);
+        int end = start + w;
+        u8  *p = glyph;
+        for (int y = 0; y < 32; y++)
+        {
+            for (int x = start; x < end; x++)
+            {
+                *p++ = tileData[x + (y * width)];
+            }
+        }
+
+        linearFree(tileData);
+        return (glyph);
     }
 
     void    ShrinkGlyph(u8 *dest, int dheight, u8 *src)
