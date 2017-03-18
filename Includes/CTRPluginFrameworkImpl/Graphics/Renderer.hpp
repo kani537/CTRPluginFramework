@@ -13,6 +13,7 @@
 
 #include <algorithm>
 #include <vector>
+#include <string>
 
 namespace CTRPluginFramework
 {
@@ -73,19 +74,16 @@ namespace CTRPluginFramework
         static void     DrawCheckBoxString(char *str, int posX, int &posY, bool isChecked, Color fg, Color checked);
         // System Font
         //#############################################################################################
-        static int      DrawSysString(const char *str, int posX, int &posY, int max, Color color, float offset = 0, const char *end = nullptr);
+        static int      DrawSysString(const char *str, int posX, int &posY, int max, Color color, float offset = 0.f, const char *end = nullptr);
         static int      DrawSysStringReturn(const char *str, int posX, int &posY, int xLimits, Color color, int maxY = 200);
         static float    GetTextSize(const char *text);
         static int      GetLineCount(const char *text, float maxWidth);
 
         static void     DrawSysCheckBox(const char *str, int posX, int &posY, int xLimits, Color color, bool isChecked = false,  float offset = 0);
         static void     DrawSysFolder(const char *str, int posX, int &posY, int xLimits, Color color, float offset = 0);
-        static void     DrawChar(char c, int posX, int posY);
-        static void     GetAlpha(char c);
-        static void     DrawArray(void);
-        static void     ScaleFont(void);
-        static void     DrawArray2(void);
-        static void     DrawArr(u8 *src, int posXX, int height, int width);
+
+        static int      DrawSysString2(const char *str, int posX, int &posY, int max, Color color, float offset = 0.f, const char *end = nullptr);
+
         // Misc
         //#############################################################################################
         static void     DrawBuffer(u8 *buffer, int posX, int posY, int width, int height);

@@ -6,8 +6,6 @@ namespace CTRPluginFramework
     PluginMenuTools::PluginMenuTools() :
     _closeBtn(*this, nullptr, IntRect(275, 24, 20, 20), Icon::DrawClose)
     {
-        Renderer::GetAlpha('A');
-        Renderer::ScaleFont();
     }
 
     bool    PluginMenuTools::operator()(EventList &eventList, Time &delta)
@@ -95,17 +93,23 @@ namespace CTRPluginFramework
 
         if (Controller::IsKeyPressed(Key::X))
             type = !type;
+        int posY = 50;
 
-        if (!type)
-            Renderer::DrawChar('A', 150, 100);
-        else
+        //if (!type)
         {
-            Renderer::DrawArray();
-            Renderer::DrawArray2();
+            Renderer::DrawSysString("This is a test string \uE000\uE001", 40, posY, 300, blank);
+            Renderer::DrawSysString("This is a test string \uE000\uE001", 40, posY, 300, blank);
+            Renderer::DrawSysString("This is a test string \uE000\uE001", 40, posY, 300, blank);
+        }
+       // else
+        {
+            Renderer::DrawSysString2("This is a test string \uE000\uE001", 40, posY, 320, blank);
+            Renderer::DrawSysString2("This is a test string \uE000\uE001", 40, posY, 302, blank);
+            Renderer::DrawSysString2("This is a test string \uE000\uE001", 40, posY, 320, blank);
         }
 
-        int posY = 205;
-        Renderer::DrawString((char *)"CTRPluginFramework Alpha V.0.0.4", 40, posY, blank);
+        //posY = 205;
+        //Renderer::DrawString((char *)"CTRPluginFramework Alpha V.0.0.4", 40, posY, blank);
 
         // Draw buttons
         _closeBtn.Draw();
