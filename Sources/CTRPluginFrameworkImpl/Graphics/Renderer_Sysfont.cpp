@@ -252,7 +252,7 @@ namespace CTRPluginFramework
     {
         Icon::DrawCheckBox(posX, posY, isChecked);
         posX += 20;
-        DrawSysString(str, posX, posY, xLimits, color, offset);
+        DrawSysString2(str, posX, posY, xLimits, color, offset);
         posY += 1;
 
     }
@@ -261,7 +261,7 @@ namespace CTRPluginFramework
     {
         Icon::DrawFolder(posX, posY);
         posX += 20;
-        DrawSysString(str, posX, posY, xLimits, color, offset);
+        DrawSysString2(str, posX, posY, xLimits, color, offset);
         posY += 1;
     }
 
@@ -430,17 +430,25 @@ namespace CTRPluginFramework
             {
                 break;
             }
+
+            if (offset >= glyph->xAdvance)
+            {
+                offset -= glyph->xAdvance;
+                continue;
+            }
+
             int  posxx = x + glyph->xOffset;
             int  y = posY;
             u8   *data = glyph->glyph;
 
-            int i = offset > 0.f ? (13 * offset) : 0; 
-            for (; i < 208; i++)
+            for (int i = offset; i < 208; i++)
             {
                 if (i != 0 && i % 13 == 0)
                 {
                     y++;
                     x = posxx;
+                    if (offset)
+                        i += offset;
                 }
                 color.a = data[i];
 
@@ -452,6 +460,12 @@ namespace CTRPluginFramework
                 PrivColor::ToFramebuffer(left, c);
                 x++;
             }
+            if (offset > 0.f)
+            {
+                posxx -= offset;
+                offset = 0;                
+            }
+
             x = posxx + glyph->xAdvance;
         } while (*str);
 

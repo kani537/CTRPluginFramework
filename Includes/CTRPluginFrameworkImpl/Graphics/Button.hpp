@@ -200,7 +200,7 @@ namespace CTRPluginFramework
 
         if (_useSysfont)
         {
-            Renderer::DrawSysString(_content.c_str(), posX, posY, limit, contentColor);
+            Renderer::DrawSysString2(_content.c_str(), posX, posY, limit, contentColor);
         }
         else
             Renderer::DrawString((char *)_content.c_str(), posX, posY, contentColor);  

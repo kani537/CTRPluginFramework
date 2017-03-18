@@ -355,7 +355,7 @@ namespace CTRPluginFramework
 
         // Draw Title
         int width;
-        width = Renderer::DrawSysString(folder->name.c_str(), posX, posY, 350, blank);
+        width = Renderer::DrawSysString2(folder->name.c_str(), posX, posY, 350, blank);
         Renderer::DrawLine(posX, posY, width, blank);
         posY += 7;
 
