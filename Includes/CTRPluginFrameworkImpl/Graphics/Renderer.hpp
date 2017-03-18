@@ -82,7 +82,7 @@ namespace CTRPluginFramework
         static void     DrawSysCheckBox(const char *str, int posX, int &posY, int xLimits, Color color, bool isChecked = false,  float offset = 0);
         static void     DrawSysFolder(const char *str, int posX, int &posY, int xLimits, Color color, float offset = 0);
 
-        static int      DrawSysString2(const char *str, int posX, int &posY, int max, Color color, float offset = 0.f, const char *end = nullptr);
+        //static int      DrawSysString2(const char *str, int posX, int &posY, int max, Color color, float offset = 0.f, const char *end = nullptr);
 
         // Misc
         //#############################################################################################

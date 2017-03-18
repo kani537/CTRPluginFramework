@@ -89,27 +89,9 @@ namespace CTRPluginFramework
             Renderer::DrawRect(22, 22, 276, 196, blank, false);            
         }
 
-        static bool type = false;
 
-        if (Controller::IsKeyPressed(Key::X))
-            type = !type;
-        int posY = 50;
-
-        //if (!type)
-        {
-            Renderer::DrawSysString("This is a test string \uE000\uE001", 40, posY, 300, blank);
-            Renderer::DrawSysString("This is a test string \uE000\uE001", 40, posY, 300, blank);
-            Renderer::DrawSysString("This is a test string \uE000\uE001", 40, posY, 300, blank);
-        }
-       // else
-        {
-            Renderer::DrawSysString2("This is a test string \uE000\uE001", 40, posY, 320, blank);
-            Renderer::DrawSysString2("This is a test string \uE000\uE001", 40, posY, 302, blank);
-            Renderer::DrawSysString2("This is a test string \uE000\uE001", 40, posY, 320, blank);
-        }
-
-        //posY = 205;
-        //Renderer::DrawString((char *)"CTRPluginFramework Alpha V.0.0.4", 40, posY, blank);
+        int posY = 205;
+        Renderer::DrawString((char *)"CTRPluginFramework Alpha V.0.0.4", 40, posY, blank);
 
         // Draw buttons
         _closeBtn.Draw();

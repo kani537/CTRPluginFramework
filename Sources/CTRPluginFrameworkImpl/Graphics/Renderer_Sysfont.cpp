@@ -182,17 +182,10 @@ namespace CTRPluginFramework
         do
         {
             if (!*c) break;
-            units = decode_utf8(&code, c);
-            if (units == -1) break;
-            c += units;
-            if (code > 0)
-            {
-                glyphIndex = fontGlyphIndexFromCodePoint(code);
-                charWidthInfo_s *cwi;
-                FontCalcGlyphPos(&data, &cwi, glyphIndex, 0.5f, 0.5f);
-                w += data.xAdvance + 1;
-            }
-        } while (code > 0);
+            Glyph *glyph = Font::GetGlyph(c);
+            if (glyph == nullptr) break;
+            w += (glyph->xOffset + glyph->xAdvance);
+        } while (1);
         return (w);
     }
 
@@ -224,23 +217,18 @@ namespace CTRPluginFramework
                 lineCount++;
                 w = 0;
             }
-            units = decode_utf8(&code, c);
-            if (units == -1) break;
-            c += units;
-            if (code > 0)
+            Glyph *glyph = Font::GetGlyph(c);
+            if (glyph == nullptr) break;
+            float gSize = glyph->xOffset + glyph->xAdvance;
+            if (w + gSize > maxWidth)
             {
-                glyphIndex = fontGlyphIndexFromCodePoint(code);
-                charWidthInfo_s *cwi;
-                FontCalcGlyphPos(&data, &cwi, glyphIndex, 0.5f, 0.5f);
-                if (w + data.xAdvance + 1 > maxWidth)
-                {
-                    lineCount++;
-                    w = data.xAdvance + 1;
-                }
-                else
-                    w += data.xAdvance + 1;
+                lineCount++;
+                w = gSize;
             }
-        } while (code > 0);
+            else
+                w += gSize;
+            
+        } while (1);
 
         return (lineCount);
     }
@@ -252,7 +240,7 @@ namespace CTRPluginFramework
     {
         Icon::DrawCheckBox(posX, posY, isChecked);
         posX += 20;
-        DrawSysString2(str, posX, posY, xLimits, color, offset);
+        DrawSysString(str, posX, posY, xLimits, color, offset);
         posY += 1;
 
     }
@@ -261,11 +249,11 @@ namespace CTRPluginFramework
     {
         Icon::DrawFolder(posX, posY);
         posX += 20;
-        DrawSysString2(str, posX, posY, xLimits, color, offset);
+        DrawSysString(str, posX, posY, xLimits, color, offset);
         posY += 1;
     }
 
-    int Renderer::DrawSysString(const char *str, int posX, int &posY, int xLimits, Color color, float offset, const char *end)
+/*    int Renderer::DrawSysString(const char *str, int posX, int &posY, int xLimits, Color color, float offset, const char *end)
     {
         u32             glyphcode;
         int             units;
@@ -324,7 +312,7 @@ namespace CTRPluginFramework
 
         posY += 16 * lineCount;
         return (x);
-    }
+    }*/
 
     int Renderer::DrawSysStringReturn(const char *str, int posX, int &posY, int xLimits, Color color, int maxY)
     {
@@ -391,7 +379,7 @@ namespace CTRPluginFramework
         return (x);
     }
 
-    int Renderer::DrawSysString2(const char *stri, int posX, int &posY, int xLimits, Color color, float offset, const char *end)
+    int Renderer::DrawSysString(const char *stri, int posX, int &posY, int xLimits, Color color, float offset, const char *end)
     {
         Glyph   *glyph;
         int      x = posX;
@@ -426,14 +414,14 @@ namespace CTRPluginFramework
 
             if (glyph == nullptr)
                 break;
-            if (x + glyph->xAdvance > xLimits)
+            if (x + glyph->xAdvance + glyph->xOffset > xLimits)
             {
                 break;
             }
 
-            if (offset >= glyph->xAdvance)
+            if (offset >= glyph->xAdvance + glyph->xOffset)
             {
-                offset -= glyph->xAdvance;
+                offset -= (glyph->xAdvance + glyph->xOffset);
                 continue;
             }
 

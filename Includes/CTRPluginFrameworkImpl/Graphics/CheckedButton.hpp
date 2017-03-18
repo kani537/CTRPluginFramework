@@ -133,7 +133,7 @@ namespace CTRPluginFramework
        // posX = Icon::DrawCheckBox(posX, posY, _state);
         if (_icon != nullptr)
             posX = _icon(posX, posY);
-        Renderer::DrawSysString2(_content.c_str(), posX, posY, limit, contentColor);        
+        Renderer::DrawSysString(_content.c_str(), posX, posY, limit, contentColor);        
     }
 
     // Update
