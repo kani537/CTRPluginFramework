@@ -9,7 +9,6 @@
 #include <cstdio>
 #include <cmath>
 
-
 namespace CTRPluginFramework
 {
     
@@ -121,12 +120,12 @@ namespace CTRPluginFramework
         }
 
         // Draw fps counter
-        char buffer[20] = {0};
+       /* char buffer[20] = {0};
         Time delta = fpsCounter.Restart();
 
         sprintf(buffer, "FPS: %.02f", Seconds(1.f).AsSeconds() / delta.AsSeconds());
         int posY = 30;
-        DrawString(buffer, 200, posY, blank, black);
+        DrawString(buffer, 200, posY, blank, black);*/
         Screen::Bottom->SwapBuffer(true, copy);
         Screen::Top->SwapBuffer(true, copy);
         gspWaitForVBlank();
