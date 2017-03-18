@@ -125,8 +125,6 @@ namespace CTRPluginFramework
         }
 
         // Get the part we're interested in
-        fontGlyphPos_s glyphPos;
-        fontCalcGlyphPos(&glyphPos, glyphIndex, 0, 1.f, 1.f);
         int w = std::round(width / 5);
         int start = std::round(index * w);
         int end = start + w;
@@ -145,86 +143,84 @@ namespace CTRPluginFramework
 
     void    ShrinkGlyph(u8 *dest, int dheight, u8 *src)
     {
-      int   x, y;
-      int   i, ii;
-      float alpha;
-      float xfrag, yfrag, xfrag2, yfrag2;
-      float xt, yt, dx, dy;
-      int   xi, yi;
-      int sheight = 32;
-      int swidth = 25;
-      float ratio = ((float)dheight) / 32.f;
-      int   dwidth = std::round((float)(swidth) * ratio);
+        int   x, y;
+        int   i, ii;
+        float alpha;
+        float xfrag, yfrag, xfrag2, yfrag2;
+        float xt, yt, dx, dy;
+        int   xi, yi;
+        int sheight = 32;
+        int swidth = 25;
+        float ratio = ((float)dheight) / 32.f;
+        int   dwidth = std::round((float)(swidth) * ratio);
 
-      dx = std::round(((float)swidth)/dwidth);
-      dy = std::round(((float)sheight)/dheight);
+        dx = std::round(((float)swidth)/dwidth);
+        dy = std::round(((float)sheight)/dheight);
 
-      for(yt= 0, y=0;y<dheight;y++, yt += dy)
+        for(yt = 0, y = 0; y < dheight; y++, yt += dy)
         {
-          yfrag = ceil(yt) - yt;
-          if(yfrag == 0)
-        yfrag = 1;
-          yfrag2 = yt+dy - (float) floor(yt + dy);
-          if(yfrag2 == 0 && dy != 1.0f)
-        yfrag2 = 1;
-        
-          for(xt = 0, x=0;x<dwidth;x++, xt+= dx)
-        {
-          xi = (int) xt;
-          yi = (int) yt;
-          xfrag = (float) ceil(xt) - xt;
-          if(xfrag == 0)
-            xfrag = 1;
-          xfrag2 = xt+dx - (float) floor(xt+dx);
-          if(xfrag2 == 0 && dx != 1.0f)
-            xfrag2 = 1;
-          alpha =  xfrag * yfrag * src[(yi*swidth+xi)];
-          
-          for(i=0; xi + i + 1 < xt+dx-1; i++)
+            yfrag = ceil(yt) - yt;
+            if(yfrag == 0)
+                yfrag = 1;
+            yfrag2 = yt+dy - (float)floor(yt + dy);
+            if(yfrag2 == 0 && dy != 1.0f)
+                yfrag2 = 1;
+
+            for(xt = 0, x = 0; x < dwidth; x++, xt += dx)
             {
-              alpha += yfrag * src[(yi*swidth+xi+i+1)];
-            } 
+                xi = (int)xt;
+                yi = (int)yt;
+                xfrag = (float)ceil(xt) - xt;
+                if(xfrag == 0)
+                    xfrag = 1;
+                xfrag2 = xt + dx - (float)floor(xt+dx);
+                if(xfrag2 == 0 && dx != 1.0f)
+                    xfrag2 = 1;
+                alpha =  xfrag * yfrag * src[(yi * swidth + xi)];
           
-          alpha += xfrag2 * yfrag * src[(yi*swidth+xi+i+1)];
+                for(i=0; xi + i + 1 < xt+dx-1; i++)
+                {
+                    alpha += yfrag * src[(yi * swidth + xi + i + 1)];
+                } 
+                
+                alpha += xfrag2 * yfrag * src[(yi*swidth+xi+i+1)];
             
-          
-          for(i=0; yi+i+1 < yt +dy-1 && yi + i+1 < sheight;i++)
-            {
-              alpha += xfrag * src[((yi+i+1)*swidth+xi)];
+                for(i = 0; yi + i + 1 < yt + dy - 1 && yi + i + 1 < sheight; i++)
+                {
+                    alpha += xfrag * src[((yi + i + 1) * swidth + xi)];
             
-              for (ii = 0; xi + ii + 1 < xt + dx - 1 && xi + ii + 1 < swidth; ii++)
-            {
-              alpha += src[((yi+i+1)*swidth+xi+ii+1)];
-            }
+                    for (ii = 0; xi + ii + 1 < xt + dx - 1 && xi + ii + 1 < swidth; ii++)
+                    {
+                        alpha += src[((yi + i + 1) * swidth + xi + ii + 1)];
+                    }
               
-              if (yi + i + 1 < sheight && xi + ii + 1 < swidth)
-            {
-              alpha += xfrag2 * src[((yi+i+1)*swidth+xi+ii+1)];
-            }
-            }
-        
-          if (yi + i + 1 < sheight)
-            {
-              alpha += xfrag * yfrag2 * src[((yi + i + 1)*swidth + xi)];
+                    if (yi + i + 1 < sheight && xi + ii + 1 < swidth)
+                    {
+                        alpha += xfrag2 * src[((yi + i + 1) * swidth + xi + ii + 1)];
+                    }
+                }
 
-              for (ii = 0; xi + ii + 1 < xt + dx - 1 && xi + ii + 1 < swidth; ii++)
-            {
-              alpha += yfrag2 * src[((yi + i + 1)*swidth + xi + ii + 1)];
-            }
-            }
+                if (yi + i + 1 < sheight)
+                {
+                    alpha += xfrag * yfrag2 * src[((yi + i + 1) * swidth + xi)];
+
+                    for (ii = 0; xi + ii + 1 < xt + dx - 1 && xi + ii + 1 < swidth; ii++)
+                    {
+                        alpha += yfrag2 * src[((yi + i + 1) * swidth + xi + ii + 1)];
+                    }
+                }
           
-          if (yi + i + 1 < sheight && xi + ii + 1 < swidth)
-            {
-              alpha += xfrag2 * yfrag2 * src[((yi + i + 1)*swidth + xi + ii + 1)];
-            }
-           
+                if (yi + i + 1 < sheight && xi + ii + 1 < swidth)
+                {
+                    alpha += xfrag2 * yfrag2 * src[((yi + i + 1) * swidth + xi + ii + 1)];
+                }
             
-          alpha /= dx * dy;
+                alpha /= dx * dy;
 
-          alpha = alpha <= 0.f ? 0.f : (alpha >= 255.f ? 255.f : alpha);
-       
-          dest[(y*dwidth+x)] = (unsigned char) alpha;
-        }
+                alpha = alpha <= 0.f ? 0.f : (alpha >= 255.f ? 255.f : alpha);
+
+                dest[(y * dwidth + x)] = (unsigned char) alpha;
+            }
         }
     }
 
