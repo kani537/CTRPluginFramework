@@ -55,10 +55,8 @@ namespace CTRPluginFramework
         _checkValue = value;
         _WriteHeaderToFile();
 
-        //_results.reserve(0x1000);
-        //_maxResult = 1000;//_results.capacity() == 0x1000 ? 0x1000 : 1000;
-        _resultsArray = (SearchResult<T>*)linearAlloc(0x32000);//new SearchResult<T>[0x8000]; //32k
-        _maxResult = (0x32000 / sizeof(SearchResult<T>)) - 1;
+        _resultsArray = (SearchResult<T>*)linearAlloc(0x40000); //256 KB
+        _maxResult = (0x40000 / sizeof(SearchResult<T>)) - 1;
         _resultsEnd = _resultsArray + _maxResult;
         _resultsP = _resultsArray;
     }
