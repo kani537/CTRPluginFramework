@@ -1,6 +1,8 @@
 #include "CTRPluginFramework/System/Directory.hpp"
 #include "CTRPluginFramework/System/File.hpp"
 #include "CTRPluginFramework/System/Process.hpp"
+#include "CTRPluginFrameworkImpl/System/ProcessImpl.hpp"
+#include "ctrulib/allocator/linear.h"
 
 #include "ctrulib/util/utf.h"
 #include "ctrulib/result.h"
@@ -258,22 +260,57 @@ namespace CTRPluginFramework
 
     int     File::Dump(u32 address, u32 length)
     {
+        bool    unpause = false;
+        // Ifgame not paused, then pause it
+        if (!ProcessImpl::IsPaused())
+        {
+            ProcessImpl::Pause(false);
+            unpause = true;
+        }
+
         if (!Process::ProtectMemory(address, length))
-            return (-1);
+            goto clean;
+
         svcFlushProcessDataCache(Process::GetHandle(), (void *)address, length);
-        return (Write((void *)address, length));
+
+        // Dump in chunk of 32kb
+        do
+        {
+            int size = length > 0x8000 ? 0x8000 : length;
+            Write((void *)address, size);
+
+            address += size;
+            length -= size;
+
+        } while (length > 0);
+
+        if (unpause)
+            ProcessImpl::Play(false);
+        return (0);
+    clean:
+        if (unpause)
+            ProcessImpl::Play(false);
+        return (-1);
     }
 
     int     File::Inject(u32 address, u32 length)
     {
-        u8  *buffer = new u8[0x1001];
+        u8  *buffer = new u8[0x40000]; //256KB
 
-        if (buffer == nullptr || !Process::ProtectMemory(address, length))
+        if (buffer == nullptr || !Process::CheckAddress(address, MEMPERM_READ))
             return (-1);
+
+        bool    unpause = false;
+        // Ifgame not paused, then pause it
+        if (!ProcessImpl::IsPaused())
+        {
+            ProcessImpl::Pause(false);
+            unpause = true;
+        }
 
         do
         {
-            int size = length <= 0x1000 ? length : 0x1000;
+            int size = length <= 0x40000 ? length : 0x40000;
             // First read file
             if (Read(buffer, size) != 0)
                 goto clean;
@@ -287,9 +324,14 @@ namespace CTRPluginFramework
 
         } while (length > 0);
 
+        delete[] buffer;
+        if (unpause)
+            ProcessImpl::Play(false);
         return (0);
     clean:
         delete[] buffer;
+        if (unpause)
+            ProcessImpl::Play(false);
         return (-1);
     }
 }
