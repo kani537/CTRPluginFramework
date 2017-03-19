@@ -15,7 +15,7 @@ namespace CTRPluginFramework
         u32 startAddress;
         u32 endAddress;
     };
-    
+
     enum class SearchSize : u8
     {
         Bits8 = 0,
@@ -81,11 +81,16 @@ namespace CTRPluginFramework
     protected: 
         friend class SearchMenu;
         
-        u32     _startRange; //<- Start address
-        u32     _endRange; //<- End address
-        u32     _currentPosition; //<- Current position in the search range
-        u8      _alignment; //<- search alignment
-        Clock   _clock;
+        u32                     _startRange; //<- Start address
+        u32                     _endRange; //<- End address
+        u32                     _currentPosition; //<- Current position in the search range
+        u8                      _alignment; //<- search alignment
+        bool                    _fullRamSearch;
+        int                     _currentRegion;
+        u32                     _totalSize;
+        u32                     _achievedSize;
+        std::vector<Region>     _regionsList;
+        Clock                   _clock;
         
 
         File    _file; //<- File associated for read / Write
@@ -108,6 +113,7 @@ namespace CTRPluginFramework
     public:
 
         Search(T value, u32 start, u32 end, u32 alignment, SearchBase *previous);
+        Search(T value, std::vector<Region> &list, u32 alignment, SearchBase *previous);
 
         /*
         ** Cancel
@@ -142,7 +148,7 @@ namespace CTRPluginFramework
         /*
         ** Methods
         ***********/
-
+        bool        _SearchInRange(void);
         void        _FirstExactSearch(u32 &start, u32 end, u32 maxResult);
         void        _UpdateCompare(void);
         // Return true if the value matches the search settings

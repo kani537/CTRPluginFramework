@@ -377,21 +377,49 @@ namespace CTRPluginFramework
 
         u32     startRange = _regionsList[_memoryRegions.SelectedItem].startAddress;
         u32     endRange = _regionsList[_memoryRegions.SelectedItem].endAddress;
+
+        if (_memoryRegions.SelectedItem == 0)
+        {
+            startRange = 0;
+            endRange = 0;
+        }
+        else
+        {
+            startRange = _regionsList[_memoryRegions.SelectedItem - 1].startAddress;
+            endRange = _regionsList[_memoryRegions.SelectedItem - 1].endAddress;  
+        }
         u32     step = _searchHistory.size();
 
         //Flush memory
         svcFlushProcessDataCache(Process::GetHandle(), (void *)startRange, endRange - startRange);
 
         // Create search object and set SearchSize
-        switch (_searchSize.SelectedItem)
+        if (_memoryRegions.SelectedItem == 0)
         {
-            case 0: _currentSearch = new Search<u8>(_valueTextBox.Bits8, startRange, endRange, _alignmentTextBox.Bits32, _currentSearch);  _currentSearch->Size = SearchSize::Bits8; break;
-            case 1: _currentSearch = new Search<u16>(_valueTextBox.Bits16, startRange, endRange, _alignmentTextBox.Bits32, _currentSearch); _currentSearch->Size = SearchSize::Bits16; break;
-            case 2: _currentSearch = new Search<u32>(_valueTextBox.Bits32, startRange, endRange, _alignmentTextBox.Bits32, _currentSearch); _currentSearch->Size = SearchSize::Bits32; break;
-            case 3: _currentSearch = new Search<u64>(_valueTextBox.Bits64, startRange, endRange, _alignmentTextBox.Bits32, _currentSearch); _currentSearch->Size = SearchSize::Bits64; break;
-            case 4: _currentSearch = new Search<float>(_valueTextBox.Single, startRange, endRange, _alignmentTextBox.Bits32, _currentSearch); _currentSearch->Size = SearchSize::FloatingPoint; break;
-            case 5: _currentSearch = new Search<double>(_valueTextBox.Double, startRange, endRange, _alignmentTextBox.Bits32, _currentSearch); _currentSearch->Size = SearchSize::Double; break;
+            switch (_searchSize.SelectedItem)
+            {
+                case 0: _currentSearch = new Search<u8>(_valueTextBox.Bits8, _regionsList, _alignmentTextBox.Bits32, _currentSearch);  _currentSearch->Size = SearchSize::Bits8; break;
+                case 1: _currentSearch = new Search<u16>(_valueTextBox.Bits16, _regionsList, _alignmentTextBox.Bits32, _currentSearch); _currentSearch->Size = SearchSize::Bits16; break;
+                case 2: _currentSearch = new Search<u32>(_valueTextBox.Bits32, _regionsList, _alignmentTextBox.Bits32, _currentSearch); _currentSearch->Size = SearchSize::Bits32; break;
+                case 3: _currentSearch = new Search<u64>(_valueTextBox.Bits64, _regionsList, _alignmentTextBox.Bits32, _currentSearch); _currentSearch->Size = SearchSize::Bits64; break;
+                case 4: _currentSearch = new Search<float>(_valueTextBox.Single, _regionsList, _alignmentTextBox.Bits32, _currentSearch); _currentSearch->Size = SearchSize::FloatingPoint; break;
+                case 5: _currentSearch = new Search<double>(_valueTextBox.Double, _regionsList, _alignmentTextBox.Bits32, _currentSearch); _currentSearch->Size = SearchSize::Double; break;
+            }
+
         }
+        else
+        {
+            switch (_searchSize.SelectedItem)
+            {
+                case 0: _currentSearch = new Search<u8>(_valueTextBox.Bits8, startRange, endRange, _alignmentTextBox.Bits32, _currentSearch);  _currentSearch->Size = SearchSize::Bits8; break;
+                case 1: _currentSearch = new Search<u16>(_valueTextBox.Bits16, startRange, endRange, _alignmentTextBox.Bits32, _currentSearch); _currentSearch->Size = SearchSize::Bits16; break;
+                case 2: _currentSearch = new Search<u32>(_valueTextBox.Bits32, startRange, endRange, _alignmentTextBox.Bits32, _currentSearch); _currentSearch->Size = SearchSize::Bits32; break;
+                case 3: _currentSearch = new Search<u64>(_valueTextBox.Bits64, startRange, endRange, _alignmentTextBox.Bits32, _currentSearch); _currentSearch->Size = SearchSize::Bits64; break;
+                case 4: _currentSearch = new Search<float>(_valueTextBox.Single, startRange, endRange, _alignmentTextBox.Bits32, _currentSearch); _currentSearch->Size = SearchSize::FloatingPoint; break;
+                case 5: _currentSearch = new Search<double>(_valueTextBox.Double, startRange, endRange, _alignmentTextBox.Bits32, _currentSearch); _currentSearch->Size = SearchSize::Double; break;
+            }
+        }
+
 
         // Set Search Type
         _currentSearch->Type = static_cast<SearchType>(_searchType.SelectedItem);
@@ -578,7 +606,8 @@ namespace CTRPluginFramework
         float   length = Renderer::GetTextSize("Build hit(s) list...");
         Renderer::DrawSysString("Build hit(s) list...", 125 + ((150 - length) /2), posY, 300, skyblue);
     }
-
+    extern "C" u32 __ctru_linear_heap;
+    extern "C" u32 __ctru_linear_heap_size;
     void    PluginMenuSearch::_ListRegion(void)
     {
 
@@ -591,6 +620,12 @@ namespace CTRPluginFramework
 
         _regionsList.clear();
         _memoryRegions.Clear();
+
+        {
+            //Region reg = (Region){0x100000, 0x50000000};
+            //_regionsList.push_back(reg);
+            _memoryRegions.Add("All memory");
+        }
 
         svcQueryProcessMemory(&meminfo, &page_info, target, 0x00100000);
         {
@@ -620,13 +655,18 @@ namespace CTRPluginFramework
             }
 
             save_addr = meminfo.base_addr + meminfo.size + 1;
-            if (meminfo.base_addr == 0x06000000 || meminfo.base_addr == 0x07000000 || meminfo.base_addr == 0x07500000)
+            if (meminfo.base_addr == 0x06000000 || meminfo.base_addr == 0x07000000 || meminfo.base_addr == 0x07500000 || meminfo.base_addr == __ctru_linear_heap)
                 continue;
 
             if (meminfo.state != 0x0 && meminfo.state != 0x2 && meminfo.state != 0x3 && meminfo.state != 0x6)
             {
                 if (meminfo.perm & MEMPERM_READ)
                 {
+                    if (meminfo.base_addr < __ctru_linear_heap && meminfo.base_addr + meminfo.size > __ctru_linear_heap)
+                    {
+                        meminfo.size = __ctru_linear_heap - meminfo.base_addr;
+                    }
+
                     Region reg = (Region){meminfo.base_addr, meminfo.base_addr + meminfo.size};
                     _regionsList.push_back(reg);
                     char    buffer[0x100] = {0};

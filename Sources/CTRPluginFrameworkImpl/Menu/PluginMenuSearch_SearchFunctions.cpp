@@ -17,7 +17,11 @@ namespace CTRPluginFramework
     _startRange(start), _endRange(end), _alignment(alignment), _previousSearch(previous), Progress(0.0f)
     {
         // Init search variables
+        _fullRamSearch = false;
         _currentPosition = 0;
+        _currentRegion = -1;
+        _totalSize = 0;
+        _achievedSize = 0;
         ResultCount = 0;
 
         // Default search parameters
@@ -53,12 +57,36 @@ namespace CTRPluginFramework
     SearchBase(start, end, alignment, prev)
     {
         _checkValue = value;
-        _WriteHeaderToFile();
+        //_WriteHeaderToFile();
 
         _resultsArray = (SearchResult<T>*)linearAlloc(0x40000); //256 KB
         _maxResult = (0x40000 / sizeof(SearchResult<T>)) - 1;
         _resultsEnd = _resultsArray + _maxResult;
         _resultsP = _resultsArray;
+    }
+
+    template <typename T>
+    Search<T>::Search(T value, std::vector<Region> &list, u32 alignment, SearchBase *prev) :
+    SearchBase(0, 0x50000000, alignment, prev)
+    {
+        _checkValue = value;
+        //_WriteHeaderToFile();
+
+        _resultsArray = (SearchResult<T>*)linearAlloc(0x40000); //256 KB
+        _maxResult = (0x40000 / sizeof(SearchResult<T>)) - 1;
+        _resultsEnd = _resultsArray + _maxResult;
+        _resultsP = _resultsArray;
+
+        _regionsList = list;
+        _fullRamSearch = true;
+        // Get Total Size
+        for (int i = 0; i < list.size(); i++)
+        {
+            Region &region = list[i];
+            int size = region.endAddress - region.startAddress;
+
+            _totalSize += size;
+        }
     }
 
     /*
@@ -105,8 +133,6 @@ namespace CTRPluginFramework
     template <typename T>
     void      Search<T>::_FirstExactSearch(u32 &start, u32 end, u32 maxResult)
     {
-        Clock timer;
-
         switch (Compare)
         {
             case CompareType::Equal:
@@ -214,25 +240,19 @@ namespace CTRPluginFramework
             default:
                 break;
         } // End switch
+        //if (_resultsP >= _resultsEnd)
+          //  start += _alignment;
     }
 
     template<typename T>
-    bool    Search<T>::DoSearch(void)
+    bool    Search<T>::_SearchInRange(void)
     {
-        //Just started search ?
-        if (_currentPosition == 0)
-        {
-            _UpdateCompare();
-            _WriteHeaderToFile();
-            _clock.Restart();
-        }
-
         // First Search ?
         if (_previousSearch == nullptr)
         {
             u32 start = _currentPosition == 0 ? _startRange : _currentPosition;
             
-            u32 end = start + std::min((u32)(_endRange - start), (u32)0x32000);
+            u32 end = start + std::min((u32)(_endRange - start), (u32)0x40000);
 
             if (Type == SearchType::ExactValue)
             {
@@ -260,22 +280,13 @@ namespace CTRPluginFramework
                 _currentPosition = start;
             }
 
-            // Calculate progress
-            Progress = ((100.0f * (float)(_currentPosition - _startRange)) / (_endRange - _startRange));
-
             // Finish
             if (_currentPosition >= _endRange)
             {
-                ResultsToFile();
-                _WriteHeaderToFile();
-                SearchTime = _clock.Restart();
-
-                // Free buffer
-                linearFree(_resultsArray);
                 return (true);
             }
         }
-        // Second search
+        // Subsidiary search
         else
         {            
             std::vector<SearchResult<T>>    oldResults;
@@ -310,13 +321,49 @@ namespace CTRPluginFramework
                 }
                 // Update position
                 _currentPosition += count;
+            }
 
+            // Finish
+            if (_currentPosition >= _previousSearch->ResultCount)
+            {
+                return (true);
+            }
+        }
+
+        return (false);
+    }
+
+    template<typename T>
+    bool    Search<T>::DoSearch(void)
+    {
+        // Just started search ?
+        if (_currentPosition == 0)
+        {
+            _UpdateCompare();
+            _WriteHeaderToFile();
+            _clock.Restart();
+        }
+
+        bool    finished = false;
+        // Range search
+        if (!_fullRamSearch)
+        {
+            finished = _SearchInRange();
+
+            // First Search
+            if (_previousSearch == nullptr)
+            {
+                // Calculate progress
+                Progress = ((100.0f * (float)(_currentPosition - _startRange)) / (_endRange - _startRange));
+            }
+            else
+            {
                 // Calculate progress
                 Progress = (100.f * (float)(_currentPosition)) / _previousSearch->ResultCount;
             }
 
             // Finish
-            if (_currentPosition >= _previousSearch->ResultCount)
+            if (finished)
             {
                 ResultsToFile();
                 _WriteHeaderToFile();
@@ -324,18 +371,78 @@ namespace CTRPluginFramework
 
                 // Free buffer
                 linearFree(_resultsArray);
-
-                return (true);
             }
+            else
+            {
+                if (_resultsP >= _resultsEnd)
+                    ResultsToFile();
+            }
+            return (finished);
         }
+        // All regions search
+        else
+        {
+            // Start search
+            if (_previousSearch == nullptr)
+            {
+                if (_currentRegion == -1)
+                {                
+                    _currentRegion = 0;
+                    _startRange = _regionsList[0].startAddress;
+                    _endRange = _regionsList[0].endAddress;
+                    _currentPosition = _startRange;
+                    svcFlushProcessDataCache(Process::GetHandle(), (void *)_startRange, _endRange - _startRange);
+                }
+            }
 
 
+            // Save current position
+            u32 position = _currentPosition;
 
-        //if (_results.size() >= _maxResult)
-        if (_resultsP >= _resultsEnd)
-            ResultsToFile();
+            // Do search
+            finished = _SearchInRange();
 
-        return (false);
+            // Compute size done
+            u32 size = _currentPosition - position;
+            _achievedSize += size;
+
+            // Calculate Progress
+            if (_previousSearch == nullptr)
+                Progress = ((100.0f * (float)(_achievedSize)) / (_totalSize));
+            else
+                Progress = (100.f * (float)(_currentPosition)) / _previousSearch->ResultCount;
+
+            // If finished, set next region parameters
+            if (finished)
+            {
+                // If we didn't finished the last region
+                if (_previousSearch == nullptr && _currentRegion < _regionsList.size() - 1)
+                {
+                    _currentRegion++;
+                    _startRange = _regionsList[_currentRegion].startAddress;
+                    _endRange = _regionsList[_currentRegion].endAddress;
+                    _currentPosition = _startRange;
+                    svcFlushProcessDataCache(Process::GetHandle(), (void *)_startRange, _endRange - _startRange);
+                }
+                else
+                {
+                    ResultsToFile();
+                    _WriteHeaderToFile();
+                    SearchTime = _clock.Restart();
+
+                    // Free buffer
+                    linearFree(_resultsArray);
+
+                    return (true);
+                }
+
+            }
+            
+            if (_resultsP >= _resultsEnd)
+                ResultsToFile();
+
+            return (false);
+        }
     }
 
     template <typename T>
