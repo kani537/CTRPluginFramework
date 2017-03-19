@@ -12,12 +12,6 @@
 
 namespace CTRPluginFramework
 {
-    struct Region
-    {
-        u32 startAddress;
-        u32 endAddress;
-    };
-
     class PluginMenuSearch
     {
         using EventList = std::vector<Event>;

@@ -10,6 +10,12 @@
 
 namespace CTRPluginFramework
 {
+    struct Region
+    {
+        u32 startAddress;
+        u32 endAddress;
+    };
+    
     enum class SearchSize : u8
     {
         Bits8 = 0,

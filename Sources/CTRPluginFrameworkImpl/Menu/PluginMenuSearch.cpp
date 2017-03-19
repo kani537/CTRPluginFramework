@@ -593,13 +593,21 @@ namespace CTRPluginFramework
         _memoryRegions.Clear();
 
         svcQueryProcessMemory(&meminfo, &page_info, target, 0x00100000);
+        {
+            Region reg = (Region){meminfo.base_addr, meminfo.base_addr + meminfo.size};
+            _regionsList.push_back(reg);
+            char    buffer[0x100] = {0};
+
+            sprintf(buffer, "%08X-%08X", reg.startAddress, reg.endAddress);
+            _memoryRegions.Add(buffer);
+        }
         save_addr = meminfo.base_addr + meminfo.size + 1;
         i = 1;
         while (save_addr < 0x50000000)
         {
             if (i >= 99)
                 break;
-            ret = svcQueryProcessMemory(&meminfo, &page_info, target, save_addr);//, "svc_queryProcessMemory");
+            ret = svcQueryProcessMemory(&meminfo, &page_info, target, save_addr);
             if (R_FAILED(ret))
             {
                 if (meminfo.base_addr >= 0x50000000)
