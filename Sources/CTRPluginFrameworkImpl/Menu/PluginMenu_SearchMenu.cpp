@@ -309,9 +309,15 @@ namespace CTRPluginFramework
         _isSubmenuOpen = false;
 
         if (_currentSearch == nullptr)
+        {
+            _selector = 0;
             return;
+        }
 
         _currentSearch->FetchResults(_resultsAddress, _resultsNewValue, _resultsOldValue, _index, 500);
+
+        if (_selector >= _resultsAddress.size())
+            _selector = 0;
     }
 
     void    SearchMenu::_DrawSubMenu(void)
