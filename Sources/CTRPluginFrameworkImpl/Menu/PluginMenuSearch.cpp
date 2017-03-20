@@ -372,7 +372,7 @@ namespace CTRPluginFramework
         if (_currentSearch != nullptr)
             _searchHistory.push_back(_currentSearch);
 
-        if (_memoryRegions.SelectedItem == -1 || _memoryRegions.SelectedItem >= _regionsList.size())
+        if (_memoryRegions.SelectedItem == -1 || _memoryRegions.SelectedItem > _regionsList.size())
             return;
 
         u32     startRange = _regionsList[_memoryRegions.SelectedItem].startAddress;
@@ -388,6 +388,7 @@ namespace CTRPluginFramework
             startRange = _regionsList[_memoryRegions.SelectedItem - 1].startAddress;
             endRange = _regionsList[_memoryRegions.SelectedItem - 1].endAddress;  
         }
+
         u32     step = _searchHistory.size();
 
         //Flush memory

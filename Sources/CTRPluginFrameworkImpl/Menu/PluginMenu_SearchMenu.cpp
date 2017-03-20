@@ -301,7 +301,7 @@ namespace CTRPluginFramework
         }
     }
 
-    void    SearchMenu::Update(void)
+    void    SearchMenu::Update()
     {
         _resultsAddress.clear();
         _resultsNewValue.clear();
@@ -314,10 +314,13 @@ namespace CTRPluginFramework
             return;
         }
 
-        _currentSearch->FetchResults(_resultsAddress, _resultsNewValue, _resultsOldValue, _index, 500);
-
-        if (_selector >= _resultsAddress.size())
+        if (_index >= _currentSearch->ResultCount)
+        {
+            _index = 0;
             _selector = 0;
+        }
+
+        _currentSearch->FetchResults(_resultsAddress, _resultsNewValue, _resultsOldValue, _index, 500);
     }
 
     void    SearchMenu::_DrawSubMenu(void)
