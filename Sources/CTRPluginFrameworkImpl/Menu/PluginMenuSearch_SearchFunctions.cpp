@@ -24,6 +24,11 @@ namespace CTRPluginFramework
         _achievedSize = 0;
         ResultCount = 0;
 
+        // Init hit list variable
+        _lastFetchedIndex = 0;
+        _lastStartIndexInFile = 0;
+        _lastEndIndexInFile = 0;
+
         // Default search parameters
         Type = SearchType::ExactValue;
         Size = SearchSize::Bits32;
@@ -309,6 +314,7 @@ namespace CTRPluginFramework
                         ResultCount++;
                         _resultsP->address = addr;
                         _resultsP->value = newval;
+                        _resultsP->oldValue = oldVal;
                         _resultsP++;
 
                         if (_resultsP >= _resultsEnd)
@@ -551,7 +557,7 @@ namespace CTRPluginFramework
     }
 
     template <typename T>
-    bool    Search<T>::_ReadResults(std::vector<SearchResult<T>> &out, u32 index, u32 count)
+    bool    Search<T>::_ReadResults(std::vector<SearchResult<T>> &out, u32 &index, u32 count)
     {
         if (index > ResultCount)
             return (false);
@@ -564,15 +570,15 @@ namespace CTRPluginFramework
         // Go to the file offset
         _file.Seek(offset, File::SeekPos::SET);
 
-        // Clean results
-        out.clear();
-
         // Reserve memory and create default object
         out.resize(count);
 
         // Read results
         if (_file.Read((void *)out.data(), count * _GetResultStructSize()) == 0)
+        {
+            index += count;
             return (true);
+        }
 
         // Clean results
         out.clear();
@@ -591,7 +597,7 @@ namespace CTRPluginFramework
     }
 
     template <typename T>
-    bool    Search<T>::FetchResults(stringvector &address, stringvector &newval, stringvector &oldvalue, int index, int count)
+    bool    Search<T>::FetchResults(stringvector &address, stringvector &newval, stringvector &oldvalue, u32 index, int count)
     {
         std::vector<SearchResult<T>>    newResults;
         char   buffer[20] = {0};
@@ -600,6 +606,7 @@ namespace CTRPluginFramework
         if (!_ReadResults(newResults, index, count))
             return (false);
 
+        // First search
         if (_previousSearch == nullptr)
         {
             for (int i = 0; i < newResults.size(); i++)
@@ -621,13 +628,93 @@ namespace CTRPluginFramework
                 newval.push_back(buffer);
             } 
         }
+        // subsidiary
+        else
+        {
+            for (int i = 0; i < newResults.size(); i++)
+            {
+                // Address
+                sprintf(buffer, "%08X", newResults[i].address);
+                address.push_back(buffer);
+
+                // Value
+                switch (Size)
+                {
+                    case SearchSize::Bits8: sprintf(buffer, "%02X", newResults[i].value); break;
+                    case SearchSize::Bits16: sprintf(buffer, "%04X", newResults[i].value); break;
+                    case SearchSize::Bits32: sprintf(buffer, "%08X", newResults[i].value); break;
+                    case SearchSize::Bits64: sprintf(buffer, "%016llX", newResults[i].value); break;
+                    case SearchSize::FloatingPoint: sprintf(buffer, "%8.7f", newResults[i].value); break;
+                    case SearchSize::Double: sprintf(buffer, "%8.7g", newResults[i].value); break;
+                }
+                newval.push_back(buffer);
+
+                // Old Value
+                switch (Size)
+                {
+                    case SearchSize::Bits8: sprintf(buffer, "%02X", newResults[i].oldValue); break;
+                    case SearchSize::Bits16: sprintf(buffer, "%04X", newResults[i].oldValue); break;
+                    case SearchSize::Bits32: sprintf(buffer, "%08X", newResults[i].oldValue); break;
+                    case SearchSize::Bits64: sprintf(buffer, "%016llX", newResults[i].oldValue); break;
+                    case SearchSize::FloatingPoint: sprintf(buffer, "%8.7f", newResults[i].oldValue); break;
+                    case SearchSize::Double: sprintf(buffer, "%8.7g", newResults[i].oldValue); break;
+                }
+                oldvalue.push_back(buffer);
+            } 
+        }
+        // Subsidiary search (need to loads from file)
+      /*  else if (_previousSearch->Type == SearchType::ExactValue && _previousSearch->Compare == CompareType::Equal)
+        {
+            T   oldValue = reinterpret_cast<Search<T> *>(_previousSearch)->_checkValue;
+            char                            oldBuffer[20] = {0};
+
+            // Format old value
+            switch (Size)
+            {
+                case SearchSize::Bits8: sprintf(oldBuffer, "%02X", oldValue); break;
+                case SearchSize::Bits16: sprintf(oldBuffer, "%04X", oldValue); break;
+                case SearchSize::Bits32: sprintf(oldBuffer, "%08X", oldValue); break;
+                case SearchSize::Bits64: sprintf(oldBuffer, "%016llX", oldValue); break;
+                case SearchSize::FloatingPoint: sprintf(oldBuffer, "%8.7f", oldValue); break;
+                case SearchSize::Double: sprintf(oldBuffer, "%8.7g", oldValue); break;
+            }
+
+            for (int i = 0; i < newResults.size(); i++)
+            {
+                // Address
+                sprintf(buffer, "%08X", newResults[i].address);
+                address.push_back(buffer);
+
+                // Value
+                switch (Size)
+                {
+                    case SearchSize::Bits8: sprintf(buffer, "%02X", newResults[i].value); break;
+                    case SearchSize::Bits16: sprintf(buffer, "%04X", newResults[i].value); break;
+                    case SearchSize::Bits32: sprintf(buffer, "%08X", newResults[i].value); break;
+                    case SearchSize::Bits64: sprintf(buffer, "%016llX", newResults[i].value); break;
+                    case SearchSize::FloatingPoint: sprintf(buffer, "%8.7f", newResults[i].value); break;
+                    case SearchSize::Double: sprintf(buffer, "%8.7g", newResults[i].value); break;
+                }
+                newval.push_back(buffer);
+
+                oldvalue.push_back(oldBuffer);
+            } 
+        }
         else
         {        
             std::vector<SearchResult<T>>    oldResults;
-            int                             oldIndex = index;
+            u32                             oldIndex;
+            bool                            reverse = false;
 
-            reinterpret_cast<Search<T> *>(_previousSearch)->_ReadResults(oldResults, oldIndex, 1000);
-            oldIndex = 1000;
+            // Try to narrow if it's not the first search
+            if (_lastFetchedIndex == index) oldIndex = _lastStartIndexInFile;
+            else if (_lastFetchedIndex < index) oldIndex = _lastEndIndexInFile;
+            else if (_lastFetchedIndex > index) { oldIndex = _lastStartIndexInFile; reverse = true; }
+
+            _lastFetchedIndex = index;
+
+            // Load some of the old results
+            reinterpret_cast<Search<T> *>(_previousSearch)->_ReadResults(oldResults, oldIndex, 0x1000, reverse);
             int y = 0;
 
             for (int i = 0; i < newResults.size(); i++)
@@ -660,14 +747,13 @@ namespace CTRPluginFramework
 
                     if (oldResults[y].address == tofind)
                         break;
-                    if (!reinterpret_cast<Search<T> *>(_previousSearch)->_ReadResults(oldResults, oldIndex, 1000))
+                    if (!reinterpret_cast<Search<T> *>(_previousSearch)->_ReadResults(oldResults, oldIndex, 0x1000, reverse))
                     {
                         y = -1;
                         break;
                     }
                     else
                         y = 0;
-                    oldIndex += 1000;
                 }
 
                 if (y == -1)
@@ -684,8 +770,24 @@ namespace CTRPluginFramework
                     case SearchSize::Double: sprintf(buffer, "%8.7g", oldResults[y].value); break;
                 }
                 oldvalue.push_back(buffer);
+                if (i == 0)
+                {
+                    _lastStartIndexInFile = oldIndex + y;
+                    if (reverse)
+                        _lastStartIndexInFile += oldResults.size();
+                    else
+                        _lastStartIndexInFile -= oldResults.size();
+                }
+                if (i == newResults.size() - 1)
+                {
+                    _lastEndIndexInFile = oldIndex + y;
+                    if (reverse)
+                        _lastEndIndexInFile += oldResults.size();
+                    else
+                        _lastEndIndexInFile -= oldResults.size();
+                }
             } 
-        }
+        }*/
     }
 
     // Return if it matches the condition

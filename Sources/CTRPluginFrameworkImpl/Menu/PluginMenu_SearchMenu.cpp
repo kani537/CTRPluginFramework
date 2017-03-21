@@ -83,9 +83,9 @@ namespace CTRPluginFramework
                         case Key::DPadLeft:
                         {
                             if (!_isSubmenuOpen)
-                            {
+                            {                                
+                                _index = std::max((int)(_index + _selector - 500), (int)(0));
                                 _selector = 0;
-                                _index = std::max((int)(_index - 500), (int)(0));
                                 _startFastScroll.Restart();
                                 Update();
                             }
@@ -94,9 +94,9 @@ namespace CTRPluginFramework
                         case Key::DPadRight:
                         {
                             if (!_submenuSelector)
-                            {
+                            {                                
+                                _index = std::min((int)(_index + _selector + 500),(int)(_currentSearch->ResultCount / 500 * 500));
                                 _selector = 0;
-                                _index = std::min((int)(_index + 500),(int)(_currentSearch->ResultCount / 500 * 500));
                                 _startFastScroll.Restart();
                                 Update();
                             }
@@ -155,16 +155,16 @@ namespace CTRPluginFramework
                         }
                         case Key::DPadLeft:
                         {
+                            _index = std::max((int)(_index + _selector - 500),(int)(0));
                             _selector = 0;
-                            _index = std::max((int)(_index - 500),(int)(0));
                             _fastScroll.Restart();
                             Update();
                             break;
                         }
                         case Key::DPadRight:
                         {
+                            _index = std::min((int)(_index + _selector + 500),(int)(_currentSearch->ResultCount / 500 * 500));
                             _selector = 0;
-                            _index = std::min((int)(_index + 500),(int)(_currentSearch->ResultCount / 500 * 500));
                             _fastScroll.Restart();
                             Update();
                             break;
@@ -314,7 +314,7 @@ namespace CTRPluginFramework
             return;
         }
 
-        if (_index >= _currentSearch->ResultCount)
+        if (_index + _selector >= _currentSearch->ResultCount)
         {
             _index = 0;
             _selector = 0;

@@ -53,6 +53,7 @@ namespace CTRPluginFramework
 
         u32     address;
         T       value;
+        T       oldValue;
     };
 
     class   SearchBase
@@ -67,7 +68,7 @@ namespace CTRPluginFramework
         virtual void    Cancel(void) = 0;
         virtual bool    DoSearch(void) = 0;
         virtual bool    ResultsToFile(void) = 0;
-        virtual bool    FetchResults(stringvector &address, stringvector &newval, stringvector &oldvalue, int index, int count) = 0;
+        virtual bool    FetchResults(stringvector &address, stringvector &newval, stringvector &oldvalue, u32 index, int count) = 0;
         //virtual u32     GetHeaderSize(void) = 0;
 
         SearchType      Type; 
@@ -92,8 +93,12 @@ namespace CTRPluginFramework
         std::vector<Region>     _regionsList;
         Clock                   _clock;
         
+        // Hit list building var
+        u32                     _lastFetchedIndex;
+        u32                     _lastStartIndexInFile;
+        u32                     _lastEndIndexInFile;
 
-        File    _file; //<- File associated for read / Write
+        File                    _file; //<- File associated for read / Write
 
         SearchBase *_previousSearch; 
 
@@ -133,7 +138,7 @@ namespace CTRPluginFramework
         ****************************/
         bool    ResultsToFile(void);
 
-        bool    FetchResults(stringvector &address, stringvector &newval, stringvector &oldvalue, int index, int count);
+        bool    FetchResults(stringvector &address, stringvector &newval, stringvector &oldvalue, u32 index, int count);
 
     private:
 
@@ -175,7 +180,7 @@ namespace CTRPluginFramework
         u32         _GetHeaderSize(void);
         u32         _GetResultStructSize(void);
         
-        bool        _ReadResults(std::vector<SearchResult<T>> &out, u32 index, u32 count);
+        bool        _ReadResults(std::vector<SearchResult<T>> &out, u32 &index, u32 count);
 
         template <typename U>
         inline int ReadFromFile(File &file, U &t)
