@@ -59,7 +59,9 @@ namespace CTRPluginFramework
         ComboBox                            _searchSize; // Variable type
         ComboBox                            _searchType; // Unknown / Exact
         ComboBox                            _compareType; // Compare
- 
+    
+        NumericTextBox                      _startRangeTextBox;
+        NumericTextBox                      _endRangeTextBox;
         NumericTextBox                      _alignmentTextBox;
         NumericTextBox                      _valueTextBox;
 

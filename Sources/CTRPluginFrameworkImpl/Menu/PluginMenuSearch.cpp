@@ -9,12 +9,14 @@ namespace CTRPluginFramework
     _hexEditor(0),
     _searchMenu(_currentSearch, _hexEditor, _inEditor),
     _closeBtn(*this, nullptr, IntRect(275, 24, 20, 20), Icon::DrawClose),
-    _memoryRegions(150, 50, 130, 15),
-    _searchSize(150, 70, 130, 15),
-    _searchType(150, 90, 130, 15),
-    _compareType(150, 110, 130, 15),
-    _alignmentTextBox(150, 130, 130, 15),
-    _valueTextBox(150, 150, 130, 15),
+    _memoryRegions(150, 40, 130, 15),
+    _startRangeTextBox(85, 60, 66, 15),
+    _endRangeTextBox(214, 60, 66, 15),
+    _searchSize(150, 80, 130, 15),
+    _searchType(150, 100, 130, 15),
+    _compareType(150, 120, 130, 15),
+    _alignmentTextBox(150, 140, 130, 15),
+    _valueTextBox(150, 160, 130, 15),
     _searchBtn("Search", *this, &PluginMenuSearch::_searchBtn_OnClick, IntRect(35, 195, 80, 15)),
     _undoBtn("Undo", *this, &PluginMenuSearch::_undoBtn_OnClick, IntRect(120, 195, 80, 15)),
     _cancelBtn("Cancel", *this, &PluginMenuSearch::_cancelBtn_OnClick, IntRect(120, 195, 80, 15)),
@@ -29,7 +31,6 @@ namespace CTRPluginFramework
         _currentSearch = nullptr;
 
         // Init ComboBoxes
-
         _searchSize.Add("1 Byte");
         _searchSize.Add("2 Bytes");
         _searchSize.Add("4 Bytes");
@@ -144,7 +145,27 @@ namespace CTRPluginFramework
 
         // Check ComboBox
 
-        _memoryRegions();
+        // Changed memory region
+        if (_memoryRegions())
+        {
+            u32     startRange = 0;
+            u32     endRange = 0xFFFFFFF0;
+            bool    isEnabled = false;
+            Region  reg;
+            Region  &region = (_memoryRegions.SelectedItem <= 1) ? reg : _regionsList[_memoryRegions.SelectedItem - 2];
+
+            switch (_memoryRegions.SelectedItem)
+            {
+                case 0: break;
+                case 1: isEnabled = true; break;
+                default: startRange = region.startAddress; endRange = region.endAddress; break;
+            }
+
+            _startRangeTextBox.SetValue(startRange);
+            _endRangeTextBox.SetValue(endRange);
+            _startRangeTextBox.IsEnabled = isEnabled;
+            _endRangeTextBox.IsEnabled = isEnabled;
+        }
 
         // Value type changed
         if (_searchSize())
@@ -202,6 +223,8 @@ namespace CTRPluginFramework
         // Check NumericTextBoxes
         _alignmentTextBox();
         _valueTextBox();
+        _startRangeTextBox();
+        _endRangeTextBox();
 
         return (false);
     }
@@ -287,33 +310,41 @@ namespace CTRPluginFramework
             Renderer::DrawRect(22, 22, 276, 196, blank, false);            
         }
 
-        int posY = 52;
+        int posY = 42;
         int textPosX = 30;
         int choicePosX = 150;
 
         // MemRegion
         Renderer::DrawString((char *)"MemRegion:", textPosX, posY, blank);
-        posY = 72;
+        posY = 62;
+
+        // Start Range
+        Renderer::DrawString((char *)"Start:", textPosX, posY, blank);
+        posY = 62;
+
+        // End Range
+        Renderer::DrawString((char *)"Stop:", 170, posY, blank);
+        posY = 82;
 
         // Value Type
         Renderer::DrawString((char *)"Value Type:", textPosX, posY, blank);
-        posY = 92;
+        posY = 102;
 
         // Search Type
         Renderer::DrawString((char *)"Search Type:", textPosX, posY, blank);
-        posY = 112;
+        posY = 122;
 
         // Scan Type
         Renderer::DrawString((char *)"Scan Type:", textPosX, posY, blank);
-        posY = 132;
+        posY = 142;
 
         // Alignment
         Renderer::DrawString((char *)"Alignment:", textPosX, posY, blank);
-        posY = 152;
+        posY = 162;
 
         // Value
         Renderer::DrawString((char *)"Value:", textPosX, posY, blank);
-        posY = 172;
+        posY = 182;
 
 
         // Draw ComboBoxes
@@ -325,6 +356,9 @@ namespace CTRPluginFramework
         // Draw NumericTextBoxes
         _alignmentTextBox.Draw();
         _valueTextBox.Draw();
+        _startRangeTextBox.Draw();
+        _endRangeTextBox.Draw();
+
 
         // Draw buttons
         _closeBtn.Draw();
@@ -354,6 +388,8 @@ namespace CTRPluginFramework
         // Update NumericTextBoxes
         _alignmentTextBox.Update(isTouched, touchPos);
         _valueTextBox.Update(isTouched, touchPos);
+        _startRangeTextBox.Update(isTouched, touchPos);
+        _endRangeTextBox.Update(isTouched, touchPos);
 
         // Update buttons
         _closeBtn.Update(isTouched, touchPos);
@@ -375,10 +411,10 @@ namespace CTRPluginFramework
         if (_memoryRegions.SelectedItem == -1 || _memoryRegions.SelectedItem > _regionsList.size())
             return;
 
-        u32     startRange = _regionsList[_memoryRegions.SelectedItem].startAddress;
-        u32     endRange = _regionsList[_memoryRegions.SelectedItem].endAddress;
+        u32     startRange = _startRangeTextBox.Bits32;
+        u32     endRange = _endRangeTextBox.Bits32;
 
-        if (_memoryRegions.SelectedItem == 0)
+        /*if (_memoryRegions.SelectedItem == 0)
         {
             startRange = 0;
             endRange = 0;
@@ -387,7 +423,7 @@ namespace CTRPluginFramework
         {
             startRange = _regionsList[_memoryRegions.SelectedItem - 1].startAddress;
             endRange = _regionsList[_memoryRegions.SelectedItem - 1].endAddress;  
-        }
+        }*/
 
         u32     step = _searchHistory.size();
 
@@ -626,6 +662,7 @@ namespace CTRPluginFramework
             //Region reg = (Region){0x100000, 0x50000000};
             //_regionsList.push_back(reg);
             _memoryRegions.Add("All memory");
+            _memoryRegions.Add("Custom range");
         }
 
         svcQueryProcessMemory(&meminfo, &page_info, target, 0x00100000);
