@@ -292,7 +292,7 @@ namespace CTRPluginFramework
         posY = 205;
         Renderer::DrawString((char *)"Options:", 260, posY, blank);
         posY -= 14;
-        Renderer::DrawSysString((char *)"\uE002", 314, posY, 330, blank);
+        Renderer::DrawSysString((char *)"\uE002", 320, posY, 380, blank);
 
         if (_isSubmenuOpen)
         {
