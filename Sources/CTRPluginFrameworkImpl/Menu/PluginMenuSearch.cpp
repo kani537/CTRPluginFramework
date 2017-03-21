@@ -64,6 +64,12 @@ namespace CTRPluginFramework
         u32   al = 4;
         _alignmentTextBox.SetValue(al);
         _searchSize.SelectedItem = 2;
+
+        // Set all memory search by default
+        _startRangeTextBox.SetValue((u32)(0x0));
+        _endRangeTextBox.SetValue((u32)(0xFFFFFFF0));
+        _startRangeTextBox.IsEnabled = false;
+        _endRangeTextBox.IsEnabled = false;
     }
 
     bool    PluginMenuSearch::operator()(EventList &eventList, Time &delta)
@@ -148,15 +154,15 @@ namespace CTRPluginFramework
         // Changed memory region
         if (_memoryRegions())
         {
-            u32     startRange = 0;
-            u32     endRange = 0xFFFFFFF0;
+            u32     startRange = _startRangeTextBox.Bits32;
+            u32     endRange = _endRangeTextBox.Bits32;
             bool    isEnabled = false;
             Region  reg;
             Region  &region = (_memoryRegions.SelectedItem <= 1) ? reg : _regionsList[_memoryRegions.SelectedItem - 2];
 
             switch (_memoryRegions.SelectedItem)
             {
-                case 0: break;
+                case 0: startRange = 0; endRange = 0xFFFFFFF0; break;
                 case 1: isEnabled = true; break;
                 default: startRange = region.startAddress; endRange = region.endAddress; break;
             }
@@ -466,6 +472,8 @@ namespace CTRPluginFramework
 
         // Lock memory region
         _memoryRegions.IsEnabled = false;
+        _startRangeTextBox.IsEnabled = false;
+        _endRangeTextBox.IsEnabled = false;
         // Lock search size
         _searchSize.IsEnabled = false;
         // Lock alignment
@@ -509,6 +517,8 @@ namespace CTRPluginFramework
 
         // Unlock memory rgions
         _memoryRegions.IsEnabled = true;
+        //_startRangeTextBox.IsEnabled = true;
+        //_endRangeTextBox.IsEnabled = true;
 
         // Unlock search size
         _searchSize.IsEnabled = true;
@@ -653,6 +663,7 @@ namespace CTRPluginFramework
         MemInfo     meminfo;
         u32         save_addr;
         int         i;
+        int         index = _memoryRegions.SelectedItem;
         Result      ret;
 
         _regionsList.clear();
@@ -663,6 +674,12 @@ namespace CTRPluginFramework
             //_regionsList.push_back(reg);
             _memoryRegions.Add("All memory");
             _memoryRegions.Add("Custom range");
+            if (index == 1)
+            {
+                _memoryRegions.SelectedItem = 1;
+                _startRangeTextBox.IsEnabled = true;
+                _endRangeTextBox.IsEnabled = true;
+            }
         }
 
         svcQueryProcessMemory(&meminfo, &page_info, target, 0x00100000);
