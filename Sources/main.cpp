@@ -1,22 +1,8 @@
 #include "CTRPluginFramework.hpp"
-
-#include "CTRPluginFramework.hpp"
-#include "ctrulib/services/hid.h"
 #include "cheats.hpp"
-#include <cstdio>
-
-#include <string>
-#include <vector>
-
-#include "ctrulib/services/gspgpu.h"
-#include "3DS.h"
 
 namespace CTRPluginFramework
-{
-    extern "C" vu32* hidSharedMem;
-    #define READU32(addr) *(u32 *)(addr)
-    #define WRITEU32(addr, v) *(u32 *)(addr) = (u32)v
-    
+{    
     // This function is called on the plugin starts, before main
     void    PatchProcess(void)
     {
@@ -34,336 +20,22 @@ namespace CTRPluginFramework
         }
     }
 
-    void    ZLCamera(MenuEntry *entry)
-    {
-        if (Controller::IsKeyDown(Key::Touchpad))
-        {
-            char buffer[60] = {0};
-            u32 Id = (u32)hidSharedMem[42 + 4];
-
-            u64 t = *((u64*)&hidSharedMem[42]);
-            u64 t1 = *((u64 *)&hidSharedMem[44]);
-
-            sprintf(buffer, "%016llX %016llX %d \n", t, t1, Id);
-            if (entry->Note().size() > 500)
-                entry->Note().clear();
-            entry->Note() += buffer;
-        }
-        if (Controller::IsKeyDown(Key::ZL))
-            Controller::InjectTouch(10, 20);
-    }
-
-    void    ZLFirstButton(MenuEntry *entry)
-    {
-        if (Controller::IsKeyDown(Key::ZL))
-            Controller::InjectTouch(300, 20);
-    }
-
-    void    ZRSecondButton(MenuEntry *entry)
-    {
-        if (Controller::IsKeyDown(Key::ZR))
-            Controller::InjectTouch(300, 210);
-    }
-
-    void    CStickToDPAD(MenuEntry *entry)
-    {
-        if (Controller::IsKeyDown(Key::CStick))
-        {
-            u32 keys = (hidKeysHeld() & Key::CStick) >> 20;
-            Controller::InjectKey(keys);
-        }
-    }
-
-    void    ZLToL(MenuEntry *entry)
-    {
-        if (Controller::IsKeyDown(Key::ZL))
-        {
-            //u32 keys = (hidKeysHeld() & Key::L);
-            Controller::InjectKey(Key::L);
-        }  
-    }
-
-    void    ZRToR(MenuEntry *entry)
-    {
-        if (Controller::IsKeyDown(Key::ZR))
-        {
-            //u32 keys = (hidKeysHeld() & Key::R);
-            Controller::InjectKey(Key::R);
-        }  
-    }
-
-    void    Overlay(MenuEntry *entry)
-    {
-        u64 tick = svcGetSystemTick();
-        u8  c = (tick >> 2) & 0b111;
-
-        Color black = Color();//(tick >> 8) & 0xFF, (tick >> 16) & 0xFF, (tick) & 0xFF);
-        Color blank = Color(255, 255, 255);//(tick >> 16) & 0xFF, (tick) & 0xFF, (tick >> 8) & 0xFF);
-        
-        if (Controller::IsKeyPressed(Key::X))
-        {
-            switch (c)
-            {
-                case 1:
-                    black = Color();
-                    blank = Color(255, 255, 255);
-                    OSD::Notify("Nanquitas says Hello !", blank, black);
-                    break;
-                case 2:
-                    black = Color(0, 255, 255, 200);
-                    OSD::Notify("I wanna eat an hot dog !", blank, black);
-                    break;
-                case 3:
-                    black = Color(0, 99, 0, 150);
-                    OSD::Notify("I'm a notification", blank, black);
-                    break;
-                case 4:
-                    OSD::Notify("Whaaaaaaaaaaaaaaaaaaat !?!", blank, black);
-                    break;
-                case 5:
-                    black = Color(0, 66, 0xCC, 150);
-                    OSD::Notify("I love chocolate !", blank, black);
-                    break;
-                default:
-                    black = Color(255, 0, 0, 150);
-                    OSD::Notify("I'm an important notification", blank, black);
-                    break;                    
-            }            
-        }
-    }
-
-    bool    CheckRupeeInput(const void *input, std::string &error)
-    {
-        // Cast the input into the appropriate type (must match the type provided to Open)
-        u32  in = *static_cast<const u32 *>(input);
-
-        // Check the value
-        if (in > 999)
-        {
-            error = "The value must be between 0 - 999";
-            // Return that the value isn't valid
-            return (false);
-        }
-
-        // The value is valid
-        return (true);
-    }
-
-    void    CustomRupee(MenuEntry *entry)
-    {
-        // If L + X is pressed
-        if (Controller::IsKeysDown(Key::L + Key::X))
-        {
-            // New keyboard, hint being:
-            Keyboard keyboard("How many rupees do you want ?");
-
-            // Add the function to check the input entered by the user
-            keyboard.SetCompareCallback(CheckRupeeInput);
-
-            // Set the keyboard as decimal (hexadecimal by default)
-            keyboard.IsHexadecimal(false);
-
-            // Read the current value of rupees
-            u32 output = READU32(0x005879A0);
-
-            // Set the input to the current count of rupees and open the keyboard
-            // If the function return -1, then the user canceled the keyboard, so do nothing
-            if (keyboard.Open(output, output) != -1)
-                WRITEU32(0x005879A0, output);            
-        }      
-    }
-
-    void    TouchCursor(MenuEntry *entry) 
-    {
-            // Draw Touch Cursor
-          /*  if (Touch::IsDown())
-            {
-                UIntVector t(Touch::GetPosition());
-                int posX = t.x - 2;
-                int posY = t.y - 1;
-
-                Renderer::SetTarget(BOTTOM);
-                Icon::DrawHandCursor(posX, posY);
-                Screen::Bottom->Flush();
-            }*/
-    }
-
-    void    TestDraw(MenuEntry *entry)
-    {
-        //Renderer::DrawChar('A', 150, 100);
-    }
-
-    std::string     GetFontInfo(void)
-    {
-        std::string str = "";
-        CFNT_s  *cfnt = fontGetFont();
-        FINF_s  *finf = fontGetInfo();
-        TGLP_s  *tglp = fontGetGlyphInfo();
-        charWidthInfo_s *cwi = &finf->defaultWidth;
-
-        str += "FONT\nVersion: " + std::to_string(cfnt->version);
-        str += "\nFile size: " + std::to_string(cfnt->fileSize);
-        str += "\nnBlock: " + std::to_string(cfnt->nBlocks);
-
-        str += "\nFINF Magic: " + std::to_string(finf->signature);
-        str += "\nFINF Section Size: " + std::to_string(finf->sectionSize);
-        str += "\nFINF Font Type: " + std::to_string(finf->fontType);
-        str += "\nFINF Height: " + std::to_string(finf->height);
-        str += "\nFINF Width: " + std::to_string(finf->width);
-        str += "\nFINF Ascent: " + std::to_string(finf->ascent);
-        str += "\nFINF Line feed:" + std::to_string(finf->lineFeed);
-        str += "\nFINF Alter Character Index: " + std::to_string(finf->alterCharIndex);
-        str += "\nFINF Default Width, Left: "  + std::to_string(cwi->left);
-        str += "\nFINF Default Glyph Width: " + std::to_string(cwi->glyphWidth);
-        str += "\nFINF Default Character Width: " + std::to_string(cwi->charWidth);
-        str += "\nFINF Encoding: " + std::to_string(finf->encoding);
-
-        str += "\nTLGP Cell width: " + std::to_string(tglp->cellWidth);
-        str += "\nTLGP Cell height: " + std::to_string(tglp->cellHeight);
-        str += "\nTLGP BaseLine Pos: " + std::to_string(tglp->baselinePos);
-        str += "\nTLGP Max Char Width: " + std::to_string(tglp->maxCharWidth);
-        str += "\nTLGP Sheet Size: " + std::to_string(tglp->sheetSize);
-        str += "\nTLGP Sheets Count:" + std::to_string(tglp->nSheets);
-        str += "\nTLGP Sheet Format:" + std::to_string(tglp->sheetFmt);
-        str += "\nTLGP Glyph Per Row: " + std::to_string(tglp->nRows);
-        str += "\nTLGP Glyph Rows Per Sheet: "  + std::to_string(tglp->nLines);
-        str += "\nTLGP Sheet Width: " + std::to_string(tglp->sheetWidth);
-        str += "\nTLGP Sheet Height: " + std::to_string(tglp->sheetHeight);
-
-        File file;
-
-        if (!File::Open(file, "FontData.txt", File::READ | File::WRITE | File::CREATE))
-        {
-            file.WriteLine(str);
-            file.Close();
-        }
-        return str;
-
-    }
-extern "C" u32 __ctru_heap;
-extern "C" u32 __ctru_heap_size;
-extern "C" u32 __ctru_linear_heap;
-extern "C" u32 __ctru_linear_heap_size;
-
-    void    backup(MenuEntry *entry)
-    {
-        File file;
-        if (!entry->IsActivated())
-        return;
-        int ret = File::Open(file, "savedata.dat", File::READ | File::WRITE | File::CREATE);
-
-        if (ret == 0)
-        {
-            int res = file.Dump(0x14000000, 0x5B98);
-            file.Close(); 
-            entry->Disable();
-
-            char buffer[0x200];
-
-            sprintf(buffer, "%08X  %08X", ret, res);
-            OSD::Notify(buffer);
-        }
-    }
-
     int    main(void)
-    {  
-        File    log;
-        //File::Open(log, "log.txt", File::READ | File::WRITE | File::CREATE);
-
-        //log.WriteLine("Menu");
-
+    {
         PluginMenu      *m = new PluginMenu("Zelda Ocarina Of Time 3D");
         PluginMenu      &menu = *m;
     
-
-
-        char buffer[0x200];
-        sprintf(buffer, "%08X -> %08X\n%08X -> %08X", __ctru_heap, __ctru_heap_size, __ctru_linear_heap, __ctru_linear_heap_size);
-
-        // this add the content of the file we've read earlier in the ls string
-        //ls += buffer;
-
-        /*MenuEntry *entryy = new MenuEntry("Test");
-        entryy->SetMenuFunc(TestDraw);
-        menu.Append(entryy);*/
-        std::string t = GetFontInfo();
-        /*
-        "Qu'est-ce que le Lorem Ipsum? \n" \
-        "Le Lorem Ipsum est simplement du faux texte" \
-        " employé dans la composition et la mise en page " \
-        "avant impression. Le Lorem Ipsum est le faux texte "\
-        " standard de l'imprimerie depuis les années 1500, quand "\
-        "un peintre anonyme assembla ensemble des morceaux de texte "\
-        "pour réaliser un livre spécimen de polices de texte. Il n'a "\
-        "pas fait que survivre cinq siècles, mais s'est aussi adapté à "\
-        "la bureautique informatique, sans que son contenu n'en soit modifié."\
-        " Il a été popularisé dans les années 1960 grâce à la vente de feuilles " \
-        "Letraset contenant des passages du Lorem Ipsum, et, plus récemment, par son"\
-        " inclusion dans des applications de mise en page de texte, comme Aldus PageMaker.\n\n" \
-        "Pourquoi l'utiliser? \n\n"\
-        "On sait depuis longtemps que travailler avec du texte lisible et contenant du sens " \
-        "est source de distractions, et empêche de se concentrer sur la mise en page elle-même." \
-        " L'avantage du Lorem Ipsum sur un texte générique comme 'Du texte. Du texte. Du texte.'"\
-        " est qu'il possède une distribution de lettres plus ou moins normale, et en tout cas " \
-        "comparable avec celle du français standard. De nombreuses suites logicielles de mise en "\
-        " page ou éditeurs de sites Web ont fait du Lorem Ipsum leur faux texte par défaut, et une " \
-        "recherche pour 'Lorem Ipsum' vous conduira vers de nombreux sites qui n'en sont encore qu'à " \
-        "leur phase de construction. Plusieurs versions sont apparues avec le temps, parfois par accident, " \
-        " souvent intentionnellement (histoire d'y rajouter de petits clins d'oeil, voire des phrases embarassantes).";
-        */
-        
         /*
         ** Movements codes
         ********************/
-        //log.WriteLine("Movement");
 
-        MenuFolder *folder = new MenuFolder("Movement", t);
+        MenuFolder *folder = new MenuFolder("Movement");
 
-        MenuEntry *entry = new MenuEntry("MoonJump (\uE000)", MoonJump, "Press \uE000 to be free of the gravity.");
-        entry->SetMenuFunc([](MenuEntry *entry)
-        {
-            Keyboard keyboard("Select something");
-
-            // The keyboard's entries
-            std::vector<std::string> vector = {"Test", "PLop", "rEALLY ?", "Yeah", "Awesome", "Weapon", "Armor", "Head", "Hand", "Boot", "Tools", "Ring", "Jewel", "Item", "Object"};
-            u32  out = 0;
-
-            // Assign the entries to the keyboard
-            keyboard.Populate(vector);
-
-            // wait for a user input
-            if ((out = keyboard.Open()) != -1)
-            {
-                entry->Name() = "MoonJump (\uE000) " + vector[out];
-            }
-        });
-
-        entry->SetRadio(1);
-        folder->Append(entry);
-
-        entry = new MenuEntry("Fast Move (\uE077 + \uE054)", MoveFast, "Use \uE077 while pressing \uE054 to move very fast. Be careful of the loading zone, it might put you out of bound.");
-        entry->SetMenuFunc([](MenuEntry *entry)
-        {
-            Keyboard keyboard("Select something");
-
-            // The keyboard's entries
-            std::vector<std::string> vector = {"Test", "PLop", "rEALLY ?", "Yeah", "Awesome"};
-            u32  out = 0;
-
-            // Assign the entries to the keyboard
-            keyboard.Populate(vector);
-
-            // wait for a user input
-            if ((out = keyboard.Open()) != -1)
-            {
-                entry->Name() = "Fast Move (\uE077 + \uE054) " + vector[out];
-            }
-        });        
-        entry->SetRadio(1);
-        folder->Append(entry);
+        folder->Append(new MenuEntry("MoonJump (\uE000)", MoonJump, "Press \uE000 to be free of the gravity."));
+        folder->Append(new MenuEntry("Fast Move (\uE077 + \uE054)", MoveFast, "Use \uE077 while pressing \uE054 to move very fast. Be careful of the loading zone, it might put you out of bound."));
+        
         menu.Append(folder);
 
-        log.WriteLine("Battle");
         /*
         ** Battle codes
         ******************/
@@ -380,7 +52,6 @@ extern "C" u32 __ctru_linear_heap_size;
 
         menu.Append(folder);
 
-        log.WriteLine("Inventory");
         /*
         ** Inventory codes
         *******************/
@@ -424,7 +95,6 @@ extern "C" u32 __ctru_linear_heap_size;
 
         menu.Append(folder);
 
-        log.WriteLine("Time");
         /*
         Time codes
         ***********/
@@ -433,7 +103,6 @@ extern "C" u32 __ctru_linear_heap_size;
 
         menu.Append(folder);
 
-        log.WriteLine("Misc");
         /*
         ** Misc codes
         *************/
@@ -450,20 +119,8 @@ extern "C" u32 __ctru_linear_heap_size;
         folder->Append(new MenuEntry("No Damage From Falling", NeverTakeDamageFromFalling));
 
         menu.Append(folder);
-        menu.Append(new MenuEntry("\uE002 to send a notification", Overlay));
-        menu.Append(new MenuEntry("Press \uE004 + \uE002 to enter the wanted number of rupees", CustomRupee));
-       /* menu.Append(new MenuEntry("\uE054 = Camera button", ZLCamera));
-        menu.Append(new MenuEntry("\uE054 = First object button", ZLFirstButton));
-        menu.Append(new MenuEntry("\uE055 = Second Object button", ZRSecondButton));
-        menu.Append(new MenuEntry("CStick as \uE041", CStickToDPAD));
-        menu.Append(new MenuEntry("\uE054 as \uE004", ZLToL));
-        menu.Append(new MenuEntry("\uE055 as \uE005", ZRToR));
-        menu.Append(new MenuEntry ("This is an incredibly long entry. Stay here a little to make it scroll and see the entire text. \uE000 \uE001 \uE002 \uE003 \uE004 \uE005 \uE006 \uE040 \uE041 \uE042 \uE043 \uE044 \uE045"));
-        menu.Append(new MenuEntry("Display touch cursor", TouchCursor));*/
 
-        log.WriteLine("Run");
         // Launch menu and mainloop
-
         menu.Run();
 
         // Exit plugin
