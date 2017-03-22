@@ -33,7 +33,10 @@ namespace CTRPluginFramework
 
         folder->Append(new MenuEntry("MoonJump (\uE000)", MoonJump, "Press \uE000 to be free of the gravity."));
         folder->Append(new MenuEntry("Fast Move (\uE077 + \uE054)", MoveFast, "Use \uE077 while pressing \uE054 to move very fast. Be careful of the loading zone, it might put you out of bound."));
-        
+        folder->Append(new MenuEntry("Epona have max carrots", EponaMaxCarrots));
+        folder->Append(new MenuEntry("Epona have max carrots", EponaInfiniteCarrotsAllAreas));
+        folder->Append(new MenuEntry("Epona MoonJump (\uE054 + \uE002)", EponaMoonJump));
+
         menu.Append(folder);
 
         /*
@@ -100,23 +103,42 @@ namespace CTRPluginFramework
         ***********/
         folder = new MenuFolder("Time");
 
-
+        folder->Append(new MenuEntry("Sunrise (\uE053 + \uE07B)", Sunrise));
+        folder->Append(new MenuEntry("Daytime (\uE053 + \uE07D)", Daytime));
+        folder->Append(new MenuEntry("Sunset (\uE053 + \uE07C)", Sunset));
+        folder->Append(new MenuEntry("Night (\uE053 + \uE07A)", Night));
+        folder->Append(new MenuEntry("Sky is always raining", AlwaysRaining));
         menu.Append(folder);
 
+        /*
+        ** Quest
+        ************/
+
+        folder = new MenuFolder("Quest");
+
+        folder->Append(new MenuEntry("Unlock All Best Equipment", UnlockAllBest));
+        folder->Append(new MenuEntry("Unlock All Stones", UnlockAllStones));
+        folder->Append(new MenuEntry("Unlock All Medallions", UnlockAllMedallions));
+        folder->Append(new MenuEntry("Unlock Enhanced Defense", UnlockEnhancedDefense));
+        folder->Append(new MenuEntry("Unlock Heart Pieces", UnlockHeartpieces));
+        folder->Append(new MenuEntry("Infinite Small Dungeon Keys", InfiniteSmallKeysAllDungeons));
+        folder->Append(new MenuEntry("Unlock Map and Boss Key of all Dungeons", HaveMapCompassAndBossKeyAllDungeon));
+        menu.Append(folder);
         /*
         ** Misc codes
         *************/
         folder = new MenuFolder("Misc.");
 
-        folder->Append(new MenuEntry("Unlock All Best Equipment", UnlockAllBest));
-        folder->Append(new MenuEntry("Unlock All Medallions", UnlockAllMedallions));
         folder->Append(new MenuEntry("Giant Link", GiantLink));
         folder->Append(new MenuEntry("Normal Link", NormalLink));
         folder->Append(new MenuEntry("Mini Link", MiniLink));
         folder->Append(new MenuEntry("Paper Link", PaperLink));
+        folder->Append(new MenuEntry("Link always have his child voice", AlwaysChildLinkVoice));
+        folder->Append(new MenuEntry("Link always have his adult voice", AlwaysAdultLinkVoice));
         folder->Append(new MenuEntry("Open Chest Many Times", OpenAnyChestInTheGameAsManyTimes));
         folder->Append(new MenuEntry("Collect Heart Piece Many Times", CollectHeartPiecesInOverworldAsMany));
         folder->Append(new MenuEntry("No Damage From Falling", NeverTakeDamageFromFalling));
+        folder->Append(new MenuEntry("Giant knife won't break", GiantsKnifeNeverBreaks));
 
         menu.Append(folder);
 
