@@ -59,7 +59,6 @@ namespace CTRPluginFramework
     void	MoonJump(MenuEntry *entry);
     // ZL + PAD
     void	MoveFast(MenuEntry *entry);
-    void	MoveFastRev(MenuEntry *entry);
     void	CollectHeart(MenuEntry *entry);
     void	OpenChest(MenuEntry *entry);
     void	SpinAttack(MenuEntry *entry);
