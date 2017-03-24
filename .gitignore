@@ -1,7 +1,7 @@
 /Build
 /Ressources
 /Guide
-/v14
+/.vs
 *.db
 *.opendb
 *.plg
