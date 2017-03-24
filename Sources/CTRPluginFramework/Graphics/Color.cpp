@@ -3,32 +3,32 @@
 
 namespace CTRPluginFramework
 {
-    Color   Color::black;
-    Color   Color::blank;
-    Color   Color::red;
-    Color   Color::green;
-    Color   Color::blue;
-    Color   Color::grey;
-    Color   Color::silver;
-    Color   Color::gainsboro;
-    Color   Color::dimGrey;
-    Color   Color::skyblue;
-    Color   Color::deepskyblue;
-    Color   Color::dodgerblue;
+    Color   Color::Black;
+    Color   Color::Blank;
+    Color   Color::Red;
+    Color   Color::Green;
+    Color   Color::Blue;
+    Color   Color::Grey;
+    Color   Color::Silver;
+    Color   Color::Gainsboro;
+    Color   Color::DimGrey;
+    Color   Color::SkyBlue;
+    Color   Color::DeepSkyBlue;
+    Color   Color::DodgerBlue;
 
     void    InitColors(void)
     {
-        Color::blank = Color(255, 255, 255);
-        Color::red = Color(255, 0, 0);
-        Color::green = Color(0, 255, 0);
-        Color::blue = Color(0, 0, 255);
-        Color::grey = Color(195, 195, 195); // TODO
-        Color::silver = Color(192, 192, 192);
-        Color::gainsboro = Color(220, 220, 200);
-        Color::dimGrey = Color(15, 15, 15);
-        Color::skyblue = Color(135, 206, 235);
-        Color::deepskyblue = Color(0, 191, 255);
-        Color::dodgerblue = Color(30, 144, 255);
+        Color::Blank = Color(255, 255, 255);
+        Color::Red = Color(255, 0, 0);
+        Color::Green = Color(0, 255, 0);
+        Color::Blue = Color(0, 0, 255);
+        Color::Grey = Color(195, 195, 195); // TODO
+        Color::Silver = Color(192, 192, 192);
+        Color::Gainsboro = Color(220, 220, 200);
+        Color::DimGrey = Color(15, 15, 15);
+        Color::SkyBlue = Color(135, 206, 235);
+        Color::DeepSkyBlue = Color(0, 191, 255);
+        Color::DodgerBlue = Color(30, 144, 255);
     }
 
     Color::Color(u8 red, u8 green, u8 blue, u8 alpha) 
