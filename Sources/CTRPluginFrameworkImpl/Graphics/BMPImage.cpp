@@ -15,8 +15,8 @@ namespace CTRPluginFramework
     void    BMPImage::SaveImage(const std::string &fileName) const
     {
         File file;
-        Color Red = Color(255, 0, 0);
-        Color Black = Color();
+        Color &Red = Color::Red;
+        Color &Black = Color::Black;
         char  buffer[200] = {0};
         int res = File::Open(file, fileName, 7);
 
@@ -221,8 +221,8 @@ namespace CTRPluginFramework
     {
         File  file;
         char  buffer[200] = {0};
-        Color red = Color(255, 0, 0);
-        Color black = Color();
+        Color &red = Color::Red;
+        Color &black = Color::Black;
 
         if (!File::Exists(_fileName))
         {

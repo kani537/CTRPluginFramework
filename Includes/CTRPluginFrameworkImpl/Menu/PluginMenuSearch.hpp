@@ -2,7 +2,6 @@
 #define CTRPLUGINFRAMEWORKIMPL_PLUGINMENUSEARCH_HPP
 
 #include "CTRPluginFrameworkImpl/Graphics.hpp"
-#include "CTRPluginFrameworkImpl/System.hpp"
 #include "CTRPluginFrameworkImpl/Menu/Menu.hpp"
 #include "CTRPluginFrameworkImpl/Menu/PluginMenuSearchStructs.hpp"
 #include "CTRPluginFrameworkImpl/Menu/PluginMenu_SearchMenu.hpp"
@@ -35,8 +34,8 @@ namespace CTRPluginFramework
         void    _undoBtn_OnClick(void);
         void    _cancelBtn_OnClick(void);
 
-        void    _ShowProgressWindow(void);
-        void    _ShowBuildResultWindow(void);
+        void    _ShowProgressWindow(void) const;
+        void    _ShowBuildResultWindow(void) const;
 
 
 

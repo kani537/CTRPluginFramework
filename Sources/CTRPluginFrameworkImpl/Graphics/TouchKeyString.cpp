@@ -32,9 +32,9 @@ namespace CTRPluginFramework
     {
         static Color    background(51, 51, 51); // sort of grey
        // static Color    pressed(192, 192, 192); // silver
-        static Color    blank(255, 255, 255); // blank
-        static Color    textSe(0, 0, 0); // black
-        static Color    pressed(225, 225, 225); 
+        Color    &blank = Color::Blank; // blank
+        Color    &textSe = Color::Black; // black
+        Color    &pressed = Color::Gainsboro; 
        
 
         // if key is disabled

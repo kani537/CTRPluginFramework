@@ -203,17 +203,13 @@ namespace CTRPluginFramework
     #define OFF(d) ((i + d) * 8)
     void    HexEditor::_RenderTop(void)
     {
-        static Color    black = Color();
-        static Color    blank(255, 255, 255);
-        static Color    dimGrey(15, 15, 15);
-        static Color    darkgrey(169, 169, 169);
-        static Color    gainsboro(220, 220, 220);
-        static Color    skyblue(135, 206, 235);
-        static Color    deepskyblue(0, 191, 255);
-        static Color    dodgerblue(30, 144, 255);
-        static Color    silver(192, 192, 192);
-        static Color    coral(255, 127, 80);
-        static Color    red(255, 0, 0);
+        Color    &black = Color::Black;
+        Color    &blank = Color::Blank;
+        Color    &dimGrey = Color::DarkGrey;
+        Color    &skyblue = Color::SkyBlue;
+        Color    &deepskyblue = Color::DeepSkyBlue;
+        Color    &dodgerblue = Color::DodgerBlue;
+        Color    &red = Color::Red;
         static IntRect  background(30, 20, 340, 200);
 
         u32     address = (u32)_memoryAddress;
@@ -232,7 +228,7 @@ namespace CTRPluginFramework
         else
         {
             Renderer::DrawRect2(background, black, dimGrey);
-            Renderer::DrawRect(32, 22, 336, 196, coral, false);
+            Renderer::DrawRect(32, 22, 336, 196, deepskyblue, false);
         }
 
         // Title
@@ -373,23 +369,6 @@ namespace CTRPluginFramework
         _keyboard._RenderBottom();
 
         _closeBtn.Draw();
-        /*static Color    black = Color();
-        static Color    blank(255, 255, 255);
-        static Color    dimGrey(15, 15, 15);
-        static IntRect  background(20, 20, 280, 200);
-        static Clock    creditClock;
-        static bool     framework = true;
-
-        Renderer::SetTarget(BOTTOM);*/
-
-        /*// Background
-        if (Preferences::bottomBackgroundImage->IsLoaded())
-            Preferences::bottomBackgroundImage->Draw(background.leftTop);
-        else
-        {
-            Renderer::DrawRect2(background, black, dimGrey);
-            Renderer::DrawRect(22, 22, 276, 196, blank, false); 
-        }*/
     }
 
     void    HexEditor::_Update(void)
@@ -484,10 +463,11 @@ namespace CTRPluginFramework
     {
         Keyboard    keyboard;
 
-        static Color    black = Color();
-        static Color    dimGrey(15, 15, 15);
+        Color    &black = Color::Black;
+        Color    &dimGrey = Color::BlackGrey;
+        Color    &skyblue = Color::SkyBlue;
         static IntRect  background(93, 95, 213, 50);
-        static Color    skyblue(0, 191, 255);
+        
 
         Renderer::SetTarget(TOP);
 

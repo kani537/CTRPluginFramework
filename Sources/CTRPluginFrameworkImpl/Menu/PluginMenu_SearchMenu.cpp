@@ -183,13 +183,12 @@ namespace CTRPluginFramework
     ********/
     void    SearchMenu::Draw(void)
     {
-        static Color    black = Color();
-        static Color    blank(255, 255, 255);
-        static Color    dimGrey(15, 15, 15);
-        static Color    darkgrey(169, 169, 169);
-        static Color    gainsboro(220, 220, 220);
-        static Color    skyblue(0, 191, 255);
-        static Color    silver(192, 192, 192);
+        Color    &black = Color::Black;
+        Color    &blank = Color::Blank;
+        Color    &darkgrey = Color::DarkGrey;
+        Color    &gainsboro = Color::Gainsboro;
+        Color    &skyblue = Color::SkyBlue;
+        Color    &silver = Color::Silver;
         //static IntRect  background(30, 20, 340, 200);
 
         /*330
@@ -328,13 +327,12 @@ namespace CTRPluginFramework
 
     void    SearchMenu::_DrawSubMenu(void)
     {
-        static Color    black = Color();
-        static Color    blank(255, 255, 255);
-        static Color    dimGrey(15, 15, 15);
-        static Color    darkgrey(169, 169, 169);
-        static Color    gainsboro(220, 220, 220);
-        static Color    skyblue(0, 191, 255);
-        static Color    silver(192, 192, 192);
+        Color    &black = Color::Black;
+        Color    &blank = Color::Blank;
+        Color    &dimGrey = Color::BlackGrey;
+        Color    &darkgrey = Color::DarkGrey;
+        Color    &gainsboro = Color::Gainsboro;
+        Color    &skyblue = Color::SkyBlue;
         static IntRect  background(240, 20, 130, 200);
 
         // DrawBackground

@@ -259,10 +259,9 @@ namespace CTRPluginFramework
 
     void    PluginMenuSearch::_RenderTop(void)
     {
-        static Color    black = Color();
-        static Color    blank(255, 255, 255);
-        static Color    dimGrey(15, 15, 15);
-        static Color    silver(160, 160, 160);
+        Color    &black = Color::Black;
+        Color    &blank = Color::Blank;
+        Color    &dimGrey = Color::BlackGrey;
         static IntRect  background(30, 20, 340, 200);
 
         // Enable renderer
@@ -297,9 +296,9 @@ namespace CTRPluginFramework
     *****************/
     void    PluginMenuSearch::_RenderBottom(void)
     {
-        static Color    black = Color();
-        static Color    blank(255, 255, 255);
-        static Color    dimGrey(15, 15, 15);
+        Color    &black = Color::Black;
+        Color    &blank = Color::Blank;
+        Color    &dimGrey = Color::BlackGrey;
         static IntRect  background(20, 20, 280, 200);
 
         // Enable renderer
@@ -554,17 +553,16 @@ namespace CTRPluginFramework
         _searchMenu.Update();
     }
 
-    void    PluginMenuSearch::_ShowProgressWindow(void)
+    void    PluginMenuSearch::_ShowProgressWindow(void) const
     {
-        static Color    black = Color();
-        static Color    blank(255, 255, 255);
-        static Color    gainsboro(225, 225, 225);
-        static Color    dimGrey(15, 15, 15);
-        static Color    silver(160, 160, 160);
+        Color    &black = Color::Black;
+        Color    &blank = Color::Blank;
+        Color    &gainsboro = Color::Gainsboro;
+        Color    &dimGrey = Color::BlackGrey;
+        Color    &skyblue = Color::SkyBlue;
+        Color    &limegreen = Color::LimeGreen;
         static IntRect  background(125, 80, 150, 70);
         static IntRect  background2(125, 80, 150, 85);
-        static Color    skyblue(0, 191, 255);
-        static Color    limegreen(50, 205, 50);
         static Clock    timer;
         static int      phase = 0;
 
@@ -633,12 +631,12 @@ namespace CTRPluginFramework
     }
 
 
-    void    PluginMenuSearch::_ShowBuildResultWindow(void)
+    void    PluginMenuSearch::_ShowBuildResultWindow(void) const
     {
-        static Color    black = Color();
-        static Color    dimGrey(15, 15, 15);
+        Color    black = Color::Black;
+        Color    dimGrey = Color::DimGrey;
+        Color    skyblue = Color::SkyBlue;
         static IntRect  background(125, 80, 150, 70);
-        static Color    skyblue(0, 191, 255);
 
         Renderer::SetTarget(TOP);
 

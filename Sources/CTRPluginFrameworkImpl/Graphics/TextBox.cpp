@@ -183,9 +183,9 @@ namespace CTRPluginFramework
 
         int  max = std::min((u32)(_currentLine + _maxLines), (u32)(_newline.size()));
 
-        Color black = Color();
-        Color blank = Color(255, 255, 255);
-        Color grey = Color(15, 15, 15);
+        Color &black = Color::Black;
+        Color &blank = Color::Blank;
+        Color &grey = Color::BlackGrey;
 
         // Draw Background
         if (Preferences::topBackgroundImage->IsLoaded() 
@@ -218,8 +218,8 @@ namespace CTRPluginFramework
             return;
 
         // Draw scroll bar
-        static Color dimGrey(105, 105, 105);
-        static Color silver(192, 192, 192);
+        Color &dimGrey = Color::DimGrey;
+        Color &silver = Color::Silver;
 
         // Background
         posX = _box.leftTop.x + _box.size.x - 8;

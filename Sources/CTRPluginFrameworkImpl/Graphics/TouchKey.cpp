@@ -54,10 +54,10 @@ namespace CTRPluginFramework
 
     void    TouchKey::Draw(void)
     {
-        static Color    background(0, 0, 0); //Black
-        static Color    pressed(192, 192, 192); // silver
-        static Color    character(255, 255, 255); // blank
-        static Color    characterDis(105, 105, 105); // dimgray
+        Color    &background = Color::Black;
+        Color    &pressed = Color::Silver;
+        Color    &character = Color::Blank;
+        Color    &characterDis = Color::DimGrey;
 
         // if key is disabled
         if (!_enabled)

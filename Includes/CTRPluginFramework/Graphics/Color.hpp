@@ -49,10 +49,13 @@ namespace CTRPluginFramework
         static Color    Red;
         static Color    Green;
         static Color    Blue;
+        static Color    BlackGrey;
+        static Color    DarkGrey;
         static Color    Grey;
         static Color    Silver;
         static Color    Gainsboro;
         static Color    DimGrey;
+        static Color    LimeGreen;
         static Color    SkyBlue;
         static Color    DeepSkyBlue;
         static Color    DodgerBlue;

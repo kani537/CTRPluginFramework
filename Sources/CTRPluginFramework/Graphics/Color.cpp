@@ -8,10 +8,13 @@ namespace CTRPluginFramework
     Color   Color::Red;
     Color   Color::Green;
     Color   Color::Blue;
+    Color   Color::BlackGrey;
+    Color   Color::DarkGrey;
     Color   Color::Grey;
     Color   Color::Silver;
     Color   Color::Gainsboro;
     Color   Color::DimGrey;
+    Color   Color::LimeGreen;
     Color   Color::SkyBlue;
     Color   Color::DeepSkyBlue;
     Color   Color::DodgerBlue;
@@ -22,10 +25,13 @@ namespace CTRPluginFramework
         Color::Red = Color(255, 0, 0);
         Color::Green = Color(0, 255, 0);
         Color::Blue = Color(0, 0, 255);
-        Color::Grey = Color(195, 195, 195); // TODO
+        Color::BlackGrey = Color(15, 15, 15);
+        Color::DimGrey = Color(105, 105, 105);
+        Color::Grey = Color(128, 128, 128);
+        Color::DarkGrey = Color(169, 169, 169);
         Color::Silver = Color(192, 192, 192);
-        Color::Gainsboro = Color(220, 220, 200);
-        Color::DimGrey = Color(15, 15, 15);
+        Color::Gainsboro = Color(220, 220, 200);    
+        Color::LimeGreen = Color(50, 205, 50);
         Color::SkyBlue = Color(135, 206, 235);
         Color::DeepSkyBlue = Color(0, 191, 255);
         Color::DodgerBlue = Color(30, 144, 255);

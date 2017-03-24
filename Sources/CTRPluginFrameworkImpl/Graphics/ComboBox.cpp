@@ -32,9 +32,9 @@ namespace CTRPluginFramework
     void    ComboBox::Draw(void)
     {
        // static Color    blank = Color(255, 255, 255);
-        static Color    black = Color();
-        static Color    gainsboro = Color(220, 220, 220);
-        static Color    grey = Color(128, 128, 128);
+        Color    &black = Color::Black;
+        Color    &gainsboro = Color::Gainsboro;
+        Color    &grey = Color::Grey;
 
         if (!IsVisible)
             return;

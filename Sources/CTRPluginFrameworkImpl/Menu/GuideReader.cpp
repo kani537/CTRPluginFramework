@@ -165,9 +165,9 @@ namespace CTRPluginFramework
         Renderer::SetTarget(BOTTOM);
 
         static IntRect  background(20, 20, 280, 200);
-        static Color    black = Color();
-        static Color    blank(255, 255, 255);
-        static Color    dimGrey(15, 15, 15);
+        Color    &black = Color::Black;
+        Color    &blank = Color::Blank;
+        Color    &dimGrey = Color::DarkGrey;
 
         if (_image != nullptr && _image->IsLoaded())
         {

@@ -43,11 +43,11 @@ namespace CTRPluginFramework
 
     void    Menu::Draw(void)
     {
-        static Color black = Color();
-        static Color blank(255, 255, 255);
-        static Color greyblack(15, 15, 15);
-        static Color silver(160, 160, 160);
-        static Color limegreen(50, 205, 50);
+        Color &black = Color::Black;
+        Color &blank = Color::Blank;
+        Color &greyblack = Color::BlackGrey;
+        Color &silver = Color::DarkGrey;
+        Color &limegreen = Color::LimeGreen;
 
         int   posY = 25;
         int   posX = 40;
