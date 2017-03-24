@@ -3,6 +3,34 @@
 
 namespace CTRPluginFramework
 {
+    Color   Color::black;
+    Color   Color::blank;
+    Color   Color::red;
+    Color   Color::green;
+    Color   Color::blue;
+    Color   Color::grey;
+    Color   Color::silver;
+    Color   Color::gainsboro;
+    Color   Color::dimGrey;
+    Color   Color::skyblue;
+    Color   Color::deepskyblue;
+    Color   Color::dodgerblue;
+
+    void    InitColors(void)
+    {
+        Color::blank = Color(255, 255, 255);
+        Color::red = Color(255, 0, 0);
+        Color::green = Color(0, 255, 0);
+        Color::blue = Color(0, 0, 255);
+        Color::grey = Color(195, 195, 195); // TODO
+        Color::silver = Color(192, 192, 192);
+        Color::gainsboro = Color(220, 220, 200);
+        Color::dimGrey = Color(15, 15, 15);
+        Color::skyblue = Color(135, 206, 235);
+        Color::deepskyblue = Color(0, 191, 255);
+        Color::dodgerblue = Color(30, 144, 255);
+    }
+
     Color::Color(u8 red, u8 green, u8 blue, u8 alpha) 
     : r(red), g(green), b(blue), a(alpha)
     {

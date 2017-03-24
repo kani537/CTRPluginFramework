@@ -85,6 +85,7 @@ namespace CTRPluginFramework
 
     extern "C" void __appInit(void);
 
+    void    InitColors(void);
     void    Initialize(void)
     {        
         // Init Services
@@ -106,6 +107,9 @@ namespace CTRPluginFramework
 
         //Init OSD
         OSDImpl::_Initialize();  
+
+        // Init Colors
+        InitColors();
     }
 
     extern "C" vu32* hidSharedMem;
