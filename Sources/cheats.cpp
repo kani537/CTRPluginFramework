@@ -7,10 +7,7 @@ namespace CTRPluginFramework
 
 	void	MaxHeart(MenuEntry *entry)
 	{
-		if (entry->WasJustActivated())
-			Process::Write16(0x058799A, 0x100);
-		else if (!entry->IsActivated())
-			Process::Write16(0x058799A, 0x140);
+		Process::Write16(0x058799A, 0x140);
 	}
 
 	void	MaxMagic(MenuEntry *entry)
