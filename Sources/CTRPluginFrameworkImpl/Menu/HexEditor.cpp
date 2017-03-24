@@ -174,6 +174,7 @@ namespace CTRPluginFramework
                         break;
                     }
                 }
+                default: break;
             }
         }
         static Clock timer;
@@ -194,6 +195,7 @@ namespace CTRPluginFramework
                     Goto((u32)_memoryAddress + 8);
                     break;
                 }
+                default: break;
             }  
         }
     }
@@ -304,7 +306,7 @@ namespace CTRPluginFramework
         }
         else
         {
-            int     xPos;
+            int     xPos = 116;
             int     yPos = posY - 10;
 
             // Address & data

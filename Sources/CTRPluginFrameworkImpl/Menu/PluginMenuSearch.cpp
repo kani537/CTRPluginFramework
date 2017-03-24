@@ -184,6 +184,7 @@ namespace CTRPluginFramework
                 case 3: _alignmentTextBox.SetValue((u32)(8)); _valueTextBox.ValueType = NumericTextBox::Type::Bits64; break;
                 case 4: _alignmentTextBox.SetValue((u32)(4)); _valueTextBox.ValueType = NumericTextBox::Type::Float; break;
                 case 5: _alignmentTextBox.SetValue((u32)(8)); _valueTextBox.ValueType = NumericTextBox::Type::Double; break;
+                default: break;
             }
             _valueTextBox.Clear();
         }
@@ -264,9 +265,6 @@ namespace CTRPluginFramework
         static Color    silver(160, 160, 160);
         static IntRect  background(30, 20, 340, 200);
 
-        int   posY = 25;
-        int   posX = 40;
-
         // Enable renderer
         Renderer::SetTarget(TOP);
 
@@ -318,7 +316,6 @@ namespace CTRPluginFramework
 
         int posY = 42;
         int textPosX = 30;
-        int choicePosX = 150;
 
         // MemRegion
         Renderer::DrawString((char *)"MemRegion:", textPosX, posY, blank);
@@ -431,8 +428,6 @@ namespace CTRPluginFramework
             endRange = _regionsList[_memoryRegions.SelectedItem - 1].endAddress;  
         }*/
 
-        u32     step = _searchHistory.size();
-
         //Flush memory
         svcFlushProcessDataCache(Process::GetHandle(), (void *)startRange, endRange - startRange);
 
@@ -447,6 +442,7 @@ namespace CTRPluginFramework
                 case 3: _currentSearch = new Search<u64>(_valueTextBox.Bits64, _regionsList, _alignmentTextBox.Bits32, _currentSearch); _currentSearch->Size = SearchSize::Bits64; break;
                 case 4: _currentSearch = new Search<float>(_valueTextBox.Single, _regionsList, _alignmentTextBox.Bits32, _currentSearch); _currentSearch->Size = SearchSize::FloatingPoint; break;
                 case 5: _currentSearch = new Search<double>(_valueTextBox.Double, _regionsList, _alignmentTextBox.Bits32, _currentSearch); _currentSearch->Size = SearchSize::Double; break;
+                default: break;
             }
 
         }
@@ -460,6 +456,7 @@ namespace CTRPluginFramework
                 case 3: _currentSearch = new Search<u64>(_valueTextBox.Bits64, startRange, endRange, _alignmentTextBox.Bits32, _currentSearch); _currentSearch->Size = SearchSize::Bits64; break;
                 case 4: _currentSearch = new Search<float>(_valueTextBox.Single, startRange, endRange, _alignmentTextBox.Bits32, _currentSearch); _currentSearch->Size = SearchSize::FloatingPoint; break;
                 case 5: _currentSearch = new Search<double>(_valueTextBox.Double, startRange, endRange, _alignmentTextBox.Bits32, _currentSearch); _currentSearch->Size = SearchSize::Double; break;
+                default: break;
             }
         }
 
@@ -735,8 +732,5 @@ namespace CTRPluginFramework
             if (meminfo.base_addr >= 0x50000000)
                 break;
         }
-        //if (meminfo[i].state == 0x0)
-        //  i--;
-        i++;
     }
 }

@@ -189,6 +189,8 @@ namespace CTRPluginFramework
         _closeBtn.Update(isTouchDown, touchPos);
         _closeBtn.Draw();
 
+        return (true);
+
     }
 
     bool    GuideReader::_ProcessEvent(Event &event)

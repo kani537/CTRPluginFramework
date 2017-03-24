@@ -169,6 +169,7 @@ namespace CTRPluginFramework
                     return (false);
                     break;
                 }
+                default: break;
             }
         }
         return (true);

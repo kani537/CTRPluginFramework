@@ -129,6 +129,7 @@ namespace CTRPluginFramework
                                 _isSubmenuOpen = false;
                             break;
                         }
+                        default: break;
                     } // end switch
                 } // end if
             }
@@ -169,10 +170,12 @@ namespace CTRPluginFramework
                             Update();
                             break;
                         }
+                        default: break;
                     } // end switch
                 } // end if
             }
         }
+        return (true);
     }
 
     /*

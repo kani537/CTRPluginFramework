@@ -189,7 +189,8 @@ namespace CTRPluginFramework
                             if (_selector < folder->ItemsCount() - 1)
                                 _selector = std::min((int)(folder->ItemsCount() - 1), (int)(_selector + 4));
                             break;
-                        } 
+                        }
+                        default: break;
                     }                    
                     inputClock.Restart(); 
                 }
@@ -258,22 +259,19 @@ namespace CTRPluginFramework
                             if (_starMode)
                             {
                                 _starred = p;
-                                folder = p;
                             }
                             else
                             {
                                 _folder = p;
-                                folder = p;
                             }
                         }
                         break;
                     }
-
+                    default: break;
                 } 
                 break;
             } // End Key::Pressed event       
-
-
+            default: break;
         } // End switch
 
         folder = _starMode ? _starred : _folder;
@@ -284,7 +282,7 @@ namespace CTRPluginFramework
         {          
             item = folder->_items[_selector];
             _selectedTextSize = folder->ItemsCount() > 0 ? Renderer::GetTextSize(item->name.c_str()) : 0;
-            _maxScrollOffset = (float)_selectedTextSize - 200.f;
+            _maxScrollOffset = static_cast<float>(_selectedTextSize) - 200.f;
             _scrollClock.Restart();
             _scrollOffset = 0.f;
             _reverseFlow = false;      

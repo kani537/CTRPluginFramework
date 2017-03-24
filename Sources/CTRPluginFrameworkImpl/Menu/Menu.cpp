@@ -160,6 +160,7 @@ namespace CTRPluginFramework
                     _input.Restart();
                     break;
                 }
+                default: break;
             }            
         }
         // Other event
@@ -191,6 +192,7 @@ namespace CTRPluginFramework
                         return (-2);
                     break;
                 }
+                default: break;
             }
         }
         return (-1);
@@ -245,6 +247,7 @@ namespace CTRPluginFramework
                     _input.Restart();
                     return (MenuEvent::SelectorChanged);
                 }
+                default: break;
             }            
         }
         // Other event
@@ -283,6 +286,7 @@ namespace CTRPluginFramework
                         return (MenuEvent::MenuClose);
                     
                 }
+                default: break;
             }
         }
         return (MenuEvent::Nothing);

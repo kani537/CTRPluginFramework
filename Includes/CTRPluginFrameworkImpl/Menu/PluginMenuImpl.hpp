@@ -36,7 +36,6 @@ namespace CTRPluginFramework
         PluginMenuTools             *_tools;
         PluginMenuExecuteLoop       *_executeLoop;
         GuideReader                 *_guide;
-        void                        _TriggerGuide(void);
         std::vector<CallbackPointer>     _callbacks;
     };
 }

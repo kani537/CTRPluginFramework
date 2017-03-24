@@ -2,7 +2,6 @@
 #include "CTRPluginFramework/System/Directory.hpp"
 #include "CTRPluginFramework/System/Process.hpp"
 #include "ctrulib/allocator/linear.h"
-#include <time.h>
 
 #include <string>
 
@@ -662,132 +661,7 @@ namespace CTRPluginFramework
                 oldvalue.push_back(buffer);
             } 
         }
-        // Subsidiary search (need to loads from file)
-      /*  else if (_previousSearch->Type == SearchType::ExactValue && _previousSearch->Compare == CompareType::Equal)
-        {
-            T   oldValue = reinterpret_cast<Search<T> *>(_previousSearch)->_checkValue;
-            char                            oldBuffer[20] = {0};
-
-            // Format old value
-            switch (Size)
-            {
-                case SearchSize::Bits8: sprintf(oldBuffer, "%02X", oldValue); break;
-                case SearchSize::Bits16: sprintf(oldBuffer, "%04X", oldValue); break;
-                case SearchSize::Bits32: sprintf(oldBuffer, "%08X", oldValue); break;
-                case SearchSize::Bits64: sprintf(oldBuffer, "%016llX", oldValue); break;
-                case SearchSize::FloatingPoint: sprintf(oldBuffer, "%8.7f", oldValue); break;
-                case SearchSize::Double: sprintf(oldBuffer, "%8.7g", oldValue); break;
-            }
-
-            for (int i = 0; i < newResults.size(); i++)
-            {
-                // Address
-                sprintf(buffer, "%08X", newResults[i].address);
-                address.push_back(buffer);
-
-                // Value
-                switch (Size)
-                {
-                    case SearchSize::Bits8: sprintf(buffer, "%02X", newResults[i].value); break;
-                    case SearchSize::Bits16: sprintf(buffer, "%04X", newResults[i].value); break;
-                    case SearchSize::Bits32: sprintf(buffer, "%08X", newResults[i].value); break;
-                    case SearchSize::Bits64: sprintf(buffer, "%016llX", newResults[i].value); break;
-                    case SearchSize::FloatingPoint: sprintf(buffer, "%8.7f", newResults[i].value); break;
-                    case SearchSize::Double: sprintf(buffer, "%8.7g", newResults[i].value); break;
-                }
-                newval.push_back(buffer);
-
-                oldvalue.push_back(oldBuffer);
-            } 
-        }
-        else
-        {        
-            std::vector<SearchResult<T>>    oldResults;
-            u32                             oldIndex;
-            bool                            reverse = false;
-
-            // Try to narrow if it's not the first search
-            if (_lastFetchedIndex == index) oldIndex = _lastStartIndexInFile;
-            else if (_lastFetchedIndex < index) oldIndex = _lastEndIndexInFile;
-            else if (_lastFetchedIndex > index) { oldIndex = _lastStartIndexInFile; reverse = true; }
-
-            _lastFetchedIndex = index;
-
-            // Load some of the old results
-            reinterpret_cast<Search<T> *>(_previousSearch)->_ReadResults(oldResults, oldIndex, 0x1000, reverse);
-            int y = 0;
-
-            for (int i = 0; i < newResults.size(); i++)
-            {
-                // Address
-                sprintf(buffer, "%08X", newResults[i].address);
-                address.push_back(buffer);
-
-                // new Value
-                switch (Size)
-                {
-                    case SearchSize::Bits8: sprintf(buffer, "%02X", newResults[i].value); break;
-                    case SearchSize::Bits16: sprintf(buffer, "%04X", newResults[i].value); break;
-                    case SearchSize::Bits32: sprintf(buffer, "%08X", newResults[i].value); break;
-                    case SearchSize::Bits64: sprintf(buffer, "%016llX", newResults[i].value); break;
-                    case SearchSize::FloatingPoint: sprintf(buffer, "%8.7f", newResults[i].value); break;
-                    case SearchSize::Double: sprintf(buffer, "%8.7g", newResults[i].value); break;
-                }
-                newval.push_back(buffer);
-
-                u32 tofind = newResults[i].address;
-
-                // Find same address in old results
-                
-                while (1)
-                {
-                    for (; y < oldResults.size(); y++)
-                        if (oldResults[y].address == tofind)
-                            break;
-
-                    if (oldResults[y].address == tofind)
-                        break;
-                    if (!reinterpret_cast<Search<T> *>(_previousSearch)->_ReadResults(oldResults, oldIndex, 0x1000, reverse))
-                    {
-                        y = -1;
-                        break;
-                    }
-                    else
-                        y = 0;
-                }
-
-                if (y == -1)
-                    continue;
-
-                // old Value
-                switch (Size)
-                {
-                    case SearchSize::Bits8: sprintf(buffer, "%02X", oldResults[y].value); break;
-                    case SearchSize::Bits16: sprintf(buffer, "%04X", oldResults[y].value); break;
-                    case SearchSize::Bits32: sprintf(buffer, "%08X", oldResults[y].value); break;
-                    case SearchSize::Bits64: sprintf(buffer, "%016llX", oldResults[y].value); break;
-                    case SearchSize::FloatingPoint: sprintf(buffer, "%8.7f", oldResults[y].value); break;
-                    case SearchSize::Double: sprintf(buffer, "%8.7g", oldResults[y].value); break;
-                }
-                oldvalue.push_back(buffer);
-                if (i == 0)
-                {
-                    _lastStartIndexInFile = oldIndex + y;
-                    if (reverse)
-                        _lastStartIndexInFile += oldResults.size();
-                    else
-                        _lastStartIndexInFile -= oldResults.size();
-                }
-                if (i == newResults.size() - 1)
-                {
-                    _lastEndIndexInFile = oldIndex + y;
-                    if (reverse)
-                        _lastEndIndexInFile += oldResults.size();
-                    else
-                        _lastEndIndexInFile -= oldResults.size();
-                }
-            } 
-        }*/
+        return (true);
     }
 
     // Return if it matches the condition
