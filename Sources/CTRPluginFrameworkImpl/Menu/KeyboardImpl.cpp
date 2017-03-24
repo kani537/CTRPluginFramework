@@ -10,6 +10,15 @@ namespace CTRPluginFramework
     #define USER_ABORT  -1
     #define KEY_ENTER 0xA
     #define KEY_BACKSPACE 0x8
+    #define KEY_SYMBOLS -2
+    #define KEY_CAPS -3
+    #define KEY_SMILEY -4
+    #define KEY_SPACE -5
+    #define KEY_SYMBOLS_PAGE -6
+    #define KEY_NINTENDO_PAGE -7
+    #define KEY_DOT 1
+    #define KEY_COPYRIGHT 1
+
 
     KeyboardImpl::KeyboardImpl(std::string text)
     {
@@ -18,6 +27,10 @@ namespace CTRPluginFramework
         _userInput = "";
 
         _isOpen = false;
+        _userAbort = false;
+        _mustRelease = false;
+        _useCaps = false;
+        _useSymbols = false;
         _errorMessage = false;
         _askForExit = false;
         _isHex = false;
@@ -27,17 +40,21 @@ namespace CTRPluginFramework
         _convert = nullptr;
         _compare = nullptr;
 
-        _customKeyboard  = false;
+        _customKeyboard = false;
         _displayScrollbar = false;
         _currentPosition = 0;
         _scrollbarSize = 0;
         _scrollCursorSize = 10;
         _scrollPadding = 0.f;
+        _scrollJump = 0.f;
         _scrollSize = 0.f;
         _scrollPosition = 0.f;
         _inertialVelocity = 0.f;
         _scrollStart = 0.f;
         _scrollEnd = 0.f;
+
+        _symbolsPage = 0;
+        _nintendoPage = 0;
 
         DisplayTopScreen = true;
     }
@@ -456,10 +473,293 @@ namespace CTRPluginFramework
         }
     }
 
+    /*
+    ** _keys:
+    **
+    ** [0] = 'Q'
+    ** [1] = 'W'
+    ** [2] = 'E'
+    ** [3] = 'R'
+    ** [4] = 'T'
+    ** [5] = 'Y'
+    ** [6] = 'U'
+    ** [7] = 'I'
+    ** [8] = 'O'
+    ** [9] = 'P'
+    ** [10] = 'KEY_BACKSPACE'
+    
+    ** First Line : 11 keys **
+
+    ** [11] = 'A'
+    ** [12] = 'S'
+    ** [13] = 'D'
+    ** [14] = 'F'
+    ** [15] = 'G'
+    ** [16] = 'H'
+    ** [17] = 'J'
+    ** [18] = 'K'
+    ** [19] = 'L'
+    ** [20] = '''
+    ** [21] = 'KEY_ENTER'
+    
+    ** Second Line : 11 keys **
+ 
+     ** [22] = 'CAPS'
+     ** [23] = 'Z'
+     ** [24] = 'X'
+     ** [25] = 'C'
+     ** [26] = 'V'
+     ** [27] = 'B'
+     ** [28] = 'N'
+     ** [29] = 'M'
+     ** [30] = ','
+     ** [31] = '.'
+     ** [32] = '?'
+     *
+     ** Third Line : 11 keys **
+
+     ** [33] = 'KEY_SYMBOL'
+     ** [34] = 'SMILEY'
+     ** [35] = 'SPACE'
+     *
+     ** Fourth Line : 3 keys **
+    *************************/
+
+    void    KeyboardImpl::_QwertyLowCase(void)
+    {
+        // Key rectangle
+        IntRect pos(20, 36, 45, 40);
+
+        /*low case*/
+        _keys.push_back(TouchKey('q', pos)); pos.leftTop.x += 45;
+        _keys.push_back(TouchKey('w', pos)); pos.leftTop.x += 45;
+        _keys.push_back(TouchKey('e', pos)); pos.leftTop.x += 45;
+        _keys.push_back(TouchKey('r', pos)); pos.leftTop.x += 45;
+        _keys.push_back(TouchKey('t', pos)); pos.leftTop.x += 45;
+        _keys.push_back(TouchKey('y', pos)); pos.leftTop.x += 45;
+        _keys.push_back(TouchKey('u', pos)); pos.leftTop.x += 45;
+        _keys.push_back(TouchKey('i', pos)); pos.leftTop.x += 45;
+        _keys.push_back(TouchKey('o', pos)); pos.leftTop.x += 45;
+        _keys.push_back(TouchKey('p', pos)); pos.leftTop.x += 45;
+        _keys.push_back(TouchKey(KEY_BACKSPACE, Icon::DrawClearSymbol, pos));
+
+        pos.leftTop.x = 20;
+        pos.leftTop.y = 76;
+
+        _keys.push_back(TouchKey('a', pos)); pos.leftTop.x += 45;
+        _keys.push_back(TouchKey('s', pos)); pos.leftTop.x += 45;
+        _keys.push_back(TouchKey('d', pos)); pos.leftTop.x += 45;
+        _keys.push_back(TouchKey('f', pos)); pos.leftTop.x += 45;
+        _keys.push_back(TouchKey('g', pos)); pos.leftTop.x += 45;
+        _keys.push_back(TouchKey('h', pos)); pos.leftTop.x += 45;
+        _keys.push_back(TouchKey('j', pos)); pos.leftTop.x += 45;
+        _keys.push_back(TouchKey('k', pos)); pos.leftTop.x += 45;
+        _keys.push_back(TouchKey('l', pos)); pos.leftTop.x += 45;
+        _keys.push_back(TouchKey('\'', pos)); pos.leftTop.x += 45;
+        _keys.push_back(TouchKey(KEY_ENTER, Icon::DrawEnterKey, pos));
+
+        pos.leftTop.x = 20;
+        pos.leftTop.y = 116;
+
+        _keys.push_back(TouchKey(KEY_CAPS, nullptr, pos)); pos.leftTop.x += 45;
+        _keys.push_back(TouchKey('z', pos)); pos.leftTop.x += 45;
+        _keys.push_back(TouchKey('x', pos)); pos.leftTop.x += 45;
+        _keys.push_back(TouchKey('c', pos)); pos.leftTop.x += 45;
+        _keys.push_back(TouchKey('v', pos)); pos.leftTop.x += 45;
+        _keys.push_back(TouchKey('b', pos)); pos.leftTop.x += 45;
+        _keys.push_back(TouchKey('n', pos)); pos.leftTop.x += 45;
+        _keys.push_back(TouchKey('m', pos)); pos.leftTop.x += 45;
+        _keys.push_back(TouchKey(',', pos)); pos.leftTop.x += 45;
+        _keys.push_back(TouchKey('.', pos)); pos.leftTop.x += 45;
+        _keys.push_back(TouchKey('?', pos));
+
+        pos.leftTop.x = 20;
+        pos.leftTop.y = 156;
+
+        _keys.push_back(TouchKey(KEY_SYMBOLS, nullptr, pos)); pos.leftTop.x += 45;
+        _keys.push_back(TouchKey(KEY_SMILEY, pos)); pos.leftTop.x += 45;
+        _keys.push_back(TouchKey(KEY_SPACE, pos)); pos.leftTop.x += 45;
+    }
+
+    void    KeyboardImpl::_QwertyUpCase(void)
+    {
+        // Key rectangle
+        IntRect pos(20, 36, 45, 40);
+
+        /*low case*/
+        _keys.push_back(TouchKey('Q', pos)); pos.leftTop.x += 45;
+        _keys.push_back(TouchKey('W', pos)); pos.leftTop.x += 45;
+        _keys.push_back(TouchKey('E', pos)); pos.leftTop.x += 45;
+        _keys.push_back(TouchKey('R', pos)); pos.leftTop.x += 45;
+        _keys.push_back(TouchKey('T', pos)); pos.leftTop.x += 45;
+        _keys.push_back(TouchKey('Y', pos)); pos.leftTop.x += 45;
+        _keys.push_back(TouchKey('U', pos)); pos.leftTop.x += 45;
+        _keys.push_back(TouchKey('I', pos)); pos.leftTop.x += 45;
+        _keys.push_back(TouchKey('O', pos)); pos.leftTop.x += 45;
+        _keys.push_back(TouchKey('P', pos)); pos.leftTop.x += 45;
+        _keys.push_back(TouchKey(KEY_BACKSPACE, Icon::DrawClearSymbol, pos));
+
+        pos.leftTop.x = 20;
+        pos.leftTop.y = 76;
+
+        _keys.push_back(TouchKey('A', pos)); pos.leftTop.x += 45;
+        _keys.push_back(TouchKey('S', pos)); pos.leftTop.x += 45;
+        _keys.push_back(TouchKey('D', pos)); pos.leftTop.x += 45;
+        _keys.push_back(TouchKey('F', pos)); pos.leftTop.x += 45;
+        _keys.push_back(TouchKey('G', pos)); pos.leftTop.x += 45;
+        _keys.push_back(TouchKey('H', pos)); pos.leftTop.x += 45;
+        _keys.push_back(TouchKey('J', pos)); pos.leftTop.x += 45;
+        _keys.push_back(TouchKey('K', pos)); pos.leftTop.x += 45;
+        _keys.push_back(TouchKey('L', pos)); pos.leftTop.x += 45;
+        _keys.push_back(TouchKey('"', pos)); pos.leftTop.x += 45;
+        _keys.push_back(TouchKey(KEY_ENTER, Icon::DrawEnterKey, pos));
+
+        pos.leftTop.x = 20;
+        pos.leftTop.y = 116;
+
+        _keys.push_back(TouchKey(KEY_CAPS, nullptr, pos)); pos.leftTop.x += 45;
+        _keys.push_back(TouchKey('Z', pos)); pos.leftTop.x += 45;
+        _keys.push_back(TouchKey('X', pos)); pos.leftTop.x += 45;
+        _keys.push_back(TouchKey('C', pos)); pos.leftTop.x += 45;
+        _keys.push_back(TouchKey('V', pos)); pos.leftTop.x += 45;
+        _keys.push_back(TouchKey('B', pos)); pos.leftTop.x += 45;
+        _keys.push_back(TouchKey('N', pos)); pos.leftTop.x += 45;
+        _keys.push_back(TouchKey('M', pos)); pos.leftTop.x += 45;
+        _keys.push_back(TouchKey(';', pos)); pos.leftTop.x += 45;
+        _keys.push_back(TouchKey(':', pos)); pos.leftTop.x += 45;
+        _keys.push_back(TouchKey('!', pos));
+
+        pos.leftTop.x = 20;
+        pos.leftTop.y = 156;
+
+        _keys.push_back(TouchKey(KEY_SYMBOLS, nullptr, pos)); pos.leftTop.x += 45;
+        _keys.push_back(TouchKey(KEY_SMILEY, pos)); pos.leftTop.x += 45;
+        _keys.push_back(TouchKey(KEY_SPACE, pos)); pos.leftTop.x += 45;
+    }
+
+    void KeyboardImpl::_QwertySymbols(void)
+    {
+        // Key rectangle
+        IntRect pos(20, 36, 45, 40);
+
+        /*page 1*/
+        _keys.push_back(TouchKey('!', pos)); pos.leftTop.x += 45;
+        _keys.push_back(TouchKey('@', pos)); pos.leftTop.x += 45;
+        _keys.push_back(TouchKey('#', pos)); pos.leftTop.x += 45;
+        _keys.push_back(TouchKey('$', pos)); pos.leftTop.x += 45;
+        _keys.push_back(TouchKey('%', pos)); pos.leftTop.x += 45;
+        _keys.push_back(TouchKey('&', pos)); pos.leftTop.x += 45;
+        _keys.push_back(TouchKey('1', pos)); pos.leftTop.x += 45;
+        _keys.push_back(TouchKey('2', pos)); pos.leftTop.x += 45;
+        _keys.push_back(TouchKey('3', pos)); pos.leftTop.x += 45;
+        _keys.push_back(TouchKey(KEY_BACKSPACE, Icon::DrawClearSymbol, pos));
+
+        pos.leftTop.x = 20;
+        pos.leftTop.y = 76;
+
+        _keys.push_back(TouchKey('(', pos)); pos.leftTop.x += 45;
+        _keys.push_back(TouchKey(')', pos)); pos.leftTop.x += 45;
+        _keys.push_back(TouchKey('-', pos)); pos.leftTop.x += 45;
+        _keys.push_back(TouchKey('_', pos)); pos.leftTop.x += 45;
+        _keys.push_back(TouchKey('=', pos)); pos.leftTop.x += 45;
+        _keys.push_back(TouchKey('+', pos)); pos.leftTop.x += 45;
+        _keys.push_back(TouchKey('4', pos)); pos.leftTop.x += 45;
+        _keys.push_back(TouchKey('5', pos)); pos.leftTop.x += 45;
+        _keys.push_back(TouchKey('6', pos)); pos.leftTop.x += 45;
+        _keys.push_back(TouchKey(KEY_ENTER, Icon::DrawEnterKey, pos));
+
+        pos.leftTop.x = 20;
+        pos.leftTop.y = 116;
+
+        _keys.push_back(TouchKey(KEY_SYMBOLS_PAGE, nullptr, pos)); pos.leftTop.x += 45;
+        _keys.push_back(TouchKey('\\', pos)); pos.leftTop.x += 45;
+        _keys.push_back(TouchKey(';', pos)); pos.leftTop.x += 45;
+        _keys.push_back(TouchKey(':', pos)); pos.leftTop.x += 45;
+        _keys.push_back(TouchKey('"', pos)); pos.leftTop.x += 45;
+        _keys.push_back(TouchKey('*', pos)); pos.leftTop.x += 45;
+        _keys.push_back(TouchKey('/', pos)); pos.leftTop.x += 45;
+        _keys.push_back(TouchKey('7', pos)); pos.leftTop.x += 45;
+        _keys.push_back(TouchKey('8', pos)); pos.leftTop.x += 45;
+        _keys.push_back(TouchKey('9', pos)); pos.leftTop.x += 45;
+
+        pos.leftTop.x = 20;
+        pos.leftTop.y = 156;
+
+        _keys.push_back(TouchKey(KEY_SYMBOLS, nullptr, pos)); pos.leftTop.x += 45;
+        _keys.push_back(TouchKey(KEY_SMILEY, pos)); pos.leftTop.x += 45;
+        _keys.push_back(TouchKey(KEY_SPACE, pos)); pos.leftTop.x += 45;
+        _keys.push_back(TouchKey('0', pos)); pos.leftTop.x += 45;
+        _keys.push_back(TouchKey('.', pos)); pos.leftTop.x += 45;
+
+        pos.leftTop.x = 20;
+        pos.leftTop.y = 36;
+
+        /*page 2*/
+        _keys.push_back(TouchKey(KEY_DOT, pos)); pos.leftTop.x += 45;
+        _keys.push_back(TouchKey(KEY_COPYRIGHT, pos)); pos.leftTop.x += 45;
+        _keys.push_back(TouchKey('€', pos)); pos.leftTop.x += 45;
+        _keys.push_back(TouchKey('£', pos)); pos.leftTop.x += 45;
+        _keys.push_back(TouchKey('µ', pos)); pos.leftTop.x += 45;
+        _keys.push_back(TouchKey('§', pos)); pos.leftTop.x += 45;
+        _keys.push_back(TouchKey('1', pos)); pos.leftTop.x += 45;
+        _keys.push_back(TouchKey('2', pos)); pos.leftTop.x += 45;
+        _keys.push_back(TouchKey('3', pos)); pos.leftTop.x += 45;
+        _keys.push_back(TouchKey(KEY_BACKSPACE, Icon::DrawClearSymbol, pos));
+
+        pos.leftTop.x = 20;
+        pos.leftTop.y = 76;
+
+        _keys.push_back(TouchKey('<', pos)); pos.leftTop.x += 45;
+        _keys.push_back(TouchKey('>', pos)); pos.leftTop.x += 45;
+        _keys.push_back(TouchKey('[', pos)); pos.leftTop.x += 45;
+        _keys.push_back(TouchKey(']', pos)); pos.leftTop.x += 45;
+        _keys.push_back(TouchKey('{', pos)); pos.leftTop.x += 45;
+        _keys.push_back(TouchKey('}', pos)); pos.leftTop.x += 45;
+        _keys.push_back(TouchKey('4', pos)); pos.leftTop.x += 45;
+        _keys.push_back(TouchKey('5', pos)); pos.leftTop.x += 45;
+        _keys.push_back(TouchKey('6', pos)); pos.leftTop.x += 45;
+        _keys.push_back(TouchKey(KEY_ENTER, Icon::DrawEnterKey, pos));
+
+        pos.leftTop.x = 20;
+        pos.leftTop.y = 116;
+
+        _keys.push_back(TouchKey(KEY_SYMBOLS_PAGE, nullptr, pos)); pos.leftTop.x += 45;
+        _keys.push_back(TouchKey('|', pos)); pos.leftTop.x += 45;
+        _keys.push_back(TouchKey('²', pos)); pos.leftTop.x += 45;
+        _keys.push_back(TouchKey('`', pos)); pos.leftTop.x += 45;
+        _keys.push_back(TouchKey('°', pos)); pos.leftTop.x += 45;
+        _keys.push_back(TouchKey('~', pos)); pos.leftTop.x += 45;
+        _keys.push_back(TouchKey('^', pos)); pos.leftTop.x += 45;
+        _keys.push_back(TouchKey('7', pos)); pos.leftTop.x += 45;
+        _keys.push_back(TouchKey('8', pos)); pos.leftTop.x += 45;
+        _keys.push_back(TouchKey('9', pos)); pos.leftTop.x += 45;
+
+        pos.leftTop.x = 20;
+        pos.leftTop.y = 156;
+
+        _keys.push_back(TouchKey(KEY_SYMBOLS, nullptr, pos)); pos.leftTop.x += 45;
+        _keys.push_back(TouchKey(KEY_SMILEY, pos)); pos.leftTop.x += 45;
+        _keys.push_back(TouchKey(KEY_SPACE, pos)); pos.leftTop.x += 45;
+        _keys.push_back(TouchKey('0', pos)); pos.leftTop.x += 45;
+        _keys.push_back(TouchKey('.', pos)); pos.leftTop.x += 45;
+    }
+
+    void KeyboardImpl::_QwertyNintendo()
+    {
+
+    }
+
+
     void    KeyboardImpl::_Qwerty(void)
     {
-        // TODO
-        return;
+        /* 0 - 35*/
+        _QwertyLowCase();
+        /*36 - 72*/
+        _QwertyUpCase();
+        /* 73 - 107 Page 1*/ 
+        /* 108 - 142 Page 2*/
+        _QwertySymbols();
+        _QwertyNintendo();
     }
 
     /*

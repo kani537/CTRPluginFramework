@@ -51,6 +51,10 @@ namespace CTRPluginFramework
 
         // Keyboard layout constructor
         void    _Qwerty(void);
+        void    _QwertyLowCase(void);
+        void    _QwertyUpCase(void);
+        void    _QwertySymbols(void);
+        void    _QwertyNintendo(void);
         void    _DigitKeyboard(void);
         void    _Decimal(void);
         void    _Hexadecimal(void);
@@ -70,7 +74,11 @@ namespace CTRPluginFramework
         bool                    _userAbort;
         bool                    _isHex;
         bool                    _mustRelease;
+        bool                    _useCaps;
+        bool                    _useSymbols;
         int                     _max;
+        u8                      _symbolsPage;
+        u8                      _nintendoPage;
         Layout                  _layout;
 
         CompareCallback         _compare;
