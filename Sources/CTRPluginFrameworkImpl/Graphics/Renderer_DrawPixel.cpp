@@ -12,15 +12,6 @@ namespace CTRPluginFramework
 
     void        Renderer::RenderRGBA8(int posX, int posY, Color &color)
     {
-       /* if (!RANGE(0, posX, _targetWidth[_target]) || !RANGE(0, posY, _targetHeight[_target]))
-            return;*/
-
-       // u32     offset = GetFramebufferOffset(posX, posY, 4, _rowSize[_target]);
-
-      /*  bool    is3D = _target == TOP && _useRender3D;
-        bool    isLeftDouble = _useDoubleBuffer;
-        bool    isRightDouble = _useDoubleBuffer; */       
-
         u8  *screen = _screen->GetLeftFramebuffer(posX, posY);// + offset;
 
 again:
@@ -32,39 +23,10 @@ again:
             *(screen++) = color.g;
             *(screen++) = color.r;
         }
-        /*
-        if (isLeftDouble)
-        {
-            screen = _screens[_target]->GetLeftFramebuffer(true) + offset;
-            isLeftDouble = false;
-            goto again;
-        }
-
-        if (is3D)
-        {
-            screen = _screens[_target]->GetRightFramebuffer() + offset;
-            is3D = false;
-            goto again;
-        }
-
-        if (isRightDouble)
-        {
-            screen = _screens[_target]->GetRightFramebuffer(true) + offset;
-            isRightDouble = false;
-            goto again;
-        }*/
     }
 
     void        Renderer::RenderBGR8(int posX, int posY, Color &color)
-    {
-       /* if (!RANGE(0, posX, _targetWidth[_target]) || !RANGE(0, posY, _targetHeight[_target]))
-            return;*/
-        /*u32     offset = GetFramebufferOffset(posX, posY, 3, _rowSize[_target]);
-
-        bool    is3D = _target == TOP && _useRender3D;
-        bool    isLeftDouble = _useDoubleBuffer;
-        bool    isRightDouble = _useDoubleBuffer;  */      
-
+    { 
         u8  *screen = _screen->GetLeftFramebuffer(posX, posY);// + offset;
 
 again:
@@ -75,40 +37,10 @@ again:
             *(screen++) = color.g;
             *(screen++) = color.r;
         }
-
-        /*if (isLeftDouble)
-        {
-            screen = _screens[_target]->GetLeftFramebuffer(true) + offset;
-            isLeftDouble = false;
-            goto again;
-        }
-
-        if (is3D)
-        {
-            screen = _screens[_target]->GetRightFramebuffer() + offset;
-            is3D = false;
-            goto again;
-        }
-
-        if (isRightDouble)
-        {
-            screen = _screens[_target]->GetRightFramebuffer(true) + offset;
-            isRightDouble = false;
-            goto again;
-        }*/
     }
 
     void        Renderer::RenderRGB565(int posX, int posY, Color &color)
     {
-       /* if (!RANGE(0, posX, _targetWidth[_target]) || !RANGE(0, posY, _targetHeight[_target]))
-            return;*/
-
-        /*u32     offset = GetFramebufferOffset(posX, posY, 2, _rowSize[_target]);
-
-        bool    is3D = _target == TOP && _useRender3D;
-        bool    isLeftDouble = _useDoubleBuffer;
-        bool    isRightDouble = _useDoubleBuffer;     */   
-
         u8  *screen = _screen->GetLeftFramebuffer(posX, posY);// + offset;
 
         union
@@ -128,40 +60,10 @@ again:
             *(screen++) = half.b[0];
             *(screen++) = half.b[1];
         }
-
-       /* if (isLeftDouble)
-        {
-            screen = _screens[_target]->GetLeftFramebuffer(true) + offset;
-            isLeftDouble = false;
-            goto again;
-        }
-
-        if (is3D)
-        {
-            screen = _screens[_target]->GetRightFramebuffer() + offset;
-            is3D = false;
-            goto again;
-        }
-
-        if (isRightDouble)
-        {
-            screen = _screens[_target]->GetRightFramebuffer(true) + offset;
-            isRightDouble = false;
-            goto again;
-        }*/
     }
 
     void        Renderer::RenderRGB5A1(int posX, int posY, Color &color)
-    {
-      /*  if (!RANGE(0, posX, _targetWidth[_target]) || !RANGE(0, posY, _targetHeight[_target]))
-            return;*/
-
-        /*u32     offset = GetFramebufferOffset(posX, posY, 2, _rowSize[_target]);
-
-        bool    is3D = _target == TOP && _useRender3D;
-        bool    isLeftDouble = _useDoubleBuffer;
-        bool    isRightDouble = _useDoubleBuffer; */       
-
+    {  
         u8  *screen = _screen->GetLeftFramebuffer(posX, posY);// + offset;
 
         union
@@ -182,41 +84,10 @@ again:
             *(screen++) = half.b[0];
             *(screen++) = half.b[1];
         }
-
-        /*if (isLeftDouble)
-        {
-            screen = _screens[_target]->GetLeftFramebuffer(true) + offset;
-            isLeftDouble = false;
-            goto again;
-        }
-
-        if (is3D)
-        {
-            screen = _screens[_target]->GetRightFramebuffer() + offset;
-            is3D = false;
-            goto again;
-        }
-
-        if (isRightDouble)
-        {
-            screen = _screens[_target]->GetRightFramebuffer(true) + offset;
-            isRightDouble = false;
-            goto again;
-        }*/
     }
 
     void        Renderer::RenderRGBA4(int posX, int posY, Color &color)
     {
-     /*   if (!RANGE(0, posX, _targetWidth[_target]) || !RANGE(0, posY, _targetHeight[_target]))
-            return;
-
-
-        u32     offset = GetFramebufferOffset(posX, posY, 2, _rowSize[_target]);
-
-        bool    is3D = _target == TOP && _useRender3D;
-        bool    isLeftDouble = _useDoubleBuffer;
-        bool    isRightDouble = _useDoubleBuffer;        
-*/
         u8  *screen = _screen->GetLeftFramebuffer(posX, posY);// + offset;
 
         union
@@ -237,26 +108,5 @@ again:
             *(screen++) = half.b[0];
             *(screen++) = half.b[1];
         }
-
-        /*if (isLeftDouble)
-        {
-            screen = _screens[_target]->GetLeftFramebuffer(true) + offset;
-            isLeftDouble = false;
-            goto again;
-        }
-
-        if (is3D)
-        {
-            screen = _screens[_target]->GetRightFramebuffer() + offset;
-            is3D = false;
-            goto again;
-        }
-
-        if (isRightDouble)
-        {
-            screen = _screens[_target]->GetRightFramebuffer(true) + offset;
-            isRightDouble = false;
-            goto again;
-        }*/
     }
 }

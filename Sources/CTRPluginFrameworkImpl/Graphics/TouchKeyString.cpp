@@ -1,5 +1,4 @@
 #include "CTRPluginFrameworkImpl/Graphics/TouchKeyString.hpp"
-#include "ctrulib/util/utf.h"
 
 namespace CTRPluginFramework
 {

@@ -1,9 +1,6 @@
 #include "types.h"
 #include "ctrulib/services/gspgpu.h"
 #include "ctrulib/util/utf.h"
-
-#include "ctrulib/allocator/linear.h"
-#include "CTRPluginFramework/Graphics.hpp"
 #include "CTRPluginFrameworkImpl/Graphics.hpp"
 #include <algorithm>
 #include <cmath>

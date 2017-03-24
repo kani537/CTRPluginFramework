@@ -75,9 +75,6 @@ namespace CTRPluginFramework
         // Sheet is composed of 8x8 pixel tiles
         for (int tileY = 0; tileY < tileHeight; tileY++)
         {
-            //int w = std::round(tileWidth / 5);
-            //int start = std::round(index * w);
-            //int end = start + w;
             for (int tileX = 0; tileX < tileWidth; tileX++)
             {
                 // Tile is composed of 2x2 sub-tiles

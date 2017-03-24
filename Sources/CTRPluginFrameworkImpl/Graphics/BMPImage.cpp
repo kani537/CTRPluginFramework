@@ -22,7 +22,7 @@ namespace CTRPluginFramework
 
         if (res != 0)
         {
-            sprintf(buffer, "BMP Error: couldn't open: %d, ec: %X", fileName, res);
+            sprintf(buffer, "BMP Error: couldn't open: %s, ec: %X", fileName.c_str(), res);
             OSD::Notify(buffer, Red, Black);
             return;
         }
@@ -74,7 +74,6 @@ namespace CTRPluginFramework
 
         std::memset(_data, 0, _dataSize);
         
-        int   startX = 0;
         int   startY = 0;
         int   offsetX = 0;
 
