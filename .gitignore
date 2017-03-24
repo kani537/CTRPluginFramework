@@ -1,6 +1,9 @@
 /Build
 /Ressources
 /Guide
+/v14
+*.db
+*.opendb
 *.plg
 *.elf
 *.zip
