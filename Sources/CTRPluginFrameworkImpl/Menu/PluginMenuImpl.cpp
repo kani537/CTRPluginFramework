@@ -13,8 +13,6 @@
 #include "CTRPluginFramework/System.hpp"
 #include "CTRPluginFrameworkImpl/Preferences.hpp"
 
-#define SHOWFPS 0
-
 namespace CTRPluginFramework
 {
     PluginMenuImpl::PluginMenuImpl(std::string name, std::string note) : 
@@ -64,11 +62,6 @@ namespace CTRPluginFramework
         GuideReader             &guide = *_guide;
         PluginMenuExecuteLoop   &executer = *_executeLoop;
 
-    #if SHOWFPS 
-        Time            second = Seconds(1);
-        Time            frameLimit = second / 30.f;
-    #endif
-
         Time            delta;
         OSDImpl         &osd = *(OSDImpl::GetInstance());
         std::vector<Event>     eventList;
@@ -89,6 +82,7 @@ namespace CTRPluginFramework
                     {
                         ProcessImpl::Play(true);
                         _isOpen = false;
+                        Controller::InjectKey(Key::B);
                     }
                     else
                     {
@@ -139,18 +133,6 @@ namespace CTRPluginFramework
                     if (tools(eventList, delta))
                         mode = 0;
                 }
-                
-                
-                // FPS of plugin Menu
-            #if SHOWFPS
-                Color black = Color();
-                Color blank = Color(255, 255, 255);
-                float   framerate = (second.AsSeconds() / delta.AsSeconds());   
-                char buf[40];
-                sprintf(buf, "FPS: %03.2f", framerate);
-                int posY = 10;
-                Renderer::DrawString(buf, 250, posY, blank, black);
-            #endif
 
                 // End frame
                 Renderer::EndFrame(shouldClose);
@@ -162,6 +144,7 @@ namespace CTRPluginFramework
                     ProcessImpl::Play(true);
                     _isOpen = false;
                     shouldClose = false;
+                    Controller::InjectKey(Key::B);
                 }    
 
                 if (Controller::IsKeysDown((L + R + Start)))
