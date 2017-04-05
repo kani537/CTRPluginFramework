@@ -9,6 +9,8 @@
 #include "CTRPluginFrameworkImpl/Menu/MenuItem.hpp"
 
 #include <vector>
+#include <string>
+
 namespace CTRPluginFramework
 {
     class PluginMenuTools
@@ -24,6 +26,7 @@ namespace CTRPluginFramework
 
         void    _ProcessEvent(Event &event);
         void    _RenderTop(void);
+        void    _RenderTopMenu(void);
         void    _RenderBottom(void);
         void    _Update(Time delta);
 

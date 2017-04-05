@@ -127,6 +127,7 @@
     <ClInclude Include="Includes\CTRPluginFrameworkImpl\Graphics\Icon.hpp" />
     <ClInclude Include="Includes\CTRPluginFrameworkImpl\Graphics\IconButton.hpp" />
     <ClInclude Include="Includes\CTRPluginFrameworkImpl\Graphics\Line.hpp" />
+    <ClInclude Include="Includes\CTRPluginFrameworkImpl\Graphics\MessageBoxImpl.hpp" />
     <ClInclude Include="Includes\CTRPluginFrameworkImpl\Graphics\NumericTextBox.hpp" />
     <ClInclude Include="Includes\CTRPluginFrameworkImpl\Graphics\OSDImpl.hpp" />
     <ClInclude Include="Includes\CTRPluginFrameworkImpl\Graphics\PrivColor.hpp" />
@@ -274,6 +275,7 @@
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\Graphics\Icons\Star15.c" />
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\Graphics\Icons\UnCheckedCheckbox.c" />
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\Graphics\Icons\UserManualFilled15.c" />
+    <ClCompile Include="Sources\CTRPluginFrameworkImpl\Graphics\MessageBoxImpl.cpp" />
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\Graphics\NumericTextBox.cpp" />
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\Graphics\OSDImpl.cpp" />
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\Graphics\PrivColor.cpp" />

@@ -39,16 +39,25 @@ namespace CTRPluginFramework
 
     }
 
+    void PluginMenuTools::_RenderTopMenu(void)
+    {
+        Color    &black = Color::Black;
+        Color    &blank = Color::Blank;
+        Color    &blackGrey = Color::BlackGrey;
+
+
+    }
+
+
     /*
     ** Render Top
     **************/
 
     void    PluginMenuTools::_RenderTop(void)
     {
-        static Color    black = Color();
-        static Color    blank(255, 255, 255);
-        static Color    dimGrey(15, 15, 15);
-        static Color    silver(160, 160, 160);
+        Color    &black = Color::Black;
+        Color    &blank = Color::Blank;
+        Color    &dimGrey = Color::BlackGrey;
         static IntRect  background(30, 20, 340, 200);
 
         int   posY = 25;

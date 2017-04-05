@@ -28,7 +28,7 @@ static bool linearInit()
 void* linearMemAlign(size_t size, size_t alignment)
 {
 	// Enforce minimum alignment
-	/*if (alignment < 16)
+	if (alignment < 16)
 		alignment = 16;
 
 	// Convert alignment to shift amount
@@ -39,7 +39,7 @@ void* linearMemAlign(size_t size, size_t alignment)
 			break;
 	}
 	if (shift == 32) // Invalid alignment
-		return nullptr;*/
+		return nullptr;
 
 	// Initialize the pool if it is not ready
 	if (!sLinearPool.Ready() && !linearInit())
@@ -47,7 +47,7 @@ void* linearMemAlign(size_t size, size_t alignment)
 
 	// Allocate the chunk
 	MemChunk chunk;
-	if (!sLinearPool.Allocate(chunk, size, 12))
+	if (!sLinearPool.Allocate(chunk, size, shift))
 		return nullptr;
 
 	auto node = newNode(chunk);
@@ -56,7 +56,7 @@ void* linearMemAlign(size_t size, size_t alignment)
 		sLinearPool.Deallocate(chunk);
 		return nullptr;
 	}
-	if (rbtree_insert(&sAddrMap, &node->node));
+    rbtree_node_t *t = rbtree_insert(&sAddrMap, &node->node);
 	return chunk.addr;
 }
 

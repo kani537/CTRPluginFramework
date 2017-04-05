@@ -23,8 +23,6 @@ namespace CTRPluginFramework
         using IconCallback = int (*)(int, int);
     public:
 
-
-
         Menu(std::string title, IconCallback iconCallback = nullptr);
         Menu(MenuFolderImpl *folder, IconCallback iconCallback = nullptr);
         ~Menu(void);

@@ -10,15 +10,19 @@ namespace CTRPluginFramework
     extern "C" CFNT_s* g_sharedFont;
     extern "C" int charPerSheet;
 
-    u32            *defaultSysFont = nullptr;
+    u32     *defaultSysFont = nullptr;
+    u8      *glyph = nullptr;
+    u8      *tileData = nullptr;
 
     void    Font::Initialize(void)
     {
         // Sysfont has 7505 glyph
         if (defaultSysFont != nullptr)
-            linearFree(defaultSysFont);
+            delete [] defaultSysFont;
 
-        defaultSysFont = (u32 *)linearAlloc(sizeof(u32) * 7505);
+        defaultSysFont = new u32[7505];//static_cast<u32 *>(linearAlloc(sizeof(u32) * 7505));
+        tileData = (u8 *)linearAlloc(4096);
+        glyph = (u8 *)linearAlloc(1000);
         std::memset(defaultSysFont, 0, sizeof(u32) * 7505);
     }
 
@@ -47,8 +51,8 @@ namespace CTRPluginFramework
     {
         TGLP_s  *tglp = fontGetGlyphInfo();
         u8      *data = (u8 *)fontGetGlyphSheetTex(glyphIndex / charPerSheet);
-        u8      *glyph = nullptr;
-        u8      *tileData = nullptr;
+       // u8      *glyph = nullptr;
+        //u8      *tileData = nullptr;
 
         int     width = tglp->sheetWidth;
         int     height = tglp->sheetHeight;
@@ -66,10 +70,14 @@ namespace CTRPluginFramework
         int tileHeight = height / 8;
 
         // Allocate buffers
-        tileData = (u8 *)linearAlloc(4096);
-        glyph = (u8 *)linearAlloc(800);
+       /* if (tileData == nullptr || glyph == nullptr)
+        {
+            tileData = (u8 *)linearMemAlign(4096, 0x1000);
+            glyph = (u8 *)linearMemAlign(1000, 0x1000);
+        }*/
+
         std::memset(tileData, 0, 4096);
-        std::memset(glyph, 0, 800);
+        std::memset(glyph, 0, 1000);
 
 
         // Sheet is composed of 8x8 pixel tiles
@@ -134,7 +142,7 @@ namespace CTRPluginFramework
             }
         }
 
-        linearFree(tileData);
+       // linearFree(tileData);
         return (glyph);
     }
 
@@ -225,21 +233,21 @@ namespace CTRPluginFramework
     {
         // if the glyph already exists
         if (defaultSysFont[glyphIndex] != 0)
-            return ((Glyph *)defaultSysFont[glyphIndex]);
+            return (reinterpret_cast<Glyph *>(defaultSysFont[glyphIndex]));
 
         u8  *originalGlyph = GetOriginalGlyph(glyphIndex);
         // 16px * 14px = 224
-        u8  *newGlyph = (u8 *)linearAlloc(208);
-        std::memset(newGlyph, 0, 208);
+        u8  *newGlyph = new u8[224]; //(u8 *)linearAlloc(224);
+        std::memset(newGlyph, 0, 224);
 
         // Shrink glyph data to the requiered size
         ShrinkGlyph(newGlyph, 16, originalGlyph);
 
         // Free original glyph data
-        linearFree(originalGlyph);
+        //linearFree(originalGlyph);
 
         // Allocate new Glyph
-        Glyph *glyph = (Glyph *)linearAlloc(sizeof(Glyph));
+        Glyph *glyph = new Glyph; //static_cast<Glyph *>(linearAlloc(sizeof(Glyph)));
         std::memset(glyph, 0, sizeof(Glyph));
 
         // Get Glyph data
@@ -252,7 +260,7 @@ namespace CTRPluginFramework
         glyph->glyph = newGlyph;
 
         // Add Glyph to defaultSysFont
-        defaultSysFont[glyphIndex] = (u32)glyph;
+        defaultSysFont[glyphIndex] = reinterpret_cast<u32>(glyph);
 
         return (glyph);
     }
