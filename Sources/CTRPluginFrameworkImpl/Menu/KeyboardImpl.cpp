@@ -244,7 +244,7 @@ namespace CTRPluginFramework
         Color    &black = Color::Black;
         Color    &red = Color::Red;
         Color    &blank = Color::Blank;
-        Color    &dimGrey = Color::DarkGrey;
+        Color    &dimGrey = Color::BlackGrey;
         static IntRect  background1(30, 20, 340, 200);
         static IntRect  background2(50, 30, 300, 180);
 
@@ -281,7 +281,7 @@ namespace CTRPluginFramework
     {
         Color    &black = Color::Black;
         Color    &blank = Color::Blank;
-        Color    &grey = Color::DarkGrey;
+        Color    &grey = Color::BlackGrey;
         static IntRect  background(20, 20, 280, 200);
         static IntRect  background2(22, 22, 276, 196);
         static IntRect  background3(22, 25, 270, 190);

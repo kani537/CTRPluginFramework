@@ -167,7 +167,7 @@ namespace CTRPluginFramework
         static IntRect  background(20, 20, 280, 200);
         Color    &black = Color::Black;
         Color    &blank = Color::Blank;
-        Color    &dimGrey = Color::DarkGrey;
+        Color    &dimGrey = Color::BlackGrey;
 
         if (_image != nullptr && _image->IsLoaded())
         {
