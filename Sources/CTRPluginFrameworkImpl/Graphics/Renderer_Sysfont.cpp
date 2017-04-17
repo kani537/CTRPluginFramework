@@ -131,7 +131,7 @@ namespace CTRPluginFramework
         posY += 1;
     }
 
-    inline int Renderer::DrawGlyph(Glyph *glyph, int posX, int posY, Color &color)
+    int Renderer::DrawGlyph(Glyph *glyph, int posX, int posY, Color &color)
     {
         int  x = posX + glyph->xOffset;
         int  y = posY;
@@ -157,7 +157,7 @@ namespace CTRPluginFramework
         return (posX + glyph->xAdvance);
     }
 
-    inline int Renderer::DrawGlyph(Glyph *glyph, int posX, int posY, float &offset, Color &color)
+    int Renderer::DrawGlyph(Glyph *glyph, int posX, int posY, float &offset, Color &color)
     {
         int  x = posX + glyph->xOffset;
         int  y = posY;
