@@ -47,6 +47,13 @@ namespace CTRPluginFramework
         return (nullptr);
     }
 
+    Glyph   *Font::GetGlyph(char c)
+    {
+        u8 *s = (u8 *)&c;
+
+        return (GetGlyph(s));
+    }
+
     u8    *GetOriginalGlyph(u32 glyphIndex)
     {
         TGLP_s  *tglp = fontGetGlyphInfo();
