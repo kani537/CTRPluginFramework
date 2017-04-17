@@ -82,7 +82,8 @@ namespace CTRPluginFramework
                     {
                         ProcessImpl::Play(true);
                         _isOpen = false;
-                        Controller::InjectKey(Key::B);
+                        if (Preferences::InjectBOnMenuClose)
+                            Controller::InjectKey(Key::B);
                     }
                     else
                     {
@@ -144,7 +145,8 @@ namespace CTRPluginFramework
                     ProcessImpl::Play(true);
                     _isOpen = false;
                     shouldClose = false;
-                    Controller::InjectKey(Key::B);
+                    if (Preferences::InjectBOnMenuClose)
+                        Controller::InjectKey(Key::B);
                 }    
 
                 if (Controller::IsKeysDown((L + R + Start)))
