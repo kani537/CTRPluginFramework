@@ -12,5 +12,4 @@ namespace CTRPluginFramework
             
         return (true);
     }
-
 }

@@ -10,6 +10,9 @@ namespace CTRPluginFramework
     public:
         static BMPImage     *topBackgroundImage;
         static BMPImage     *bottomBackgroundImage;
+
+        static bool         InjectBOnMenuClose;
+        static bool         DrawTouchCursor;
     private:
         friend void     ThreadInit(void *arg);
         static void     Initialize(void);

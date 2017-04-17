@@ -5,6 +5,8 @@ namespace CTRPluginFramework
 {
     BMPImage    *Preferences::topBackgroundImage = nullptr;
     BMPImage    *Preferences::bottomBackgroundImage = nullptr;
+    bool        Preferences::InjectBOnMenuClose = false;
+    bool        Preferences::DrawTouchCursor = false;
 
     BMPImage *RegionFromCenter(BMPImage *img, int maxX, int maxY)
     {
@@ -81,6 +83,11 @@ namespace CTRPluginFramework
 
     void    Preferences::Initialize(void)
     {
+        // Framework globals
+        InjectBOnMenuClose = false;
+        DrawTouchCursor = false;
+
+        // Background initialization
         topBackgroundImage = new BMPImage("TopBackground.bmp");
 
         if (topBackgroundImage->IsLoaded())
