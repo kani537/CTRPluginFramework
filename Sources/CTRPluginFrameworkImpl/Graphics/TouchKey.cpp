@@ -32,24 +32,17 @@ namespace CTRPluginFramework
 
     void    TouchKey::DrawCharacter(const IntRect &rect, char c, Color &color)
     {
-        u32             glyphCode;
-        u32             index;
-        int             units;
-        fontGlyphPos_s  glyphPos;
-        charWidthInfo_s *cwi;
+        Glyph *glyph = Font::GetGlyph(c);
 
-        units = decode_utf8(&glyphCode, (const u8 *)&c);
-        if (units == -1)
+        if (glyph == nullptr)
             return;
-        index = fontGlyphIndexFromCodePoint(glyphCode);
-        Renderer::FontCalcGlyphPos(&glyphPos, &cwi, index, 0.5f, 0.5f);
 
-        float  width = (glyphPos.xAdvance + 1 / 2.f);
+        float  width = (glyph->xAdvance / 2.f);
 
-        int posX = ((rect.size.x - (int)width) / 2) + rect.leftTop.x;
+        int posX = ((rect.size.x - static_cast<int>(width)) / 2) + rect.leftTop.x;
         int posY = ((rect.size.y - 16) / 2) + rect.leftTop.y;
 
-        Renderer::DrawGlyph(glyphPos, cwi, posX, posY, color, 0.f);
+        Renderer::DrawGlyph(glyph, posX, posY, color);
     }
 
     void    TouchKey::Draw(void)
