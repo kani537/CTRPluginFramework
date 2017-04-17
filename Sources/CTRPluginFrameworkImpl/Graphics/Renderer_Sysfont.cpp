@@ -142,11 +142,11 @@ namespace CTRPluginFramework
             if (i != 0 && i % 13 == 0)
             {
                 y++;
-                posX = x;
+                x = posX;
             }
             color.a = data[i];
 
-            u8 *left = static_cast<u8 *>(_screen->GetLeftFramebuffer(posX, y));
+            u8 *left = static_cast<u8 *>(_screen->GetLeftFramebuffer(x, y));
             Color l = PrivColor::FromFramebuffer(left);
             Color c = l.Blend(color, Color::BlendMode::Alpha);
 
@@ -154,7 +154,7 @@ namespace CTRPluginFramework
             x++;
         }
 
-        return (x + glyph->xAdvance);
+        return (posX + glyph->xAdvance);
     }
 
     inline int Renderer::DrawGlyph(Glyph *glyph, int posX, int posY, float &offset, Color &color)
@@ -168,13 +168,13 @@ namespace CTRPluginFramework
             if (i != 0 && i % 13 == 0)
             {
                 y++;
-                posX = x;
+                x = posX;
                 if (offset)
                     i += offset;
             }
             color.a = data[i];
 
-            u8 *left = static_cast<u8 *>(_screen->GetLeftFramebuffer(posX, y));
+            u8 *left = static_cast<u8 *>(_screen->GetLeftFramebuffer(x, y));
             Color l = PrivColor::FromFramebuffer(left);
             Color c = l.Blend(color, Color::BlendMode::Alpha);
 
@@ -187,7 +187,7 @@ namespace CTRPluginFramework
             offset = 0;
         }
 
-        return (x + glyph->xAdvance);
+        return (posX + glyph->xAdvance);
     }
 
     int Renderer::DrawSysStringReturn(const unsigned char *stri, int posX, int& posY, int xLimits, Color color, int maxY)
