@@ -266,14 +266,14 @@ namespace CTRPluginFramework
             //Renderer::DrawRect(32, 22, 336, 196, blank, false);            
         }
 
-        Renderer::DrawSysStringReturn(_text.c_str(), posX, posY, maxX, blank, maxY);
+        Renderer::DrawSysStringReturn(, posX, posY, maxX, blank, maxY);
 
         // IF error
         if (_errorMessage && _error.size() > 0)
         {
             if (posY < 120)
                 posY += 48;
-            Renderer::DrawSysStringReturn(_error.c_str(), posX, posY, maxX, red, maxY);
+            Renderer::DrawSysStringReturn(, posX, posY, maxX, red, maxY);
         }
     }
 

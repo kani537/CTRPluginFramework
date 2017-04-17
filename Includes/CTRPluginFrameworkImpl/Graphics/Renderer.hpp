@@ -14,6 +14,7 @@
 #include <algorithm>
 #include <vector>
 #include <string>
+#include "Font.hpp"
 
 namespace CTRPluginFramework
 {
@@ -39,7 +40,6 @@ namespace CTRPluginFramework
         static void     SetTarget(Target target);
         static void     StartFrame(bool current = false);
         static void     EndFrame(bool copy = false);
-        static void     UseDoubleBuffer(bool useIt);
         // Forms
         //#############################################################################################
         static void     DrawLine(int posX, int posY, int length, Color color, int width = 1);
@@ -75,18 +75,19 @@ namespace CTRPluginFramework
         // System Font
         //#############################################################################################
         static int      DrawSysString(const char *str, int posX, int &posY, int max, Color color, float offset = 0.f, const char *end = nullptr);
-        static int      DrawSysStringReturn(const char *str, int posX, int &posY, int xLimits, Color color, int maxY = 200);
+        static int      DrawSysStringReturn(const unsigned char* stri, int posX, int& posY, int xLimits, Color color, int maxY = 200);
         static float    GetTextSize(const char *text);
         static int      GetLineCount(const char *text, float maxWidth);
 
         static void     DrawSysCheckBox(const char *str, int posX, int &posY, int xLimits, Color color, bool isChecked = false,  float offset = 0);
         static void     DrawSysFolder(const char *str, int posX, int &posY, int xLimits, Color color, float offset = 0);
+        static int      DrawGlyph(Glyph* glyph, int posX, int posY, Color& color);
+        static int      DrawGlyph(Glyph* glyph, int posX, int posY, float& offset, Color& color);
 
         //static int      DrawSysString2(const char *str, int posX, int &posY, int max, Color color, float offset = 0.f, const char *end = nullptr);
 
         // Misc
         //#############################################################################################
-        static void     DrawBuffer(u8 *buffer, int posX, int posY, int width, int height);
         static DrawPixelP   _DrawPixel;
     private:
 
@@ -101,30 +102,13 @@ namespace CTRPluginFramework
 
         // Initalize Renderer
         static void     Initialize(void);
-        // Allocate buffer to process files in ram
-        static void     InitBuffer(u32 size);
         // Calulate sysfont glyph
         static void     FontCalcGlyphPos(fontGlyphPos_s *out,  charWidthInfo_s **cwout, int glyphIndex, float scaleX, float scaleY);
-        // Draw glyph
-        static uint8_t  DrawGlyph(fontGlyphPos_s &pos,  charWidthInfo_s *cwi, uint16_t x, uint16_t y, Color color, float offset);
-        static u8       *DrawTile(u8 *tile, u8 iconsize, u8 tilesize, u16 startX, u16 startY, u16 endX, u16 endY, u8 charWidth, u8 charHeight, Color color);
-
-        static Target       _target;
         
-        static bool         _isRendering;
-        static bool         _useDoubleBuffer;
-        //static bool         _useSystemFont;
-
-        //static Screen       *_screens[2];
+        static Target       _target;
         static Screen       *_screen;
-
-        //static u8           *_framebuffer[4];
-        //static u8           *_framebufferR[4];
         static u32          _rowstride;
-        static u8           _smallBuffer[1000];
         static GSPGPU_FramebufferFormats _format;
-        static u8           *_buffer;
-        static u32          _bufferSize;
         static int          _length;
 
         static void         RenderRGBA8(int posX, int posY, Color &color);

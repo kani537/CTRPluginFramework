@@ -6,6 +6,7 @@
 #include "CTRPluginFrameworkImpl/Graphics.hpp"
 #include "CTRPluginFramework/System/Touch.hpp"
 #include "CTRPluginFramework/System/Clock.hpp"
+#include "CTRPluginFrameworkImpl/Preferences.hpp"
 #include <cstdio>
 #include <cmath>
 
@@ -14,15 +15,10 @@ namespace CTRPluginFramework
     
 
     Target      Renderer::_target = BOTTOM;
-    bool        Renderer::_isRendering = false;
-    bool        Renderer::_useDoubleBuffer = false;
     Screen      *Renderer::_screen = Screen::Bottom;
     DrawPixelP  Renderer::_DrawPixel = nullptr;
     DrawDataP   Renderer::_DrawData = nullptr;
     int         Renderer::_length = 1;
-    u8          Renderer::_smallBuffer[1000] = {0};
-    u8          *Renderer::_buffer = nullptr;
-    u32         Renderer::_bufferSize = 1000;
     u32         Renderer::_rowstride;
     GSPGPU_FramebufferFormats Renderer::_format = GSP_BGR8_OES;
 
@@ -32,31 +28,9 @@ namespace CTRPluginFramework
         return ((rowsize - 1 - posY + posX * rowsize) * bpp);
     }
 
-    void    Renderer::UseDoubleBuffer(bool useIt)
-    {
-        _useDoubleBuffer = useIt;
-    }
-
-    void    Renderer::InitBuffer(u32 size)
-    {
-        _buffer = new u8(size);
-        if (_buffer == nullptr)
-        {
-            if (size > 0x1000)
-                InitBuffer(size - 0x1000);
-            else
-            {
-                _buffer = _smallBuffer;
-                _bufferSize = 1000;
-            }
-        }
-        else
-            _bufferSize = size;
-    }
-
     void        Renderer::Initialize(void)
     {
-        _useDoubleBuffer = false;
+        // TODO: Remove this function ?
     }
 
     void        Renderer::SetTarget(Target target)
@@ -95,20 +69,20 @@ namespace CTRPluginFramework
 
     void        Renderer::StartFrame(bool current)
     {
-        _isRendering = true;
+        // TODO: remove this function ?
     }
 
     void        Renderer::EndFrame(bool copy)
     {
         static IntRect                  background(20, 20, 280, 200);
         static Color                    blank(255, 255, 255);
-        static Color                    black;
-        static Clock                    fpsCounter;
+        //static Color                    black;
+        //static Clock                    fpsCounter;
 
         bool isTouchDown = Touch::IsDown();
         IntVector touchPos(Touch::GetPosition());
 
-        // Draw Touch Cursor
+        // Draw Touch Cursor (on menu)
         if (isTouchDown && background.Contains(touchPos))
         {
             int posX = touchPos.x - 2;
@@ -129,7 +103,6 @@ namespace CTRPluginFramework
         Screen::Bottom->SwapBuffer(true, copy);
         Screen::Top->SwapBuffer(true, copy);
         gspWaitForVBlank();
-        _isRendering = false;
     }
 
     void    Renderer::MenuSelector(int posX, int posY, int width, int height)

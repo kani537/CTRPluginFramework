@@ -1,10 +1,9 @@
 #include "types.h"
-#include "ctrulib/services/gspgpu.h"
-#include "ctrulib/util/utf.h"
+
 #include "CTRPluginFrameworkImpl/Graphics.hpp"
-#include <algorithm>
-#include <cmath>
 #include "CTRPluginFrameworkImpl/Graphics/Font.hpp"
+
+#include <algorithm>
 
 namespace CTRPluginFramework
 {
@@ -42,125 +41,6 @@ namespace CTRPluginFramework
         out->texcoord.top = ty;
         out->texcoord.right = tx+tw;
         out->texcoord.bottom = ty + th;
-    }
-
-     u8 *Renderer::DrawTile(u8 *tile, u8 iconsize, u8 tilesize, u16 startX, \
-     u16 startY, u16 endX, u16 endY, u8 charWidth, u8 charHeight, Color color)
-    {
-        u16     alpha;
-        u16     py;
-        u16     px;
-        u32     y;
-        u32     x;
-        int     size = 2;
-        
-        if (iconsize == 2 || iconsize == 1)
-        {
-            if (endY + 1 <= charHeight)
-            {           
-                alpha = *(u16 *)tile;
-                alpha = (alpha & 0x0F0F) + ((alpha >> 4) & 0x0F0F);
-                alpha = ((alpha + (alpha >> 8)) >> 2) & 0x0F;
-                py = startY + (endY / 2);
-                if (alpha && endX + 1 <= charWidth)
-                {
-                    px = startX + (endX + 1) / 2;
-
-                    if (!(px >= 400 || px < 0 || py >= 240 || py < 0))
-                    {
-                        //u32 offset = GetFramebufferOffset(px, py, _screens[_target]->GetBytesPerPixel(), _rowSize[_target]);
-                        u8 *left = (u8 *)_screen->GetLeftFramebuffer(px, py);
-                        //u8 *right = (u8 *)_screens[_target]->GetRightFramebuffer(px, py) + offset;
-                        GSPGPU_FramebufferFormats fmt = _format;
-                        Color l = PrivColor::FromFramebuffer(left);
-                        int aneg = 0x0F - alpha;
-                        int apos = alpha + 1;
-                        Color res;
-                        res.b = (l.b * aneg + color.b * apos) >> 4;  
-                        res.g = (l.g * aneg + color.g * apos) >> 4;
-                        res.r = (l.r * aneg + color.r * apos) >> 4;
-                        PrivColor::ToFramebuffer(left, res);
-                        /*if (_useDoubleBuffer)
-                        {
-                            u8 *right = (u8 *)_screen->GetLeftFramebuffer(true);
-                            u32 offset = GetFramebufferOffset(px, py, _screen->GetBytesPerPixel(), _screen->GetRowSize());
-                            Color::ToFramebuffer(right + offset, res);
-                        }*/
-                        //if (!_useRender3D)
-                        //res.ToMemory(left, fmt);
-                        /*else
-                            res.ToMemory(left, fmt, right);*/
-                    }
-                }
-            }
-            tile += iconsize;
-        }
-        else
-        {
-            for (y = 0; y < iconsize; y += tilesize)
-            {
-                for (x = 0; x < iconsize; x += tilesize)
-                    tile = DrawTile(tile, tilesize, tilesize / 2, startX, startY, endX + x, endY + y, charWidth, charHeight, color);
-            }
-        }
-        return tile;
-    }
-
-    uint8_t Renderer::DrawGlyph(fontGlyphPos_s  &glyphPos, charWidthInfo_s *cwi, u16 x, u16 y, Color color, float offset)
-    {
-        u8          *texSheet;
-
-        u16         glyphXoffs;
-        u16         glyphYoffs;        
-
-        u16         tileX;
-        u16         tileXend;
-        u16         tileY;
-        u16         tileYend;
-
-        //float       size = 16;
-        //float       padding = 8;
-        //float       height = 30;
-        texSheet = (u8 *)fontGetGlyphSheetTex(glyphPos.sheetIndex);
-
-
-        glyphXoffs = (int)ceilf(128.0f * glyphPos.texcoord.left - 1 + (offset * 2));
-        tileX = glyphXoffs & 0xFFFFFFF8;  
-        tileXend = (int)ceilf((128.0f * glyphPos.texcoord.right)) & 0xFFFFFFF8;
-
-        glyphYoffs = (int)ceilf(128.0f * glyphPos.texcoord.bottom);
-        tileY = (int)ceilf(128.0f * glyphPos.texcoord.top) & 0xFFFFFFF8;
-        tileYend = glyphYoffs & 0xFFFFFFF8;
-
-        glyphXoffs &= 0x00000007;
-        glyphYoffs &= 0x00000007;
-
-        //*********
-        int st = (int)(ceilf(glyphPos.xOffset) + 1);
-        u16 startX = x + (offset ? 0 : st);
-        u16 startY = y;
-        //u16 endX = 0;
-        u16 endY = 0;
-        u8  charWidth = cwi->charWidth - (offset * 2);
-
-        //********
-        for (u16 charY = tileY; charY <= tileYend; charY += 8, endY += 8)
-        {
-            for (u16 charX = tileX; charX <= tileXend; charX += 8)
-            {
-                u8 *tile = texSheet + (u32)(4 * (charX + charY * 16));
-                
-                    DrawTile(tile, 8, 8, \
-                        startX, startY, charX - tileX - glyphXoffs, endY - glyphYoffs, \
-                        charWidth, 30, color);
-            }
-        }
-        int ret = (int)ceilf(glyphPos.xAdvance);
-        if (offset)
-            ret -= (offset);
-        else
-            ret += 1;
-        return (ret);
     }
 
     float Renderer::GetTextSize(const char *text)
@@ -241,6 +121,7 @@ namespace CTRPluginFramework
         posY += 1;
 
     }
+
     extern "C" unsigned char *FolderFilled;
     void Renderer::DrawSysFolder(const char *str, int posX, int &posY, int xLimits, Color color, float offset)
     {
@@ -250,80 +131,79 @@ namespace CTRPluginFramework
         posY += 1;
     }
 
-/*    int Renderer::DrawSysString(const char *str, int posX, int &posY, int xLimits, Color color, float offset, const char *end)
+    inline int Renderer::DrawGlyph(Glyph *glyph, int posX, int posY, Color &color)
     {
-        u32             glyphcode;
-        int             units;
-        int             lineCount;
-        size_t          i;
-        fontGlyphPos_s glyphPos;
-        int             x = posX;
-        
-        if (!(str && *str))
-            return (x);
+        int  x = posX + glyph->xOffset;
+        int  y = posY;
+        u8   *data = glyph->glyph;
 
-        lineCount = 1;
-        xLimits = std::min(xLimits, (_target == TOP ? 400 : 320));
-
-        // Skip UTF8 sig
-        if (str[0] == 0xEF && str[1] == 0xBB && str[2] == 0xBF)
-            str += 3;
-
-        do
+        for (int i = 0; i < 208; i++)
         {
-            if (x >= xLimits || str == end)
+            if (i != 0 && i % 13 == 0)
             {
-                break;
+                y++;
+                posX = x;
             }
-            if (*str == '\n' || *str == '\r')
-            {
-                str++;
-                continue;
-            }       
-            if (posY >= 240)
-                break;
+            color.a = data[i];
 
-            units = decode_utf8(&glyphcode, (const u8 *)str);
-            if (units == -1)
-                break;
-            str += units;
-            u32 index = fontGlyphIndexFromCodePoint(glyphcode);
-            charWidthInfo_s *cwi;
-            FontCalcGlyphPos(&glyphPos, &cwi, index, 0.5f, 0.5f);
-            if (offset >= glyphPos.xAdvance + 1)
-            {
-                offset -= glyphPos.xAdvance + 1;
-                if (x + glyphPos.xAdvance > xLimits)
-                    x+= glyphPos.xAdvance;
-                continue;
-            }
-            if (x + glyphPos.xAdvance + 1 > xLimits)
-            {
-                x+= glyphPos.xAdvance + 1;
-                str -= units;
-                continue;
-            }      
-            x += DrawGlyph(glyphPos, cwi, x, posY, color, offset);
-            offset = 0;
-        } while (glyphcode > 0 && *str);
+            u8 *left = static_cast<u8 *>(_screen->GetLeftFramebuffer(posX, y));
+            Color l = PrivColor::FromFramebuffer(left);
+            Color c = l.Blend(color, Color::BlendMode::Alpha);
 
-        posY += 16 * lineCount;
-        return (x);
-    }*/
+            PrivColor::ToFramebuffer(left, c);
+            x++;
+        }
 
-    int Renderer::DrawSysStringReturn(const char *str, int posX, int &posY, int xLimits, Color color, int maxY)
+        return (x + glyph->xAdvance);
+    }
+
+    inline int Renderer::DrawGlyph(Glyph *glyph, int posX, int posY, float &offset, Color &color)
     {
+        int  x = posX + glyph->xOffset;
+        int  y = posY;
+        u8   *data = glyph->glyph;
+
+        for (int i = static_cast<int>(offset); i < 208; i++)
+        {
+            if (i != 0 && i % 13 == 0)
+            {
+                y++;
+                posX = x;
+                if (offset)
+                    i += offset;
+            }
+            color.a = data[i];
+
+            u8 *left = static_cast<u8 *>(_screen->GetLeftFramebuffer(posX, y));
+            Color l = PrivColor::FromFramebuffer(left);
+            Color c = l.Blend(color, Color::BlendMode::Alpha);
+
+            PrivColor::ToFramebuffer(left, c);
+            x++;
+        }
+        if (offset > 0.f)
+        {
+            x -= offset;
+            offset = 0;
+        }
+
+        return (x + glyph->xAdvance);
+    }
+
+    int Renderer::DrawSysStringReturn(const unsigned char *stri, int posX, int& posY, int xLimits, Color color, int maxY)
+    {
+        // Check for a valid pointer
+        if (!(stri && *stri))
+            return (posX);
+
         u32             glyphcode;
-        int             units;
-        int             lineCount;
-        size_t          i;
+        int             lineCount = 1;
+        u8              *str = const_cast<u8 *>(stri);
         fontGlyphPos_s  glyphPos;
         int             x = posX;
         
-        if (!(str && *str))
-            return (x);
 
-        lineCount = 1;
+
         xLimits = std::min(xLimits, (_target == TOP ? 400 : 320));
 
         // Skip UTF8 sig
@@ -334,11 +214,11 @@ namespace CTRPluginFramework
         {
             if (x >= xLimits)
             {
-
                 x = posX;
                 lineCount++;
                 posY += 16;
             }
+
             if (*str == '\r')
                 str++;
             if (*str == '\n')
@@ -348,27 +228,17 @@ namespace CTRPluginFramework
                 posY += 16;
                 str++;
                 continue;
-            }       
+            }
+
             if (posY >= maxY)
                 break;
 
-            units = decode_utf8(&glyphcode, (const u8 *)str);
-            if (units == -1)
+            Glyph *glyph = Font::GetGlyph(str);
+
+            if (glyph == nullptr)
                 break;
 
-            str += units;
-
-            u32 index = fontGlyphIndexFromCodePoint(glyphcode);
-            charWidthInfo_s *cwi;
-            FontCalcGlyphPos(&glyphPos, &cwi, index, 0.5f, 0.5f);
-
-            if (x + glyphPos.xAdvance + 1 > xLimits)
-            {
-                x+= glyphPos.xAdvance + 1;
-                str -= units;
-                continue;
-            }      
-            x += DrawGlyph(glyphPos, cwi, x, posY, color, 0);
+            x = DrawGlyph(glyph, x, posY, color);
 
         } while (glyphcode > 0 && *str);
 
@@ -422,36 +292,7 @@ namespace CTRPluginFramework
                 continue;
             }
 
-            int  posxx = x + glyph->xOffset;
-            int  y = posY;
-            u8   *data = glyph->glyph;
-
-            for (int i = offset; i < 208; i++)
-            {
-                if (i != 0 && i % 13 == 0)
-                {
-                    y++;
-                    x = posxx;
-                    if (offset)
-                        i += offset;
-                }
-                color.a = data[i];
-
-                u8 *left = (u8 *)_screen->GetLeftFramebuffer(x, y);
-                Color l = PrivColor::FromFramebuffer(left);
-
-                Color c = l.Blend(color, Color::BlendMode::Alpha);
-
-                PrivColor::ToFramebuffer(left, c);
-                x++;
-            }
-            if (offset > 0.f)
-            {
-                posxx -= offset;
-                offset = 0;                
-            }
-
-            x = posxx + glyph->xAdvance;
+            x = DrawGlyph(glyph, x, posY, offset, color);
         } while (*str);
 
         posY += 16;

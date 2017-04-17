@@ -87,7 +87,6 @@ namespace CTRPluginFramework
                     }
                     else
                     {
-                        Renderer::UseDoubleBuffer(false);
                         ProcessImpl::Pause(true);
                         _isOpen = true;
                     }
