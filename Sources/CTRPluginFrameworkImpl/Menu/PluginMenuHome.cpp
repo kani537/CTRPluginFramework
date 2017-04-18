@@ -80,6 +80,7 @@ namespace CTRPluginFramework
         // RenderBottom
         _RenderBottom();
 
+        // If Favorites button is (de) activated
         if (_showStarredBtn())
         {
             static int bak = 0;
@@ -91,6 +92,7 @@ namespace CTRPluginFramework
             {
                 _InfoBtn.Enable(false);
                 _AddFavoriteBtn.Enable(false);
+                _selectedTextSize = 0;
             }
             else
             {
@@ -98,8 +100,14 @@ namespace CTRPluginFramework
                 _InfoBtn.Enable(e->note.size() > 0);
                 _AddFavoriteBtn.Enable(true);
                 _AddFavoriteBtn.SetState(e->_IsStarred());
-            }
 
+                // Update entry infos
+                _selectedTextSize = Renderer::GetTextSize(e->name.c_str());
+                _maxScrollOffset = static_cast<float>(_selectedTextSize) - 200.f;
+                _scrollClock.Restart();
+                _scrollOffset = 0.f;
+                _reverseFlow = false;
+            }
         }
 
         /*
@@ -283,13 +291,17 @@ namespace CTRPluginFramework
         ** Scrolling text variables
         *********************************/
         if (folder->ItemsCount() > 0 && event.key.code != Key::Touchpad && (event.type < Event::TouchBegan || event.type > Event::TouchSwipped))
-        {          
+        {  
             item = folder->_items[_selector];
-            _selectedTextSize = folder->ItemsCount() > 0 ? Renderer::GetTextSize(item->name.c_str()) : 0;
+            _selectedTextSize = Renderer::GetTextSize(item->name.c_str());
             _maxScrollOffset = static_cast<float>(_selectedTextSize) - 200.f;
             _scrollClock.Restart();
             _scrollOffset = 0.f;
             _reverseFlow = false;      
+        }
+        else if (folder->ItemsCount() == 0)
+        {
+            _selectedTextSize = 0;
         }
         /*
         ** Update favorite state
