@@ -37,6 +37,10 @@ namespace CTRPluginFramework
         _searchBtn.RoundedRatio(7);
         _arBtn.RoundedRatio(7);
         _toolsBtn.RoundedRatio(7);
+
+        // Temporary disable unused buttons
+        _hidMapperBtn.IsLocked = true;
+        _arBtn.IsLocked = true;
     }
 
     bool    PluginMenuHome::operator()(EventList &eventList, int &mode, Time &delta)
