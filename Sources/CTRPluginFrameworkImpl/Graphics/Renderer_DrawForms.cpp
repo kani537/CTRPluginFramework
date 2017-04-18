@@ -2,7 +2,7 @@
 
 #include "CTRPluginFrameworkImpl/Graphics.hpp"
 #include "CTRPluginFramework/Graphics.hpp"
-
+#include "CTRPluginFrameworkImpl/System/Screen.hpp"
 #include <algorithm>
 #include <queue>
 
@@ -70,7 +70,7 @@ namespace CTRPluginFramework
             dst += stride;
         }
     }
-
+#if GEOMETRY
     void        Renderer::Arc(int posX, int posY, int r, Color color)
     {
         int d;
@@ -421,7 +421,7 @@ namespace CTRPluginFramework
             FormFiller(start, area, true, fillColor, color);    */       
         }
     }
-
+#endif
     void        Renderer::ComputeRoundedRectangle(std::vector<IntLine> &out, const IntRect &rect, float radius, int max)
     {
         int     x;

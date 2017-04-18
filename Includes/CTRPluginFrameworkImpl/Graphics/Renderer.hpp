@@ -11,51 +11,56 @@
 #include "CTRPluginFrameworkImpl/Graphics/Rect.hpp"
 #include "CTRPluginFrameworkImpl/Graphics/Line.hpp"
 
-#include <algorithm>
 #include <vector>
-#include <string>
 #include "Font.hpp"
+
+#define GEOMETRY 0
 
 namespace CTRPluginFramework
 {
-    
-    #define     RANGE(x, y, z) (y >= x && y <= z)
+
+#define     RANGE(x, y, z) (y >= x && y <= z)
 
     enum Target
     {
         BOTTOM = 0,
         TOP = 1
     };
-    
-    using DrawPixelP = void (*)(int, int, Color&);
-    using DrawDataP = void (*)(int, int, u8*, int);
-    
+
+    using DrawPixelP = void(*)(int, int, Color&);
+    using DrawDataP = void(*)(int, int, u8*, int);
+
     class Icon;
     class Screen;
     class TextBox;
     class Renderer
     {
     public:
-        
+
         static void     SetTarget(Target target);
         static void     StartFrame(bool current = false);
         static void     EndFrame(bool copy = false);
+
         // Forms
         //#############################################################################################
+
         static void     DrawLine(int posX, int posY, int length, Color color, int width = 1);
         static void     DrawLine(IntVector &start, IntVector &end, Color color);
         static void     DrawRect(int posX, int posY, int width, int height, Color color, bool fill = true, int thickness = 1);
         static void     DrawRect(const IntRect &rect, Color &color, bool fill = true);
         static void     DrawRect2(const IntRect &rect, Color &color1, Color &color2);
+
+#if GEOMETRY
         template <typename T>
-        static void     Line(Vector<T> &start, Vector<T> &end, Color color);  
-        static void     Arc(int x, int y, int r, Color color);      
+        static void     Line(Vector<T> &start, Vector<T> &end, Color color);
+        static void     Arc(int x, int y, int r, Color color);
         static void     Ellipse(int posX, int posY, long a, long b, Color color);
         static void     EllipseIncomplete(int posX, int posY, float a, float b, int max, int aff, Color color);
         static void     RoundedRectangle(const IntRect &rect, float radius, int max, Color color, bool mustFill = false, Color fillColor = Color());
-        static     void  ComputeRoundedRectangle(std::vector<IntLine> &out, const IntRect &rect, float radius, int max);
-        //static void     FormFiller(int posX,int posY, Color &fillColor, Color &limit) ;
-        static    void    FormFiller(const IntVector &start, const IntRect &area, bool singlePoint, Color &fill, Color &limit);
+#endif
+
+        static    void  ComputeRoundedRectangle(std::vector<IntLine> &out, const IntRect &rect, float radius, int max);
+        static    void  FormFiller(const IntVector &start, const IntRect &area, bool singlePoint, Color &fill, Color &limit);
         // Menu
         //#############################################################################################
         static    void        MenuSelector(int posX, int posY, int width, int height);
@@ -79,7 +84,7 @@ namespace CTRPluginFramework
         static float    GetTextSize(const char *text);
         static int      GetLineCount(const char *text, float maxWidth);
 
-        static void     DrawSysCheckBox(const char *str, int posX, int &posY, int xLimits, Color color, bool isChecked = false,  float offset = 0);
+        static void     DrawSysCheckBox(const char *str, int posX, int &posY, int xLimits, Color color, bool isChecked = false, float offset = 0);
         static void     DrawSysFolder(const char *str, int posX, int &posY, int xLimits, Color color, float offset = 0);
         static int      DrawGlyph(Glyph* glyph, int posX, int posY, Color& color);
         static int      DrawGlyph(Glyph* glyph, int posX, int posY, float& offset, Color& color);
@@ -103,8 +108,8 @@ namespace CTRPluginFramework
         // Initalize Renderer
         static void     Initialize(void);
         // Calulate sysfont glyph
-        static void     FontCalcGlyphPos(fontGlyphPos_s *out,  charWidthInfo_s **cwout, int glyphIndex, float scaleX, float scaleY);
-        
+        static void     FontCalcGlyphPos(fontGlyphPos_s *out, charWidthInfo_s **cwout, int glyphIndex, float scaleX, float scaleY);
+
         static Target       _target;
         static Screen       *_screen;
         static u32          _rowstride;
@@ -117,11 +122,12 @@ namespace CTRPluginFramework
         static void         RenderRGB5A1(int posX, int posY, Color &color);
         static void         RenderRGBA4(int posX, int posY, Color &color);
 
-        
+
         static DrawDataP    _DrawData;
 
     };
 
+#if GEOMETRY
     template <typename T>
     void Renderer::Line(Vector<T> &start, Vector<T> &end, Color color)
     {
@@ -138,44 +144,46 @@ namespace CTRPluginFramework
         y = static_cast<int>(start.y);
         dx = static_cast<int>(end.x - start.x);
         dy = static_cast<int>(end.y - start.y);
-        xinc = ( dx > 0 ) ? 1 : -1;
-        yinc = ( dy > 0 ) ? 1 : -1;
-        dx = abs(dx) ;
-        dy = abs(dy) ;
+        xinc = (dx > 0) ? 1 : -1;
+        yinc = (dy > 0) ? 1 : -1;
+        dx = abs(dx);
+        dy = abs(dy);
 
-        _DrawPixel(x,y, color);
+        _DrawPixel(x, y, color);
 
-        if ( dx > dy )
+        if (dx > dy)
         {
-            cumul = dx / 2 ;
-            for ( i = 1 ; i <= dx ; i++ )
+            cumul = dx / 2;
+            for (i = 1; i <= dx; i++)
             {
-                x += xinc ;
-                cumul += dy ;
-                if ( cumul >= dx ) 
+                x += xinc;
+                cumul += dy;
+                if (cumul >= dx)
                 {
-                    cumul -= dx ;
-                    y += yinc ; 
+                    cumul -= dx;
+                    y += yinc;
                 }
-                _DrawPixel(x,y, color); 
-            } 
+                _DrawPixel(x, y, color);
+            }
         }
-        else 
+        else
         {
-            cumul = dy / 2 ;
-            for ( i = 1 ; i <= dy ; i++ ) 
+            cumul = dy / 2;
+            for (i = 1; i <= dy; i++)
             {
-                y += yinc ;
-                cumul += dx ;
-                if ( cumul >= dy ) 
+                y += yinc;
+                cumul += dx;
+                if (cumul >= dy)
                 {
-                    cumul -= dy ;
-                    x += xinc ; 
+                    cumul -= dy;
+                    x += xinc;
                 }
-                _DrawPixel(x,y, color); 
+                _DrawPixel(x, y, color);
             }
         }
     }
+#endif
+
 }
 
 #endif 
