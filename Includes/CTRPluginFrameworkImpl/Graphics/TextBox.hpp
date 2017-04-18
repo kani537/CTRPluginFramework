@@ -38,9 +38,9 @@ namespace CTRPluginFramework
 
     private:
         void    _GetTextInfos(void);
-        char   *_GetWordWidth(char *str, float &width, float &extra, int &count);
+        u8      *_GetWordWidth(u8 *str, float& width);
 
-        std::vector<char *>      _newline;
+        std::vector<u8 *>      _newline;
         std::string             _title;
         std::string             &_text;
         IntRect                 _box;

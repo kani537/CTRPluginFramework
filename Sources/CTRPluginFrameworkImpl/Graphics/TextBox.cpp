@@ -211,7 +211,7 @@ namespace CTRPluginFramework
         // Draw Text
         for (int i = _currentLine; i < max; i++)
         {
-            Renderer::DrawSysString(_newline[i], posX, posY, xLimit, textColor, 0, _newline[i + 1]);
+            Renderer::DrawSysString((char *)_newline[i], posX, posY, xLimit, textColor, 0, (char *)_newline[i + 1]);
         }
 
         if (!_displayScrollbar)
@@ -241,53 +241,25 @@ namespace CTRPluginFramework
     ** Text infos
     ***************/
 
-    char   *TextBox::_GetWordWidth(char *str, float &width, float &extra, int &count)
+    u8   *TextBox::_GetWordWidth(u8 *str, float &width)
     {
         width = 0;
-        count = 0;
-        extra = 0;  
 
-        u32             code;
-        ssize_t         units = decode_utf8(&code, (u8 *)str);
-        if (units == -1 || code == 0)
+        if (!str || !(*str))
             return (nullptr);
-
-        float           spaceWidth;
-        u32             spaceCode;
-        ssize_t         spaceUnits;
-        spaceUnits = decode_utf8(&spaceCode, (u8 *)" ");
-        int             glyphIndex;
-        fontGlyphPos_s  data;
-        charWidthInfo_s *cwi;
-
-        glyphIndex = fontGlyphIndexFromCodePoint(code);         
-        Renderer::FontCalcGlyphPos(&data, &cwi, glyphIndex, 0.5f, 0.5f);
-        spaceWidth = data.xAdvance + 1;
         
-        while (*str != '\n' && *str != ' ')
+        while (*str != '\n')
         {
-            units = decode_utf8(&code, (u8 *)str);
+            bool isSpace = *str == ' ' ? true : false;
+            Glyph *glyph = Font::GetGlyph(str);
 
-            if (units == -1 || code == 0)
+            if (glyph == nullptr)
                 return (nullptr);
 
-            str += units;
-            count += units;
-            if (code == spaceCode)
-            {
-                extra += spaceWidth;
-                break;
-            }
+            width += glyph->Width();
 
-            glyphIndex = fontGlyphIndexFromCodePoint(code);         
-            Renderer::FontCalcGlyphPos(&data, &cwi, glyphIndex, 0.5f, 0.5f);
-            width += ceilf(data.xAdvance) + 1;
-        }
-        if (*str == ' ')
-        {
-            str += spaceUnits;
-            extra = spaceWidth;
-            count += spaceUnits;
+            if (isSpace)
+                break;
         }
         return (str);
     }
@@ -297,10 +269,9 @@ namespace CTRPluginFramework
     ******************/
     void     TextBox::_GetTextInfos(void)
     {
-        float           w = 0.0f;
-        char            *str = (char *)_text.c_str();
+        u8      *str = const_cast<u8 *>(reinterpret_cast<const u8*>(_text.c_str()));
 
-        float maxWidth = _border.size.x - 5.f;
+        const float maxWidth = static_cast<float>(_border.size.x) - 12.f;
 
         _newline.push_back(str);
         int advance = 0;
@@ -311,27 +282,25 @@ namespace CTRPluginFramework
             advance++;
         }
         
-        while (1)
+        while (true)
         {
             if (*str == '\n')
             {
                 str++;
             }
-            char *s = str;            
+            u8 *s = str;            
             float line = 0.f;
-            int ncount = 0;
 
 
             while (line < maxWidth && s != nullptr)
             {
                 str = s;
-                float ww;
-                float extra;
-                int count = 0;
+                float wordWidth;
 
-                s = _GetWordWidth(s, ww, extra, count);                
+                s = _GetWordWidth(s, wordWidth);                
 
-                line += ww;
+                line += wordWidth;
+
                 // if we are at the end of the text
                 if (s == nullptr)
                 {
@@ -340,11 +309,8 @@ namespace CTRPluginFramework
                     {
                         goto exit;
                     }
-                    else
-                    {
-                        _newline.push_back(str);
-                        goto exit;
-                    }
+                    _newline.push_back(str);
+                    goto exit;
                 }
 
                 // If we have a new line symbol
@@ -355,12 +321,10 @@ namespace CTRPluginFramework
                 }
 
                 // If the espace char is out of border, skip it and go to a new line
-                if (line < maxWidth && line + extra >= maxWidth)
-                {                    
-                    str = s;
+                if (line >= maxWidth)
+                {
                     break;                                
                 }
-                line += extra;
             }
             _newline.push_back(str);
 
