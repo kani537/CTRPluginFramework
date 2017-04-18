@@ -37,7 +37,7 @@ namespace CTRPluginFramework
         if (glyph == nullptr)
             return;
 
-        float  width = (glyph->xAdvance / 2.f);
+        float  width = (glyph->Width() / 2.f);
 
         int posX = ((rect.size.x - static_cast<int>(width)) / 2) + rect.leftTop.x;
         int posY = ((rect.size.y - 16) / 2) + rect.leftTop.y;
