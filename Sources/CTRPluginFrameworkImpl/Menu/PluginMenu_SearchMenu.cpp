@@ -69,9 +69,7 @@ namespace CTRPluginFramework
                         {
                             if (!_isSubmenuOpen)
                             {
-                                _selector = std::min((int)(_selector + 1),(int)(499));
-                                if (_index + _selector > _currentSearch->ResultCount)
-                                    _selector = _currentSearch->ResultCount % 500; 
+                                _selector = std::min((int)(_selector + 1), (int)(_resultsAddress.size() - 1));
                                 _startFastScroll.Restart();
                             }     
                             else
@@ -148,9 +146,7 @@ namespace CTRPluginFramework
                         }
                         case Key::DPadDown:
                         {
-                            _selector = std::min((int)(_selector + 1),(int)(499));
-                            if (_index + _selector > _currentSearch->ResultCount)
-                                _selector = _currentSearch->ResultCount % 500;
+                            _selector = std::min((int)(_selector + 1),(int)(_resultsAddress.size() - 1));
                             _fastScroll.Restart();              
                             break;
                         }
