@@ -143,13 +143,13 @@ namespace CTRPluginFramework
             {
                 for (; start < end; start += _alignment)
                 {
-                    T value = *((T *)(start));
+                    T value = *reinterpret_cast<T *>(start);
                     if (value == _checkValue)
                     {
                         ResultCount++;
                         _resultsP->address = start;
                         _resultsP->value = value;
-                        _resultsP++;
+                        ++_resultsP;
                         if (_resultsP >= _resultsEnd)
                             break;
                     }
@@ -166,7 +166,7 @@ namespace CTRPluginFramework
                         ResultCount++;
                         _resultsP->address = start;
                         _resultsP->value = value;
-                        _resultsP++;
+                        ++_resultsP;
                         if (_resultsP >= _resultsEnd)
                             break;
                     }
@@ -183,7 +183,7 @@ namespace CTRPluginFramework
                         ResultCount++;
                         _resultsP->address = start;
                         _resultsP->value = value;
-                        _resultsP++;
+                        ++_resultsP;
                         if (_resultsP >= _resultsEnd)
                             break;
                     }
@@ -200,7 +200,7 @@ namespace CTRPluginFramework
                         ResultCount++;
                         _resultsP->address = start;
                         _resultsP->value = value;
-                        _resultsP++;
+                        ++_resultsP;
                         if (_resultsP >= _resultsEnd)
                             break;
                     }
@@ -217,7 +217,7 @@ namespace CTRPluginFramework
                         ResultCount++;
                         _resultsP->address = start;
                         _resultsP->value = value;
-                        _resultsP++;
+                        ++_resultsP;
                         if (_resultsP >= _resultsEnd)
                             break;
                     }
@@ -234,7 +234,7 @@ namespace CTRPluginFramework
                         ResultCount++;
                         _resultsP->address = start;
                         _resultsP->value = value;
-                        _resultsP++;
+                        ++_resultsP;
                         if (_resultsP >= _resultsEnd)
                             break;
                     }
@@ -488,19 +488,6 @@ namespace CTRPluginFramework
         header.resultSize = sizeof(SearchResult<T>);
         header.value = _checkValue;
 
-        /*ret |= WriteToFile(_file, Type);                // u8
-        ret |= WriteToFile(_file, Compare);             // u8
-        ret |= WriteToFile(_file, _startRange);         // u32
-        ret |= WriteToFile(_file, _endRange);           // u32
-        ret |= WriteToFile(_file, _alignment);          // u8
-        ret |= WriteToFile(_file, ResultCount);         // u32
-        ret |= WriteToFile(_file, Size);                // u8
-        ret |= WriteToFile(_file, (u8)sizeof(T));       // u8
-        ret |= WriteToFile(_file, _GetHeaderSize());    // u32
-        u32 size = _GetResultStructSize();// sizeof(u32) + sizeof(T);        
-        ret |= WriteToFile(_file, size);                // u32
-        ret |= WriteToFile(_file, _checkValue);         // T*/
-
         ret = WriteToFile(_file, header);
 
         if (offset != 0)
@@ -535,24 +522,14 @@ namespace CTRPluginFramework
     template <typename T>
     u32     Search<T>::_GetResultStructSize(void)
     {
-        /*u32 size = sizeof(u32) + sizeof(T);
-
-        size += size % 4;*/
         return (sizeof(SearchResult<T>));
     }
 
     template <typename T>
     bool    Search<T>::ResultsToFile(void)
     {
-        // Write Header
-        //_WriteHeaderToFile();
-
-        // Write all results
-        //_file.Write(_results.data(), _results.size() * _GetResultStructSize());
         _file.Write(_resultsArray, (_resultsP - _resultsArray) * _GetResultStructSize());
         _resultsP = _resultsArray;
-        // Clear results vector
-        //_results.clear();
     }
 
     template <typename T>

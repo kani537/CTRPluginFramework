@@ -28,6 +28,7 @@ namespace CTRPluginFramework
         void    _Update(Time delta);
 
         void    _ListRegion(void);
+        void    _PopulateSearchType(bool isFirstSearch);
 
         void    _searchBtn_OnClick(void);
         void    _resetBtn_OnClick(void);

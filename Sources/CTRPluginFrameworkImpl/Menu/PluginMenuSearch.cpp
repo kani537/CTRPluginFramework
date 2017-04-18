@@ -41,15 +41,7 @@ namespace CTRPluginFramework
         _searchType.Add("Specified value");
         _searchType.Add("Unknown search");
 
-        _compareType.Add("Equal To");
-        _compareType.Add("Not Equal To");
-        _compareType.Add("Bigger Than");
-        _compareType.Add("Bigger Or Equal");
-        _compareType.Add("Smaller Than");
-        _compareType.Add("Smaller Or Equal");
-        _compareType.Add("Different By");
-        _compareType.Add("Different By Less");
-        _compareType.Add("Different By More");
+        _PopulateSearchType(true);
 
         // Init buttons
         _searchBtn.UseSysFont(false);
@@ -125,6 +117,9 @@ namespace CTRPluginFramework
             {
                 _waitForUser = true;
                 _compareType.IsEnabled = true;
+                // If we just finished first search
+                if (_step == 1)
+                    _PopulateSearchType(false);
             }
             return (false);
         }
@@ -528,6 +523,9 @@ namespace CTRPluginFramework
         _resetBtn.IsEnabled = false;
         _undoBtn.IsEnabled = false;
         _searchMenu.Update();
+
+        // Reset search type available
+        _PopulateSearchType(true);
     }
 
     void    PluginMenuSearch::_undoBtn_OnClick(void)
@@ -730,5 +728,23 @@ namespace CTRPluginFramework
             if (meminfo.base_addr >= 0x50000000)
                 break;
         }
+    }
+
+    void    PluginMenuSearch::_PopulateSearchType(bool isFirstSearch)
+    {
+        _compareType.Clear();
+
+        _compareType.Add("Equal To");
+        _compareType.Add("Not Equal To");
+        _compareType.Add("Bigger Than");
+        _compareType.Add("Bigger Or Equal");
+        _compareType.Add("Smaller Than");
+        _compareType.Add("Smaller Or Equal");
+
+        if (isFirstSearch)
+            return;
+        _compareType.Add("Different By");
+        _compareType.Add("Different By Less");
+        _compareType.Add("Different By More");
     }
 }
