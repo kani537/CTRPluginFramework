@@ -45,46 +45,39 @@ namespace CTRPluginFramework
 
     float Renderer::GetTextSize(const char *text)
     {
-        float   w;
-        u8      *c;
-        u32     code;
-        ssize_t units;
-        int     glyphIndex;
-        fontGlyphPos_s  data;
-
-        w = 0.0f;
-        c = (u8 *)text;
         if (!text) return (0.0f);
+
+        float   w = 0.0f;
+        u8      *c = (u8 *)text;        
+
         while (*c == '\n') c++;
+
         do
         {
             if (!*c) break;
             Glyph *glyph = Font::GetGlyph(c);
             if (glyph == nullptr) break;
-            w += (glyph->xOffset + glyph->xAdvance);
-        } while (1);
+            w += glyph->Width();
+        } while (true);
         return (w);
     }
 
 
     int Renderer::GetLineCount(const char *text, float maxWidth)
     {
-        float   w;
-        u8      *c;
-        u32     code;
-        ssize_t units;
-        int     glyphIndex;
-        fontGlyphPos_s  data;
-        int     lineCount = 1;
-
-        w = 0.0f;
-        c = (u8 *)text;
         if (!text) return (0.0f);
+
+        int     lineCount = 1;
+        float   w = 0.0f;
+        u8      *c = (u8 *)text;
+        
+
         while (*c == '\n')
         {
             c++;
             lineCount++;
         }
+
         do
         {
             if (!*c) 
@@ -96,7 +89,7 @@ namespace CTRPluginFramework
             }
             Glyph *glyph = Font::GetGlyph(c);
             if (glyph == nullptr) break;
-            float gSize = glyph->xOffset + glyph->xAdvance;
+            float gSize = glyph->Width();
             if (w + gSize > maxWidth)
             {
                 lineCount++;
@@ -105,7 +98,7 @@ namespace CTRPluginFramework
             else
                 w += gSize;
             
-        } while (1);
+        } while (true);
 
         return (lineCount);
     }
@@ -159,7 +152,9 @@ namespace CTRPluginFramework
 
     int Renderer::DrawGlyph(Glyph *glyph, int posX, int posY, float &offset, Color &color)
     {
-        int  x = posX + glyph->xOffset;
+        posX += glyph->xOffset;
+
+        int  x = posX;
         int  y = posY;
         u8   *data = glyph->glyph;
 
@@ -183,7 +178,7 @@ namespace CTRPluginFramework
         }
         if (offset > 0.f)
         {
-            x -= offset;
+            posX -= offset;
             offset = 0;
         }
 
