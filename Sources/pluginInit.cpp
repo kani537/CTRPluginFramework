@@ -27,6 +27,7 @@ namespace CTRPluginFramework
 
     Handle      keepThreadHandle;
     Handle      _keepEvent = 0;
+    Handle      _continueGameEvent = 0;
     bool        keepRunning = true;
     Thread      mainThread;
 
@@ -40,6 +41,8 @@ namespace CTRPluginFramework
     extern "C" u32 __ctru_heap_size;
     extern "C" u32 __linearOp;
 
+    extern "C" void __appInit(void);
+
     void    KeepThreadMain(void *arg)
     {
         // Init Framework's system constants
@@ -47,6 +50,15 @@ namespace CTRPluginFramework
 
         // Init Process info
         ProcessImpl::Initialize();
+
+        // Initialize services
+        srvInit();
+
+        // Patch process before it starts
+        PatchProcess();
+
+        // Continue game
+        svcSignalEvent(_continueGameEvent);
 
         // Correction for some games like Kirby
         u64 tid = Process::GetTitleID();
@@ -83,14 +95,12 @@ namespace CTRPluginFramework
         exit(1);
     }
 
-    extern "C" void __appInit(void);
-
     void    InitColors(void);
     void    Initialize(void)
-    {        
+    {
         // Init Services
         __appInit();
-        
+
         // Init Screen
         Screen::Initialize();
         Renderer::Initialize();
@@ -99,11 +109,7 @@ namespace CTRPluginFramework
         gfxInit(Screen::Top->GetFormat(), Screen::Bottom->GetFormat(), false);
 
         // Init Process info
-        //Process::Initialize(keepEvent);
         ProcessImpl::UpdateThreadHandle();
-
-        // Patch process before it starts
-        PatchProcess();
 
         //Init OSD
         OSDImpl::_Initialize();  
@@ -193,7 +199,9 @@ namespace CTRPluginFramework
     extern "C" int LaunchMainThread(int arg);
     int   LaunchMainThread(int arg)
     {
+        svcCreateEvent(&_continueGameEvent, RESET_ONESHOT);
         svcCreateThread(&keepThreadHandle, KeepThreadMain, 0, &keepThreadStack[0x1000], 0x1A, -2);
+        svcWaitSynchronization(_continueGameEvent, U64_MAX);
         return (0);
     }
 
