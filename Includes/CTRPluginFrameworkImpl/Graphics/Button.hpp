@@ -139,6 +139,7 @@ namespace CTRPluginFramework
             return;
 
         Color &fillColor = IsLocked ? disabledColor : (_isPressed ? pressedColor : idleColor);
+        Color &bordColor = IsLocked ? disabledColor : borderColor;
         int i;
 
         if (_useRounded)
@@ -149,8 +150,8 @@ namespace CTRPluginFramework
             {
                 IntLine &line = _lines[i];
                 // Draw border
-                Renderer::_DrawPixel(line.start.x, line.start.y, borderColor);
-                Renderer::_DrawPixel(line.end.x, line.end.y, borderColor);
+                Renderer::_DrawPixel(line.start.x, line.start.y, bordColor);
+                Renderer::_DrawPixel(line.end.x, line.end.y, bordColor);
 
                 // Fill line
                 IntVector left(line.start);
@@ -164,7 +165,7 @@ namespace CTRPluginFramework
             {
                 IntLine &line = _lines[i];
 
-                Renderer::DrawLine(line.start.x, line.start.y, line.end.x, borderColor, line.end.y);
+                Renderer::DrawLine(line.start.x, line.start.y, line.end.x, bordColor, line.end.y);
             }
 
             IntLine &line = _lines[i];
@@ -173,7 +174,7 @@ namespace CTRPluginFramework
         else
         {
             Renderer::DrawRect(_uiProperty, fillColor);
-            Renderer::DrawRect(_uiProperty, borderColor, false);
+            Renderer::DrawRect(_uiProperty, bordColor, false);
         }
         
 
