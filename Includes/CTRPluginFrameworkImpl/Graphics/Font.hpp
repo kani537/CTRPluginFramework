@@ -11,6 +11,8 @@ namespace CTRPluginFramework
         float   xAdvance; ///< Horizontal distance to advance after drawing the glyph.
         //int     width; ///< Glyph width.
         u8      *glyph; //< Glyph data to draw
+
+        float   Width(void) const; // Return the glyph's width
     };
 
     class Font

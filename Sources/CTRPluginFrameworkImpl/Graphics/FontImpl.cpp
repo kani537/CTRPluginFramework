@@ -14,6 +14,12 @@ namespace CTRPluginFramework
     u8      *glyph = nullptr;
     u8      *tileData = nullptr;
 
+    float Glyph::Width(void) const
+    {
+        return (xOffset + xAdvance);
+    }
+
+
     void    Font::Initialize(void)
     {
         // Sysfont has 7505 glyph
