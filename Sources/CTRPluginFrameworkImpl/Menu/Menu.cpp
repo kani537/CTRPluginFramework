@@ -181,6 +181,7 @@ namespace CTRPluginFramework
                     // if it's a folder
                     MenuFolderImpl *folder = reinterpret_cast<MenuFolderImpl *>(item);
                     folder->_Open(_folder, _selector);
+                    _selector = 0;
                     break;
                 }
                 case B:
@@ -200,9 +201,10 @@ namespace CTRPluginFramework
 
     int     Menu::ProcessEvent(Event &event, MenuItem **userchoice)
     {
+        // If the current folder is empty
         if (_folder->ItemsCount() == 0)
         {
-            if (event.type == Event::KeyPressed &&event.key.code == Key::B)
+            if (event.type == Event::KeyPressed && event.key.code == Key::B)
             {
                 MenuFolderImpl *p = _folder->_Close(_selector);
                 if (p != nullptr)
@@ -231,7 +233,7 @@ namespace CTRPluginFramework
                     if (_selector > 0)
                         _selector--;
                     else
-                        _selector = std::max(0, (int)_folder->ItemsCount() - 1);
+                        _selector = std::max(0, static_cast<int>(_folder->ItemsCount() - 1));
                     _input.Restart();
                     return (MenuEvent::SelectorChanged);
                 }
@@ -254,6 +256,7 @@ namespace CTRPluginFramework
         else if (event.type == Event::KeyPressed)
         {
             MenuItem *item = _folder->_items[_selector];
+
             if (userchoice)
                 *userchoice = item;
             switch (event.key.code)
@@ -270,6 +273,7 @@ namespace CTRPluginFramework
                     MenuFolderImpl *folder = reinterpret_cast<MenuFolderImpl *>(item);
                     folder->_Open(_folder, _selector);
                     _folder = folder;
+                    _selector = 0;
                     return (MenuEvent::FolderChanged);
                 }
                 case B:
