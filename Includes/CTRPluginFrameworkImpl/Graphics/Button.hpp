@@ -31,16 +31,14 @@ namespace CTRPluginFramework
         _isReady(true),
         _useSysfont(true),
         _useRounded(false),
-        IsEnabled(true)
+        IsEnabled(true),
+        IsLocked(false)
         {
-            // Black
-            borderColor = Color(165, 165, 165);
-            // Blank
-            idleColor   = Color(250, 250, 250);
-            // Dim Grey
-            pressedColor = Color(105, 105, 105);
-            // Black
-            contentColor = Color();
+            borderColor = Color::DarkGrey;
+            disabledColor = Color::Grey;
+            idleColor   = Color::Gainsboro;
+            pressedColor = Color::DimGrey;
+            contentColor = Color::Black;
 
             _textSize = Renderer::GetTextSize(content.c_str());
             if (icon != nullptr)
@@ -53,7 +51,7 @@ namespace CTRPluginFramework
 
         bool    operator ()(Args&... args)
         {
-            if (IsEnabled && _execute)
+            if (!IsLocked && IsEnabled && _execute)
             {
                 if (_callback != nullptr)
                     (_caller.*(_callback))(args...);
@@ -81,10 +79,12 @@ namespace CTRPluginFramework
         }
 
         Color           borderColor;
+        Color           disabledColor;
         Color           idleColor;
         Color           pressedColor;
         Color           contentColor;
         bool            IsEnabled;
+        bool            IsLocked;
 
     private:
 
@@ -138,7 +138,7 @@ namespace CTRPluginFramework
         if (!IsEnabled)
             return;
 
-        Color &fillColor = _isPressed ? pressedColor : idleColor;
+        Color &fillColor = IsLocked ? disabledColor : (_isPressed ? pressedColor : idleColor);
         int i;
 
         if (_useRounded)
@@ -212,7 +212,7 @@ namespace CTRPluginFramework
     template <class C, class T, class... Args>
     void    Button<C,T, Args...>::Update(bool isTouchDown, IntVector touchPos)
     {
-        if (!IsEnabled)
+        if (!IsEnabled || IsLocked)
             return;
 
         // Check if is pressed
