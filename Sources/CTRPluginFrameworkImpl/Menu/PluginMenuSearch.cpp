@@ -153,13 +153,12 @@ namespace CTRPluginFramework
             u32     endRange = _endRangeTextBox.Bits32;
             bool    isEnabled = false;
             Region  reg;
-            Region  &region = (_memoryRegions.SelectedItem <= 1) ? reg : _regionsList[_memoryRegions.SelectedItem - 2];
+            Region  &region = (_memoryRegions.SelectedItem == 0) ? reg : _regionsList[_memoryRegions.SelectedItem - 1];
 
             switch (_memoryRegions.SelectedItem)
             {
                 case 0: startRange = 0; endRange = 0xFFFFFFF0; break;
-                case 1: isEnabled = true; break;
-                default: startRange = region.startAddress; endRange = region.endAddress; break;
+                default: startRange = region.startAddress; endRange = region.endAddress; isEnabled = true;  break;
             }
 
             _startRangeTextBox.SetValue(startRange);
@@ -255,8 +254,20 @@ namespace CTRPluginFramework
             }
         }
         _valueTextBox();
-        _startRangeTextBox();
-        _endRangeTextBox();
+        if (_startRangeTextBox())
+        {
+            Region  &region = _regionsList[_memoryRegions.SelectedItem - 1];
+
+            if (_startRangeTextBox.Bits32 >= region.endAddress || _startRangeTextBox.Bits32 < region.startAddress)
+                _startRangeTextBox.SetValue(region.startAddress);
+        }
+        if (_endRangeTextBox())
+        {
+            Region  &region = _regionsList[_memoryRegions.SelectedItem - 1];
+
+            if (_endRangeTextBox.Bits32 > region.endAddress || _endRangeTextBox.Bits32 <= region.startAddress)
+                _endRangeTextBox.SetValue(region.endAddress);
+        }
 
         return (false);
     }
@@ -700,10 +711,8 @@ namespace CTRPluginFramework
         _memoryRegions.Clear();
 
         {
-            //Region reg = (Region){0x100000, 0x50000000};
-            //_regionsList.push_back(reg);
             _memoryRegions.Add("All memory");
-            _memoryRegions.Add("Custom range");
+            //_memoryRegions.Add("Custom range");
             if (index == 1)
             {
                 _memoryRegions.SelectedItem = 1;
