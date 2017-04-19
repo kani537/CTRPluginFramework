@@ -3,6 +3,7 @@
 #include "CTRPluginFramework/System/Process.hpp"
 #include "ctrulib/allocator/linear.h"
 
+#include <cmath>
 #include <string>
 
 namespace CTRPluginFramework
@@ -135,7 +136,7 @@ namespace CTRPluginFramework
     }
 
     template <typename T>
-    void      Search<T>::_FirstExactSearch(u32 &start, u32 end, u32 maxResult)
+    void      Search<T>::_FirstExactSearch(u32 &start, const u32 end)
     {
         switch (Compare)
         {
@@ -143,7 +144,7 @@ namespace CTRPluginFramework
             {
                 for (; start < end; start += _alignment)
                 {
-                    T value = *reinterpret_cast<T *>(start);
+                    T value = *(reinterpret_cast<T *>(start));
                     if (value == _checkValue)
                     {
                         ResultCount++;
@@ -243,9 +244,145 @@ namespace CTRPluginFramework
             }
             default:
                 break;
-        } // End switch
-        //if (_resultsP >= _resultsEnd)
-          //  start += _alignment;
+        }
+    }
+
+    template <>
+    void      Search<float>::_FirstExactSearch(u32 &start, const u32 end)
+    {
+        float epsilon = 1e-6f;
+        
+        switch (Compare)
+        {
+        case CompareType::Equal:
+        {
+            for (; start < end; start += _alignment)
+            {
+                float value = *(reinterpret_cast<float *>(start));
+
+                if (std::isnan(value) || std::isinf(value))
+                    continue;
+
+                if (std::fabs(value - _checkValue) <= epsilon)
+                {
+                    ResultCount++;
+                    _resultsP->address = start;
+                    _resultsP->value = value;
+                    _resultsP++;
+                    if (_resultsP >= _resultsEnd)
+                        break;
+                }
+            }
+            break;
+        }
+        case CompareType::NotEqual:
+        {
+            for (; start < end; start += _alignment)
+            {
+                float value = *(reinterpret_cast<float *>(start));
+
+                if (std::isnan(value) || std::isinf(value))
+                    continue;
+
+                if (std::fabs(value - _checkValue) > epsilon)
+                {
+                    ResultCount++;
+                    _resultsP->address = start;
+                    _resultsP->value = value;
+                    _resultsP++;
+                    if (_resultsP >= _resultsEnd)
+                        break;
+                }
+            }
+            break;
+        }
+        case CompareType::GreaterThan:
+        {
+            for (; start < end; start += _alignment)
+            {
+                float value = *(reinterpret_cast<float *>(start));
+
+                if (std::isnan(value) || std::isinf(value))
+                    continue;
+
+                if (value > _checkValue)
+                {
+                    ResultCount++;
+                    _resultsP->address = start;
+                    _resultsP->value = value;
+                    ++_resultsP;
+                    if (_resultsP >= _resultsEnd)
+                        break;
+                }
+            }
+            break;
+        }
+        case CompareType::GreaterOrEqual:
+        {
+            for (; start < end; start += _alignment)
+            {
+                float value = *(reinterpret_cast<float *>(start));
+
+                if (std::isnan(value) || std::isinf(value))
+                    continue;
+
+                if (value >= _checkValue)
+                {
+                    ResultCount++;
+                    _resultsP->address = start;
+                    _resultsP->value = value;
+                    ++_resultsP;
+                    if (_resultsP >= _resultsEnd)
+                        break;
+                }
+            }
+            break;
+        }
+        case CompareType::LesserThan:
+        {
+            for (; start < end; start += _alignment)
+            {
+                float value = *(reinterpret_cast<float *>(start));
+
+                if (std::isnan(value) || std::isinf(value))
+                    continue;
+
+                if (value < _checkValue)
+                {
+                    ResultCount++;
+                    _resultsP->address = start;
+                    _resultsP->value = value;
+                    ++_resultsP;
+                    if (_resultsP >= _resultsEnd)
+                        break;
+                }
+            }
+            break;
+        }
+        case CompareType::LesserOrEqual:
+        {
+            for (; start < end; start += _alignment)
+            {
+                float value = *(reinterpret_cast<float *>(start));
+
+                if (std::isnan(value) || std::isinf(value))
+                    continue;
+
+                if (value <= _checkValue)
+                {
+                    ResultCount++;
+                    _resultsP->address = start;
+                    _resultsP->value = value;
+                    ++_resultsP;
+                    if (_resultsP >= _resultsEnd)
+                        break;
+                }
+            }
+            break;
+        }
+        default:
+            break;
+        }
     }
 
     template<typename T>
@@ -258,9 +395,14 @@ namespace CTRPluginFramework
             
             u32 end = start + std::min((u32)(_endRange - start), (u32)0x40000);
 
+            if (_alignment != sizeof(T))
+            {
+                end -= sizeof(T);
+            }
+
             if (Type == SearchType::ExactValue)
             {
-                _FirstExactSearch(start, end, _maxResult);
+                _FirstExactSearch(start, end);
 
                 // Update position
                 _currentPosition = start;
@@ -274,8 +416,7 @@ namespace CTRPluginFramework
                     ResultCount++;
                     _resultsP->address = start;
                     _resultsP->value = value;
-                    _resultsP++;
-                    //_results.push_back(SearchResult<T>(start, value));   _results.size() >= _maxResult
+                    ++_resultsP;
                     if (_resultsP >= _resultsEnd)
                         break;
                 }
@@ -285,7 +426,7 @@ namespace CTRPluginFramework
             }
 
             // Finish
-            if (_currentPosition >= _endRange)
+            if (_currentPosition >= (_endRange - sizeof(T)))
             {
                 return (true);
             }
@@ -598,8 +739,8 @@ namespace CTRPluginFramework
                     case SearchSize::Bits16: sprintf(buffer, "%04X", newResults[i].value); break;
                     case SearchSize::Bits32: sprintf(buffer, "%08X", newResults[i].value); break;
                     case SearchSize::Bits64: sprintf(buffer, "%016llX", newResults[i].value); break;
-                    case SearchSize::FloatingPoint: sprintf(buffer, "%8.7f", newResults[i].value); break;
-                    case SearchSize::Double: sprintf(buffer, "%8.7g", newResults[i].value); break;
+                    case SearchSize::FloatingPoint: sprintf(buffer, "%15.7f", newResults[i].value); break;
+                    case SearchSize::Double: sprintf(buffer, "%15.7g", newResults[i].value); break;
                 }
                 newval.push_back(buffer);
             } 
@@ -620,8 +761,8 @@ namespace CTRPluginFramework
                     case SearchSize::Bits16: sprintf(buffer, "%04X", newResults[i].value); break;
                     case SearchSize::Bits32: sprintf(buffer, "%08X", newResults[i].value); break;
                     case SearchSize::Bits64: sprintf(buffer, "%016llX", newResults[i].value); break;
-                    case SearchSize::FloatingPoint: sprintf(buffer, "%8.7f", newResults[i].value); break;
-                    case SearchSize::Double: sprintf(buffer, "%8.7g", newResults[i].value); break;
+                    case SearchSize::FloatingPoint: sprintf(buffer, "%15.7f", newResults[i].value); break;
+                    case SearchSize::Double: sprintf(buffer, "%15.7g", newResults[i].value); break;
                 }
                 newval.push_back(buffer);
 
@@ -632,8 +773,8 @@ namespace CTRPluginFramework
                     case SearchSize::Bits16: sprintf(buffer, "%04X", newResults[i].oldValue); break;
                     case SearchSize::Bits32: sprintf(buffer, "%08X", newResults[i].oldValue); break;
                     case SearchSize::Bits64: sprintf(buffer, "%016llX", newResults[i].oldValue); break;
-                    case SearchSize::FloatingPoint: sprintf(buffer, "%8.7f", newResults[i].oldValue); break;
-                    case SearchSize::Double: sprintf(buffer, "%8.7g", newResults[i].oldValue); break;
+                    case SearchSize::FloatingPoint: sprintf(buffer, "%15.7f", newResults[i].oldValue); break;
+                    case SearchSize::Double: sprintf(buffer, "%15.7g", newResults[i].oldValue); break;
                 }
                 oldvalue.push_back(buffer);
             } 

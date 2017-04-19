@@ -223,7 +223,37 @@ namespace CTRPluginFramework
         }
 
         // Check NumericTextBoxes
-        _alignmentTextBox();
+        if (_alignmentTextBox())
+        {
+            int typeSize;
+            u32 alignment = _alignmentTextBox.Bits32;
+            bool isFloat = false;
+
+            switch (_searchSize.SelectedItem)
+            {
+            case 0: typeSize = 1; break;
+            case 1: typeSize = 2; break;
+            case 2: typeSize = 4; break;
+            case 3: typeSize = 8; break;
+            case 4: typeSize = 4; isFloat = true; break;
+            case 5: typeSize = 8; break;
+            default: typeSize = 4; break;
+            }
+
+            if (alignment == 0)
+            {
+                _alignmentTextBox.SetValue((u32)typeSize);
+            }
+            else if (typeSize == 8 || isFloat)
+            {
+                if (alignment % 4 != 0)
+                {
+                    alignment &= ~3;
+                    if (!alignment) alignment = 8;
+                    _alignmentTextBox.SetValue((u32)alignment);
+                }
+            }
+        }
         _valueTextBox();
         _startRangeTextBox();
         _endRangeTextBox();
@@ -511,9 +541,9 @@ namespace CTRPluginFramework
         //_startRangeTextBox.IsEnabled = true;
         //_endRangeTextBox.IsEnabled = true;
 
+
         // Unlock search size
         _searchSize.IsEnabled = true;
-
         // Unlock alignment
         _alignmentTextBox.IsEnabled = true;
 
@@ -526,6 +556,13 @@ namespace CTRPluginFramework
 
         // Reset search type available
         _PopulateSearchType(true);
+
+        // If Unknown search is selected
+        if (_searchType.SelectedItem != 0)
+        {
+            _compareType.IsEnabled = false;
+            _valueTextBox.IsEnabled = false;
+        }
     }
 
     void    PluginMenuSearch::_undoBtn_OnClick(void)

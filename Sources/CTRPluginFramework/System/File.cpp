@@ -301,7 +301,7 @@ namespace CTRPluginFramework
             return (-1);
 
         bool    unpause = false;
-        // Ifgame not paused, then pause it
+        // If game not paused, then pause it
         if (!ProcessImpl::IsPaused())
         {
             ProcessImpl::Pause(false);
