@@ -126,15 +126,18 @@ namespace CTRPluginFramework
         CTRPluginFramework::Initialize();
 
         // Init sdmcArchive
-        FS_Path sdmcPath = { PATH_EMPTY, 1, (u8*)"" };
-        FSUSER_OpenArchive(&_sdmcArchive, ARCHIVE_SDMC, sdmcPath);
-
+        {
+            FS_Path sdmcPath = { PATH_EMPTY, 1, (u8*)"" };
+            FSUSER_OpenArchive(&_sdmcArchive, ARCHIVE_SDMC, sdmcPath);
+        }
         // Set current working directory
-        u64     tid = Process::GetTitleID();
-        char    path[256] = { 0 };
+        {
+            u64     tid = Process::GetTitleID();
+            char    path[256] = { 0 };
 
-        sprintf(path, "/plugin/%016llX/", tid);
-        Directory::ChangeWorkingDirectory(path);
+            sprintf(path, "/plugin/%016llX/", tid);
+            Directory::ChangeWorkingDirectory(path);
+        }
 
         // Protect VRAM
         Process::ProtectRegion(0x1F000000, 3);
