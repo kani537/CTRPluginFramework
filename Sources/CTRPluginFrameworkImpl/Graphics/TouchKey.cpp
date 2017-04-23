@@ -6,17 +6,31 @@ namespace CTRPluginFramework
     TouchKey::TouchKey(int character, IntRect ui, bool isEnabled)
     {
         _character = character;
+        _content = nullptr;
         _icon = nullptr;
         _uiProperties = ui;
         _enabled = isEnabled;
 
         _isPressed = false;
         _execute = false;
-    }  
+    }
+
+    TouchKey::TouchKey(std::string str, IntRect ui, int value, bool isEnabled)
+    {
+        _character = value;
+        _content = new KeyContent{ str, Renderer::GetTextSize(str.c_str()) };
+        _icon = nullptr;
+        _uiProperties = ui;
+        _enabled = isEnabled;
+
+        _isPressed = false;
+        _execute = false;
+    }
 
     TouchKey::TouchKey(int value, IconCallback icon, IntRect ui, bool isEnabled)
     {
         _character = value;
+        _content = nullptr;
         _icon = icon;
         _uiProperties = ui;
         _enabled = isEnabled;
@@ -30,19 +44,51 @@ namespace CTRPluginFramework
         _enabled = isEnabled;
     }
 
-    void    TouchKey::DrawCharacter(const IntRect &rect, char c, Color &color)
+    void    TouchKey::ChangeContent(std::string content)
     {
-        Glyph *glyph = Font::GetGlyph(c);
+        if (_content != nullptr)
+        {
+            _content->text = content;
+            _content->width = Renderer::GetTextSize(content.c_str());
+        }
+    }
 
-        if (glyph == nullptr)
-            return;
+    void    TouchKey::DrawCharacter(const IntRect &rect, Color &color)
+    {
+        // If not a string
+        if (_content == nullptr)
+        {
+            char c = static_cast<char>(_character);
+            Glyph *glyph = Font::GetGlyph(c);
 
-        float  width = (glyph->Width() / 2.f);
+            if (glyph == nullptr)
+                return;
 
-        int posX = ((rect.size.x - static_cast<int>(width)) / 2) + rect.leftTop.x;
-        int posY = ((rect.size.y - 16) / 2) + rect.leftTop.y;
+            int posX = ((rect.size.x - static_cast<int>(glyph->Width())) / 2) + rect.leftTop.x;
+            int posY = ((rect.size.y - 16) / 2) + rect.leftTop.y;
 
-        Renderer::DrawGlyph(glyph, posX, posY, color);
+            Renderer::DrawGlyph(glyph, posX, posY, color);
+        }
+        // String
+        else
+        {
+            int posX = ((rect.size.x - _content->width) / 2) + rect.leftTop.x;
+            int posY = ((rect.size.y - 16) / 2) + rect.leftTop.y;
+
+            int end = posX + _content->width;
+
+            u8  *str = reinterpret_cast<u8 *>(const_cast<char *>(_content->text.c_str()));
+            do
+            {
+                Glyph *glyph = Font::GetGlyph(str);
+
+                if (glyph == nullptr)
+                    break;
+
+                posX = Renderer::DrawGlyph(glyph, posX, posY, color);
+            } while (*str);
+        }
+
     }
 
     void    TouchKey::Draw(void)
@@ -63,7 +109,7 @@ namespace CTRPluginFramework
                 _icon(posX, posY, false);
             }
             else
-                DrawCharacter(_uiProperties, _character, characterDis);
+                DrawCharacter(_uiProperties, characterDis);
         }
         else if (_isPressed)
         {
@@ -79,7 +125,7 @@ namespace CTRPluginFramework
             // Character
             else
             {
-                DrawCharacter(_uiProperties, _character, character);
+                DrawCharacter(_uiProperties, character);
             }
         }
         else
@@ -95,7 +141,7 @@ namespace CTRPluginFramework
             // Character
             else
             {
-                DrawCharacter(_uiProperties, _character, character);
+                DrawCharacter(_uiProperties, character);
             }
         }
     }
@@ -121,11 +167,15 @@ namespace CTRPluginFramework
             _isPressed = false;   
     }
 
-    int      TouchKey::operator()(void)
+    int      TouchKey::operator()(std::string &str)
     {
         if (_enabled && _execute)
         {
             _execute = false;
+            if (_content != nullptr && _character == 0x12345678)
+            {
+                str += _content->text;
+            }
             return (_character);
         }
         return (-1);

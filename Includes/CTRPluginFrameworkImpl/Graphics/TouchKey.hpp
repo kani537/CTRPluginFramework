@@ -10,6 +10,11 @@
 
 namespace CTRPluginFramework
 {
+    struct KeyContent
+    {
+        std::string     text;
+        float           width;
+    };
     class TouchKey
     {
     public:
@@ -17,6 +22,8 @@ namespace CTRPluginFramework
 
         // Key with char
         TouchKey(int character, IntRect ui, bool enabled = true);
+        // Key with char
+        TouchKey(std::string str, IntRect ui, int value = 0x12345678, bool enabled = true);
         // Key with Icon
         TouchKey(int value, IconCallback, IntRect ui, bool enabled = true);
 
@@ -24,22 +31,24 @@ namespace CTRPluginFramework
 
         // Enabler
         void    Enable(bool enable = true);
+        void    ChangeContent(std::string content);
 
         // Draw
-        void    DrawCharacter(const IntRect &rect, char c, Color &color);
+        void    DrawCharacter(const IntRect &rect, Color &color);
         void    Draw(void);
 
         // Update
         void    Update(bool touchIsDown, IntVector touchPos);
 
         // Executer
-        // Return -1 if not pressed, _character value otherwise
-        int    operator()(void);
+        // Return -1 if not pressed, _character value or 0x12345678 otherwise
+        int    operator()(std::string &str);
 
 
 
     private:
-        int              _character;
+        int             _character;
+        KeyContent      *_content;
         IconCallback    _icon;
         IntRect         _uiProperties;
 
