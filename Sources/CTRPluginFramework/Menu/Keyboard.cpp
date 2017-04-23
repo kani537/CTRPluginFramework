@@ -408,13 +408,31 @@ namespace CTRPluginFramework
 
     int     Keyboard::Open(std::string &output)
     {
-        // TODO
-        return (-1);
+        _keyboard->SetLayout(QWERTY);
+        _keyboard->DisplayTopScreen = DisplayTopScreen;
+
+        int ret = _keyboard->Run();
+
+        if (ret != -1)
+        {
+            output = _keyboard->GetInput();
+        }
+        return (ret);
     }
 
     int     Keyboard::Open(std::string &output, std::string start)
     {
-        // TODO
-        return (-1);
+        _keyboard->SetLayout(QWERTY);
+        _keyboard->DisplayTopScreen = DisplayTopScreen;
+
+        _keyboard->GetInput() = start;
+
+        int ret = _keyboard->Run();
+
+        if (ret != -1)
+        {
+            output = _keyboard->GetInput();
+        }
+        return (ret);
     }
 }

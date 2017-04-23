@@ -76,6 +76,7 @@ namespace CTRPluginFramework
         bool                    _mustRelease;
         bool                    _useCaps;
         bool                    _useSymbols;
+        bool                    _useNintendo;
         int                     _max;
         u8                      _symbolsPage;
         u8                      _nintendoPage;

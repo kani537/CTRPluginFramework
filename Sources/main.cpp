@@ -20,10 +20,27 @@ namespace CTRPluginFramework
         }
     }
 
+    void    TestStringKeyboard(MenuEntry *entry)
+    {
+        Keyboard keyboard("Enter any text");
+
+        std::string str;
+
+        if (keyboard.Open(str) != -1)
+        {
+            entry->Name() = str;
+        }
+    }
+
     int    main(void)
     {
         PluginMenu      *m = new PluginMenu("Zelda Ocarina Of Time 3D");
         PluginMenu      &menu = *m;
+
+        MenuEntry *entry = new MenuEntry("Test Keyboard");
+
+        entry->SetMenuFunc(TestStringKeyboard);
+        menu.Append(entry);
     
         /*
         ** Movements codes
