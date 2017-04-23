@@ -191,13 +191,9 @@ namespace CTRPluginFramework
         if (!(stri && *stri))
             return (posX);
 
-        u32             glyphcode;
         int             lineCount = 1;
         u8              *str = const_cast<u8 *>(stri);
-        fontGlyphPos_s  glyphPos;
         int             x = posX;
-        
-
 
         xLimits = std::min(xLimits, (_target == TOP ? 400 : 320));
 
@@ -235,7 +231,7 @@ namespace CTRPluginFramework
 
             x = DrawGlyph(glyph, x, posY, color);
 
-        } while (glyphcode > 0 && *str);
+        } while (*str);
 
         posY += 16 * lineCount;
         return (x);
