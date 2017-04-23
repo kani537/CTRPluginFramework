@@ -10,6 +10,8 @@ namespace CTRPluginFramework
     extern "C" unsigned char *AddFavoriteFilled25;
     extern "C" unsigned char *CheckedCheckbox;
     extern "C" unsigned char *UnCheckedCheckbox;
+    extern "C" unsigned char *CapsLockOn15;
+    extern "C" unsigned char *CapsLockOnFilled15;
     extern "C" unsigned char *ClearSymbol15;
     extern "C" unsigned char *ClearSymbolFilled15;
     extern "C" unsigned char *CloseWindow20;
@@ -19,6 +21,8 @@ namespace CTRPluginFramework
     extern "C" unsigned char *EnterKeyFilled15;
     extern "C" unsigned char *FolderFilled;
     extern "C" unsigned char *File15;
+    extern "C" unsigned char *Happy15;
+    extern "C" unsigned char *HappyFilled15;
     extern "C" unsigned char *Info25;
     extern "C" unsigned char *InfoFilled25;
     extern "C" unsigned char *HandCursor15;
@@ -88,10 +92,20 @@ namespace CTRPluginFramework
     }
 
     /*
+    ** CapsLockOn
+    ** 15px * 15px
+    ************/
+    int Icon::DrawCapsLockOn(int posX, int posY, bool isFilled)
+    {
+        u8 *img = isFilled ? CapsLockOnFilled15 : CapsLockOn15;
+
+        return (DrawImg(img, posX, posY, 15, 15));
+    }
+
+    /*
     ** CheckBox
     ** 15px * 15px
     ************/
-
     int     Icon::DrawCheckBox(IntVector &pos, bool isChecked)
     {
         // Define which version to draw
@@ -299,6 +313,17 @@ namespace CTRPluginFramework
             }
         }
         return (posX + 15);
+    }
+
+    /*
+    ** Happy face
+    ** 15 px * 15 px
+    ****************/
+    int     Icon::DrawHappyFace(int posX, int posY, bool isFilled)
+    {
+        u8 *img = isFilled ? HappyFilled15 : Happy15;
+
+        return (DrawImg(img, posX, posY, 15, 15));
     }
 
     /*

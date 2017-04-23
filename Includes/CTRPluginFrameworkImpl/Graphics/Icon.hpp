@@ -8,6 +8,12 @@ namespace CTRPluginFramework
     public:
 
         /*
+        ** CapsLockOn
+        ** 15px * 15px
+        ************/
+        static int      DrawCapsLockOn(int posX, int posY, bool filled);
+
+        /*
         ** CheckBox 
         ** 15px * 15px
         ************/
@@ -80,6 +86,12 @@ namespace CTRPluginFramework
         ** 15 px * 15 px
         ****************/
         static int      DrawHandCursor(int posX, int posY);
+
+        /*
+        ** Happy face
+        ** 15 px * 15 px
+        ****************/
+        static int      DrawHappyFace(int posX, int posY, bool filled);
 
         /*
         ** Keyboard
