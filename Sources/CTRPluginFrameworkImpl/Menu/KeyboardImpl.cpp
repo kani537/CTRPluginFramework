@@ -325,8 +325,24 @@ namespace CTRPluginFramework
                 // Symbols
                 if (_useSymbols)
                 {
-                    // Temporary disabled
-                    _useSymbols = false;
+                    int start;
+                    int end;
+
+                    if (!_symbolsPage)
+                    {
+                        start = 72;
+                        end = 109;
+                    }
+                    else
+                    {
+                        start = 109;
+                        end = 148;
+                    }
+
+                    for (start; start < end; start++)
+                    {
+                        _keys[start].Draw();
+                    }
                 }
                 // Nintendo
                 else if (_useNintendo)
@@ -466,7 +482,16 @@ namespace CTRPluginFramework
                 // Symbols
                 if (_useSymbols)
                 {
-                    //TODO
+                    if (!_symbolsPage)
+                    {
+                        start = 72;
+                        end = 109;
+                    }
+                    else
+                    {
+                        start = 109;
+                        end = 148;
+                    }
                 }
                 // Nintendo
                 else if (_useNintendo)
@@ -650,11 +675,11 @@ namespace CTRPluginFramework
         pos.leftTop.x = 20;
         pos.leftTop.y = 156;
 
-        pos.size.x = 45;
-        _keys.push_back(TouchKey(KEY_SYMBOLS, nullptr, pos)); pos.leftTop.x += 45;
-        _keys.push_back(TouchKey(KEY_SMILEY, Icon::DrawHappyFace, pos)); pos.leftTop.x += 45;
-        pos.size.x = 155;
-        _keys.push_back(TouchKey(KEY_SPACE, nullptr,pos));
+        pos.size.x = 40;
+        _keys.push_back(TouchKey("+=@", pos, KEY_SYMBOLS)); pos.leftTop.x += 40;
+        _keys.push_back(TouchKey("\uE008", pos, KEY_SMILEY)); pos.leftTop.x += 40;
+        pos.size.x = 145;
+        _keys.push_back(TouchKey("\uE057", pos, KEY_SPACE)); pos.leftTop.x += 145;
     }
 
     void    KeyboardImpl::_QwertyUpCase(void)
@@ -708,19 +733,20 @@ namespace CTRPluginFramework
         pos.leftTop.x = 20;
         pos.leftTop.y = 156;
 
-        pos.size.x = 45;
-        _keys.push_back(TouchKey(KEY_SYMBOLS, nullptr, pos)); pos.leftTop.x += 45;
-        _keys.push_back(TouchKey(KEY_SMILEY, Icon::DrawHappyFace, pos)); pos.leftTop.x += 45;
-        pos.size.x = 155;
-        _keys.push_back(TouchKey(KEY_SPACE, nullptr, pos));
+        pos.size.x = 40;
+        _keys.push_back(TouchKey("+=@", pos, KEY_SYMBOLS)); pos.leftTop.x += 40;
+        _keys.push_back(TouchKey("\uE008", pos, KEY_SMILEY)); pos.leftTop.x += 40;
+        pos.size.x = 145;
+        _keys.push_back(TouchKey("\uE057", pos, KEY_SPACE)); pos.leftTop.x += 145;
     }
 
     void KeyboardImpl::_QwertySymbols(void)
     {
         // Key rectangle
-        IntRect pos(20, 36, 45, 40);
+        IntRect pos(20, 36, 25, 40);
 
         /*page 1*/
+        _keys.push_back(TouchKey('?', pos)); pos.leftTop.x += 25;
         _keys.push_back(TouchKey('!', pos)); pos.leftTop.x += 25;
         _keys.push_back(TouchKey('@', pos)); pos.leftTop.x += 25;
         _keys.push_back(TouchKey('#', pos)); pos.leftTop.x += 25;
@@ -740,6 +766,7 @@ namespace CTRPluginFramework
         _keys.push_back(TouchKey('-', pos)); pos.leftTop.x += 25;
         _keys.push_back(TouchKey('_', pos)); pos.leftTop.x += 25;
         _keys.push_back(TouchKey('=', pos)); pos.leftTop.x += 25;
+        _keys.push_back(TouchKey("\u00F7", pos)); pos.leftTop.x += 25;
         _keys.push_back(TouchKey('+', pos)); pos.leftTop.x += 25;
         _keys.push_back(TouchKey('4', pos)); pos.leftTop.x += 25;
         _keys.push_back(TouchKey('5', pos)); pos.leftTop.x += 25;
@@ -749,7 +776,7 @@ namespace CTRPluginFramework
         pos.leftTop.x = 20;
         pos.leftTop.y = 116;
 
-        _keys.push_back(TouchKey(KEY_SYMBOLS_PAGE, nullptr, pos)); pos.leftTop.x += 25;
+        _keys.push_back(TouchKey("\u2192", pos, KEY_SYMBOLS_PAGE)); pos.leftTop.x += 25;
         _keys.push_back(TouchKey('\\', pos)); pos.leftTop.x += 25;
         _keys.push_back(TouchKey(';', pos)); pos.leftTop.x += 25;
         _keys.push_back(TouchKey(':', pos)); pos.leftTop.x += 25;
@@ -758,27 +785,31 @@ namespace CTRPluginFramework
         _keys.push_back(TouchKey('/', pos)); pos.leftTop.x += 25;
         _keys.push_back(TouchKey('7', pos)); pos.leftTop.x += 25;
         _keys.push_back(TouchKey('8', pos)); pos.leftTop.x += 25;
-        _keys.push_back(TouchKey('9', pos)); pos.leftTop.x += 25;
+        _keys.push_back(TouchKey('9', pos));
 
         pos.leftTop.x = 20;
         pos.leftTop.y = 156;
 
-        _keys.push_back(TouchKey(KEY_SYMBOLS, nullptr, pos)); pos.leftTop.x += 25;
-        _keys.push_back(TouchKey(KEY_SMILEY, pos)); pos.leftTop.x += 25;
-        _keys.push_back(TouchKey(KEY_SPACE, pos)); pos.leftTop.x += 25;
+        pos.size.x = 40;
+        _keys.push_back(TouchKey("+=@", pos, KEY_SYMBOLS)); pos.leftTop.x += 40;
+        _keys.push_back(TouchKey("\uE008", pos, KEY_SMILEY)); pos.leftTop.x += 40;
+        pos.size.x = 145;
+        _keys.push_back(TouchKey("\uE057", pos, KEY_SPACE)); pos.leftTop.x += 145;
+        pos.size.x = 25;
         _keys.push_back(TouchKey('0', pos)); pos.leftTop.x += 25;
-        _keys.push_back(TouchKey('.', pos)); pos.leftTop.x += 25;
+        _keys.push_back(TouchKey('.', pos));
 
         pos.leftTop.x = 20;
         pos.leftTop.y = 36;
 
         /*page 2*/
-        _keys.push_back(TouchKey(KEY_DOT, pos)); pos.leftTop.x += 25;
-        _keys.push_back(TouchKey(KEY_COPYRIGHT, pos)); pos.leftTop.x += 25;
-        _keys.push_back(TouchKey('€', pos)); pos.leftTop.x += 25;
-        _keys.push_back(TouchKey('£', pos)); pos.leftTop.x += 25;
-        _keys.push_back(TouchKey('µ', pos)); pos.leftTop.x += 25;
-        _keys.push_back(TouchKey('§', pos)); pos.leftTop.x += 25;
+        _keys.push_back(TouchKey("\u2022", pos)); pos.leftTop.x += 25;
+        _keys.push_back(TouchKey("\u00A9", pos)); pos.leftTop.x += 25;
+        _keys.push_back(TouchKey("\u20AC", pos)); pos.leftTop.x += 25;
+        _keys.push_back(TouchKey("\u00A3", pos)); pos.leftTop.x += 25;
+        _keys.push_back(TouchKey("\u00A5", pos)); pos.leftTop.x += 25;
+        _keys.push_back(TouchKey("\u00B5", pos)); pos.leftTop.x += 25;
+        _keys.push_back(TouchKey("\u00A7", pos)); pos.leftTop.x += 25;
         _keys.push_back(TouchKey('1', pos)); pos.leftTop.x += 25;
         _keys.push_back(TouchKey('2', pos)); pos.leftTop.x += 25;
         _keys.push_back(TouchKey('3', pos)); pos.leftTop.x += 25;
@@ -787,6 +818,7 @@ namespace CTRPluginFramework
         pos.leftTop.x = 20;
         pos.leftTop.y = 76;
 
+        _keys.push_back(TouchKey("\u2122", pos)); pos.leftTop.x += 25;
         _keys.push_back(TouchKey('<', pos)); pos.leftTop.x += 25;
         _keys.push_back(TouchKey('>', pos)); pos.leftTop.x += 25;
         _keys.push_back(TouchKey('[', pos)); pos.leftTop.x += 25;
@@ -801,23 +833,27 @@ namespace CTRPluginFramework
         pos.leftTop.x = 20;
         pos.leftTop.y = 116;
 
-        _keys.push_back(TouchKey(KEY_SYMBOLS_PAGE, nullptr, pos)); pos.leftTop.x += 25;
+        _keys.push_back(TouchKey("\u2190", pos, KEY_SYMBOLS_PAGE)); pos.leftTop.x += 25;
         _keys.push_back(TouchKey('|', pos)); pos.leftTop.x += 25;
-        _keys.push_back(TouchKey('²', pos)); pos.leftTop.x += 25;
+        _keys.push_back(TouchKey("\u00B2", pos)); pos.leftTop.x += 25;
         _keys.push_back(TouchKey('`', pos)); pos.leftTop.x += 25;
-        _keys.push_back(TouchKey('°', pos)); pos.leftTop.x += 25;
+        _keys.push_back(TouchKey("\u00B0", pos)); pos.leftTop.x += 25;
         _keys.push_back(TouchKey('~', pos)); pos.leftTop.x += 25;
         _keys.push_back(TouchKey('^', pos)); pos.leftTop.x += 25;
         _keys.push_back(TouchKey('7', pos)); pos.leftTop.x += 25;
         _keys.push_back(TouchKey('8', pos)); pos.leftTop.x += 25;
         _keys.push_back(TouchKey('9', pos)); pos.leftTop.x += 25;
+        _keys.push_back(TouchKey("\u00B1", pos));
 
         pos.leftTop.x = 20;
         pos.leftTop.y = 156;
 
-        _keys.push_back(TouchKey(KEY_SYMBOLS, nullptr, pos)); pos.leftTop.x += 25;
-        _keys.push_back(TouchKey(KEY_SMILEY, pos)); pos.leftTop.x += 25;
-        _keys.push_back(TouchKey(KEY_SPACE, pos)); pos.leftTop.x += 25;
+        pos.size.x = 40;
+        _keys.push_back(TouchKey("+=@", pos, KEY_SYMBOLS)); pos.leftTop.x += 40;
+        _keys.push_back(TouchKey("\uE008", pos, KEY_SMILEY)); pos.leftTop.x += 40;
+        pos.size.x = 145;
+        _keys.push_back(TouchKey("\uE057", pos, KEY_SPACE)); pos.leftTop.x += 145;
+        pos.size.x = 25;
         _keys.push_back(TouchKey('0', pos)); pos.leftTop.x += 25;
         _keys.push_back(TouchKey('.', pos));
     }
@@ -834,8 +870,8 @@ namespace CTRPluginFramework
         _QwertyLowCase();
         /*36 - 71*/
         _QwertyUpCase();
-        /* 72 - 107 Page 1*/ 
-        /* 108 - 142 Page 2*/
+        /* 72 - 108 Page 1*/ 
+        /* 109 - 147 Page 2*/
         _QwertySymbols();
         _QwertyNintendo();
     }
@@ -966,7 +1002,16 @@ namespace CTRPluginFramework
             // Symbols
             if (_useSymbols)
             {
-                //TODO
+                if (!_symbolsPage)
+                {
+                    start = 72;
+                    end = 109;
+                }
+                else
+                {
+                    start = 109;
+                    end = 148;
+                }
             }
             // Nintendo
             else if (_useNintendo)
@@ -992,10 +1037,15 @@ namespace CTRPluginFramework
 
         for (int i = start; i < end; i++)
         {
-            ret = _keys[i]();
+            ret = _keys[i](_userInput);
 
             if (ret != -1)
             {
+                if (ret == 0x12345678)
+                {
+                    // _userInput has been modified by TouchKey
+                    return (true);
+                }
                 if (ret == KEY_ENTER)
                 {
                     _askForExit = true;
@@ -1014,6 +1064,7 @@ namespace CTRPluginFramework
                 else if (ret == KEY_SPACE)
                 {
                     _userInput += ' ';
+                    return (true);
                 }
                 else if (ret == KEY_CAPS)
                 {
@@ -1026,6 +1077,14 @@ namespace CTRPluginFramework
                 else if (ret == KEY_SYMBOLS)
                 {
                     _useSymbols = !_useSymbols;
+                }
+                else if (ret == KEY_SYMBOLS_PAGE)
+                {
+                    _symbolsPage = !_symbolsPage;
+
+                    int pos = _symbolsPage ? 132 : 95;
+
+                    _keys[pos].ChangeContent(_symbolsPage ? "\u2190" : "\u2192");
                 }
                 else
                 {
