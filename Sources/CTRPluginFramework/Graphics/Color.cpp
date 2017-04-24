@@ -30,7 +30,7 @@ namespace CTRPluginFramework
         Color::Grey = Color(128, 128, 128);
         Color::DarkGrey = Color(169, 169, 169);
         Color::Silver = Color(192, 192, 192);
-        Color::Gainsboro = Color(220, 220, 200);    
+        Color::Gainsboro = Color(220, 220, 220);    
         Color::LimeGreen = Color(50, 205, 50);
         Color::SkyBlue = Color(135, 206, 235);
         Color::DeepSkyBlue = Color(0, 191, 255);
