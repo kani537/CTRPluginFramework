@@ -3,6 +3,7 @@
 #include "CTRPluginFrameworkImpl/Preferences.hpp"
 
 #include <cmath>
+#include "ctrulib/util/utf.h"
 
 namespace CTRPluginFramework
 {
@@ -16,8 +17,6 @@ namespace CTRPluginFramework
     #define KEY_SPACE -5
     #define KEY_SYMBOLS_PAGE -6
     #define KEY_NINTENDO_PAGE -7
-    #define KEY_DOT 1
-    #define KEY_COPYRIGHT 1
 
 
     KeyboardImpl::KeyboardImpl(std::string text)
@@ -336,10 +335,10 @@ namespace CTRPluginFramework
                     else
                     {
                         start = 109;
-                        end = 148;
+                        end = 147;
                     }
 
-                    for (start; start < end; start++)
+                    for (; start < end; start++)
                     {
                         _keys[start].Draw();
                     }
@@ -347,8 +346,24 @@ namespace CTRPluginFramework
                 // Nintendo
                 else if (_useNintendo)
                 {
-                    // Temporary disabled
-                    _useNintendo = false;
+                    int start;
+                    int end;
+
+                    if (!_nintendoPage)
+                    {
+                        start = 147;
+                        end = 182;
+                    }
+                    else
+                    {
+                        start = 182;
+                        end = 217;
+                    }
+
+                    for (; start < end; start++)
+                    {
+                        _keys[start].Draw();
+                    }
                 }
                 // Letters
                 else
@@ -490,13 +505,22 @@ namespace CTRPluginFramework
                     else
                     {
                         start = 109;
-                        end = 148;
+                        end = 147;
                     }
                 }
                 // Nintendo
                 else if (_useNintendo)
                 {
-                    //TODO 
+                    if (!_nintendoPage)
+                    {
+                        start = 147;
+                        end = 182;
+                    }
+                    else
+                    {
+                        start = 182;
+                        end = 217;
+                    }
                 }
                 else
                 {
@@ -678,8 +702,8 @@ namespace CTRPluginFramework
         pos.size.x = 40;
         _keys.push_back(TouchKey("+=@", pos, KEY_SYMBOLS)); pos.leftTop.x += 40;
         _keys.push_back(TouchKey("\uE008", pos, KEY_SMILEY)); pos.leftTop.x += 40;
-        pos.size.x = 145;
-        _keys.push_back(TouchKey("\uE057", pos, KEY_SPACE)); pos.leftTop.x += 145;
+        pos.size.x = 120;
+        _keys.push_back(TouchKey("\uE057", pos, KEY_SPACE));
     }
 
     void    KeyboardImpl::_QwertyUpCase(void)
@@ -736,8 +760,8 @@ namespace CTRPluginFramework
         pos.size.x = 40;
         _keys.push_back(TouchKey("+=@", pos, KEY_SYMBOLS)); pos.leftTop.x += 40;
         _keys.push_back(TouchKey("\uE008", pos, KEY_SMILEY)); pos.leftTop.x += 40;
-        pos.size.x = 145;
-        _keys.push_back(TouchKey("\uE057", pos, KEY_SPACE)); pos.leftTop.x += 145;
+        pos.size.x = 120;
+        _keys.push_back(TouchKey("\uE057", pos, KEY_SPACE));
     }
 
     void KeyboardImpl::_QwertySymbols(void)
@@ -793,8 +817,8 @@ namespace CTRPluginFramework
         pos.size.x = 40;
         _keys.push_back(TouchKey("+=@", pos, KEY_SYMBOLS)); pos.leftTop.x += 40;
         _keys.push_back(TouchKey("\uE008", pos, KEY_SMILEY)); pos.leftTop.x += 40;
-        pos.size.x = 145;
-        _keys.push_back(TouchKey("\uE057", pos, KEY_SPACE)); pos.leftTop.x += 145;
+        pos.size.x = 120;
+        _keys.push_back(TouchKey("\uE057", pos, KEY_SPACE)); pos.leftTop.x += 120;
         pos.size.x = 25;
         _keys.push_back(TouchKey('0', pos)); pos.leftTop.x += 25;
         _keys.push_back(TouchKey('.', pos));
@@ -851,8 +875,8 @@ namespace CTRPluginFramework
         pos.size.x = 40;
         _keys.push_back(TouchKey("+=@", pos, KEY_SYMBOLS)); pos.leftTop.x += 40;
         _keys.push_back(TouchKey("\uE008", pos, KEY_SMILEY)); pos.leftTop.x += 40;
-        pos.size.x = 145;
-        _keys.push_back(TouchKey("\uE057", pos, KEY_SPACE)); pos.leftTop.x += 145;
+        pos.size.x = 120;
+        _keys.push_back(TouchKey("\uE057", pos, KEY_SPACE)); pos.leftTop.x += 120;
         pos.size.x = 25;
         _keys.push_back(TouchKey('0', pos)); pos.leftTop.x += 25;
         _keys.push_back(TouchKey('.', pos));
@@ -860,7 +884,115 @@ namespace CTRPluginFramework
 
     void KeyboardImpl::_QwertyNintendo()
     {
+        // Key rectangle
+        IntRect pos(20, 36, 25, 40);
 
+        /*page 1*/
+        _keys.push_back(TouchKey("\uE000" /* A */, pos)); pos.leftTop.x += 25;
+        _keys.push_back(TouchKey("\uE001" /* B */, pos)); pos.leftTop.x += 25;
+        _keys.push_back(TouchKey("\uE002" /* X */, pos)); pos.leftTop.x += 25;
+        _keys.push_back(TouchKey("\uE003" /* Y */, pos)); pos.leftTop.x += 25;
+        _keys.push_back(TouchKey("\uE004" /* L */, pos)); pos.leftTop.x += 25;
+        _keys.push_back(TouchKey("\uE005" /* R */, pos)); pos.leftTop.x += 25;
+        _keys.push_back(TouchKey("\uE054" /* ZL */, pos)); pos.leftTop.x += 25;
+        _keys.push_back(TouchKey("\uE055" /* ZR */, pos)); pos.leftTop.x += 25;
+        _keys.push_back(TouchKey("\uE006" /* DPAD */, pos)); pos.leftTop.x += 25;
+        _keys.push_back(TouchKey("\uE041" /* DPAD Wii*/, pos)); pos.leftTop.x += 25;
+        _keys.push_back(TouchKey(KEY_BACKSPACE, Icon::DrawClearSymbol, pos));
+
+        pos.leftTop.x = 20;
+        pos.leftTop.y = 76;
+
+        _keys.push_back(TouchKey("\uE04C" /* a */, pos)); pos.leftTop.x += 25;
+        _keys.push_back(TouchKey("\uE04D" /* b */, pos)); pos.leftTop.x += 25;
+        _keys.push_back(TouchKey("\uE04E" /* x */, pos)); pos.leftTop.x += 25;
+        _keys.push_back(TouchKey("\uE04F" /* y */, pos)); pos.leftTop.x += 25;
+        _keys.push_back(TouchKey("\uE052" /* l */, pos)); pos.leftTop.x += 25;
+        _keys.push_back(TouchKey("\uE053" /* r */, pos)); pos.leftTop.x += 25;
+        _keys.push_back(TouchKey("\uE050" /* L Stick */, pos)); pos.leftTop.x += 25;
+        _keys.push_back(TouchKey("\uE051" /* R Stick */, pos)); pos.leftTop.x += 25;
+        _keys.push_back(TouchKey("\uE042" /* A Wii */, pos)); pos.leftTop.x += 25;
+        _keys.push_back(TouchKey("\uE043" /* B Wii */, pos)); pos.leftTop.x += 25;
+        _keys.push_back(TouchKey(KEY_ENTER, Icon::DrawEnterKey, pos));
+
+        pos.leftTop.x = 20;
+        pos.leftTop.y = 116;
+
+        _keys.push_back(TouchKey("\u2192", pos, KEY_NINTENDO_PAGE)); pos.leftTop.x += 25;
+        _keys.push_back(TouchKey("\uE040" /* Power */, pos)); pos.leftTop.x += 25;
+        _keys.push_back(TouchKey("\uE044" /* Home */, pos)); pos.leftTop.x += 25;
+        _keys.push_back(TouchKey("\uE045" /* + */, pos)); pos.leftTop.x += 25;
+        _keys.push_back(TouchKey("\uE046" /* - */, pos)); pos.leftTop.x += 25;
+        _keys.push_back(TouchKey("\uE047" /* 1 */, pos)); pos.leftTop.x += 25;
+        _keys.push_back(TouchKey("\uE048" /* 2 */, pos)); pos.leftTop.x += 25;
+        _keys.push_back(TouchKey("\uE049" /* Stick */, pos)); pos.leftTop.x += 25;
+        _keys.push_back(TouchKey("\uE04A" /* C */, pos)); pos.leftTop.x += 25;
+        _keys.push_back(TouchKey("\uE04B" /* Z */, pos)); pos.leftTop.x += 25;
+
+        pos.leftTop.x = 20;
+        pos.leftTop.y = 156;
+
+        pos.size.x = 40;
+        _keys.push_back(TouchKey("+=@", pos, KEY_SYMBOLS)); pos.leftTop.x += 40;
+        _keys.push_back(TouchKey("\uE008", pos, KEY_SMILEY)); pos.leftTop.x += 40;
+
+        pos.size.x = 120;
+        _keys.push_back(TouchKey("\uE057", pos, KEY_SPACE));
+        pos.size.x = 25;
+
+        pos.leftTop.x = 20;
+        pos.leftTop.y = 36;
+
+        /*page 2*/
+        _keys.push_back(TouchKey("\uE079" /* DPAD UP */, pos)); pos.leftTop.x += 25;
+        _keys.push_back(TouchKey("\uE07B" /* DPAD DOWN */, pos)); pos.leftTop.x += 25;
+        _keys.push_back(TouchKey("\uE07C" /* DPAD LEFT */, pos)); pos.leftTop.x += 25;
+        _keys.push_back(TouchKey("\uE07D" /* DPAD RIGHT */, pos)); pos.leftTop.x += 25;
+        _keys.push_back(TouchKey("\uE07E" /* DPAD UP&DOWN */, pos)); pos.leftTop.x += 25;
+        _keys.push_back(TouchKey("\uE07F" /* DPAD LEFT&RIGHT */, pos)); pos.leftTop.x += 25;
+        _keys.push_back(TouchKey("\uE077" /* Wii Stick */, pos)); pos.leftTop.x += 25;
+        _keys.push_back(TouchKey("\uE078" /* Wii Power */, pos)); pos.leftTop.x += 25;
+        _keys.push_back(TouchKey("\uE056" /* Enter */, pos)); pos.leftTop.x += 25;
+        _keys.push_back(TouchKey("\uE057" /* Space*/, pos)); pos.leftTop.x += 25;
+        _keys.push_back(TouchKey(KEY_BACKSPACE, Icon::DrawClearSymbol, pos));
+
+        pos.leftTop.x = 20;
+        pos.leftTop.y = 76;
+
+        _keys.push_back(TouchKey("\uE007" /* Clock */, pos)); pos.leftTop.x += 25;
+        _keys.push_back(TouchKey("\uE008" /* Happy */, pos)); pos.leftTop.x += 25;
+        _keys.push_back(TouchKey("\uE009" /* Angry */, pos)); pos.leftTop.x += 25;
+        _keys.push_back(TouchKey("\uE00A" /* Sad */, pos)); pos.leftTop.x += 25;
+        _keys.push_back(TouchKey("\uE00B" /* ExpressionLess */, pos)); pos.leftTop.x += 25;
+        _keys.push_back(TouchKey("\uE00C" /* Sun */, pos)); pos.leftTop.x += 25;
+        _keys.push_back(TouchKey("\uE00D" /* Cloud */, pos)); pos.leftTop.x += 25;
+        _keys.push_back(TouchKey("\uE00E" /* Umbrella */, pos)); pos.leftTop.x += 25;
+        _keys.push_back(TouchKey("\uE00F" /* Snowman */, pos)); pos.leftTop.x += 25;
+        _keys.push_back(TouchKey("\uE06B" /* ? */, pos)); pos.leftTop.x += 25;
+        _keys.push_back(TouchKey(KEY_ENTER, Icon::DrawEnterKey, pos));
+
+        pos.leftTop.x = 20;
+        pos.leftTop.y = 116;
+
+        _keys.push_back(TouchKey("\u2190", pos, KEY_NINTENDO_PAGE)); pos.leftTop.x += 25;
+        _keys.push_back(TouchKey("\uE015" /*  */, pos)); pos.leftTop.x += 25;
+        _keys.push_back(TouchKey("\uE016" /*  */, pos)); pos.leftTop.x += 25;
+        _keys.push_back(TouchKey("\uE017" /*  */, pos)); pos.leftTop.x += 25;
+        _keys.push_back(TouchKey("\uE018" /*  */, pos)); pos.leftTop.x += 25;
+        _keys.push_back(TouchKey("\uE019" /* Arrow Right */, pos)); pos.leftTop.x += 25;
+        _keys.push_back(TouchKey("\uE01A" /* Arrow Left */, pos)); pos.leftTop.x += 25;
+        _keys.push_back(TouchKey("\uE01B" /* Arrow Up */, pos)); pos.leftTop.x += 25;
+        _keys.push_back(TouchKey("\uE01C" /* Arow Down */, pos)); pos.leftTop.x += 25;
+        _keys.push_back(TouchKey("\uE01E" /* Camera */, pos)); pos.leftTop.x += 25;
+
+        pos.leftTop.x = 20;
+        pos.leftTop.y = 156;
+
+        pos.size.x = 40;
+        _keys.push_back(TouchKey("+=@", pos, KEY_SYMBOLS)); pos.leftTop.x += 40;
+        _keys.push_back(TouchKey("\uE008", pos, KEY_SMILEY)); pos.leftTop.x += 40;
+        pos.size.x = 120;
+        _keys.push_back(TouchKey("\uE057", pos, KEY_SPACE));
     }
 
 
@@ -871,8 +1003,10 @@ namespace CTRPluginFramework
         /*36 - 71*/
         _QwertyUpCase();
         /* 72 - 108 Page 1*/ 
-        /* 109 - 147 Page 2*/
+        /* 109 - 146 Page 2*/
         _QwertySymbols();
+        /* 147 - 181 Page 1*/
+        /* 182 - 216 Page 2*/
         _QwertyNintendo();
     }
 
@@ -1010,13 +1144,22 @@ namespace CTRPluginFramework
                 else
                 {
                     start = 109;
-                    end = 148;
+                    end = 147;
                 }
             }
             // Nintendo
             else if (_useNintendo)
             {
-               //TODO 
+                if (!_nintendoPage)
+                {
+                    start = 147;
+                    end = 182;
+                }
+                else
+                {
+                    start = 182;
+                    end = 217;
+                }
             }
             else
             {
@@ -1053,13 +1196,41 @@ namespace CTRPluginFramework
                 }
                 else if (ret == KEY_BACKSPACE)
                 {
-                    if (_userInput.length() > 1)
+                    int size = _userInput.length();
+
+                    if (!size)
+                        return false;
+
+                    u8 *str = (u8 *)strdup(_userInput.c_str());// reinterpret_cast<u8 *>(const_cast<char *>(_userInput.c_str()));
+                    u8 *bak = str;
+                    int index = 0;
+
+                    while (*str)
+                    {
+                        u32 code;
+                        int units = decode_utf8(&code, str);
+
+                        if (units == -1)
+                            break;
+
+                        if (*(str + units))
+                            str += units;
+                        else
+                        {
+                            *str = '\0';
+                            _userInput = reinterpret_cast<char *>(bak);
+                            free(bak);
+                            return (true);
+                        }
+                        
+                    }
+                    /*if (_userInput.length() > 1)
                         _userInput.pop_back();
                     else if (_userInput.length() == 1)
                         _userInput.clear();
-                    else
-                        return (false);
-                    return (true);
+                    else*/
+                    return (false);
+                    //return (true);
                 }
                 else if (ret == KEY_SPACE)
                 {
@@ -1073,22 +1244,28 @@ namespace CTRPluginFramework
                 else if (ret == KEY_SMILEY)
                 {
                     _useNintendo = !_useNintendo;
+                    _useSymbols = false;
                 }
                 else if (ret == KEY_SYMBOLS)
                 {
                     _useSymbols = !_useSymbols;
+                    _useNintendo = false;
                 }
                 else if (ret == KEY_SYMBOLS_PAGE)
                 {
                     _symbolsPage = !_symbolsPage;
 
-                    int pos = _symbolsPage ? 132 : 95;
+                    //int pos = _symbolsPage ? 132 : 95;
 
-                    _keys[pos].ChangeContent(_symbolsPage ? "\u2190" : "\u2192");
+                    //_keys[pos].ChangeContent(_symbolsPage ? "\u2190" : "\u2192");
+                }
+                else if (ret == KEY_NINTENDO_PAGE)
+                {
+                    _nintendoPage = !_nintendoPage;
                 }
                 else
                 {
-                    if (_userInput.length() == 0 && ret == '.')
+                    if (_layout != Layout::QWERTY &&_userInput.length() == 0 && ret == '.')
                         _userInput += "0.";
                     else if (_max == 0 || _userInput.size() < _max)
                         _userInput += ret;

@@ -1,5 +1,6 @@
 #include "CTRPluginFramework.hpp"
 #include "cheats.hpp"
+#include "ctrulib/util/utf.h"
 
 namespace CTRPluginFramework
 {    
@@ -37,7 +38,14 @@ namespace CTRPluginFramework
         PluginMenu      *m = new PluginMenu("Zelda Ocarina Of Time 3D");
         PluginMenu      &menu = *m;
 
-        MenuEntry *entry = new MenuEntry("Test Keyboard");
+        std::string note = "t: ";
+
+        char buf[10] = { 0 };
+        encode_utf8((u8 *)buf, 0xE000);
+
+        note += buf;
+
+        MenuEntry *entry = new MenuEntry("Test Keyboard", note);
 
         entry->SetMenuFunc(TestStringKeyboard);
         menu.Append(entry);
