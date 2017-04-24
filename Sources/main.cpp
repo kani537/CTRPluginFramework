@@ -1,6 +1,7 @@
 #include "CTRPluginFramework.hpp"
 #include "cheats.hpp"
 #include "ctrulib/util/utf.h"
+#include "CTRPluginFrameworkImpl/Graphics/MessageBoxImpl.hpp"
 
 namespace CTRPluginFramework
 {    
@@ -33,6 +34,23 @@ namespace CTRPluginFramework
         }
     }
 
+    void    TestTextBox1(MenuEntry *entry)
+    {
+        MessageBoxImpl msgBox("This is a message !");
+
+        msgBox();
+    }
+
+    void    TestTextBox2(MenuEntry *entry)
+    {
+        MessageBoxImpl msgBox("This is a message !", DialogType::DialogOkCancel);
+
+        if (msgBox())
+            entry->Note() = "Success !";
+        else
+            entry->Note() = "Canceled !";
+    }
+
     int    main(void)
     {
         PluginMenu      *m = new PluginMenu("Zelda Ocarina Of Time 3D");
@@ -49,6 +67,17 @@ namespace CTRPluginFramework
 
         entry->SetMenuFunc(TestStringKeyboard);
         menu.Append(entry);
+
+        entry = new MenuEntry("Test Box 1");
+
+        entry->SetMenuFunc(TestTextBox1);
+        menu.Append(entry);
+
+        entry = new MenuEntry("Test Box 2");
+
+        entry->SetMenuFunc(TestTextBox2);
+        menu.Append(entry);
+
     
         /*
         ** Movements codes

@@ -1,6 +1,7 @@
 #ifndef CTRPLUGINFRAMEWORK_EVENTMANAGER_HPP
 #define CTRPLUGINFRAMEWORK_EVENTMANAGER_HPP
 
+#include "ctrulib/services/hid.h"
 #include <queue>
 
 namespace CTRPluginFramework
