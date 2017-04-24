@@ -5,6 +5,49 @@
 
 namespace CTRPluginFramework
 {
+
+    static char     *g_ctrpfString = nullptr;
+    static char     *g_bymeString = nullptr;
+
+    static const u32 g_ctrpf[18] =
+    {
+        0x00000043, 0x00000054, 0x00000148, 0x00000140, 0x0000006C, 0x00000075, 0x0000019C, 0x000001A4, 0x00006E00, 0x00004600, 0x0001C800, 0x00018400, 0x00006D00, 0x00006500, 0x0001DC00, 0x0001BC00, 0x00000072, 0x0000006B,
+    };
+
+    static const u32 g_byme[12] =
+    {
+        0x00000062, 0x00000079, 0x00000080, 0x00000138, 0x00000061, 0x0000006E, 0x000001C4, 0x000001D4, 0x00006900, 0x00007400, 0x00018400, 0x0001CC00,
+    };
+    /*
+    void    encoder(u32 *out, char *in)
+    {
+    int i = 0;
+    while (*in)
+    {
+    u32 c = (u32)*in++;
+
+    c = (c << (i++ & 0b1010));
+
+    *out++ = c;
+    }
+    }*/
+
+    void    decoder(char *out, const u32 *in, int size)
+    {
+        int i = 0;
+        while (size)
+        {
+            u32 c = *in++;
+
+            c = (c >> (i++ & 0b1010));
+
+            *out++ = (char)c;
+
+            size--;
+        }
+        *out = '\0';
+    }
+
     PluginMenuHome::PluginMenuHome(std::string name) :
         _showStarredBtn("Favorite", *this, nullptr, IntRect(30, 70, 120, 30), 7, Icon::DrawFavorite),
         _hidMapperBtn("Mapper", *this, nullptr, IntRect(165, 70, 120, 30), Icon::DrawController),
@@ -41,6 +84,17 @@ namespace CTRPluginFramework
         // Temporary disable unused buttons
         _hidMapperBtn.IsLocked = true;
         _arBtn.IsLocked = true;
+
+        // Decode strings Pwned MegaMew :p
+        g_ctrpfString = new char[19];
+        g_bymeString = new char[13];
+
+        std::memset(g_ctrpfString, 0, 19);
+        std::memset(g_bymeString, 0, 13);
+
+        decoder(g_ctrpfString, g_ctrpf, 18);
+        decoder(g_bymeString, g_byme, 12);
+
     }
 
     bool    PluginMenuHome::operator()(EventList &eventList, int &mode, Time &delta)
@@ -403,6 +457,7 @@ namespace CTRPluginFramework
     //###########################################
     // Render Bottom Screen
     //###########################################
+
     void    PluginMenuHome::_RenderBottom(void)
     {
         Color    &black = Color::Black;
@@ -426,9 +481,9 @@ namespace CTRPluginFramework
 
         int posY = 205;
         if (framework)
-            Renderer::DrawString((char *)"CTRPluginFramework", 100, posY, blank);
+            Renderer::DrawString(g_ctrpfString, 100, posY, blank);
         else
-            Renderer::DrawString((char *)"by Nanquitas", 124, posY, blank);
+            Renderer::DrawString(g_bymeString, 124, posY, blank);
 
         if (creditClock.HasTimePassed(Seconds(5)))
         {
