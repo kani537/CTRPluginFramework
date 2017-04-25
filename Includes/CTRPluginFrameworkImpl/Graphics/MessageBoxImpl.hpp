@@ -9,13 +9,14 @@ namespace CTRPluginFramework
 {
     enum class DialogType
     {
-        DialogOkOnly,
-        DialogOkCancel
+        DialogOk,
+        DialogOkCancel,
+        DialogYesNo
     };
     class MessageBoxImpl
     {
     public:
-        MessageBoxImpl(std::string message, DialogType dtype = DialogType::DialogOkOnly);
+        MessageBoxImpl(std::string message, DialogType dtype = DialogType::DialogOk);
         ~MessageBoxImpl() {};
 
         /*

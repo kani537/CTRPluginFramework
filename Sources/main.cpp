@@ -34,21 +34,25 @@ namespace CTRPluginFramework
         }
     }
 
-    void    TestTextBox1(MenuEntry *entry)
+    void    TestMsgBox1(MenuEntry *entry)
     {
         MessageBoxImpl msgBox("This is a message !");
 
         msgBox();
     }
 
-    void    TestTextBox2(MenuEntry *entry)
+    void    TestMsgBox2(MenuEntry *entry)
     {
-        MessageBoxImpl msgBox("This is a message !", DialogType::DialogOkCancel);
+        if (Controller::IsKeysPressed(A + L))
+        {
+            MessageBoxImpl msgBox("Do you want to rename it ?", DialogType::DialogYesNo);
 
-        if (msgBox())
-            entry->Note() = "Success !";
-        else
-            entry->Note() = "Canceled !";
+            // Display MessageBox and check user choice
+            if (msgBox())
+            {
+                // Display keyboard etc...
+            }
+        }
     }
 
     int    main(void)
@@ -70,12 +74,11 @@ namespace CTRPluginFramework
 
         entry = new MenuEntry("Test Box 1");
 
-        entry->SetMenuFunc(TestTextBox1);
+        entry->SetMenuFunc(TestMsgBox1);
         menu.Append(entry);
 
-        entry = new MenuEntry("Test Box 2");
+        entry = new MenuEntry("Test Box 2", TestMsgBox2);
 
-        entry->SetMenuFunc(TestTextBox2);
         menu.Append(entry);
 
     

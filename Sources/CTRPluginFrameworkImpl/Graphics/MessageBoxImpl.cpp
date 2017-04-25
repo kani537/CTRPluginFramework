@@ -14,20 +14,20 @@ namespace CTRPluginFramework
          *  30 + 16 = 46 + 20 = 66
          */
 
-        // If text width is inferior to 180px
-        if (Renderer::GetTextSize(message.c_str()) < 180.f)
+        // If text width is inferior to 191px
+        if (Renderer::GetTextSize(message.c_str()) < 191.f)
         {
             _box = IntRect(100, 82, 200, 75);
         }
         // Text is superior to 180px
         else
         {
-            int lineCount = Renderer::GetLineCount(message.c_str(), 180);
+            int lineCount = Renderer::GetLineCount(message.c_str(), 190.f);
 
             if (lineCount > 3)
                 lineCount = 3;
 
-            int height = 16 * lineCount + 60;
+            int height = 16 * lineCount + 59;
             int posY = (240 - height) / 2;
             _box = IntRect(100, posY, 200, height);
         }        
@@ -90,7 +90,7 @@ namespace CTRPluginFramework
                 }
                 case Key::DPadRight:
                 {
-                    if (_cursor == 0)
+                    if (_cursor == 0 && _dialogType != DialogType::DialogOk)
                         _cursor = 1;
                     break;
                 }
@@ -109,13 +109,13 @@ namespace CTRPluginFramework
 
         // Draw Text
         int posY = _box.leftTop.y + 20;
-        Renderer::DrawSysStringReturn((const u8 *)_message.c_str(), _box.leftTop.x + 10, posY, _box.leftTop.x + _box.size.x - 10, Color::Blank, _box.leftTop.y + _box.size.y - 30);
+        Renderer::DrawSysStringReturn((const u8 *)_message.c_str(), _box.leftTop.x + 5, posY, _box.leftTop.x + _box.size.x, Color::Blank, _box.leftTop.y + _box.size.y - 30);
        
         // Draw "Buttons"
         posY += 13;
 
         // Single button case
-        if (_dialogType == DialogType::DialogOkOnly)
+        if (_dialogType == DialogType::DialogOk)
         {
             int posX = 160;
 
@@ -142,12 +142,14 @@ namespace CTRPluginFramework
                 Renderer::DrawRect(posX, posY, 80, 20, Color::DimGrey);
                 Renderer::DrawRect(posX, posY, 80, 20, _cursor ? Color::Grey : Color::Blank, false);
 
+                const char *content = _dialogType == DialogType::DialogOkCancel ? "Ok" : "Yes";
+
                 // Text
-                float width = Renderer::GetTextSize("Ok");
+                float width = Renderer::GetTextSize(content);
 
                 posX += ((80 - width) / 2);
                 posY += 2;
-                Renderer::DrawSysString("Ok", posX, posY, 380, Color::Blank);
+                Renderer::DrawSysString(content, posX, posY, 380, _cursor ? Color::Silver : Color::Blank);
             }
 
             posY = posYBak;
@@ -160,12 +162,13 @@ namespace CTRPluginFramework
                 Renderer::DrawRect(posX, posY, 80, 20, Color::DimGrey);
                 Renderer::DrawRect(posX, posY, 80, 20, _cursor ? Color::Blank : Color::Grey, false);
 
+                const char *content = _dialogType == DialogType::DialogOkCancel ? "Cancel" : "No";
                 // Text
-                float width = Renderer::GetTextSize("Cancel");
+                float width = Renderer::GetTextSize(content);
 
                 posX += ((80 - width) / 2);
                 posY += 2;
-                Renderer::DrawSysString("Cancel", posX, posY, 380, Color::Blank);
+                Renderer::DrawSysString(content, posX, posY, 380, _cursor ? Color::Blank : Color::Silver);
             }
         }
     }
