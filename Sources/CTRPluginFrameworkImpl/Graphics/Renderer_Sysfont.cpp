@@ -47,7 +47,7 @@ namespace CTRPluginFramework
     {
         if (!text) return (0.0f);
 
-        float   w = 0.0f;
+        float   w = 0.f;
         u8      *c = (u8 *)text;        
 
         while (*c == '\n') c++;
@@ -57,6 +57,7 @@ namespace CTRPluginFramework
             if (!*c) break;
             Glyph *glyph = Font::GetGlyph(c);
             if (glyph == nullptr) break;
+
             w += glyph->Width();
         } while (true);
         return (w);
@@ -70,35 +71,32 @@ namespace CTRPluginFramework
         int     lineCount = 1;
         float   w = 0.0f;
         u8      *c = (u8 *)text;
-        
 
-        while (*c == '\n')
+        while (*c)
         {
-            c++;
-            lineCount++;
-        }
-
-        do
-        {
-            if (!*c) 
-                break;
             if (*c == '\n')
             {
                 lineCount++;
-                w = 0;
+                w = 0.f;
+                c++;
+                continue;
             }
+
             Glyph *glyph = Font::GetGlyph(c);
-            if (glyph == nullptr) break;
+
+            if (glyph == nullptr)
+                break;
+
             float gSize = glyph->Width();
+
             if (w + gSize > maxWidth)
             {
                 lineCount++;
                 w = gSize;
             }
             else
-                w += gSize;
-            
-        } while (true);
+                w += gSize;            
+        }
 
         return (lineCount);
     }
@@ -126,7 +124,8 @@ namespace CTRPluginFramework
 
     int Renderer::DrawGlyph(Glyph *glyph, int posX, int posY, Color &color)
     {
-        int  x = posX + glyph->xOffset;
+        posX += glyph->xOffset;
+        int  x = posX;
         int  y = posY;
         u8   *data = glyph->glyph;
 
@@ -203,13 +202,6 @@ namespace CTRPluginFramework
 
         do
         {
-            if (x >= xLimits)
-            {
-                x = posX;
-                lineCount++;
-                posY += 16;
-            }
-
             if (*str == '\r')
                 str++;
             if (*str == '\n')
@@ -228,6 +220,13 @@ namespace CTRPluginFramework
 
             if (glyph == nullptr)
                 break;
+
+            if (x + glyph->Width() >= xLimits)
+            {
+                x = posX;
+                lineCount++;
+                posY += 16;
+            }
 
             x = DrawGlyph(glyph, x, posY, color);
 
@@ -270,16 +269,18 @@ namespace CTRPluginFramework
 
             glyph = Font::GetGlyph(str);
 
+            float gWidth = glyph->Width();
+
             if (glyph == nullptr)
                 break;
-            if (x + glyph->xAdvance + glyph->xOffset > xLimits)
+            if (x + gWidth > xLimits)
             {
                 break;
             }
 
-            if (offset >= glyph->xAdvance + glyph->xOffset)
+            if (offset >= gWidth)
             {
-                offset -= (glyph->xAdvance + glyph->xOffset);
+                offset -= (gWidth);
                 continue;
             }
 
