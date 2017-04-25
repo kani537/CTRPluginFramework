@@ -4,15 +4,11 @@
 #include <string>
 #include "Rect.hpp"
 #include "CTRPluginFrameworkImpl/System/Events.hpp"
+#include "CTRPluginFramework/Menu/MessageBox.hpp"
 
 namespace CTRPluginFramework
 {
-    enum class DialogType
-    {
-        DialogOk,
-        DialogOkCancel,
-        DialogYesNo
-    };
+
     class MessageBoxImpl
     {
     public:

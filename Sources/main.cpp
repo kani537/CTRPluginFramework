@@ -1,7 +1,6 @@
 #include "CTRPluginFramework.hpp"
 #include "cheats.hpp"
 #include "ctrulib/util/utf.h"
-#include "CTRPluginFrameworkImpl/Graphics/MessageBoxImpl.hpp"
 
 namespace CTRPluginFramework
 {    
@@ -36,7 +35,7 @@ namespace CTRPluginFramework
 
     void    TestMsgBox1(MenuEntry *entry)
     {
-        MessageBoxImpl msgBox("This is a message !");
+        MessageBox msgBox("This is a message !");
 
         msgBox();
     }
@@ -45,7 +44,7 @@ namespace CTRPluginFramework
     {
         if (Controller::IsKeysPressed(A + L))
         {
-            MessageBoxImpl msgBox("Do you want to rename it ?", DialogType::DialogYesNo);
+            MessageBox msgBox("Do you want to rename it ?", DialogType::DialogYesNo);
 
             // Display MessageBox and check user choice
             if (msgBox())
