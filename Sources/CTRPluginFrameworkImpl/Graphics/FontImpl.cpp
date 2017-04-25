@@ -268,7 +268,7 @@ namespace CTRPluginFramework
         fontGlyphPos_s      glyphPos;
         Renderer::FontCalcGlyphPos(&glyphPos, &cwi, glyphIndex, 0.5f, 0.5f);
 
-        glyph->xOffset =  (glyphIndex == 0) ? glyphPos.xOffset : std::round(glyphPos.xOffset);
+        glyph->xOffset =  (glyphIndex == 0) ? 0 : std::round(glyphPos.xOffset);
         glyph->xAdvance = (glyphIndex == 0) ? glyphPos.xAdvance : std::round(glyphPos.xAdvance);
         glyph->glyph = newGlyph;
 
