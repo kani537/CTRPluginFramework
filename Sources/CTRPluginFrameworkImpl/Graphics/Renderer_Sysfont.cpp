@@ -232,7 +232,7 @@ namespace CTRPluginFramework
 
         } while (*str);
 
-        posY += 16 * lineCount;
+        posY += 16;
         return (x);
     }
 
