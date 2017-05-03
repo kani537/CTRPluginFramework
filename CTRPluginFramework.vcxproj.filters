@@ -414,6 +414,12 @@
     <ClInclude Include="Includes\CTRPluginFrameworkImpl\Graphics\MessageBoxImpl.hpp">
       <Filter>Fichiers d%27en-tête</Filter>
     </ClInclude>
+    <ClInclude Include="Includes\Unicode.h">
+      <Filter>Fichiers d%27en-tête</Filter>
+    </ClInclude>
+    <ClInclude Include="Includes\CTRPluginFramework\Menu\MessageBox.hpp">
+      <Filter>Fichiers d%27en-tête</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Sources\CTRPluginFramework\Graphics\Color.cpp">
@@ -789,6 +795,9 @@
       <Filter>Fichiers sources</Filter>
     </ClCompile>
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\Graphics\MessageBoxImpl.cpp">
+      <Filter>Fichiers sources</Filter>
+    </ClCompile>
+    <ClCompile Include="Sources\CTRPluginFramework\Menu\MessageBox.cpp">
       <Filter>Fichiers sources</Filter>
     </ClCompile>
   </ItemGroup>

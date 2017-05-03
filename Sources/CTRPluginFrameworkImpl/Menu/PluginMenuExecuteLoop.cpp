@@ -15,13 +15,14 @@ namespace CTRPluginFramework
 
     void    PluginMenuExecuteLoop::Add(MenuEntryImpl *entry)
     {
-        if (_firstInstance == nullptr)
+        if (_firstInstance == nullptr || entry == nullptr)
             return;
 
         std::vector<MenuEntryImpl*> &vector = _firstInstance->_executeLoop;
         std::queue<int>             &queue = _firstInstance->_availableIndex;
 
-        int id = entry->_radioId;
+        int     id = entry->_radioId;
+        bool    alreadyInHere = false;
 
         // If it's a radio entry
         if (entry->_flags.isRadio && id != -1 && !vector.empty())
@@ -29,18 +30,43 @@ namespace CTRPluginFramework
             for (int i = 0; i < vector.size(); i++)
             {
                 MenuEntryImpl *e = vector[i];
+
                 if (e != nullptr)
                 {
+                    // Check that it's not the same entry that we try to add
+                    if (e == entry)
+                    {
+                        alreadyInHere = true;
+                        continue;
+                    }
+
                     if (e->_flags.state && e->_flags.isRadio && e->_radioId == id)
                     {
+                        // If the entry was just added to the execute loop
                         if (e->_flags.justChanged)
                             Remove(e);
                         else
                             e->_TriggerState();
                     }
                 }
-            }            
+            }
         }
+
+        // If it's a non radio entry, check that the entry isn't in the vector
+        if (!entry->_flags.isRadio)
+        {
+            for (int i = 0; i < vector.size(); i++)
+            {
+                MenuEntryImpl *e = vector[i];
+
+                if (e == entry)
+                    alreadyInHere = true;
+            }
+        }
+
+        // If the entry is already in the loop, exit
+        if (alreadyInHere)
+            return;
 
         // If queue is empty
         if (queue.empty())
@@ -61,7 +87,7 @@ namespace CTRPluginFramework
 
     void    PluginMenuExecuteLoop::Remove(MenuEntryImpl *entry)
     {
-        if (_firstInstance == nullptr)
+        if (_firstInstance == nullptr || entry == nullptr)
             return;
 
         if (_firstInstance->_executeLoop.empty())

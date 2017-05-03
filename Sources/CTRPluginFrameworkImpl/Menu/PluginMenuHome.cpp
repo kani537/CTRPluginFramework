@@ -572,9 +572,11 @@ namespace CTRPluginFramework
         if (item->_type == MenuType::Entry)
         {
             MenuEntryImpl *entry = reinterpret_cast<MenuEntryImpl *>(item);
+
             // Change the state
             bool just = entry->_flags.justChanged;
             bool state = entry->_TriggerState();
+
             // If the entry has a valid funcpointer
             if (entry->GameFunc != nullptr)
             {

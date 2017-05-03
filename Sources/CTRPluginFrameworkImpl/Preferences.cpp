@@ -88,6 +88,7 @@ namespace CTRPluginFramework
         DrawTouchCursor = false;
 
         // Background initialization
+
         topBackgroundImage = new BMPImage("TopBackground.bmp");
 
         if (topBackgroundImage->IsLoaded())

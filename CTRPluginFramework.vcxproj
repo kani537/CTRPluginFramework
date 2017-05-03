@@ -169,6 +169,7 @@
     <ClInclude Include="Includes\CTRPluginFramework\Menu\Keyboard.hpp" />
     <ClInclude Include="Includes\CTRPluginFramework\Menu\MenuEntry.hpp" />
     <ClInclude Include="Includes\CTRPluginFramework\Menu\MenuFolder.hpp" />
+    <ClInclude Include="Includes\CTRPluginFramework\Menu\MessageBox.hpp" />
     <ClInclude Include="Includes\CTRPluginFramework\Menu\PluginMenu.hpp" />
     <ClInclude Include="Includes\CTRPluginFramework\System.hpp" />
     <ClInclude Include="Includes\CTRPluginFramework\System\Clock.hpp" />
@@ -240,6 +241,7 @@
     <ClInclude Include="Includes\libntrplg\xprintf.h" />
     <ClInclude Include="Includes\NTR.h" />
     <ClInclude Include="Includes\types.h" />
+    <ClInclude Include="Includes\Unicode.h" />
     <ClInclude Include="Sources\cheats.hpp" />
     <ClInclude Include="Sources\ctrulib\allocator\addrmap.h" />
     <ClInclude Include="Sources\ctrulib\allocator\mem_pool.h" />
@@ -311,6 +313,7 @@
     <ClCompile Include="Sources\CTRPluginFramework\Menu\Keyboard.cpp" />
     <ClCompile Include="Sources\CTRPluginFramework\Menu\MenuEntry.cpp" />
     <ClCompile Include="Sources\CTRPluginFramework\Menu\MenuFolder.cpp" />
+    <ClCompile Include="Sources\CTRPluginFramework\Menu\MessageBox.cpp" />
     <ClCompile Include="Sources\CTRPluginFramework\Menu\PluginMenu.cpp" />
     <ClCompile Include="Sources\CTRPluginFramework\System\Clock.cpp" />
     <ClCompile Include="Sources\CTRPluginFramework\System\Controller.cpp" />

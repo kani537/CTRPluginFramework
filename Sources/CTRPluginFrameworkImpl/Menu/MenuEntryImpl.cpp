@@ -71,18 +71,17 @@ namespace CTRPluginFramework
 
     bool    MenuEntryImpl::_TriggerState(void)
     {
+        // Disable if currently enabled
         if (_flags.state)
         {
-            _flags.state = 0;
-            _flags.justChanged = 0;
+            _flags.state = false;
+            _flags.justChanged = false;
             return (false);
         }
-        else
-        {
-            _flags.state = 1;
-            _flags.justChanged = 1;
-            return (true);
-        }
+        // Else enable
+        _flags.state = true;
+        _flags.justChanged = true;
+        return (true);
     }
 
     bool    MenuEntryImpl::_MustBeRemoved(void)
@@ -102,9 +101,9 @@ namespace CTRPluginFramework
             GameFunc(_owner);
         
         if (_flags.state && _flags.justChanged)
-            _flags.justChanged = 0;
+            _flags.justChanged = false;
         else if (!_flags.state && fl.justChanged && !fl.state)
-            _flags.justChanged = 0;
+            _flags.justChanged = false;
 
         return (_MustBeRemoved());
     }
