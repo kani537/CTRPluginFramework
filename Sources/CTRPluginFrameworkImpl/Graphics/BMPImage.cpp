@@ -1,6 +1,14 @@
 #include "CTRPluginFrameworkImpl/Graphics/BMPImage.hpp"
+
+#include "CTRPluginFramework/Graphics/Color.hpp"
+#include "CTRPluginFrameworkImpl/Graphics/PrivColor.hpp"
+#include "CTRPluginFramework/Graphics/OSD.hpp"
+#include "CTRPluginFrameworkImpl/Graphics/Renderer.hpp"
+#include "CTRPluginFrameworkImpl/System/Screen.hpp"
+
 #include "ctrulib/allocator/linear.h"
 #include "3DS.h"
+
 namespace CTRPluginFramework
 {
     BMPImage::~BMPImage()
@@ -226,8 +234,9 @@ namespace CTRPluginFramework
 
         if (!File::Exists(_fileName))
         {
-            sprintf(buffer, "%s not found !", _fileName.c_str());
-            OSD::Notify(buffer, red, black);
+            // Disabled loading log
+            //sprintf(buffer, "%s not found !", _fileName.c_str());
+            //OSD::Notify(buffer, red, black);
             return;
         }
 

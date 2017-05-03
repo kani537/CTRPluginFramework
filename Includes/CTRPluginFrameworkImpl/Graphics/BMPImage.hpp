@@ -2,19 +2,12 @@
 #define CTRPLUGINFRAMEWORK_BMPIMAHE_HPP
 
 #include "types.h"
-#include "CTRPluginFramework/Graphics/Color.hpp"
-#include "CTRPluginFrameworkImpl/Graphics/PrivColor.hpp"
-#include "CTRPluginFrameworkImpl/Graphics/Renderer.hpp"
-#include "CTRPluginFrameworkImpl/System/Screen.hpp"
-#include "CTRPluginFramework/Graphics/OSD.hpp"
+
 #include "CTRPluginFramework/System/File.hpp"
 #include "CTRPluginFrameworkImpl/Graphics/Vector.hpp"
 #include "CTRPluginFrameworkImpl/Graphics/Rect.hpp"
 
-#include <string>
-#include <vector>
 #include <cstring>
-#include <cstdio>
 
 namespace CTRPluginFramework
 {

@@ -4,10 +4,11 @@
 
 #include "CTRPluginFramework/Graphics/Color.hpp"
 #include "CTRPluginFramework/System/Touch.hpp"
-#include "CTRPluginFrameworkImpl/Graphics.hpp"
+#include "CTRPluginFrameworkImpl/Graphics/Renderer.hpp"
 
 #include <string>
 #include <vector>
+
 
 namespace CTRPluginFramework
 {
