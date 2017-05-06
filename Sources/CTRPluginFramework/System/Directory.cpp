@@ -247,7 +247,7 @@ namespace CTRPluginFramework
         output._isListed = false;
         output._isInit = false;
         res = FSUSER_OpenDirectory(&handle, _sdmcArchive, fsPath);
-        if (R_FAILED(res) && create)
+        if (R_FAILED(res))
         {
             if (create)
             {
@@ -266,7 +266,6 @@ namespace CTRPluginFramework
         output._handle = handle;
         output._isInit = true;
 
-        //output = Folders(bakpath, handle);// = Folders(bakpath, handle);
         return (res);
     }
 
