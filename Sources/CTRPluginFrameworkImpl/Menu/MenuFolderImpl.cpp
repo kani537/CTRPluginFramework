@@ -20,8 +20,13 @@ namespace CTRPluginFramework
 
     }
 
-    void    MenuFolderImpl::Append(MenuItem *item)
+    void    MenuFolderImpl::Append(MenuItem *item, bool isStar)
     {
+        if (!isStar)
+        {
+            item->_container = this;
+            item->_index = _items.size();
+        }        
         _items.push_back(item);
 
     }

@@ -15,6 +15,8 @@
 
 namespace CTRPluginFramework
 {
+    PluginMenuImpl  *PluginMenuImpl::_runningInstance = nullptr;
+
     PluginMenuImpl::PluginMenuImpl(std::string name, std::string note) : 
 
     _home(new PluginMenuHome(name)),
@@ -65,6 +67,9 @@ namespace CTRPluginFramework
         Time            delta;
         OSDImpl         &osd = *(OSDImpl::GetInstance());
         std::vector<Event>     eventList;
+
+        // Set _runningInstance to this menu
+        _runningInstance = this;
 
         OSD::Notify("Plugin ready !", Color(255, 255, 255), Color());
 
@@ -169,6 +174,25 @@ namespace CTRPluginFramework
                 osd();
             }
         }
+
+        // Remove Running Instance
+        _runningInstance = nullptr;
         return (0);
+    }
+
+    void PluginMenuImpl::UnStar(MenuItem* item)
+    {
+        if (_runningInstance != nullptr)
+        {
+            _runningInstance->_home->UnStar(item);
+        }
+    }
+
+    void    PluginMenuImpl::Refresh(void)
+    {
+        if (_runningInstance != nullptr)
+        {
+            _runningInstance->_home->Refresh();
+        }
     }
 }

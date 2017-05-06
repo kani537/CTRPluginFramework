@@ -10,21 +10,32 @@ namespace CTRPluginFramework
 
     }
 
-    void    MenuFolder::Append(MenuEntry *item)
+    void    MenuFolder::Hide(void) const
+    {
+        _item->Hide();
+    }
+
+    void    MenuFolder::Show(void) const
+    {
+        _item->Show();
+    }
+
+
+    void    MenuFolder::Append(MenuEntry *item) const
     {
         MenuEntryImpl *entry = item->_item;
 
         _item->Append(entry);
     }
 
-    void    MenuFolder::Append(MenuFolder *item)
+    void    MenuFolder::Append(MenuFolder *item) const
     {
         MenuFolderImpl *folder = item->_item;
 
         _item->Append(folder);
     }
 
-    u32    MenuFolder::ItemsCount(void)
+    u32    MenuFolder::ItemsCount(void) const
     {
         return (_item->ItemsCount());
     }

@@ -5,9 +5,8 @@
 
 namespace CTRPluginFramework
 {
-
-    static char     *g_ctrpfString = nullptr;
-    static char     *g_bymeString = nullptr;
+    static char* g_ctrpfString = nullptr;
+    static char* g_bymeString = nullptr;
 
     static const u32 g_ctrpf[18] =
     {
@@ -18,6 +17,7 @@ namespace CTRPluginFramework
     {
         0x00000062, 0x00000079, 0x00000080, 0x00000138, 0x00000061, 0x0000006E, 0x000001C4, 0x000001D4, 0x00006900, 0x00007400, 0x00018400, 0x0001CC00,
     };
+
     /*
     void    encoder(u32 *out, char *in)
     {
@@ -32,7 +32,7 @@ namespace CTRPluginFramework
     }
     }*/
 
-    void    decoder(char *out, const u32 *in, int size)
+    void decoder(char* out, const u32* in, int size)
     {
         int i = 0;
         while (size)
@@ -51,8 +51,8 @@ namespace CTRPluginFramework
     PluginMenuHome::PluginMenuHome(std::string name) :
         _showStarredBtn("Favorite", *this, nullptr, IntRect(30, 70, 120, 30), 7, Icon::DrawFavorite),
         _hidMapperBtn("Mapper", *this, nullptr, IntRect(165, 70, 120, 30), Icon::DrawController),
-        _gameGuideBtn("Game Guide", *this, nullptr, IntRect(30, 105, 120, 30), Icon::DrawGuide),        
-        _searchBtn("Search", *this, nullptr, IntRect(165, 105, 120, 30), Icon::DrawSearch),  
+        _gameGuideBtn("Game Guide", *this, nullptr, IntRect(30, 105, 120, 30), Icon::DrawGuide),
+        _searchBtn("Search", *this, nullptr, IntRect(165, 105, 120, 30), Icon::DrawSearch),
         _arBtn("ActionReplay", *this, nullptr, IntRect(30, 140, 120, 30)),
         _toolsBtn("Tools", *this, nullptr, IntRect(165, 140, 120, 30), Icon::DrawTools),
 
@@ -94,10 +94,9 @@ namespace CTRPluginFramework
 
         decoder(g_ctrpfString, g_ctrpf, 18);
         decoder(g_bymeString, g_byme, 12);
-
     }
 
-    bool    PluginMenuHome::operator()(EventList &eventList, int &mode, Time &delta)
+    bool PluginMenuHome::operator()(EventList& eventList, int& mode, Time& delta)
     {
         static int note = 0;
 
@@ -110,14 +109,14 @@ namespace CTRPluginFramework
                 if (_noteTB->ProcessEvent(eventList[i]) == false)
                 {
                     note = 0;
-                     _InfoBtn.SetState(false);
+                    _InfoBtn.SetState(false);
                     break;
-                }        
+                }
         }
         else
         {
             for (int i = 0; i < eventList.size(); i++)
-                _ProcessEvent(eventList[i]);            
+                _ProcessEvent(eventList[i]);
         }
 
 
@@ -141,17 +140,19 @@ namespace CTRPluginFramework
             std::swap(bak, _selector);
             _starMode = !_starMode;
 
-            MenuFolderImpl *f = _starMode ? _starred : _folder;
+            MenuFolderImpl* f = _starMode ? _starred : _folder;
             if (f->ItemsCount() == 0)
             {
                 _InfoBtn.Enable(false);
                 _AddFavoriteBtn.Enable(false);
+                _keyboardBtn.Enable(false);
                 _selectedTextSize = 0;
             }
             else
             {
-                MenuEntryImpl *e = reinterpret_cast<MenuEntryImpl *>(f->_items[_selector]);
+                MenuEntryImpl* e = reinterpret_cast<MenuEntryImpl *>(f->_items[_selector]);
                 _InfoBtn.Enable(e->note.size() > 0);
+                _keyboardBtn.Enable(e->MenuFunc != nullptr);
                 _AddFavoriteBtn.Enable(true);
                 _AddFavoriteBtn.SetState(e->_IsStarred());
 
@@ -188,30 +189,85 @@ namespace CTRPluginFramework
 
         if (_keyboardBtn())
         {
-            MenuFolderImpl *f = _starMode ? _starred : _folder;
-            MenuEntryImpl *e = reinterpret_cast<MenuEntryImpl *>(f->_items[_selector]);
+            MenuFolderImpl* f = _starMode ? _starred : _folder;
+            MenuEntryImpl* e = reinterpret_cast<MenuEntryImpl *>(f->_items[_selector]);
             e->MenuFunc(e->_owner);
         }
 
         return (_closeBtn());
     }
 
-    void    PluginMenuHome::Append(MenuItem *item)
+    void PluginMenuHome::Append(MenuItem* item) const
     {
         _folder->Append(item);
+    }
+
+    void PluginMenuHome::Refresh(void)
+    {
+        // If the currently selected folder is root
+        // Nothing to do
+        if (_folder->_container != nullptr)
+        {
+            // If current folder is hidden, close it
+            while (!_folder->_isVisible)
+            {
+                MenuFolderImpl *p = _folder->_Close(_selector);
+
+                if (p)
+                {
+                    _folder = p;
+                    if (_selector >= 1)
+                        _selector--;
+                }
+                else
+                    break;
+
+            }
+        }
+
+        // Starred folder
+        do
+        {
+            // If the currently selected folder is root
+            // Nothing to do
+            if (_starred->_container == nullptr)
+                break;
+
+            // If current folder is hidden, close it
+            while (!_starred->_isVisible)
+            {
+                MenuFolderImpl *p = _starred->_Close(_selector, true);
+
+                if (p)
+                {
+                    _starred = p;
+                    if (_selector >= 1)
+                        _selector--;
+                }
+                else
+                    break;
+            }
+        } while (true);
+
+        // Check for the validity of _selector range
+        MenuFolderImpl *folder = _starMode ? _starred : _folder;
+
+        if (_selector >= folder->ItemsCount())
+            _selector = 0;
+
     }
 
     //###########################################
     // Process Event
     //###########################################
-    void    PluginMenuHome::_ProcessEvent(Event &event)
+    void PluginMenuHome::_ProcessEvent(Event& event)
     {
         static Clock fastScroll;
         static Clock inputClock;
-        static MenuItem *last = nullptr;
+        static MenuItem* last = nullptr;
 
-        MenuFolderImpl *folder = _starMode ? _starred : _folder;
-        MenuItem *item;
+        MenuFolderImpl* folder = _starMode ? _starred : _folder;
+        MenuItem* item;
 
         switch (event.type)
         {
@@ -221,9 +277,9 @@ namespace CTRPluginFramework
                 {
                     switch (event.key.code)
                     {
-                        /*
-                        ** Selector
-                        **************/
+                            /*
+                            ** Selector
+                            **************/
                         case Key::CPadUp:
                         case Key::DPadUp:
                         {
@@ -241,7 +297,7 @@ namespace CTRPluginFramework
                             else
                                 _selector = 0;
                             break;
-                        } 
+                        }
                         case Key::CPadLeft:
                         case Key::DPadLeft:
                         {
@@ -257,8 +313,8 @@ namespace CTRPluginFramework
                             break;
                         }
                         default: break;
-                    }                    
-                    inputClock.Restart(); 
+                    }
+                    inputClock.Restart();
                 }
                 break;
             } // Event::KeyDown
@@ -266,9 +322,9 @@ namespace CTRPluginFramework
             {
                 switch (event.key.code)
                 {
-                    /*
-                    ** Selector
-                    **************/
+                        /*
+                        ** Selector
+                        **************/
                     case Key::CPadUp:
                     case Key::DPadUp:
                     {
@@ -305,21 +361,21 @@ namespace CTRPluginFramework
                         fastScroll.Restart();
                         break;
                     }
-                    /*
-                    ** Trigger entry
-                    ** Top Screen
-                    ******************/
+                        /*
+                        ** Trigger entry
+                        ** Top Screen
+                        ******************/
                     case Key::A:
                     {
                         _TriggerEntry();
                         break;
                     }
-                    /*
-                    ** Closing Folder
-                    ********************/
+                        /*
+                        ** Closing Folder
+                        ********************/
                     case Key::B:
                     {
-                        MenuFolderImpl *p = folder->_Close(_selector, _starMode);
+                        MenuFolderImpl* p = folder->_Close(_selector, _starMode);
                         if (p != nullptr)
                         {
                             if (_starMode)
@@ -334,7 +390,7 @@ namespace CTRPluginFramework
                         break;
                     }
                     default: break;
-                } 
+                }
                 break;
             } // End Key::Pressed event       
             default: break;
@@ -345,13 +401,13 @@ namespace CTRPluginFramework
         ** Scrolling text variables
         *********************************/
         if (folder->ItemsCount() > 0 && event.key.code != Key::Touchpad && (event.type < Event::TouchBegan || event.type > Event::TouchSwipped))
-        {  
+        {
             item = folder->_items[_selector];
             _selectedTextSize = Renderer::GetTextSize(item->name.c_str());
             _maxScrollOffset = static_cast<float>(_selectedTextSize) - 200.f;
             _scrollClock.Restart();
             _scrollOffset = 0.f;
-            _reverseFlow = false;      
+            _reverseFlow = false;
         }
         else if (folder->ItemsCount() == 0)
         {
@@ -361,28 +417,28 @@ namespace CTRPluginFramework
         ** Update favorite state
         **************************/
 
-        if (folder->ItemsCount() > 0  && _selector < folder->ItemsCount())
+        if (folder->ItemsCount() > 0 && _selector < folder->ItemsCount())
         {
             item = folder->_items[_selector];
             _AddFavoriteBtn.SetState(item->_IsStarred());
-            
+
             if (last != item)
             {
                 if (item->_type == MenuType::Entry)
                 {
-                    MenuEntryImpl *e = reinterpret_cast<MenuEntryImpl *>(item);
+                    MenuEntryImpl* e = reinterpret_cast<MenuEntryImpl *>(item);
                     _keyboardBtn.Enable(e->MenuFunc != nullptr);
                 }
                 else
                     _keyboardBtn.Enable(false);
-                 
+
                 last = item;
                 if (_noteTB != nullptr)
                 {
                     delete _noteTB;
                     _noteTB = nullptr;
                 }
-                
+
                 if (item->note.size() > 0)
                 {
                     static IntRect noteRect(40, 30, 320, 180);
@@ -399,16 +455,16 @@ namespace CTRPluginFramework
     // Render Menu
     //###########################################
 
-    void    PluginMenuHome::_RenderTop(void)
+    void PluginMenuHome::_RenderTop(void)
     {
-        static Color    black = Color();
-        static Color    blank(255, 255, 255);
-        static Color    dimGrey(15, 15, 15);
-        static Color    silver(160, 160, 160);
-        static IntRect  background(30, 20, 340, 200);
+        static Color black = Color();
+        static Color blank(255, 255, 255);
+        static Color dimGrey(15, 15, 15);
+        static Color silver(160, 160, 160);
+        static IntRect background(30, 20, 340, 200);
 
-        int   posY = 25;
-        int   posX = 40;
+        int posY = 25;
+        int posX = 40;
 
         // Draw background
         if (Preferences::topBackgroundImage->IsLoaded())
@@ -416,10 +472,10 @@ namespace CTRPluginFramework
         else
         {
             Renderer::DrawRect2(background, black, dimGrey);
-            Renderer::DrawRect(32, 22, 336, 196, blank, false);            
+            Renderer::DrawRect(32, 22, 336, 196, blank, false);
         }
 
-        MenuFolderImpl *folder = _starMode ? _starred : _folder;
+        MenuFolderImpl* folder = _starMode ? _starred : _folder;
 
         // Draw Title
         int width;
@@ -433,18 +489,18 @@ namespace CTRPluginFramework
             return;
         int i = std::max(0, _selector - 6);
         max = std::min(max, (i + 8));
-        
+
         for (; i < max; i++)
         {
-            MenuItem *item = folder->_items[i];
+            MenuItem* item = folder->_items[i];
             if (i == _selector)
             {
                 Renderer::MenuSelector(posX - 5, posY - 3, 320, 20);
             }
             if (item->_type == MenuType::Entry)
             {
-                MenuEntryImpl *entry = reinterpret_cast<MenuEntryImpl *>(item);
-                Renderer::DrawSysCheckBox(entry->name.c_str(), posX, posY, 350, i == _selector ? blank : silver, entry->IsActivated(), i == _selector ? _scrollOffset : 0.f);  
+                MenuEntryImpl* entry = reinterpret_cast<MenuEntryImpl *>(item);
+                Renderer::DrawSysCheckBox(entry->name.c_str(), posX, posY, 350, i == _selector ? blank : silver, entry->IsActivated(), i == _selector ? _scrollOffset : 0.f);
             }
             else
             {
@@ -458,14 +514,14 @@ namespace CTRPluginFramework
     // Render Bottom Screen
     //###########################################
 
-    void    PluginMenuHome::_RenderBottom(void)
+    void PluginMenuHome::_RenderBottom(void)
     {
-        Color    &black = Color::Black;
-        Color    &blank = Color::Blank;
-        Color    &dimGrey = Color::BlackGrey;
-        static IntRect  background(20, 20, 280, 200);
-        static Clock    creditClock;
-        static bool     framework = true;
+        Color& black = Color::Black;
+        Color& blank = Color::Blank;
+        Color& dimGrey = Color::BlackGrey;
+        static IntRect background(20, 20, 280, 200);
+        static Clock creditClock;
+        static bool framework = true;
 
         Renderer::SetTarget(BOTTOM);
 
@@ -475,7 +531,7 @@ namespace CTRPluginFramework
         else
         {
             Renderer::DrawRect2(background, black, dimGrey);
-            Renderer::DrawRect(22, 22, 276, 196, blank, false);            
+            Renderer::DrawRect(22, 22, 276, 196, blank, false);
         }
 
 
@@ -511,7 +567,7 @@ namespace CTRPluginFramework
     //###########################################
     // Update menu
     //###########################################
-    void    PluginMenuHome::_Update(Time delta)
+    void PluginMenuHome::_Update(Time delta)
     {
         /*
         ** Scrolling
@@ -540,8 +596,8 @@ namespace CTRPluginFramework
         /*
         ** Buttons
         *************/
-        bool        isTouched = Touch::IsDown();
-        IntVector   touchPos(Touch::GetPosition());
+        bool isTouched = Touch::IsDown();
+        IntVector touchPos(Touch::GetPosition());
 
         _showStarredBtn.Update(isTouched, touchPos);
         _gameGuideBtn.Update(isTouched, touchPos);
@@ -556,22 +612,22 @@ namespace CTRPluginFramework
         _closeBtn.Update(isTouched, touchPos);
     }
 
-    void    PluginMenuHome::_TriggerEntry(void)
+    void PluginMenuHome::_TriggerEntry(void)
     {
-        MenuFolderImpl *folder = _starMode ? _starred : _folder;
+        MenuFolderImpl* folder = _starMode ? _starred : _folder;
 
 
         if (_selector >= folder->ItemsCount())
             return;
 
-        MenuItem    *item = folder->_items[_selector];
+        MenuItem* item = folder->_items[_selector];
 
         /*
         ** MenuEntryImpl
         **************/
         if (item->_type == MenuType::Entry)
         {
-            MenuEntryImpl *entry = reinterpret_cast<MenuEntryImpl *>(item);
+            MenuEntryImpl* entry = reinterpret_cast<MenuEntryImpl *>(item);
 
             // Change the state
             bool just = entry->_flags.justChanged;
@@ -596,7 +652,7 @@ namespace CTRPluginFramework
         ****************/
         else
         {
-            MenuFolderImpl *p = reinterpret_cast<MenuFolderImpl *>(item);
+            MenuFolderImpl* p = reinterpret_cast<MenuFolderImpl *>(item);
             p->_Open(folder, _selector, _starMode);
             if (_starMode)
                 _starred = p;
@@ -607,7 +663,7 @@ namespace CTRPluginFramework
     }
 
 
-    void    PluginMenuHome::_DisplayNote(void)
+    void PluginMenuHome::_DisplayNote(void)
     {
         if (_noteTB != nullptr)
         {
@@ -618,45 +674,57 @@ namespace CTRPluginFramework
         }
     }
 
-    void   PluginMenuHome::_StarItem(void)
+    void PluginMenuHome::_StarItem(void)
     {
-        MenuFolderImpl *folder = _starMode ? _starred : _folder;
+        MenuFolderImpl* folder = _starMode ? _starred : _folder;
 
         if (_selector >= folder->ItemsCount())
             return;
 
-        MenuItem *item = folder->_items[_selector];
+        MenuItem* item = folder->_items[_selector];
 
         if (item)
         {
             bool star = item->_TriggerStar();
 
             if (star)
-                _starredConst->Append(item);
+                _starredConst->Append(item, true);
             else
             {
-                int count = _starredConst->ItemsCount();
-
-                if (count == 1)
-                {
-                    _starredConst->_items.clear();
-                }
-                else
-                {
-                    for (int i = 0; i < count; i++)
-                    {
-                        MenuItem *it = _starredConst->_items[i];
-
-                        if (it == item)
-                        {
-                            _starredConst->_items.erase(_starredConst->_items.begin() + i);
-                            break;
-                        }
-                    }                    
-                }
-                if (_selector >= folder->ItemsCount())
-                    _selector = std::max((int)folder->ItemsCount() - 1, 0);
+                UnStar(item);
             }
+        }
+    }
+
+    void PluginMenuHome::UnStar(MenuItem* item)
+    {
+        MenuFolderImpl* folder = _starMode ? _starred : _folder;
+
+        if (item != nullptr)
+        {
+            item->_TriggerStar();
+
+            int count = _starredConst->ItemsCount();
+
+            if (count == 1)
+            {
+                _starredConst->_items.clear();
+            }
+            else
+            {
+                for (int i = 0; i < count; i++)
+                {
+                    MenuItem* it = _starredConst->_items[i];
+
+                    if (it == item)
+                    {
+                        _starredConst->_items.erase(_starredConst->_items.begin() + i);
+                        break;
+                    }
+                }
+            }
+            if (_selector >= folder->ItemsCount())
+                _selector = std::max((int)folder->ItemsCount() - 1, 0);
         }
     }
 }

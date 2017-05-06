@@ -54,33 +54,38 @@ namespace CTRPluginFramework
         }
     }
 
+
+
+    MenuFolder  *g_folderToHide = nullptr;
+
+    void    HS(MenuEntry *entry)
+    {
+        static bool isHidden = false;
+
+        if (isHidden)
+            g_folderToHide->Show();
+        else
+            g_folderToHide->Hide();
+
+        isHidden = !isHidden;
+    }
+
     int    main(void)
     {
         PluginMenu      *m = new PluginMenu("Zelda Ocarina Of Time 3D");
         PluginMenu      &menu = *m;
 
-        std::string note = "t: ";
+        g_folderToHide = new MenuFolder("Folder to hide");
 
-        char buf[10] = { 0 };
-        encode_utf8((u8 *)buf, 0xE000);
+        menu.Append(g_folderToHide);
 
-        note += buf;
+        g_folderToHide->Append(new MenuEntry("Test Keyboard", nullptr, TestStringKeyboard));
+        g_folderToHide->Append(new MenuEntry("Test Box 1", nullptr, TestMsgBox1));
+        g_folderToHide->Append(new MenuEntry("Test Box 2", TestMsgBox2));
+        g_folderToHide->Append(new MenuEntry("Hide", nullptr, HS));
 
-        MenuEntry *entry = new MenuEntry("Test Keyboard", note);
-
-        entry->SetMenuFunc(TestStringKeyboard);
-        menu.Append(entry);
-
-        entry = new MenuEntry("Test Box 1");
-
-        entry->SetMenuFunc(TestMsgBox1);
-        menu.Append(entry);
-
-        entry = new MenuEntry("Test Box 2", TestMsgBox2);
-
-        menu.Append(entry);
-
-    
+        menu.Append(new MenuEntry("Hide", nullptr, HS));
+        
         /*
         ** Movements codes
         ********************/

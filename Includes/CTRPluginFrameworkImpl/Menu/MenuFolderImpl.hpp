@@ -1,8 +1,9 @@
 #ifndef CTRPLUGINFRAMEWORKIMPL_MENUFOLDERIMPL_HPP
 #define CTRPLUGINFRAMEWORKIMPL_MENUFOLDERIMPL_HPP
 
+#include "types.h"
+
 #include "CTRPluginFrameworkImpl/Menu/MenuItem.hpp"
-#include "CTRPluginFrameworkImpl/Menu/MenuFolderImpl.hpp"
 #include <vector>
 #include <string>
 
@@ -15,10 +16,11 @@ namespace CTRPluginFramework
         MenuFolderImpl(std::string name, std::string note = "");
         ~MenuFolderImpl();
 
-        void    Append(MenuItem *item);
+        void    Append(MenuItem *item, bool isStar = false);
         u32     ItemsCount(void);
 
     private:
+        friend class MenuItem;
         friend class PluginMenuHome;
         friend class Menu;
 

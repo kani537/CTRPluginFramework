@@ -20,7 +20,10 @@ namespace CTRPluginFramework
         // Return true if the Close Button is pressed, else false
         bool    operator()(EventList &eventList, int &mode, Time &delta);
         void    Append(MenuItem *item);
+        void    Refresh(void);
+        void    UnStar(MenuItem* item);
     private:
+        friend class PluginMenuImpl;
 
         void    _ProcessEvent(Event &event);
         void    _RenderTop(void);

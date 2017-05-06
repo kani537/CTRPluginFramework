@@ -24,9 +24,12 @@ namespace CTRPluginFramework
         void    Append(MenuItem *item);
         void    Callback(CallbackPointer callback);
         int     Run(void);
-        void    Null(void);
+
+        static void UnStar(MenuItem *item);
+        static void Refresh(void);
     private: 
 
+        static PluginMenuImpl       *_runningInstance;
 
         bool                        _isOpen;
         bool                        _pluginRun;
