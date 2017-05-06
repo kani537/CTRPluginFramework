@@ -310,9 +310,7 @@ namespace CTRPluginFramework
         if (create)
             mode |= File::CREATE; 
         
-        int res;
-        res = File::Open(output, fullPath, mode);
-        return (res);
+        return (File::Open(output, fullPath, mode));
     }
 
     /*
@@ -324,9 +322,7 @@ namespace CTRPluginFramework
     {
 
         FS_DirectoryEntry   entry;
-        u32                 units;
         u32                 entriesNb = 0;
-        u8                  filename[PATH_MAX + 1] = {0};
 
         while (R_SUCCEEDED(FSDIR_Read(_handle, &entriesNb, 1, &entry)))
         {
@@ -369,15 +365,14 @@ namespace CTRPluginFramework
             return (-1);
 
         bool patternCheck = (pattern.size() > 0);
-       // FS_DirectoryEntry   entries[MAX_ENTRIES] = {0};
         FS_DirectoryEntry   entry;
-        Result              res;
-        u32                 units;
-        u32                 entriesNb = 0;
+        ssize_t             units;
         u8                  filename[PATH_MAX + 1] = {0};
 
         if (!_isListed)
             _List();
+
+        int   count = files.size();
 
         for (int i = 0; i < _list.size(); i++)
         {
@@ -394,7 +389,7 @@ namespace CTRPluginFramework
                 continue;
             files.push_back(fn);           
         }
-        return (res);
+        return (files.size() - count);
     }
 
     /*
@@ -406,15 +401,14 @@ namespace CTRPluginFramework
             return (-1);
 
         bool patternCheck = (pattern.size() > 0);
-        //FS_DirectoryEntry   entries[MAX_ENTRIES] = {0};
         FS_DirectoryEntry   entry;
-        Result              res;
-        u32                 units;
-        u32                 entriesNb = 0;
+        ssize_t             units;
         u8                  filename[PATH_MAX + 1] = {0};
 
         if (!_isListed)
             _List();
+
+        int count = folders.size();
 
         for (int i = 0; i < _list.size(); i++)
         {
@@ -431,7 +425,7 @@ namespace CTRPluginFramework
                 continue;
             folders.push_back(fn);  
         }
-        return (0);
+        return (folders.size() - count);
     }
 
     std::string &Directory::GetPath(void)

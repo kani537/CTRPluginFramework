@@ -19,7 +19,7 @@ namespace CTRPluginFramework
 
         // Return true if the Close Button is pressed, else false
         bool    operator()(EventList &eventList, int &mode, Time &delta);
-        void    Append(MenuItem *item);
+        void    Append(MenuItem *item) const;
         void    Refresh(void);
         void    UnStar(MenuItem* item);
     private:
