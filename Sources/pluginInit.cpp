@@ -95,6 +95,9 @@ namespace CTRPluginFramework
         exit(1);
     }
 
+    extern "C" vu32* hidSharedMem;
+    FS_Archive  _sdmcArchive;
+
     void    InitColors(void);
     void    Initialize(void)
     {
@@ -116,14 +119,6 @@ namespace CTRPluginFramework
 
         // Init Colors
         InitColors();
-    }
-
-    extern "C" vu32* hidSharedMem;
-    FS_Archive  _sdmcArchive;
-
-    void  ThreadInit(void *arg)
-    {
-        CTRPluginFramework::Initialize();
 
         // Init sdmcArchive
         {
@@ -145,45 +140,53 @@ namespace CTRPluginFramework
         // Protect HID Shared Memory in case we want to push inputs
         Process::ProtectMemory((u32)hidSharedMem, 0x1000);
 
-        // Reduce Priority
-        ProcessImpl::Play(false);
 
         //if (tid != 0x0004000000183600)
         //Sleep(Seconds(5));
 
         // Init Font characters
+        /*{
+        // 0-9
+
+        std::string str = "";
+        for (u32 i = '0'; i <= '9'; i++)
         {
-            // 0-9
-
-            std::string str = "";
-            for (u32 i = '0'; i <= '9'; i++)
-            {
-                str += i;
-            }
-
-            // a-z
-            for (u32 i = 'a'; i <= 'z'; i++)
-            {
-                str += i;
-            }
-
-            // A-Z
-            for (u32 i = 'A'; i <= 'Z'; i++)
-            {
-                str += i;
-            }
-            str += "\uE000\uE001\uE002\uE003\uE004\uE005\uE006\uE020\uE021\uE022\uE023\uE024\uE025\uE026\uE027";
-
-            u8 *s = (u8 *)str.c_str();
-
-            do
-            {
-                Glyph *g = Font::GetGlyph(s);
-            } while (*s);
-
+        str += i;
         }
+
+        // a-z
+        for (u32 i = 'a'; i <= 'z'; i++)
+        {
+        str += i;
+        }
+
+        // A-Z
+        for (u32 i = 'A'; i <= 'Z'; i++)
+        {
+        str += i;
+        }
+        str += "\uE000\uE001\uE002\uE003\uE004\uE005\uE006\uE020\uE021\uE022\uE023\uE024\uE025\uE026\uE027";
+
+        u8 *s = (u8 *)str.c_str();
+
+        do
+        {
+        Glyph *g = Font::GetGlyph(s);
+        } while (*s);
+
+        }*/
+        
+    }
+
+    void  ThreadInit(void *arg)
+    {
+        CTRPluginFramework::Initialize();
+
+        // Reduce Priority
+        ProcessImpl::Play(false);
+
         // Initialize Globals settings
-        Preferences::Initialize();
+        Preferences::Initialize();        
 
         // Start plugin
         int ret = main();
