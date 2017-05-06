@@ -128,7 +128,7 @@ namespace CTRPluginFramework
         /*
         ** Return the current position in the file
         *************************************************/
-        u64     Tell(void);
+        u64     Tell(void) const;
         /*
         **
         *************************************************/
@@ -139,7 +139,7 @@ namespace CTRPluginFramework
         ** -1 : Error    
         ** Other : file size
         *************************************************/
-        u64     GetSize(void);
+        u64     GetSize(void) const;
         /*
         ** Dump memory into a file
         ** address to dump from
@@ -161,7 +161,12 @@ namespace CTRPluginFramework
         *************************************************/
         int     Inject(u32 address, u32 length);
         
-        File (){}
+        File(void);
+
+        /*
+        ** Return if the File is open
+        *************************************************/
+        bool    IsOpen(void) const;
 
     private:
         std::string     _path;
@@ -169,8 +174,7 @@ namespace CTRPluginFramework
         Handle          _handle;
         u64             _offset;
         int             _mode;
-
-        File (std::string &path, Handle handle, int mode);
+        bool            _isOpen;
     };
 }
 

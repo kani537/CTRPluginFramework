@@ -100,15 +100,7 @@ namespace CTRPluginFramework
         Result res;
 
         res = FSUSER_OpenFile(&handle, _sdmcArchive, fsPath, fsmode, 0);
-        /*if (R_FAILED(res) && mode & CREATE)
-        {
-            res = Create(path);
-            if (R_SUCCEEDED(res))  
-            {
-                res = FSUSER_OpenFile(&handle, _sdmcArchive, fsPath, fsmode, 0);
-            } 
-                
-        }*/
+
         if (R_FAILED(res))
             return (res);
 
@@ -116,6 +108,7 @@ namespace CTRPluginFramework
         output._mode = mode;
         output._path = path;
         output._offset = 0;
+        output._isOpen = true;
 
         if (mode & TRUNCATE)
             FSFILE_SetSize(handle, 0);
@@ -130,38 +123,32 @@ namespace CTRPluginFramework
             output._name = path.substr(0, pos);
         else
             output._name = path;
-        //output = File(path, handle, mode);
         return (res);
-
-    }
-
-    File::File(std::string &path, Handle handle, int mode) :
-    _path(path), _mode(mode), _offset(0)
-    {
-        _handle = handle;
-        if (mode & TRUNCATE)
-            FSFILE_SetSize(handle, 0);
-
-        u32     pos = path.rfind('/');
-
-        if (pos != std::string::npos)
-            path = path.substr(pos);
-
-        pos = path.rfind('.');
-        if (pos != std::string::npos)
-            _name = path.substr(0, pos);
-        else
-            _name = path;
     }
 
     int     File::Close(void)
     {
-        return (FSFILE_Close(_handle));
+        if (!_isOpen)
+            return (-1);
+
+        Result res = FSFILE_Close(_handle);
+        
+        if (R_SUCCEEDED(res))
+        {
+            _path = "";
+            _name = "";
+            _handle = 0;
+            _offset = 0;
+            _mode = 0;
+            _isOpen = false;
+        }
+
+        return (res);
     }
 
     int     File::Read(void *buffer, u32 length)
     {
-        if (!buffer)
+        if (!_isOpen || !buffer)
             return (-1);
         if (length == 0)
             return (0);
@@ -178,7 +165,7 @@ namespace CTRPluginFramework
 
     int     File::Write(const void *data, u32 length)
     {
-        if (!data || !(_mode & WRITE))
+        if (!_isOpen || !data || !(_mode & WRITE))
             return (-1);
         if (length == 0)
             return (0);
@@ -206,6 +193,9 @@ namespace CTRPluginFramework
 
     int     File::Seek(s64 position, SeekPos rel)
     {
+        if (!_isOpen)
+            return (-1);
+
         u64 offset;
 
         switch (rel)
@@ -239,7 +229,7 @@ namespace CTRPluginFramework
         return (0);
     }
 
-    u64     File::Tell(void)
+    u64     File::Tell(void) const
     {
         return (_offset);
     }
@@ -249,19 +239,25 @@ namespace CTRPluginFramework
         _offset = 0;
     }
 
-    u64     File::GetSize(void)
+    u64     File::GetSize(void) const
     {
-        u64 file = 0;
+        if (!_isOpen)
+            return (0);
+        
+        u64 size = 0;
 
-        if (R_FAILED(FSFILE_GetSize(_handle, &file)))
+        if (R_FAILED(FSFILE_GetSize(_handle, &size)))
             return (-1);
-        return (file);
+        return (size);
     }
 
     int     File::Dump(u32 address, u32 length)
     {
+        if (!_isOpen)
+            return (-1);
+
         bool    unpause = false;
-        // Ifgame not paused, then pause it
+        // If game not paused, then pause it
         if (!ProcessImpl::IsPaused())
         {
             ProcessImpl::Pause(false);
@@ -295,6 +291,9 @@ namespace CTRPluginFramework
 
     int     File::Inject(u32 address, u32 length)
     {
+        if (!_isOpen)
+            return (-1);
+
         u8  *buffer = new u8[0x40000]; //256KB
 
         if (buffer == nullptr || !Process::CheckAddress(address, MEMPERM_READ))
@@ -333,5 +332,14 @@ namespace CTRPluginFramework
         if (unpause)
             ProcessImpl::Play(false);
         return (-1);
+    }
+
+    File::File(): _handle(0), _offset(0), _mode(0), _isOpen(false)
+    {
+    }
+
+    bool    File::IsOpen(void) const
+    {
+        return (_isOpen);
     }
 }
