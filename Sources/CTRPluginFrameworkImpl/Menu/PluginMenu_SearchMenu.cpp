@@ -26,11 +26,6 @@ namespace CTRPluginFramework
         _isSubmenuOpen = false;
         _action = false;
         _alreadyExported = false;
-
-        if (File::Open(_export, "ExportedAddresses.txt", File::WRITE | File::APPEND))
-        {
-            File::Open(_export, "ExportedAddresses.txt", File::WRITE | File::CREATE);
-        }
     }
 
     /*
@@ -299,7 +294,7 @@ namespace CTRPluginFramework
         }
     }
 
-    void    SearchMenu::Update()
+    void    SearchMenu::Update(void)
     {
         _resultsAddress.clear();
         _resultsNewValue.clear();
@@ -380,6 +375,17 @@ namespace CTRPluginFramework
                 Renderer::DrawString((char *)str.c_str(), 245, posY, blank);
             }
             posY += 2;
+        }
+    }
+
+    void    SearchMenu::_OpenExportFile(void)
+    {
+        if (_export.IsOpen())
+            return;
+
+        if (File::Open(_export, "ExportedAddresses.txt", File::WRITE | File::APPEND))
+        {
+            File::Open(_export, "ExportedAddresses.txt", File::WRITE | File::CREATE);
         }
     }
 
@@ -496,6 +502,8 @@ namespace CTRPluginFramework
         _action = true;
         if (!_alreadyExported)
         {
+            if (!_export.IsOpen())
+                _OpenExportFile();
             _export.WriteLine("");
             time_t t = time(NULL);
             char *ct = ctime(&t);
@@ -516,6 +524,9 @@ namespace CTRPluginFramework
         _action = true;
         if (!_alreadyExported)
         {
+            if (!_export.IsOpen())
+                _OpenExportFile();
+
             _export.WriteLine("");
             time_t t = time(NULL);
             char *ct = ctime(&t);
@@ -535,6 +546,5 @@ namespace CTRPluginFramework
             std::string str = _resultsAddress[i] +" : " + _resultsNewValue[i];
             _export.WriteLine(str);
         }
-
     }
 }

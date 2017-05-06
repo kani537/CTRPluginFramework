@@ -44,6 +44,7 @@ namespace CTRPluginFramework
         File                        _export;
 
         void        _DrawSubMenu(void);
+        void        _OpenExportFile(void);
         void        _Save(void);
         void        _Edit(void);
         void        _JumpInEditor(void);
