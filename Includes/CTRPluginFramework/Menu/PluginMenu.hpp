@@ -18,10 +18,12 @@ namespace CTRPluginFramework
         PluginMenu(std::string name = "Cheats", std::string note = "");
         ~PluginMenu(void){};
 
-        void    Append(MenuEntry *item);
-        void    Append(MenuFolder *item);
-        void    Callback(CallbackPointer callback);
-        int     Run(void);
+        void    Append(MenuEntry *item) const;
+        void    Append(MenuFolder *item) const;
+        void    Callback(CallbackPointer callback) const;
+        int     Run(void) const;
+        void    SetSearchButtonState(bool isEnabled) const;
+        void    SetActionReplayButtonState(bool isEnabled) const;
 
     private:
         

@@ -27,6 +27,9 @@ namespace CTRPluginFramework
 
         static void UnStar(MenuItem *item);
         static void Refresh(void);
+
+        void    TriggerSearch(bool state) const;
+        void    TriggerActionReplay(bool state) const;
     private: 
 
         static PluginMenuImpl       *_runningInstance;

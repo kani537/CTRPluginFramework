@@ -195,4 +195,14 @@ namespace CTRPluginFramework
             _runningInstance->_home->Refresh();
         }
     }
+
+    void    PluginMenuImpl::TriggerSearch(bool state) const
+    {
+        _home->TriggerSearch(state);
+    }
+
+    void    PluginMenuImpl::TriggerActionReplay(bool state) const
+    {
+        _home->TriggerActionReplay(state);
+    }
 }

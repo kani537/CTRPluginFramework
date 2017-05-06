@@ -727,4 +727,14 @@ namespace CTRPluginFramework
                 _selector = std::max((int)folder->ItemsCount() - 1, 0);
         }
     }
+
+    void    PluginMenuHome::TriggerSearch(bool state)
+    {
+        _searchBtn.IsLocked = state;
+    }
+
+    void    PluginMenuHome::TriggerActionReplay(bool state)
+    {
+        _arBtn.IsLocked = state;
+    }
 }
