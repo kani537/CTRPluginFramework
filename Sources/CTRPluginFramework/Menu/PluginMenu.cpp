@@ -1,5 +1,6 @@
 #include "CTRPluginFramework/Menu.hpp"
 #include "CTRPluginFrameworkImpl/Menu.hpp"
+#include "CTRPluginFrameworkImpl/Menu/PluginMenuImpl.hpp"
 
 namespace CTRPluginFramework
 {
@@ -9,21 +10,32 @@ namespace CTRPluginFramework
 
     }
 
+    PluginMenu::~PluginMenu(void)
+    {
+    }
+
     void    PluginMenu::Append(MenuEntry *item) const
     {
-        MenuEntryImpl *entry = item->_item;
+        if (item == nullptr)
+            return;
+
+        MenuEntryImpl *entry = item->_item.get();
         _menu->Append(entry);
     }
 
     void    PluginMenu::Append(MenuFolder *item) const
     {
-        MenuFolderImpl *folder = item->_item;
+        if (item == nullptr)
+            return;
+
+        MenuFolderImpl *folder = item->_item.get();
         _menu->Append(folder);
     }
 
     void    PluginMenu::Callback(CallbackPointer callback) const
     {
-        _menu->Callback(callback);
+        if (callback != nullptr)
+            _menu->Callback(callback);
     }
 
     int    PluginMenu::Run(void) const

@@ -35,6 +35,10 @@ namespace CTRPluginFramework
         _item->MenuFunc = MenuFunc;
     }
 
+    MenuEntry::~MenuEntry()
+    {
+    }
+
     void    MenuEntry::Disable(void) const
     {
         _item->Disable();

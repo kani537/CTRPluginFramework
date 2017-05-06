@@ -295,6 +295,7 @@
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\Menu\Menu.cpp" />
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\Menu\MenuEntryImpl.cpp" />
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\Menu\MenuFolderImpl.cpp" />
+    <ClCompile Include="Sources\CTRPluginFrameworkImpl\Menu\MenuItem.cpp" />
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\Menu\PluginMenuExecuteLoop.cpp" />
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\Menu\PluginMenuHome.cpp" />
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\Menu\PluginMenuImpl.cpp" />

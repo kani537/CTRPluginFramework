@@ -2,7 +2,7 @@
 #define CTRPLUGINFRAMEWORK_MENUENTRY_HPP
 
 #include <string>
-//#include <memory>
+#include <memory>
 
 namespace CTRPluginFramework
 {
@@ -21,7 +21,7 @@ namespace CTRPluginFramework
         MenuEntry(std::string name, FuncPointer gameFunc, FuncPointer menuFunc, std::string note = "");
         MenuEntry(int radioGroup, std::string name, FuncPointer gameFunc, std::string note = "");
         MenuEntry(int radioGroup, std::string name, FuncPointer gameFunc, FuncPointer menuFunc, std::string note = "");
-        ~MenuEntry(){};
+        ~MenuEntry();
 
         // Disable the entry
         void    Disable(void) const;
@@ -49,8 +49,7 @@ namespace CTRPluginFramework
     private:
         friend class MenuFolder;
         friend class PluginMenu;
-        MenuEntryImpl       *_item;
-        //std::unique_ptr<MenuEntryImpl>  _item;
+        std::unique_ptr<MenuEntryImpl>  _item;
     };
 }
 

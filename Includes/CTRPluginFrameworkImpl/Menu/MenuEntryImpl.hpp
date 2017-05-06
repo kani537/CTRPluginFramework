@@ -32,11 +32,11 @@ namespace CTRPluginFramework
         // Set an argument for the entry
         void    SetArg(void *arg);
         // Get the argument
-        void    *GetArg(void);
+        void    *GetArg(void) const;
         // Return if the entry just got activated
-        bool    WasJustActivated(void);
+        bool    WasJustActivated(void) const;
         // Return if the entry is activated
-        bool    IsActivated(void);
+        bool    IsActivated(void) const;
 
         // Public members
         FuncPointer     GameFunc;
@@ -47,7 +47,7 @@ namespace CTRPluginFramework
         friend class PluginMenuExecuteLoop;
         // Functions used by the menu
         bool    _TriggerState(void);
-        bool    _MustBeRemoved(void);
+        bool    _MustBeRemoved(void) const;
         bool    _Execute(void);
         int     _executeIndex;
         MenuEntry *_owner;

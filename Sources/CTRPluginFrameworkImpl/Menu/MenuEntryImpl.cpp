@@ -52,17 +52,17 @@ namespace CTRPluginFramework
         _arg = arg;
     }
 
-    void    *MenuEntryImpl::GetArg(void)
+    void    *MenuEntryImpl::GetArg(void) const
     {
         return (_arg);
     }
 
-    bool    MenuEntryImpl::WasJustActivated(void)
+    bool    MenuEntryImpl::WasJustActivated(void) const
     {
         return (_flags.state && _flags.justChanged);
     }
 
-    bool    MenuEntryImpl::IsActivated(void)
+    bool    MenuEntryImpl::IsActivated(void) const
     {
         return (_flags.state);
     }
@@ -84,7 +84,7 @@ namespace CTRPluginFramework
         return (true);
     }
 
-    bool    MenuEntryImpl::_MustBeRemoved(void)
+    bool    MenuEntryImpl::_MustBeRemoved(void) const
     {
         if (_flags.state)
             return (false);

@@ -10,6 +10,10 @@ namespace CTRPluginFramework
 
     }
 
+    MenuFolder::~MenuFolder()
+    {
+    }
+
     void    MenuFolder::Hide(void) const
     {
         _item->Hide();
@@ -23,14 +27,14 @@ namespace CTRPluginFramework
 
     void    MenuFolder::Append(MenuEntry *item) const
     {
-        MenuEntryImpl *entry = item->_item;
+        MenuEntryImpl *entry = item->_item.get();
 
         _item->Append(entry);
     }
 
     void    MenuFolder::Append(MenuFolder *item) const
     {
-        MenuFolderImpl *folder = item->_item;
+        MenuFolderImpl *folder = item->_item.get();
 
         _item->Append(folder);
     }
