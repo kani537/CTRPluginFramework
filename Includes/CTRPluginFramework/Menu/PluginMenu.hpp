@@ -13,14 +13,27 @@ namespace CTRPluginFramework
     class PluginMenu
     {
         using CallbackPointer = void (*)(void);
+        using DecipherPointer = void(*)(std::string &, void *);
     public:
 
         /*
         ** Create a new PluginMenu
         ** name = The name of the menu / main folder
-        ** note = no use atm
+        ** about = text to display on the bottom screen of Tools section
         ******************************/
-        explicit PluginMenu(std::string name = "Cheats", std::string note = "");
+        explicit PluginMenu(std::string name = "Cheats", std::string about = "");
+
+        /*
+        ** Create a new PluginMenu
+        ** name = The name of the menu / main folder
+        ** about = pointer to encrypted about's text data
+        ** func = function to decrypt the about's data
+        ******************************/
+        PluginMenu(std::string name, void *about, DecipherPointer func);
+
+        /*
+        ** Destructor
+        ******************************/
         ~PluginMenu(void);
 
         /*

@@ -4,10 +4,18 @@
 
 namespace CTRPluginFramework
 {
-    PluginMenu::PluginMenu(std::string name, std::string note) :
-        _menu(new PluginMenuImpl(name, note)) 
+    PluginMenu::PluginMenu(std::string name, std::string about) :
+        _menu(new PluginMenuImpl(name, about)) 
     {
 
+    }
+
+    PluginMenu::PluginMenu(std::string name, void *about, DecipherPointer func)
+    {
+        std::string aboutStr = "";
+        func(aboutStr, about);
+
+        _menu = std::unique_ptr<PluginMenuImpl>(new PluginMenuImpl(name, aboutStr));
     }
 
     PluginMenu::~PluginMenu(void)

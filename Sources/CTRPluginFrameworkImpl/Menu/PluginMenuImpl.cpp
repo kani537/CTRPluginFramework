@@ -17,11 +17,11 @@ namespace CTRPluginFramework
 {
     PluginMenuImpl  *PluginMenuImpl::_runningInstance = nullptr;
 
-    PluginMenuImpl::PluginMenuImpl(std::string name, std::string note) : 
+    PluginMenuImpl::PluginMenuImpl(std::string name, std::string about) : 
 
     _home(new PluginMenuHome(name)),
     _search(new PluginMenuSearch()),
-    _tools(new PluginMenuTools()),
+    _tools(new PluginMenuTools(about)),
     _executeLoop(new PluginMenuExecuteLoop()),
     _guide(new GuideReader())
     {

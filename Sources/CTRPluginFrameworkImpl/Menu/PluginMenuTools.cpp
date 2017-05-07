@@ -3,7 +3,8 @@
 
 namespace CTRPluginFramework
 {
-    PluginMenuTools::PluginMenuTools() :
+    PluginMenuTools::PluginMenuTools(std::string &about) :
+    _about(about),
     _closeBtn(*this, nullptr, IntRect(275, 24, 20, 20), Icon::DrawClose)
     {
     }

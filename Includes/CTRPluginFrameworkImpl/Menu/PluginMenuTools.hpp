@@ -17,7 +17,7 @@ namespace CTRPluginFramework
     {
         using EventList = std::vector<Event>;
     public:
-        PluginMenuTools();
+        PluginMenuTools(std::string &about);
         ~PluginMenuTools(){}
 
         // Return true if the Close Button is pressed, else false
@@ -34,6 +34,7 @@ namespace CTRPluginFramework
 
         // Members
         //Menu                            _menu;
+        std::string     _about;
 
 
         // Buttons        
