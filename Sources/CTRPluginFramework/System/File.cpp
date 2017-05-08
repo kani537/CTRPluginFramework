@@ -172,7 +172,7 @@ namespace CTRPluginFramework
 
         Result  res;
         u32     bytes;
-        u32     sync = FS_WRITE_FLUSH | FS_WRITE_UPDATE_TIME;
+        u32     sync = _mode & SYNC ?  FS_WRITE_FLUSH | FS_WRITE_UPDATE_TIME : 0;
 
         if (_mode & APPEND)
             FSFILE_GetSize(_handle, &_offset);
