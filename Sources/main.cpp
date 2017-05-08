@@ -70,9 +70,44 @@ namespace CTRPluginFramework
         isHidden = !isHidden;
     }
 
+    static u32  g_encAboutSize = 43;
+    static u32  g_encAbout[43] =
+    {
+        0x00000028, 0x00000108, 0x0000019C, 0x0000008C,
+        0x000001D0, 0x000001A4, 0x000001CC, 0x00000180,
+        0x00000184, 0x0000019C, 0x000000A8, 0x000001F4,
+        0x0000018C, 0x000001E0, 0x000001F4, 0x000000BC,
+        0x00000194, 0x000001C8, 0x000001D8, 0x0000008C,
+        0x000001D0, 0x000001DC, 0x000001A4, 0x000001DC,
+        0x0000019C, 0x000001E8, 0xFFFFFF24, 0xFFFFFE88, 
+        0x000000B0, 0x000001F4, 0x000001BC, 0x000001F4,
+        0x00000028, 0x0000013C, 0x0000018C, 0x000001B4,
+        0x000001D4, 0x000001C0, 0x000001BC, 0x000001CC,
+        0x000001A4, 0x000001E8, 0x00000090,
+    };
+
+    void    Decoder(std::string &output, void *input)
+    {
+        u32 size = g_encAboutSize;
+        u32 *in = (u32 *)input;
+
+        int i = 0;
+        while (size)
+        {
+            u32 c = *in++;
+
+            c = (c >> 2) ^ (i++ & 0xF);
+
+            output += (char)c;
+
+            size--;
+        }
+    }
+
     int    main(void)
     {
-        PluginMenu      *m = new PluginMenu("Zelda Ocarina Of Time 3D");
+
+        PluginMenu      *m = new PluginMenu("Zelda Ocarina Of Time 3D", g_encAbout, Decoder);
         PluginMenu      &menu = *m;
 
         g_folderToHide = new MenuFolder("Folder to hide");

@@ -269,10 +269,11 @@ namespace CTRPluginFramework
 
             glyph = Font::GetGlyph(str);
 
-            float gWidth = glyph->Width();
-
             if (glyph == nullptr)
                 break;
+
+            float gWidth = glyph->Width();
+
             if (x + gWidth > xLimits)
             {
                 break;

@@ -99,9 +99,22 @@ namespace CTRPluginFramework
             Renderer::DrawRect(22, 22, 276, 196, blank, false);            
         }
 
+        // Draw About text
+        {
+            int posY = 30;
+            int maxY = 200;
+            int posX = 30;
+            int maxX = 290;
 
-        int posY = 205;
-        Renderer::DrawString((char *)"CTRPluginFramework Alpha V.0.0.10", 40, posY, blank);
+            Renderer::DrawSysStringReturn(reinterpret_cast<const u8 *>(_about.c_str()), 
+                                          posX, posY, maxX, blank, maxY);
+        }
+
+        // Draw Framework version
+        {
+            int posY = 205;
+            Renderer::DrawString((char *)"CTRPluginFramework Alpha V.0.0.10", 40, posY, blank);
+        }
 
         // Draw buttons
         _closeBtn.Draw();
