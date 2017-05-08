@@ -21,7 +21,8 @@ namespace CTRPluginFramework
 	bool 		ProcessImpl::_isPaused = false;
 	bool 		ProcessImpl::_isAcquiring = false;
 
-    extern      Handle      _keepEvent;
+    // pluginInit.cpp
+    extern      Handle      g_keepEvent;
 
 	void    ProcessImpl::Initialize(void)
 	{
@@ -86,7 +87,7 @@ namespace CTRPluginFramework
 		_isPaused = true;
 		
 		// Waking up Init thread
-		svcSignalEvent(_keepEvent);
+		svcSignalEvent(g_keepEvent);
 
 		_isAcquiring = true;
 		Screen::Top->Acquire(false);

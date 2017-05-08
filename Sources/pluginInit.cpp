@@ -19,29 +19,30 @@ void abort(void)
 
 namespace CTRPluginFramework
 {
-    static u32 threadStack[0x4000] ALIGN(8);
-    //extern "C" u32 keepThreadStack[0x1000];
-    u32 keepThreadStack[0x1000] ALIGN(8);
+    // Threads stacks
+    static u32  threadStack[0x4000] ALIGN(8);
+    static u32  keepThreadStack[0x1000] ALIGN(8);
 
-    
+    // Some globals
+    Handle      g_keepThreadHandle;
+    Handle      g_keepEvent = 0;
+    Handle      g_continueGameEvent = 0;
+    bool        g_keepRunning = true;
+    Thread      g_mainThread;
 
-    Handle      keepThreadHandle;
-    Handle      _keepEvent = 0;
-    Handle      _continueGameEvent = 0;
-    bool        keepRunning = true;
-    Thread      mainThread;
+    void    ThreadInit(void *arg);
 
     // From main.cpp
     void    PatchProcess(void);
     int     main(void);
-
-    void    ThreadInit(void *arg);
-
-    extern "C" u32 __ctru_heap;
-    extern "C" u32 __ctru_heap_size;
-    extern "C" u32 __linearOp;
+    
+    // allocateHeaps.cpp
+    extern u32      g_linearOp;
+    extern bool     g_heapError;
 
     extern "C" void __appInit(void);
+
+    extern "C" Result __sync_init(void);
 
     void    KeepThreadMain(void *arg)
     {
@@ -54,14 +55,18 @@ namespace CTRPluginFramework
         // Init Screen
         Screen::Initialize();
 
+        // Initialize the synchronization subsystem
+        __sync_init();
+
         // Initialize services
         srvInit();
+        fsInit();
 
         // Patch process before it starts
         PatchProcess();
 
         // Continue game
-        svcSignalEvent(_continueGameEvent);
+        svcSignalEvent(g_continueGameEvent);
 
         // Correction for some games like Kirby
         u64 tid = Process::GetTitleID();
@@ -73,22 +78,27 @@ namespace CTRPluginFramework
         // Mario Kart
        // || tid == 0x0004000000030600  || tid == 0x0004000000030700 || tid == 0x0004000000030800)
         )
-            __linearOp = 0x10203u;
-        //if (tid == 0x0004000000183600)
-            Sleep(Seconds(5));
+            g_linearOp = 0x10203u;
+
+        // Wait for the game to be fully launched
+        Sleep(Seconds(5));
 
         // Init heap and newlib's syscalls
         initSystem();
 
+        // If heap error, exit
+        if (g_heapError)
+            goto exit;
+
         // Create plugin's main thread
-        mainThread = threadCreate(ThreadInit, (void *)threadStack, 0x4000, 0x18, -2, false);
+        g_mainThread = threadCreate(ThreadInit, (void *)threadStack, 0x4000, 0x18, -2, false);
 
-        svcCreateEvent(&_keepEvent, RESET_ONESHOT);
+        svcCreateEvent(&g_keepEvent, RESET_ONESHOT);
 
-        while (keepRunning)
+        while (g_keepRunning)
         {
-            svcWaitSynchronization(_keepEvent, U64_MAX); 
-            svcClearEvent(_keepEvent);
+            svcWaitSynchronization(g_keepEvent, U64_MAX); 
+            svcClearEvent(g_keepEvent);
 
             while (ProcessImpl::IsPaused())
             {
@@ -97,7 +107,8 @@ namespace CTRPluginFramework
             }               
         }
 
-        threadJoin(mainThread, U64_MAX);
+        threadJoin(g_mainThread, U64_MAX);
+    exit:
         exit(1);
     }
 
@@ -107,11 +118,13 @@ namespace CTRPluginFramework
     void    InitColors(void);
     void    Initialize(void)
     {
-        // Init Services
-        __appInit();
+        // Init HID
+        hidInit();
 
+        // Init classes
         Renderer::Initialize();
         Font::Initialize();
+
         // could probably get swapped for lighter implement of gspevent init
         gfxInit(Screen::Top->GetFormat(), Screen::Bottom->GetFormat(), false);
 
@@ -182,6 +195,7 @@ namespace CTRPluginFramework
         
     }
 
+    // Main thread's start
     void  ThreadInit(void *arg)
     {
         CTRPluginFramework::Initialize();
@@ -201,8 +215,8 @@ namespace CTRPluginFramework
         gfxExit();
 
         // Exit loop in keep thread
-        keepRunning = false;
-        svcSignalEvent(_keepEvent);
+        g_keepRunning = false;
+        svcSignalEvent(g_keepEvent);
 
         threadExit(1);        
     }
@@ -210,9 +224,9 @@ namespace CTRPluginFramework
     extern "C" int LaunchMainThread(int arg);
     int   LaunchMainThread(int arg)
     {
-        svcCreateEvent(&_continueGameEvent, RESET_ONESHOT);
-        svcCreateThread(&keepThreadHandle, KeepThreadMain, 0, &keepThreadStack[0x1000], 0x1A, -2);
-        svcWaitSynchronization(_continueGameEvent, U64_MAX);
+        svcCreateEvent(&g_continueGameEvent, RESET_ONESHOT);
+        svcCreateThread(&g_keepThreadHandle, KeepThreadMain, 0, &keepThreadStack[0x1000], 0x1A, -2);
+        svcWaitSynchronization(g_continueGameEvent, U64_MAX);
         return (0);
     }
 

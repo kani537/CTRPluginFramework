@@ -9,7 +9,6 @@ u32 __ctru_heap;
 u32 __ctru_heap_size;
 u32 __ctru_linear_heap;
 u32 __ctru_linear_heap_size;
-u32	__linearOp = 0x10003u;
 
 void (*__system_retAddr)(void);
 
@@ -26,7 +25,7 @@ void __attribute__((weak)) __libctru_init(void)
 	//__system_retAddr = NULL;//envIsHomebrew() ? retAddr : NULL;
 
 	// Initialize the synchronization subsystem
-	__sync_init();
+	//__sync_init();
 
 	// Initialize newlib support system calls
 	__system_initSyscalls();
