@@ -18,10 +18,10 @@ namespace CTRPluginFramework
     {
         return (xOffset + xAdvance);
     }
-
-
+    
     void    Font::Initialize(void)
     {
+        fontEnsureMapped();
         // Sysfont has 7505 glyph
         if (defaultSysFont != nullptr)
             delete [] defaultSysFont;
