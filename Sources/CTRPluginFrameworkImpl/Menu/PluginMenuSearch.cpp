@@ -547,10 +547,14 @@ namespace CTRPluginFramework
         // Update memory regions
         _ListRegion();
 
-        // Unlock memory rgions
+        // Unlock memory regions
         _memoryRegions.IsEnabled = true;
-        //_startRangeTextBox.IsEnabled = true;
-        //_endRangeTextBox.IsEnabled = true;
+
+        // Set all memory search by default
+        _startRangeTextBox.SetValue((u32)(0x0));
+        _endRangeTextBox.SetValue((u32)(0xFFFFFFF0));
+        _startRangeTextBox.IsEnabled = false;
+        _endRangeTextBox.IsEnabled = false;
 
 
         // Unlock search size
