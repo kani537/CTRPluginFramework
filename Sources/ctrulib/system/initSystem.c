@@ -4,6 +4,13 @@
 
 #include <3DS.h>
 
+u32 __tmp;
+u32 __ctru_heap;
+u32 __ctru_heap_size;
+u32 __ctru_linear_heap;
+u32 __ctru_linear_heap_size;
+u32	__linearOp = 0x10003u;
+
 void (*__system_retAddr)(void);
 
 void __system_initSyscalls(void);
