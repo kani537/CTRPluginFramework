@@ -51,6 +51,9 @@ namespace CTRPluginFramework
         // Init Process info
         ProcessImpl::Initialize();
 
+        // Init Screen
+        Screen::Initialize();
+
         // Initialize services
         srvInit();
 
@@ -66,7 +69,10 @@ namespace CTRPluginFramework
         // Pokemon Sun & Moon
         if (tid == 0x0004000000175E00 || tid == 0x0004000000164800
         // ACNL
-        ||  tid == 0x0004000000086300 || tid == 0x0004000000086400 || tid == 0x0004000000086200)
+        ||  tid == 0x0004000000086300 || tid == 0x0004000000086400 || tid == 0x0004000000086200
+        // Mario Kart
+       // || tid == 0x0004000000030600  || tid == 0x0004000000030700 || tid == 0x0004000000030800)
+        )
             __linearOp = 0x10203u;
         //if (tid == 0x0004000000183600)
             Sleep(Seconds(5));
@@ -75,7 +81,7 @@ namespace CTRPluginFramework
         initSystem();
 
         // Create plugin's main thread
-        mainThread = threadCreate(ThreadInit, (void *)threadStack, 0x4000, 0x18, -2, 0);
+        mainThread = threadCreate(ThreadInit, (void *)threadStack, 0x4000, 0x18, -2, false);
 
         svcCreateEvent(&_keepEvent, RESET_ONESHOT);
 
@@ -104,8 +110,6 @@ namespace CTRPluginFramework
         // Init Services
         __appInit();
 
-        // Init Screen
-        Screen::Initialize();
         Renderer::Initialize();
         Font::Initialize();
         // could probably get swapped for lighter implement of gspevent init
