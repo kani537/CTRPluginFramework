@@ -1,6 +1,5 @@
 #include "CTRPluginFramework.hpp"
 #include "cheats.hpp"
-#include "ctrulib/util/utf.h"
 
 namespace CTRPluginFramework
 {    
@@ -15,9 +14,43 @@ namespace CTRPluginFramework
             || tid == 0x0004000000164800)
         {
             u32     patch  = 0xE3A01000;
-            u32     original = 0;
-            // Patch and get the original data
-            Process::Patch(0x003DFFD0, (u8 *)&patch, 4); 
+            // Patch
+            Process::Patch(0x003DFFD0, reinterpret_cast<u8 *>(&patch), 4); 
+        }
+    }
+
+    static u32  g_encAboutSize = 43;
+    static u32  g_encAbout[43] =
+    {
+        0x00000028, 0x00000108, 0x0000019C, 0x0000008C,
+        0x000001D0, 0x000001A4, 0x000001CC, 0x00000180,
+        0x00000184, 0x0000019C, 0x000000A8, 0x000001F4,
+        0x0000018C, 0x000001E0, 0x000001F4, 0x000000BC,
+        0x00000194, 0x000001C8, 0x000001D8, 0x0000008C,
+        0x000001D0, 0x000001DC, 0x000001A4, 0x000001DC,
+        0x0000019C, 0x000001E8, 0xFFFFFF24, 0xFFFFFE88,
+        0x000000B0, 0x000001F4, 0x000001BC, 0x000001F4,
+        0x00000028, 0x0000013C, 0x0000018C, 0x000001B4,
+        0x000001D4, 0x000001C0, 0x000001BC, 0x000001CC,
+        0x000001A4, 0x000001E8, 0x00000090
+    };
+
+    // Function to pass to plugin to decode the About text
+    void    Decoder(std::string &output, void *input)
+    {
+        u32     size = g_encAboutSize;
+        u32     *in = static_cast<u32 *>(input);
+        int     i = 0;
+
+        while (size)
+        {
+            u32 c = *in++;
+
+            c = (c >> 2) ^ (i++ & 0xF);
+
+            output += static_cast<char>(c);
+
+            size--;
         }
     }
 
@@ -27,8 +60,10 @@ namespace CTRPluginFramework
 
         std::string str;
 
+        // If user didn't abort the keyboard (B)
         if (keyboard.Open(str) != -1)
         {
+            // Replace the entry's name by the user's text
             entry->Name() = str;
         }
     }
@@ -54,11 +89,10 @@ namespace CTRPluginFramework
         }
     }
 
-
-
+    // Pointer to the folder I'll hide / show
     MenuFolder  *g_folderToHide = nullptr;
 
-    void    HS(MenuEntry *entry)
+    void    HideShow(MenuEntry *entry)
     {
         static bool isHidden = false;
 
@@ -70,39 +104,7 @@ namespace CTRPluginFramework
         isHidden = !isHidden;
     }
 
-    static u32  g_encAboutSize = 43;
-    static u32  g_encAbout[43] =
-    {
-        0x00000028, 0x00000108, 0x0000019C, 0x0000008C,
-        0x000001D0, 0x000001A4, 0x000001CC, 0x00000180,
-        0x00000184, 0x0000019C, 0x000000A8, 0x000001F4,
-        0x0000018C, 0x000001E0, 0x000001F4, 0x000000BC,
-        0x00000194, 0x000001C8, 0x000001D8, 0x0000008C,
-        0x000001D0, 0x000001DC, 0x000001A4, 0x000001DC,
-        0x0000019C, 0x000001E8, 0xFFFFFF24, 0xFFFFFE88, 
-        0x000000B0, 0x000001F4, 0x000001BC, 0x000001F4,
-        0x00000028, 0x0000013C, 0x0000018C, 0x000001B4,
-        0x000001D4, 0x000001C0, 0x000001BC, 0x000001CC,
-        0x000001A4, 0x000001E8, 0x00000090,
-    };
-
-    void    Decoder(std::string &output, void *input)
-    {
-        u32 size = g_encAboutSize;
-        u32 *in = (u32 *)input;
-
-        int i = 0;
-        while (size)
-        {
-            u32 c = *in++;
-
-            c = (c >> 2) ^ (i++ & 0xF);
-
-            output += (char)c;
-
-            size--;
-        }
-    }
+    
 
     int    main(void)
     {
@@ -110,16 +112,21 @@ namespace CTRPluginFramework
         PluginMenu      *m = new PluginMenu("Zelda Ocarina Of Time 3D", g_encAbout, Decoder);
         PluginMenu      &menu = *m;
 
-        g_folderToHide = new MenuFolder("Folder to hide");
+        /*
+        ** Tests
+        ********************/
 
+        // Set my global
+        g_folderToHide = new MenuFolder("Folder to hide");
+        // Append to the menu
         menu.Append(g_folderToHide);
 
         g_folderToHide->Append(new MenuEntry("Test Keyboard", nullptr, TestStringKeyboard));
         g_folderToHide->Append(new MenuEntry("Test Box 1", nullptr, TestMsgBox1));
         g_folderToHide->Append(new MenuEntry("Test Box 2", TestMsgBox2));
-        g_folderToHide->Append(new MenuEntry("Hide", nullptr, HS));
+        g_folderToHide->Append(new MenuEntry("Hide", nullptr, HideShow));
 
-        menu.Append(new MenuEntry("Hide", nullptr, HS));
+        menu.Append(new MenuEntry("Hide", nullptr, HideShow));
         
         /*
         ** Movements codes
