@@ -64,8 +64,8 @@ namespace CTRPluginFramework
         _checkValue = value;
         //_WriteHeaderToFile();
 
-        _resultsArray = (SearchResult<T>*)linearAlloc(0x40000); //256 KB
-        _maxResult = (0x40000 / sizeof(SearchResult<T>)) - 1;
+        _resultsArray = (SearchResult<T>*)linearAlloc(0x80000); //256 KB
+        _maxResult = (0x80000 / sizeof(SearchResult<T>)) - 1;
         _resultsEnd = _resultsArray + _maxResult;
         _resultsP = _resultsArray;
     }
@@ -77,8 +77,8 @@ namespace CTRPluginFramework
         _checkValue = value;
         //_WriteHeaderToFile();
 
-        _resultsArray = (SearchResult<T>*)linearAlloc(0x40000); //256 KB
-        _maxResult = (0x40000 / sizeof(SearchResult<T>)) - 1;
+        _resultsArray = (SearchResult<T>*)linearAlloc(0x80000); //256 KB
+        _maxResult = (0x80000 / sizeof(SearchResult<T>)) - 1;
         _resultsEnd = _resultsArray + _maxResult;
         _resultsP = _resultsArray;
 
