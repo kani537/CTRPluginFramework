@@ -14,6 +14,9 @@ namespace CTRPluginFramework
 
     #define REG(x) *(vu32 *)(x)
 
+    u8  _topBuf[sizeof(Screen)];
+    u8  _botBuf[sizeof(Screen)];
+
     Screen *Screen::Top = nullptr;
     Screen  *Screen::Bottom = nullptr;
 
@@ -134,8 +137,8 @@ namespace CTRPluginFramework
 
     void    Screen::Initialize(void)
     {
-        Screen::Top = new Screen(SystemImpl::GetIOBasePDC() + 0x400, SystemImpl::GetIOBaseLCD() + 0x204, true);
-        Screen::Bottom = new Screen(SystemImpl::GetIOBasePDC() + 0x500, SystemImpl::GetIOBaseLCD() + 0xA04);
+        Screen::Top = new (_topBuf) Screen(SystemImpl::GetIOBasePDC() + 0x400, SystemImpl::GetIOBaseLCD() + 0x204, true);
+        Screen::Bottom = new (_botBuf) Screen(SystemImpl::GetIOBasePDC() + 0x500, SystemImpl::GetIOBaseLCD() + 0xA04);
     }
 
 

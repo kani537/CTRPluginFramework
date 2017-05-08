@@ -65,7 +65,7 @@ namespace CTRPluginFramework
 
     private:
         friend class Renderer;
-        friend void                 Initialize(void);
+        friend void                 KeepThreadMain(void *);
 
         static void                 Initialize(void);
 
