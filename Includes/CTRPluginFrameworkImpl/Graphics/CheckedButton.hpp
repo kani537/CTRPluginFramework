@@ -17,7 +17,7 @@ namespace CTRPluginFramework
         using EventCallback = T (C::*)(Args...);
         using IconCallback = int (*)(int, int);
 
-        CheckedButton(std::string content, C &caller, EventCallback callback, IntRect ui, int round, IconCallback icon = nullptr);
+        CheckedButton(std::string content, C &caller, EventCallback callback, IntRect ui, IconCallback icon = nullptr);
         ~CheckedButton(){}
 
         // Draw
@@ -26,9 +26,30 @@ namespace CTRPluginFramework
         void    Update(bool isTouchDown, IntVector touchPos);
         // Execute
         bool    operator()(Args ...args);
+        // Return if the button is checked or not
+        bool    GetState(void) const
+        {
+            return (_state);
+        }
+
+        void    UseSysFont(bool use);
+
+        void    RoundedRatio(u32 ratio)
+        {
+            if (ratio == 0)
+            {
+                _lines.clear();
+                _useRounded = false;
+            }
+            else
+            {
+                _useRounded = true;
+                Renderer::ComputeRoundedRectangle(_lines, _uiProperties, ratio, 50);
+            }
+        }
 
         Color   borderColor;
-        Color   idleColor;  
+        Color   idleColor;
         Color   pressedColor;
         Color   contentColor;
         Color   checkedColor;
@@ -46,73 +67,104 @@ namespace CTRPluginFramework
         bool                    _isPressed;
         bool                    _execute;
         bool                    _isWaiting;
+        bool                    _useRounded;
+        bool                    _useSysfont;
         float                   _textSize;
     };
 
     #define TCheckedButton CheckedButton<C, T, Args...>
 
+    /*
+    ** Select sysfont or not
+    ************************/
+    template <class C, class T, class... Args>
+    void    TCheckedButton::UseSysFont(bool use)
+    {
+        _useSysfont = use;
+
+        if (use)
+        {
+            _textSize = Renderer::GetTextSize(_content.c_str());
+        }
+        else
+        {
+            _textSize = 6.f * _content.size();
+        }
+
+        if (_icon != nullptr)
+            _textSize += 18.f;
+    }
+
     //Constructor
     template <class C, class T, class ...Args>
-    TCheckedButton::CheckedButton(std::string content, C &caller, EventCallback callback, IntRect ui, int round, IconCallback icon) :
-    _content(content), _caller(caller), _callback(callback), _uiProperties(ui), _icon(icon)
+    TCheckedButton::CheckedButton(std::string content, C &caller, EventCallback callback, IntRect ui, IconCallback icon) :
+    _content(content), _caller(caller), _callback(callback), _uiProperties(ui), _icon(icon), _useRounded(false), _useSysfont(true), _isPressed(false)
     {
         _state = false;
         _execute = false;
         _isWaiting = false;
 
         // LightGrey
-        borderColor = Color(165, 165, 165);
+        borderColor = Color::DarkGrey;
         // Blank
-        idleColor   = Color(250, 250, 250);
+        idleColor   = Color::Gainsboro;
         // Dim Grey
-        pressedColor = Color(105, 105, 105);
+        pressedColor = Color::DimGrey;
         // Black
-        contentColor = Color();
+        contentColor = Color::Black;
 
         // Limegreen
-        checkedColor = Color(50, 205, 50);
+        checkedColor = Color::LimeGreen;
 
         _textSize = Renderer::GetTextSize(content.c_str());
-        //_textSize += 18.f;
 
         if (icon != nullptr)
             _textSize += 18.f;
-
-        Renderer::ComputeRoundedRectangle(_lines, _uiProperties, round, 50);
     }
 
     //Draw
     template <class C, class T, class ...Args>
     void    TCheckedButton::Draw(void)
     {      
-        Color &fillColor = _isPressed ? pressedColor : (_state ? checkedColor : idleColor);
-        int bMax = _lines.size() - 5;
+        Color &fillColor = (_isPressed ? pressedColor : (_state ? checkedColor : idleColor));
+        Color &bordColor = borderColor;
         int i;
 
-        for (i = 0; i < bMax; i++)
+        if (_useRounded)
         {
-            IntLine &line = _lines[i];
-            // Draw border
-            Renderer::_DrawPixel(line.start.x, line.start.y, borderColor);
-            Renderer::_DrawPixel(line.end.x, line.end.y, borderColor);
+            int bMax = _lines.size() - 5;
 
-            // Fill line
-            IntVector left(line.start);
-            IntVector right(line.end);
-            left.x++;
-            right.x;
-            Renderer::DrawLine(left, right, fillColor);
+            for (i = 0; i < bMax; i++)
+            {
+                IntLine &line = _lines[i];
+                // Draw border
+                Renderer::_DrawPixel(line.start.x, line.start.y, bordColor);
+                Renderer::_DrawPixel(line.end.x, line.end.y, bordColor);
+
+                // Fill line
+                IntVector left(line.start);
+                IntVector right(line.end);
+                left.x++;
+                right.x;
+                Renderer::DrawLine(left, right, fillColor);
+            }
+
+            for (; i < _lines.size() - 1; i++)
+            {
+                IntLine &line = _lines[i];
+
+                Renderer::DrawLine(line.start.x, line.start.y, line.end.x, bordColor, line.end.y);
+            }
+
+            IntLine &line = _lines[i];
+            Renderer::DrawLine(line.start.x, line.start.y, line.end.x, fillColor, line.end.y);
+        }
+        else
+        {
+            Renderer::DrawRect(_uiProperties, fillColor);
+            Renderer::DrawRect(_uiProperties, bordColor, false);
         }
 
-        for (; i < _lines.size() - 1; i++)
-        {
-            IntLine &line = _lines[i];
-
-            Renderer::DrawLine(line.start.x, line.start.y, line.end.x, borderColor, line.end.y);
-        }
-
-        IntLine &line = _lines[i];
-        Renderer::DrawLine(line.start.x, line.start.y, line.end.x, fillColor, line.end.y);
 
         int posX = _uiProperties.leftTop.x;
         int posY = _uiProperties.leftTop.y;
@@ -121,19 +173,26 @@ namespace CTRPluginFramework
         int width = _uiProperties.size.x;
         int limit = posX + width;
 
-        posY += (height - 16) / 2;
+        if (_useSysfont)
+            posY += (height - 16) / 2;
+        else
+            posY += (height - 10) / 2;
 
         int posXI = 0;
 
-        
         int x = (width - _textSize) / 2;
         if (x > 0)
             posX += x;
 
-       // posX = Icon::DrawCheckBox(posX, posY, _state);
         if (_icon != nullptr)
-            posX = _icon(posX, posY);
-        Renderer::DrawSysString(_content.c_str(), posX, posY, limit, contentColor);        
+            posX = _icon(posX, posY) + 3;
+
+        if (_useSysfont)
+        {
+            Renderer::DrawSysString(_content.c_str(), posX, posY, limit, contentColor);
+        }
+        else
+            Renderer::DrawString((char *)_content.c_str(), posX, posY, contentColor);
     }
 
     // Update
