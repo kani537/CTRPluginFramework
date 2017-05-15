@@ -484,8 +484,8 @@ namespace CTRPluginFramework
 
     void    KeyboardImpl::_Update(float delta)
     {
-        bool isTouchDown = Touch::IsDown();
-        IntVector touchPos(Touch::GetPosition());
+        bool			isTouchDown = Touch::IsDown();
+        IntVector		touchPos(Touch::GetPosition());
 
         if (!_customKeyboard)
         {
@@ -588,7 +588,7 @@ namespace CTRPluginFramework
             {
                 KeyStringIter iter = _strKeys.begin();
 
-                for (; iter != _strKeys.end(); iter++)
+                for (; iter != _strKeys.end(); ++iter)
                 {                
                     (*iter).Update(isTouchDown, touchPos);
                 }                 
@@ -1245,19 +1245,23 @@ namespace CTRPluginFramework
                 {
                     _useNintendo = !_useNintendo;
                     _useSymbols = false;
+					_useCaps = false;
+					if (!_useNintendo)
+						_nintendoPage = 0;
+					_symbolsPage = 0;
                 }
                 else if (ret == KEY_SYMBOLS)
                 {
                     _useSymbols = !_useSymbols;
                     _useNintendo = false;
+					_useCaps = false;
+					if (!_useSymbols)
+						_symbolsPage = 0;
+					_nintendoPage = 0;
                 }
                 else if (ret == KEY_SYMBOLS_PAGE)
                 {
                     _symbolsPage = !_symbolsPage;
-
-                    //int pos = _symbolsPage ? 132 : 95;
-
-                    //_keys[pos].ChangeContent(_symbolsPage ? "\u2190" : "\u2192");
                 }
                 else if (ret == KEY_NINTENDO_PAGE)
                 {
