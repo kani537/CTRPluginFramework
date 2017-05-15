@@ -36,7 +36,6 @@ namespace CTRPluginFramework
         //Menu                            _menu;
         std::string     _about;
 
-
         // Buttons        
         IconButton<PluginMenuTools, void>          _closeBtn;
 

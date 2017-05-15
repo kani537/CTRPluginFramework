@@ -7,7 +7,7 @@ namespace CTRPluginFramework
 {
     PluginMenuSearch::PluginMenuSearch() :
     _hexEditor(0),
-    _searchMenu(_currentSearch, _hexEditor, _inEditor),
+    _searchMenu(_currentSearch, _hexEditor, _inEditor, _hexInput),
     _closeBtn(*this, nullptr, IntRect(275, 24, 20, 20), Icon::DrawClose),
     _memoryRegions(150, 40, 130, 15),
     _startRangeTextBox(85, 60, 66, 15),
@@ -26,7 +26,9 @@ namespace CTRPluginFramework
     _step(0),
     _waitForUser(false),
     _buildResult(false),
-    _inEditor(false)
+	_hexInput(false),
+    _inEditor(false),
+    _hexBtn("Hex", *this, nullptr, IntRect(110, 160, 38, 15), nullptr)
     {
         _currentSearch = nullptr;
 
@@ -51,6 +53,7 @@ namespace CTRPluginFramework
         _resetBtn.IsEnabled = false;
         _cancelBtn.UseSysFont(false);
         _cancelBtn.IsEnabled = false;
+        _hexBtn.UseSysFont(false);
 
         // Set 4 Bytes as default
         u32   al = 4;
@@ -62,6 +65,7 @@ namespace CTRPluginFramework
         _endRangeTextBox.SetValue((u32)(0xFFFFFFF0));
         _startRangeTextBox.IsEnabled = false;
         _endRangeTextBox.IsEnabled = false;
+		_valueTextBox.UseHexadecimal(false);
     }
 
     bool    PluginMenuSearch::operator()(EventList &eventList, Time &delta)
@@ -142,7 +146,12 @@ namespace CTRPluginFramework
         _searchBtn();
         _undoBtn();
         _resetBtn();
-
+		if (_hexBtn())
+		{
+			_hexInput = !_hexInput;
+			_valueTextBox.UseHexadecimal(_hexInput);
+		}
+			
 
         // Check ComboBox
 
@@ -404,6 +413,7 @@ namespace CTRPluginFramework
         _cancelBtn.Draw();
         _undoBtn.Draw();
         _resetBtn.Draw();
+		_hexBtn.Draw();
     }
 
     /*
@@ -435,6 +445,7 @@ namespace CTRPluginFramework
         _cancelBtn.Update(isTouched, touchPos);
         _undoBtn.Update(isTouched, touchPos);
         _resetBtn.Update(isTouched, touchPos);
+		_hexBtn.Update(isTouched, touchPos);
     }
 
     /*
@@ -494,7 +505,6 @@ namespace CTRPluginFramework
                 default: break;
             }
         }
-
 
         // Set Search Type
         _currentSearch->Type = static_cast<SearchType>(_searchType.SelectedItem);

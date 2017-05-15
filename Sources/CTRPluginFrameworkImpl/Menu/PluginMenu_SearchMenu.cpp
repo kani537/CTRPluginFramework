@@ -8,10 +8,11 @@
 
 namespace CTRPluginFramework
 {
-    SearchMenu::SearchMenu(SearchBase* &curSearch, HexEditor &hexEditor, bool &inEditor) : 
-    _currentSearch(curSearch),
-    _hexEditor(hexEditor),
-    _inEditor(inEditor)
+	SearchMenu::SearchMenu(SearchBase* &curSearch, HexEditor &hexEditor, bool &inEditor, bool &useHexInput) :
+	_currentSearch(curSearch),
+	_hexEditor(hexEditor),
+	_inEditor(inEditor),
+	_useHexInput(useHexInput)
     {
         _index = 0;
         _selector = 0;
@@ -189,17 +190,17 @@ namespace CTRPluginFramework
                                     = 270 = 330*/
 
         int posY = 25;
-        int xx = Renderer::DrawSysString("Search", 35, posY, 330, blank);
-        Renderer::DrawLine(35, posY, xx, skyblue);
+        int xx = Renderer::DrawSysString("Search", 40, posY, 330, blank);
+        Renderer::DrawLine(40, posY, xx, skyblue);
 
         posY += 10;
 
         if (_currentSearch != nullptr)
         {
             std::string str = "Step: " + std::to_string(_currentSearch->Step);
-            Renderer::DrawString((char *)str.c_str(), 35, posY, blank);
+            Renderer::DrawString((char *)str.c_str(), 37, posY, blank);
             str = "Hit(s): " + std::to_string(_currentSearch->ResultCount);
-            Renderer::DrawString((char *)str.c_str(), 35, posY, blank);
+            Renderer::DrawString((char *)str.c_str(), 37, posY, blank);
         }
 
         posY = 80;
@@ -280,9 +281,9 @@ namespace CTRPluginFramework
         std::string str = std::to_string(start) + "-" + std::to_string(std::min((u32)(start + 10), (u32)_currentSearch->ResultCount))
                     + " / " + std::to_string(_currentSearch->ResultCount);
         posY = 196;
-        Renderer::DrawString((char *)str.c_str(), 38, posY, blank);
+        Renderer::DrawString((char *)str.c_str(), 37, posY, blank);
 
-        posY = 205;
+        posY = 203;
         Renderer::DrawString((char *)"Options:", 260, posY, blank);
         posY -= 14;
         Renderer::DrawSysString((char *)"\uE002", 320, posY, 380, blank);
@@ -401,6 +402,7 @@ namespace CTRPluginFramework
         Keyboard keyboard;
 
         keyboard.DisplayTopScreen = false;
+		keyboard.IsHexadecimal(_useHexInput);
 
         u32 address = strtoul(_resultsAddress[_selector].c_str(), NULL, 16);
 

@@ -51,6 +51,7 @@ namespace CTRPluginFramework
         bool                                _firstRegionInit;
         bool                                _waitForUser;
         bool                                _buildResult;
+		bool								_hexInput;
         int                                 _step;
 
         // UIComponent
@@ -72,6 +73,8 @@ namespace CTRPluginFramework
         Button<PluginMenuSearch, void>              _cancelBtn;
         Button<PluginMenuSearch, void>              _undoBtn;
         Button<PluginMenuSearch, void>              _resetBtn;
+
+        CheckedButton<PluginMenuSearch, void>       _hexBtn;
 
     };
 }
