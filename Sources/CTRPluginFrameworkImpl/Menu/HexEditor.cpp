@@ -205,7 +205,7 @@ namespace CTRPluginFramework
     {
         Color    &black = Color::Black;
         Color    &blank = Color::Blank;
-        Color    &dimGrey = Color::DarkGrey;
+        Color    &dimGrey = Color::BlackGrey;
         Color    &skyblue = Color::SkyBlue;
         Color    &deepskyblue = Color::DeepSkyBlue;
         Color    &dodgerblue = Color::DodgerBlue;
@@ -228,7 +228,7 @@ namespace CTRPluginFramework
         else
         {
             Renderer::DrawRect2(background, black, dimGrey);
-            Renderer::DrawRect(32, 22, 336, 196, deepskyblue, false);
+            Renderer::DrawRect(32, 22, 336, 196, blank, false);
         }
 
         // Title
@@ -345,21 +345,21 @@ namespace CTRPluginFramework
         if (_isModified)
         {
             posY += 5;
-            Renderer::DrawString((char *)"Apply changes: ", 40, posY, blank);
+            Renderer::DrawString((char *)"Apply changes: ", 44, posY, blank);
             posY -= 14;
-            Renderer::DrawSysString("\uE000", 145, posY, 330, blank);
+            Renderer::DrawSysString("\uE000", 149, posY, 330, blank);
 
             posY +=2;
-            Renderer::DrawString((char *)"Discard changes: ", 40, posY, blank);
+            Renderer::DrawString((char *)"Discard changes: ", 44, posY, blank);
             posY -= 14;
-            Renderer::DrawSysString("\uE001", 159, posY, 330, blank);
+            Renderer::DrawSysString("\uE001", 163, posY, 330, blank);
         }
         else
         {
             posY += 5;
-            Renderer::DrawString((char *)"Jump to address: ", 40, posY, blank);
+            Renderer::DrawString((char *)"Jump to address: ", 44, posY, blank);
             posY -= 14;
-            Renderer::DrawSysString("\uE002", 162, posY, 330, blank);  
+            Renderer::DrawSysString("\uE002", 166, posY, 330, blank);  
         }
         
     }
