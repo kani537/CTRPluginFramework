@@ -49,7 +49,7 @@ namespace CTRPluginFramework
     }
 
     PluginMenuHome::PluginMenuHome(std::string name) :
-        _showStarredBtn("Favorite", *this, nullptr, IntRect(30, 70, 120, 30), 7, Icon::DrawFavorite),
+        _showStarredBtn("Favorite", *this, nullptr, IntRect(30, 70, 120, 30), Icon::DrawFavorite),
         _hidMapperBtn("Mapper", *this, nullptr, IntRect(165, 70, 120, 30), Icon::DrawController),
         _gameGuideBtn("Game Guide", *this, nullptr, IntRect(30, 105, 120, 30), Icon::DrawGuide),
         _searchBtn("Search", *this, nullptr, IntRect(165, 105, 120, 30), Icon::DrawSearch),
@@ -75,6 +75,7 @@ namespace CTRPluginFramework
         _noteTB = nullptr;
 
         // Set rounding
+        _showStarredBtn.RoundedRatio(7);
         _hidMapperBtn.RoundedRatio(7);
         _gameGuideBtn.RoundedRatio(7);
         _searchBtn.RoundedRatio(7);
@@ -397,6 +398,9 @@ namespace CTRPluginFramework
         } // End switch
 
         folder = _starMode ? _starred : _folder;
+
+		if (_selector >= folder->ItemsCount())
+			_selector = 0;
         /*
         ** Scrolling text variables
         *********************************/
@@ -412,6 +416,12 @@ namespace CTRPluginFramework
         else if (folder->ItemsCount() == 0)
         {
             _selectedTextSize = 0;
+			_AddFavoriteBtn.SetState(false);
+			_AddFavoriteBtn.Enable(false);
+			_InfoBtn.Enable(false);
+			_InfoBtn.SetState(false);
+			_keyboardBtn.Enable(false);
+			_keyboardBtn.SetState(false);
         }
         /*
         ** Update favorite state
@@ -702,7 +712,7 @@ namespace CTRPluginFramework
 
         if (item != nullptr)
         {
-            item->_TriggerStar();
+			item->_isStarred = false;
 
             int count = _starredConst->ItemsCount();
 
