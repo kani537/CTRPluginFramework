@@ -31,8 +31,10 @@ namespace CTRPluginFramework
         void    SetValue(float val);
         void    SetValue(double val);
 
+		void	UseHexadecimal(bool useHex);
+
         void    Clear(void);
-        void    Draw(void);
+        void    Draw(void) const;
         void    Update(bool isTouchDown, IntVector touchPos);
         bool    operator()(void);
 
@@ -53,6 +55,7 @@ namespace CTRPluginFramework
     private:
         bool                        _execute;
         bool                        _isTouched;
+		bool						_isHexadecimal;
         IntRect                     _rectPos;
         std::string                 _text;
 

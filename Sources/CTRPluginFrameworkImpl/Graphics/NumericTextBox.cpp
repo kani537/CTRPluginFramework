@@ -10,6 +10,7 @@ namespace CTRPluginFramework
     _rectPos(IntRect(posX, posY, width, height)),
     _execute(false),
     _isTouched(false),
+	_isHexadecimal(true),
     IsEnabled(true),
     IsVisible(true),
     ValueType(Type::Bits32),
@@ -22,15 +23,31 @@ namespace CTRPluginFramework
     {
         char buffer[17] = {0};
 
-        switch (ValueType)
-        {
-            case Type::Bits8: sprintf(buffer, "%08X", Bits8); break;
-            case Type::Bits16: sprintf(buffer, "%08X", Bits16); break;
-            case Type::Bits32: sprintf(buffer, "%08X", Bits32); break;
-            case Type::Bits64: sprintf(buffer, "%016llX", Bits64); break;
-            case Type::Float: sprintf(buffer, "%.4f", Single); break;
-            case Type::Double: sprintf(buffer, "%.4lf", Double); break;
-        }
+		if (_isHexadecimal)
+		{
+			switch (ValueType)
+			{
+			case Type::Bits8: sprintf(buffer, "%08X", Bits8); break;
+			case Type::Bits16: sprintf(buffer, "%08X", Bits16); break;
+			case Type::Bits32: sprintf(buffer, "%08X", Bits32); break;
+			case Type::Bits64: sprintf(buffer, "%016llX", Bits64); break;
+			case Type::Float: sprintf(buffer, "%.4f", Single); break;
+			case Type::Double: sprintf(buffer, "%.4lf", Double); break;
+			}
+		}
+		else
+		{
+			switch (ValueType)
+			{
+			case Type::Bits8: sprintf(buffer, "%d", Bits8); break;
+			case Type::Bits16: sprintf(buffer, "%d", Bits16); break;
+			case Type::Bits32: sprintf(buffer, "%d", Bits32); break;
+			case Type::Bits64: sprintf(buffer, "%ll", Bits64); break;
+			case Type::Float: sprintf(buffer, "%.4f", Single); break;
+			case Type::Double: sprintf(buffer, "%.4lf", Double); break;
+			}
+		}
+
         _text = buffer;
     }
 
@@ -82,6 +99,12 @@ namespace CTRPluginFramework
         _UpdateVal();
     }
 
+	void	NumericTextBox::UseHexadecimal(bool useHex)
+	{
+		_isHexadecimal = useHex;
+		_UpdateVal();
+	}
+
     void    NumericTextBox::Clear(void)
     {
         Bits64 = 0;
@@ -89,7 +112,7 @@ namespace CTRPluginFramework
         _UpdateVal();
     }
 
-    void    NumericTextBox::Draw(void)
+    void    NumericTextBox::Draw(void) const
     {
        // static Color    blank = Color(255, 255, 255);
         Color    &black = Color::Black;
@@ -135,6 +158,7 @@ namespace CTRPluginFramework
             Keyboard  keyboard;
 
             keyboard.DisplayTopScreen = false;
+			keyboard.IsHexadecimal(_isHexadecimal);
 
            int  out = -1;
 
@@ -149,25 +173,11 @@ namespace CTRPluginFramework
             }
 
             if (out != -1)
-            {
-                char buffer[17] = {0};
-
-                switch (ValueType)
-                {
-                    case Type::Bits8: sprintf(buffer, "%08X", Bits8); break;
-                    case Type::Bits16: sprintf(buffer, "%08X", Bits16); break;
-                    case Type::Bits32: sprintf(buffer, "%08X", Bits32); break;
-                    case Type::Bits64: sprintf(buffer, "%016llX", Bits64); break;
-                    case Type::Float: sprintf(buffer, "%.4f", Single); break;
-                    case Type::Double: sprintf(buffer, "%.4lf", Double); break;
-                }
-                _text = buffer;
-            }
+				_UpdateVal();
 
             _execute = false;
             return (true);
         }
         return (false);
     }
-
 }
