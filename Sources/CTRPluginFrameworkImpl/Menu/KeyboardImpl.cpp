@@ -150,7 +150,6 @@ namespace CTRPluginFramework
     {
         _isOpen = true;
         _userAbort = false;
-        _errorMessage = false;
         _askForExit = false;
 
         // Check if Process is paused
@@ -174,6 +173,9 @@ namespace CTRPluginFramework
             else if (_layout == DECIMAL) _Decimal();
             else if (_layout == HEXADECIMAL) _Hexadecimal();            
         }
+
+		// Check start input
+		_errorMessage = !_CheckInput();
 
         // Loop until exit
         while (_isOpen)
