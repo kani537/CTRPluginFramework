@@ -26,6 +26,10 @@ namespace CTRPluginFramework
 
         void    Hide(void);
         void    Show(void);
+        bool    IsVisible(void) const
+        {
+            return (_isVisible);
+        }
 
     private:
         friend class MenuFolderImpl;
@@ -35,7 +39,7 @@ namespace CTRPluginFramework
         static void     _DisableFolder(MenuFolderImpl *folder);
         static void     _EnableFolder(MenuFolderImpl* folder);
 
-        bool        _IsStarred(void)
+        bool        _IsStarred(void) const
         {
             return (_isStarred);
         }
@@ -45,6 +49,7 @@ namespace CTRPluginFramework
             _isStarred = !_isStarred;
             return (_isStarred);
         }
+
         MenuType    _type;
         bool        _isStarred;
         bool        _isVisible;

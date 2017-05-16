@@ -24,6 +24,11 @@ namespace CTRPluginFramework
         _item->Show();
     }
 
+    bool    MenuFolder::IsVisible() const
+    {
+        return(_item->IsVisible());
+    }
+
 
     void    MenuFolder::Append(MenuEntry *item) const
     {

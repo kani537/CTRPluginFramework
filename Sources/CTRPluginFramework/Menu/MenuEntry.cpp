@@ -79,6 +79,11 @@ namespace CTRPluginFramework
         return (_item->IsActivated());
     }
 
+    bool    MenuEntry::IsVisible() const
+    {
+        return (_item->IsVisible());
+    }
+
     void    MenuEntry::SetGameFunc(FuncPointer func) const
     {
         _item->GameFunc = func;

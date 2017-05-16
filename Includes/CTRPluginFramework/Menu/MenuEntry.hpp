@@ -39,6 +39,8 @@ namespace CTRPluginFramework
         bool    WasJustActivated(void) const;
         // Return if the entry is activated
         bool    IsActivated(void) const;
+        // Return if the entry is visible in the menu
+        bool    IsVisible(void) const;
 
         void    SetGameFunc(FuncPointer func) const;
         void    SetMenuFunc(FuncPointer func) const;
