@@ -163,15 +163,23 @@ namespace CTRPluginFramework
             }
             else
             {
-                // Execute activate cheat
+                // Init Screens, flush framebuffers
+                osd.Start();
+
+                // Execute activated cheats
                 executer();
+
                 // Execute callbacks
                 for (int i = 0; i < _callbacks.size(); i++)
                 {
                     _callbacks[i]();
                 }
+                
                 // Display notifications
                 osd();
+
+                // Invalidate changed framebuffers
+				osd.Finalize();
             }
         }
 

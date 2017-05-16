@@ -677,9 +677,6 @@
     <ClCompile Include="Sources\ctrulib\services\irrst.c">
       <Filter>Fichiers sources</Filter>
     </ClCompile>
-    <ClCompile Include="Sources\ctrulib\system\allocateHeaps.c">
-      <Filter>Fichiers sources</Filter>
-    </ClCompile>
     <ClCompile Include="Sources\ctrulib\system\appExit.c">
       <Filter>Fichiers sources</Filter>
     </ClCompile>
@@ -801,6 +798,9 @@
       <Filter>Fichiers sources</Filter>
     </ClCompile>
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\Menu\MenuItem.cpp">
+      <Filter>Fichiers sources</Filter>
+    </ClCompile>
+    <ClCompile Include="Sources\ctrulib\system\allocateHeaps.cpp">
       <Filter>Fichiers sources</Filter>
     </ClCompile>
   </ItemGroup>
