@@ -60,8 +60,10 @@ namespace CTRPluginFramework
 
         void                        Fade(float fade, bool copy = false);
         void                        Flush(void);
+		void						Invalidate(void);
         void                        Copy(void);
         int                         Debug(int posX, int posY);
+	    
 
     private:
         friend class Renderer;

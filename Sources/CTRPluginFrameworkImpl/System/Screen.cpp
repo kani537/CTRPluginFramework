@@ -216,8 +216,9 @@ namespace CTRPluginFramework
             if (R_FAILED(GSPGPU_FlushDataCache((void *)_leftFramebuffersV[_currentBuffer], size)))
                 svcFlushProcessDataCache(Process::GetHandle(), (void *)_leftFramebuffersV[_currentBuffer], size);
 
-            // Invalidate other buffeer
+            // Invalidate other buffer
             svcInvalidateProcessDataCache(Process::GetHandle(), (void *)_leftFramebuffersV[!_currentBuffer], size);
+
             // Copy current buffer in the other one
             memcpy((void *)_leftFramebuffersV[!_currentBuffer], (void *)_leftFramebuffersV[_currentBuffer], size);
             // Flush second buffer
@@ -244,18 +245,16 @@ namespace CTRPluginFramework
         // Flush currentBuffer
         if (R_FAILED(GSPGPU_FlushDataCache((void *)_leftFramebuffersV[_currentBuffer], size)))
             svcFlushProcessDataCache(Process::GetHandle(), (void *)_leftFramebuffersV[_currentBuffer], size);
-        // Copy current buffer in the other one
-        //memcpy((void *)_leftFramebuffersV[!_currentBuffer], (void *)_leftFramebuffersV[_currentBuffer], size);
+
         // Flush second buffer
         if (R_FAILED(GSPGPU_FlushDataCache((void *)_leftFramebuffersV[!_currentBuffer], size)))
             svcFlushProcessDataCache(Process::GetHandle(), (void *)_leftFramebuffersV[!_currentBuffer], size);
 
         if (Is3DEnabled())
         {
-             if (R_FAILED(GSPGPU_FlushDataCache((void *)_rightFramebuffersV[_currentBuffer], size)))
+            if (R_FAILED(GSPGPU_FlushDataCache((void *)_rightFramebuffersV[_currentBuffer], size)))
                 svcFlushProcessDataCache(Process::GetHandle(), (void *)_rightFramebuffersV[_currentBuffer], size);
-            // Copy current buffer in the other one
-            //memcpy((void *)_leftFramebuffersV[!_currentBuffer], (void *)_leftFramebuffersV[_currentBuffer], size);
+
             // Flush second buffer
             if (R_FAILED(GSPGPU_FlushDataCache((void *)_rightFramebuffersV[!_currentBuffer], size)))
                 svcFlushProcessDataCache(Process::GetHandle(), (void *)_rightFramebuffersV[!_currentBuffer], size); 
@@ -263,7 +262,30 @@ namespace CTRPluginFramework
         }
     }
 
-    void    Screen::Copy(void)
+	void	Screen::Invalidate(void)
+	{
+		u32 size = GetFramebufferSize();
+
+		// Invalidate currentBuffer
+		if (R_FAILED(GSPGPU_InvalidateDataCache((void *)_leftFramebuffersV[_currentBuffer], size)))
+			svcInvalidateProcessDataCache(Process::GetHandle(), (void *)_leftFramebuffersV[_currentBuffer], size);
+
+    	// Invalidate second buffer
+		if (R_FAILED(GSPGPU_InvalidateDataCache((void *)_leftFramebuffersV[!_currentBuffer], size)))
+			svcInvalidateProcessDataCache(Process::GetHandle(), (void *)_leftFramebuffersV[!_currentBuffer], size);
+
+		if (Is3DEnabled())
+		{
+			if (R_FAILED(GSPGPU_InvalidateDataCache((void *)_rightFramebuffersV[_currentBuffer], size)))
+				svcInvalidateProcessDataCache(Process::GetHandle(), (void *)_rightFramebuffersV[_currentBuffer], size);
+
+			// Invalidate second buffer
+			if (R_FAILED(GSPGPU_InvalidateDataCache((void *)_rightFramebuffersV[!_currentBuffer], size)))
+				svcInvalidateProcessDataCache(Process::GetHandle(), (void *)_rightFramebuffersV[!_currentBuffer], size);
+		}
+	}
+
+	void    Screen::Copy(void)
     {
         u32 size = GetFramebufferSize();
 
