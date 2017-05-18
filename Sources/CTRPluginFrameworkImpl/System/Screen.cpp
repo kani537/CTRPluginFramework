@@ -227,15 +227,7 @@ namespace CTRPluginFramework
         }
         else
         {
-            u32 size = GetFramebufferSize();
-            // Flush currentBuffer
-            if (R_FAILED(GSPGPU_FlushDataCache((void *)_leftFramebuffersV[_currentBuffer], size)))
-                svcFlushProcessDataCache(Process::GetHandle(), (void *)_leftFramebuffersV[_currentBuffer], size);
-            // Copy current buffer in the other one
-            //memcpy((void *)_leftFramebuffersV[!_currentBuffer], (void *)_leftFramebuffersV[_currentBuffer], size);
-            // Flush second buffer
-            if (R_FAILED(GSPGPU_InvalidateDataCache((void *)_leftFramebuffersV[!_currentBuffer], size)))
-                svcInvalidateProcessDataCache(Process::GetHandle(), (void *)_leftFramebuffersV[!_currentBuffer], size);             
+            Flush();
         }      
     }
 

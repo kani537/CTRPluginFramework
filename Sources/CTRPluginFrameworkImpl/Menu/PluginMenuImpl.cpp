@@ -163,9 +163,6 @@ namespace CTRPluginFramework
             }
             else
             {
-                // Init Screens, flush framebuffers
-                osd.Start();
-
                 // Execute activated cheats
                 executer();
 
@@ -177,9 +174,6 @@ namespace CTRPluginFramework
                 
                 // Display notifications
                 osd();
-
-                // Invalidate changed framebuffers
-				osd.Finalize();
             }
         }
 

@@ -37,6 +37,11 @@ namespace CTRPluginFramework
 			return;
 
         if (!screen) inst->_DrawBottom(line, posX, posY, fg, bg);
-        else inst->_DrawTop(line, posX, posY, offset, fg, bg);
+        else
+        {
+            Screen::Top->Acquire(true);
+            inst->_DrawTop(line, posX, posY, offset, fg, bg);
+            Screen::Top->Invalidate();
+        }
 	}
 }

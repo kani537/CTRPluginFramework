@@ -28,11 +28,11 @@ namespace CTRPluginFramework
 
 	void	OSDImpl::Start(void)
 	{
-        Screen::Top->Acquire(true);
-        Screen::Top->Flush();
+       // Screen::Top->Acquire(true);
+       // Screen::Top->Flush();
 			
-        Screen::Bottom->Acquire(true);
-        Screen::Bottom->Flush();
+       // Screen::Bottom->Acquire(true);
+      //  Screen::Bottom->Flush();
 	}
 
 	void	OSDImpl::Finalize(void)
@@ -57,6 +57,8 @@ namespace CTRPluginFramework
     {
         if (_list.empty())
             return;        
+
+        Screen::Top->Acquire(true);
 
         int posX;
         int posY = std::min((u32)15, (u32)_list.size());
@@ -91,6 +93,8 @@ namespace CTRPluginFramework
             }
         }
 
+        Screen::Top->Invalidate();
+
         if (!remove.empty())
             for (int i = remove.size() - 1; i >= 0; i--)
             {
@@ -106,11 +110,13 @@ namespace CTRPluginFramework
 
     void    OSDImpl::_DrawTop(std::string &text, int posX, int &posY, int offset, Color &fg, Color &bg)
     {
+       // Screen::Top->Acquire(true);
+
         const char  *str = text.c_str();
         int         stride = Screen::Top->GetStride();
         int         off3D = offset < 0 ? offset - 1 : offset + 1;
 
-        _topModified = true;
+       // _topModified = true;
 
         // If 3D
         if (*(float *)(0x1FF81080) > 0.f)
@@ -222,6 +228,8 @@ namespace CTRPluginFramework
 
     void    OSDImpl::_DrawBottom(std::string &text, int posX, int &posY, Color &fg, Color &bg)
     {
+        Screen::Bottom->Acquire(true);
+
         const char *str = text.c_str();
         int     stride = Screen::Bottom->GetStride();
 
@@ -272,5 +280,7 @@ namespace CTRPluginFramework
             posX += 6;
         }
         posY += 15;
+
+        Screen::Bottom->Invalidate();
     }
 }
