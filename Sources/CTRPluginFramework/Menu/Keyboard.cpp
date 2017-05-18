@@ -2,6 +2,7 @@
 #include "CTRPluginFramework/Menu/Keyboard.hpp"
 
 #include <string>
+#include <limits.h>
 
 namespace CTRPluginFramework
 {
@@ -9,13 +10,87 @@ namespace CTRPluginFramework
     ** Convert
     ************/
 
+    bool    stou32(std::string &input, u32 &res)
+    {
+        const char *str = input.c_str();
+
+        res = 0;
+
+        while (*str)
+        {
+            int val = *str - '0';
+
+            // Check that the mutiplication won't overflow 
+            if (res > UINT32_MAX / 10)
+                goto overflow;
+
+            res *= 10;
+
+            // Check that the addition won't overflow
+            if ((res > 0) && (val > UINT32_MAX - res))
+                goto overflow;
+
+            res += val;
+            str++;
+        }
+        return (true);
+
+    overflow:
+        res = UINT32_MAX;
+        input = "4294967295";
+        return (false);
+    }
+
+    bool    stou64(std::string &input, u64 &res)
+    {
+        const char *str = input.c_str();
+
+        res = 0;
+
+        while (*str)
+        {
+            int val = *str - '0';
+
+            // Check that the mutiplication won't overflow 
+            if (res > U64_MAX / 10)
+                goto overflow;
+
+            res *= 10;
+
+            // Check that the addition won't overflow
+            if ((res > 0) && (val > U64_MAX - res))
+                goto overflow;
+
+            res += val;
+            str++;
+        }
+        return (true);
+
+    overflow:
+        res = U64_MAX;
+        input = "18446744073709551615";
+        return (false);
+    }
+
     void    *ConvertToU8(std::string &input, bool isHex)
     {
         static u8   temp = 0;
 
         if (input.length() > 0)
-            temp = static_cast<u8>(std::stoul(input, nullptr, isHex ? 16 : 10));
-        return ((void *)&temp);
+        {
+            if (!isHex)
+            {
+                u32 n;
+                stou32(input, n);
+                temp = static_cast<u8>(n);
+            }
+            else
+                temp = static_cast<u8>(std::stoul(input, nullptr, 16));
+        }
+        else
+            temp = 0;
+            
+        return (static_cast<void *>(&temp));
     }
 
     void    *ConvertToU16(std::string &input, bool isHex)
@@ -23,8 +98,20 @@ namespace CTRPluginFramework
         static u16   temp = 0;
 
         if (input.length() > 0)
-            temp = static_cast<u16>(std::stoul(input, nullptr, isHex ? 16 : 10));
-        return ((void *)&temp);
+        {
+            if (!isHex)
+            {
+                u32 n;
+                stou32(input, n);
+                temp = static_cast<u16>(n);
+            }
+            else
+                temp = static_cast<u16>(std::stoul(input, nullptr, 16));
+        }
+        else
+            temp = 0;
+
+        return (static_cast<void *>(&temp));
     }
 
     void    *ConvertToU32(std::string &input, bool isHex)
@@ -32,8 +119,18 @@ namespace CTRPluginFramework
         static u32   temp = 0;
 
         if (input.length() > 0)
-            temp = static_cast<u32>(std::stoul(input, nullptr, isHex ? 16 : 10));
-        return ((void *)&temp);
+        {
+            if (!isHex)
+            {
+                stou32(input, temp);
+            }
+            else
+                temp = static_cast<u32>(std::stoul(input, nullptr, 16));
+        }
+        else
+            temp = 0;
+
+        return (static_cast<void *>(&temp));
     }
 
     void    *ConvertToU64(std::string &input, bool isHex)
@@ -41,8 +138,18 @@ namespace CTRPluginFramework
         static u64   temp = 0;
 
         if (input.length() > 0)
-            temp = static_cast<u64>(std::stoull(input, nullptr, isHex ? 16 : 10));
-        return ((void *)&temp);
+        {
+            if (!isHex)
+            {
+                stou64(input, temp);
+            }
+            else
+                temp = static_cast<u64>(std::stoul(input, nullptr, 16));
+        }
+        else
+            temp = 0;
+
+        return (static_cast<void *>(&temp));
     }
 
     void    *ConvertToFloat(std::string &input, bool isHex)

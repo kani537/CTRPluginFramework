@@ -190,7 +190,6 @@ namespace CTRPluginFramework
                 }           
             }
 
-
             // Update current keys
             _Update(clock.Restart().AsSeconds());
 
@@ -211,7 +210,7 @@ namespace CTRPluginFramework
                 if (_errorMessage && inputChanged)
                     _errorMessage = false;
 
-                if (inputChanged && _compare != nullptr)
+                if (inputChanged)
                     _errorMessage = !_CheckInput();
 
                 if (_askForExit && !_errorMessage)
@@ -1202,10 +1201,12 @@ namespace CTRPluginFramework
 
                     if (!size)
                         return false;
+                    
+                    u8 buffer[0x100] = { 0 };
 
-                    u8 *str = (u8 *)strdup(_userInput.c_str());// reinterpret_cast<u8 *>(const_cast<char *>(_userInput.c_str()));
-                    u8 *bak = str;
-                    int index = 0;
+                    std::memcpy(buffer, _userInput.data(), _userInput.size());
+                    u8 *str = buffer;//(u8 *)strdup(_userInput.c_str());// reinterpret_cast<u8 *>(const_cast<char *>(_userInput.c_str()));
+                    //u8 *bak = str;
 
                     while (*str)
                     {
@@ -1220,17 +1221,11 @@ namespace CTRPluginFramework
                         else
                         {
                             *str = '\0';
-                            _userInput = reinterpret_cast<char *>(bak);
-                            free(bak);
+                            _userInput = reinterpret_cast<char *>(buffer);
+                            //free(bak);
                             return (true);
-                        }
-                        
+                        }                        
                     }
-                    /*if (_userInput.length() > 1)
-                        _userInput.pop_back();
-                    else if (_userInput.length() == 1)
-                        _userInput.clear();
-                    else*/
                     return (false);
                     //return (true);
                 }
@@ -1284,22 +1279,25 @@ namespace CTRPluginFramework
 
     bool    KeyboardImpl::_CheckInput(void)
     {
-        if (_layout == QWERTY && _compare != nullptr)
+        if (_layout == QWERTY)
         {
-            return (_compare((void *)&_userInput, _error));
+            if (_compare != nullptr)
+                return (_compare((void *)&_userInput, _error));
+            return (true);
         }
-        else if (_layout == DECIMAL && _compare != nullptr && _convert != nullptr)
-        {
-            void *convertedInput = _convert(_userInput, false);
-            return (_compare(convertedInput, _error));
-        }
-        else if (_compare != nullptr && _convert != nullptr)
-        {
-            void *convertedInput = _convert(_userInput, _isHex ? true : false);
-            return (_compare(convertedInput, _error));            
-        }
+
+        // In case there's no convert function, always consider input as valid
+        if (_convert == nullptr)
+            return (true);
+
+        // Always call convert function, can avoid overflow
+        void *convertedInput = _convert(_userInput, _isHex);
+
         // In case there's no callback, always consider input as valid
-        return (true);
+        if (_compare == nullptr)
+            return (true);
+
+        return (_compare(convertedInput, _error));
     }
 
     bool    KeyboardImpl::_CheckButtons(int &ret)
