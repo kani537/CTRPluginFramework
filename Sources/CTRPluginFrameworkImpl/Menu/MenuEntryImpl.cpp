@@ -2,6 +2,7 @@
 
 #include "CTRPluginFrameworkImpl/Menu/MenuItem.hpp"
 #include "CTRPluginFrameworkImpl/Menu/MenuEntryImpl.hpp"
+#include "CTRPluginFrameworkImpl/Menu/PluginMenuExecuteLoop.hpp"
 
 namespace CTRPluginFramework
 {
@@ -33,6 +34,21 @@ namespace CTRPluginFramework
         this->_flags.isRadio = false;        
         this->_radioId = -1;
         this->_owner = owner;
+    }
+
+    void    MenuEntryImpl::Enable(void)
+    {
+        if (IsActivated())
+            return;
+
+        // Change the state
+        _TriggerState();
+
+        // If the entry has a valid funcpointer
+        if (GameFunc != nullptr)
+        {
+            PluginMenuExecuteLoop::Add(this);
+        }
     }
 
     void    MenuEntryImpl::Disable(void)

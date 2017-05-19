@@ -104,10 +104,16 @@ namespace CTRPluginFramework
         isHidden = !isHidden;
     }
 
+    MenuEntry *g_e;
+
     void    Notif(MenuEntry *entry)
     {
         if (Controller::IsKeyPressed(X))
-            OSD::Notify("A new notification !");
+        {
+            OSD::Notify("A new notification 2 !");
+            g_e->Enable();
+        }
+            
     }
 
     void    Write(MenuEntry *entry)
@@ -129,7 +135,8 @@ namespace CTRPluginFramework
         ********************/
 
         menu.Append(new MenuEntry("Notif X", Notif));
-        menu.Append(new MenuEntry("Write", Write));
+        g_e = new MenuEntry("Write", Write);
+        menu.Append(g_e);
         // Set my global
         g_folderToHide = new MenuFolder("Folder to hide");
         // Append to the menu

@@ -23,6 +23,8 @@ namespace CTRPluginFramework
         MenuEntry(int radioGroup, std::string name, FuncPointer gameFunc, FuncPointer menuFunc, std::string note = "");
         ~MenuEntry();
 
+        // Enable the entry
+        void    Enable(void);
         // Disable the entry
         void    Disable(void) const;
         // Hide the entry from the menu. Will disable it too

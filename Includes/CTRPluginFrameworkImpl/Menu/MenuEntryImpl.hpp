@@ -25,6 +25,8 @@ namespace CTRPluginFramework
         MenuEntryImpl(std::string name, FuncPointer func, std::string note = "", MenuEntry *owner = nullptr);
         ~MenuEntryImpl(){};
 
+        // Enable the entry
+        void    Enable(void);
         // Disable the entry
         void    Disable(void);
         // Set the entry as radio, an ID must be provided
