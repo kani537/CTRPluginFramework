@@ -14,16 +14,16 @@ namespace CTRPluginFramework
          *  30 + 16 = 46 + 20 = 66
          */
 
+        int lineCount = Renderer::GetLineCount(message.c_str(), 190.f);
+
         // If text width is inferior to 191px
-        if (Renderer::GetTextSize(message.c_str()) < 191.f)
+        if (Renderer::GetTextSize(message.c_str()) < 191.f && lineCount == 1)
         {
             _box = IntRect(100, 82, 200, 75);
         }
         // Text is superior to 180px
         else
         {
-            int lineCount = Renderer::GetLineCount(message.c_str(), 190.f);
-
             if (lineCount > 3)
                 lineCount = 3;
 
