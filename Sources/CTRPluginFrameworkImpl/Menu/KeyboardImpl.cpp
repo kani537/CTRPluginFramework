@@ -21,10 +21,13 @@ namespace CTRPluginFramework
 
     KeyboardImpl::KeyboardImpl(std::string text)
     {
+        _owner = nullptr;
+
         _text = text;
         _error = "";
         _userInput = "";
 
+        _canAbort = true;
         _isOpen = false;
         _userAbort = false;
         _mustRelease = false;
@@ -39,6 +42,51 @@ namespace CTRPluginFramework
 
         _convert = nullptr;
         _compare = nullptr;
+        _onInputChange = nullptr;
+
+        _customKeyboard = false;
+        _displayScrollbar = false;
+        _currentPosition = 0;
+        _scrollbarSize = 0;
+        _scrollCursorSize = 10;
+        _scrollPadding = 0.f;
+        _scrollJump = 0.f;
+        _scrollSize = 0.f;
+        _scrollPosition = 0.f;
+        _inertialVelocity = 0.f;
+        _scrollStart = 0.f;
+        _scrollEnd = 0.f;
+
+        _symbolsPage = 0;
+        _nintendoPage = 0;
+
+        DisplayTopScreen = true;
+    }
+
+    KeyboardImpl::KeyboardImpl(Keyboard* kb, std::string text)
+    {
+        _owner = kb;
+
+        _text = text;
+        _error = "";
+        _userInput = "";
+
+        _canAbort = true;
+        _isOpen = false;
+        _userAbort = false;
+        _mustRelease = false;
+        _useCaps = false;
+        _useSymbols = false;
+        _useNintendo = false;
+        _errorMessage = false;
+        _askForExit = false;
+        _isHex = false;
+        _max = 0;
+        _layout = HEXADECIMAL;
+
+        _convert = nullptr;
+        _compare = nullptr;
+        _onInputChange = nullptr;
 
         _customKeyboard = false;
         _displayScrollbar = false;
@@ -83,9 +131,25 @@ namespace CTRPluginFramework
         _max = max;
     }
 
+    void    KeyboardImpl::CanAbort(bool canAbort)
+    {
+        _canAbort = canAbort;
+    }
+
     std::string &KeyboardImpl::GetInput(void)
     {
-        return(_userInput);
+        return (_userInput);
+    }
+
+    std::string &KeyboardImpl::GetMessage(void)
+    {
+        return (_text);
+    }
+
+    void    KeyboardImpl::SetError(std::string &error)
+    {
+        _errorMessage = true;
+        _error = error;
     }
 
     void    KeyboardImpl::SetConvertCallback(ConvertCallback callback)
@@ -96,6 +160,11 @@ namespace CTRPluginFramework
     void    KeyboardImpl::SetCompareCallback(CompareCallback callback)
     {
         _compare = callback;
+    }
+
+    void    KeyboardImpl::OnInputChange(OnInputChangeCallback callback)
+    {
+        _onInputChange = callback;
     }
 
     void    KeyboardImpl::Populate(std::vector<std::string> &input)
@@ -211,7 +280,11 @@ namespace CTRPluginFramework
                     _errorMessage = false;
 
                 if (inputChanged)
+                {
                     _errorMessage = !_CheckInput();
+                    if (_onInputChange != nullptr && _owner != nullptr)
+                        _onInputChange(*_owner);
+                }  
 
                 if (_askForExit && !_errorMessage)
                 {
@@ -238,6 +311,11 @@ namespace CTRPluginFramework
         if (_mustRelease)
             ProcessImpl::Play(false);
         return (ret);
+    }
+
+    void    KeyboardImpl::Close(void)
+    {
+        _isOpen = false;
     }
 
     void    KeyboardImpl::_RenderTop(void)
@@ -437,7 +515,8 @@ namespace CTRPluginFramework
         {
             if (event.key.code == Key::B)
             {
-                _userAbort = true;
+                if (_canAbort)
+                    _userAbort = true;
                 return;
             }
         }

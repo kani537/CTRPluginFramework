@@ -568,7 +568,7 @@ namespace CTRPluginFramework
 		Process::Write16(0x00588EAA, 0x0000FFFF);
 	}
 
-	void	NeverTakeDamageFromFalling(MenuEntry *entry)
+    void	NeverTakeDamageFromFalling(MenuEntry *entry)
 	{
 		Process::Write32(0x098F7290, 0x00000000);
 	}

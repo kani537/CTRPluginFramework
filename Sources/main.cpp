@@ -124,16 +124,172 @@ namespace CTRPluginFramework
         OSD::WriteLine(1, "This is a test line...", 20, 30, 15);
     }
 
+    // class pokemon
+    VectorPokemon   *g_pokeList = nullptr;
+
+    Pokemon::Pokemon(std::string name, u32 id) : ID(id), Name(name)
+    {
+    }
+
+    void    Pokemon::InitList(void)
+    {
+        // Init our Vector if it doesn't exist yet, else clear it
+        if (g_pokeList == nullptr)
+            g_pokeList = new VectorPokemon;
+        else
+            g_pokeList->clear();
+
+        // Create our list
+        VectorPokemon &list = *g_pokeList;
+
+        list.push_back(Pokemon("Bulbasaur", 1));
+        list.push_back(Pokemon("Ivysaur", 2));
+        list.push_back(Pokemon("Venusaur", 3));
+        list.push_back(Pokemon("Charmander", 4));
+        list.push_back(Pokemon("Charmeleon", 5));
+        list.push_back(Pokemon("Squirtle", 6));
+        list.push_back(Pokemon("Wartortle", 7));
+        list.push_back(Pokemon("Blastoise", 8));
+        list.push_back(Pokemon("Caterpie", 9));
+        list.push_back(Pokemon("MetaPod", 10));
+        list.push_back(Pokemon("Butterfree", 11));
+        
+        // Etc...
+    }
+    
+    u32     Pokemon::GetList(VectorPokemon& output, std::string pattern)
+    {
+        VectorPokemon &list = *g_pokeList;
+
+        // Clear list
+        output.clear();
+
+        // If pattern isn't specified return full list
+        if (pattern.empty())
+        {
+            for (Pokemon &pokemon : list)
+            {
+                output.push_back(pokemon);
+            }
+        }
+
+        // Else parse our list and found those matches the pattern
+        else
+        {
+            for (Pokemon &pokemon : list)
+            {
+                if (pokemon.Name.find(pattern) != std::string::npos)
+                    output.push_back(pokemon);
+            }
+        }
+
+        // Return the count of found pokemon that matched the pattern
+        return (output.size());
+    }
+
+    Pokemon     &Pokemon::GetPokemon(std::string name)
+    {
+        static Pokemon empty("Error pokemon", 0);
+
+        for (Pokemon &pokemon : *g_pokeList)
+            if (pokemon.Name.compare(name) == 0)
+                return pokemon;
+
+        return (empty);
+    }
+
+    Pokemon     &Pokemon::GetPokemon(u32 id)
+    {
+        static Pokemon empty("Error pokemon", 0);
+
+        for (Pokemon &pokemon : *g_pokeList)
+            if (pokemon.ID == id)
+                return pokemon;
+
+        return (empty);
+    }
+
+    void    PokemonOnInputChange(Keyboard &keyboard)
+    {
+        std::string     &input = keyboard.GetInput();
+        VectorPokemon   list;
+
+        // Get the list of Pokemon that matches the pattern entered by the user
+        Pokemon::GetList(list, input);
+
+        // If the list is empty, the user made an error:
+        if (list.empty())
+        {
+            keyboard.SetError("No pokemon matches your input.\nCheck it and try again.");
+            return;
+        }
+
+        // Check if the list that matches the pattern is small enough
+        if (list.size() < 15)
+        {
+            // Create a keyboard with the list and tell the user to chose one
+            std::vector<std::string>    pokeList;
+            Keyboard                    listKeyboard("");
+
+            for (Pokemon &pokemon : list)
+                pokeList.push_back(pokemon.Name);
+
+            // Populate the keyboard
+            listKeyboard.Populate(pokeList);
+
+            // I don't want the top screen to be displayed
+            listKeyboard.DisplayTopScreen = false;
+
+            // User can't abort the keyboard
+            listKeyboard.CanAbort(false);
+
+            // Get user choice
+            int userChoice = listKeyboard.Open();
+
+            // Set my main keyboard input
+            input = pokeList[userChoice];
+
+            // Close Qwerty keyboard
+            keyboard.Close();
+            return;
+        }
+
+        // The list is still too long, user must keep typing letters
+        std::string error("Too much results, keep typing: " + list.size());
+        keyboard.SetError(error);
+    }
+
+    void    PokemonKeyboard(MenuEntry *entry)
+    {
+        // Create QwertyKeyboard
+        Keyboard        keyboard("Enter the pokemon name");
+        std::string     output;
+
+        // Function to call when user change input
+        keyboard.OnInputChange(PokemonOnInputChange);
+
+        // Open keyboard
+        keyboard.Open(output);
+
+        // Get Pokemon
+        Pokemon &pokemon = Pokemon::GetPokemon(output);
+
+        // Do something with the infos from the pokemon
+        MessageBox("You've selected:\n" + pokemon.Name + "(" + std::to_string(pokemon.ID) + ")")();
+    }
+
     int    main(void)
     {
 
         PluginMenu      *m = new PluginMenu("Zelda Ocarina Of Time 3D", g_encAbout, Decoder);
         PluginMenu      &menu = *m;
+        
+        Pokemon::InitList();
 
         /*
         ** Tests
         ********************/
-
+        menu.Append(new MenuEntry("Pokemon Keyboard", nullptr, PokemonKeyboard));
         menu.Append(new MenuEntry("Notif X", Notif));
         g_e = new MenuEntry("Write", Write);
         menu.Append(g_e);

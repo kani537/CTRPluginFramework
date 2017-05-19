@@ -174,7 +174,7 @@ namespace CTRPluginFramework
     ** Compare
     ***********/
 
-    Keyboard::Keyboard(std::string text) : _keyboard(new KeyboardImpl(text))
+    Keyboard::Keyboard(std::string text) : _keyboard(new KeyboardImpl(this, text))
     {
         _hexadecimal = true;
         _isPopulated = false;
@@ -206,6 +206,9 @@ namespace CTRPluginFramework
     {
         if (!_isPopulated)
             return (-1);
+
+        _keyboard->DisplayTopScreen = DisplayTopScreen;
+
         return (_keyboard->Run());
     }
 
@@ -541,5 +544,35 @@ namespace CTRPluginFramework
             output = _keyboard->GetInput();
         }
         return (ret);
+    }
+
+    std::string     &Keyboard::GetInput(void)
+    {
+        return (_keyboard->GetInput());
+    }
+
+    std::string     &Keyboard::GetMessage(void)
+    {
+        return (_keyboard->GetMessage());
+    }
+
+    void    Keyboard::SetError(std::string error)
+    {
+        _keyboard->SetError(error);
+    }
+
+    void    Keyboard::CanAbort(bool canAbort)
+    {
+        _keyboard->CanAbort(canAbort);
+    }
+
+    void    Keyboard::Close(void)
+    {
+        _keyboard->Close();
+    }
+
+    void    Keyboard::OnInputChange(OnInputChangeCallback callback)
+    {
+        _keyboard->OnInputChange(callback);
     }
 }

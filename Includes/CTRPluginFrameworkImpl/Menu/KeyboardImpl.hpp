@@ -18,27 +18,36 @@ namespace CTRPluginFramework
         HEXADECIMAL
     };
 
+    class Keyboard;
     class KeyboardImpl
     {
         using   CompareCallback = bool (*)(const void *, std::string&);
         using   ConvertCallback = void *(*)(std::string&, bool);
+        using   OnInputChangeCallback = void(*)(Keyboard&);
         using   KeyIter  = std::vector<TouchKey>::iterator;
         using   KeyStringIter  = std::vector<TouchKeyString>::iterator;
     public:
 
         KeyboardImpl(std::string text = "");
+        explicit KeyboardImpl(Keyboard *kb, std::string text = "");
         ~KeyboardImpl(void);
 
         void        SetLayout(Layout layout);
         void        SetHexadecimal(bool isHex);
         void        SetMaxInput(int max);
+        void        CanAbort(bool canAbort);
         std::string &GetInput(void);
+        std::string &GetMessage(void);
+        void        SetError(std::string &error);
+
         void        SetConvertCallback(ConvertCallback callback);
         void        SetCompareCallback(CompareCallback callback);
+        void        OnInputChange(OnInputChangeCallback callback);
         void        Populate(std::vector<std::string> &input);
 
         int         Run(void);
-        bool        operator()(int &out);
+        void        Close(void);
+        bool        operator()(int &out);     
 
         bool        DisplayTopScreen;
     private:
@@ -64,10 +73,13 @@ namespace CTRPluginFramework
 
         bool    _CheckButtons(int &ret); //<- for string button
 
+        Keyboard                *_owner;
+
         std::string             _text;
         std::string             _error;
         std::string             _userInput;
 
+        bool                    _canAbort;
         bool                    _isOpen;
         bool                    _askForExit;
         bool                    _errorMessage;
@@ -84,6 +96,7 @@ namespace CTRPluginFramework
 
         CompareCallback         _compare;
         ConvertCallback         _convert;
+        OnInputChangeCallback   _onInputChange;
 
         std::vector<TouchKey>    _keys;
 
