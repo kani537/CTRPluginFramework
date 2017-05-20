@@ -39,9 +39,9 @@ namespace CTRPluginFramework
 		{
 			switch (ValueType)
 			{
-			case Type::Bits8: sprintf(buffer, "%d", Bits8); break;
-			case Type::Bits16: sprintf(buffer, "%d", Bits16); break;
-			case Type::Bits32: sprintf(buffer, "%d", Bits32); break;
+			case Type::Bits8: sprintf(buffer, "%u", Bits8); break;
+			case Type::Bits16: sprintf(buffer, "%u", Bits16); break;
+			case Type::Bits32: sprintf(buffer, "%u", Bits32); break;
 			case Type::Bits64: sprintf(buffer, "%ll", Bits64); break;
 			case Type::Float: sprintf(buffer, "%.4f", Single); break;
 			case Type::Double: sprintf(buffer, "%.4lf", Double); break;
