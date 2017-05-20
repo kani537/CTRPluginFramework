@@ -26,6 +26,7 @@ namespace CTRPluginFramework
     _guide(new GuideReader())
     {
         _isOpen = false;
+        _wasOpened = false;
         _pluginRun = true;
     }
 
@@ -34,7 +35,7 @@ namespace CTRPluginFramework
 
     }  
 
-    void    PluginMenuImpl::Append(MenuItem *item)
+    void    PluginMenuImpl::Append(MenuItem *item) const
     {
         _home->Append(item);
     }
@@ -94,6 +95,7 @@ namespace CTRPluginFramework
                     {
                         ProcessImpl::Pause(true);
                         _isOpen = true;
+                        _wasOpened = true;
                     }
                     inputClock.Restart();   
                 }
@@ -174,6 +176,9 @@ namespace CTRPluginFramework
                 
                 // Display notifications
                 osd();
+
+                if (_wasOpened)
+                    _wasOpened = false;
             }
         }
 
@@ -206,5 +211,15 @@ namespace CTRPluginFramework
     void    PluginMenuImpl::TriggerActionReplay(bool state) const
     {
         _home->TriggerActionReplay(state);
+    }
+
+    bool    PluginMenuImpl::IsOpen(void) const
+    {
+        return (_isOpen);
+    }
+
+    bool    PluginMenuImpl::WasOpened(void) const
+    {
+        return (_wasOpened);
     }
 }

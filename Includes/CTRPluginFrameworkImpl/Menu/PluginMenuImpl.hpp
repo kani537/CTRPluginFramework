@@ -21,7 +21,7 @@ namespace CTRPluginFramework
         PluginMenuImpl(std::string name = "Cheats", std::string note = "");
         ~PluginMenuImpl(void);
 
-        void    Append(MenuItem *item);
+        void    Append(MenuItem *item) const;
         void    Callback(CallbackPointer callback);
         int     Run(void);
 
@@ -30,11 +30,15 @@ namespace CTRPluginFramework
 
         void    TriggerSearch(bool state) const;
         void    TriggerActionReplay(bool state) const;
+
+        bool    IsOpen(void) const;
+        bool    WasOpened(void) const;
     private: 
 
         static PluginMenuImpl       *_runningInstance;
 
         bool                        _isOpen;
+        bool                        _wasOpened;
         bool                        _pluginRun;
         
         PluginMenuHome              *_home;

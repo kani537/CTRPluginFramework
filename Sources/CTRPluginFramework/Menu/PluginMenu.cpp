@@ -4,6 +4,8 @@
 
 namespace CTRPluginFramework
 {
+    static const PluginMenu   *g_runningInstance = nullptr;
+
     PluginMenu::PluginMenu(std::string name, std::string about) :
         _menu(new PluginMenuImpl(name, about)) 
     {
@@ -48,7 +50,13 @@ namespace CTRPluginFramework
 
     int    PluginMenu::Run(void) const
     {
-       return (_menu->Run());
+        g_runningInstance = this;
+
+        int ret = _menu->Run();
+
+        g_runningInstance = nullptr;
+
+        return (ret);
     }
 
     void    PluginMenu::SetSearchButtonState(bool isEnabled) const
@@ -60,5 +68,20 @@ namespace CTRPluginFramework
     {
         return;
         _menu->TriggerActionReplay(isEnabled);
+    }
+
+    bool    PluginMenu::IsOpen(void)
+    {
+        return (_menu->IsOpen());
+    }
+
+    bool    PluginMenu::WasOpened(void)
+    {
+        return (_menu->WasOpened());
+    }
+
+    PluginMenu  &PluginMenu::GetRunningInstance(void)
+    {
+        return (const_cast<PluginMenu &>(*g_runningInstance));
     }
 }
