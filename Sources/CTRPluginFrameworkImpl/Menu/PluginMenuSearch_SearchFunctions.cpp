@@ -37,10 +37,9 @@ namespace CTRPluginFramework
         Step = _previousSearch == nullptr ? 0 : _previousSearch->Step + 1;
 
         // Open file
-        char    tid[17] = {0};
-        Process::GetTitleID(tid);
         std::string path = "Search/";
-        path += tid;
+        Process::GetTitleID(path);
+        
         path += "-Step" + std::to_string(Step) + ".bin";
 
 

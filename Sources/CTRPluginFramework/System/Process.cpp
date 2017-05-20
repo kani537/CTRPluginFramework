@@ -21,36 +21,35 @@ namespace CTRPluginFramework
 		return (ProcessImpl::_processID);
 	}
 
-	void     Process::GetProcessID(char *output)
-	{
-		if (!output)
-			return;
-		sprintf(output, "%02X", ProcessImpl::_processID);
-	}
-
 	u64     Process::GetTitleID(void)
 	{
 		return (ProcessImpl::_titleID);
 	}
 
-	void     Process::GetTitleID(char *output)
+    void    Process::GetTitleID(std::string &output)
+    {
+        char tid[17] = { 0 };
+
+        sprintf(tid, "%016llX", ProcessImpl::_titleID);
+        for (int i = 0; i < 16; i++)
+            output += tid[i];
+    }
+
+    void    Process::GetName(std::string &output)
 	{
-		if (!output)
-			return;
-		sprintf(output, "%016llX", ProcessImpl::_titleID);
+	    for (int i = 0; i < 8; i++)
+		    output += ProcessImpl::_processName[i];
 	}
 
-	void    Process::GetName(char *output)
+	bool 	Process::Patch(u32 	addr, void *patch, u32 length, void *original)
 	{
-		if (output != nullptr)
-			for (int i = 0; i < 8; i++)
-				output[i] = ProcessImpl::_processName[i];
+		return (ProcessImpl::PatchProcess(addr, static_cast<u8 *>(patch), length, static_cast<u8 *>(original)));
 	}
 
-	bool 	Process::Patch(u32 	addr, u8 *patch, u32 length, u8 *original)
-	{
-		return (ProcessImpl::PatchProcess(addr, patch, length, original));
-	}
+    bool    Process::Patch(u32 addr, u32 patch, void *original)
+    {
+        return (ProcessImpl::PatchProcess(addr, reinterpret_cast<u8 *>(&patch), 4, static_cast<u8 *>(original)));
+    }
 
     bool     Process::ProtectMemory(u32 addr, u32 size, int perm)
     {

@@ -104,6 +104,11 @@ namespace CTRPluginFramework
         isHidden = !isHidden;
     }
 
+    void    Test(MenuEntry *entry)
+    {
+        Process::Patch(0x12345678, 0x12345678);
+    }
+
     MenuEntry *g_e;
 
     void    Notif(MenuEntry *entry)
