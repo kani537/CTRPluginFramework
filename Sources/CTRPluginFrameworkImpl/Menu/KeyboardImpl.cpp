@@ -1,6 +1,7 @@
 #include "CTRPluginFrameworkImpl/Menu/KeyboardImpl.hpp"
 #include "CTRPluginFrameworkImpl/System/ProcessImpl.hpp"
 #include "CTRPluginFrameworkImpl/Preferences.hpp"
+#include "CTRPluginFramework/Menu/Keyboard.hpp"
 
 #include <cmath>
 #include "ctrulib/util/utf.h"
@@ -283,7 +284,7 @@ namespace CTRPluginFramework
                 {
                     _errorMessage = !_CheckInput();
                     if (_onInputChange != nullptr && _owner != nullptr)
-                        _onInputChange(*_owner);
+                        _onInputChange(*_owner, _inputChangeEvent);
                 }  
 
                 if (_askForExit && !_errorMessage)
@@ -1260,13 +1261,18 @@ namespace CTRPluginFramework
 
         for (int i = start; i < end; i++)
         {
-            ret = _keys[i](_userInput);
+            std::string  temp;
+
+            ret = _keys[i](temp);
 
             if (ret != -1)
             {
                 if (ret == 0x12345678)
                 {
-                    // _userInput has been modified by TouchKey
+                    _userInput += temp;
+                    _inputChangeEvent.type = InputChangeEvent::CharacterAdded;
+                    decode_utf8(&_inputChangeEvent.codepoint, (const u8 *)temp.c_str());
+
                     return (true);
                 }
                 if (ret == KEY_ENTER)
@@ -1301,6 +1307,8 @@ namespace CTRPluginFramework
                         {
                             *str = '\0';
                             _userInput = reinterpret_cast<char *>(buffer);
+                            _inputChangeEvent.type = InputChangeEvent::CharacterRemoved;
+                            _inputChangeEvent.codepoint = code;
                             //free(bak);
                             return (true);
                         }                        
@@ -1348,7 +1356,12 @@ namespace CTRPluginFramework
                     if (_layout != Layout::QWERTY &&_userInput.length() == 0 && ret == '.')
                         _userInput += "0.";
                     else if (_max == 0 || _userInput.size() < _max)
+                    {
                         _userInput += ret;
+                        _inputChangeEvent.type = InputChangeEvent::CharacterAdded;
+                        _inputChangeEvent.codepoint = ret;
+                    }
+                        
                     return (true); 
                 }
             }

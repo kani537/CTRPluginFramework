@@ -4,10 +4,12 @@
 #include "CTRPluginFrameworkImpl/Graphics.hpp"
 #include "CTRPluginFrameworkImpl/Graphics/TouchKey.hpp"
 #include "CTRPluginFrameworkImpl/Graphics/TouchKeyString.hpp"
+#include "CTRPluginFramework/Menu/Keyboard.hpp"
 #include "CTRPluginFrameworkImpl/System.hpp"
 
 #include <vector>
 #include <string>
+
 
 namespace CTRPluginFramework
 {
@@ -23,7 +25,7 @@ namespace CTRPluginFramework
     {
         using   CompareCallback = bool (*)(const void *, std::string&);
         using   ConvertCallback = void *(*)(std::string&, bool);
-        using   OnInputChangeCallback = void(*)(Keyboard&);
+        using   OnInputChangeCallback = void(*)(Keyboard&, InputChangeEvent&);
         using   KeyIter  = std::vector<TouchKey>::iterator;
         using   KeyStringIter  = std::vector<TouchKeyString>::iterator;
     public:
@@ -97,7 +99,7 @@ namespace CTRPluginFramework
         CompareCallback         _compare;
         ConvertCallback         _convert;
         OnInputChangeCallback   _onInputChange;
-
+        InputChangeEvent        _inputChangeEvent;
         std::vector<TouchKey>    _keys;
 
         // Custom keyboard stuff

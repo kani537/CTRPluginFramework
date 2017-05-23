@@ -101,23 +101,5 @@ namespace CTRPluginFramework
     void	OpenAnyChestInTheGameAsManyTimes(MenuEntry *entry);
     void	CollectHeartPiecesInOverworldAsMany(MenuEntry *entry);
     void	AlwaysHaveNayrusLoveActivated(MenuEntry *entry);
-
-    class Pokemon;
-    using VectorPokemon = std::vector<Pokemon>;
-
-    class Pokemon
-    {
-    public:
-        Pokemon(std::string name, u32 id);
-
-        const u32           ID;
-        const std::string   Name;
-        
-        static void     InitList(void);
-        static u32      GetList(VectorPokemon &output, std::string pattern = "");
-        static Pokemon  &GetPokemon(std::string name);
-        static Pokemon  &GetPokemon(u32 id);        
-    };
-
 }
 #endif

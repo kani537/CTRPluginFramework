@@ -1,5 +1,10 @@
 #include "CTRPluginFramework.hpp"
 #include "cheats.hpp"
+#include "CTRPluginFrameworkImpl/System/ProcessImpl.hpp"
+#include <cstdio>
+#include <cctype>
+#include <vector>
+#include "CTRPluginFrameworkImpl/arm11kCommands.h"
 
 namespace CTRPluginFramework
 {    
@@ -54,233 +59,204 @@ namespace CTRPluginFramework
         }
     }
 
-    void    TestStringKeyboard(MenuEntry *entry)
+    using StringVector = std::vector<std::string>;
+    using StringIter = std::string::iterator;
+    using StringConstIter = std::string::const_iterator;
+
+    // Create our list of possibilities
+    static const StringVector     g_possibilities =
     {
-        Keyboard keyboard("Enter any text");
+        "Bulbasaur",
+        "Ivysaur",
+        "Venusaur",
+        "Charmander",
+        "Charmeleon",
+        "Charizard",
+        "Squirtle",
+        "Wartortle",
+        "Blastoise",
+        "Caterpie",
+        "Metapod",
+        "Butterfree",
+        "Weedle",
+        "Kakuna",
+        "Beedrill",
+        "Pidgey",
+        "Pidgeotto",
+        "Pidgeot",
+        "Rattata",
+        "Raticate",
+        "Spearow",
+        "Fearow",
+        "Ekans",
+        "Arbok",
+        "Pikachu",
+        "Raichu"
+    };
 
-        std::string str;
-
-        // If user didn't abort the keyboard (B)
-        if (keyboard.Open(str) != -1)
-        {
-            // Replace the entry's name by the user's text
-            entry->Name() = str;
-        }
-    }
-
-    void    TestMsgBox1(MenuEntry *entry)
+    /**
+    * @brief      Gets the Pokemons that matches the first letters of the input
+    *
+    * @param      output  The vector where to put the pokemons that matches the input
+    * @param      input   The input string entered by the user
+    *
+    * @return     The amount of pokemons that matches the input.
+    */
+    int     GetMatches(StringVector &output, std::string &input)
     {
-        MessageBox msgBox("This is a message !");
-
-        msgBox();
-    }
-
-    void    TestMsgBox2(MenuEntry *entry)
-    {
-        if (Controller::IsKeysPressed(A + L))
-        {
-            MessageBox msgBox("Do you want to rename it ?", DialogType::DialogYesNo);
-
-            // Display MessageBox and check user choice
-            if (msgBox())
-            {
-                // Display keyboard etc...
-            }
-        }
-    }
-
-    // Pointer to the folder I'll hide / show
-    MenuFolder  *g_folderToHide = nullptr;
-
-    void    HideShow(MenuEntry *entry)
-    {
-        static bool isHidden = false;
-
-        if (isHidden)
-            g_folderToHide->Show();
-        else
-            g_folderToHide->Hide();
-
-        isHidden = !isHidden;
-    }
-
-    void    Test(MenuEntry *entry)
-    {
-        Process::Patch(0x12345678, 0x12345678);
-    }
-
-    MenuEntry *g_e;
-
-    void    Notif(MenuEntry *entry)
-    {
-        if (Controller::IsKeyPressed(X))
-        {
-            OSD::Notify("A new notification 2 !");
-            g_e->Enable();
-        }
-            
-    }
-
-    void    Write(MenuEntry *entry)
-    {
-        OSD::WriteLine(0, "This is a test line...", 10, 10);
-
-        OSD::WriteLine(1, "This is a test line...", 20, 10);
-        OSD::WriteLine(1, "This is a test line...", 20, 30, 15);
-    }
-
-    // class pokemon
-    VectorPokemon   *g_pokeList = nullptr;
-
-    Pokemon::Pokemon(std::string name, u32 id) : ID(id), Name(name)
-    {
-    }
-
-    void    Pokemon::InitList(void)
-    {
-        // Init our Vector if it doesn't exist yet, else clear it
-        if (g_pokeList == nullptr)
-            g_pokeList = new VectorPokemon;
-        else
-            g_pokeList->clear();
-
-        // Create our list
-        VectorPokemon &list = *g_pokeList;
-
-        list.push_back(Pokemon("Bulbasaur", 1));
-        list.push_back(Pokemon("Ivysaur", 2));
-        list.push_back(Pokemon("Venusaur", 3));
-        list.push_back(Pokemon("Charmander", 4));
-        list.push_back(Pokemon("Charmeleon", 5));
-        list.push_back(Pokemon("Squirtle", 6));
-        list.push_back(Pokemon("Wartortle", 7));
-        list.push_back(Pokemon("Blastoise", 8));
-        list.push_back(Pokemon("Caterpie", 9));
-        list.push_back(Pokemon("MetaPod", 10));
-        list.push_back(Pokemon("Butterfree", 11));
-        
-        // Etc...
-    }
-    
-    u32     Pokemon::GetList(VectorPokemon& output, std::string pattern)
-    {
-        VectorPokemon &list = *g_pokeList;
-
-        // Clear list
+        // Clear the output
         output.clear();
 
-        // If pattern isn't specified return full list
-        if (pattern.empty())
+        // Clone the input string but with forced lowcase
+        std::string     lowcaseInput(input);
+
+        for (char &c : lowcaseInput)
+            c = std::tolower(c);
+
+        // Parse our possibilities to find the matches
+        for (const std::string &pokemon : g_possibilities)
         {
-            for (Pokemon &pokemon : list)
+            StringIter      inputIt = lowcaseInput.begin();
+            StringConstIter pokeIt = pokemon.begin();
+
+            // Parse every letter of input while it matches the pokemon's name
+            while (inputIt != lowcaseInput.end() && pokeIt != pokemon.end() && *inputIt == std::tolower(*pokeIt))
             {
+                ++inputIt;
+                ++pokeIt;
+            }
+
+            // If we're at the end of input then it matches the pokemon's name
+            if (inputIt == lowcaseInput.end())
                 output.push_back(pokemon);
-            }
         }
 
-        // Else parse our list and found those matches the pattern
-        else
-        {
-            for (Pokemon &pokemon : list)
-            {
-                if (pokemon.Name.find(pattern) != std::string::npos)
-                    output.push_back(pokemon);
-            }
-        }
-
-        // Return the count of found pokemon that matched the pattern
         return (output.size());
     }
 
-    Pokemon     &Pokemon::GetPokemon(std::string name)
+    /**
+    * @brief      This function will be called by the Keyboard everytime the input change
+    *
+    * @param      keyboard  The keyboard that called the function
+    */
+    void    OnInputChange(Keyboard &keyboard, InputChangeEvent &event)
     {
-        static Pokemon empty("Error pokemon", 0);
-
-        for (Pokemon &pokemon : *g_pokeList)
-            if (pokemon.Name.compare(name) == 0)
-                return pokemon;
-
-        return (empty);
-    }
-
-    Pokemon     &Pokemon::GetPokemon(u32 id)
-    {
-        static Pokemon empty("Error pokemon", 0);
-
-        for (Pokemon &pokemon : *g_pokeList)
-            if (pokemon.ID == id)
-                return pokemon;
-
-        return (empty);
-    }
-
-    void    PokemonOnInputChange(Keyboard &keyboard)
-    {
-        std::string     &input = keyboard.GetInput();
-        VectorPokemon   list;
-
-        // Get the list of Pokemon that matches the pattern entered by the user
-        Pokemon::GetList(list, input);
-
-        // If the list is empty, the user made an error:
-        if (list.empty())
+        if (event.type == InputChangeEvent::CharacterRemoved)
         {
-            keyboard.SetError("No pokemon matches your input.\nCheck it and try again.");
+            if (!keyboard.GetInput().size())
+                keyboard.SetError("Not enough letters to do the search.\nKeep typing.");
+            return;
+        }            
+
+        std::string  &input = keyboard.GetInput();
+
+        // If input's length is inferior than 3, ask for more letters
+        if (input.size() < 3)
+        {
+            keyboard.SetError("Not enough letters to do the search.\nKeep typing.");
             return;
         }
 
-        // Check if the list that matches the pattern is small enough
-        if (list.size() < 15)
+        // Else do the search
+        StringVector    matches;
+
+
+        // Search for matches
+        int count = GetMatches(matches, input);
+
+        // If we don't have any matches, tell the user
+        if (!count)
         {
-            // Create a keyboard with the list and tell the user to chose one
-            std::vector<std::string>    pokeList;
-            Keyboard                    listKeyboard("");
+            keyboard.SetError("Nothing matches your input.\nTry something else.");
+            return;
+        }
 
-            for (Pokemon &pokemon : list)
-                pokeList.push_back(pokemon.Name);
+        // If we have only one matches, complete the input
+        if (count == 1)
+        {
+            input = matches[0];
+            return;
+        }
 
-            // Populate the keyboard
-            listKeyboard.Populate(pokeList);
+        // If we have more than 1, but less or equal than 10 matches, ask the user to choose which one
+        if (count <= 10)
+        {
+            // Our new keyboard
+            Keyboard    listKeyboard;
 
-            // I don't want the top screen to be displayed
-            listKeyboard.DisplayTopScreen = false;
+            // Populate the keyboard with the matches
+            listKeyboard.Populate(matches);
 
-            // User can't abort the keyboard
+            // User can't abort with B
             listKeyboard.CanAbort(false);
 
-            // Get user choice
-            int userChoice = listKeyboard.Open();
+            // Nothing to display on the top screen
+            listKeyboard.DisplayTopScreen = false;
 
-            // Set my main keyboard input
-            input = pokeList[userChoice];
+            // Display the keyboard and get user choice
+            int choice = listKeyboard.Open();
 
-            // Close Qwerty keyboard
-            keyboard.Close();
+            // Complete the input
+            input = matches[choice];
             return;
         }
 
-        // The list is still too long, user must keep typing letters
-        std::string error("Too much results, keep typing: " + list.size());
-        keyboard.SetError(error);
+        // We have too much results, the user must keep typing letters
+        keyboard.SetError("Too many results: " + std::to_string(count) + "\nType more letters to narrow the results.");
     }
 
-    void    PokemonKeyboard(MenuEntry *entry)
+    /**
+    * @brief      A cheat function that needs the user to select a pokemon before doing something
+    *
+    * @param      entry  The entry that called the function
+    */
+    void    SelectAPokemon(MenuEntry *entry)
     {
-        // Create QwertyKeyboard
-        Keyboard        keyboard("Enter the pokemon name");
-        std::string     output;
+        // Store the selected pokemon's name
+        std::string  output;
 
-        // Function to call when user change input
-        keyboard.OnInputChange(PokemonOnInputChange);
+        // Create a keyboard
+        Keyboard    keyboard("Which pokemon do you want ?");
 
-        // Open keyboard
-        keyboard.Open(output);
+        // Pass our OnInputChange function to the keyboard
+        keyboard.OnInputChange(OnInputChange);
 
-        // Get Pokemon
-        Pokemon &pokemon = Pokemon::GetPokemon(output);
+        // Open the keyboard
+        if (keyboard.Open(output) != -1)
+        {
+            // Display the selected pokemon
+            MessageBox("You have selected:\n" + output)();
+        }
+    }
 
-        // Do something with the infos from the pokemon
-        MessageBox("You've selected:\n" + pokemon.Name + "(" + std::to_string(pokemon.ID) + ")")();
+
+#define FORMAT(str, fmt, ...) {char buffer[0X100] = {0}; sprintf(buffer, fmt, ##__VA_ARGS__); str += buffer;}
+    
+    void    GetHandlesInfo(MenuEntry *entry)
+    {
+        std::string &note = entry->Note();
+        note.clear();
+
+        KProcessHandleTable table;
+        std::vector<HandleDescriptor>  handles;
+
+        ProcessImpl::GetHandleTable(table, handles);
+
+        // Display table infos
+        FORMAT(note, "Handle table: %08X\n", (u32)table.handleTable);
+        FORMAT(note, "Max handles: %d\n", table.maxHandle);
+        FORMAT(note, "Handles open: %d\n", table.openedHandleCounter);
+        FORMAT(note, "Next HandleDescriptor: %08X\n", (u32)table.nextOpenHandleDecriptor);
+        FORMAT(note, "Total handles: %d\n", table.totalHandles);
+        FORMAT(note, "Handles in use: %d\n\n", table.handlesCount);
+
+        for (HandleDescriptor &desc : handles)
+        {
+            u32 pid = arm11kGetKProcessId(desc.kObjectPointer);
+            FORMAT(note, "Handle: %08X, KObj: %08X, Pid: %d\n", desc.handleInfo, desc.kObjectPointer, pid);
+        }
+
+        MessageBox("Done !")();
     }
 
     int    main(void)
@@ -288,27 +264,14 @@ namespace CTRPluginFramework
 
         PluginMenu      *m = new PluginMenu("Zelda Ocarina Of Time 3D", g_encAbout, Decoder);
         PluginMenu      &menu = *m;
-        
-        Pokemon::InitList();
+       
 
         /*
         ** Tests
         ********************/
-        menu.Append(new MenuEntry("Pokemon Keyboard", nullptr, PokemonKeyboard));
-        menu.Append(new MenuEntry("Notif X", Notif));
-        g_e = new MenuEntry("Write", Write);
-        menu.Append(g_e);
-        // Set my global
-        g_folderToHide = new MenuFolder("Folder to hide");
-        // Append to the menu
-        menu.Append(g_folderToHide);
-
-        g_folderToHide->Append(new MenuEntry("Test Keyboard", nullptr, TestStringKeyboard));
-        g_folderToHide->Append(new MenuEntry("Test Box 1", nullptr, TestMsgBox1));
-        g_folderToHide->Append(new MenuEntry("Test Box 2", TestMsgBox2));
-        g_folderToHide->Append(new MenuEntry("Hide", nullptr, HideShow));
-
-        menu.Append(new MenuEntry("Hide", nullptr, HideShow));
+        //menu.Append(new MenuEntry("Pokemon Keyboard", nullptr, PokemonKeyboard));
+        menu.Append(new MenuEntry("Get KProcess Handles", nullptr, GetHandlesInfo));
+        menu.Append(new MenuEntry("Pokemon Keyboard", nullptr, SelectAPokemon));
         
         /*
         ** Movements codes
