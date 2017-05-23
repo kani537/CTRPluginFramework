@@ -49,7 +49,6 @@ namespace CTRPluginFramework
 
     }
 
-
     /*
     ** Render Top
     **************/

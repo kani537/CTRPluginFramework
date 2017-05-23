@@ -738,6 +738,16 @@ namespace CTRPluginFramework
         }
     }
 
+    void    PluginMenuHome::Init(void)
+    {
+        MenuFolderImpl* folder = _starMode ? _starred : _folder;
+        MenuItem    *item = folder->ItemsCount() != 0 ? folder->_items[0] : nullptr;
+
+        // Init buttons state
+        _AddFavoriteBtn.Enable(folder->ItemsCount() != 0);
+        _InfoBtn.Enable(item != nullptr ? !item->note.empty() : false);
+    }
+
     void    PluginMenuHome::TriggerSearch(bool state)
     {
         _searchBtn.IsLocked = state;

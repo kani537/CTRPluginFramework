@@ -72,6 +72,9 @@ namespace CTRPluginFramework
         // Set _runningInstance to this menu
         _runningInstance = this;
 
+        // Update PluginMenuHome variables
+        home.Init();
+
         OSD::Notify("Plugin ready !", Color(255, 255, 255), Color());
 
         // Main loop

@@ -22,9 +22,10 @@ namespace CTRPluginFramework
         void    Append(MenuItem *item) const;
         void    Refresh(void);
         void    UnStar(MenuItem* item);
+        void    Init(void);
 
         void    TriggerSearch(bool state);
-        void    TriggerActionReplay(bool state);
+        void    TriggerActionReplay(bool state);        
 
     private:
         friend class PluginMenuImpl;
