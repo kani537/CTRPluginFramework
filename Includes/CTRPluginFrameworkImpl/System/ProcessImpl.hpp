@@ -2,6 +2,7 @@
 #define CTRPLUGINFRAMEWORKIMPL_PROCESSIMPL_HPP
 
 #include "ctrulib/svc.h"
+#include <vector>
 
 namespace CTRPluginFramework
 {
@@ -29,6 +30,31 @@ namespace CTRPluginFramework
         u64     titleId;
     }__attribute__((packed));
 
+    struct HandleDescriptor
+    {
+        u32     handleInfo;
+        u32     kObjectPointer;
+    }__attribute__((packed));
+
+    struct KObjectMutex
+    {
+        u32     kThreadPointer;
+        s16     counter1;
+        s16     counter2;
+    }__attribute__((packed));
+
+    struct KProcessHandleTable
+    {
+        HandleDescriptor    *handleTable;
+        s16                 maxHandle;
+        s16                 openedHandleCounter;
+        HandleDescriptor    *nextOpenHandleDecriptor;
+        s16                 totalHandles;
+        s16                 handlesCount;
+        KObjectMutex        mutex;
+        HandleDescriptor    table[0x28];
+    }__attribute__((packed));
+
     class ProcessImpl
     {
         public:
@@ -42,8 +68,8 @@ namespace CTRPluginFramework
             static void     Initialize(void);
             static void     UpdateThreadHandle(void);
             static bool     PatchProcess(u32 addr, u8 *patch, u32 length, u8 *original);
+            static void     GetHandleTable(KProcessHandleTable &table, std::vector<HandleDescriptor> &handleDescriptors);
 
-           
             static u32          _processID;
             static u64          _titleID;
             static char         _processName[8];
