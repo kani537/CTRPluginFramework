@@ -10,6 +10,16 @@ u32 arm11kSetKProcessId(u32 kprocess, u32 newPid)
     g_kernelParams[0] = 5;
     g_kernelParams[1] = kprocess;
     g_kernelParams[2] = newPid;
+    g_kernelParams[3] = 1;
+    svcBackdoor(executeKernelCmd);
+    return (g_kernelParams[1]);
+}
+
+u32 arm11kGetKProcessId(u32 kprocess)
+{
+    g_kernelParams[0] = 5;
+    g_kernelParams[1] = kprocess;
+    g_kernelParams[3] = 0;
     svcBackdoor(executeKernelCmd);
     return (g_kernelParams[1]);
 }

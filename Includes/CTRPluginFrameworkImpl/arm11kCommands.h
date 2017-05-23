@@ -14,6 +14,7 @@ s32     executeKernelCmd(void);
 
 // Set a new pid to the KObject and return the old one
 u32     arm11kSetKProcessId(u32 kprocess, u32 newPid);
+u32     arm11kGetKProcessId(u32 kprocess);
 
 // Change the current KProcess and return the old one
 u32     arm11kSetCurrentKProcess(u32 kprocess);

@@ -73,7 +73,9 @@ SetKProcessID:
         LDR         R3, [R4, #8] @ R3 = g_kernelParams[2]
         LDR         R0, [R1,R2] @ r0 = *(kprocess + g_KProcessPIDOffset)
         STR         R0, [R4,#4] @ g_kernelParams[1] = *(kprocess + g_KProcessPIDOffset)
-        STR         R3, [R1,R2] @ Store to Memory
+        LDR			R0, [R4, #0xC] @ R0 = g_kernelParams[3]
+		CMP			R0, #0
+		STRNE       R3, [R1,R2] @ Store to Memory
         LDMFD       SP!, {R4,PC} @ Load Block from Memory
 @ ---------------------------------------------------------------------------
 
