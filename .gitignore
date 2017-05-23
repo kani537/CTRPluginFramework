@@ -3,6 +3,7 @@
 /Guide
 /.vs
 *.db
+*.a
 *.opendb
 *.plg
 *.elf

@@ -28,7 +28,7 @@ initSystem:
 @	bl	__appInit
 skip:
 	bl	__libc_init_array
-
+	bl	_init
 	ldr	r2, =saved_stack
 	ldr	lr, [r2,#4]
  	bx	lr
@@ -39,6 +39,7 @@ skip:
 
 __ctru_exit:
 	bl	__libc_fini_array
+	bl	_fini
 	bl	__appExit
 
 	ldr	r2, =saved_stack
