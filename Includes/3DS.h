@@ -7,6 +7,7 @@ extern "C" {
 
 #include "types.h"
 
+#include "ctrulib/services/ac.h"
 #include "ctrulib/services/apt.h"
 #include "ctrulib/services/cfgu.h"
 #include "ctrulib/services/fs.h"
