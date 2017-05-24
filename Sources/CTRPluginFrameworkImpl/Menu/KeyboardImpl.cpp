@@ -285,15 +285,26 @@ namespace CTRPluginFramework
                     _errorMessage = !_CheckInput();
                     if (_onInputChange != nullptr && _owner != nullptr)
                         _onInputChange(*_owner, _inputChangeEvent);
-                }  
-
-                if (_askForExit && !_errorMessage)
-                {
-                    _isOpen = false;
-                    ret = 0;
                 }
-                else if (_askForExit && _errorMessage)
-                    _askForExit = false;                
+
+                // If user try to exit the keyboard
+                if (_askForExit)
+                {
+                    // If input is invalid, user can't exit
+                    if (_errorMessage)
+                        _askForExit = false;
+                    else
+                    {
+                        // Check input
+                        _errorMessage = !_CheckInput();
+                        if (!_errorMessage)
+                        {
+                            // input is valid, exit
+                            _isOpen = false;
+                            ret = 0;
+                        }
+                    }                    
+                }         
             }
             else
             {
