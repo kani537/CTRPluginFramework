@@ -14,4 +14,13 @@ namespace CTRPluginFramework
     {
         return (static_cast<Language>(SystemImpl::_language));
     }
+
+    bool    System::IsConnectedToInternet(void)
+    {
+        u32 out = 0;
+
+        ACU_GetWifiStatus(&out);
+
+        return (out != 0);
+    }
 }

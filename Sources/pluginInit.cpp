@@ -50,6 +50,7 @@ namespace CTRPluginFramework
         __sync_init();
 
         // Initialize services
+        acInit();
         srvInit();
         fsInit();
         cfguInit();

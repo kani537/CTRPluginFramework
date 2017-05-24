@@ -21,7 +21,7 @@ namespace CTRPluginFramework
 
     class System
     {
-    public:
+    public: 
         
         /**
          * \brief Check if the current console is a New3DS
@@ -34,6 +34,12 @@ namespace CTRPluginFramework
          * \return The language of the system
          */
         static Language     GetSystemLanguage(void);
+
+        /**
+         * \brief Get if the 3DS is connected to Internet
+         * \return true if connected \n false if not connected
+         */
+        static bool         IsConnectedToInternet(void);
     };
 }
 
