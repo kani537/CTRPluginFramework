@@ -40,6 +40,13 @@ namespace CTRPluginFramework
          */
         static void     GetName(std::string &output);
 
+
+        /**
+         * \brief Get the total size of the .text section
+         * \return The total size of the .text section
+         */
+        static u32      GetTextSize(void);
+
         /**
         * \brief Safely patch the current process (MemPerm check and Invalidate cache)
         * \param addr      The address to start the patch

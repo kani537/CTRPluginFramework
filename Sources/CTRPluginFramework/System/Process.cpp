@@ -41,7 +41,12 @@ namespace CTRPluginFramework
 		    output += ProcessImpl::_processName[i];
 	}
 
-	bool 	Process::Patch(u32 	addr, void *patch, u32 length, void *original)
+    u32     Process::GetTextSize(void)
+    {
+        return (ProcessImpl::_kCodeSet.textPages * 0x1000);
+    }
+
+    bool 	Process::Patch(u32 	addr, void *patch, u32 length, void *original)
 	{
 		return (ProcessImpl::PatchProcess(addr, static_cast<u8 *>(patch), length, static_cast<u8 *>(original)));
 	}
