@@ -7,6 +7,7 @@ namespace CTRPluginFramework
     BMPImage    *Preferences::bottomBackgroundImage = nullptr;
     bool        Preferences::InjectBOnMenuClose = false;
     bool        Preferences::DrawTouchCursor = false;
+    bool        Preferences::EcoMemoryMode = false;
 
     BMPImage *RegionFromCenter(BMPImage *img, int maxX, int maxY)
     {
@@ -87,29 +88,22 @@ namespace CTRPluginFramework
         InjectBOnMenuClose = false;
         DrawTouchCursor = false;
 
-        // Background initialization
-
-        topBackgroundImage = new BMPImage("TopBackground.bmp");
-
-        if (topBackgroundImage->IsLoaded())
+        // If EcoMemoryMode, don't load the backgrounds
+        if (EcoMemoryMode)
         {
-            topBackgroundImage = PostProcess(topBackgroundImage, 340, 200);
-          /*  if (topBackgroundImage->Width() > 340 || topBackgroundImage->Height() > 200)
-                topBackgroundImage = RegionFromCenter(topBackgroundImage, 340, 200);
-            else if (topBackgroundImage->Width() < 340 || topBackgroundImage->Height() < 200)
-                topBackgroundImage = UpSampleThenCrop(topBackgroundImage, 340, 200);      */      
+            topBackgroundImage = new BMPImage();
+            bottomBackgroundImage = new BMPImage();            
         }
-
-
-        bottomBackgroundImage = new BMPImage("BottomBackground.bmp");
-
-        if (bottomBackgroundImage->IsLoaded())
+        else // Load the backgrounds
         {
-            bottomBackgroundImage = PostProcess(bottomBackgroundImage, 280, 200);
-            /*if (bottomBackgroundImage->Width() > 280 || bottomBackgroundImage->Height() > 200)
-                bottomBackgroundImage = RegionFromCenter(bottomBackgroundImage, 280, 200);
-            else if (bottomBackgroundImage->Width() < 280 || bottomBackgroundImage->Height() < 200)
-                bottomBackgroundImage = UpSampleThenCrop(bottomBackgroundImage, 280, 200);   */         
+            topBackgroundImage = new BMPImage("TopBackground.bmp");
+            if (topBackgroundImage->IsLoaded())
+                topBackgroundImage = PostProcess(topBackgroundImage, 340, 200);
+
+            bottomBackgroundImage = new BMPImage("BottomBackground.bmp");
+            if (bottomBackgroundImage->IsLoaded())
+                bottomBackgroundImage = PostProcess(bottomBackgroundImage, 280, 200);
         }
+        
     }
 }

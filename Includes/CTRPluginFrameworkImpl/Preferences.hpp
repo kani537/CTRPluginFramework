@@ -13,10 +13,10 @@ namespace CTRPluginFramework
 
         static bool         InjectBOnMenuClose;
         static bool         DrawTouchCursor;
+        static bool         EcoMemoryMode;
     private:
         friend void     ThreadInit(void *arg);
         static void     Initialize(void);
-
     };
 }
 
