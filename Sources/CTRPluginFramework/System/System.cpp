@@ -9,4 +9,9 @@ namespace CTRPluginFramework
     {
         return (SystemImpl::_isNew3DS);
     }
+
+    Language    System::GetSystemLanguage(void)
+    {
+        return (static_cast<Language>(SystemImpl::_language));
+    }
 }

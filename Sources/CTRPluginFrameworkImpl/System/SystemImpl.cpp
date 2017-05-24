@@ -9,6 +9,8 @@ namespace CTRPluginFramework
     u32     SystemImpl::_IOBaseLCD = 0;
     u32     SystemImpl::_IOBasePAD = 0;
     u32     SystemImpl::_IOBasePDC = 0;
+    u8      SystemImpl::_language = CFG_LANGUAGE_EN;
+
     extern "C" u32     g_KProcessPIDOffset;
 
     void    SystemImpl::Initialize(void)
@@ -18,7 +20,6 @@ namespace CTRPluginFramework
 
         bool isNew3DS = false;
         
-        srvInit();
         APT_CheckNew3DS(&isNew3DS);
         _isNew3DS = isNew3DS;
         if (isNew3DS)
@@ -35,6 +36,9 @@ namespace CTRPluginFramework
             _IOBasePDC = 0xFFFC0000;
             g_KProcessPIDOffset = 0xB4;
         }
+
+        // Get System's language
+        CFGU_GetSystemLanguage(&_language);
         _isInit = true;
     }
 

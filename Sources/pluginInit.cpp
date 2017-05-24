@@ -46,6 +46,14 @@ namespace CTRPluginFramework
 
     void    KeepThreadMain(void *arg)
     {
+        // Initialize the synchronization subsystem
+        __sync_init();
+
+        // Initialize services
+        srvInit();
+        fsInit();
+        cfguInit();
+
         // Init Framework's system constants
         SystemImpl::Initialize();
 
@@ -54,13 +62,6 @@ namespace CTRPluginFramework
 
         // Init Screen
         Screen::Initialize();
-
-        // Initialize the synchronization subsystem
-        __sync_init();
-
-        // Initialize services
-        srvInit();
-        fsInit();
 
         // Patch process before it starts
         PatchProcess();
