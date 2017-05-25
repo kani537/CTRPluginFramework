@@ -179,7 +179,6 @@ namespace CTRPluginFramework
                 
                 // Display notifications
                 osd();
-
                 if (_wasOpened)
                     _wasOpened = false;
             }

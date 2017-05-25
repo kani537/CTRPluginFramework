@@ -48,21 +48,6 @@ namespace CTRPluginFramework
         return (mFolder);
     }
 
-
-    /*BMPImage *SubSampleUntilItFits(BMPImage *img, int maxX, int maxY)
-    {
-        if (img->Width() <= maxX && img->Height() <= maxY)
-            return (img);
-
-        BMPImage *temp = new BMPImage(img->Width() / 2, img->Height() / 2);
-
-        img->SubSample(*temp);
-        delete img;
-
-        if (temp->Width() > maxX || temp->Height() > maxY)
-            return (SubSampleUntilItFits(temp, maxX, maxY));
-        return (temp);
-    }*/
     #define ABS(x) x >= 0 ? 0 : -x
 
     float GetRatio(int width, int height)
@@ -100,8 +85,8 @@ namespace CTRPluginFramework
         return (temp);
     }
 
-    GuideReader::GuideReader(void) :
-    _text(""), _isOpen(false), _guideTB(nullptr), _last(nullptr), _menu(CreateFolder("Guide"), Icon::DrawFile),
+    GuideReader::GuideReader(void):
+    _isOpen(false), _menu(CreateFolder("Guide"), Icon::DrawFile), _guideTB(nullptr), _text(""), _last(nullptr),
     _closeBtn(*this, nullptr, IntRect(275, 24, 20, 20), Icon::DrawClose)
     {
         _isOpen = false;

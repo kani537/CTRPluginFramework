@@ -49,9 +49,9 @@ namespace CTRPluginFramework
         // Initialize the synchronization subsystem
         __sync_init();
 
-        // Initialize services
-        acInit();
+        // Initialize services        
         srvInit();
+        acInit();
         fsInit();
         cfguInit();
 

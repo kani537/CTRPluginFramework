@@ -145,7 +145,7 @@ namespace CTRPluginFramework
 		}
         _isPaused = false;
 		while(R_FAILED(svcSetThreadPriority(gspThreadEventHandle, 0x3F)));
-		while(R_FAILED(svcSetThreadPriority(_mainThreadHandle, 0x3F)));
+		while(R_FAILED(svcSetThreadPriority(_mainThreadHandle, 0x31)));
 	}
 
     bool     ProcessImpl::PatchProcess(u32 addr, u8 *patch, u32 length, u8 *original)

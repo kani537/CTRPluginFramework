@@ -197,6 +197,7 @@
     <ClInclude Include="Includes\ctrulib\os.h" />
     <ClInclude Include="Includes\ctrulib\result.h" />
     <ClInclude Include="Includes\ctrulib\sdmc.h" />
+    <ClInclude Include="Includes\ctrulib\services\ac.h" />
     <ClInclude Include="Includes\ctrulib\services\apt.h" />
     <ClInclude Include="Includes\ctrulib\services\cfgu.h" />
     <ClInclude Include="Includes\ctrulib\services\fs.h" />
@@ -339,6 +340,7 @@
     <ClCompile Include="Sources\ctrulib\gpu\shbin.c" />
     <ClCompile Include="Sources\ctrulib\newSrv.c" />
     <ClCompile Include="Sources\ctrulib\os.c" />
+    <ClCompile Include="Sources\ctrulib\services\ac.c" />
     <ClCompile Include="Sources\ctrulib\services\apt.c" />
     <ClCompile Include="Sources\ctrulib\services\fs.c" />
     <ClCompile Include="Sources\ctrulib\services\gspgpu.c" />

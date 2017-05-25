@@ -103,7 +103,6 @@ namespace CTRPluginFramework
             bottomBackgroundImage = new BMPImage("BottomBackground.bmp");
             if (bottomBackgroundImage->IsLoaded())
                 bottomBackgroundImage = PostProcess(bottomBackgroundImage, 280, 200);
-        }
-        
+        }        
     }
 }
