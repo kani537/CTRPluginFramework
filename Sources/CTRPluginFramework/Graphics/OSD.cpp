@@ -26,7 +26,12 @@ namespace CTRPluginFramework
             return;
 
         if (!screen) inst->_DrawBottom(line, posX, posY, fg, bg);
-        else inst->_DrawTop(line, posX, posY, 10, fg, bg);	
+        else
+        {
+            Screen::Top->Acquire(true);
+            inst->_DrawTop(line, posX, posY, 10, fg, bg);
+            Screen::Top->Invalidate();
+        }
     }
 
 	void    OSD::WriteLine(int screen, std::string line, int posX, int posY, int offset, Color fg, Color bg)
