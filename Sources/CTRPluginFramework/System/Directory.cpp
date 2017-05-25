@@ -376,16 +376,18 @@ namespace CTRPluginFramework
         for (int i = 0; i < _list.size(); i++)
         {
             entry = _list[i];
-            //entry = &entries[i];
             if (entry.attributes & 1)
                 continue;
+
             std::memset(filename, 0, sizeof(filename));
             units = utf16_to_utf8(filename, entry.name, PATH_MAX);
             if (units < 0)
                 continue;
+
             std::string fn = (char *)filename;
             if (patternCheck && fn.find(pattern) == std::string::npos)
                 continue;
+
             files.push_back(fn);           
         }
         return (files.size() - count);

@@ -18,9 +18,11 @@ namespace CTRPluginFramework
     bool    System::IsConnectedToInternet(void)
     {
         u32 out = 0;
+        u8  *wifiLevel = (u8 *)0x1FF81066;
 
-        ACU_GetWifiStatus(&out);
+        if (R_FAILED(ACU_GetWifiStatus(&out)))
+            out = 0;
 
-        return (out != 0);
+        return (out != 0 && *wifiLevel != 0);
     }
 }
