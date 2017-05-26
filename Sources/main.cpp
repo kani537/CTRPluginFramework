@@ -15,13 +15,13 @@ namespace CTRPluginFramework
 
         // Pokemon Moon / Sun
         // Patch game to prevent deconnection from Stream / debugger
-        if (tid == 0x0004000000175E00 
+        /*if (tid == 0x0004000000175E00 
             || tid == 0x0004000000164800)
         {
             u32     patch  = 0xE3A01000;
             // Patch
             Process::Patch(0x003DFFD0, reinterpret_cast<u8 *>(&patch), 4); 
-        }
+        }*/
     }
 
     static u32  g_encAboutSize = 43;
