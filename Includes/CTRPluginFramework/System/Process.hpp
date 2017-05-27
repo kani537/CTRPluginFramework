@@ -40,6 +40,11 @@ namespace CTRPluginFramework
          */
         static void     GetName(std::string &output);
 
+        /**
+         * \brief Get the version of the current process
+         * \return The version of the current processs
+         */
+        static u16      GetVersion(void);
 
         /**
          * \brief Get the total size of the .text section

@@ -41,6 +41,24 @@ namespace CTRPluginFramework
 		    output += ProcessImpl::_processName[i];
 	}
 
+    u16     Process::GetVersion(void)
+    {
+        AM_TitleEntry   entry = { 0 };
+
+        u64  tid = Process::GetTitleID();
+        u64  tidupdate = tid | 0x000000E00000000;
+
+        if (R_FAILED(AM_GetTitleInfo(MEDIATYPE_SD, 1, &tidupdate, &entry)))
+        {
+            if (R_FAILED(AM_GetTitleInfo(MEDIATYPE_SD, 1, &tid, &entry)))
+            {
+                AM_GetTitleInfo(MEDIATYPE_GAME_CARD, 1, &tid, &entry);
+            }
+        }        
+
+        return (entry.version);
+    }
+
     u32     Process::GetTextSize(void)
     {
         return (ProcessImpl::_kCodeSet.textPages * 0x1000);
