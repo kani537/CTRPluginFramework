@@ -52,6 +52,7 @@ namespace CTRPluginFramework
         // Initialize services        
         srvInit();
         acInit();
+        amInit();
         fsInit();
         cfguInit();
 
