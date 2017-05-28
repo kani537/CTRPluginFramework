@@ -112,7 +112,7 @@ namespace CTRPluginFramework
         // Draw Framework version
         {
             int posY = 205;
-            Renderer::DrawString((char *)"CTRPluginFramework Alpha V.0.0.12.1", 40, posY, blank);
+            Renderer::DrawString((char *)"CTRPluginFramework Alpha V.0.0.13", 40, posY, blank);
         }
 
         // Draw buttons
