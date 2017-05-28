@@ -5,7 +5,10 @@
 
 #include <cmath>
 #include <string>
+#include <cstring>
+
 #include "CTRPluginFrameworkImpl/Preferences.hpp"
+#include "CTRPluginFramework/Menu/MessageBox.hpp"
 
 namespace CTRPluginFramework
 {
@@ -64,12 +67,16 @@ namespace CTRPluginFramework
         _checkValue = value;
         //_WriteHeaderToFile();
 
+        _regionsList.push_back({ start, end, _GetHeaderSize() });
+
         u32 size = Preferences::EcoMemoryMode ? 0x40000 : 0x80000;
 
-        _resultsArray = (SearchResult<T>*)linearAlloc(size); //256 KB
-        _maxResult = (size / sizeof(SearchResult<T>)) - 1;
-        _resultsEnd = _resultsArray + _maxResult;
+        _resultsArray = linearAlloc(size);
         _resultsP = _resultsArray;
+        _resultsEnd = (void *)((u32)_resultsArray + size);
+        _maxResult = size;
+
+        _flags = Subsidiary;
     }
 
     template <typename T>
@@ -81,19 +88,22 @@ namespace CTRPluginFramework
 
         u32 size = Preferences::EcoMemoryMode ? 0x40000 : 0x80000;
 
-        _resultsArray = (SearchResult<T>*)linearAlloc(size); //256 KB
-        _maxResult = (size / sizeof(SearchResult<T>)) - 1;
-        _resultsEnd = _resultsArray + _maxResult;
+        _resultsArray = linearAlloc(size);
         _resultsP = _resultsArray;
+        _resultsEnd = (void *)((u32)_resultsArray + size);
+        _maxResult = size;
 
-        _regionsList = list;
         _fullRamSearch = true;
+        _flags = Subsidiary;
+        
         // Get Total Size
         for (int i = 0; i < list.size(); i++)
         {
             Region &region = list[i];
-            int size = region.endAddress - region.startAddress;
 
+            _regionsList.push_back({ region.startAddress, region.endAddress, 0 });
+
+            size = region.endAddress - region.startAddress;
             _totalSize += size;
         }
     }
@@ -140,8 +150,10 @@ namespace CTRPluginFramework
     }
 
     template <typename T>
-    void      Search<T>::_FirstExactSearch(u32 &start, const u32 end)
+    void    Search<T>::_FirstExactSearch(u32 &start, const u32 end)
     {
+        SearchResultFirst<T>    *result = reinterpret_cast<SearchResultFirst<T>*>(_resultsP);
+        //u32 count = 0;
         switch (Compare)
         {
             case CompareType::Equal:
@@ -152,11 +164,18 @@ namespace CTRPluginFramework
                     if (value == _checkValue)
                     {
                         ResultCount++;
-                        _resultsP->address = start;
-                        _resultsP->value = value;
-                        ++_resultsP;
-                        if (_resultsP >= _resultsEnd)
+                        result->address = start;
+                        result->value = value;
+                        ++result;
+                       /* count++;
+                        if (count >= _maxResult)
                             break;
+                        */
+                        if ((u32)result >= (u32)_resultsEnd)
+                        {
+                            start += _alignment;
+                            break;
+                        }
                     }
                 }
                 break;
@@ -169,11 +188,14 @@ namespace CTRPluginFramework
                     if (value != _checkValue)
                     {
                         ResultCount++;
-                        _resultsP->address = start;
-                        _resultsP->value = value;
-                        ++_resultsP;
-                        if (_resultsP >= _resultsEnd)
+                        result->address = start;
+                        result->value = value;
+                        ++result;
+                        if ((u32)result >= (u32)_resultsEnd)
+                        {
+                            start += _alignment;
                             break;
+                        }
                     }
                 }
                 break;
@@ -186,11 +208,14 @@ namespace CTRPluginFramework
                     if (value > _checkValue)
                     {
                         ResultCount++;
-                        _resultsP->address = start;
-                        _resultsP->value = value;
-                        ++_resultsP;
-                        if (_resultsP >= _resultsEnd)
+                        result->address = start;
+                        result->value = value;
+                        ++result;
+                        if ((u32)result >= (u32)_resultsEnd)
+                        {
+                            start += _alignment;
                             break;
+                        }
                     }
                 }
                 break;
@@ -203,11 +228,14 @@ namespace CTRPluginFramework
                     if (value >= _checkValue)
                     {
                         ResultCount++;
-                        _resultsP->address = start;
-                        _resultsP->value = value;
-                        ++_resultsP;
-                        if (_resultsP >= _resultsEnd)
+                        result->address = start;
+                        result->value = value;
+                        ++result;
+                        if ((u32)result >= (u32)_resultsEnd)
+                        {
+                            start += _alignment;
                             break;
+                        }
                     }
                 }
                 break;
@@ -220,11 +248,14 @@ namespace CTRPluginFramework
                     if (value < _checkValue)
                     {
                         ResultCount++;
-                        _resultsP->address = start;
-                        _resultsP->value = value;
-                        ++_resultsP;
-                        if (_resultsP >= _resultsEnd)
+                        result->address = start;
+                        result->value = value;
+                        ++result;
+                        if ((u32)result >= (u32)_resultsEnd)
+                        {
+                            start += _alignment;
                             break;
+                        }
                     }
                 }
                 break;
@@ -237,11 +268,14 @@ namespace CTRPluginFramework
                     if (value <= _checkValue)
                     {
                         ResultCount++;
-                        _resultsP->address = start;
-                        _resultsP->value = value;
-                        ++_resultsP;
-                        if (_resultsP >= _resultsEnd)
+                        result->address = start;
+                        result->value = value;
+                        ++result;
+                        if ((u32)result >= (u32)_resultsEnd)
+                        {
+                            start += _alignment;
                             break;
+                        }
                     }
                 }
                 break;
@@ -249,11 +283,13 @@ namespace CTRPluginFramework
             default:
                 break;
         }
+        _resultsP = result;
     }
 
     template <>
-    void      Search<float>::_FirstExactSearch(u32 &start, const u32 end)
+    void    Search<float>::_FirstExactSearch(u32 &start, const u32 end)
     {
+        SearchResultFirst<float>    *result = reinterpret_cast<SearchResultFirst<float>*>(_resultsP);
         float epsilon = 1e-6f;
         
         switch (Compare)
@@ -270,11 +306,14 @@ namespace CTRPluginFramework
                 if (std::fabs(value - _checkValue) <= epsilon)
                 {
                     ResultCount++;
-                    _resultsP->address = start;
-                    _resultsP->value = value;
-                    _resultsP++;
-                    if (_resultsP >= _resultsEnd)
+                    result->address = start;
+                    result->value = value;
+                    result++;
+                    if ((u32)result >= (u32)_resultsEnd)
+                    {
+                        start += _alignment;
                         break;
+                    }
                 }
             }
             break;
@@ -291,11 +330,14 @@ namespace CTRPluginFramework
                 if (std::fabs(value - _checkValue) > epsilon)
                 {
                     ResultCount++;
-                    _resultsP->address = start;
-                    _resultsP->value = value;
-                    _resultsP++;
-                    if (_resultsP >= _resultsEnd)
+                    result->address = start;
+                    result->value = value;
+                    result++;
+                    if ((u32)result >= (u32)_resultsEnd)
+                    {
+                        start += _alignment;
                         break;
+                    }
                 }
             }
             break;
@@ -312,11 +354,14 @@ namespace CTRPluginFramework
                 if (value > _checkValue)
                 {
                     ResultCount++;
-                    _resultsP->address = start;
-                    _resultsP->value = value;
-                    ++_resultsP;
-                    if (_resultsP >= _resultsEnd)
+                    result->address = start;
+                    result->value = value;
+                    ++result;
+                    if ((u32)result >= (u32)_resultsEnd)
+                    {
+                        start += _alignment;
                         break;
+                    }
                 }
             }
             break;
@@ -333,11 +378,14 @@ namespace CTRPluginFramework
                 if (value >= _checkValue)
                 {
                     ResultCount++;
-                    _resultsP->address = start;
-                    _resultsP->value = value;
-                    ++_resultsP;
-                    if (_resultsP >= _resultsEnd)
+                    result->address = start;
+                    result->value = value;
+                    ++result;
+                    if ((u32)result >= (u32)_resultsEnd)
+                    {
+                        start += _alignment;
                         break;
+                    }
                 }
             }
             break;
@@ -354,11 +402,14 @@ namespace CTRPluginFramework
                 if (value < _checkValue)
                 {
                     ResultCount++;
-                    _resultsP->address = start;
-                    _resultsP->value = value;
-                    ++_resultsP;
-                    if (_resultsP >= _resultsEnd)
+                    result->address = start;
+                    result->value = value;
+                    ++result;
+                    if ((u32)result >= (u32)_resultsEnd)
+                    {
+                        start += _alignment;
                         break;
+                    }
                 }
             }
             break;
@@ -375,11 +426,14 @@ namespace CTRPluginFramework
                 if (value <= _checkValue)
                 {
                     ResultCount++;
-                    _resultsP->address = start;
-                    _resultsP->value = value;
-                    ++_resultsP;
-                    if (_resultsP >= _resultsEnd)
+                    result->address = start;
+                    result->value = value;
+                    ++result;
+                    if ((u32)result >= (u32)_resultsEnd)
+                    {
+                        start += _alignment;
                         break;
+                    }
                 }
             }
             break;
@@ -387,6 +441,187 @@ namespace CTRPluginFramework
         default:
             break;
         }
+        _resultsP = result;
+    }
+
+    template <typename T>
+    bool    Search<T>::_SecondExactSearch(void)
+    {
+        std::vector<SearchResultFirst<T>>   oldResultsFirst;
+
+        u32 index = _currentPosition;
+        // First get the results from the file
+        if (reinterpret_cast<Search<T> *>(_previousSearch)->_ReadResults(oldResultsFirst, index, _maxResult))
+        {
+            SearchResult<T>     *result = reinterpret_cast<SearchResult<T>*>(_resultsP);
+            ResultExactIter iter = oldResultsFirst.begin();
+            ResultExactIter end = oldResultsFirst.end();
+            u32 count = 1;
+
+            for (; iter != end; ++iter, ++count)
+            {
+                u32 addr = iter->address;
+                T   newval = *reinterpret_cast<T *>(addr);
+                T   oldVal = iter->value;
+
+                if ((this->*_compare)(oldVal, newval))
+                {
+                    ++ResultCount;
+                    result->address = addr;
+                    result->value = newval;
+                    result->oldValue = oldVal;
+                    ++result;
+
+                    if (result >= _resultsEnd)
+                        break;
+                }
+            }
+            _resultsP = result;
+            // Update position
+            _currentPosition += count;
+
+            if (_currentPosition >= _previousSearch->ResultCount)
+            {
+                return (true);
+            }
+        }
+
+        return (false);
+    }
+
+#define LOG(str, ...) {char buf[0x100]; sprintf(buf, str, ##__VA_ARGS__); (MessageBox(buf))();}
+    template <typename T>
+    bool    Search<T>::_SecondUnknownSearch(void)
+    {
+        std::vector<SearchResultUnknown<T>> oldResultsUnkn;
+
+        auto getAddress = [this](u32 index, u32 &addr, u32 &end, u32 &nextAddr, u32 &nextEndAddr)
+        {
+            Search<T> *prev = reinterpret_cast<Search<T> *>(_previousSearch);
+
+            u64 offset = prev->_GetHeaderSize() + prev->_GetResultStructSize() * index;
+            u32 size = prev->_GetResultStructSize();
+
+            for (SRegion &region : prev->_regionsList)
+            {
+                if (offset >= region.fileOffset)
+                {
+                    addr = region.startAddress;
+                    addr += (offset - region.fileOffset);
+                    end = region.endAddress;
+                    nextEndAddr = end;
+                }
+                else
+                {
+                    nextAddr = region.startAddress;
+                    nextEndAddr = region.endAddress;
+                    break;
+                }
+            }
+        };
+
+        u32 address;
+        u32 endAddr;
+        u32 nextAddr;
+        u32 nextEndAddr;
+        u32 index = _currentPosition;// == 0 ? _currentPosition : _currentPosition - 1;
+
+        getAddress(index, address, endAddr, nextAddr, nextEndAddr);
+       // LOG("index: %08X\nAddress: %08X", index, address);
+        
+        // First get the results from the file
+        if (reinterpret_cast<Search<T> *>(_previousSearch)->_ReadResults(oldResultsUnkn, index, _maxResult))
+        {
+            SearchResult<T>     *result = reinterpret_cast<SearchResult<T>*>(_resultsP);
+            ResultUnknownIter iter = oldResultsUnkn.begin();
+            ResultUnknownIter end = oldResultsUnkn.end();
+            u32 count = 1;
+
+            for (; iter != end; ++iter, ++count)
+            {
+                T   newval = *reinterpret_cast<T *>(address);
+                T   oldVal = iter->value;
+
+                if ((this->*_compare)(oldVal, newval))
+                {
+                    ++ResultCount;
+                    result->address = address;
+                    result->value = newval;
+                    result->oldValue = oldVal;
+                    ++result;
+
+                    if (result >= _resultsEnd)
+                        break;
+                }
+
+                address += _alignment;
+                if (address >= endAddr)
+                {
+                    if (endAddr == nextEndAddr)
+                        break;
+
+                    address = nextAddr;
+                    endAddr = nextEndAddr;
+                }
+            }
+
+            _resultsP = result;
+
+            // Update position
+           // LOG("index: %08X\nAddress: %08X\ncount: %08X", _currentPosition, address, count);
+            _currentPosition += count;
+
+            if (_currentPosition >= _previousSearch->ResultCount)
+                return (true);
+        }
+
+        return (false);
+    }
+
+    template <typename T>
+    bool    Search<T>::_SubsidiarySearch(void)
+    {
+        std::vector<SearchResult<T>>        oldResults;
+        u32 index = _currentPosition;
+
+        // First get the results from the file
+        if (reinterpret_cast<Search<T> *>(_previousSearch)->_ReadResults(oldResults, index, _maxResult))
+        {
+            SearchResult<T>     *result = reinterpret_cast<SearchResult<T>*>(_resultsP);
+            ResultIter iter = oldResults.begin();
+            ResultIter end = oldResults.end();
+            u32 count = 1;
+
+            for (; iter != end; ++iter, ++count)
+            {
+                u32 addr = iter->address;
+                T   newval = *reinterpret_cast<T *>(addr);
+                T   oldVal = iter->value;
+
+                if ((this->*_compare)(oldVal, newval))
+                {
+                    ++ResultCount;
+                    result->address = addr;
+                    result->value = newval;
+                    result->oldValue = oldVal;
+                    ++result;
+
+                    if (result >= _resultsEnd)
+                        break;
+                }
+            }
+            _resultsP = result;
+            // Update position
+            _currentPosition += count;
+        }
+
+        // Finish
+        if (_currentPosition >= _previousSearch->ResultCount)
+        {
+            return (true);
+        }
+
+        return (false);
     }
 
     template<typename T>
@@ -412,19 +647,24 @@ namespace CTRPluginFramework
                 _currentPosition = start;
             }                
             else // Unknown value
-            {             
+            {           
+                SearchResultUnknown<T> *result = reinterpret_cast<SearchResultUnknown<T>*>(_resultsP);
+
                 for (; start < end; start += _alignment)
                 {
                     T value = *(reinterpret_cast<T *>(start));
 
                     ResultCount++;
-                    _resultsP->address = start;
-                    _resultsP->value = value;
-                    ++_resultsP;
-                    if (_resultsP >= _resultsEnd)
+                    result->value = value;
+                    ++result;
+                    if (result >= _resultsEnd)
+                    {
+                        start += _alignment;
                         break;
+                    }
+                        
                 }
-
+                _resultsP = result;
                 // Update position
                 _currentPosition = start;
             }
@@ -437,47 +677,13 @@ namespace CTRPluginFramework
         }
         // Subsidiary search
         else
-        {            
-            std::vector<SearchResult<T>>    oldResults;
+        {  
+            SearchFlags flags = reinterpret_cast<Search<T> *>(_previousSearch)->_flags;
 
-            // First get the results from the file
-            if (reinterpret_cast<Search<T> *>(_previousSearch)->_ReadResults(oldResults, _currentPosition, _maxResult))
-            {
-                ResultIter iter = oldResults.begin();
-                ResultIter end = oldResults.end();
-                u32 count = 0;
-
-                for (; iter != end; iter++, count++)
-                {
-                    u32 addr = (*iter).address;
-                    T   newval = *reinterpret_cast<T *>(addr);
-                    T   oldVal = (*iter).value;
-
-                    if ((this->*_compare)(oldVal, newval))
-                    {
-                        ResultCount++;
-                        _resultsP->address = addr;
-                        _resultsP->value = newval;
-                        _resultsP->oldValue = oldVal;
-                        _resultsP++;
-
-                        if (_resultsP >= _resultsEnd)
-                        {
-                            count++;
-                            break;
-                        }                        
-                        //_results.push_back(SearchResult<T>((*iter).address, newval));
-                    }
-                }
-                // Update position
-                _currentPosition += count;
-            }
-
-            // Finish
-            if (_currentPosition >= _previousSearch->ResultCount)
-            {
-                return (true);
-            }
+            if (flags == FirstExact) return (_SecondExactSearch());
+            if (flags == FirstUnknown) return (_SecondUnknownSearch());
+            
+            return (_SubsidiarySearch());            
         }
 
         return (false);
@@ -489,12 +695,36 @@ namespace CTRPluginFramework
         // Just started search ?
         if (_currentPosition == 0)
         {
+            // Set flags / variables according to search parameters
+            // At this step, _maxResult == pool size
+            if (_previousSearch == nullptr)
+            {
+                if (Type == SearchType::Unknown)
+                {
+                    _flags = FirstUnknown;
+                    _maxResult = (_maxResult / sizeof(SearchResultUnknown<T>)) - 1;
+                    _resultsEnd = (void *)(((SearchResultUnknown<T> *)_resultsArray) + _maxResult);
+                }
+                else
+                {
+                    _flags = FirstExact;
+                    _maxResult = (_maxResult / sizeof(SearchResultFirst<T>)) - 1;
+                    _resultsEnd = (void *)((u32)_resultsArray + _maxResult * _GetResultStructSize());
+                }
+            }
+            else
+            {
+                _maxResult = (_maxResult / sizeof(SearchResult<T>)) - 1;
+                _resultsEnd = (void *)(((SearchResult<T> *)_resultsArray) + _maxResult);
+            }
+
             _UpdateCompare();
             _WriteHeaderToFile();
             _clock.Restart();
         }
 
-        bool    finished = false;
+        bool    finished;
+
         // Range search
         if (!_fullRamSearch)
         {
@@ -525,12 +755,14 @@ namespace CTRPluginFramework
             else
             {
                 if (_resultsP >= _resultsEnd)
+                {
                     ResultsToFile();
+                }
+                    
             }
             return (finished);
         }
         // All regions search
-        else
         {
             // Start search
             if (_previousSearch == nullptr)
@@ -540,6 +772,7 @@ namespace CTRPluginFramework
                     _currentRegion = 0;
                     _startRange = _regionsList[0].startAddress;
                     _endRange = _regionsList[0].endAddress;
+                    _regionsList[0].fileOffset = _GetHeaderSize();
                     _currentPosition = _startRange;
                     svcFlushProcessDataCache(Process::GetHandle(), (void *)_startRange, _endRange - _startRange);
                 }
@@ -568,15 +801,18 @@ namespace CTRPluginFramework
                 // If we didn't finished the last region
                 if (_previousSearch == nullptr && _currentRegion < _regionsList.size() - 1)
                 {
+                    ResultsToFile();
                     _currentRegion++;
                     _startRange = _regionsList[_currentRegion].startAddress;
                     _endRange = _regionsList[_currentRegion].endAddress;
+                    _regionsList[_currentRegion].fileOffset = _file.Tell();
                     _currentPosition = _startRange;
                     svcFlushProcessDataCache(Process::GetHandle(), (void *)_startRange, _endRange - _startRange);
                 }
                 else
                 {
                     ResultsToFile();
+                    _startRange = _regionsList[0].startAddress;
                     _WriteHeaderToFile();
                     SearchTime = _clock.Restart();
 
@@ -600,15 +836,18 @@ namespace CTRPluginFramework
     {
         u8      type;
         u8      compare;
-        u32     startRange;
-        u32     endRange;
         u8      alignment;
-        u32     resultcount;
         u8      size;
         u8      valuesize;
+        SearchFlags flags;
+        u32     startRange;
+        u32     endRange;        
+        u32     resultcount;    
         u32     offset;
-        u32     resultSize;
+        u32     resultSize;        
         T       value;
+        u32     regionCount;
+        u8      padding[0x200];
     };
 
     template <typename T>
@@ -619,19 +858,23 @@ namespace CTRPluginFramework
 
         _file.Rewind();
 
-        Header<T>   header;
+        Header<T>   header = { 0 };
 
         header.type = (u8)Type;
         header.compare = (u8)Compare;
-        header.startRange = _startRange;
-        header.endRange = _endRange;
         header.alignment = _alignment;
-        header.resultcount = ResultCount;
         header.size = (u8)Size;
         header.valuesize = sizeof(T);
+        header.flags = _flags;
+        header.startRange = _startRange;
+        header.endRange = _endRange;
+        header.resultcount = ResultCount;
         header.offset = sizeof(Header<T>);
-        header.resultSize = sizeof(SearchResult<T>);
+        header.resultSize = _flags == Subsidiary ? sizeof(SearchResult<T>) : (_flags == FirstExact ? sizeof(SearchResultFirst<T>) : sizeof(SearchResultUnknown<T>)); 
         header.value = _checkValue;
+        header.regionCount = _regionsList.size();
+
+        std::memcpy(header.padding, _regionsList.data(), _regionsList.size() * sizeof(SRegion));
 
         ret = WriteToFile(_file, header);
 
@@ -647,34 +890,24 @@ namespace CTRPluginFramework
     template <typename T>
     u32     Search<T>::_GetHeaderSize(void)
     {
-        return 
-        (  
-           /* sizeof(Type) // u8
-            + sizeof(Compare) // u8
-            + sizeof(_startRange) // u32
-            + sizeof(_endRange) //u32
-            + sizeof(_alignment) // u8
-            + sizeof(ResultCount) //u32
-            + sizeof(Size) // u8
-            + sizeof(u8) // u8 //sizeof(T)
-            + sizeof(u32) // offset in file where results starts
-            + sizeof(u32) // SearchResultSize
-            + sizeof(T) // value compared with*/
-            sizeof(Header<T>)
-        );
+        return (sizeof(Header<T>));
     }
 
     template <typename T>
-    u32     Search<T>::_GetResultStructSize(void)
+    u32     Search<T>::_GetResultStructSize(void) const
     {
+        if (_flags == FirstExact) return (sizeof(SearchResultFirst<T>));
+        if (_flags == FirstUnknown) return (sizeof(SearchResultUnknown<T>));
+
         return (sizeof(SearchResult<T>));
     }
 
     template <typename T>
     bool    Search<T>::ResultsToFile(void)
     {
-        _file.Write(_resultsArray, (_resultsP - _resultsArray) * _GetResultStructSize());
+        int res = _file.Write(_resultsArray, (u32)(((u32)_resultsP - (u32)_resultsArray)));
         _resultsP = _resultsArray;
+        return (res == 0);
     }
 
     template <typename T>
@@ -708,11 +941,71 @@ namespace CTRPluginFramework
     }
 
     template <typename T>
+    bool    Search<T>::_ReadResults(std::vector<SearchResultUnknown<T>> &out, u32 &index, u32 count)
+    {
+        if (index > ResultCount)
+            return (false);
+
+        if (index + count > ResultCount)
+            count = ResultCount - index;
+
+        u64 offset = _GetHeaderSize() + _GetResultStructSize() * index;
+
+        // Go to the file offset
+        _file.Seek(offset, File::SeekPos::SET);
+
+        // Reserve memory and create default object
+        out.resize(count);
+
+        // Read results
+        if (_file.Read((void *)out.data(), count * _GetResultStructSize()) == 0)
+        {
+            index += count;
+            return (true);
+        }
+
+        // Clean results
+        out.clear();
+
+        return (false);
+    }
+
+    template <typename T>
+    bool    Search<T>::_ReadResults(std::vector<SearchResultFirst<T>> &out, u32 &index, u32 count)
+    {
+        if (index > ResultCount)
+            return (false);
+
+        if (index + count > ResultCount)
+            count = ResultCount - index;
+
+        u64 offset = _GetHeaderSize() + _GetResultStructSize() * index;
+
+        // Go to the file offset
+        _file.Seek(offset, File::SeekPos::SET);
+
+        // Reserve memory and create default object
+        out.resize(count);
+
+        // Read results
+        if (_file.Read((void *)out.data(), count * _GetResultStructSize()) == 0)
+        {
+            index += count;
+            return (true);
+        }
+
+        // Clean results
+        out.clear();
+
+        return (false);
+    }
+
+    template <typename T>
     void    Search<T>::Cancel(void)
     {
         ResultsToFile();
         SearchTime = _clock.Restart();
-
+            
         // Free buffer
         linearFree(_resultsArray);
     }
@@ -720,69 +1013,140 @@ namespace CTRPluginFramework
     template <typename T>
     bool    Search<T>::FetchResults(stringvector &address, stringvector &newval, stringvector &oldvalue, u32 index, int count)
     {
-        std::vector<SearchResult<T>>    newResults;
+        auto getAddress = [this](u32 index, u32 &addr, u32 &end, u32 &nextAddr)
+        {
+            u64 offset = _GetHeaderSize() + _GetResultStructSize() * index;
+            u32 size = _GetResultStructSize();
+
+            for (SRegion &region : _regionsList)
+            {
+                if (offset >= region.fileOffset)
+                {
+                    addr = region.startAddress;
+                    addr += (offset - region.fileOffset);// / size;
+                    end = region.endAddress;
+                    nextAddr = end + 1;
+                }
+                else
+                {
+                    nextAddr = region.startAddress;
+                    break;
+                }
+            }
+        };
+
+        std::vector<SearchResult<T>>        newResults;
+        std::vector<SearchResultFirst<T>>   newResultsFirst;
+        std::vector<SearchResultUnknown<T>> newResultsUnkn;
         char   buffer[20] = {0};
 
-        // Fetch new results
+        if (_flags == FirstExact) goto firstExact;
+        if (_flags == FirstUnknown) goto firstUnknown;
+        goto subsidiary;
+
+        // FirstExact Search
+    firstExact:
+
+        if (!_ReadResults(newResultsFirst, index, count))
+            return (false);
+
+        for (int i = 0; i < newResultsFirst.size(); i++)
+        {
+            // Address
+            sprintf(buffer, "%08X", newResultsFirst[i].address);
+            address.push_back(buffer);
+
+            // Value
+            switch (Size)
+            {
+            case SearchSize::Bits8: sprintf(buffer, "%02X", newResultsFirst[i].value); break;
+            case SearchSize::Bits16: sprintf(buffer, "%04X", newResultsFirst[i].value); break;
+            case SearchSize::Bits32: sprintf(buffer, "%08X", newResultsFirst[i].value); break;
+            case SearchSize::Bits64: sprintf(buffer, "%016llX", newResultsFirst[i].value); break;
+            case SearchSize::FloatingPoint: sprintf(buffer, "%15.7f", newResultsFirst[i].value); break;
+            case SearchSize::Double: sprintf(buffer, "%15.7g", newResultsFirst[i].value); break;
+            }
+            newval.push_back(buffer);
+        }
+
+        return (true);
+
+        // FirstUnknown Search
+    firstUnknown:
+
+        u32 addr;
+        u32 endAddr;
+        u32 nextAddr;
+
+        getAddress(index, addr, endAddr, nextAddr);
+
+        if (!_ReadResults(newResultsUnkn, index, count))
+            return (false);
+
+        for (int i = 0; i < newResultsUnkn.size(); i++)
+        {
+            // Address
+            sprintf(buffer, "%08X", addr);//newResultsUnkn[i].address);
+            address.push_back(buffer);
+
+            // Value
+            switch (Size)
+            {
+            case SearchSize::Bits8: sprintf(buffer, "%02X", newResultsUnkn[i].value); break;
+            case SearchSize::Bits16: sprintf(buffer, "%04X", newResultsUnkn[i].value); break;
+            case SearchSize::Bits32: sprintf(buffer, "%08X", newResultsUnkn[i].value); break;
+            case SearchSize::Bits64: sprintf(buffer, "%016llX", newResultsUnkn[i].value); break;
+            case SearchSize::FloatingPoint: sprintf(buffer, "%15.7f", newResultsUnkn[i].value); break;
+            case SearchSize::Double: sprintf(buffer, "%15.7g", newResultsUnkn[i].value); break;
+            }
+            newval.push_back(buffer);
+
+            addr += _alignment;
+            if (addr >= endAddr)
+            {
+                addr = nextAddr;
+            }
+        }
+
+        return (true);
+
+        // Subsidiary Search
+    subsidiary:
+    
         if (!_ReadResults(newResults, index, count))
             return (false);
 
-        // First search
-        if (_previousSearch == nullptr)
+        for (int i = 0; i < newResults.size(); i++)
         {
-            for (int i = 0; i < newResults.size(); i++)
+            // Address
+            sprintf(buffer, "%08X", newResults[i].address);
+            address.push_back(buffer);
+
+            // Value
+            switch (Size)
             {
-                // Address
-                sprintf(buffer, "%08X", newResults[i].address);
-                address.push_back(buffer);
+            case SearchSize::Bits8: sprintf(buffer, "%02X", newResults[i].value); break;
+            case SearchSize::Bits16: sprintf(buffer, "%04X", newResults[i].value); break;
+            case SearchSize::Bits32: sprintf(buffer, "%08X", newResults[i].value); break;
+            case SearchSize::Bits64: sprintf(buffer, "%016llX", newResults[i].value); break;
+            case SearchSize::FloatingPoint: sprintf(buffer, "%15.7f", newResults[i].value); break;
+            case SearchSize::Double: sprintf(buffer, "%15.7g", newResults[i].value); break;
+            }
+            newval.push_back(buffer);
 
-                // Value
-                switch (Size)
-                {
-                    case SearchSize::Bits8: sprintf(buffer, "%02X", newResults[i].value); break;
-                    case SearchSize::Bits16: sprintf(buffer, "%04X", newResults[i].value); break;
-                    case SearchSize::Bits32: sprintf(buffer, "%08X", newResults[i].value); break;
-                    case SearchSize::Bits64: sprintf(buffer, "%016llX", newResults[i].value); break;
-                    case SearchSize::FloatingPoint: sprintf(buffer, "%15.7f", newResults[i].value); break;
-                    case SearchSize::Double: sprintf(buffer, "%15.7g", newResults[i].value); break;
-                }
-                newval.push_back(buffer);
-            } 
-        }
-        // subsidiary
-        else
-        {
-            for (int i = 0; i < newResults.size(); i++)
+            // Old Value
+            switch (Size)
             {
-                // Address
-                sprintf(buffer, "%08X", newResults[i].address);
-                address.push_back(buffer);
-
-                // Value
-                switch (Size)
-                {
-                    case SearchSize::Bits8: sprintf(buffer, "%02X", newResults[i].value); break;
-                    case SearchSize::Bits16: sprintf(buffer, "%04X", newResults[i].value); break;
-                    case SearchSize::Bits32: sprintf(buffer, "%08X", newResults[i].value); break;
-                    case SearchSize::Bits64: sprintf(buffer, "%016llX", newResults[i].value); break;
-                    case SearchSize::FloatingPoint: sprintf(buffer, "%15.7f", newResults[i].value); break;
-                    case SearchSize::Double: sprintf(buffer, "%15.7g", newResults[i].value); break;
-                }
-                newval.push_back(buffer);
-
-                // Old Value
-                switch (Size)
-                {
-                    case SearchSize::Bits8: sprintf(buffer, "%02X", newResults[i].oldValue); break;
-                    case SearchSize::Bits16: sprintf(buffer, "%04X", newResults[i].oldValue); break;
-                    case SearchSize::Bits32: sprintf(buffer, "%08X", newResults[i].oldValue); break;
-                    case SearchSize::Bits64: sprintf(buffer, "%016llX", newResults[i].oldValue); break;
-                    case SearchSize::FloatingPoint: sprintf(buffer, "%15.7f", newResults[i].oldValue); break;
-                    case SearchSize::Double: sprintf(buffer, "%15.7g", newResults[i].oldValue); break;
-                }
-                oldvalue.push_back(buffer);
-            } 
+            case SearchSize::Bits8: sprintf(buffer, "%02X", newResults[i].oldValue); break;
+            case SearchSize::Bits16: sprintf(buffer, "%04X", newResults[i].oldValue); break;
+            case SearchSize::Bits32: sprintf(buffer, "%08X", newResults[i].oldValue); break;
+            case SearchSize::Bits64: sprintf(buffer, "%016llX", newResults[i].oldValue); break;
+            case SearchSize::FloatingPoint: sprintf(buffer, "%15.7f", newResults[i].oldValue); break;
+            case SearchSize::Double: sprintf(buffer, "%15.7g", newResults[i].oldValue); break;
+            }
+            oldvalue.push_back(buffer);
         }
+
         return (true);
     }
 

@@ -198,6 +198,7 @@
     <ClInclude Include="Includes\ctrulib\result.h" />
     <ClInclude Include="Includes\ctrulib\sdmc.h" />
     <ClInclude Include="Includes\ctrulib\services\ac.h" />
+    <ClInclude Include="Includes\ctrulib\services\am.h" />
     <ClInclude Include="Includes\ctrulib\services\apt.h" />
     <ClInclude Include="Includes\ctrulib\services\cfgu.h" />
     <ClInclude Include="Includes\ctrulib\services\fs.h" />
@@ -243,6 +244,7 @@
     <ClInclude Include="Includes\NTR.h" />
     <ClInclude Include="Includes\types.h" />
     <ClInclude Include="Includes\Unicode.h" />
+    <ClInclude Include="Sources\AutoVersion.hpp" />
     <ClInclude Include="Sources\cheats.hpp" />
     <ClInclude Include="Sources\ctrulib\allocator\addrmap.h" />
     <ClInclude Include="Sources\ctrulib\allocator\mem_pool.h" />
@@ -250,6 +252,7 @@
     <ClInclude Include="Sources\ctrulib\util\rbtree\rbtree_internal.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Sources\AutoVersion.cpp" />
     <ClCompile Include="Sources\cheats.cpp" />
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\arm11kCommands.c" />
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\Graphics\BMPImage.cpp" />
@@ -341,6 +344,7 @@
     <ClCompile Include="Sources\ctrulib\newSrv.c" />
     <ClCompile Include="Sources\ctrulib\os.c" />
     <ClCompile Include="Sources\ctrulib\services\ac.c" />
+    <ClCompile Include="Sources\ctrulib\services\am.c" />
     <ClCompile Include="Sources\ctrulib\services\apt.c" />
     <ClCompile Include="Sources\ctrulib\services\fs.c" />
     <ClCompile Include="Sources\ctrulib\services\gspgpu.c" />

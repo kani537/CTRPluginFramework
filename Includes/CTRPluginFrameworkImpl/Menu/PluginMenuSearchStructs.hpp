@@ -16,6 +16,21 @@ namespace CTRPluginFramework
         u32 endAddress;
     };
 
+    struct SRegion
+    {
+        u32 startAddress;
+        u32 endAddress;
+        u64 fileOffset;
+    };
+   
+
+    enum SearchFlags : u8
+    {
+        Subsidiary = 1,
+        FirstExact = 1 << 1,
+        FirstUnknown = 1 << 2
+    };
+
     enum class SearchSize : u8
     {
         Bits8 = 0,
@@ -46,6 +61,16 @@ namespace CTRPluginFramework
     };
 
     template <typename T>
+    struct SearchResultFirst
+    {
+        SearchResultFirst() : address(0), value(0) {}
+        SearchResultFirst(u32 addr, T v) : address(addr), value(v) {}
+
+        u32     address;
+        T       value;
+    };
+
+    template <typename T>
     struct SearchResult
     {
         SearchResult() : address(0), value(0) {}
@@ -56,6 +81,15 @@ namespace CTRPluginFramework
         T       oldValue;
     };
 
+    template <typename T>
+    struct SearchResultUnknown
+    {
+        SearchResultUnknown() : value(0) {}
+        SearchResultUnknown(u32 addr, T v) :value(v) {}
+
+        T       value;
+    };
+
     class   SearchBase
     {
         using stringvector = std::vector<std::string>;
@@ -63,7 +97,7 @@ namespace CTRPluginFramework
     public:
 
         SearchBase(u32 start, u32 end, u32 alignment, SearchBase *prev);
-        ~SearchBase(){}
+        virtual ~SearchBase(){}
 
         virtual void    Cancel(void) = 0;
         virtual bool    DoSearch(void) = 0;
@@ -90,7 +124,7 @@ namespace CTRPluginFramework
         int                     _currentRegion;
         u32                     _totalSize;
         u32                     _achievedSize;
-        std::vector<Region>     _regionsList;
+        std::vector<SRegion>    _regionsList;
         Clock                   _clock;
         
         // Hit list building var
@@ -111,6 +145,9 @@ namespace CTRPluginFramework
     class Search : public SearchBase
     {
         using ResultIter = typename std::vector<SearchResult<T>>::iterator;
+        using ResultExactIter = typename std::vector<SearchResultFirst<T>>::iterator;
+        using ResultUnknownIter = typename std::vector<SearchResultUnknown<T>>::iterator;
+        using UnknResultIter = typename std::vector<SearchResultUnknown<T>>::iterator;
         using stringvector = std::vector<std::string>;
         
         using CmpFunc = bool (Search<T>::*)(T, T);
@@ -123,7 +160,7 @@ namespace CTRPluginFramework
         /*
         ** Cancel
         */
-        void    Cancel(void);
+        void    Cancel(void) override;
         /*
         ** DoSearch
         ** Override SearchBase's
@@ -145,11 +182,16 @@ namespace CTRPluginFramework
         //std::vector<SearchResult<T>>    _results; //<- Hold the results
         T                               _checkValue; //<- Value to compare with
         u32                             _maxResult;
-        SearchResult<T>                 *_resultsArray;
-        SearchResult<T>                 *_resultsEnd;
-        SearchResult<T>                 *_resultsP;
+        void                            *_resultsArray;
+        void                            *_resultsEnd;
+        void                            *_resultsP;
+        //u64                             _indexInFile;
+        SearchFlags                     _flags;
         CmpFunc                         _compare;
 
+        bool _SecondExactSearch();
+        bool _SecondUnknownSearch();
+        bool _SubsidiarySearch();
         /*
         ** Methods
         ***********/
@@ -177,10 +219,11 @@ namespace CTRPluginFramework
         bool        _CompareUnknownLE(T old, T newer);
         
         bool        _WriteHeaderToFile(void);
-        u32         _GetHeaderSize(void);
-        u32         _GetResultStructSize(void);
-        
+        static u32         _GetHeaderSize(void);
+        u32         _GetResultStructSize(void) const;        
         bool        _ReadResults(std::vector<SearchResult<T>> &out, u32 &index, u32 count);
+        bool        _ReadResults(std::vector<SearchResultUnknown<T>> &out, u32 &index, u32 count);
+        bool _ReadResults(std::vector<SearchResultFirst<T>>& out, u32& index, u32 count);
 
         template <typename U>
         inline int ReadFromFile(File &file, U &t)
