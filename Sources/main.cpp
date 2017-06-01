@@ -5,6 +5,7 @@
 #include <cctype>
 #include <vector>
 #include "CTRPluginFrameworkImpl/arm11kCommands.h"
+#include "3DS.h"
 
 namespace CTRPluginFramework
 {    
@@ -262,7 +263,8 @@ namespace CTRPluginFramework
     int    main(void)
     {
 
-        PluginMenu      *m = new PluginMenu("Zelda Ocarina Of Time 3D", g_encAbout, Decoder);
+        std::string     version = std::string("Zelda Ocarina Of Time 3D") + std::to_string(Process::GetVersion());
+        PluginMenu      *m = new PluginMenu(version, g_encAbout, Decoder);
         PluginMenu      &menu = *m;
        
 
@@ -272,7 +274,55 @@ namespace CTRPluginFramework
         //menu.Append(new MenuEntry("Pokemon Keyboard", nullptr, PokemonKeyboard));
         menu.Append(new MenuEntry("Get KProcess Handles", nullptr, GetHandlesInfo));
         menu.Append(new MenuEntry("Pokemon Keyboard", nullptr, SelectAPokemon));
-        
+        menu.Append(new MenuEntry("Test", nullptr, [](MenuEntry *entry)
+        {
+            std::string &note = entry->Note();
+
+            u64  tid = Process::GetTitleID();
+            u64  tidupdate = tid | 0x000000E00000000;
+            u64  tids[2] = { tid, tidupdate };
+            AM_TitleEntry entries[2] = { 0 };
+            u16 version = 0;
+            u16 original = 0;
+            Result res = 0;
+            bool card = false;
+
+
+            if (R_SUCCEEDED(res = AM_GetTitleInfo(MEDIATYPE_GAME_CARD, 1, &tids[0], &entries[0])))
+            {
+                if (tid == tids[0])
+                {
+                    original = entries[0].version;
+                    card = true;
+                }
+            }
+
+            if (R_SUCCEEDED(res = AM_GetTitleInfo(MEDIATYPE_SD, 2, tids, entries)))
+            {
+                for (int i = 0; i < 2; i++)
+                {
+                    if (tid == tids[i])
+                    {
+                        original = entries[i].version;
+                    }
+                    if (tidupdate == tids[i])
+                    {
+                        version = entries[i].version;
+                    }
+                }
+            }
+
+        end:
+            note = std::string(card ? "Card Version: " : "Cia Version: ") + std::to_string(original);
+            note += std::string("\nUpdate Version: ") + std::to_string(version);
+            char buf[0x100] = { 0 };
+
+            sprintf(buf, "\nRes: %08X", res);
+            note += buf;
+
+            MessageBox("Done !")();
+
+        }));
         /*
         ** Movements codes
         ********************/

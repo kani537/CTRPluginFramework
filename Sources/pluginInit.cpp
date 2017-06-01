@@ -9,12 +9,18 @@
 extern "C" void     abort(void);
 extern "C" void     initSystem();
 
+namespace CTRPluginFramework
+{
+    void  ThreadExit(void) __attribute__((noreturn));
+}
+
 void abort(void)
 {
     CTRPluginFramework::Color red(255, 0, 0);
     CTRPluginFramework::Screen::Top->Flash(red);
     CTRPluginFramework::Screen::Bottom->Flash(red);
-    exit(-1);  
+
+    CTRPluginFramework::ThreadExit();
 }
 
 namespace CTRPluginFramework
@@ -24,11 +30,11 @@ namespace CTRPluginFramework
     static u32  keepThreadStack[0x1000] ALIGN(8);
 
     // Some globals
+    Handle      g_continueGameEvent = 0;
     Handle      g_keepThreadHandle;
     Handle      g_keepEvent = 0;
-    Handle      g_continueGameEvent = 0;
     bool        g_keepRunning = true;
-    Thread      g_mainThread;
+    Thread      g_mainThread = nullptr;
 
     void    ThreadInit(void *arg);
 
@@ -194,8 +200,7 @@ namespace CTRPluginFramework
         Glyph *g = Font::GetGlyph(s);
         } while (*s);
 
-        }*/
-        
+        }*/        
     }
 
     // Main thread's start
@@ -212,16 +217,48 @@ namespace CTRPluginFramework
         // Start plugin
         int ret = main();
 
-        // Release process in case it was forgotten
-        ProcessImpl::Play(false);
+        ThreadExit();
+    }
 
-        gfxExit();
+    void  ThreadExit(void)
+    {
+        // In which thread are we ?
+        if (threadGetCurrent() != nullptr)
+        {
+            // MainThread
 
-        // Exit loop in keep thread
-        g_keepRunning = false;
-        svcSignalEvent(g_keepEvent);
+            // Release process in case it's currently paused
+            ProcessImpl::Play(false);
 
-        threadExit(1);        
+            // Exit services
+            gfxExit();
+
+            // Exit loop in keep thread
+            g_keepRunning = false;
+            svcSignalEvent(g_keepEvent);
+
+            threadExit(1);
+        }
+        else
+        {
+            // KeepThread
+            if (g_mainThread != nullptr)
+            {
+                ProcessImpl::Play(false);
+                PluginMenuImpl::ForceExit();
+                threadJoin(g_mainThread, U64_MAX);
+            }
+            else
+                svcSignalEvent(g_continueGameEvent);
+
+            // Exit services
+            acExit();
+            amExit();
+            fsExit();
+            cfguExit();            
+
+            exit(-1);
+        }      
     }
 
     extern "C" int LaunchMainThread(int arg);

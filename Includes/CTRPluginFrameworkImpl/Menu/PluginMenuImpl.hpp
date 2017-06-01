@@ -25,6 +25,9 @@ namespace CTRPluginFramework
         void    Callback(CallbackPointer callback);
         int     Run(void);
 
+        // Used to forcefully exit a menu
+        static void ForceExit(void);
+
         static void UnStar(MenuItem *item);
         static void Refresh(void);
 

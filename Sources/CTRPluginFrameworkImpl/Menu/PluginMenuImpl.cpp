@@ -32,7 +32,12 @@ namespace CTRPluginFramework
 
     PluginMenuImpl::~PluginMenuImpl(void)
     {
-
+        ProcessImpl::Play(false);
+        delete _home;
+        delete _search;
+        delete _tools;
+        delete _executeLoop;
+        delete _guide;
     }  
 
     void    PluginMenuImpl::Append(MenuItem *item) const
@@ -189,7 +194,13 @@ namespace CTRPluginFramework
         return (0);
     }
 
-    void PluginMenuImpl::UnStar(MenuItem* item)
+    void    PluginMenuImpl::ForceExit(void)
+    {
+        if (_runningInstance != nullptr)
+            _runningInstance->_pluginRun = false;
+    }
+
+    void    PluginMenuImpl::UnStar(MenuItem* item)
     {
         if (_runningInstance != nullptr)
         {
