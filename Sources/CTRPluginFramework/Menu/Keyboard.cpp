@@ -176,7 +176,7 @@ namespace CTRPluginFramework
                 stou64(input, temp);
             }
             else
-                temp = static_cast<u64>(std::stoul(input, nullptr, 16));
+                temp = static_cast<u64>(std::stoull(input, nullptr, 16));
         }
         else
             temp = 0;
