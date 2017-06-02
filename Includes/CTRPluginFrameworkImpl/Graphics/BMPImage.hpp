@@ -4,8 +4,9 @@
 #include "types.h"
 
 #include "CTRPluginFramework/System/File.hpp"
-#include "CTRPluginFrameworkImpl/Graphics/Vector.hpp"
-#include "CTRPluginFrameworkImpl/Graphics/Rect.hpp"
+#include "CTRPluginFramework/System/Vector.hpp"
+#include "CTRPluginFramework/System/Rect.hpp"
+
 
 #include <cstring>
 

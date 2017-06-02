@@ -1,8 +1,8 @@
 #ifndef CTRPLUGINFRAMEWORK_GRAPHICSIMPL_HPP
 #define CTRPLUGINFRAMEWORK_GRAPHICSIMPL_HPP
 
-#include "CTRPluginFrameworkImpl/Graphics/Vector.hpp"
-#include "CTRPluginFrameworkImpl/Graphics/Rect.hpp"
+#include "CTRPluginFramework/System/Vector.hpp"
+#include "CTRPluginFramework/System/Rect.hpp"
 #include "CTRPluginFrameworkImpl/Graphics/Line.hpp"
 
 #include "CTRPluginFrameworkImpl/Graphics/BMPImage.hpp"

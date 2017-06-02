@@ -2,7 +2,7 @@
 #define CTRPLUGINFRAMEWORKIMPL_MESSAGEBOXIMPL_HPP
 
 #include <string>
-#include "Rect.hpp"
+#include "CTRPluginFramework/System/Rect.hpp"
 #include "CTRPluginFrameworkImpl/System/Events.hpp"
 #include "CTRPluginFramework/Menu/MessageBox.hpp"
 

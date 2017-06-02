@@ -3,7 +3,7 @@
 
 #include "ctrulib/gfx.h"
 #include "CTRPluginFramework/Graphics/Color.hpp"
-#include "CTRPluginFrameworkImpl/Graphics/Rect.hpp"
+#include "CTRPluginFramework/System/Rect.hpp"
 
 namespace CTRPluginFramework
 {

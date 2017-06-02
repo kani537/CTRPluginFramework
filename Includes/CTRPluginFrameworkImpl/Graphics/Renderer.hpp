@@ -7,8 +7,8 @@
 #include "ctrulib/gfx.h"
 
 #include "CTRPluginFramework/Graphics/Color.hpp"
-#include "CTRPluginFrameworkImpl/Graphics/Vector.hpp"
-#include "CTRPluginFrameworkImpl/Graphics/Rect.hpp"
+#include "CTRPluginFramework/System/Vector.hpp"
+#include "CTRPluginFramework/System/Rect.hpp"
 #include "CTRPluginFrameworkImpl/Graphics/Line.hpp"
 
 #include <vector>

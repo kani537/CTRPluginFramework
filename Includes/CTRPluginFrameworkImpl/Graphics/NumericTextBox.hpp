@@ -1,8 +1,8 @@
 #ifndef CTRPLUGINFRAMEWORKIMPL_NUMERICTEXTBOX_HPP
 #define CTRPLUGINFRAMEWORKIMPL_NUMERICTEXTBOX_HPP
 
-#include "CTRPluginFrameworkImpl/Graphics/Vector.hpp"
-#include "CTRPluginFrameworkImpl/Graphics/Rect.hpp"
+#include "CTRPluginFramework/System/Vector.hpp"
+#include "CTRPluginFramework/System/Rect.hpp"
 #include <string>
 #include <vector>
 
