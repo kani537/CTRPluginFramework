@@ -294,7 +294,7 @@ namespace CTRPluginFramework
             _buildResult = true;
             _cancelBtn.IsEnabled = false;
             _resetBtn.IsEnabled = true;
-            if (_step > 1)
+            if (_searchHistory.size())
                 _undoBtn.IsEnabled = true;
         }
     }
@@ -458,6 +458,19 @@ namespace CTRPluginFramework
         if (_currentSearch != nullptr)
             _searchHistory.push_back(_currentSearch);
 
+        if (_searchHistory.size() > 5)
+        {
+            SearchBase *search = _searchHistory.front();
+            
+            _searchHistory.pop_front();
+            delete search;
+
+            search = _searchHistory.front();
+
+            search->_previousSearch = nullptr;
+        }
+
+
         if (_memoryRegions.SelectedItem == -1 || _memoryRegions.SelectedItem > _regionsList.size())
             return;
 
@@ -524,6 +537,8 @@ namespace CTRPluginFramework
 
         // Enable Cancel button
         _cancelBtn.IsEnabled = true;
+        // Disable Undo button
+        _undoBtn.IsEnabled = false;
 
         _inSearch = true;
 
@@ -544,7 +559,7 @@ namespace CTRPluginFramework
         // Clear history
         if (_searchHistory.size() > 0)
         {
-            for (auto it = _searchHistory.begin(); it != _searchHistory.end(); it++)
+            for (auto it = _searchHistory.begin(); it != _searchHistory.end(); ++it)
                 delete *it;
             _searchHistory.clear();         
         }
@@ -609,7 +624,7 @@ namespace CTRPluginFramework
         // Reset step
         _step--;
 
-        if (_step <= 1)
+        if (!_searchHistory.size())
             _undoBtn.IsEnabled = false;
         _searchMenu.Update();
     }

@@ -113,6 +113,8 @@ namespace CTRPluginFramework
         float           Progress; //<- current progression of the search in %
         Time            SearchTime;
         u32             Step; //<- current step
+
+        SearchBase *_previousSearch;
     protected: 
         friend class SearchMenu;
         
@@ -124,7 +126,7 @@ namespace CTRPluginFramework
         int                     _currentRegion;
         u32                     _totalSize;
         u32                     _achievedSize;
-        std::vector<SRegion>    _regionsList;
+        std::vector<SRegion>    &_regionsList;
         Clock                   _clock;
         
         // Hit list building var
@@ -134,7 +136,7 @@ namespace CTRPluginFramework
 
         File                    _file; //<- File associated for read / Write
 
-        SearchBase *_previousSearch; 
+        
 
     };
     
@@ -156,7 +158,7 @@ namespace CTRPluginFramework
 
         Search(T value, u32 start, u32 end, u32 alignment, SearchBase *previous);
         Search(T value, std::vector<Region> &list, u32 alignment, SearchBase *previous);
-
+        ~Search(){}
         /*
         ** Cancel
         */
@@ -166,35 +168,34 @@ namespace CTRPluginFramework
         ** Override SearchBase's
         ** Return true if search is done
         ****************************/
-        bool    DoSearch(void);
+        bool    DoSearch(void) override;
 
         /*
         ** ResultsToFile
         ** Override SearchBase's
         ** Return true if suceeded
         ****************************/
-        bool    ResultsToFile(void);
+        bool    ResultsToFile(void) override;
 
-        bool    FetchResults(stringvector &address, stringvector &newval, stringvector &oldvalue, u32 index, int count);
+        bool    FetchResults(stringvector &address, stringvector &newval, stringvector &oldvalue, u32 index, int count) override;
 
     private:
 
-        //std::vector<SearchResult<T>>    _results; //<- Hold the results
         T                               _checkValue; //<- Value to compare with
         u32                             _maxResult;
         void                            *_resultsArray;
         void                            *_resultsEnd;
         void                            *_resultsP;
-        //u64                             _indexInFile;
         SearchFlags                     _flags;
         CmpFunc                         _compare;
 
-        bool _SecondExactSearch();
-        bool _SecondUnknownSearch();
-        bool _SubsidiarySearch();
+        void _FirstUnknownSearch(u32& start, const u32 end);
         /*
         ** Methods
         ***********/
+        bool        _SecondExactSearch(void);
+        bool        _SecondUnknownSearch(void);
+        bool        _SubsidiarySearch(void);
         bool        _SearchInRange(void);
         void        _FirstExactSearch(u32 &start, u32 end);
         void        _UpdateCompare(void);
@@ -219,24 +220,23 @@ namespace CTRPluginFramework
         bool        _CompareUnknownLE(T old, T newer);
         
         bool        _WriteHeaderToFile(void);
-        static u32         _GetHeaderSize(void);
+        static u32  _GetHeaderSize(void);
         u32         _GetResultStructSize(void) const;        
         bool        _ReadResults(std::vector<SearchResult<T>> &out, u32 &index, u32 count);
         bool        _ReadResults(std::vector<SearchResultUnknown<T>> &out, u32 &index, u32 count);
-        bool _ReadResults(std::vector<SearchResultFirst<T>>& out, u32& index, u32 count);
+        bool        _ReadResults(std::vector<SearchResultFirst<T>>& out, u32& index, u32 count);
 
         template <typename U>
-        inline int ReadFromFile(File &file, U &t)
+        static int ReadFromFile(File &file, U &t)
         {
             return (file.Read(reinterpret_cast<char *>(&t), sizeof(U)));
         }
 
         template <typename U>
-        inline int WriteToFile(File &file, const U &t) const
+        static int WriteToFile(File &file, const U &t)
         {
             return (file.Write(reinterpret_cast<const char *>(&t), sizeof(U)));
         }
-
     };
 }
 
