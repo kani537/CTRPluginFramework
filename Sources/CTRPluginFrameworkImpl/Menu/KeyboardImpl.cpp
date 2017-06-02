@@ -168,7 +168,7 @@ namespace CTRPluginFramework
         _onInputChange = callback;
     }
 
-    void    KeyboardImpl::Populate(std::vector<std::string> &input)
+    void    KeyboardImpl::Populate(const std::vector<std::string> &input)
     {
         _customKeyboard = true;
         _strKeys.clear();
@@ -193,7 +193,6 @@ namespace CTRPluginFramework
             float scrollTrackSpace = lsize - height;
             float scrollThumbSpace = height - cursorSize;
 
-
             _scrollJump = scrollTrackSpace / scrollThumbSpace;
             _scrollbarSize = height;
 
@@ -209,9 +208,9 @@ namespace CTRPluginFramework
 
         IntRect box(60, posY, 200, 30);
 
-        for (int i = 0; i < input.size(); i++)
+        for (const std::string &str : input)
         {
-            _strKeys.push_back(TouchKeyString(input[i], box));
+            _strKeys.push_back(TouchKeyString(str, box));
             box.leftTop.y += 36;
         }
     }

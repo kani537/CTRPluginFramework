@@ -13,6 +13,13 @@ namespace CTRPluginFramework
     bool    stou32(std::string &input, u32 &res)
     {
         const char *str = input.c_str();
+        bool neg = false;
+
+        if (*str == '-')
+        {
+            str++;
+            neg = true;
+        }
 
         res = 0;
 
@@ -33,6 +40,13 @@ namespace CTRPluginFramework
             res += val;
             str++;
         }
+
+        if (neg)
+        {
+            s32 sign = -static_cast<s32>(res);
+
+            res = sign;
+        }
         return (true);
 
     overflow:
@@ -44,6 +58,13 @@ namespace CTRPluginFramework
     bool    stou64(std::string &input, u64 &res)
     {
         const char *str = input.c_str();
+        bool neg = false;
+
+        if (*str == '-')
+        {
+            str++;
+            neg = true;
+        }
 
         res = 0;
 
@@ -64,6 +85,14 @@ namespace CTRPluginFramework
             res += val;
             str++;
         }
+
+        if (neg)
+        {
+            s64 sign = -static_cast<s64>(res);
+
+            res = sign;
+        }
+
         return (true);
 
     overflow:
@@ -76,7 +105,7 @@ namespace CTRPluginFramework
     {
         static u8   temp = 0;
 
-        if (input.length() > 0)
+        if (input.length() > 0 && !(input.length() == 1 && input[0] == '-'))
         {
             if (!isHex)
             {
@@ -85,7 +114,10 @@ namespace CTRPluginFramework
                 temp = static_cast<u8>(n);
             }
             else
+            {
                 temp = static_cast<u8>(std::stoul(input, nullptr, 16));
+            }
+                
         }
         else
             temp = 0;
@@ -97,7 +129,7 @@ namespace CTRPluginFramework
     {
         static u16   temp = 0;
 
-        if (input.length() > 0)
+        if (input.length() > 0 && !(input.length() == 1 && input[0] == '-'))
         {
             if (!isHex)
             {
@@ -118,7 +150,7 @@ namespace CTRPluginFramework
     {
         static u32   temp = 0;
 
-        if (input.length() > 0)
+        if (input.length() > 0 && !(input.length() == 1 && input[0] == '-'))
         {
             if (!isHex)
             {
@@ -137,7 +169,7 @@ namespace CTRPluginFramework
     {
         static u64   temp = 0;
 
-        if (input.length() > 0)
+        if (input.length() > 0 && !(input.length() == 1 && input[0] == '-'))
         {
             if (!isHex)
             {
@@ -156,8 +188,10 @@ namespace CTRPluginFramework
     {
         static float   temp = 0;
 
-        if (input.length() > 0)
+        if (input.length() > 0 && !(input.length() == 1 && input[0] == '-'))
             temp = static_cast<float>(std::stof(input, nullptr));
+        else
+            temp = 0.f;
         return ((void *)&temp);
     }
 
@@ -165,8 +199,10 @@ namespace CTRPluginFramework
     {
         static double   temp = 0;
 
-        if (input.length() > 0)
+        if (input.length() > 0 && !(input.length() == 1 && input[0] == '-'))
             temp = static_cast<double>(std::stod(input, nullptr));
+        else
+            temp = 0;
         return ((void *)&temp);
     }
 
@@ -191,18 +227,18 @@ namespace CTRPluginFramework
         _hexadecimal = isHex;
     }
 
-    void    Keyboard::SetCompareCallback(CompareCallback callback)
+    void    Keyboard::SetCompareCallback(CompareCallback callback) const
     {
         _keyboard->SetCompareCallback(callback);
     }
 
-    void    Keyboard::Populate(std::vector<std::string> &input)
+    void    Keyboard::Populate(const std::vector<std::string> &input)
     {
         _keyboard->Populate(input);
         _isPopulated = true;
     }
 
-    int     Keyboard::Open(void)
+    int     Keyboard::Open(void) const
     {
         if (!_isPopulated)
             return (-1);
@@ -216,7 +252,7 @@ namespace CTRPluginFramework
     ** U8
     ******/
 
-    int     Keyboard::Open(u8 &output)
+    int     Keyboard::Open(u8 &output) const
     {
         _keyboard->SetLayout(Layout::HEXADECIMAL);
         _keyboard->SetHexadecimal(_hexadecimal);
@@ -237,7 +273,7 @@ namespace CTRPluginFramework
         return (ret);
     }
 
-    int     Keyboard::Open(u8 &output, u8 start)
+    int     Keyboard::Open(u8 &output, u8 start) const
     {
         _keyboard->SetLayout(Layout::HEXADECIMAL);
         _keyboard->SetHexadecimal(_hexadecimal);
@@ -271,7 +307,7 @@ namespace CTRPluginFramework
     ** U16
     ******/
 
-    int     Keyboard::Open(u16 &output)
+    int     Keyboard::Open(u16 &output) const
     {
         _keyboard->SetLayout(Layout::HEXADECIMAL);
         _keyboard->SetHexadecimal(_hexadecimal);
@@ -292,7 +328,7 @@ namespace CTRPluginFramework
         return (ret);
     }
 
-    int     Keyboard::Open(u16 &output, u16 start)
+    int     Keyboard::Open(u16 &output, u16 start) const
     {
         _keyboard->SetLayout(Layout::HEXADECIMAL);
         _keyboard->SetHexadecimal(_hexadecimal);
@@ -326,7 +362,7 @@ namespace CTRPluginFramework
     ** U32
     ******/
 
-    int     Keyboard::Open(u32 &output)
+    int     Keyboard::Open(u32 &output) const
     {
         _keyboard->SetLayout(Layout::HEXADECIMAL);
         _keyboard->SetHexadecimal(_hexadecimal);
@@ -347,7 +383,7 @@ namespace CTRPluginFramework
         return (ret);
     }
 
-    int     Keyboard::Open(u32 &output, u32 start)
+    int     Keyboard::Open(u32 &output, u32 start) const
     {
         _keyboard->SetLayout(Layout::HEXADECIMAL);
         _keyboard->SetHexadecimal(_hexadecimal);
@@ -381,7 +417,7 @@ namespace CTRPluginFramework
     ** U64
     ******/
 
-    int     Keyboard::Open(u64 &output)
+    int     Keyboard::Open(u64 &output) const
     {
         _keyboard->SetLayout(Layout::HEXADECIMAL);
         _keyboard->SetHexadecimal(_hexadecimal);
@@ -402,7 +438,7 @@ namespace CTRPluginFramework
         return (ret);
     }
 
-    int     Keyboard::Open(u64 &output, u64 start)
+    int     Keyboard::Open(u64 &output, u64 start) const
     {
         _keyboard->SetLayout(Layout::HEXADECIMAL);
         _keyboard->SetHexadecimal(_hexadecimal);
@@ -436,7 +472,7 @@ namespace CTRPluginFramework
     ** float
     ******/
 
-    int     Keyboard::Open(float &output)
+    int     Keyboard::Open(float &output) const
     {
         _keyboard->SetLayout(DECIMAL);
         _keyboard->SetConvertCallback(ConvertToFloat);
@@ -452,7 +488,7 @@ namespace CTRPluginFramework
         return (ret);
     }
 
-    int     Keyboard::Open(float &output, float start)
+    int     Keyboard::Open(float &output, float start) const
     {
         _keyboard->SetLayout(DECIMAL);
         _keyboard->SetConvertCallback(ConvertToFloat);
@@ -476,7 +512,7 @@ namespace CTRPluginFramework
     ** double
     ******/
 
-    int     Keyboard::Open(double &output)
+    int     Keyboard::Open(double &output) const
     {
         _keyboard->SetLayout(DECIMAL);
         _keyboard->SetConvertCallback(ConvertToDouble);
@@ -492,7 +528,7 @@ namespace CTRPluginFramework
         return (ret);
     }
 
-    int     Keyboard::Open(double &output, double start)
+    int     Keyboard::Open(double &output, double start) const
     {
         _keyboard->SetLayout(DECIMAL);
         _keyboard->SetConvertCallback(ConvertToDouble);
@@ -516,7 +552,7 @@ namespace CTRPluginFramework
     ** string
     **********/
 
-    int     Keyboard::Open(std::string &output)
+    int     Keyboard::Open(std::string &output) const
     {
         _keyboard->SetLayout(QWERTY);
         _keyboard->DisplayTopScreen = DisplayTopScreen;
@@ -530,7 +566,7 @@ namespace CTRPluginFramework
         return (ret);
     }
 
-    int     Keyboard::Open(std::string &output, std::string start)
+    int     Keyboard::Open(std::string &output, const std::string &start) const
     {
         _keyboard->SetLayout(QWERTY);
         _keyboard->DisplayTopScreen = DisplayTopScreen;
@@ -546,32 +582,32 @@ namespace CTRPluginFramework
         return (ret);
     }
 
-    std::string     &Keyboard::GetInput(void)
+    std::string     &Keyboard::GetInput(void) const
     {
         return (_keyboard->GetInput());
     }
 
-    std::string     &Keyboard::GetMessage(void)
+    std::string     &Keyboard::GetMessage(void) const
     {
         return (_keyboard->GetMessage());
     }
 
-    void    Keyboard::SetError(std::string error)
+    void    Keyboard::SetError(std::string error) const
     {
         _keyboard->SetError(error);
     }
 
-    void    Keyboard::CanAbort(bool canAbort)
+    void    Keyboard::CanAbort(bool canAbort) const
     {
         _keyboard->CanAbort(canAbort);
     }
 
-    void    Keyboard::Close(void)
+    void    Keyboard::Close(void) const
     {
         _keyboard->Close();
     }
 
-    void    Keyboard::OnInputChange(OnInputChangeCallback callback)
+    void    Keyboard::OnInputChange(OnInputChangeCallback callback) const
     {
         _keyboard->OnInputChange(callback);
     }

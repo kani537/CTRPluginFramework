@@ -45,7 +45,7 @@ namespace CTRPluginFramework
         void        SetConvertCallback(ConvertCallback callback);
         void        SetCompareCallback(CompareCallback callback);
         void        OnInputChange(OnInputChangeCallback callback);
-        void        Populate(std::vector<std::string> &input);
+        void        Populate(const std::vector<std::string> &input);
 
         int         Run(void);
         void        Close(void);
