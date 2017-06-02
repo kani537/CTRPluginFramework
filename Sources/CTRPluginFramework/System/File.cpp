@@ -239,6 +239,11 @@ namespace CTRPluginFramework
         _offset = 0;
     }
 
+    int     File::Flush(void) const
+    {
+        return (FSFILE_Flush(_handle));
+    }
+
     u64     File::GetSize(void) const
     {
         if (!_isOpen)
