@@ -2,6 +2,7 @@
 #define CTRPLUGINFRAMEWORK_PROCESS_HPP
 
 #include "ctrulib/svc.h"
+#include <string>
 
 namespace CTRPluginFramework
 {
