@@ -10,6 +10,8 @@ namespace CTRPluginFramework
     extern "C" CFNT_s* g_sharedFont;
     extern "C" int charPerSheet;
 
+    u32     g_fontAllocated = 0;
+    u32     g_glyphAllocated = 0;
     u32     *defaultSysFont = nullptr;
     u8      *glyph = nullptr;
     u8      *tileData = nullptr;
@@ -27,6 +29,7 @@ namespace CTRPluginFramework
             delete [] defaultSysFont;
 
         defaultSysFont = new u32[7505];//static_cast<u32 *>(linearAlloc(sizeof(u32) * 7505));
+        g_fontAllocated = sizeof(u32) * 7505;
         tileData = (u8 *)linearAlloc(4096);
         glyph = (u8 *)linearAlloc(1000);
         std::memset(defaultSysFont, 0, sizeof(u32) * 7505);
@@ -251,6 +254,7 @@ namespace CTRPluginFramework
         u8  *originalGlyph = GetOriginalGlyph(glyphIndex);
         // 16px * 14px = 224
         u8  *newGlyph = new u8[224]; //(u8 *)linearAlloc(224);
+        g_fontAllocated += 224;
         std::memset(newGlyph, 0, 224);
 
         // Shrink glyph data to the requiered size
@@ -261,6 +265,8 @@ namespace CTRPluginFramework
 
         // Allocate new Glyph
         Glyph *glyph = new Glyph; //static_cast<Glyph *>(linearAlloc(sizeof(Glyph)));
+        g_fontAllocated += sizeof(Glyph);
+        g_glyphAllocated++;
         std::memset(glyph, 0, sizeof(Glyph));
 
         // Get Glyph data

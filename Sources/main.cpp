@@ -277,50 +277,15 @@ namespace CTRPluginFramework
         menu.Append(new MenuEntry("Test", nullptr, [](MenuEntry *entry)
         {
             std::string &note = entry->Note();
+            extern u32 g_fontAllocated;
+            extern u32 g_glyphAllocated;
 
-            u64  tid = Process::GetTitleID();
-            u64  tidupdate = tid | 0x000000E00000000;
-            u64  tids[2] = { tid, tidupdate };
-            AM_TitleEntry entries[2] = { 0 };
-            u16 version = 0;
-            u16 original = 0;
-            Result res = 0;
-            bool card = false;
-
-
-            if (R_SUCCEEDED(res = AM_GetTitleInfo(MEDIATYPE_GAME_CARD, 1, &tids[0], &entries[0])))
-            {
-                if (tid == tids[0])
-                {
-                    original = entries[0].version;
-                    card = true;
-                }
-            }
-
-            if (R_SUCCEEDED(res = AM_GetTitleInfo(MEDIATYPE_SD, 2, tids, entries)))
-            {
-                for (int i = 0; i < 2; i++)
-                {
-                    if (tid == tids[i])
-                    {
-                        original = entries[i].version;
-                    }
-                    if (tidupdate == tids[i])
-                    {
-                        version = entries[i].version;
-                    }
-                }
-            }
-
-        end:
-            note = std::string(card ? "Card Version: " : "Cia Version: ") + std::to_string(original);
-            note += std::string("\nUpdate Version: ") + std::to_string(version);
             char buf[0x100] = { 0 };
 
-            sprintf(buf, "\nRes: %08X", res);
-            note += buf;
+            sprintf(buf, "Currently allocated: %d\n 0x%08X", g_glyphAllocated, g_fontAllocated);
+            note = buf;
 
-            MessageBox("Done !")();
+            (MessageBox(buf))();
 
         }));
         /*

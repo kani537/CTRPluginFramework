@@ -510,6 +510,51 @@ namespace CTRPluginFramework
         }
         _resultsP = result;
     }
+    /*
+    template <>
+    void    Search<u8>::_FirstUnknownSearch(u32 &start, const u32 end)
+    {
+        SearchResultUnknown<u8> *result = reinterpret_cast<SearchResultUnknown<u8>*>(_resultsP);
+
+        for (; start < end; start += 4)
+        {
+            u32 value = *(reinterpret_cast<u32 *>(start));
+
+            ResultCount++;
+            result->value = value;
+            ++result;
+            if (result >= _resultsEnd)
+            {
+                start += 4;
+                break;
+            }
+
+        }
+        _resultsP = result;
+    }
+
+    template <>
+    void    Search<u16>::_FirstUnknownSearch(u32 &start, const u32 end)
+    {
+        SearchResultUnknown<u16> *result = reinterpret_cast<SearchResultUnknown<u16>*>(_resultsP);
+
+        for (; start < end; start += 4)
+        {
+            u32 value = *(reinterpret_cast<u32 *>(start));
+
+            ResultCount++;
+            result->value = value;
+            ++result;
+            if (result >= _resultsEnd)
+            {
+                start += 4;
+                break;
+            }
+
+        }
+        _resultsP = result;
+    } */
+
     template <typename T>
     bool    Search<T>::_SecondExactSearch(void)
     {
@@ -728,6 +773,198 @@ namespace CTRPluginFramework
 
         return (false);
     }
+    /*
+    template <>
+    bool    Search<u8>::_SecondUnknownSearch(void)
+    {
+        std::vector<SearchResultUnknown<u32>> oldResultsUnkn;
+
+        auto getAddress = [this](u32 index, u32 &addr, u32 &end, u32 &nextAddr, u32 &nextEndAddr)
+        {
+            Search<u8> *prev = reinterpret_cast<Search<u8> *>(_previousSearch);
+
+            u64 offset = prev->_GetHeaderSize() + prev->_GetResultStructSize() * index;
+            u32 size = prev->_GetResultStructSize();
+
+            for (SRegion &region : prev->_regionsList)
+            {
+                if (offset >= region.fileOffset)
+                {
+                    addr = region.startAddress;
+                    addr += (offset - region.fileOffset);
+                    end = region.endAddress;
+                    nextEndAddr = end;
+                }
+                else
+                {
+                    nextAddr = region.startAddress;
+                    nextEndAddr = region.endAddress;
+                    break;
+                }
+            }
+        };
+
+        u32 address;
+        u32 endAddr;
+        u32 nextAddr;
+        u32 nextEndAddr;
+        u32 index = _currentPosition;
+
+        getAddress(index, address, endAddr, nextAddr, nextEndAddr);
+
+        // First get the results from the file
+        if (reinterpret_cast<Search<u8> *>(_previousSearch)->_ReadResults(oldResultsUnkn, index, _maxResult))
+        {
+            SearchResult<u8>     *result = reinterpret_cast<SearchResult<u8>*>(_resultsP);
+            std::vector<SearchResultUnknown<u32>>::iterator iter = oldResultsUnkn.begin();
+            std::vector<SearchResultUnknown<u32>>::iterator end = oldResultsUnkn.end();
+            u32 count = 1;
+
+            for (; iter != end; ++iter, ++count)
+            {
+                u32   newValBase = *reinterpret_cast<u32 *>(address);
+                u32   oldValBase = iter->value;
+
+                u8    newVal = newValBase;
+                u8    oldVal = oldValBase;
+
+                for (int i = 0; i < 4; i++)
+                {
+                    if ((this->*_compare)(oldVal, newVal))
+                    {
+                        ++ResultCount;
+                        result->address = address + i;
+                        result->value = newVal;
+                        result->oldValue = oldVal;
+                        ++result;
+
+                        if (result >= _resultsEnd)
+                            break;
+                    }
+
+                    int shift = 8 * (i + 1);
+                    newVal = newValBase >> shift;
+                    oldValBase = oldValBase >> shift;
+                }
+                
+                address += 4;
+                if (address >= endAddr)
+                {
+                    if (endAddr == nextEndAddr)
+                        break;
+
+                    address = nextAddr;
+                    endAddr = nextEndAddr;
+                }
+            }
+
+            _resultsP = result;
+
+            // Update position
+            _currentPosition += count;
+
+            if (_currentPosition >= _previousSearch->ResultCount)
+                return (true);
+        }
+
+        return (false);
+    }
+
+    template <>
+    bool    Search<u16>::_SecondUnknownSearch(void)
+    {
+        std::vector<SearchResultUnknown<u32>> oldResultsUnkn;
+
+        auto getAddress = [this](u32 index, u32 &addr, u32 &end, u32 &nextAddr, u32 &nextEndAddr)
+        {
+            Search<u16> *prev = reinterpret_cast<Search<u16> *>(_previousSearch);
+
+            u64 offset = prev->_GetHeaderSize() + prev->_GetResultStructSize() * index;
+            u32 size = prev->_GetResultStructSize();
+
+            for (SRegion &region : prev->_regionsList)
+            {
+                if (offset >= region.fileOffset)
+                {
+                    addr = region.startAddress;
+                    addr += (offset - region.fileOffset);
+                    end = region.endAddress;
+                    nextEndAddr = end;
+                }
+                else
+                {
+                    nextAddr = region.startAddress;
+                    nextEndAddr = region.endAddress;
+                    break;
+                }
+            }
+        };
+
+        u32 address;
+        u32 endAddr;
+        u32 nextAddr;
+        u32 nextEndAddr;
+        u32 index = _currentPosition;
+
+        getAddress(index, address, endAddr, nextAddr, nextEndAddr);
+
+        // First get the results from the file
+        if (reinterpret_cast<Search<u8> *>(_previousSearch)->_ReadResults(oldResultsUnkn, index, _maxResult))
+        {
+            SearchResult<u8>     *result = reinterpret_cast<SearchResult<u8>*>(_resultsP);
+            std::vector<SearchResultUnknown<u32>>::iterator iter = oldResultsUnkn.begin();
+            std::vector<SearchResultUnknown<u32>>::iterator end = oldResultsUnkn.end();
+            u32 count = 1;
+
+            for (; iter != end; ++iter, ++count)
+            {
+                u32   newValBase = *reinterpret_cast<u32 *>(address);
+                u32   oldValBase = iter->value;
+
+                u8    newVal = newValBase;
+                u8    oldVal = oldValBase;
+
+                for (int i = 0; i < 4; i++)
+                {
+                    if ((this->*_compare)(oldVal, newVal))
+                    {
+                        ++ResultCount;
+                        result->address = address + i;
+                        result->value = newVal;
+                        result->oldValue = oldVal;
+                        ++result;
+
+                        if (result >= _resultsEnd)
+                            break;
+                    }
+
+                    int shift = 8 * (i + 1);
+                    newVal = newValBase >> shift;
+                    oldValBase = oldValBase >> shift;
+                }
+
+                address += 4;
+                if (address >= endAddr)
+                {
+                    if (endAddr == nextEndAddr)
+                        break;
+
+                    address = nextAddr;
+                    endAddr = nextEndAddr;
+                }
+            }
+
+            _resultsP = result;
+
+            // Update position
+            _currentPosition += count;
+
+            if (_currentPosition >= _previousSearch->ResultCount)
+                return (true);
+        }
+
+        return (false);
+    } */
 
     template <typename T>
     bool    Search<T>::_SubsidiarySearch(void)
