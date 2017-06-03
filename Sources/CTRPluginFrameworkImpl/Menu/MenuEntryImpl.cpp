@@ -123,5 +123,4 @@ namespace CTRPluginFramework
 
         return (_MustBeRemoved());
     }
-
 }

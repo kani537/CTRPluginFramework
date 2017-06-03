@@ -5,6 +5,8 @@
 
 namespace CTRPluginFramework
 {
+    u32     MenuItem::_uidCounter = 0;
+
     using   MenuIter = std::vector<MenuItem*>::iterator;
 
     void    MenuItem::_DisableFolder(MenuFolderImpl *folder)

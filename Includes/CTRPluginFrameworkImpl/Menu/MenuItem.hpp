@@ -1,8 +1,8 @@
 #ifndef CTRPLUGINFRAMEWORKIMPL_MENUITEMIMPL_HPP
 #define CTRPLUGINFRAMEWORKIMPL_MENUITEMIMPL_HPP
 
+#include "types.h"
 #include <string>
-
 
 namespace CTRPluginFramework
 {
@@ -17,7 +17,7 @@ namespace CTRPluginFramework
     {
     public:
         MenuItem(MenuType type) :
-        _type(type), _isStarred(false), _isVisible(true), _container(nullptr), _index(0)
+        _type(type), _isStarred(false), _isVisible(true), _container(nullptr), _index(0), _uid(++_uidCounter)
         {
         }
 
@@ -55,6 +55,9 @@ namespace CTRPluginFramework
         bool        _isVisible;
         MenuItem    *_container; /* MenuFolderImpl */
         int         _index;
+        const u32   _uid;
+
+        static u32  _uidCounter;
     };
 }
 
