@@ -68,8 +68,6 @@ namespace CTRPluginFramework
     void    EventManager::ProcessEvents(void)
     {
         Event   event;
-        int     i;
-
         
         Controller::Update();
 

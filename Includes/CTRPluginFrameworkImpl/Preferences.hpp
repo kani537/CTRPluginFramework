@@ -11,6 +11,7 @@ namespace CTRPluginFramework
         static BMPImage     *topBackgroundImage;
         static BMPImage     *bottomBackgroundImage;
 
+        static u32          MenuHotkeys;
         static bool         InjectBOnMenuClose;
         static bool         DrawTouchCursor;
         static bool         EcoMemoryMode;

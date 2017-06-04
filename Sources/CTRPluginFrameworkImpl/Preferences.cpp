@@ -1,10 +1,13 @@
+#include "CTRPluginFramework/System/Controller.hpp"
 #include "CTRPluginFrameworkImpl/Preferences.hpp"
 #include <math.h>
+
 
 namespace CTRPluginFramework
 {
     BMPImage    *Preferences::topBackgroundImage = nullptr;
     BMPImage    *Preferences::bottomBackgroundImage = nullptr;
+    u32         Preferences::MenuHotkeys = static_cast<u32>(Key::Select);
     bool        Preferences::InjectBOnMenuClose = false;
     bool        Preferences::DrawTouchCursor = false;
     bool        Preferences::EcoMemoryMode = false;

@@ -99,9 +99,6 @@
     <ClInclude Include="Includes\CTRPluginFrameworkImpl\Graphics\PrivColor.hpp">
       <Filter>Fichiers d%27en-tête</Filter>
     </ClInclude>
-    <ClInclude Include="Includes\CTRPluginFrameworkImpl\Graphics\Rect.hpp">
-      <Filter>Fichiers d%27en-tête</Filter>
-    </ClInclude>
     <ClInclude Include="Includes\CTRPluginFrameworkImpl\Graphics\Renderer.hpp">
       <Filter>Fichiers d%27en-tête</Filter>
     </ClInclude>
@@ -115,9 +112,6 @@
       <Filter>Fichiers d%27en-tête</Filter>
     </ClInclude>
     <ClInclude Include="Includes\CTRPluginFrameworkImpl\Graphics\TouchKeyString.hpp">
-      <Filter>Fichiers d%27en-tête</Filter>
-    </ClInclude>
-    <ClInclude Include="Includes\CTRPluginFrameworkImpl\Graphics\Vector.hpp">
       <Filter>Fichiers d%27en-tête</Filter>
     </ClInclude>
     <ClInclude Include="Includes\CTRPluginFrameworkImpl\Menu\GuideReader.hpp">
@@ -426,7 +420,10 @@
     <ClInclude Include="Includes\ctrulib\services\am.h">
       <Filter>Fichiers d%27en-tête</Filter>
     </ClInclude>
-    <ClInclude Include="Sources\AutoVersion.hpp">
+    <ClInclude Include="Includes\CTRPluginFramework\System\Vector.hpp">
+      <Filter>Fichiers d%27en-tête</Filter>
+    </ClInclude>
+    <ClInclude Include="Includes\CTRPluginFramework\System\Rect.hpp">
       <Filter>Fichiers d%27en-tête</Filter>
     </ClInclude>
   </ItemGroup>
@@ -818,7 +815,16 @@
     <ClCompile Include="Sources\ctrulib\services\am.c">
       <Filter>Fichiers sources</Filter>
     </ClCompile>
-    <ClCompile Include="Sources\AutoVersion.cpp">
+    <ClCompile Include="Sources\CTRPluginFrameworkImpl\Graphics\Icons\CapsLockOn15.c">
+      <Filter>Fichiers sources</Filter>
+    </ClCompile>
+    <ClCompile Include="Sources\CTRPluginFrameworkImpl\Graphics\Icons\CapsLockOnFilled15.c">
+      <Filter>Fichiers sources</Filter>
+    </ClCompile>
+    <ClCompile Include="Sources\CTRPluginFrameworkImpl\Graphics\Icons\Happy15.c">
+      <Filter>Fichiers sources</Filter>
+    </ClCompile>
+    <ClCompile Include="Sources\CTRPluginFrameworkImpl\Graphics\Icons\HappyFilled15.c">
       <Filter>Fichiers sources</Filter>
     </ClCompile>
   </ItemGroup>

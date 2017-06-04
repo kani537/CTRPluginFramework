@@ -89,23 +89,41 @@ namespace CTRPluginFramework
             eventList.clear();
             while (manager.PollEvent(event))
             {
-                // If Select is pressed
-                if (event.type == Event::KeyPressed && event.key.code == Key::Select && inputClock.HasTimePassed(Milliseconds(500)))
+                // If it's a KeyPressed event
+                if (event.type == Event::KeyPressed && inputClock.HasTimePassed(Milliseconds(500)))
                 {
-                    if (_isOpen)
+                    bool isHotkeysDown = false;
+
+                    // Check that MenuHotkeys are pressed
+                    for (int i = 0; i < 16; i++)
                     {
-                        ProcessImpl::Play(true);
-                        _isOpen = false;
-                        if (Preferences::InjectBOnMenuClose)
-                            Controller::InjectKey(Key::B);
+                        u32 key = Preferences::MenuHotkeys & (1u << i);
+                        
+                        if (key && event.key.code == key)
+                        {
+                            if (Controller::IsKeysDown(Preferences::MenuHotkeys ^ key))
+                                isHotkeysDown = true;
+                        }
                     }
-                    else
+
+                    // If MenuHotkeys are pressed
+                    if (isHotkeysDown)
                     {
-                        ProcessImpl::Pause(true);
-                        _isOpen = true;
-                        _wasOpened = true;
-                    }
-                    inputClock.Restart();   
+                        if (_isOpen)
+                        {
+                            ProcessImpl::Play(true);
+                            _isOpen = false;
+                            if (Preferences::InjectBOnMenuClose)
+                                Controller::InjectKey(Key::B);
+                        }
+                        else
+                        {
+                            ProcessImpl::Pause(true);
+                            _isOpen = true;
+                            _wasOpened = true;
+                        }
+                        inputClock.Restart();
+                    }                       
                 }
 
                 if (_isOpen)
@@ -169,7 +187,6 @@ namespace CTRPluginFramework
                     _pluginRun = false;                    
                     _isOpen = false;     
                 }
-
             }
             else
             {
