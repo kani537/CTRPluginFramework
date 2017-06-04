@@ -1,0 +1,24 @@
+#ifndef CTRPLUGINFRAMEWORKIMPL_CHECKBOX_HPP
+#define CTRPLUGINFRAMEWORKIMPL_CHECKBOX_HPP
+
+#include "IconButton.hpp"
+
+namespace CTRPluginFramework
+{
+    class CheckBox;
+    class CheckBox : public IconButton<CheckBox, void>
+    {
+    public:
+        CheckBox(int posX, int posY);
+        ~CheckBox(void);
+
+        void    Update(bool isTouchDown, IntVector touchPos) override;
+        bool    IsChecked(void) const;
+
+    protected:
+        bool    _isWaiting;
+        bool    _isPressed;
+    };
+}
+
+#endif

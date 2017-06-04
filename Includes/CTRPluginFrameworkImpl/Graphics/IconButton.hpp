@@ -3,8 +3,7 @@
 
 
 #include "CTRPluginFramework/Graphics/Color.hpp"
-#include "CTRPluginFrameworkImpl/Graphics.hpp"
-
+#include "CTRPluginFramework/System/Rect.hpp"
 #include "CTRPluginFramework/System/Touch.hpp"
 #include "CTRPluginFramework/System/Clock.hpp"
 
@@ -20,7 +19,7 @@ namespace CTRPluginFramework
 
         // Create the object
         IconButton(C &caller, EventCallback callback, IntRect ui, IconCallback icon, bool enabled = true);
-        ~IconButton(){}
+        virtual ~IconButton(){}
 
         // Change the state of the object
         void    SetState(bool state);
@@ -29,15 +28,15 @@ namespace CTRPluginFramework
         void    Draw(void);
 
         // Update
-        void    Update(bool touchIsDown, IntVector touchPos);
+        virtual void    Update(bool touchIsDown, IntVector touchPos);
 
         // Executer
-        bool    operator()(Args ...args);
+        virtual bool    operator()(Args ...args);
 
         // Enabler
         void    Enable(bool enable = true);
 
-    private:
+    protected:
         C               &_caller;
         EventCallback   _callback;
         IconCallback    _icon;
