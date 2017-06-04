@@ -6,6 +6,8 @@
 #include <vector>
 #include "CTRPluginFrameworkImpl/arm11kCommands.h"
 #include "3DS.h"
+#include "CTRPluginFrameworkImpl/Menu/PluginMenuHotkeys.hpp"
+#include "CTRPluginFrameworkImpl/Preferences.hpp"
 
 namespace CTRPluginFramework
 {    
@@ -287,6 +289,11 @@ namespace CTRPluginFramework
 
             (MessageBox(buf))();
 
+        }));
+
+        menu.Append(new MenuEntry("Change Hotkey", nullptr, [](MenuEntry *entry)
+        {
+            (HotkeysModifier(Preferences::MenuHotkeys, "Select the hotkeys you'd like to use to open the menu."))();
         }));
         /*
         ** Movements codes
