@@ -8,6 +8,7 @@
 #include "CTRPluginFrameworkImpl/Graphics/BMPImage.hpp"
 #include "CTRPluginFrameworkImpl/Graphics/Button.hpp"
 #include "CTRPluginFrameworkImpl/Graphics/CheckedButton.hpp"
+#include "CTRPluginFrameworkImpl/Graphics/CheckBox.hpp"
 #include "CTRPluginFrameworkImpl/Graphics/ComboBox.hpp"
 #include "CTRPluginFrameworkImpl/Graphics/Icon.hpp"
 #include "CTRPluginFrameworkImpl/Graphics/IconButton.hpp"

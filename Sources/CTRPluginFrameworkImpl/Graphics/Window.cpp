@@ -1,6 +1,8 @@
 #include "CTRPluginFrameworkImpl/Graphics/Window.hpp"
 #include "CTRPluginFrameworkImpl/Preferences.hpp"
 #include "CTRPluginFramework/Graphics/Color.hpp"
+#include "CTRPluginFrameworkImpl/Graphics/Icon.hpp"
+#include "CTRPluginFrameworkImpl/Graphics/Renderer.hpp"
 
 namespace CTRPluginFramework
 {

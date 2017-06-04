@@ -1,6 +1,7 @@
 #ifndef CTRPPLUGINFRAMEWORK_PREFERENCES_HPP
 #define CTRPPLUGINFRAMEWORK_PREFERENCES_HPP
 
+#include "types.h"
 #include "CTRPluginFrameworkImpl/Graphics/BMPImage.hpp"
 
 namespace CTRPluginFramework

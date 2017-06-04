@@ -7,6 +7,7 @@
 
 namespace CTRPluginFramework
 {
+    class BMPImage;
     class Window
     {
     public:
