@@ -17,6 +17,7 @@
 #include "CTRPluginFrameworkImpl/Graphics/Renderer.hpp"
 #include "CTRPluginFrameworkImpl/Graphics/TextBox.hpp"
 #include "CTRPluginFrameworkImpl/Graphics/ToggleButton.hpp"
+#include "CTRPluginFrameworkImpl/Graphics/Window.hpp"
 
 #include "CTRPluginFrameworkImpl/System/Screen.hpp"
 

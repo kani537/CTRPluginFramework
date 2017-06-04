@@ -30,15 +30,7 @@ namespace CTRPluginFramework
         void    _RenderBottom(void);
         void    _Update(Time delta);
 
-
-
-        // Members
-        //Menu                            _menu;
         std::string     _about;
-
-        // Buttons        
-        IconButton<PluginMenuTools, void>          _closeBtn;
-
     };
 }
 

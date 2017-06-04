@@ -4,8 +4,7 @@
 namespace CTRPluginFramework
 {
     PluginMenuTools::PluginMenuTools(std::string &about) :
-    _about(about),
-    _closeBtn(*this, nullptr, IntRect(275, 24, 20, 20), Icon::DrawClose)
+    _about(about)
     {
     }
 
@@ -26,10 +25,7 @@ namespace CTRPluginFramework
 
         // Check buttons
 
-        if (_closeBtn())
-            return (true);
-
-        return (false);
+        return (Window::BottomWindow.MustClose());
     }
 
     /*
@@ -55,25 +51,13 @@ namespace CTRPluginFramework
 
     void    PluginMenuTools::_RenderTop(void)
     {
-        Color    &black = Color::Black;
-        Color    &blank = Color::Blank;
-        Color    &dimGrey = Color::BlackGrey;
-        static IntRect  background(30, 20, 340, 200);
-
         int   posY = 25;
         int   posX = 40;
 
         // Enable renderer
         Renderer::SetTarget(TOP);
 
-        // Draw background
-        if (Preferences::topBackgroundImage->IsLoaded())
-            Preferences::topBackgroundImage->Draw(background.leftTop);
-        else
-        {
-            Renderer::DrawRect2(background, black, dimGrey);
-            Renderer::DrawRect(32, 22, 336, 196, blank, false);            
-        }
+        Window::TopWindow.Draw();
     }
 
     /*
@@ -84,19 +68,12 @@ namespace CTRPluginFramework
         Color    &black = Color::Black;
         Color    &blank = Color::Blank;
         Color    &dimGrey = Color::BlackGrey;
-        static IntRect  background(20, 20, 280, 200);
 
         // Enable renderer
         Renderer::SetTarget(BOTTOM);
 
-        // Background
-        if (Preferences::bottomBackgroundImage->IsLoaded())
-            Preferences::bottomBackgroundImage->Draw(background.leftTop);
-        else
-        {
-            Renderer::DrawRect2(background, black, dimGrey);
-            Renderer::DrawRect(22, 22, 276, 196, blank, false);            
-        }
+        // Window
+        Window::BottomWindow.Draw();
 
         // Draw About text
         {
@@ -114,9 +91,6 @@ namespace CTRPluginFramework
             int posY = 205;
             Renderer::DrawString((char *)"CTRPluginFramework Alpha V.0.0.14", 40, posY, blank);
         }
-
-        // Draw buttons
-        _closeBtn.Draw();
     }
 
     /*
@@ -130,6 +104,6 @@ namespace CTRPluginFramework
         bool        isTouched = Touch::IsDown();
         IntVector   touchPos(Touch::GetPosition());
 
-        _closeBtn.Update(isTouched, touchPos);
+        Window::BottomWindow.Update(isTouched, touchPos);
     }
 }
