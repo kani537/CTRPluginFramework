@@ -10,6 +10,7 @@
 
 #include <vector>
 #include <string>
+#include "HexEditor.hpp"
 
 namespace CTRPluginFramework
 {
@@ -17,7 +18,8 @@ namespace CTRPluginFramework
     {
         using EventList = std::vector<Event>;
     public:
-        PluginMenuTools(std::string &about);
+        PluginMenuTools(std::string &about, HexEditor &hexEditor);
+        void InitMenu();
         ~PluginMenuTools(){}
 
         // Return true if the Close Button is pressed, else false
@@ -31,6 +33,11 @@ namespace CTRPluginFramework
         void    _Update(Time delta);
 
         std::string     _about;
+        MenuFolderImpl  _mainMenu;
+        MenuFolderImpl  _settingsMenu;
+        HexEditor       &_hexEditor;
+        Menu            _menu;
+        TextBox         _abouttb;
     };
 }
 

@@ -29,6 +29,7 @@ namespace CTRPluginFramework
 
         void    Append(MenuItem *item);
         void    Draw(void);
+        void    Open(MenuFolderImpl *folder);
         //void    Update(Time delta);
 
         /*
@@ -44,8 +45,8 @@ namespace CTRPluginFramework
 
     private:
         MenuFolderImpl  *_folder;
-        IntRect     _background;
-        IntRect     _border;
+       // IntRect     _background;
+       // IntRect     _border;
         Clock       _input;
         IconCallback    _iconCallback;
 

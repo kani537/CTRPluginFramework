@@ -49,6 +49,7 @@ namespace CTRPluginFramework
         PluginMenuTools             *_tools;
         PluginMenuExecuteLoop       *_executeLoop;
         GuideReader                 *_guide;
+        HexEditor                   _hexEditor;
         std::vector<CallbackPointer>     _callbacks;
     };
 }

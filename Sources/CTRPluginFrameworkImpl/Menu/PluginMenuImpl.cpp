@@ -18,10 +18,10 @@ namespace CTRPluginFramework
     PluginMenuImpl  *PluginMenuImpl::_runningInstance = nullptr;
 
     PluginMenuImpl::PluginMenuImpl(std::string name, std::string about) : 
-
+    _hexEditor(0x00100000),
     _home(new PluginMenuHome(name)),
-    _search(new PluginMenuSearch()),
-    _tools(new PluginMenuTools(about)),
+    _search(new PluginMenuSearch(_hexEditor)),
+    _tools(new PluginMenuTools(about, _hexEditor)),
     _executeLoop(new PluginMenuExecuteLoop()),
     _guide(new GuideReader())
     {

@@ -5,9 +5,9 @@
 
 namespace CTRPluginFramework
 {
-    PluginMenuSearch::PluginMenuSearch() :
-    _hexEditor(0),
-    _searchMenu(_currentSearch, _hexEditor, _inEditor, _hexInput),
+    PluginMenuSearch::PluginMenuSearch(HexEditor &hexEditor) :
+    _hexEditor(hexEditor),
+    _searchMenu(_currentSearch, hexEditor, _inEditor, _hexInput),
     _closeBtn(*this, nullptr, IntRect(275, 24, 20, 20), Icon::DrawClose),
     _memoryRegions(150, 40, 130, 15),
     _startRangeTextBox(85, 60, 66, 15),

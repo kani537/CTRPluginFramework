@@ -6,13 +6,14 @@
 #include "CTRPluginFrameworkImpl/Preferences.hpp"
 
 #include <algorithm>
+#include "CTRPluginFrameworkImpl/Menu/MenuEntryTools.hpp"
 
 namespace CTRPluginFramework
 {
     Menu::Menu(std::string title, IconCallback iconCallback)
     {
-        _background = IntRect(30, 20, 340, 200);
-        _border = IntRect(32, 22, 336, 196);
+       // _background = IntRect(30, 20, 340, 200);
+        //_border = IntRect(32, 22, 336, 196);
         _selector = 0;
         _folder = new MenuFolderImpl(title);
         _iconCallback = iconCallback;
@@ -20,13 +21,19 @@ namespace CTRPluginFramework
 
     Menu::Menu(MenuFolderImpl *folder, IconCallback iconCallback)
     {
-        _background = IntRect(30, 20, 340, 200);
-        _border = IntRect(32, 22, 336, 196);
+       // _background = IntRect(30, 20, 340, 200);
+       // _border = IntRect(32, 22, 336, 196);
         _selector = 0;
         _folder = folder;
         _iconCallback = iconCallback;
         if (_folder == nullptr)
             _folder = new MenuFolderImpl("Menu");
+    }
+
+    void    Menu::Open(MenuFolderImpl* folder)
+    {
+        _selector = 0;
+        _folder = folder;
     }
 
     Menu::~Menu(void)
@@ -43,28 +50,17 @@ namespace CTRPluginFramework
 
     void    Menu::Draw(void)
     {
-        Color &black = Color::Black;
         Color &blank = Color::Blank;
-        Color &greyblack = Color::BlackGrey;
         Color &silver = Color::DarkGrey;
-        Color &limegreen = Color::LimeGreen;
 
         int   posY = 25;
         int   posX = 40;
 
-        // Draw background
-        if (Preferences::topBackgroundImage->IsLoaded() 
-            && (Preferences::topBackgroundImage->GetDimensions() <= _background.size))
-            Preferences::topBackgroundImage->Draw(_background.leftTop);
-        else
-        {
-            Renderer::DrawRect2(_background, black, greyblack);
-            Renderer::DrawRect(_border, blank, false);
-        }
+        Window::TopWindow.Draw();
 
         // Draw title
-        int width = Renderer::DrawSysString(_folder->name.c_str(), posX, posY, XMAX, limegreen);
-        Renderer::DrawLine(posX, posY, width, limegreen);   
+        int width = Renderer::DrawSysString(_folder->name.c_str(), posX, posY, XMAX, blank);
+        Renderer::DrawLine(posX, posY, width, blank);   
         posY += 7;
 
         // Draw entries
@@ -87,7 +83,7 @@ namespace CTRPluginFramework
                     Renderer::MenuSelector(posX - 5, posY - 3, 320, 20);
                 }
 
-                if (item->_type == MenuType::Entry)
+                if (item->_type == MenuType::Entry || item->_type == MenuType::EntryTools)
                 {
                     _iconCallback(posX, posY);
                     Renderer::DrawSysString(item->name.c_str(), posX + 20, posY, XMAX, c);
@@ -110,10 +106,29 @@ namespace CTRPluginFramework
                     Renderer::MenuSelector(posX - 5, posY - 3, 320, 20);
                 }
 
+                // MenuEntryImpl
                 if (item->_type == MenuType::Entry)
                 {
                     Renderer::DrawSysString(item->name.c_str(), posX + 20, posY, XMAX, c);
                 }
+                /// MenuEntryTools
+                else if (item->_type == MenuType::EntryTools)
+                {
+                    MenuEntryTools *e = reinterpret_cast<MenuEntryTools *>(item);
+
+                    if (e->UseCheckBox)
+                    {
+                        Icon::DrawCheckBox(posX, posY, e->IsActivated());
+                        Renderer::DrawSysString(item->name.c_str(), posX + 20, posY, XMAX, c);
+                    }
+                    else
+                    {
+                        if (e->Icon != nullptr)
+                            e->Icon(posX, posY);
+                        Renderer::DrawSysString(item->name.c_str(), posX + 20, posY, XMAX, c);
+                    }
+                }
+                // MenuFolderImpl
                 else
                     Renderer::DrawSysFolder(item->name.c_str(), posX, posY, XMAX, c);
 
@@ -139,7 +154,7 @@ namespace CTRPluginFramework
                 case CPadUp:
                 case DPadUp:
                 {
-                    if (!_input.HasTimePassed(Milliseconds(400)))
+                    if (!_input.HasTimePassed(Milliseconds(200)))
                         return (MenuEvent::SelectorChanged);
                     if (_selector > 0)
                         _selector--;
@@ -151,7 +166,7 @@ namespace CTRPluginFramework
                 case CPadDown:
                 case DPadDown:
                 {
-                    if (!_input.HasTimePassed(Milliseconds(400)))
+                    if (!_input.HasTimePassed(Milliseconds(200)))
                         break;
                     if (_selector < _folder->ItemsCount() - 1)
                         _selector++;
@@ -171,13 +186,12 @@ namespace CTRPluginFramework
             {
                 case A:
                 {
-                    // if it's not a folder
+                    // MenuEntryImpl
                     if (item->_type == MenuType::Entry)
                     {
                         userchoice = item->name;
                         return (_selector);
                     }
-
                     // if it's a folder
                     MenuFolderImpl *folder = reinterpret_cast<MenuFolderImpl *>(item);
                     folder->_Open(_folder, _selector);
@@ -199,6 +213,7 @@ namespace CTRPluginFramework
         return (-1);
     }
 
+    // Return a MenuEvent value
     int     Menu::ProcessEvent(Event &event, MenuItem **userchoice)
     {
         // If the current folder is empty
@@ -228,7 +243,7 @@ namespace CTRPluginFramework
                 case CPadUp:
                 case DPadUp:
                 {
-                    if (!_input.HasTimePassed(Milliseconds(400)))
+                    if (!_input.HasTimePassed(Milliseconds(200)))
                         break;
                     if (_selector > 0)
                         _selector--;
@@ -240,7 +255,7 @@ namespace CTRPluginFramework
                 case CPadDown:
                 case DPadDown:
                 {
-                    if (!_input.HasTimePassed(Milliseconds(400)))
+                    if (!_input.HasTimePassed(Milliseconds(200)))
                         break;
                     if (_selector < _folder->ItemsCount() - 1)
                         _selector++;
@@ -263,9 +278,25 @@ namespace CTRPluginFramework
             {
                 case A:
                 {
-                    // if it's not a folder
+                    // MenuEntryImpl
                     if (item->_type == MenuType::Entry)
                     {
+                        return (MenuEvent::EntrySelected);
+                    }
+                    else if (item->_type == MenuType::EntryTools)
+                    {
+                        MenuEntryTools *e = reinterpret_cast<MenuEntryTools *>(item);
+
+                        if (e->UseCheckBox)
+                        {
+                            e->TriggerState();
+                            if (e->Func != nullptr && e->IsActivated())
+                                e->Func();
+                        }
+                            
+                        else if (e->Func != nullptr)
+                            e->Func();
+                        
                         return (MenuEvent::EntrySelected);
                     }
 

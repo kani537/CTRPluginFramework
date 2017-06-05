@@ -51,7 +51,7 @@ namespace CTRPluginFramework
         _invalid = true;
         _isModified = false;
         _startRegion = 0;
-        _endRegion = false;
+        _endRegion = 0;
         _cursor = 0;
 
         // Clean buffer

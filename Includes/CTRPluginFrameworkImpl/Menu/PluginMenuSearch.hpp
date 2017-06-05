@@ -15,7 +15,7 @@ namespace CTRPluginFramework
     {
         using EventList = std::vector<Event>;
     public:
-        PluginMenuSearch();
+        PluginMenuSearch(HexEditor &hexEditor);
         ~PluginMenuSearch(){}
 
         // Return true if the Close Button is pressed, else false
@@ -44,7 +44,7 @@ namespace CTRPluginFramework
         std::vector<Region>                 _regionsList;
         std::list<SearchBase *>             _searchHistory;
         SearchBase                          *_currentSearch;
-        HexEditor                           _hexEditor;
+        HexEditor                           &_hexEditor;
 
         bool                                _inSearch;
         bool                                _inEditor;

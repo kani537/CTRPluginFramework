@@ -1,15 +1,70 @@
+#include "CTRPluginFrameworkImpl/Menu/HotkeysModifier.hpp"
 #include "CTRPluginFrameworkImpl/Menu/PluginMenuTools.hpp"
+#include "CTRPluginFrameworkImpl/Menu/MenuEntryTools.hpp"
 #include "CTRPluginFrameworkImpl/Preferences.hpp"
+#include "CTRPluginFramework/Menu/MessageBox.hpp"
 
 namespace CTRPluginFramework
 {
-    PluginMenuTools::PluginMenuTools(std::string &about) :
-    _about(about)
+    enum Mode
     {
+        NORMAL = 0,
+        HEXEDITOR,
+        ABOUT
+    };
+
+    static int  g_mode = NORMAL;
+
+    PluginMenuTools::PluginMenuTools(std::string &about, HexEditor &hexEditor) :
+        _about(about),
+        _mainMenu("Tools"),
+        _settingsMenu("Settings"),
+        _hexEditor(hexEditor),
+        _menu(&_mainMenu, nullptr),
+        _abouttb("About", _about, IntRect(30, 20, 340, 200))
+    {
+        InitMenu();
+    }
+
+    static void    MenuHotkeyModifier(void)
+    {
+        u32 keys = Preferences::MenuHotkeys;
+
+        (HotkeysModifier(keys, "Select the hotkeys you'd like to use to open the menu."))();
+
+        if (keys != 0)
+            Preferences::MenuHotkeys = keys;
+    }
+
+    void    PluginMenuTools::InitMenu(void)
+    {
+        _mainMenu.Append(new MenuEntryTools("About", [] { g_mode = ABOUT; }, nullptr));
+        _mainMenu.Append(new MenuEntryTools("Hex Editor", [] { g_mode = HEXEDITOR; }, nullptr));
+        _mainMenu.Append(new MenuEntryTools("Saved cheats", [] { MessageBox("Not yet implemented")(); }, nullptr));
+        _mainMenu.Append(new MenuEntryTools("Settings", nullptr, nullptr, this));
+
+        _settingsMenu.Append(new MenuEntryTools("Change menu hotkeys", MenuHotkeyModifier, nullptr));
+        //_settingsMenu.Append(new MenuEntryTools("Inject B when closing the menu", [] { Preferences::InjectBOnMenuClose = !Preferences::InjectBOnMenuClose; }, true));
+        //_settingsMenu.Append(new MenuEntryTools("Touch Cursor", [] { Preferences::DrawTouchCursor = !Preferences::DrawTouchCursor; }, true));
     }
 
     bool    PluginMenuTools::operator()(EventList &eventList, Time &delta)
     {
+        if (g_mode == HEXEDITOR)
+        {
+            if (_hexEditor(eventList))
+                g_mode = NORMAL;
+            return (false);
+        }
+
+        if (g_mode == ABOUT)
+        {
+            if (!_abouttb.IsOpen())
+                _abouttb.Open();
+            else
+                g_mode = NORMAL;
+        }
+
         // Process Event
         for (int i = 0; i < eventList.size(); i++)
             _ProcessEvent(eventList[i]); 
@@ -33,16 +88,33 @@ namespace CTRPluginFramework
     *****************/
     void    PluginMenuTools::_ProcessEvent(Event &event)
     {
+        if (_abouttb.IsOpen())
+        {
+            _abouttb.ProcessEvent(event);
+            return;
+        }
 
+        MenuItem    *item = nullptr;
+        static bool settingsIsOpen = false;
+
+        int ret = _menu.ProcessEvent(event, &item);
+
+        if (ret == EntrySelected && item != nullptr && ((MenuEntryTools *)item)->GetArg() == this)
+        {
+            settingsIsOpen = true;
+            _menu.Open(&_settingsMenu);
+        }
+
+        if (ret == MenuClose && settingsIsOpen)
+        {
+            settingsIsOpen = false;
+            _menu.Open(&_mainMenu);
+        }
     }
 
     void PluginMenuTools::_RenderTopMenu(void)
     {
-        Color    &black = Color::Black;
-        Color    &blank = Color::Blank;
-        Color    &blackGrey = Color::BlackGrey;
-
-
+        
     }
 
     /*
@@ -51,13 +123,24 @@ namespace CTRPluginFramework
 
     void    PluginMenuTools::_RenderTop(void)
     {
-        int   posY = 25;
-        int   posX = 40;
-
         // Enable renderer
         Renderer::SetTarget(TOP);
 
+        if(_abouttb.IsOpen())
+        {
+            _abouttb.Draw();
+            return;
+        }
+
+      /*  // Window
         Window::TopWindow.Draw();
+
+        // Title
+        int posY = 25;
+        int xx = Renderer::DrawSysString("Tools", 40, posY, 330, Color::Blank);
+        Renderer::DrawLine(40, posY, xx, Color::Blank);*/
+
+        _menu.Draw();
     }
 
     /*
@@ -82,8 +165,8 @@ namespace CTRPluginFramework
             int posX = 30;
             int maxX = 290;
 
-            Renderer::DrawSysStringReturn(reinterpret_cast<const u8 *>(_about.c_str()), 
-                                          posX, posY, maxX, blank, maxY);
+            //Renderer::DrawSysStringReturn(reinterpret_cast<const u8 *>(_about.c_str()), 
+            //                              posX, posY, maxX, blank, maxY);
         }
 
         // Draw Framework version
