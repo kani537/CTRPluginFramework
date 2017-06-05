@@ -39,14 +39,14 @@ namespace CTRPluginFramework
     {
     }
 
-    void    MenuEntry::Enable(void)
+    void    MenuEntry::Enable(void) const
     {
         _item->Enable();
     }
 
     void    MenuEntry::Disable(void) const
     {
-        
+        _item->Disable();
     }
 
     void    MenuEntry::Hide(void) const
