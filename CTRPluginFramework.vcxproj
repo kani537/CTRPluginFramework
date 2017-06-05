@@ -121,6 +121,7 @@
     <ClInclude Include="Includes\CTRPluginFrameworkImpl\Graphics.hpp" />
     <ClInclude Include="Includes\CTRPluginFrameworkImpl\Graphics\BMPImage.hpp" />
     <ClInclude Include="Includes\CTRPluginFrameworkImpl\Graphics\Button.hpp" />
+    <ClInclude Include="Includes\CTRPluginFrameworkImpl\Graphics\CheckBox.hpp" />
     <ClInclude Include="Includes\CTRPluginFrameworkImpl\Graphics\CheckedButton.hpp" />
     <ClInclude Include="Includes\CTRPluginFrameworkImpl\Graphics\ComboBox.hpp" />
     <ClInclude Include="Includes\CTRPluginFrameworkImpl\Graphics\Font.hpp" />
@@ -131,6 +132,8 @@
     <ClInclude Include="Includes\CTRPluginFrameworkImpl\Graphics\NumericTextBox.hpp" />
     <ClInclude Include="Includes\CTRPluginFrameworkImpl\Graphics\OSDImpl.hpp" />
     <ClInclude Include="Includes\CTRPluginFrameworkImpl\Graphics\PrivColor.hpp" />
+    <ClInclude Include="Includes\CTRPluginFrameworkImpl\Graphics\Window.hpp" />
+    <ClInclude Include="Includes\CTRPluginFrameworkImpl\Menu\PluginMenuHotkeys.hpp" />
     <ClInclude Include="Includes\CTRPluginFramework\System\Rect.hpp" />
     <ClInclude Include="Includes\CTRPluginFrameworkImpl\Graphics\Renderer.hpp" />
     <ClInclude Include="Includes\CTRPluginFrameworkImpl\Graphics\TextBox.hpp" />
@@ -245,6 +248,7 @@
     <ClInclude Include="Includes\types.h" />
     <ClInclude Include="Includes\Unicode.h" />
     <ClInclude Include="Sources\cheats.hpp" />
+    <ClInclude Include="Sources\CTRPluginFrameworkImpl\Graphics\CheckBox.cpp" />
     <ClInclude Include="Sources\ctrulib\allocator\addrmap.h" />
     <ClInclude Include="Sources\ctrulib\allocator\mem_pool.h" />
     <ClInclude Include="Sources\ctrulib\internal.h" />
@@ -295,6 +299,7 @@
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\Graphics\TextBox.cpp" />
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\Graphics\TouchKey.cpp" />
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\Graphics\TouchKeyString.cpp" />
+    <ClCompile Include="Sources\CTRPluginFrameworkImpl\Graphics\Window.cpp" />
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\Menu\GuideReader.cpp" />
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\Menu\HexEditor.cpp" />
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\Menu\KeyboardImpl.cpp" />
@@ -304,6 +309,7 @@
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\Menu\MenuItem.cpp" />
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\Menu\PluginMenuExecuteLoop.cpp" />
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\Menu\PluginMenuHome.cpp" />
+    <ClCompile Include="Sources\CTRPluginFrameworkImpl\Menu\PluginMenuHotkeys.cpp" />
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\Menu\PluginMenuImpl.cpp" />
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\Menu\PluginMenuSearch.cpp" />
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\Menu\PluginMenuSearch_SearchFunctions.cpp" />

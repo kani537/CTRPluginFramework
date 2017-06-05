@@ -1,4 +1,4 @@
-#include "CTRPluginFrameworkImpl/Menu/PluginMenuHotkeys.hpp"
+#include "CTRPluginFrameworkImpl/Menu/HotkeysModifier.hpp"
 #include "CTRPluginFrameworkImpl/Graphics/Renderer.hpp"
 #include "CTRPluginFrameworkImpl/Graphics/Window.hpp"
 #include "CTRPluginFramework/System/Controller.hpp"

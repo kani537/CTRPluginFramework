@@ -6,7 +6,7 @@
 #include <vector>
 #include "CTRPluginFrameworkImpl/arm11kCommands.h"
 #include "3DS.h"
-#include "CTRPluginFrameworkImpl/Menu/PluginMenuHotkeys.hpp"
+#include "CTRPluginFrameworkImpl/Menu/HotkeysModifier.hpp"
 #include "CTRPluginFrameworkImpl/Preferences.hpp"
 
 namespace CTRPluginFramework
