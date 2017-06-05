@@ -1,0 +1,29 @@
+#ifndef CTRPLUGINFRAMEWORKIMPL_MENUENTRYTOOLS_HPP
+#define CTRPLUGINFRAMEWORKIMPL_MENUENTRYTOOLS_HPP
+
+#include "MenuEntryImpl.hpp"
+#include <string>
+
+
+namespace CTRPluginFramework
+{
+    class MenuEntryTools : public MenuEntryImpl
+    {
+        using IconCallback = int(*)(int, int);
+        using FuncPointer = void(*)(void);
+    public:
+        MenuEntryTools(const std::string &text, FuncPointer func, IconCallback icon, void *arg = nullptr);
+        MenuEntryTools(const std::string &text, FuncPointer func, IconCallback icon, const std::string &note);
+        MenuEntryTools(const std::string &text, FuncPointer func, bool useCheckBox, const std::string &note = "");
+
+        ~MenuEntryTools() {}
+
+        void    TriggerState(void);
+
+        IconCallback    Icon;
+        FuncPointer     Func;
+        bool            UseCheckBox;
+    };
+}
+
+#endif

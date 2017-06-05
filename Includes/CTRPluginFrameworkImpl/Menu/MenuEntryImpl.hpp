@@ -44,7 +44,7 @@ namespace CTRPluginFramework
         FuncPointer     GameFunc;
         FuncPointer     MenuFunc;
 
-    private:
+    protected:
         friend class PluginMenuHome;
         friend class PluginMenuExecuteLoop;
         // Functions used by the menu

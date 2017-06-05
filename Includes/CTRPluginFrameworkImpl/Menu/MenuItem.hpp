@@ -9,7 +9,8 @@ namespace CTRPluginFramework
     enum MenuType
     {
         Folder,
-        Entry
+        Entry,
+        EntryTools
     };
 
     class MenuFolderImpl;
@@ -31,7 +32,7 @@ namespace CTRPluginFramework
             return (_isVisible);
         }
 
-    private:
+    protected:
         friend class MenuFolderImpl;
         friend class PluginMenuHome;
         friend class Menu;
