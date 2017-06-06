@@ -77,6 +77,12 @@ namespace CTRPluginFramework
         // Set _runningInstance to this menu
         _runningInstance = this;
 
+        // Load favorites and enabled cheats
+        if (Preferences::AutoLoadFavorites)
+            Preferences::LoadSavedFavorites();
+        if (Preferences::AutoLoadCheats)
+            Preferences::LoadSavedEnabledCheats();
+
         // Update PluginMenuHome variables
         home.Init();
 
@@ -115,6 +121,9 @@ namespace CTRPluginFramework
                             _isOpen = false;
                             if (Preferences::InjectBOnMenuClose)
                                 Controller::InjectKey(Key::B);
+
+                            // Save settings
+                            Preferences::WriteSettings();
                         }
                         else
                         {
@@ -209,6 +218,109 @@ namespace CTRPluginFramework
         // Remove Running Instance
         _runningInstance = nullptr;
         return (0);
+    }
+
+    void PluginMenuImpl::LoadEnabledCheatsFromFile(const Preferences::Header &header, File &settings)
+    {
+        if (_runningInstance == nullptr)
+            return;
+
+        std::vector<u32>    uids;
+        MenuFolderImpl      *folder = _runningInstance->_home->_folder;
+
+        uids.resize(header.enabledCheatsCount);
+
+        settings.Seek(header.enabledCheatsOffset, File::SET);
+
+        if (settings.Read(uids.data(), sizeof(u32) * header.enabledCheatsCount) == 0)
+        {
+            for (u32 &uid : uids)
+            {
+                MenuItem *item = folder->GetItem(uid);
+
+                if (item != nullptr && item->IsEntry())
+                    reinterpret_cast<MenuEntryImpl *>(item)->Enable();
+            }
+        }
+    }
+
+    void PluginMenuImpl::LoadFavoritesFromFile(const Preferences::Header &header, File &settings)
+    {
+        if (_runningInstance == nullptr)
+            return;
+
+        std::vector<u32>    uids;
+        MenuFolderImpl      *folder = _runningInstance->_home->_folder;
+        MenuFolderImpl      *starred = _runningInstance->_home->_starredConst;
+
+        uids.resize(header.favoritesCount);
+
+        settings.Seek(header.favoritesOffset, File::SET);
+
+        if (settings.Read(uids.data(), sizeof(u32) * header.favoritesCount) == 0)
+        {
+            for (u32 &uid : uids)
+            {
+                MenuItem *item = folder->GetItem(uid);
+
+                if (item != nullptr && !item->_IsStarred())
+                {
+                    item->_TriggerStar();                   
+                    starred->Append(item, true);                    
+                }
+            }
+        }
+    }
+
+    void    PluginMenuImpl::WriteEnabledCheatsToFile(Preferences::Header &header, File &settings)
+    {
+        if (_runningInstance == nullptr)
+            return;
+
+        std::vector<u32>    uids;
+        MenuFolderImpl      *folder = _runningInstance->_home->_folder;
+
+        for (MenuItem *item : folder->_items)
+        {
+            if (item->IsEntry() && reinterpret_cast<MenuEntryImpl *>(item)->IsActivated())
+                uids.push_back(item->_uid);
+        }
+
+        if (uids.size())
+        {                
+            u64 offset = settings.Tell();
+
+            if (settings.Write(uids.data(), sizeof(u32) * uids.size()) == 0)
+            {
+                header.enabledCheatsCount = uids.size();
+                header.enabledCheatsOffset = offset;
+            }
+        }
+    }
+
+    void    PluginMenuImpl::WriteFavoritesToFile(Preferences::Header &header, File &settings)
+    {
+        if (_runningInstance == nullptr)
+            return;
+
+        std::vector<u32>    uids;
+        MenuFolderImpl      *folder = _runningInstance->_home->_starred;
+
+        for (MenuItem *item : folder->_items)
+        {
+            uids.push_back(item->_uid);
+        }
+
+        if (uids.size())
+        {
+            u64 offset = settings.Tell();
+
+            if (settings.Write(uids.data(), sizeof(u32) * uids.size()) == 0)
+            {
+                header.favoritesCount = uids.size();
+                header.favoritesOffset = offset;
+            }
+        }
     }
 
     void    PluginMenuImpl::ForceExit(void)

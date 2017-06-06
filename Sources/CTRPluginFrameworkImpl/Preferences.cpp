@@ -1,6 +1,8 @@
 #include "CTRPluginFramework/System/Controller.hpp"
 #include "CTRPluginFrameworkImpl/Preferences.hpp"
 #include <math.h>
+#include "ctrulib/result.h"
+#include "CTRPluginFrameworkImpl/Menu/PluginMenuImpl.hpp"
 
 
 namespace CTRPluginFramework
@@ -11,6 +13,10 @@ namespace CTRPluginFramework
     bool        Preferences::InjectBOnMenuClose = false;
     bool        Preferences::DrawTouchCursor = false;
     bool        Preferences::EcoMemoryMode = false;
+    bool        Preferences::AutoSaveCheats = false;
+    bool        Preferences::AutoSaveFavorites = false;
+    bool        Preferences::AutoLoadCheats = false;
+    bool        Preferences::AutoLoadFavorites = false;
 
     BMPImage *RegionFromCenter(BMPImage *img, int maxX, int maxY)
     {
@@ -85,6 +91,100 @@ namespace CTRPluginFramework
         return (temp);
     }
 
+    void    Preferences::LoadSettings(void)
+    {
+        File    settings;
+        Header  header = { 0 };
+
+        if (File::Open(settings, "CTRPFData.bin") == 0)
+        {
+            if (settings.Read(&header, sizeof(Header)) == 0)
+            {
+                MenuHotkeys = header.hotkeys;
+                AutoLoadCheats = (header.flags & (u64)SettingsFlags::AutoLoadCheats != 0);
+                AutoLoadFavorites = (header.flags & (u64)SettingsFlags::AutoLoadFavorites != 0);
+                AutoSaveCheats = (header.flags & (u64)SettingsFlags::AutoSaveCheats != 0);
+                AutoSaveFavorites = (header.flags & (u64)SettingsFlags::AutoSaveFavorites != 0);
+            }
+        }
+    }
+
+    void    Preferences::LoadSavedCheats(void)
+    {
+        File    settings;
+        Header  header = { 0 };
+
+        if (File::Open(settings, "CTRPFData.bin") == 0)
+        {
+            if (settings.Read(&header, sizeof(Header)) == 0)
+            {
+                // TODO
+            }
+        }
+    }
+
+    void    Preferences::LoadSavedEnabledCheats(void)
+    {
+        File    settings;
+        Header  header = { 0 };
+
+        if (File::Open(settings, "CTRPFData.bin") == 0)
+        {
+            if (settings.Read(&header, sizeof(Header)) == 0)
+            {
+                if (header.enabledCheatsCount != 0)
+                    PluginMenuImpl::LoadEnabledCheatsFromFile(header, settings);
+            }
+        }
+    }
+
+    void    Preferences::LoadSavedFavorites(void)
+    {
+        File    settings;
+        Header  header = { 0 };
+
+        if (File::Open(settings, "CTRPFData.bin") == 0)
+        {
+            if (settings.Read(&header, sizeof(Header)) == 0)
+            {
+                if (header.favoritesCount != 0)
+                    PluginMenuImpl::LoadFavoritesFromFile(header, settings);
+            }
+        }
+    }
+
+    void    Preferences::WriteSettings(void)
+    {
+        File    settings;
+        int     mode = File::READ | File::WRITE | File::CREATE | File::TRUNCATE;
+        Header  header = { 0 };
+
+        header.version = SETTINGS_VERSION;
+        
+        if (AutoSaveCheats) header.flags |= (u64)SettingsFlags::AutoSaveCheats;
+        if (AutoLoadCheats) header.flags |= (u64)SettingsFlags::AutoLoadCheats;
+        if (AutoSaveFavorites) header.flags |= (u64)SettingsFlags::AutoSaveFavorites;
+        if (AutoLoadFavorites) header.flags |= (u64)SettingsFlags::AutoLoadFavorites;
+
+        header.hotkeys = MenuHotkeys;
+
+        if (File::Open(settings, "CTRPFData.bin", mode) == 0)
+        {
+            if (settings.Write(&header, sizeof(Header)) != 0) goto error;
+
+            // FreeCheats::WriteToFile(header, file);
+            if (AutoSaveCheats) PluginMenuImpl::WriteEnabledCheatsToFile(header, settings);
+            if (AutoSaveFavorites) PluginMenuImpl::WriteFavoritesToFile(header, settings);
+
+            settings.Rewind();
+            settings.Write(&header, sizeof(Header));
+            settings.Flush();
+
+        error:
+            return;
+        }
+    }
+
     void    Preferences::Initialize(void)
     {
         // Framework globals
@@ -106,6 +206,9 @@ namespace CTRPluginFramework
             bottomBackgroundImage = new BMPImage("BottomBackground.bmp");
             if (bottomBackgroundImage->IsLoaded())
                 bottomBackgroundImage = PostProcess(bottomBackgroundImage, 280, 200);
-        }        
+        } 
+        
+        // Load settings
+        LoadSettings();
     }
 }

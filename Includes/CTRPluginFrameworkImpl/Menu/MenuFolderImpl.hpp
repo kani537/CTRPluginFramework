@@ -17,10 +17,12 @@ namespace CTRPluginFramework
         ~MenuFolderImpl();
 
         void    Append(MenuItem *item, bool isStar = false);
-        u32     ItemsCount(void);
+        u32     ItemsCount(void) const;
+        MenuItem *GetItem(u32 uid);
 
     private:
         friend class MenuItem;
+        friend class PluginMenuImpl;
         friend class PluginMenuHome;
         friend class Menu;
 

@@ -31,9 +31,28 @@ namespace CTRPluginFramework
 
     }
 
-    u32    MenuFolderImpl::ItemsCount(void)
+    u32    MenuFolderImpl::ItemsCount(void) const
     {
         return (_items.size());
+    }
+
+    MenuItem *MenuFolderImpl::GetItem(u32 uid)
+    {
+        for (MenuItem *item : _items)
+        {
+            if (item->_uid == uid)
+                return (item);
+
+            if (item->_type == MenuType::Folder)
+            {
+                MenuItem * i = reinterpret_cast<MenuFolderImpl *>(item)->GetItem(uid);
+
+                if (i != nullptr)
+                    return (i);
+            }
+        }
+
+        return (nullptr);
     }
 
     //#######################################################################

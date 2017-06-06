@@ -9,6 +9,7 @@
 #include "CTRPluginFrameworkImpl/Menu/PluginMenuSearch.hpp"
 #include "CTRPluginFrameworkImpl/Menu/PluginMenuTools.hpp"
 #include "CTRPluginFrameworkImpl/Menu/PluginMenuExecuteLoop.hpp"
+#include "CTRPluginFrameworkImpl/Preferences.hpp"
 
 #include <vector>
 
@@ -24,6 +25,12 @@ namespace CTRPluginFramework
         void    Append(MenuItem *item) const;
         void    Callback(CallbackPointer callback);
         int     Run(void);
+
+        static void LoadEnabledCheatsFromFile(const Preferences::Header &header, File &settings);
+        static void LoadFavoritesFromFile(const Preferences::Header &header, File &settings);
+
+        static void WriteEnabledCheatsToFile(Preferences::Header &header, File &settings);
+        static void WriteFavoritesToFile(Preferences::Header &header, File &settings);
 
         // Used to forcefully exit a menu
         static void ForceExit(void);

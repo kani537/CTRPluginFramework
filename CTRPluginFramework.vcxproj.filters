@@ -426,9 +426,6 @@
     <ClInclude Include="Includes\CTRPluginFramework\System\Rect.hpp">
       <Filter>Fichiers d%27en-tête</Filter>
     </ClInclude>
-    <ClInclude Include="Includes\CTRPluginFrameworkImpl\Menu\PluginMenuHotkeys.hpp">
-      <Filter>Fichiers d%27en-tête</Filter>
-    </ClInclude>
     <ClInclude Include="Includes\CTRPluginFrameworkImpl\Graphics\Window.hpp">
       <Filter>Fichiers d%27en-tête</Filter>
     </ClInclude>
@@ -436,6 +433,12 @@
       <Filter>Fichiers d%27en-tête</Filter>
     </ClInclude>
     <ClInclude Include="Sources\CTRPluginFrameworkImpl\Graphics\CheckBox.cpp">
+      <Filter>Fichiers d%27en-tête</Filter>
+    </ClInclude>
+    <ClInclude Include="Includes\CTRPluginFrameworkImpl\Menu\HotkeysModifier.hpp">
+      <Filter>Fichiers d%27en-tête</Filter>
+    </ClInclude>
+    <ClInclude Include="Includes\CTRPluginFrameworkImpl\Menu\MenuEntryTools.hpp">
       <Filter>Fichiers d%27en-tête</Filter>
     </ClInclude>
   </ItemGroup>
@@ -839,10 +842,13 @@
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\Graphics\Icons\HappyFilled15.c">
       <Filter>Fichiers sources</Filter>
     </ClCompile>
-    <ClCompile Include="Sources\CTRPluginFrameworkImpl\Menu\PluginMenuHotkeys.cpp">
+    <ClCompile Include="Sources\CTRPluginFrameworkImpl\Graphics\Window.cpp">
       <Filter>Fichiers sources</Filter>
     </ClCompile>
-    <ClCompile Include="Sources\CTRPluginFrameworkImpl\Graphics\Window.cpp">
+    <ClCompile Include="Sources\CTRPluginFrameworkImpl\Menu\HotkeysModifier.cpp">
+      <Filter>Fichiers sources</Filter>
+    </ClCompile>
+    <ClCompile Include="Sources\CTRPluginFrameworkImpl\Menu\MenuEntryTools.cpp">
       <Filter>Fichiers sources</Filter>
     </ClCompile>
   </ItemGroup>

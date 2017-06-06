@@ -32,8 +32,14 @@ namespace CTRPluginFramework
             return (_isVisible);
         }
 
+        bool    IsEntry(void) const
+        {
+            return (_type == Entry);
+        }
+
     protected:
         friend class MenuFolderImpl;
+        friend class PluginMenuImpl;
         friend class PluginMenuHome;
         friend class Menu;
 

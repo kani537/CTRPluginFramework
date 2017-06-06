@@ -133,7 +133,8 @@
     <ClInclude Include="Includes\CTRPluginFrameworkImpl\Graphics\OSDImpl.hpp" />
     <ClInclude Include="Includes\CTRPluginFrameworkImpl\Graphics\PrivColor.hpp" />
     <ClInclude Include="Includes\CTRPluginFrameworkImpl\Graphics\Window.hpp" />
-    <ClInclude Include="Includes\CTRPluginFrameworkImpl\Menu\PluginMenuHotkeys.hpp" />
+    <ClInclude Include="Includes\CTRPluginFrameworkImpl\Menu\HotkeysModifier.hpp" />
+    <ClInclude Include="Includes\CTRPluginFrameworkImpl\Menu\MenuEntryTools.hpp" />
     <ClInclude Include="Includes\CTRPluginFramework\System\Rect.hpp" />
     <ClInclude Include="Includes\CTRPluginFrameworkImpl\Graphics\Renderer.hpp" />
     <ClInclude Include="Includes\CTRPluginFrameworkImpl\Graphics\TextBox.hpp" />
@@ -305,11 +306,12 @@
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\Menu\KeyboardImpl.cpp" />
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\Menu\Menu.cpp" />
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\Menu\MenuEntryImpl.cpp" />
+    <ClCompile Include="Sources\CTRPluginFrameworkImpl\Menu\MenuEntryTools.cpp" />
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\Menu\MenuFolderImpl.cpp" />
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\Menu\MenuItem.cpp" />
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\Menu\PluginMenuExecuteLoop.cpp" />
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\Menu\PluginMenuHome.cpp" />
-    <ClCompile Include="Sources\CTRPluginFrameworkImpl\Menu\PluginMenuHotkeys.cpp" />
+    <ClCompile Include="Sources\CTRPluginFrameworkImpl\Menu\HotkeysModifier.cpp" />
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\Menu\PluginMenuImpl.cpp" />
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\Menu\PluginMenuSearch.cpp" />
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\Menu\PluginMenuSearch_SearchFunctions.cpp" />

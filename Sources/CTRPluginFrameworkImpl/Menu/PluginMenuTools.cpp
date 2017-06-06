@@ -44,6 +44,13 @@ namespace CTRPluginFramework
         _mainMenu.Append(new MenuEntryTools("Settings", nullptr, nullptr, this));
 
         _settingsMenu.Append(new MenuEntryTools("Change menu hotkeys", MenuHotkeyModifier, nullptr));
+        _settingsMenu.Append(new MenuEntryTools("Auto save enabled cheats", [] { Preferences::AutoSaveCheats = !Preferences::AutoSaveCheats; }, true, Preferences::AutoSaveCheats));
+        _settingsMenu.Append(new MenuEntryTools("Auto save favorites", [] { Preferences::AutoSaveFavorites = !Preferences::AutoSaveFavorites; }, true, Preferences::AutoSaveFavorites));
+        _settingsMenu.Append(new MenuEntryTools("Auto load enabled cheats at starts", [] { Preferences::AutoLoadCheats = !Preferences::AutoLoadCheats; }, true, Preferences::AutoLoadCheats));
+        _settingsMenu.Append(new MenuEntryTools("Auto load favorites at starts", [] { Preferences::AutoLoadFavorites = !Preferences::AutoLoadFavorites; }, true, Preferences::AutoSaveFavorites));
+        _settingsMenu.Append(new MenuEntryTools("Load enabled cheats now", nullptr, nullptr));
+        _settingsMenu.Append(new MenuEntryTools("Load favorites now", nullptr, nullptr));
+
         //_settingsMenu.Append(new MenuEntryTools("Inject B when closing the menu", [] { Preferences::InjectBOnMenuClose = !Preferences::InjectBOnMenuClose; }, true));
         //_settingsMenu.Append(new MenuEntryTools("Touch Cursor", [] { Preferences::DrawTouchCursor = !Preferences::DrawTouchCursor; }, true));
     }

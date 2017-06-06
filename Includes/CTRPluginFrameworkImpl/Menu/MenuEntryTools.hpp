@@ -14,7 +14,7 @@ namespace CTRPluginFramework
     public:
         MenuEntryTools(const std::string &text, FuncPointer func, IconCallback icon, void *arg = nullptr);
         MenuEntryTools(const std::string &text, FuncPointer func, IconCallback icon, const std::string &note);
-        MenuEntryTools(const std::string &text, FuncPointer func, bool useCheckBox, const std::string &note = "");
+        MenuEntryTools(const std::string &text, FuncPointer func, bool useCheckBox, bool isEnabled = false, const std::string &note = "");
 
         ~MenuEntryTools() {}
 
