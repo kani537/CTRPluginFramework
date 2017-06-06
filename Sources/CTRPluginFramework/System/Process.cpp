@@ -210,6 +210,16 @@ namespace CTRPluginFramework
         return (false);
     }
 
+    bool    Process::WriteDouble(u32 address, double value)
+    {
+        if (CheckAddress(address, MEMPERM_WRITE))
+        {
+            *(double *)address = value;
+            return (true);
+        }
+        return (false);
+    }
+
     bool    Process::Read64(u32 address, u64 &value)
     {
         if (CheckAddress(address, MEMPERM_READ))
@@ -255,6 +265,16 @@ namespace CTRPluginFramework
         if (CheckAddress(address, MEMPERM_READ))
         {
             value = *(float *)address;
+            return (true);
+        }
+        return (false);
+    }
+
+    bool    Process::ReadDouble(u32 address, double& value)
+    {
+        if (CheckAddress(address, MEMPERM_READ))
+        {
+            value = *(double *)address;
             return (true);
         }
         return (false);
