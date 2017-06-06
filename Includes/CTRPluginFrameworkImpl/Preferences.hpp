@@ -71,6 +71,9 @@ namespace CTRPluginFramework
         static void         WriteSettings(void);
 
     private:
+        static bool         _cheatsAlreadyLoaded;
+        static bool         _favoritesAlreadyLoaded;
+
         friend void     ThreadInit(void *arg);
         static void     Initialize(void);
     };

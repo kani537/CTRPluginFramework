@@ -17,6 +17,8 @@ namespace CTRPluginFramework
     bool        Preferences::AutoSaveFavorites = false;
     bool        Preferences::AutoLoadCheats = false;
     bool        Preferences::AutoLoadFavorites = false;
+    bool        Preferences::_cheatsAlreadyLoaded = false;
+    bool        Preferences::_favoritesAlreadyLoaded = false;
 
     BMPImage *RegionFromCenter(BMPImage *img, int maxX, int maxY)
     {
@@ -128,12 +130,19 @@ namespace CTRPluginFramework
         File    settings;
         Header  header = { 0 };
 
+        if (_cheatsAlreadyLoaded)
+        {
+            MessageBox("Error\nCheats already loaded")();
+            return;
+        }
+
         if (File::Open(settings, "CTRPFData.bin") == 0)
         {
             if (settings.Read(&header, sizeof(Header)) == 0)
             {
                 if (header.enabledCheatsCount != 0)
                     PluginMenuImpl::LoadEnabledCheatsFromFile(header, settings);
+                _cheatsAlreadyLoaded = true;
             }
         }
     }
@@ -143,12 +152,19 @@ namespace CTRPluginFramework
         File    settings;
         Header  header = { 0 };
 
+        if (_favoritesAlreadyLoaded)
+        {
+            MessageBox("Error\nFavorites already loaded")();
+            return;
+        }
+
         if (File::Open(settings, "CTRPFData.bin") == 0)
         {
             if (settings.Read(&header, sizeof(Header)) == 0)
             {
                 if (header.favoritesCount != 0)
                     PluginMenuImpl::LoadFavoritesFromFile(header, settings);
+                _favoritesAlreadyLoaded = true;
             }
         }
     }
