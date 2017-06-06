@@ -10,7 +10,8 @@ namespace CTRPluginFramework
     {
         Folder,
         Entry,
-        EntryTools
+        EntryTools,
+        FreeCheat
     };
 
     class MenuFolderImpl;
