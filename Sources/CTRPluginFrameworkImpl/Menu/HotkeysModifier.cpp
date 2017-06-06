@@ -3,6 +3,7 @@
 #include "CTRPluginFrameworkImpl/Graphics/Window.hpp"
 #include "CTRPluginFramework/System/Controller.hpp"
 #include "Unicode.h"
+#include "CTRPluginFramework/System/System.hpp"
 
 namespace CTRPluginFramework
 {
@@ -42,6 +43,12 @@ namespace CTRPluginFramework
                 _checkboxs[GetIndex(1u << i)].SetState(true);
             }
         }
+
+        if (!System::IsNew3DS())
+        {
+            _checkboxs[0].Enable(false);
+            _checkboxs[7].Enable(false);
+        }        
     }
 
     HotkeysModifier::~HotkeysModifier()
@@ -92,10 +99,12 @@ namespace CTRPluginFramework
         for (CheckBox &cb : _checkboxs)
             cb.Draw();
 
+        int skip = !System::IsNew3DS();
+
         // Draw labels
-        for (int i = 0, posY = 32; i < 7; ++i, posY += 9)
+        for (int i = 0 + skip, posY = 32 + (skip * 25); i < 7; ++i, posY += 9)
             Renderer::DrawSysString(stable[i], 50, posY, 290, Color::Blank);
-        for (int i = 7, posY = 32; i < 14; ++i, posY += 9)
+        for (int i = 7 + skip, posY = 32 + (skip * 25); i < 14; ++i, posY += 9)
             Renderer::DrawSysString(stable[i], 220, posY, 290, Color::Blank);
     }
 
