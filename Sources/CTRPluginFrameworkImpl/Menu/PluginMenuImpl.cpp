@@ -192,14 +192,17 @@ namespace CTRPluginFramework
                     shouldClose = false;
                     if (Preferences::InjectBOnMenuClose)
                         Controller::InjectKey(Key::B);
+
+                    // Save settings
+                    Preferences::WriteSettings();
                 }    
 
-                if (Controller::IsKeysDown((L + R + Start)))
+               /* if (Controller::IsKeysDown((L + R + Start)))
                 {
                     ProcessImpl::Play(true);
                     _pluginRun = false;                    
                     _isOpen = false;     
-                }
+                } */
             }
             else
             {
