@@ -124,7 +124,7 @@ namespace CTRPluginFramework
         if (ret == MenuClose && settingsIsOpen)
         {
             settingsIsOpen = false;
-            _menu.Open(&_mainMenu);
+            _menu.Open(&_mainMenu, 3);
         }
     }
 
