@@ -101,6 +101,50 @@ namespace CTRPluginFramework
         return (lineCount);
     }
 
+    void Renderer::GetTextInfos(const char *text, int &lineCount, float &lineMaxWidth, float maxWidth)
+    {
+        lineCount = 0;
+        lineMaxWidth = 0.f;
+
+        if (!text || !*text) return;
+
+        lineCount = 1;
+        float   w = 0.0f;
+        u8      *c = (u8 *)text;
+
+        while (*c)
+        {
+            if (*c == '\n')
+            {
+                lineCount++;
+                if (w > lineMaxWidth)
+                    lineMaxWidth = w;
+                w = 0.f;
+                c++;
+                continue;
+            }
+
+            Glyph *glyph = Font::GetGlyph(c);
+
+            if (glyph == nullptr)
+                break;
+
+            float gSize = glyph->Width();
+
+            if (w + gSize > maxWidth)
+            {
+                lineCount++;
+                if (w > lineMaxWidth)
+                    lineMaxWidth = w;
+                w = gSize;
+            }
+            else
+                w += gSize;
+        }
+        if (w > lineMaxWidth)
+            lineMaxWidth = w;
+    }
+
     extern "C" unsigned char *CheckedCheckbox;
     extern "C" unsigned char *UnCheckedCheckbox;
 
