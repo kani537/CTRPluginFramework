@@ -1,6 +1,7 @@
 #include "CTRPluginFrameworkImpl/Menu/PluginMenuExecuteLoop.hpp"
 
 #include <queue>
+#include "CTRPluginFrameworkImpl/Menu/MenuEntryFreeCheat.hpp"
 
 namespace CTRPluginFramework
 {
@@ -121,9 +122,18 @@ namespace CTRPluginFramework
 
             if (entry != nullptr)
             {
-                if (entry->_Execute())
+                // Execute MenuEntryImpl
+                if (entry->IsEntry() && entry->_Execute())
                 {
                     Remove(entry);                 
+                }
+                // Execute FreeCheat
+                else if (entry->IsFreeCheat())
+                {
+                    MenuEntryFreeCheat *fc = reinterpret_cast<MenuEntryFreeCheat *>(entry);
+
+                    if (fc->Func != nullptr)
+                        fc->Func(fc);
                 }
             }
         }
