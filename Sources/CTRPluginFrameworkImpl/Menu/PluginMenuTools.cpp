@@ -9,17 +9,19 @@ namespace CTRPluginFramework
     enum Mode
     {
         NORMAL = 0,
+        ABOUT,
         HEXEDITOR,
-        ABOUT
+        FREECHEATS
     };
 
     static int  g_mode = NORMAL;
 
-    PluginMenuTools::PluginMenuTools(std::string &about, HexEditor &hexEditor) :
+    PluginMenuTools::PluginMenuTools(std::string &about, HexEditor &hexEditor, FreeCheats &freeCheats) :
         _about(about),
         _mainMenu("Tools"),
         _settingsMenu("Settings"),
         _hexEditor(hexEditor),
+        _freeCheats(freeCheats),
         _menu(&_mainMenu, nullptr),
         _abouttb("About", _about, IntRect(30, 20, 340, 200))
     {
@@ -40,7 +42,7 @@ namespace CTRPluginFramework
     {
         _mainMenu.Append(new MenuEntryTools("About", [] { g_mode = ABOUT; }, nullptr));
         _mainMenu.Append(new MenuEntryTools("Hex Editor", [] { g_mode = HEXEDITOR; }, nullptr));
-        _mainMenu.Append(new MenuEntryTools("Saved cheats", [] { MessageBox("Not yet implemented")(); }, nullptr));
+        _mainMenu.Append(new MenuEntryTools("Free Cheats", [] { g_mode = FREECHEATS; }, nullptr));
         _mainMenu.Append(new MenuEntryTools("Settings", nullptr, nullptr, this));
 
         _settingsMenu.Append(new MenuEntryTools("Change menu hotkeys", MenuHotkeyModifier, nullptr));
@@ -60,6 +62,13 @@ namespace CTRPluginFramework
         if (g_mode == HEXEDITOR)
         {
             if (_hexEditor(eventList))
+                g_mode = NORMAL;
+            return (false);
+        }
+
+        if (g_mode == FREECHEATS)
+        {
+            if (_freeCheats(eventList))
                 g_mode = NORMAL;
             return (false);
         }

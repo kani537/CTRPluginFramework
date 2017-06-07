@@ -24,13 +24,13 @@ namespace CTRPluginFramework
             u32     version;
             u64     flags;
             u32     hotkeys;
-            u32     savedCheatsCount;
-            u64     savedCheatsOffset;
+            u32     freeCheatsCount;
+            u64     freeCheatsOffset;
             u32     enabledCheatsCount;
             u64     enabledCheatsOffset;
             u32     favoritesCount;
             u64     favoritesOffset;
-        };
+        } PACKED;
 
         struct SavedCheats
         {
@@ -64,7 +64,7 @@ namespace CTRPluginFramework
         static bool         AutoLoadFavorites;
 
         static void         LoadSettings(void);
-        static void         LoadSavedCheats(void);
+        static void         LoadFreeCheats(void);
         static void         LoadSavedEnabledCheats(void);
         static void         LoadSavedFavorites(void);
 

@@ -8,9 +8,10 @@
 
 namespace CTRPluginFramework
 {
-	SearchMenu::SearchMenu(SearchBase* &curSearch, HexEditor &hexEditor, bool &inEditor, bool &useHexInput) :
+	SearchMenu::SearchMenu(SearchBase* &curSearch, HexEditor &hexEditor, bool &inEditor, bool &useHexInput, FreeCheats &freeCheats) :
 	_currentSearch(curSearch),
 	_hexEditor(hexEditor),
+    _freeCheats(freeCheats),
 	_inEditor(inEditor),
 	_useHexInput(useHexInput)
     {
@@ -393,6 +394,15 @@ namespace CTRPluginFramework
     void    SearchMenu::_Save(void)
     {
         _action = true;
+
+        u32 address = strtoul(_resultsAddress[_selector].c_str(), NULL, 16);
+
+        if (_currentSearch->Size == SearchSize::Bits8) _freeCheats.Create(address, *(u8 *)address);
+        if (_currentSearch->Size == SearchSize::Bits16) _freeCheats.Create(address, *(u16 *)address);
+        if (_currentSearch->Size == SearchSize::Bits32) _freeCheats.Create(address, *(u32 *)address);
+        if (_currentSearch->Size == SearchSize::Bits64) _freeCheats.Create(address, *(u64 *)address);
+        if (_currentSearch->Size == SearchSize::FloatingPoint) _freeCheats.Create(address, *(float *)address);
+        if (_currentSearch->Size == SearchSize::Double) _freeCheats.Create(address, *(double *)address);
     }
 
     void    SearchMenu::_Edit(void)

@@ -8,6 +8,7 @@
 #include "CTRPluginFrameworkImpl/Menu/MenuEntryImpl.hpp"
 #include "CTRPluginFrameworkImpl/Menu/MenuFolderImpl.hpp"
 #include "CTRPluginFrameworkImpl/Menu/PluginMenuImpl.hpp"
+#include "CTRPluginFrameworkImpl/Menu/PluginMenuFreeCheats.hpp"
 #include "CTRPluginFrameworkImpl/Menu/Menu.hpp"
 
 #endif

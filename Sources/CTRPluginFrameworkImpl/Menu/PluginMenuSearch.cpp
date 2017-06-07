@@ -2,12 +2,11 @@
 #include "CTRPluginFrameworkImpl/Preferences.hpp"
 #include "CTRPluginFramework/System/Process.hpp"
 #include "3DS.h"
-
 namespace CTRPluginFramework
 {
-    PluginMenuSearch::PluginMenuSearch(HexEditor &hexEditor) :
+    PluginMenuSearch::PluginMenuSearch(HexEditor &hexEditor, FreeCheats &freeCheats) :
     _hexEditor(hexEditor),
-    _searchMenu(_currentSearch, hexEditor, _inEditor, _hexInput),
+    _searchMenu(_currentSearch, hexEditor, _inEditor, _hexInput, freeCheats),
     _closeBtn(*this, nullptr, IntRect(275, 24, 20, 20), Icon::DrawClose),
     _memoryRegions(150, 40, 130, 15),
     _startRangeTextBox(85, 60, 66, 15),

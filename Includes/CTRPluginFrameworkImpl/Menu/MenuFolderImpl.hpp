@@ -24,6 +24,7 @@ namespace CTRPluginFramework
         friend class MenuItem;
         friend class PluginMenuImpl;
         friend class PluginMenuHome;
+        friend class FreeCheats;
         friend class Menu;
 
         // Private methods

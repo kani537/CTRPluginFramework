@@ -10,6 +10,7 @@
 
 #include <string>
 #include <vector>
+#include "PluginMenuFreeCheats.hpp"
 
 namespace CTRPluginFramework
 {
@@ -18,7 +19,7 @@ namespace CTRPluginFramework
         using EventList = std::vector<Event>;
     public:
 
-        SearchMenu(SearchBase* &curSearch, HexEditor &hexEditor, bool &inEditor, bool &useHexInput);
+        SearchMenu(SearchBase* &curSearch, HexEditor &hexEditor, bool &inEditor, bool &useHexInput, FreeCheats &freeCheats);
         ~SearchMenu(){};
 
         bool    ProcessEvent(EventList &eventList, Time &delta);
@@ -27,6 +28,7 @@ namespace CTRPluginFramework
 
     private:
         HexEditor                   &_hexEditor;
+        FreeCheats                  &_freeCheats;
         SearchBase*                 &_currentSearch;
         std::vector<std::string>    _resultsAddress;
         std::vector<std::string>    _resultsNewValue;

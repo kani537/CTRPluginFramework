@@ -4,6 +4,7 @@
 #include "CTRPluginFramework.hpp"
 #include "CTRPluginFrameworkImpl.hpp"
 #include "CTRPluginFrameworkImpl/Menu/GuideReader.hpp"
+#include "CTRPluginFrameworkImpl/Menu/PluginMenuFreeCheats.hpp"
 
 #include "CTRPluginFrameworkImpl/Menu/PluginMenuHome.hpp"
 #include "CTRPluginFrameworkImpl/Menu/PluginMenuSearch.hpp"
@@ -57,6 +58,7 @@ namespace CTRPluginFramework
         PluginMenuExecuteLoop       *_executeLoop;
         GuideReader                 *_guide;
         HexEditor                   _hexEditor;
+        FreeCheats                  _freeCheats;
         std::vector<CallbackPointer>     _callbacks;
     };
 }

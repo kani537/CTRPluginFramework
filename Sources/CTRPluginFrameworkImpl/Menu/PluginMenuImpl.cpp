@@ -19,9 +19,10 @@ namespace CTRPluginFramework
 
     PluginMenuImpl::PluginMenuImpl(std::string name, std::string about) : 
     _hexEditor(0x00100000),
+    _freeCheats(),
     _home(new PluginMenuHome(name)),
-    _search(new PluginMenuSearch(_hexEditor)),
-    _tools(new PluginMenuTools(about, _hexEditor)),
+    _search(new PluginMenuSearch(_hexEditor, _freeCheats)),
+    _tools(new PluginMenuTools(about, _hexEditor, _freeCheats)),
     _executeLoop(new PluginMenuExecuteLoop()),
     _guide(new GuideReader())
     {
@@ -82,6 +83,9 @@ namespace CTRPluginFramework
             Preferences::LoadSavedFavorites();
         if (Preferences::AutoLoadCheats)
             Preferences::LoadSavedEnabledCheats();
+
+        // Load FreeCheats
+        Preferences::LoadFreeCheats();
 
         // Update PluginMenuHome variables
         home.Init();

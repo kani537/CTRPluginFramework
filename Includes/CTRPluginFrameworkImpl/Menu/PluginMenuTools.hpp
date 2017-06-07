@@ -8,9 +8,11 @@
 #include "CTRPluginFrameworkImpl/Menu/MenuEntryImpl.hpp"
 #include "CTRPluginFrameworkImpl/Menu/MenuItem.hpp"
 
+#include "CTRPluginFrameworkImpl/Menu/HexEditor.hpp"
+#include "CTRPluginFrameworkImpl/Menu/PluginMenuFreeCheats.hpp"
+
 #include <vector>
 #include <string>
-#include "HexEditor.hpp"
 
 namespace CTRPluginFramework
 {
@@ -18,7 +20,7 @@ namespace CTRPluginFramework
     {
         using EventList = std::vector<Event>;
     public:
-        PluginMenuTools(std::string &about, HexEditor &hexEditor);
+        PluginMenuTools(std::string &about, HexEditor &hexEditor, FreeCheats &freeCheats);
         void InitMenu();
         ~PluginMenuTools(){}
 
@@ -36,6 +38,7 @@ namespace CTRPluginFramework
         MenuFolderImpl  _mainMenu;
         MenuFolderImpl  _settingsMenu;
         HexEditor       &_hexEditor;
+        FreeCheats      &_freeCheats;
         Menu            _menu;
         TextBox         _abouttb;
     };

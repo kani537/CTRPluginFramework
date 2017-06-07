@@ -3,6 +3,7 @@
 #include <math.h>
 #include "ctrulib/result.h"
 #include "CTRPluginFrameworkImpl/Menu/PluginMenuImpl.hpp"
+#include "CTRPluginFrameworkImpl/Menu/PluginMenuFreeCheats.hpp"
 
 
 namespace CTRPluginFramework
@@ -111,7 +112,7 @@ namespace CTRPluginFramework
         }
     }
 
-    void    Preferences::LoadSavedCheats(void)
+    void    Preferences::LoadFreeCheats(void)
     {
         File    settings;
         Header  header = { 0 };
@@ -120,7 +121,8 @@ namespace CTRPluginFramework
         {
             if (settings.Read(&header, sizeof(Header)) == 0)
             {
-                // TODO
+                if (header.freeCheatsCount)
+                    FreeCheats::LoadFromFile(header, settings);
             }
         }
     }
@@ -188,7 +190,7 @@ namespace CTRPluginFramework
         {
             if (settings.Write(&header, sizeof(Header)) != 0) goto error;
 
-            // FreeCheats::WriteToFile(header, file);
+            FreeCheats::WriteToFile(header, settings);
             if (AutoSaveCheats) PluginMenuImpl::WriteEnabledCheatsToFile(header, settings);
             if (AutoSaveFavorites) PluginMenuImpl::WriteFavoritesToFile(header, settings);
 
