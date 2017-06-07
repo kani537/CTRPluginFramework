@@ -40,12 +40,12 @@ namespace CTRPluginFramework
 
     void    PluginMenuTools::InitMenu(void)
     {
-        _mainMenu.Append(new MenuEntryTools("About", [] { g_mode = ABOUT; }, nullptr));
-        _mainMenu.Append(new MenuEntryTools("Hex Editor", [] { g_mode = HEXEDITOR; }, nullptr));
-        _mainMenu.Append(new MenuEntryTools("Free Cheats", [] { g_mode = FREECHEATS; }, nullptr));
-        _mainMenu.Append(new MenuEntryTools("Settings", nullptr, nullptr, this));
+        _mainMenu.Append(new MenuEntryTools("About", [] { g_mode = ABOUT; }, Icon::DrawAbout));
+        _mainMenu.Append(new MenuEntryTools("Hex Editor", [] { g_mode = HEXEDITOR; }, Icon::DrawGrid));
+        _mainMenu.Append(new MenuEntryTools("Free Cheats", [] { g_mode = FREECHEATS; }, Icon::DrawCentreOfGravity));
+        _mainMenu.Append(new MenuEntryTools("Settings", nullptr, Icon::DrawSettings, this));
 
-        _settingsMenu.Append(new MenuEntryTools("Change menu hotkeys", MenuHotkeyModifier, nullptr));
+        _settingsMenu.Append(new MenuEntryTools("Change menu hotkeys", MenuHotkeyModifier, Icon::DrawGameController));
         _settingsMenu.Append(new MenuEntryTools("Auto save enabled cheats", [] { Preferences::AutoSaveCheats = !Preferences::AutoSaveCheats; }, true, Preferences::AutoSaveCheats));
         _settingsMenu.Append(new MenuEntryTools("Auto save favorites", [] { Preferences::AutoSaveFavorites = !Preferences::AutoSaveFavorites; }, true, Preferences::AutoSaveFavorites));
         _settingsMenu.Append(new MenuEntryTools("Auto load enabled cheats at starts", [] { Preferences::AutoLoadCheats = !Preferences::AutoLoadCheats; }, true, Preferences::AutoLoadCheats));
