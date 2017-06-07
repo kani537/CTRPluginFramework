@@ -14,23 +14,20 @@ namespace CTRPluginFramework
          *  30 + 16 = 46 + 20 = 66
          */
 
-        int lineCount = Renderer::GetLineCount(message.c_str(), 190.f);
+        int lineCount;
+        float maxLineWidth;
+        
+        Renderer::GetTextInfos(message.c_str(), lineCount, maxLineWidth, 290.f);
 
-        // If text width is inferior to 191px
-        if (Renderer::GetTextSize(message.c_str()) < 191.f && lineCount == 1)
-        {
-            _box = IntRect(100, 82, 200, 75);
-        }
-        // Text is superior to 180px
-        else
-        {
-            if (lineCount > 3)
-                lineCount = 3;
+        if (lineCount > 10)
+            lineCount = 10;
 
-            int height = 16 * lineCount + 59;
-            int posY = (240 - height) / 2;
-            _box = IntRect(100, posY, 200, height);
-        }        
+        int height = 16 * lineCount + 59;
+        int posY = (240 - height) / 2;
+        int width = maxLineWidth + 10;
+        int posX = (400 - width) / 2;
+
+        _box = IntRect(posX, posY, width, height);
     }
 
     bool    MessageBoxImpl::operator()(void)
@@ -109,7 +106,7 @@ namespace CTRPluginFramework
 
         // Draw Text
         int posY = _box.leftTop.y + 20;
-        Renderer::DrawSysStringReturn((const u8 *)_message.c_str(), _box.leftTop.x + 5, posY, _box.leftTop.x + _box.size.x, Color::Blank, _box.leftTop.y + _box.size.y - 30);
+        Renderer::DrawSysStringReturn((const u8 *)_message.c_str(), _box.leftTop.x + 5, posY, _box.leftTop.x + _box.size.x - 5, Color::Blank, _box.leftTop.y + _box.size.y - 30);
        
         // Draw "Buttons"
         posY += 13;
