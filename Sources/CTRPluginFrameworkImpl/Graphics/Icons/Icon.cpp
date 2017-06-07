@@ -6,12 +6,14 @@
 
 namespace CTRPluginFramework
 {
+    extern "C" unsigned char *About15;
     extern "C" unsigned char *AddFavorite25;
     extern "C" unsigned char *AddFavoriteFilled25;
     extern "C" unsigned char *CheckedCheckbox;
     extern "C" unsigned char *UnCheckedCheckbox;
     extern "C" unsigned char *CapsLockOn15;
     extern "C" unsigned char *CapsLockOnFilled15;
+    extern "C" unsigned char *CentreofGravity15;
     extern "C" unsigned char *ClearSymbol15;
     extern "C" unsigned char *ClearSymbolFilled15;
     extern "C" unsigned char *CloseWindow20;
@@ -21,6 +23,8 @@ namespace CTRPluginFramework
     extern "C" unsigned char *EnterKeyFilled15;
     extern "C" unsigned char *FolderFilled;
     extern "C" unsigned char *File15;
+    extern "C" unsigned char *GameController15;
+    extern "C" unsigned char *Grid15;
     extern "C" unsigned char *Happy15;
     extern "C" unsigned char *HappyFilled15;
     extern "C" unsigned char *Info25;
@@ -30,6 +34,7 @@ namespace CTRPluginFramework
     extern "C" unsigned char *Keyboard25;
     extern "C" unsigned char *KeyboardFilled25;
     extern "C" unsigned char *Search15;
+    extern "C" unsigned char *Settings15;
     extern "C" unsigned char *Star15;
     extern "C" unsigned char *UserManualFilled15;
 
@@ -92,6 +97,15 @@ namespace CTRPluginFramework
     }
 
     /*
+    ** About
+    ** 15px * 15px
+    **************/
+    int     Icon::DrawAbout(int posX, int posY)
+    {
+        return (DrawImg(About15, posX, posY, 15, 15));
+    }
+
+    /*
     ** CapsLockOn
     ** 15px * 15px
     ************/
@@ -100,6 +114,15 @@ namespace CTRPluginFramework
         u8 *img = isFilled ? CapsLockOnFilled15 : CapsLockOn15;
 
         return (DrawImg(img, posX, posY, 15, 15));
+    }
+
+    /*
+    ** CentreOfGravity
+    ** 15px * 15px
+    **************/
+    int     Icon::DrawCentreOfGravity(int posX, int posY)
+    {
+        return (DrawImg(CentreofGravity15, posX, posY, 15, 15));
     }
 
     /*
@@ -227,6 +250,24 @@ namespace CTRPluginFramework
     }
 
     /*
+    ** Game Controller
+    ** 15px * 15px
+    **************/
+    int     Icon::DrawGameController(int posX, int posY)
+    {
+        return (DrawImg(GameController15, posX, posY, 15, 15));
+    }
+
+    /*
+    ** Grid
+    ** 15px * 15px
+    **************/
+    int     Icon::DrawGrid(int posX, int posY)
+    {
+        return (DrawImg(Grid15, posX, posY, 15, 15));
+    }
+
+    /*
     ** Info
     ** 25px * 25px
     ***************/
@@ -345,6 +386,16 @@ namespace CTRPluginFramework
     int     Icon::DrawSearch(int posX, int posY)
     {
         return (DrawImg(Search15, posX, posY, 15, 15));
+    }
+
+    /*
+    ** Settings
+    ** 15px * 15px
+    ***************/
+
+    int     Icon::DrawSettings(int posX, int posY)
+    {
+        return (DrawImg(Settings15, posX, posY, 15, 15));
     }
 
     /*

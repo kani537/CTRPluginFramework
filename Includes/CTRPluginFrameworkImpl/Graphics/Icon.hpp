@@ -6,12 +6,24 @@ namespace CTRPluginFramework
     class Icon
     {
     public:
+        /*
+        ** About
+        ** 15px * 15px
+        ************/
+        static int      DrawAbout(int posX, int posY);
+
 
         /*
         ** CapsLockOn
         ** 15px * 15px
         ************/
         static int      DrawCapsLockOn(int posX, int posY, bool filled);
+        
+        /*
+        ** CentreOfGravity
+        ** 15px * 15px
+        ************/
+        static int      DrawCentreOfGravity(int posX, int posY);
 
         /*
         ** CheckBox 
@@ -68,6 +80,19 @@ namespace CTRPluginFramework
         static int      DrawFile(int posX, int posY);
 
         /*
+        ** Game Controller
+        ** 15px * 15px
+        ************/
+        static int      DrawGameController(int posX, int posY);
+
+        /*
+        ** Grid
+        ** 15px * 15px
+        ************/
+        static int      DrawGrid(int posX, int posY);
+
+        
+        /*
         ** Info
         ** 25px * 25px
         ***********/
@@ -104,6 +129,12 @@ namespace CTRPluginFramework
         ** 15px * 15 px
         **************/
         static int      DrawSearch(int posX, int posY);
+
+        /*
+        ** Settings
+        ** 15px * 15 px
+        **************/
+        static int      DrawSettings(int posX, int posY);
 
         /*
         ** Tools
