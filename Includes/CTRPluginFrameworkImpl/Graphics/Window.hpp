@@ -4,6 +4,7 @@
 #include "CTRPluginFramework/System/Vector.hpp"
 #include "CTRPluginFramework/System/Rect.hpp"
 #include "IconButton.hpp"
+#include <string>
 
 namespace CTRPluginFramework
 {
@@ -16,6 +17,7 @@ namespace CTRPluginFramework
         ~Window(void);
 
         void    Draw(void) const;
+        void    Draw(const std::string &title) const;
         void    Update(bool isTouched, IntVector touchPos) const;
         bool    MustClose(void) const;
 
