@@ -2,6 +2,7 @@
 #include "CTRPluginFramework/System/Process.hpp"
 #include <cstring>
 #include "CTRPluginFrameworkImpl/Menu/PluginMenuFreeCheats.hpp"
+#include "CTRPluginFrameworkImpl/Menu/PluginMenuExecuteLoop.hpp"
 
 namespace CTRPluginFramework
 {
@@ -115,9 +116,9 @@ namespace CTRPluginFramework
         if (Type == Type_e::Double) Func = WriteDouble;
     }
 
-    void    MenuEntryFreeCheat::TriggerState(void)
+    bool    MenuEntryFreeCheat::TriggerState(void)
     {
-        _TriggerState();
+        return (_TriggerState());
     }
 
     void    MenuEntryFreeCheat::Enable(void)
@@ -126,7 +127,7 @@ namespace CTRPluginFramework
             return;
 
         _TriggerState();
-        FreeCheats::Append(this);
+        PluginMenuExecuteLoop::Add(this);
     }
 
     void    MenuEntryFreeCheat::Disable(void)
@@ -135,7 +136,7 @@ namespace CTRPluginFramework
             return;
 
         _TriggerState();
-        FreeCheats::Remove(this);
+        PluginMenuExecuteLoop::Remove(this);
     }
 
     void    MenuEntryFreeCheat::ToSavedSearch(Preferences::SavedCheats &savedCheats)

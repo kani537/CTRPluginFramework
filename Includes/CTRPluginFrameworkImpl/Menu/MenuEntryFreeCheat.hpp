@@ -32,7 +32,7 @@ namespace CTRPluginFramework
         explicit MenuEntryFreeCheat(const Preferences::SavedCheats &savedCheats);
         ~MenuEntryFreeCheat() {}
 
-        void    TriggerState(void);
+        bool    TriggerState(void);
         void    Enable(void);
         void    Disable(void);
         void    ToSavedSearch(Preferences::SavedCheats &savedCheats);
