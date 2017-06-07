@@ -61,6 +61,10 @@ namespace CTRPluginFramework
         _openInEditorBtn.UseSysFont(false);
 
         _valueTextBox.UseHexadecimal(false);
+
+
+        _saveBtn.IsLocked = true;
+        _cancelBtn.IsLocked = true;
     }
 
     void    FreeCheats::Create(u32 address, u8 value) const
@@ -339,6 +343,8 @@ namespace CTRPluginFramework
             _selectedFC->name = input;
             _mustSave = true;
             _nameChanged = true;
+            _saveBtn.IsLocked = false;
+            _cancelBtn.IsLocked = false;
         }
     }
 
@@ -349,6 +355,8 @@ namespace CTRPluginFramework
         _selectedFC->Address = _addressTextBox.Bits32;
         _selectedFC->Value.Bits64 = _valueTextBox.Bits64;
         _savedName.clear();
+        _saveBtn.IsLocked = true;
+        _cancelBtn.IsLocked = true;
     }
 
     void    FreeCheats::_CancelBtn_OnClick(void)
@@ -357,6 +365,8 @@ namespace CTRPluginFramework
             _selectedFC->name = _savedName;
         _mustSave = false;       
         _nameChanged = false;
+        _saveBtn.IsLocked = true;
+        _cancelBtn.IsLocked = true;
     }
 
     void    FreeCheats::_DeleteBtn_OnClick(void)
@@ -370,6 +380,12 @@ namespace CTRPluginFramework
 
         _menu.Remove(_selectedFC);
         delete _selectedFC;
+
+        _mustSave = false;
+        _nameChanged = false;
+        _savedName.clear();
+        _saveBtn.IsLocked = true;
+        _cancelBtn.IsLocked = true;
 
         _selectedFC = reinterpret_cast<MenuEntryFreeCheat*>(_menu.GetSelectedItem());
         _UpdateInfos();
