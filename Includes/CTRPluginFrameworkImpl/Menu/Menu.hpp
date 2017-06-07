@@ -27,8 +27,10 @@ namespace CTRPluginFramework
         Menu(MenuFolderImpl *folder, IconCallback iconCallback = nullptr);
         ~Menu(void);
 
-        void    Append(MenuItem *item);
-        void    Draw(void);
+        void    Append(MenuItem *item) const;
+        void    Remove(MenuItem *item) const;
+
+        void    Draw(void) const;
         void    Open(MenuFolderImpl *folder);
         //void    Update(Time delta);
 
@@ -41,7 +43,6 @@ namespace CTRPluginFramework
         int     ProcessEvent(Event &event, std::string &userchoice);
         // This return a menuEvent value
         int     ProcessEvent(Event &event, MenuItem **userchoice);
-        int     ProcessEvent(Event &event);
 
     private:
         MenuFolderImpl  *_folder;

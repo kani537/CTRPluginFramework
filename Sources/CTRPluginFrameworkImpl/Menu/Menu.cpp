@@ -42,14 +42,26 @@ namespace CTRPluginFramework
         // TODO: Free every folder's object
     }
 
-    void    Menu::Append(MenuItem *item)
+    void    Menu::Append(MenuItem *item) const
     {
         _folder->Append(item);
     }
 
-    #define XMAX 360
+    void    Menu::Remove(MenuItem *item) const
+    {
+        for (auto iter = _folder->_items.begin(); iter < _folder->_items.end(); ++iter)
+        {
+            if (*iter == item)
+            {
+                _folder->_items.erase(iter);
+                break;
+            }
+        }
+    }
 
-    void    Menu::Draw(void)
+#define XMAX 360
+
+    void    Menu::Draw(void) const
     {
         Color &blank = Color::Blank;
         Color &silver = Color::DarkGrey;
