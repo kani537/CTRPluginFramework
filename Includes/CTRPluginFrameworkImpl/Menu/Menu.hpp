@@ -29,6 +29,7 @@ namespace CTRPluginFramework
 
         void    Append(MenuItem *item) const;
         void    Remove(MenuItem *item) const;
+        MenuFolderImpl *GetFolder(void) const;
 
         void    Draw(void) const;
         void    Open(MenuFolderImpl *folder);

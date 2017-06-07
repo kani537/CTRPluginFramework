@@ -59,6 +59,11 @@ namespace CTRPluginFramework
         }
     }
 
+    MenuFolderImpl  *Menu::GetFolder(void) const
+    {
+        return (_folder);
+    }
+
 #define XMAX 360
 
     void    Menu::Draw(void) const
