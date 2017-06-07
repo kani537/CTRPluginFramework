@@ -5,6 +5,7 @@
 
 #include <cstdlib>
 #include <ctime>
+#include "CTRPluginFramework/Menu/MessageBox.hpp"
 
 namespace CTRPluginFramework
 {
@@ -19,9 +20,9 @@ namespace CTRPluginFramework
         _selector = 0;
         _submenuSelector = 0;
 
-        _options.push_back("Save");
         _options.push_back("Edit");
         _options.push_back("Jump in editor");
+        _options.push_back("New cheat");
         _options.push_back("Export");
         _options.push_back("Export all");
 
@@ -108,9 +109,9 @@ namespace CTRPluginFramework
                             {
                                 switch (_submenuSelector)
                                 {
-                                    case 0: _Save(); break;
-                                    case 1: _Edit(); break;
-                                    case 2: _JumpInEditor(); break;
+                                    case 0: _Edit(); break;
+                                    case 1: _JumpInEditor(); break;
+                                    case 2: _Save(); break;
                                     case 3: _Export(); break;
                                     case 4: _ExportAll(); break;
                                     default: break;
@@ -353,8 +354,7 @@ namespace CTRPluginFramework
                     {
                         _action = false;
                         _buttonFade.Restart();
-                    }
-                    
+                    }                    
 
                     // Draw action rectangle
                     Renderer::DrawRect(selRect, gainsboro);
@@ -396,6 +396,8 @@ namespace CTRPluginFramework
         _action = true;
 
         u32 address = strtoul(_resultsAddress[_selector].c_str(), NULL, 16);
+
+        MessageBox("Enter the name of the new cheat")();
 
         if (_currentSearch->Size == SearchSize::Bits8) _freeCheats.Create(address, *(u8 *)address);
         if (_currentSearch->Size == SearchSize::Bits16) _freeCheats.Create(address, *(u16 *)address);

@@ -69,7 +69,7 @@ namespace CTRPluginFramework
         NumericTextBox                      _valueTextBox;
 
         // Buttons        
-        IconButton<PluginMenuSearch, void>          _closeBtn;
+        //IconButton<PluginMenuSearch, void>          _closeBtn;
 
         Button<PluginMenuSearch, void>              _searchBtn;
         Button<PluginMenuSearch, void>              _cancelBtn;

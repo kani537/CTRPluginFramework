@@ -7,15 +7,15 @@ namespace CTRPluginFramework
     PluginMenuSearch::PluginMenuSearch(HexEditor &hexEditor, FreeCheats &freeCheats) :
     _hexEditor(hexEditor),
     _searchMenu(_currentSearch, hexEditor, _inEditor, _hexInput, freeCheats),
-    _closeBtn(*this, nullptr, IntRect(275, 24, 20, 20), Icon::DrawClose),
-    _memoryRegions(150, 40, 130, 15),
-    _startRangeTextBox(85, 60, 66, 15),
-    _endRangeTextBox(214, 60, 66, 15),
-    _searchSize(150, 80, 130, 15),
-    _searchType(150, 100, 130, 15),
-    _compareType(150, 120, 130, 15),
-    _alignmentTextBox(150, 140, 130, 15),
-    _valueTextBox(150, 160, 130, 15),
+   // _closeBtn(*this, nullptr, IntRect(275, 24, 20, 20), Icon::DrawClose),
+    _memoryRegions(150, 45, 130, 15),
+    _startRangeTextBox(85, 65, 66, 15),
+    _endRangeTextBox(214, 65, 66, 15),
+    _searchSize(150, 85, 130, 15),
+    _searchType(150, 105, 130, 15),
+    _compareType(150, 125, 130, 15),
+    _alignmentTextBox(150, 145, 130, 15),
+    _valueTextBox(150, 165, 130, 15),
     _searchBtn("Search", *this, &PluginMenuSearch::_searchBtn_OnClick, IntRect(35, 195, 80, 15)),
     _undoBtn("Undo", *this, &PluginMenuSearch::_undoBtn_OnClick, IntRect(120, 195, 80, 15)),
     _cancelBtn("Cancel", *this, &PluginMenuSearch::_cancelBtn_OnClick, IntRect(120, 195, 80, 15)),
@@ -27,7 +27,7 @@ namespace CTRPluginFramework
     _buildResult(false),
 	_hexInput(false),
     _inEditor(false),
-    _hexBtn("Hex", *this, nullptr, IntRect(110, 160, 38, 15), nullptr)
+    _hexBtn("Hex", *this, nullptr, IntRect(110, 165, 38, 15), nullptr)
     {
         _currentSearch = nullptr;
 
@@ -140,7 +140,7 @@ namespace CTRPluginFramework
 
         // Check buttons
 
-        if (_closeBtn())
+        if (Window::BottomWindow.MustClose())
             return (true);
 
         _searchBtn();
@@ -307,7 +307,7 @@ namespace CTRPluginFramework
         Color    &black = Color::Black;
         Color    &blank = Color::Blank;
         Color    &dimGrey = Color::BlackGrey;
-        static IntRect  background(30, 20, 340, 200);
+        //static IntRect  background(30, 20, 340, 200);
 
         // Enable renderer
         Renderer::SetTarget(TOP);
@@ -318,21 +318,7 @@ namespace CTRPluginFramework
             return;
         }
 
-        if (_buildResult)
-        {
-            _ShowBuildResultWindow();
-            return;
-        }
-
-        // Draw background
-        if (Preferences::topBackgroundImage->IsLoaded())
-            Preferences::topBackgroundImage->Draw(background.leftTop);
-        else
-        {
-            Renderer::DrawRect2(background, black, dimGrey);
-            Renderer::DrawRect(32, 22, 336, 196, blank, false);            
-        }
-
+        Window::TopWindow.Draw();
         _searchMenu.Draw();
     }
 
@@ -344,54 +330,47 @@ namespace CTRPluginFramework
         Color    &black = Color::Black;
         Color    &blank = Color::Blank;
         Color    &dimGrey = Color::BlackGrey;
-        static IntRect  background(20, 20, 280, 200);
+        //static IntRect  background(20, 20, 280, 200);
 
         // Enable renderer
         Renderer::SetTarget(BOTTOM);
 
-        // Background
-        if (Preferences::bottomBackgroundImage->IsLoaded())
-            Preferences::bottomBackgroundImage->Draw(background.leftTop);
-        else
-        {
-            Renderer::DrawRect2(background, black, dimGrey);
-            Renderer::DrawRect(22, 22, 276, 196, blank, false);            
-        }
+        Window::BottomWindow.Draw();
 
-        int posY = 42;
+        int posY = 47;
         int textPosX = 30;
 
         // MemRegion
         Renderer::DrawString((char *)"MemRegion:", textPosX, posY, blank);
-        posY = 62;
+        posY = 67;
 
         // Start Range
         Renderer::DrawString((char *)"Start:", textPosX, posY, blank);
-        posY = 62;
+        posY = 67;
 
         // End Range
         Renderer::DrawString((char *)"Stop:", 170, posY, blank);
-        posY = 82;
+        posY = 87;
 
         // Value Type
         Renderer::DrawString((char *)"Value Type:", textPosX, posY, blank);
-        posY = 102;
+        posY = 107;
 
         // Search Type
         Renderer::DrawString((char *)"Search Type:", textPosX, posY, blank);
-        posY = 122;
+        posY = 127;
 
         // Scan Type
         Renderer::DrawString((char *)"Scan Type:", textPosX, posY, blank);
-        posY = 142;
+        posY = 147;
 
         // Alignment
         Renderer::DrawString((char *)"Alignment:", textPosX, posY, blank);
-        posY = 162;
+        posY = 167;
 
         // Value
         Renderer::DrawString((char *)"Value:", textPosX, posY, blank);
-        posY = 182;
+        posY = 187;
 
 
         // Draw ComboBoxes
@@ -408,7 +387,7 @@ namespace CTRPluginFramework
 
 
         // Draw buttons
-        _closeBtn.Draw();
+        //_closeBtn.Draw();
         _searchBtn.Draw();
         _cancelBtn.Draw();
         _undoBtn.Draw();
@@ -427,6 +406,9 @@ namespace CTRPluginFramework
         bool        isTouched = Touch::IsDown();
         IntVector   touchPos(Touch::GetPosition());
 
+        // Update Window
+        Window::BottomWindow.Update(isTouched, touchPos);
+
         // Update ComboBoxes
         _memoryRegions.Update(isTouched, touchPos);
         _searchSize.Update(isTouched, touchPos);
@@ -440,7 +422,7 @@ namespace CTRPluginFramework
         _endRangeTextBox.Update(isTouched, touchPos);
 
         // Update buttons
-        _closeBtn.Update(isTouched, touchPos);
+        //_closeBtn.Update(isTouched, touchPos);
         _searchBtn.Update(isTouched, touchPos);
         _cancelBtn.Update(isTouched, touchPos);
         _undoBtn.Update(isTouched, touchPos);
