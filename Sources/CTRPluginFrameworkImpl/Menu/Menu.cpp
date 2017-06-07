@@ -31,9 +31,9 @@ namespace CTRPluginFramework
             _folder = new MenuFolderImpl("Menu");
     }
 
-    void    Menu::Open(MenuFolderImpl* folder)
+    void    Menu::Open(MenuFolderImpl* folder, int selector)
     {
-        _selector = 0;
+        _selector = std::max((int)0, (int)std::min(selector, (int)(folder->ItemsCount() - 1)));
         _folder = folder;
     }
 
@@ -47,7 +47,7 @@ namespace CTRPluginFramework
         _folder->Append(item);
     }
 
-    void    Menu::Remove(MenuItem *item) const
+    void    Menu::Remove(MenuItem *item)
     {
         for (auto iter = _folder->_items.begin(); iter < _folder->_items.end(); ++iter)
         {
@@ -57,11 +57,21 @@ namespace CTRPluginFramework
                 break;
             }
         }
+
+        if (_selector >= _folder->ItemsCount())
+            _selector = std::max((int)0, (int)(_folder->ItemsCount() - 1));
     }
 
     MenuFolderImpl  *Menu::GetFolder(void) const
     {
         return (_folder);
+    }
+
+    MenuItem    *Menu::GetSelectedItem() const
+    {
+        if (_folder->ItemsCount())
+            return (_folder->_items[_selector]);
+        return (nullptr);
     }
 
 #define XMAX 360

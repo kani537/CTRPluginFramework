@@ -1,8 +1,9 @@
 #include "CTRPluginFrameworkImpl/Menu/MenuEntryFreeCheat.hpp"
 #include "CTRPluginFramework/System/Process.hpp"
-#include <cstring>
 #include "CTRPluginFrameworkImpl/Menu/PluginMenuFreeCheats.hpp"
 #include "CTRPluginFrameworkImpl/Menu/PluginMenuExecuteLoop.hpp"
+
+#include <cstring>
 
 namespace CTRPluginFramework
 {
@@ -43,6 +44,7 @@ namespace CTRPluginFramework
     {
         _type = MenuType::FreeCheat;
         Type = Type_e::Bits8;
+        Value.Bits64 = 0;
         Value.Bits8 = value;
     }
 
@@ -53,6 +55,7 @@ namespace CTRPluginFramework
     {
         _type = MenuType::FreeCheat;
         Type = Type_e::Bits16;
+        Value.Bits64 = 0;
         Value.Bits16 = value;
     }
 
@@ -63,6 +66,7 @@ namespace CTRPluginFramework
     {
         _type = MenuType::FreeCheat;
         Type = Type_e::Bits32;
+        Value.Bits64 = 0;
         Value.Bits32 = value;
     }
 
@@ -83,6 +87,7 @@ namespace CTRPluginFramework
     {
         _type = MenuType::FreeCheat;
         Type = Type_e::Float;
+        Value.Bits64 = 0;
         Value.Float = value;
     }
 
@@ -102,6 +107,7 @@ namespace CTRPluginFramework
     {
         _type = MenuType::FreeCheat;
         Type = (Type_e)(savedCheats.flags & 0xFF);
+        Value.Bits64 = savedCheats.value;
 
         if (savedCheats.flags >> 8)
             Enable();

@@ -174,9 +174,9 @@ namespace CTRPluginFramework
     void    Preferences::WriteSettings(void)
     {
         File    settings;
-        int     mode = File::READ | File::WRITE | File::CREATE | File::TRUNCATE;
+        int     mode = File::READ | File::WRITE | File::CREATE | File::TRUNCATE | File::SYNC;
         Header  header = { 0 };
-
+        char buff[0x100] = { 0 };
         header.version = SETTINGS_VERSION;
         
         if (AutoSaveCheats) header.flags |= (u64)SettingsFlags::AutoSaveCheats;
@@ -195,9 +195,10 @@ namespace CTRPluginFramework
             if (AutoSaveFavorites) PluginMenuImpl::WriteFavoritesToFile(header, settings);
 
             settings.Rewind();
-            settings.Write(&header, sizeof(Header));
-            settings.Flush();
+            settings.Write(&header, sizeof(Header));            
 
+            sprintf(buff, "Done: %d freecheats", header.freeCheatsCount);
+            OSD::Notify(buff);
         error:
             return;
         }

@@ -19,7 +19,7 @@ namespace CTRPluginFramework
 
     PluginMenuImpl::PluginMenuImpl(std::string name, std::string about) : 
     _hexEditor(0x00100000),
-    _freeCheats(),
+    _freeCheats(_hexEditor),
     _home(new PluginMenuHome(name)),
     _search(new PluginMenuSearch(_hexEditor, _freeCheats)),
     _tools(new PluginMenuTools(about, _hexEditor, _freeCheats)),
