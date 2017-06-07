@@ -7,6 +7,7 @@
 
 #include <algorithm>
 #include "CTRPluginFrameworkImpl/Menu/MenuEntryTools.hpp"
+#include "CTRPluginFrameworkImpl/Menu/MenuEntryFreeCheat.hpp"
 
 namespace CTRPluginFramework
 {
@@ -83,11 +84,13 @@ namespace CTRPluginFramework
                     Renderer::MenuSelector(posX - 5, posY - 3, 320, 20);
                 }
 
-                if (item->_type == MenuType::Entry || item->_type == MenuType::EntryTools)
+                // Draw Entry / EntryTools / FreeCheat
+                if (item->_type != MenuType::Folder)
                 {
                     _iconCallback(posX, posY);
                     Renderer::DrawSysString(item->name.c_str(), posX + 20, posY, XMAX, c);
                 }
+                // Draw Folder
                 else
                     Renderer::DrawSysFolder(item->name.c_str(), posX, posY, XMAX, c);
 
@@ -111,7 +114,7 @@ namespace CTRPluginFramework
                 {
                     Renderer::DrawSysString(item->name.c_str(), posX + 20, posY, XMAX, c);
                 }
-                /// MenuEntryTools
+                // MenuEntryTools
                 else if (item->_type == MenuType::EntryTools)
                 {
                     MenuEntryTools *e = reinterpret_cast<MenuEntryTools *>(item);
@@ -127,6 +130,14 @@ namespace CTRPluginFramework
                             e->Icon(posX, posY);
                         Renderer::DrawSysString(item->name.c_str(), posX + 20, posY, XMAX, c);
                     }
+                }
+                // MenuEntryFreeCheat
+                else if (item->_type == MenuType::FreeCheat)
+                {
+                    MenuEntryImpl *e = reinterpret_cast<MenuEntryImpl *>(item);
+
+                    Icon::DrawCheckBox(posX, posY, e->IsActivated());
+                    Renderer::DrawSysString(item->name.c_str(), posX + 20, posY, XMAX, c);
                 }
                 // MenuFolderImpl
                 else
@@ -283,6 +294,7 @@ namespace CTRPluginFramework
                     {
                         return (MenuEvent::EntrySelected);
                     }
+                    // MenuEntryTools
                     else if (item->_type == MenuType::EntryTools)
                     {
                         MenuEntryTools *e = reinterpret_cast<MenuEntryTools *>(item);
@@ -297,6 +309,20 @@ namespace CTRPluginFramework
                         else if (e->Func != nullptr)
                             e->Func();
                         
+                        return (MenuEvent::EntrySelected);
+                    }
+                    // MenuEntryFreeCheat
+                    else if (item->_type == MenuType::FreeCheat)
+                    {
+                        MenuEntryFreeCheat *e = reinterpret_cast<MenuEntryFreeCheat *>(item);
+
+                        bool state = e->TriggerState();
+                        
+                        if (state)
+                            PluginMenuExecuteLoop::Add(e);
+                        else
+                            PluginMenuExecuteLoop::Remove(e);
+
                         return (MenuEvent::EntrySelected);
                     }
 
