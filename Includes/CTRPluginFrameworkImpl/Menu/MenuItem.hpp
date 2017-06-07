@@ -38,6 +38,21 @@ namespace CTRPluginFramework
             return (_type == Entry);
         }
 
+        bool    IsFolder(void) const
+        {
+            return (_type == Folder);
+        }
+
+        bool    IsEntryTools(void) const
+        {
+            return (_type == EntryTools);
+        }
+
+        bool    IsFreeCheat(void) const
+        {
+            return (_type == FreeCheat);
+        }
+
     protected:
         friend class MenuFolderImpl;
         friend class PluginMenuImpl;
