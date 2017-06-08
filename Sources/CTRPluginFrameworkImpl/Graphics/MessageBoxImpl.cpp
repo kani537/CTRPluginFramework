@@ -14,17 +14,18 @@ namespace CTRPluginFramework
          *  30 + 16 = 46 + 20 = 66
          */
 
-        int lineCount;
-        float maxLineWidth;
+        int     minWidth = dType == DialogType::DialogOk ? 100 : 200;
+        int     lineCount;
+        float   maxLineWidth;
         
         Renderer::GetTextInfos(message.c_str(), lineCount, maxLineWidth, 290.f);
 
         if (lineCount > 10)
             lineCount = 10;
 
-        int height = 16 * lineCount + 59;
+        int height = std::max((16 * lineCount + 59), 75);
         int posY = (240 - height) / 2;
-        int width = maxLineWidth + 10;
+        int width = std::max((int)(maxLineWidth + 10), minWidth);
         int posX = (400 - width) / 2;
 
         _box = IntRect(posX, posY, width, height);
