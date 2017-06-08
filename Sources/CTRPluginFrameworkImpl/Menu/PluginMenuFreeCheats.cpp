@@ -132,8 +132,18 @@ namespace CTRPluginFramework
         _ProcessEvent(eventList);
         _Update();
 
-        if (_addressTextBox())  _mustSave = true;
-        if (_valueTextBox()) _mustSave = true;
+        if (_addressTextBox())
+        {
+            _mustSave = true;
+            _saveBtn.IsLocked = false;
+            _cancelBtn.IsLocked = false;
+        }
+        if (_valueTextBox())
+        {
+            _mustSave = true;
+            _saveBtn.IsLocked = false;
+            _cancelBtn.IsLocked = false;
+        }
         
         _saveBtn();
         _cancelBtn();
