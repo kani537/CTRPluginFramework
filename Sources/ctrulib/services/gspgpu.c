@@ -150,8 +150,11 @@ static int popInterrupt()
 	return curEvt;
 }
 
+bool   IsGamePrior(void);
+
 void gspEventThreadMain(u32 arg)
 {
+
 	while (gspRunEvents)
 	{
 		svcWaitSynchronization(gspEvent, U64_MAX);
@@ -159,6 +162,11 @@ void gspEventThreadMain(u32 arg)
 
 		while (true)
 		{
+          /*  while (IsGamePrior())
+            {
+                svcSleepThread(0x1000);
+            }*/
+
 			int curEvt = popInterrupt();
 
 			if (curEvt == -1)

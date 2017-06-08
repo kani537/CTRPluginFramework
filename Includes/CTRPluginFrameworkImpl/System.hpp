@@ -5,7 +5,6 @@
 #include "CTRPluginFrameworkImpl/System/Events.hpp"
 #include "CTRPluginFrameworkImpl/System/ProcessImpl.hpp"
 #include "CTRPluginFrameworkImpl/System/Screen.hpp"
-#include "CTRPluginFrameworkImpl/System/Sleep.hpp"
 #include "CTRPluginFrameworkImpl/System/SystemImpl.hpp"
 
 #endif

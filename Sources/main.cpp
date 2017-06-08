@@ -264,37 +264,14 @@ namespace CTRPluginFramework
 
     int    main(void)
     {
-
-        std::string     version = std::string("Zelda Ocarina Of Time 3D") + std::to_string(Process::GetVersion());
-        PluginMenu      *m = new PluginMenu(version, g_encAbout, Decoder);
+        PluginMenu      *m = new PluginMenu("Zelda Ocarina Of Time 3D", g_encAbout, Decoder);
         PluginMenu      &menu = *m;
        
 
         /*
         ** Tests
         ********************/
-        //menu.Append(new MenuEntry("Pokemon Keyboard", nullptr, PokemonKeyboard));
-        menu.Append(new MenuEntry("Get KProcess Handles", nullptr, GetHandlesInfo));
-        menu.Append(new MenuEntry("Pokemon Keyboard", nullptr, SelectAPokemon));
-        menu.Append(new MenuEntry("Test", nullptr, [](MenuEntry *entry)
-        {
-            std::string &note = entry->Note();
-            extern u32 g_fontAllocated;
-            extern u32 g_glyphAllocated;
 
-            char buf[0x100] = { 0 };
-
-            sprintf(buf, "Currently allocated: %d\n 0x%08X", g_glyphAllocated, g_fontAllocated);
-            note = buf;
-
-            (MessageBox(buf))();
-
-        }));
-
-        menu.Append(new MenuEntry("Change Hotkey", nullptr, [](MenuEntry *entry)
-        {
-            (HotkeysModifier(Preferences::MenuHotkeys, "Select the hotkeys you'd like to use to open the menu."))();
-        }));
         /*
         ** Movements codes
         ********************/
@@ -412,6 +389,7 @@ namespace CTRPluginFramework
 
         menu.Append(folder);
 
+        menu.Callback([] {Sleep(Milliseconds(1)); });
         // Launch menu and mainloop
         menu.Run();
 

@@ -134,7 +134,9 @@
     <ClInclude Include="Includes\CTRPluginFrameworkImpl\Graphics\PrivColor.hpp" />
     <ClInclude Include="Includes\CTRPluginFrameworkImpl\Graphics\Window.hpp" />
     <ClInclude Include="Includes\CTRPluginFrameworkImpl\Menu\HotkeysModifier.hpp" />
+    <ClInclude Include="Includes\CTRPluginFrameworkImpl\Menu\MenuEntryFreeCheat.hpp" />
     <ClInclude Include="Includes\CTRPluginFrameworkImpl\Menu\MenuEntryTools.hpp" />
+    <ClInclude Include="Includes\CTRPluginFrameworkImpl\Menu\PluginMenuFreeCheats.hpp" />
     <ClInclude Include="Includes\CTRPluginFramework\System\Rect.hpp" />
     <ClInclude Include="Includes\CTRPluginFrameworkImpl\Graphics\Renderer.hpp" />
     <ClInclude Include="Includes\CTRPluginFrameworkImpl\Graphics\TextBox.hpp" />
@@ -261,10 +263,12 @@
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\Graphics\BMPImage.cpp" />
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\Graphics\ComboBox.cpp" />
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\Graphics\FontImpl.cpp" />
+    <ClCompile Include="Sources\CTRPluginFrameworkImpl\Graphics\Icons\About15.c" />
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\Graphics\Icons\AddFavorite25.c" />
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\Graphics\Icons\AddFavoriteFilled25.c" />
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\Graphics\Icons\CapsLockOn15.c" />
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\Graphics\Icons\CapsLockOnFilled15.c" />
+    <ClCompile Include="Sources\CTRPluginFrameworkImpl\Graphics\Icons\CentreofGravity15.c" />
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\Graphics\Icons\CheckedCheckbox.c" />
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\Graphics\Icons\ClearSymbol15.c" />
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\Graphics\Icons\ClearSymbolFilled15.c" />
@@ -285,6 +289,7 @@
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\Graphics\Icons\KeyboardFilled25.c" />
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\Graphics\Icons\Maintenance15.c" />
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\Graphics\Icons\Search15.c" />
+    <ClCompile Include="Sources\CTRPluginFrameworkImpl\Graphics\Icons\Settings15.c" />
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\Graphics\Icons\Star15.c" />
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\Graphics\Icons\UnCheckedCheckbox.c" />
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\Graphics\Icons\UserManualFilled15.c" />
@@ -305,11 +310,13 @@
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\Menu\HexEditor.cpp" />
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\Menu\KeyboardImpl.cpp" />
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\Menu\Menu.cpp" />
+    <ClCompile Include="Sources\CTRPluginFrameworkImpl\Menu\MenuEntryFreeCheat.cpp" />
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\Menu\MenuEntryImpl.cpp" />
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\Menu\MenuEntryTools.cpp" />
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\Menu\MenuFolderImpl.cpp" />
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\Menu\MenuItem.cpp" />
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\Menu\PluginMenuExecuteLoop.cpp" />
+    <ClCompile Include="Sources\CTRPluginFrameworkImpl\Menu\PluginMenuFreeCheats.cpp" />
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\Menu\PluginMenuHome.cpp" />
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\Menu\HotkeysModifier.cpp" />
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\Menu\PluginMenuImpl.cpp" />
