@@ -63,7 +63,7 @@ namespace CTRPluginFramework
                 e->Disable();
         }
         // Else refresh the menu to be sure that we're not currently in a hidden folder
-        else
+        else if (_type == MenuType::Folder)
         {
             // Now forcefully disable every sub entries
             _DisableFolder(reinterpret_cast<MenuFolderImpl *>(this));
