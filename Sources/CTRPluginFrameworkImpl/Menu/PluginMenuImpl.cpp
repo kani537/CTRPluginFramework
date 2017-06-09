@@ -78,6 +78,9 @@ namespace CTRPluginFramework
         // Set _runningInstance to this menu
         _runningInstance = this;
 
+        // Load settings
+        Preferences::LoadSettings();
+
         // Load favorites and enabled cheats
         if (Preferences::AutoLoadFavorites)
             Preferences::LoadSavedFavorites();
