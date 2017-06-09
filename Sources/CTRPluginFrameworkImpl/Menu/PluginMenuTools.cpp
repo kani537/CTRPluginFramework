@@ -20,6 +20,7 @@ namespace CTRPluginFramework
         _about(about),
         _mainMenu("Tools"),
         _settingsMenu("Settings"),
+        _freecheatsEntry(nullptr),
         _hexEditor(hexEditor),
         _freeCheats(freeCheats),
         _menu(&_mainMenu, nullptr),
@@ -42,7 +43,8 @@ namespace CTRPluginFramework
     {
         _mainMenu.Append(new MenuEntryTools("About", [] { g_mode = ABOUT; }, Icon::DrawAbout));
         _mainMenu.Append(new MenuEntryTools("Hex Editor", [] { g_mode = HEXEDITOR; }, Icon::DrawGrid));
-        _mainMenu.Append(new MenuEntryTools("Free Cheats", [] { g_mode = FREECHEATS; }, Icon::DrawCentreOfGravity));
+        _freecheatsEntry = new MenuEntryTools("Free Cheats", [] { g_mode = FREECHEATS; }, Icon::DrawCentreOfGravity);
+        _mainMenu.Append(_freecheatsEntry);
         _mainMenu.Append(new MenuEntryTools("Settings", nullptr, Icon::DrawSettings, this));
 
         _settingsMenu.Append(new MenuEntryTools("Change menu hotkeys", MenuHotkeyModifier, Icon::DrawGameController));
@@ -97,6 +99,17 @@ namespace CTRPluginFramework
         // Check buttons
 
         return (Window::BottomWindow.MustClose());
+    }
+
+    void    PluginMenuTools::TriggerFreeCheatsEntry(bool isEnabled) const
+    {
+        if (!isEnabled)
+        {
+            _freecheatsEntry->Hide();
+            FreeCheats::DisableAll();
+        }
+        else
+            _freecheatsEntry->Show();
     }
 
     /*

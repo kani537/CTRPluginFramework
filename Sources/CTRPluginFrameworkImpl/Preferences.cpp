@@ -176,6 +176,7 @@ namespace CTRPluginFramework
         File    settings;
         int     mode = File::READ | File::WRITE | File::CREATE | File::TRUNCATE | File::SYNC;
         Header  header = { 0 };
+
         header.version = SETTINGS_VERSION;
         
         if (AutoSaveCheats) header.flags |= (u64)SettingsFlags::AutoSaveCheats;

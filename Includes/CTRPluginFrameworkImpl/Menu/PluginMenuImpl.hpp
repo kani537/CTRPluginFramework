@@ -41,6 +41,7 @@ namespace CTRPluginFramework
 
         void    TriggerSearch(bool state) const;
         void    TriggerActionReplay(bool state) const;
+        void    TriggerFreeCheats(bool isEnabled) const;
 
         bool    IsOpen(void) const;
         bool    WasOpened(void) const;

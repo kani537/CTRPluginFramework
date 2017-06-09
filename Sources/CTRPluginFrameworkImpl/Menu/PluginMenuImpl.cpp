@@ -362,6 +362,11 @@ namespace CTRPluginFramework
         _home->TriggerActionReplay(state);
     }
 
+    void    PluginMenuImpl::TriggerFreeCheats(bool isEnabled) const
+    {
+        _tools->TriggerFreeCheatsEntry(isEnabled);
+    }
+
     bool    PluginMenuImpl::IsOpen(void) const
     {
         return (_isOpen);

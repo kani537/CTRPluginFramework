@@ -134,8 +134,6 @@ $(OUTPUT).a	:	$(filter-out $(EXCLUDE), $(OFILES))
 
 $(OUTPUT).elf :	$(OFILES)
 
-
-
 #---------------------------------------------------------------------------------
 # you need a rule like this for each extension you use as binary data
 #---------------------------------------------------------------------------------

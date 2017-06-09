@@ -82,7 +82,6 @@ namespace CTRPluginFramework
             _regionsList.push_back({ start, end, _GetHeaderSize() });
         }
         
-
         u32 size = Preferences::EcoMemoryMode ? 0x40000 : 0x80000;
 
         _resultsArray = linearAlloc(size);

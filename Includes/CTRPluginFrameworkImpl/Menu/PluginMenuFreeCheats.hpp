@@ -31,6 +31,8 @@ namespace CTRPluginFramework
 
         static FreeCheats   *GetInstance(void);
         
+
+        static void     DisableAll(void);
         static void     LoadFromFile(Preferences::Header &header, File &file);
         static void     WriteToFile(Preferences::Header& header, File &file);
     private:

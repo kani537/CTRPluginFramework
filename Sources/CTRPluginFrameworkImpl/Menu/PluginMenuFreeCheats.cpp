@@ -170,6 +170,14 @@ namespace CTRPluginFramework
         return (_instance);
     }
 
+    void    FreeCheats::DisableAll(void)
+    {
+        if (_instance == nullptr)
+            return;
+
+        _instance->_menu.GetFolder()->DisableAll();
+    }
+
     void    FreeCheats::LoadFromFile(Preferences::Header &header, File &file)
     {
         if (_instance == nullptr || header.freeCheatsCount == 0)

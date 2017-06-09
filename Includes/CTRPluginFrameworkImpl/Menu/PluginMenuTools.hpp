@@ -13,6 +13,7 @@
 
 #include <vector>
 #include <string>
+#include "MenuEntryTools.hpp"
 
 namespace CTRPluginFramework
 {
@@ -26,6 +27,7 @@ namespace CTRPluginFramework
 
         // Return true if the Close Button is pressed, else false
         bool    operator()(EventList &eventList, Time &delta);
+        void    TriggerFreeCheatsEntry(bool isEnabled) const;
     private:
 
         void    _ProcessEvent(Event &event);
@@ -37,6 +39,7 @@ namespace CTRPluginFramework
         std::string     _about;
         MenuFolderImpl  _mainMenu;
         MenuFolderImpl  _settingsMenu;
+        MenuEntryTools  *_freecheatsEntry;
         HexEditor       &_hexEditor;
         FreeCheats      &_freeCheats;
         Menu            _menu;
