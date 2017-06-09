@@ -113,6 +113,7 @@ namespace CTRPluginFramework
         float           Progress; //<- current progression of the search in %
         Time            SearchTime;
         u32             Step; //<- current step
+        bool            PoolError;
 
         SearchBase *_previousSearch;
     protected: 

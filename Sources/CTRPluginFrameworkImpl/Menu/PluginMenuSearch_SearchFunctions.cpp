@@ -28,6 +28,7 @@ namespace CTRPluginFramework
         _totalSize = 0;
         _achievedSize = 0;
         ResultCount = 0;
+        PoolError = false;
 
         // Init hit list variable
         _lastFetchedIndex = 0;
@@ -69,6 +70,43 @@ namespace CTRPluginFramework
     ** Search : SearchBase
     ************/
 
+    void    *AllocatePool(u32 &poolSize)
+    {
+        u32     linearFreeSize = linearSpaceFree();
+        u32     size = 0x80000;
+        void    *pool = nullptr;
+
+        if (linearFreeSize >= size)
+            pool = linearAlloc(size);
+
+        if (pool == nullptr)
+        {
+            // Try with the base heap
+            pool = new u8[size];
+            
+            if (pool == nullptr)
+            {
+                size = 0x40000;
+
+                while (pool == nullptr && size >= 0x10000)
+                {
+                    if ((pool = linearAlloc(size)) != nullptr)
+                        break;
+                    if ((pool = new u8[size]) != nullptr)
+                        break;
+                    size -= 0x10000;
+                }
+            }
+        }
+
+        if (pool == nullptr)
+            poolSize = 0;
+        else
+            poolSize = size;
+
+        return (pool);
+    }
+
     template <typename T>
     Search<T>::Search(T value, u32 start, u32 end, u32 alignment, SearchBase *prev) :
     SearchBase(start, end, alignment, prev)
@@ -82,9 +120,16 @@ namespace CTRPluginFramework
             _regionsList.push_back({ start, end, _GetHeaderSize() });
         }
         
-        u32 size = Preferences::EcoMemoryMode ? 0x40000 : 0x80000;
+        u32 size;// = Preferences::EcoMemoryMode ? 0x40000 : 0x80000;
 
-        _resultsArray = linearAlloc(size);
+        _resultsArray = AllocatePool(size);
+
+        if (size == 0)
+        {
+            PoolError = true;
+            return;
+        }
+            
         _resultsP = _resultsArray;
         _resultsEnd = (void *)((u32)_resultsArray + size);
         _maxResult = size;
@@ -99,9 +144,16 @@ namespace CTRPluginFramework
         _checkValue = value;
         //_WriteHeaderToFile();
 
-        u32 size = Preferences::EcoMemoryMode ? 0x40000 : 0x80000;
+        u32 size;// = Preferences::EcoMemoryMode ? 0x40000 : 0x80000;
 
-        _resultsArray = linearAlloc(size);
+        _resultsArray = AllocatePool(size);
+
+        if (size == 0)
+        {
+            PoolError = true;
+            return;
+        }
+
         _resultsP = _resultsArray;
         _resultsEnd = (void *)((u32)_resultsArray + size);
         _maxResult = size;

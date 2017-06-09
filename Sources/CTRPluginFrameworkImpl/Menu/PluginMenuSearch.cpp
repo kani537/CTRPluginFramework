@@ -2,6 +2,8 @@
 #include "CTRPluginFrameworkImpl/Preferences.hpp"
 #include "CTRPluginFramework/System/Process.hpp"
 #include "3DS.h"
+#include "CTRPluginFramework/Menu/MessageBox.hpp"
+
 namespace CTRPluginFramework
 {
     PluginMenuSearch::PluginMenuSearch(HexEditor &hexEditor, FreeCheats &freeCheats) :
@@ -499,6 +501,23 @@ namespace CTRPluginFramework
                 case 5: _currentSearch = new Search<double>(_valueTextBox.Double, startRange, endRange, _alignmentTextBox.Bits32, _currentSearch); _currentSearch->Size = SearchSize::Double; break;
                 default: break;
             }
+        }
+
+        // Check for error
+        if (_currentSearch->PoolError)
+        {
+            delete _currentSearch;
+            _currentSearch = nullptr;
+
+            if (_searchHistory.size())
+            {
+                SearchBase *search = _searchHistory.back();
+                _searchHistory.pop_back();
+                _currentSearch = search;
+            }
+            
+            MessageBox("Error\n\nAn error occurred: pool alloc.")();
+            return;
         }
 
         // Set Search Type
