@@ -55,6 +55,17 @@ namespace CTRPluginFramework
         return (nullptr);
     }
 
+    void    MenuFolderImpl::DisableAll(void)
+    {
+        for (MenuItem *item : _items)
+        {
+            if (item->IsEntry() || item->IsFreeCheat())
+                reinterpret_cast<MenuEntryImpl *>(item)->Disable();
+            if (item->IsFolder())
+                reinterpret_cast<MenuFolderImpl *>(item)->DisableAll();
+        }
+    }
+
     //#######################################################################
 
     void    MenuFolderImpl::_Open(MenuFolderImpl *parent, int position, bool starMode)
@@ -71,5 +82,4 @@ namespace CTRPluginFramework
             position = _position[index];
         return (_parent[index]);
     }
-
 }

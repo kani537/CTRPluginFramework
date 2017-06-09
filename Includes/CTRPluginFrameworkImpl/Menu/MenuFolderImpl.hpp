@@ -19,6 +19,7 @@ namespace CTRPluginFramework
         void    Append(MenuItem *item, bool isStar = false);
         u32     ItemsCount(void) const;
         MenuItem *GetItem(u32 uid);
+        void    DisableAll(void);
 
     private:
         friend class MenuItem;
