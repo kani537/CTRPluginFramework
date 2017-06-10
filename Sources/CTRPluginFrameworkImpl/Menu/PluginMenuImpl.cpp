@@ -17,7 +17,7 @@ namespace CTRPluginFramework
 {
     PluginMenuImpl  *PluginMenuImpl::_runningInstance = nullptr;
 
-    PluginMenuImpl::PluginMenuImpl(std::string name, std::string about) : 
+    PluginMenuImpl::PluginMenuImpl(std::string &name, std::string &about) : 
     _hexEditor(0x00100000),
     _freeCheats(_hexEditor),
     _home(new PluginMenuHome(name)),

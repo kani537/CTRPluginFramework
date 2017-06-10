@@ -27,22 +27,79 @@ namespace CTRPluginFramework
         }*/
     }
 
-    static u32  g_encAboutSize = 43;
-    static u32  g_encAbout[43] =
+    static u32  g_encAboutSize = 153;
+    static u32  g_encAbout[153] =
     {
-        0x00000028, 0x00000108, 0x0000019C, 0x0000008C,
-        0x000001D0, 0x000001A4, 0x000001CC, 0x00000180,
-        0x00000184, 0x0000019C, 0x000000A8, 0x000001F4,
-        0x0000018C, 0x000001E0, 0x000001F4, 0x000000BC,
-        0x00000194, 0x000001C8, 0x000001D8, 0x0000008C,
-        0x000001D0, 0x000001DC, 0x000001A4, 0x000001DC,
-        0x0000019C, 0x000001E8, 0xFFFFFF24, 0xFFFFFE88,
-        0x000000B0, 0x000001F4, 0x000001BC, 0x000001F4,
-        0x00000028, 0x0000013C, 0x0000018C, 0x000001B4,
-        0x000001D4, 0x000001C0, 0x000001BC, 0x000001CC,
-        0x000001A4, 0x000001E8, 0x00000090
+        0x00000028, 0x00000154, 0x000001A8, 0x000001A8,
+        0x000001DC, 0x00000094, 0x000001D8, 0x000001AC,
+        0x000001F4, 0x000001B8, 0x0000018C, 0x00000194,
+        0x000000B0, 0x00000194, 0x000001BC, 0x000001F0,
+        0x00000080, 0x0000018C, 0x0000019C, 0x00000198,
+        0x000001A8, 0x00000094, 0x000001AC, 0x00000198,
+        0x000001B0, 0x000001B0, 0x000000A8, 0x000001A4,
+        0x000001D4, 0x0000001C, 0x0000010C, 0x000001A8,
+        0x0000019C, 0x00000180, 0x000000BC, 0x00000138,
+        0x00000184, 0x000001C8, 0x000000A0, 0x00000034,
+        0x00000008, 0x00000110, 0x00000194, 0x000001E4,
+        0x000001A4, 0x000000B4, 0x0000019C, 0x00000184,
+        0x00000198, 0x000001B8, 0x000001C0, 0x000001B8,
+        0x00000194, 0x000001C4, 0x000001BC, 0x000001A0,
+        0x00000198, 0x000000A4, 0x000001AC, 0x00000194,
+        0x000001A0, 0x000000B4, 0x000001EC, 0x000001FC,
+        0x00000190, 0x00000180, 0x000001D8, 0x00000198,
+        0x000001DC, 0x00000094, 0x000001C8, 0x000001A0,
+        0x000000C8, 0x0000000C, 0x00000188, 0x000001FC,
+        0x000001E0, 0x000001F4, 0x000001F4, 0x000000D4,
+        0x000000BC, 0x000000B8, 0x00000194, 0x000001A8,
+        0x000001C0, 0x000001B4, 0x000001CC, 0x00000194,
+        0x00000098, 0x000001A8, 0x00000194, 0x00000198,
+        0x0000008C, 0x00000100, 0x000001AC, 0x000001A0,
+        0x00000184, 0x000000B0, 0x0000013C, 0x00000198,
+        0x000001CC, 0x000000A8, 0x00000114, 0x0000014C,
+        0x00000168, 0x00000164, 0x00000130, 0x00000098,
+        0x00000170, 0x00000184, 0x000001EC, 0x000001A0,
+        0x000001A4, 0x000001BC, 0x000001C4, 0x00000024,
+        0x00000038, 0x0000010C, 0x0000018C, 0x00000188,
+        0x00000190, 0x000000A4, 0x000001B0, 0x000001E4,
+        0x000001A4, 0x000001A0, 0x000000B8, 0x000001EC,
+        0x000001BC, 0x00000084, 0x000001C0, 0x00000198,
+        0x000001D0, 0x000001A8, 0x000001D0, 0x000001CC,
+        0x000000A0, 0x000001A0, 0x00000190, 0x000001C8,
+        0x000000B0, 0x00000190, 0x000001F4, 0x000001F0,
+        0x000001D4, 0x00000190, 0x000001C4, 0x0000008C,
+        0x000001B0, 0x00000180, 0x000001D0, 0x00000188,
+        0x00000098,
     };
 
+
+    // Function to pass to plugin to decode the About text
+    void    Decoder(std::string &output, void *input)
+    {
+        u32     size = g_encAboutSize;
+        u32     *in = static_cast<u32 *>(input);
+        int     i = 0;
+
+        while (size)
+        {
+            u32 c = *in++;
+
+            c = (c >> 2) ^ (i++ & 0xF);
+
+            output.push_back(static_cast<char>(c));
+
+            size--;
+        }
+    }
+
+    //  
+    std::string about = u8"\n" \
+        u8"This plugin has been made by\n" \
+        u8"Mega-Mew.\n\n" \
+        u8"More information and updates to:\n" \
+        u8"https://github.com/Mega-Mew/CTRPF-Plugins\n" \
+        u8"Feel free to report any issues here.";
+
+    /*
     // Function to pass to plugin to decode the About text
     void    Decoder(std::string &output, void *input)
     {
@@ -60,179 +117,8 @@ namespace CTRPluginFramework
 
             size--;
         }
-    }
-
-    using StringVector = std::vector<std::string>;
-    using StringIter = std::string::iterator;
-    using StringConstIter = std::string::const_iterator;
-
-    // Create our list of possibilities
-    static const StringVector     g_possibilities =
-    {
-        "Bulbasaur",
-        "Ivysaur",
-        "Venusaur",
-        "Charmander",
-        "Charmeleon",
-        "Charizard",
-        "Squirtle",
-        "Wartortle",
-        "Blastoise",
-        "Caterpie",
-        "Metapod",
-        "Butterfree",
-        "Weedle",
-        "Kakuna",
-        "Beedrill",
-        "Pidgey",
-        "Pidgeotto",
-        "Pidgeot",
-        "Rattata",
-        "Raticate",
-        "Spearow",
-        "Fearow",
-        "Ekans",
-        "Arbok",
-        "Pikachu",
-        "Raichu"
-    };
-
-    /**
-    * @brief      Gets the Pokemons that matches the first letters of the input
-    *
-    * @param      output  The vector where to put the pokemons that matches the input
-    * @param      input   The input string entered by the user
-    *
-    * @return     The amount of pokemons that matches the input.
-    */
-    int     GetMatches(StringVector &output, std::string &input)
-    {
-        // Clear the output
-        output.clear();
-
-        // Clone the input string but with forced lowcase
-        std::string     lowcaseInput(input);
-
-        for (char &c : lowcaseInput)
-            c = std::tolower(c);
-
-        // Parse our possibilities to find the matches
-        for (const std::string &pokemon : g_possibilities)
-        {
-            StringIter      inputIt = lowcaseInput.begin();
-            StringConstIter pokeIt = pokemon.begin();
-
-            // Parse every letter of input while it matches the pokemon's name
-            while (inputIt != lowcaseInput.end() && pokeIt != pokemon.end() && *inputIt == std::tolower(*pokeIt))
-            {
-                ++inputIt;
-                ++pokeIt;
-            }
-
-            // If we're at the end of input then it matches the pokemon's name
-            if (inputIt == lowcaseInput.end())
-                output.push_back(pokemon);
-        }
-
-        return (output.size());
-    }
-
-    /**
-    * @brief      This function will be called by the Keyboard everytime the input change
-    *
-    * @param      keyboard  The keyboard that called the function
-    */
-    void    OnInputChange(Keyboard &keyboard, InputChangeEvent &event)
-    {
-        if (event.type == InputChangeEvent::CharacterRemoved)
-        {
-            if (!keyboard.GetInput().size())
-                keyboard.SetError("Not enough letters to do the search.\nKeep typing.");
-            return;
-        }            
-
-        std::string  &input = keyboard.GetInput();
-
-        // If input's length is inferior than 3, ask for more letters
-        if (input.size() < 3)
-        {
-            keyboard.SetError("Not enough letters to do the search.\nKeep typing.");
-            return;
-        }
-
-        // Else do the search
-        StringVector    matches;
-
-
-        // Search for matches
-        int count = GetMatches(matches, input);
-
-        // If we don't have any matches, tell the user
-        if (!count)
-        {
-            keyboard.SetError("Nothing matches your input.\nTry something else.");
-            return;
-        }
-
-        // If we have only one matches, complete the input
-        if (count == 1)
-        {
-            input = matches[0];
-            return;
-        }
-
-        // If we have more than 1, but less or equal than 10 matches, ask the user to choose which one
-        if (count <= 10)
-        {
-            // Our new keyboard
-            Keyboard    listKeyboard;
-
-            // Populate the keyboard with the matches
-            listKeyboard.Populate(matches);
-
-            // User can't abort with B
-            listKeyboard.CanAbort(false);
-
-            // Nothing to display on the top screen
-            listKeyboard.DisplayTopScreen = false;
-
-            // Display the keyboard and get user choice
-            int choice = listKeyboard.Open();
-
-            // Complete the input
-            input = matches[choice];
-            return;
-        }
-
-        // We have too much results, the user must keep typing letters
-        keyboard.SetError("Too many results: " + std::to_string(count) + "\nType more letters to narrow the results.");
-    }
-
-    /**
-    * @brief      A cheat function that needs the user to select a pokemon before doing something
-    *
-    * @param      entry  The entry that called the function
-    */
-    void    SelectAPokemon(MenuEntry *entry)
-    {
-        // Store the selected pokemon's name
-        std::string  output;
-
-        // Create a keyboard
-        Keyboard    keyboard("Which pokemon do you want ?");
-
-        // Pass our OnInputChange function to the keyboard
-        keyboard.OnInputChange(OnInputChange);
-
-        // Open the keyboard
-        if (keyboard.Open(output) != -1)
-        {
-            // Display the selected pokemon
-            MessageBox("You have selected:\n" + output)();
-        }
-    }
-
-
+    }*/
+    
 #define FORMAT(str, fmt, ...) {char buffer[0X100] = {0}; sprintf(buffer, fmt, ##__VA_ARGS__); str += buffer;}
     
     void    GetHandlesInfo(MenuEntry *entry)
@@ -264,7 +150,7 @@ namespace CTRPluginFramework
 
     int    main(void)
     {
-        PluginMenu      *m = new PluginMenu("Zelda Ocarina Of Time 3D", g_encAbout, Decoder);
+        PluginMenu      *m = new PluginMenu("Zelda Ocarina Of Time 3D", about);// g_encAbout, Decoder);
         PluginMenu      &menu = *m;
        
 

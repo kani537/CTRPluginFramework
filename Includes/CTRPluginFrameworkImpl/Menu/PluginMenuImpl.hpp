@@ -20,7 +20,7 @@ namespace CTRPluginFramework
     {
     public:
 
-        PluginMenuImpl(std::string name = "Cheats", std::string note = "");
+        PluginMenuImpl(std::string &name, std::string &note);
         ~PluginMenuImpl(void);
 
         void    Append(MenuItem *item) const;
