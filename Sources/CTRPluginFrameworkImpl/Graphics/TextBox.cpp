@@ -264,6 +264,37 @@ namespace CTRPluginFramework
         return (str);
     }
 
+    u8   *CutWordWidth(u8 *str, float &width, float maxWidth)
+    {
+        width = 0;
+
+        if (!str || !(*str))
+            return (nullptr);
+
+        while (*str != '\n')
+        {
+            bool isSpace = *str == ' ' ? true : false;
+
+            u8      *strBak = str;
+            Glyph   *glyph = Font::GetGlyph(str);
+
+            if (glyph == nullptr)
+                return (nullptr);
+
+            width += glyph->Width();
+
+            if (isSpace)
+                break;
+
+            if (width > maxWidth)
+            {
+                str = strBak;
+                break;
+            }
+        }
+        return (str);
+    }
+
     /*
     ** Get text infos
     ******************/
@@ -297,7 +328,14 @@ namespace CTRPluginFramework
                 str = s;
                 float wordWidth;
 
-                s = _GetWordWidth(s, wordWidth);                
+                s = _GetWordWidth(s, wordWidth);  
+                
+                // If word's width is greater than line's width
+                if (wordWidth > maxWidth)
+                {
+                    str = CutWordWidth(str, wordWidth, maxWidth);
+                    break;
+                }
 
                 line += wordWidth;
 
