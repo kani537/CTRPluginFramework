@@ -16,11 +16,12 @@ namespace CTRPluginFramework
         MenuFolderImpl(std::string name, std::string note = "");
         ~MenuFolderImpl();
 
-        void    Append(MenuItem *item, bool isStar = false);
-        u32     ItemsCount(void) const;
-        MenuItem *GetItem(u32 uid);
-        void    DisableAll(void);
+        void        Append(MenuItem *item, bool isStar = false);
+        u32         ItemsCount(void) const;
+        MenuItem    *GetItem(u32 uid);
+        void        DisableAll(void);
 
+        MenuItem    *operator[](int index);
     private:
         friend class MenuItem;
         friend class PluginMenuImpl;

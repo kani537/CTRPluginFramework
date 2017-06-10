@@ -66,6 +66,14 @@ namespace CTRPluginFramework
         }
     }
 
+    MenuItem* MenuFolderImpl::operator[](int index)
+    {
+        if (index >= _items.size())
+            return (nullptr);
+
+        return (_items[index]);
+    }
+
     //#######################################################################
 
     void    MenuFolderImpl::_Open(MenuFolderImpl *parent, int position, bool starMode)
