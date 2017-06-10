@@ -22,6 +22,7 @@ namespace CTRPluginFramework
         using EventList = std::vector<Event>;
     public:
         PluginMenuTools(std::string &about, HexEditor &hexEditor, FreeCheats &freeCheats);
+        void UpdateSettings();
         void InitMenu();
         ~PluginMenuTools(){}
 

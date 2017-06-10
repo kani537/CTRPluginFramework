@@ -80,6 +80,7 @@ namespace CTRPluginFramework
 
         // Load settings
         Preferences::LoadSettings();
+        _tools->UpdateSettings();
 
         // Load favorites and enabled cheats
         if (Preferences::AutoLoadFavorites)

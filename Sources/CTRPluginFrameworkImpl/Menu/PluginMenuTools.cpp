@@ -39,6 +39,21 @@ namespace CTRPluginFramework
             Preferences::MenuHotkeys = keys;
     }
 
+    void    PluginMenuTools::UpdateSettings(void)
+    {
+        if (Preferences::AutoSaveCheats) _settingsMenu[1]->AsMenuEntryImpl().Enable();
+        else _settingsMenu[1]->AsMenuEntryImpl().Disable();
+
+        if (Preferences::AutoSaveFavorites) _settingsMenu[2]->AsMenuEntryImpl().Enable();
+        else _settingsMenu[2]->AsMenuEntryImpl().Disable();
+
+        if (Preferences::AutoLoadCheats) _settingsMenu[3]->AsMenuEntryImpl().Enable();
+        else _settingsMenu[3]->AsMenuEntryImpl().Disable();
+
+        if (Preferences::AutoLoadFavorites) _settingsMenu[4]->AsMenuEntryImpl().Enable();
+        else _settingsMenu[4]->AsMenuEntryImpl().Disable();
+    }
+
     void    PluginMenuTools::InitMenu(void)
     {
         _mainMenu.Append(new MenuEntryTools("About", [] { g_mode = ABOUT; }, Icon::DrawAbout));
