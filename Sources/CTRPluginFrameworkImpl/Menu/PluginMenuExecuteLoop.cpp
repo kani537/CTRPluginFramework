@@ -14,6 +14,45 @@ namespace CTRPluginFramework
         _firstInstance = this;
     }
 
+    void PluginMenuExecuteLoop::WriteEnabledCheatsToFile(Preferences::Header& header, File& file)
+    {
+        if (_firstInstance == nullptr)
+            return;
+
+        std::vector<u32>    uids;
+        std::vector<MenuEntryImpl *>  &items = _firstInstance->_executeLoop;
+        u32     count = items.size();
+        u32     index = 0;
+        u32     written = 0;
+        u64     offset = file.Tell();
+
+        while (count)
+        {
+            uids.clear();
+            u32 nb = count > 1000 ? 1000 : count;
+
+            for (; index < items.size(); ++index)
+            {
+                MenuEntryImpl *e = items[index];
+
+                if (e != nullptr && e->IsEntry() && e->IsActivated())
+                    uids.push_back(e->_uid);
+            }
+
+            if (file.Write(uids.data(), sizeof(u32) * uids.size()) != 0)
+                goto error;
+            
+            written += uids.size();
+            count -= nb;
+        }   
+        
+        header.enabledCheatsCount = written;
+        header.enabledCheatsOffset = offset;
+
+        error:
+            return;
+    }
+
     void    PluginMenuExecuteLoop::Add(MenuEntryImpl *entry)
     {
         if (_firstInstance == nullptr || entry == nullptr)

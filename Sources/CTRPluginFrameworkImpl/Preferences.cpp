@@ -191,7 +191,7 @@ namespace CTRPluginFramework
             if (settings.Write(&header, sizeof(Header)) != 0) goto error;
 
             FreeCheats::WriteToFile(header, settings);
-            if (AutoSaveCheats) PluginMenuImpl::WriteEnabledCheatsToFile(header, settings);
+            if (AutoSaveCheats) PluginMenuExecuteLoop::WriteEnabledCheatsToFile(header, settings);///PluginMenuImpl::WriteEnabledCheatsToFile(header, settings);
             if (AutoSaveFavorites) PluginMenuImpl::WriteFavoritesToFile(header, settings);
 
             settings.Rewind();

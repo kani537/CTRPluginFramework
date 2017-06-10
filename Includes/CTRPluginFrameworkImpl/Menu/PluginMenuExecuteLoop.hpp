@@ -5,6 +5,7 @@
 
 #include <vector>
 #include <queue>
+#include "CTRPluginFrameworkImpl/Preferences.hpp"
 
 namespace CTRPluginFramework
 {
@@ -13,7 +14,8 @@ namespace CTRPluginFramework
     {   
     public:
         PluginMenuExecuteLoop(void);
-        ~PluginMenuExecuteLoop(void) {};
+        ~PluginMenuExecuteLoop(void) {}
+        static void WriteEnabledCheatsToFile(Preferences::Header &header, File &file);
 
         static void    Add(MenuEntryImpl *entry);
         static void    Remove(MenuEntryImpl *entry);
