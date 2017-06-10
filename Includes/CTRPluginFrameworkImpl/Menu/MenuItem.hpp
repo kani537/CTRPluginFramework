@@ -14,6 +14,8 @@ namespace CTRPluginFramework
         FreeCheat
     };
 
+    class MenuEntryImpl;
+    class MenuEntryTools;
     class MenuFolderImpl;
     class MenuItem
     {
@@ -51,6 +53,16 @@ namespace CTRPluginFramework
         bool    IsFreeCheat(void) const
         {
             return (_type == FreeCheat);
+        }
+
+        MenuEntryImpl &AsMenuEntryImpl(void)
+        {
+            return (*reinterpret_cast<MenuEntryImpl *>(this));
+        }
+
+        MenuEntryTools &AsMenuEntryTools(void)
+        {
+            return (*reinterpret_cast<MenuEntryTools *>(this));
         }
 
     protected:
