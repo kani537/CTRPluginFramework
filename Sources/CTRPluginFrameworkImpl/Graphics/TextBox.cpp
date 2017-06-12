@@ -19,7 +19,7 @@ namespace CTRPluginFramework
         _maxLines = ((box.size.y - 10) / 16) - 1;        
         _border = IntRect(box.leftTop.x + 2, box.leftTop.y + 2, box.size.x - 4, box.size.y - 4);
         _GetTextInfos();
-        if (_newline.size() < _maxLines)
+        if (_newline.size() <= _maxLines)
         {
             _maxLines = _newline.size();
             _displayScrollbar = false;
