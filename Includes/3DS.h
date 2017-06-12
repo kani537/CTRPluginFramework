@@ -7,6 +7,7 @@ extern "C" {
 
 #include "types.h"
 
+#include "ctrulib/allocator/newlibHeap.h"
 #include "ctrulib/services/ac.h"
 #include "ctrulib/services/am.h"
 #include "ctrulib/services/apt.h"
