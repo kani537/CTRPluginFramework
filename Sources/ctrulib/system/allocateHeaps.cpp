@@ -24,7 +24,7 @@ namespace CTRPluginFramework
 
         // Allocate the main heap
         __ctru_heap = 0x07500000;
-        __ctru_heap_size = 0x100000;
+        __ctru_heap_size = 0xB0000;
 
         if (R_FAILED(arm11kSvcControlMemory(&__ctru_heap, __ctru_heap, __ctru_heap_size, 0x203u, MEMPERM_READ | MEMPERM_WRITE | MEMPERM_EXECUTE)))
         {
@@ -34,7 +34,7 @@ namespace CTRPluginFramework
         }
 
         // Allocate the linear heap
-        __ctru_linear_heap_size = 0x150000;
+        __ctru_linear_heap_size = 0xD0000;
         if (R_FAILED(arm11kSvcControlMemory(&__ctru_linear_heap, 0, __ctru_linear_heap_size, g_linearOp, MEMPERM_READ | MEMPERM_WRITE | MEMPERM_EXECUTE)))
         {
             // Try again with a different mode
