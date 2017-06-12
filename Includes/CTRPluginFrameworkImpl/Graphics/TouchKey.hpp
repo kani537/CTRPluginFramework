@@ -27,7 +27,10 @@ namespace CTRPluginFramework
         // Key with Icon
         TouchKey(int value, IconCallback, IntRect ui, bool enabled = true);
 
-        ~TouchKey(){}
+        ~TouchKey();
+
+        // Clear
+        void    Clear(void); ///TODO replace all instance with new in Keyboard
 
         // Enabler
         void    Enable(bool enable = true);

@@ -110,7 +110,8 @@ namespace CTRPluginFramework
 
     KeyboardImpl::~KeyboardImpl(void)
     {
-
+        for (KeyIter iter = _keys.begin(); iter != _keys.end(); ++iter)
+            iter->Clear();
     }
 
     void    KeyboardImpl::SetLayout(Layout layout)

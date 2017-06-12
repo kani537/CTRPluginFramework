@@ -39,6 +39,16 @@ namespace CTRPluginFramework
         _execute = false;
     }
 
+    TouchKey::~TouchKey()
+    {            
+    }
+
+    void TouchKey::Clear(void)
+    {
+        if (_content != nullptr)
+            delete _content;
+    }
+
     void    TouchKey::Enable(bool isEnabled)
     {
         _enabled = isEnabled;
