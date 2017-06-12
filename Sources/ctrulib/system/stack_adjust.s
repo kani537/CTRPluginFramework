@@ -6,27 +6,16 @@
 	.type	initSystem,	%function
 
 initSystem:
+	bl	__system_initSyscalls
+	bx lr
 
+	.global	initLib
+	.type	initLib,	%function
+initLib:
 	ldr	r2, =saved_stack
 	str	sp, [r2]
 	str	lr, [r2,#4]
-
-	bl	__libctru_init
-	b skip
-@-----------------------------
-	ldr	r2, =fake_heap_start
-	ldr	sp, [r2]
-
-	ldr	r3, =__stacksize__
-	ldr	r3, [r3]
-	add sp, sp, r3
-	add	sp, sp, #7
-	bics	sp, sp, #7
-	str	sp, [r2]
-
-@---------------------------------
-@	bl	__appInit
-skip:
+	bl	__system_allocateHeaps
 	bl	__libc_init_array
 	bl	_init
 	ldr	r2, =saved_stack

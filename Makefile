@@ -92,7 +92,7 @@ export INCLUDE	:=	$(foreach dir,$(INCLUDES),-I$(CURDIR)/$(dir)) \
 
 export LIBPATHS	:=	$(foreach dir,$(LIBDIRS),-L $(dir)/lib) -L $(LIBDIRS)
 
-.PHONY: $(BUILD) clean all
+.PHONY: $(BUILD) clean all re send lib
 
 #---------------------------------------------------------------------------------
 all: $(BUILD)
@@ -110,6 +110,12 @@ re:
 	@rm $(OUTPUT).plg $(OUTPUT).elf
 	make
 
+DEPENDS	:=	$(OFILES:.o=.d)
+EXCLUDE := main.o cheats.o
+
+lib: $(OUTPUT).a $(BUILD)
+	mv $(OUTPUT).a lib$(OUTPUT).a
+
 send:
 	@echo "Sending the plugin over FTP"
 	@$(TOPDIR)/sendfile.py $(TARGET).plg $(FTP_PATH) "$(FTP_HOST)$(IP)" $(FTP_PORT)
@@ -118,8 +124,6 @@ send:
 
 else
 
-
-
 #---------------------------------------------------------------------------------
 # main targets
 #---------------------------------------------------------------------------------
@@ -127,12 +131,10 @@ else
 DEPENDS	:=	$(OFILES:.o=.d)
 EXCLUDE := main.o cheats.o
 
-#$(OUTPUT).a	:	$(filter-out $(EXCLUDE), $(OFILES))
-$(OUTPUT).plg : $(OUTPUT).elf
-$(OUTPUT).a	:	$(filter-out $(EXCLUDE), $(OFILES))
 
-
-$(OUTPUT).elf :	$(OFILES)
+$(OUTPUT).a	:	$(filter-out $(EXCLUDE), $(OFILES))	$(OUTPUT).plg
+$(OUTPUT).plg : $(OFILES)
+	
 
 #---------------------------------------------------------------------------------
 # you need a rule like this for each extension you use as binary data

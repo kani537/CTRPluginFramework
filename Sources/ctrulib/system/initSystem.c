@@ -28,7 +28,7 @@ void __attribute__((weak)) __libctru_init(void)
 	//__sync_init();
 
 	// Initialize newlib support system calls
-	__system_initSyscalls();
+	//__system_initSyscalls();
 
 	// Allocate application and linear heaps
 	__system_allocateHeaps();

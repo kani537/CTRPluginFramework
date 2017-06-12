@@ -8,6 +8,7 @@
 
 extern "C" void     abort(void);
 extern "C" void     initSystem();
+extern "C" void     initLib();
 
 namespace CTRPluginFramework
 {
@@ -49,11 +50,15 @@ namespace CTRPluginFramework
     extern "C" void __appInit(void);
 
     extern "C" Result __sync_init(void);
+    extern "C" void __system_initSyscalls(void);
 
     void    KeepThreadMain(void *arg)
     {
         // Initialize the synchronization subsystem
         __sync_init();
+
+        // Initialize newlib's syscalls
+        __system_initSyscalls();
 
         // Initialize services        
         srvInit();
@@ -93,7 +98,8 @@ namespace CTRPluginFramework
         Sleep(Seconds(5));
 
         // Init heap and newlib's syscalls
-        initSystem();
+        initLib();
+        //initSystem();
 
         // If heap error, exit
         if (g_heapError)
@@ -224,7 +230,7 @@ namespace CTRPluginFramework
             cfguExit();            
 
             exit(-1);
-        }      
+        }
     }
 
     extern "C" int LaunchMainThread(int arg);

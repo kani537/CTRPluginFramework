@@ -158,7 +158,7 @@ namespace CTRPluginFramework
         ** Tests
         ********************/
 
-        MenuEntry *entry = new MenuEntry("Trigger FreeCheats", nullptr,
+       /* MenuEntry *entry = new MenuEntry("Trigger FreeCheats", nullptr,
             [](MenuEntry *entry)
             {
                 static bool isEnabled = true;
@@ -168,7 +168,7 @@ namespace CTRPluginFramework
         });
 
         entry->SetArg(m);
-        m->Append(entry);
+        m->Append(entry);*/
 
         /*
         ** Movements codes
