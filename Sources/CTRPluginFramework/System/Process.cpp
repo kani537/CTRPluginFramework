@@ -160,6 +160,30 @@ namespace CTRPluginFramework
         return (false);
     }
 
+    bool    Process::CheckRegion(u32 address, u32 &size, u32 perm)
+    {
+        Result         res;
+        PageInfo       pInfo = { 0 };
+        MemInfo        mInfo = { 0 };
+
+        res = svcQueryProcessMemory(&mInfo, &pInfo, ProcessImpl::_processHandle, address);
+        if (R_SUCCEEDED(res) && mInfo.base_addr <= address && mInfo.base_addr + mInfo.size > address)
+        {
+            size = mInfo.size;
+
+            if ((mInfo.perm & perm) != perm)
+            {
+                perm |= mInfo.perm;
+                res = svcControlProcessMemory(ProcessImpl::_processHandle, mInfo.base_addr, mInfo.base_addr, mInfo.size, 6, perm);
+                if (R_SUCCEEDED(res))
+                    return (true);
+                return (false);
+            }
+            return (true);
+        }
+        return (false);
+    }
+
     bool    Process::Write64(u32 address, u64 value)
     {
         if (CheckAddress(address, MEMPERM_WRITE))
