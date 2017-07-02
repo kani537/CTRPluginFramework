@@ -697,8 +697,11 @@ namespace CTRPluginFramework
         if (_inSearch)
         {
             // Draw Result count
-            std::string res = "Hit(s): " + std::to_string(_currentSearch->ResultsCount);            
-            Renderer::DrawString((char *)res.c_str(), 131, posY, blank);
+            //std::string res = "Hit(s): " + std::to_string(_currentSearch->ResultsCount);        
+            char buf[100] = { 0 };
+
+            sprintf(buf, "Hit(s): %u", _currentSearch->ResultsCount);
+            Renderer::DrawString(buf, 131, posY, blank);
         }
         if (!_inSearch)
         {

@@ -159,21 +159,6 @@ namespace CTRPluginFramework
         else if (_resultsInPool >= _maxResults - 4)
             WriteResults();
 
-        if (Controller::IsKeyPressed(Key::X))
-        {
-            char buf[0x200] = { 0 };
-
-            sprintf(buf, "isRegionFinished: %d, _nbResult: %08X\n" \
-                "_currentAddress: %08X  _endRegion: %08X\n" \
-                "_startRegion: %08X \n" \
-                "_indexRegion: %d, nbRegions: %d",
-                isRegionFinished, _previous->_header.regions[_previous->_indexRegion].nbResults, _currentAddress, _endRegion,
-                _startRegion, _indexRegion, _header.nbRegions
-                );
-
-            (MessageBox(buf))();
-        }
-
         // Search is not finished
         return (false);
     }

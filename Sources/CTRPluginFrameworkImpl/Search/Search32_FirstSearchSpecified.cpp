@@ -323,7 +323,8 @@ namespace CTRPluginFramework
 
                     if (EQ(value, _checkValue.Float))
                     {
-                        *result++ = {_currentAddress, value};
+                        result->address = _currentAddress;
+                        result++->value.Float = value;
                         _resultsInPool++;
                         ResultsCount++;
                     }
@@ -339,7 +340,8 @@ namespace CTRPluginFramework
 
                     if (NE(value, _checkValue.Float))
                     {
-                        *result++ = {_currentAddress, value};
+                        result->address = _currentAddress;
+                        result++->value.Float = value;
                         _resultsInPool++;
                         ResultsCount++;
                     }
@@ -355,7 +357,8 @@ namespace CTRPluginFramework
 
                     if (GT(value, _checkValue.Float))
                     {
-                        *result++ = {_currentAddress, value};
+                        result->address = _currentAddress;
+                        result++->value.Float = value;
                         _resultsInPool++;
                         ResultsCount++;
                     }
@@ -371,7 +374,8 @@ namespace CTRPluginFramework
 
                     if (GE(value, _checkValue.Float))
                     {
-                        *result++ = {_currentAddress, value};
+                        result->address = _currentAddress;
+                        result++->value.Float = value;
                         _resultsInPool++;
                         ResultsCount++;
                     }
@@ -387,7 +391,8 @@ namespace CTRPluginFramework
 
                     if (LT(value, _checkValue.Float))
                     {
-                        *result++ = {_currentAddress, value};
+                        result->address = _currentAddress;
+                        result++->value.Float = value;
                         _resultsInPool++;
                         ResultsCount++;
                     }
@@ -403,7 +408,8 @@ namespace CTRPluginFramework
 
                     if (LE(value, _checkValue.Float))
                     {
-                        *result++ = {_currentAddress, value};
+                        result->address = _currentAddress;
+                        result++->value.Float = value;
                         _resultsInPool++;
                         ResultsCount++;
                     }

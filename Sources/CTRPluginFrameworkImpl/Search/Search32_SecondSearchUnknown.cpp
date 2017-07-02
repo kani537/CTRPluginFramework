@@ -2,7 +2,7 @@
 
 namespace CTRPluginFramework
 {
-    void    Search32::SecondSearchUnknownU8(const std::vector<u32>& data, SearchFlags compare, Results32WithOld* result)
+    void    Search32::SecondSearchUnknownU8(Storage<u32> &data, SearchFlags compare, Results32WithOld* result)
     {
         u32 address = _startRegion + _currentAddress * 4;
 
@@ -451,7 +451,7 @@ namespace CTRPluginFramework
         _currentAddress = (address - _startRegion) / 4;
     }
 
-    void    Search32::SecondSearchUnknownU16(const std::vector<u32>& data, SearchFlags compare, Results32WithOld* result)
+    void    Search32::SecondSearchUnknownU16(Storage<u32> &data, SearchFlags compare, Results32WithOld* result)
     {
         u32 address = _startRegion + _currentAddress * 4;
 
@@ -639,7 +639,7 @@ namespace CTRPluginFramework
             }
             case SearchFlags::DifferentBy:
             {
-                u8 difference = _checkValue.U8;
+                u16 difference = _checkValue.U16;
 
                 for (u32 v : data)
                 {
@@ -671,7 +671,7 @@ namespace CTRPluginFramework
             }
             case SearchFlags::DifferentByLess:
             {
-                u8 difference = _checkValue.U8;
+                u16 difference = _checkValue.U16;
 
                 for (u32 v : data)
                 {
@@ -703,7 +703,7 @@ namespace CTRPluginFramework
             }
             case SearchFlags::DifferentByMore:
             {
-                u8 difference = _checkValue.U8;
+                u16 difference = _checkValue.U16;
 
                 for (u32 v : data)
                 {
@@ -738,7 +738,7 @@ namespace CTRPluginFramework
         _currentAddress = (address - _startRegion) / 4;
     }
 
-    void    Search32::SecondSearchUnknownU32(const std::vector<u32>& data, SearchFlags compare, Results32WithOld* result)
+    void    Search32::SecondSearchUnknownU32(Storage<u32> &data, SearchFlags compare, Results32WithOld* result)
     {
         u32 address = _startRegion + _currentAddress * 4;
 
@@ -753,7 +753,7 @@ namespace CTRPluginFramework
 
                     u32 newValue = *(u32 *)address;
 
-                    if (EQ(value, newValue))
+                    if (EQ(newValue, value))
                     {
                         *result++ = {address, newValue, value};
                         _resultsInPool++;
@@ -773,7 +773,7 @@ namespace CTRPluginFramework
 
                     u32 newValue = *(u32 *)address;
 
-                    if (NE(value, newValue))
+                    if (NE(newValue, value))
                     {
                         *result++ = {address, newValue, value};
                         _resultsInPool++;
@@ -793,7 +793,7 @@ namespace CTRPluginFramework
 
                     u32 newValue = *(u32 *)address;
 
-                    if (GT(value, newValue))
+                    if (GT(newValue, value))
                     {
                         *result++ = {address, newValue, value};
                         _resultsInPool++;
@@ -813,7 +813,7 @@ namespace CTRPluginFramework
 
                     u32 newValue = *(u32 *)address;
 
-                    if (GE(value, newValue))
+                    if (GE(newValue, value))
                     {
                         *result++ = {address, newValue, value};
                         _resultsInPool++;
@@ -833,7 +833,7 @@ namespace CTRPluginFramework
 
                     u32 newValue = *(u32 *)address;
 
-                    if (LT(value, newValue))
+                    if (LT(newValue, value))
                     {
                         *result++ = {address, newValue, value};
                         _resultsInPool++;
@@ -853,7 +853,7 @@ namespace CTRPluginFramework
 
                     u32 newValue = *(u32 *)address;
 
-                    if (LE(value, newValue))
+                    if (LE(newValue, value))
                     {
                         *result++ = {address, newValue, value};
                         _resultsInPool++;
@@ -875,7 +875,7 @@ namespace CTRPluginFramework
 
                     u32 newValue = *(u32 *)address;
 
-                    if (DB(value, newValue, difference))
+                    if (DB(newValue, value, difference))
                     {
                         *result++ = {address, newValue, value};
                         _resultsInPool++;
@@ -897,7 +897,7 @@ namespace CTRPluginFramework
 
                     u32 newValue = *(u32 *)address;
 
-                    if (DBL(value, newValue, difference))
+                    if (DBL(newValue, value, difference))
                     {
                         *result++ = {address, newValue, value};
                         _resultsInPool++;
@@ -919,7 +919,7 @@ namespace CTRPluginFramework
 
                     u32 newValue = *(u32 *)address;
 
-                    if (DBM(value, newValue, difference))
+                    if (DBM(newValue, value, difference))
                     {
                         *result++ = {address, newValue, value};
                         _resultsInPool++;
@@ -935,7 +935,7 @@ namespace CTRPluginFramework
         _currentAddress = (address - _startRegion) / 4;
     }
 
-    void    Search32::SecondSearchUnknownFloat(const std::vector<u32>& data, SearchFlags compare, Results32WithOld* result)
+    void    Search32::SecondSearchUnknownFloat(Storage<u32> &data, SearchFlags compare, Results32WithOld* result)
     {
         u32 address = _startRegion + _currentAddress * 4;
 
@@ -952,9 +952,11 @@ namespace CTRPluginFramework
 
                     float newValue = *(float *)address;
 
-                    if (EQ(value, newValue))
+                    if (EQ(newValue, value))
                     {
-                        *result++ = {address, newValue, value};
+                        result->address = address;
+                        result->newValue.Float = newValue;
+                        result++->oldValue.Float = value;
                         _resultsInPool++;
                         ResultsCount++;
                     }
@@ -974,9 +976,11 @@ namespace CTRPluginFramework
 
                     float newValue = *(float *)address;
 
-                    if (NE(value, newValue))
+                    if (NE(newValue, value))
                     {
-                        *result++ = {address, newValue, value};
+                        result->address = address;
+                        result->newValue.Float = newValue;
+                        result++->oldValue.Float = value;
                         _resultsInPool++;
                         ResultsCount++;
                     }
@@ -996,9 +1000,11 @@ namespace CTRPluginFramework
 
                     float newValue = *(float *)address;
 
-                    if (GT(value, newValue))
+                    if (GT(newValue, value))
                     {
-                        *result++ = {address, newValue, value};
+                        result->address = address;
+                        result->newValue.Float = newValue;
+                        result++->oldValue.Float = value;
                         _resultsInPool++;
                         ResultsCount++;
                     }
@@ -1018,9 +1024,11 @@ namespace CTRPluginFramework
 
                     float newValue = *(float *)address;
 
-                    if (GE(value, newValue))
+                    if (GE(newValue, value))
                     {
-                        *result++ = {address, newValue, value};
+                        result->address = address;
+                        result->newValue.Float = newValue;
+                        result++->oldValue.Float = value;
                         _resultsInPool++;
                         ResultsCount++;
                     }
@@ -1040,9 +1048,11 @@ namespace CTRPluginFramework
 
                     float newValue = *(float *)address;
 
-                    if (LT(value, newValue))
+                    if (LT(newValue, value))
                     {
-                        *result++ = {address, newValue, value};
+                        result->address = address;
+                        result->newValue.Float = newValue;
+                        result++->oldValue.Float = value;
                         _resultsInPool++;
                         ResultsCount++;
                     }
@@ -1062,9 +1072,11 @@ namespace CTRPluginFramework
 
                     float newValue = *(float *)address;
 
-                    if (LE(value, newValue))
+                    if (LE(newValue, value))
                     {
-                        *result++ = {address, newValue, value};
+                        result->address = address;
+                        result->newValue.Float = newValue;
+                        result++->oldValue.Float = value;
                         _resultsInPool++;
                         ResultsCount++;
                     }
@@ -1086,9 +1098,11 @@ namespace CTRPluginFramework
 
                     float newValue = *(float *)address;
 
-                    if (DB(value, newValue, difference))
+                    if (DB(newValue, value, difference))
                     {
-                        *result++ = {address, newValue, value};
+                        result->address = address;
+                        result->newValue.Float = newValue;
+                        result++->oldValue.Float = value;
                         _resultsInPool++;
                         ResultsCount++;
                     }
@@ -1110,9 +1124,11 @@ namespace CTRPluginFramework
 
                     float newValue = *(float *)address;
 
-                    if (DBL(value, newValue, difference))
+                    if (DBL(newValue, value, difference))
                     {
-                        *result++ = {address, newValue, value};
+                        result->address = address;
+                        result->newValue.Float = newValue;
+                        result++->oldValue.Float = value;
                         _resultsInPool++;
                         ResultsCount++;
                     }
@@ -1134,9 +1150,11 @@ namespace CTRPluginFramework
 
                     float newValue = *(float *)address;
 
-                    if (DBM(value, newValue, difference))
+                    if (DBM(newValue, value, difference))
                     {
-                        *result++ = {address, newValue, value};
+                        result->address = address;
+                        result->newValue.Float = newValue;
+                        result++->oldValue.Float = value;
                         _resultsInPool++;
                         ResultsCount++;
                     }

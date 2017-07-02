@@ -6,6 +6,7 @@
 #include <cstring>
 #include "CTRPluginFramework/Menu/MessageBox.hpp"
 #include <algorithm>
+#include "3DS.h"
 
 namespace CTRPluginFramework
 {
@@ -17,7 +18,7 @@ namespace CTRPluginFramework
 
         return (buf);
     }
-
+    
     Search32::Search32(SearchParameters& parameters) :
     Search(parameters.previous)
     {
@@ -243,13 +244,10 @@ namespace CTRPluginFramework
         if (_currentAddress >= _endRegion)
             return (true);
 
-        u32     nbItem = std::min((u32)5000, _endRegion - _currentAddress);
+        u32     nbItem = std::min((u32)25000, _endRegion - _currentAddress);
 
-        std::vector<Results32>  previousHits;
-        Results32WithOld        *result = reinterpret_cast<Results32WithOld *>((u32)_pool + (sizeof(Results32WithOld) * _resultsInPool));
-        
-        // Resize container and create the items
-        previousHits.resize(nbItem);        
+        Storage<Results32>      previousHits(nbItem);
+        Results32WithOld        *result = reinterpret_cast<Results32WithOld *>((u32)_pool + (sizeof(Results32WithOld) * _resultsInPool));  
 
         // Extract previous hits
         _previous->ExtractPreviousHits(previousHits.data(), _currentAddress, sizeof(Results32), nbItem);
@@ -282,18 +280,11 @@ namespace CTRPluginFramework
 
         u32 nbItem = std::min((u32)0x10000, (u32)_endRegion - _currentAddress);
 
-        std::vector<u32>  previousHits;
-        Results32WithOld  *result = reinterpret_cast<Results32WithOld *>((u32)_pool + (sizeof(Results32WithOld) * _resultsInPool));
-
-        // Resize container and create the items
-        previousHits.resize(nbItem);
+        Storage<u32>        previousHits(nbItem);
+        Results32WithOld    *result = reinterpret_cast<Results32WithOld *>((u32)_pool + (sizeof(Results32WithOld) * _resultsInPool));
 
         // Extract previous hits
         _previous->ExtractPreviousHits(previousHits.data(), _currentAddress, sizeof(u32), nbItem);
-
-        // If previousHits is empty, we finished the region
-        if (previousHits.empty())
-            return (true);
 
         // Resize container to real size
         previousHits.resize(nbItem);
@@ -321,13 +312,10 @@ namespace CTRPluginFramework
         if (_currentAddress >= _endRegion)
             return (true);
 
-        u32     nbItem = std::min((u32)10000, _endRegion - _currentAddress);
+        u32     nbItem = std::min((u32)25000, _endRegion - _currentAddress);
 
-        std::vector<Results32WithOld>  previousHits;
-        Results32WithOld        *result = reinterpret_cast<Results32WithOld *>((u32)_pool + (sizeof(Results32WithOld) * _resultsInPool));
-
-        // Resize container and create the items
-        previousHits.resize(nbItem);
+        Storage<Results32WithOld>   previousHits(nbItem);
+        Results32WithOld            *result = reinterpret_cast<Results32WithOld *>((u32)_pool + (sizeof(Results32WithOld) * _resultsInPool));
 
         // Extract previous hits
         _previous->ExtractPreviousHits(previousHits.data(), _currentAddress, sizeof(Results32WithOld), nbItem);
@@ -358,13 +346,10 @@ namespace CTRPluginFramework
         if (_currentAddress >= _endRegion)
             return (true);
 
-        u32     nbItem = std::min((u32)10000, _endRegion - _currentAddress);
+        u32     nbItem = std::min((u32)25000, _endRegion - _currentAddress);
 
-        std::vector<Results32WithOld>  previousHits;
-        Results32WithOld        *result = reinterpret_cast<Results32WithOld *>((u32)_pool + (sizeof(Results32WithOld) * _resultsInPool));
-
-        // Resize container and create the items
-        previousHits.resize(nbItem);
+        Storage<Results32WithOld>   previousHits(nbItem);
+        Results32WithOld            *result = reinterpret_cast<Results32WithOld *>((u32)_pool + (sizeof(Results32WithOld) * _resultsInPool));
 
         // Extract previous hits
         _previous->ExtractPreviousHits(previousHits.data(), _currentAddress, sizeof(Results32WithOld), nbItem);

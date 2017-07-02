@@ -12,7 +12,8 @@ namespace CTRPluginFramework
     {
     public:
 
-        /*Storage() :
+        /* Disabled so dev is forced to set the capacity
+        Storage() :
             _itemCount(0)
         {
             _pool = new T[10];
@@ -54,12 +55,12 @@ namespace CTRPluginFramework
             return (&_pool[_itemCount]);
         }
 
-        void  *data(void)
+        void  *data(void) const
         {
             return ((void *)_pool);
         }
 
-        // Force item count
+        // Force item count, memory isn't initilized
         void    resize(u32 size)
         {
             if (size > _capacity)
@@ -81,17 +82,17 @@ namespace CTRPluginFramework
             }
         }
 
-        u32     size(void)
+        u32     size(void) const
         {
             return (_itemCount);
         }
 
-        u32     capacity(void)
+        u32     capacity(void) const
         {
             return (_capacity);
         }
 
-        bool    empty(void)
+        bool    empty(void) const
         {
             return (_itemCount == 0);
         }

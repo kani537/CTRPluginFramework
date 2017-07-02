@@ -37,25 +37,25 @@ namespace CTRPluginFramework
         void    FirstSearchSpecifiedU32(u32 endAddress, SearchFlags compare, Results32 *result);
         void    FirstSearchSpecifiedFloat(u32 endAddress, SearchFlags compare, Results32 *result);
 
-        void    SecondSearchSpecifiedU8(const std::vector<Results32> &data, SearchFlags compare, Results32WithOld *result);
-        void    SecondSearchSpecifiedU16(const std::vector<Results32> &data, SearchFlags compare, Results32WithOld *result);
-        void    SecondSearchSpecifiedU32(const std::vector<Results32> &data, SearchFlags compare, Results32WithOld *result);
-        void    SecondSearchSpecifiedFloat(const std::vector<Results32> &data, SearchFlags compare, Results32WithOld *result);
+        void    SecondSearchSpecifiedU8(Storage<Results32> &data, SearchFlags compare, Results32WithOld *result);
+        void    SecondSearchSpecifiedU16(Storage<Results32> &data, SearchFlags compare, Results32WithOld *result);
+        void    SecondSearchSpecifiedU32(Storage<Results32> &data, SearchFlags compare, Results32WithOld *result);
+        void    SecondSearchSpecifiedFloat(Storage<Results32> &data, SearchFlags compare, Results32WithOld *result);
 
-        void    SecondSearchUnknownU8(const std::vector<u32> &data, SearchFlags compare, Results32WithOld *result);
-        void    SecondSearchUnknownU16(const std::vector<u32> &data, SearchFlags compare, Results32WithOld *result);
-        void    SecondSearchUnknownU32(const std::vector<u32> &data, SearchFlags compare, Results32WithOld *result);
-        void    SecondSearchUnknownFloat(const std::vector<u32> &data, SearchFlags compare, Results32WithOld *result);
+        void    SecondSearchUnknownU8(Storage<u32> &data, SearchFlags compare, Results32WithOld *result);
+        void    SecondSearchUnknownU16(Storage<u32> &data, SearchFlags compare, Results32WithOld *result);
+        void    SecondSearchUnknownU32(Storage<u32> &data, SearchFlags compare, Results32WithOld *result);
+        void    SecondSearchUnknownFloat(Storage<u32> &data, SearchFlags compare, Results32WithOld *result);
 
-        void    SubsidiarySearchSpecifiedU8(const std::vector<Results32WithOld> &data, SearchFlags compare, Results32WithOld* result);
-        void    SubsidiarySearchSpecifiedU16(const std::vector<Results32WithOld> &data, SearchFlags compare, Results32WithOld* result);
-        void    SubsidiarySearchSpecifiedU32(const std::vector<Results32WithOld> &data, SearchFlags compare, Results32WithOld* result);
-        void    SubsidiarySearchSpecifiedFloat(const std::vector<Results32WithOld> &data, SearchFlags compare, Results32WithOld* result);
+        void    SubsidiarySearchSpecifiedU8(Storage<Results32WithOld> &data, SearchFlags compare, Results32WithOld* result);
+        void    SubsidiarySearchSpecifiedU16(Storage<Results32WithOld> &data, SearchFlags compare, Results32WithOld* result);
+        void    SubsidiarySearchSpecifiedU32(Storage<Results32WithOld> &data, SearchFlags compare, Results32WithOld* result);
+        void    SubsidiarySearchSpecifiedFloat(Storage<Results32WithOld> &data, SearchFlags compare, Results32WithOld* result);
 
-        void    SubsidiarySearchUnknownU8(const std::vector<Results32WithOld> &data, SearchFlags compare, Results32WithOld* result);
-        void    SubsidiarySearchUnknownU16(const std::vector<Results32WithOld> &data, SearchFlags compare, Results32WithOld* result);
-        void    SubsidiarySearchUnknownU32(const std::vector<Results32WithOld> &data, SearchFlags compare, Results32WithOld* result);
-        void    SubsidiarySearchUnknownFloat(const std::vector<Results32WithOld> &data, SearchFlags compare, Results32WithOld* result);
+        void    SubsidiarySearchUnknownU8(Storage<Results32WithOld> &data, SearchFlags compare, Results32WithOld* result);
+        void    SubsidiarySearchUnknownU16(Storage<Results32WithOld> &data, SearchFlags compare, Results32WithOld* result);
+        void    SubsidiarySearchUnknownU32(Storage<Results32WithOld> &data, SearchFlags compare, Results32WithOld* result);
+        void    SubsidiarySearchUnknownFloat(Storage<Results32WithOld> &data, SearchFlags compare, Results32WithOld* result);
 
 
 

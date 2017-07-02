@@ -2,7 +2,7 @@
 
 namespace CTRPluginFramework
 {
-    void    Search32::SecondSearchSpecifiedU8(const std::vector<Results32>& data, SearchFlags compare, Results32WithOld* result)
+    void    Search32::SecondSearchSpecifiedU8(Storage<Results32>& data, SearchFlags compare, Results32WithOld* result)
     {
         u8 checkValue = _checkValue.U8;
 
@@ -18,7 +18,7 @@ namespace CTRPluginFramework
                     u8 newValue = *(u8 *)res.address;
                     u8 oldValue = res.value.U8;
 
-                    if (EQ(checkValue, newValue))
+                    if (EQ(newValue, checkValue))
                     {
                         *result++ = { res.address, newValue, oldValue };
                         _resultsInPool++;
@@ -35,7 +35,7 @@ namespace CTRPluginFramework
                     u8 newValue = *(u8 *)res.address;
                     u8 oldValue = res.value.U8;
 
-                    if (NE(checkValue, newValue))
+                    if (NE(newValue, checkValue))
                     {
                         *result++ = { res.address, newValue, oldValue };
                         _resultsInPool++;
@@ -52,7 +52,7 @@ namespace CTRPluginFramework
                     u8 newValue = *(u8 *)res.address;
                     u8 oldValue = res.value.U8;
 
-                    if (GT(checkValue, newValue))
+                    if (GT(newValue, checkValue))
                     {
                         *result++ = { res.address, newValue, oldValue };
                         _resultsInPool++;
@@ -69,7 +69,7 @@ namespace CTRPluginFramework
                     u8 newValue = *(u8 *)res.address;
                     u8 oldValue = res.value.U8;
 
-                    if (GE(checkValue, newValue))
+                    if (GE(newValue, checkValue))
                     {
                         *result++ = { res.address, newValue, oldValue };
                         _resultsInPool++;
@@ -86,7 +86,7 @@ namespace CTRPluginFramework
                     u8 newValue = *(u8 *)res.address;
                     u8 oldValue = res.value.U8;
 
-                    if (LT(checkValue, newValue))
+                    if (LT(newValue, checkValue))
                     {
                         *result++ = { res.address, newValue, oldValue };
                         _resultsInPool++;
@@ -103,7 +103,7 @@ namespace CTRPluginFramework
                     u8 newValue = *(u8 *)res.address;
                     u8 oldValue = res.value.U8;
 
-                    if (LE(checkValue, newValue))
+                    if (LE(newValue, checkValue))
                     {
                         *result++ = { res.address, newValue, oldValue };
                         _resultsInPool++;
@@ -120,7 +120,7 @@ namespace CTRPluginFramework
                     u8 newValue = *(u8 *)res.address;
                     u8 oldValue = res.value.U8;
 
-                    if (DB(oldValue, newValue, _checkValue.U8))
+                    if (DB(newValue, oldValue, _checkValue.U8))
                     {
                         *result++ = { res.address, newValue, oldValue };
                         _resultsInPool++;
@@ -137,7 +137,7 @@ namespace CTRPluginFramework
                     u8 newValue = *(u8 *)res.address;
                     u8 oldValue = res.value.U8;
 
-                    if (DBL(oldValue, newValue, _checkValue.U8))
+                    if (DBL(newValue, oldValue, _checkValue.U8))
                     {
                         *result++ = { res.address, newValue, oldValue };
                         _resultsInPool++;
@@ -154,7 +154,7 @@ namespace CTRPluginFramework
                     u8 newValue = *(u8 *)res.address;
                     u8 oldValue = res.value.U8;
 
-                    if (DBM(oldValue, newValue, _checkValue.U8))
+                    if (DBM(newValue, oldValue, _checkValue.U8))
                     {
                         *result++ = { res.address, newValue, oldValue };
                         _resultsInPool++;
@@ -178,7 +178,7 @@ namespace CTRPluginFramework
                     u8 newValue = *(u8 *)res.address;
                     u8 oldValue = res.value.U8;
 
-                    if (EQ(oldValue, newValue))
+                    if (EQ(newValue, oldValue))
                     {
                         *result++ = { res.address, newValue, oldValue };
                         _resultsInPool++;
@@ -195,7 +195,7 @@ namespace CTRPluginFramework
                     u8 newValue = *(u8 *)res.address;
                     u8 oldValue = res.value.U8;
 
-                    if (NE(oldValue, newValue))
+                    if (NE(newValue, oldValue))
                     {
                         *result++ = { res.address, newValue, oldValue };
                         _resultsInPool++;
@@ -212,7 +212,7 @@ namespace CTRPluginFramework
                     u8 newValue = *(u8 *)res.address;
                     u8 oldValue = res.value.U8;
 
-                    if (GT(oldValue, newValue))
+                    if (GT(newValue, oldValue))
                     {
                         *result++ = { res.address, newValue, oldValue };
                         _resultsInPool++;
@@ -229,7 +229,7 @@ namespace CTRPluginFramework
                     u8 newValue = *(u8 *)res.address;
                     u8 oldValue = res.value.U8;
 
-                    if (GE(oldValue, newValue))
+                    if (GE(newValue, oldValue))
                     {
                         *result++ = { res.address, newValue, oldValue };
                         _resultsInPool++;
@@ -246,7 +246,7 @@ namespace CTRPluginFramework
                     u8 newValue = *(u8 *)res.address;
                     u8 oldValue = res.value.U8;
 
-                    if (LT(oldValue, newValue))
+                    if (LT(newValue, oldValue))
                     {
                         *result++ = { res.address, newValue, oldValue };
                         _resultsInPool++;
@@ -263,7 +263,7 @@ namespace CTRPluginFramework
                     u8 newValue = *(u8 *)res.address;
                     u8 oldValue = res.value.U8;
 
-                    if (LE(oldValue, newValue))
+                    if (LE(newValue, oldValue))
                     {
                         *result++ = { res.address, newValue, oldValue };
                         _resultsInPool++;
@@ -280,7 +280,7 @@ namespace CTRPluginFramework
                     u8 newValue = *(u8 *)res.address;
                     u8 oldValue = res.value.U8;
 
-                    if (DB(oldValue, newValue, _checkValue.U8))
+                    if (DB(newValue, oldValue, _checkValue.U8))
                     {
                         *result++ = { res.address, newValue, oldValue };
                         _resultsInPool++;
@@ -297,7 +297,7 @@ namespace CTRPluginFramework
                     u8 newValue = *(u8 *)res.address;
                     u8 oldValue = res.value.U8;
 
-                    if (DBL(oldValue, newValue, _checkValue.U8))
+                    if (DBL(newValue, oldValue, _checkValue.U8))
                     {
                         *result++ = { res.address, newValue, oldValue };
                         _resultsInPool++;
@@ -314,7 +314,7 @@ namespace CTRPluginFramework
                     u8 newValue = *(u8 *)res.address;
                     u8 oldValue = res.value.U8;
 
-                    if (DBM(oldValue, newValue, _checkValue.U8))
+                    if (DBM(newValue, oldValue, _checkValue.U8))
                     {
                         *result++ = { res.address, newValue, oldValue };
                         _resultsInPool++;
@@ -329,7 +329,7 @@ namespace CTRPluginFramework
         }
     }
 
-    void    Search32::SecondSearchSpecifiedU16(const std::vector<Results32>& data, SearchFlags compare, Results32WithOld* result)
+    void    Search32::SecondSearchSpecifiedU16(Storage<Results32>& data, SearchFlags compare, Results32WithOld* result)
     {
         u16 checkValue = _checkValue.U16;
 
@@ -345,7 +345,7 @@ namespace CTRPluginFramework
                     u16 newValue = *(u16 *)res.address;
                     u16 oldValue = res.value.U16;
 
-                    if (EQ(checkValue, newValue))
+                    if (EQ(newValue, checkValue))
                     {
                         *result++ = { res.address, newValue, oldValue };
                         _resultsInPool++;
@@ -362,7 +362,7 @@ namespace CTRPluginFramework
                     u16 newValue = *(u16 *)res.address;
                     u16 oldValue = res.value.U16;
 
-                    if (NE(checkValue, newValue))
+                    if (NE(newValue, checkValue))
                     {
                         *result++ = { res.address, newValue, oldValue };
                         _resultsInPool++;
@@ -379,7 +379,7 @@ namespace CTRPluginFramework
                     u16 newValue = *(u16 *)res.address;
                     u16 oldValue = res.value.U16;
 
-                    if (GT(checkValue, newValue))
+                    if (GT(newValue, checkValue))
                     {
                         *result++ = { res.address, newValue, oldValue };
                         _resultsInPool++;
@@ -396,7 +396,7 @@ namespace CTRPluginFramework
                     u16 newValue = *(u16 *)res.address;
                     u16 oldValue = res.value.U16;
 
-                    if (GE(checkValue, newValue))
+                    if (GE(newValue, checkValue))
                     {
                         *result++ = { res.address, newValue, oldValue };
                         _resultsInPool++;
@@ -413,7 +413,7 @@ namespace CTRPluginFramework
                     u16 newValue = *(u16 *)res.address;
                     u16 oldValue = res.value.U16;
 
-                    if (LT(checkValue, newValue))
+                    if (LT(newValue, checkValue))
                     {
                         *result++ = { res.address, newValue, oldValue };
                         _resultsInPool++;
@@ -430,7 +430,7 @@ namespace CTRPluginFramework
                     u16 newValue = *(u16 *)res.address;
                     u16 oldValue = res.value.U16;
 
-                    if (LE(checkValue, newValue))
+                    if (LE(newValue, checkValue))
                     {
                         *result++ = { res.address, newValue, oldValue };
                         _resultsInPool++;
@@ -447,7 +447,7 @@ namespace CTRPluginFramework
                     u16 newValue = *(u16 *)res.address;
                     u16 oldValue = res.value.U16;
 
-                    if (DB(oldValue, newValue, _checkValue.U16))
+                    if (DB(newValue, oldValue, _checkValue.U16))
                     {
                         *result++ = { res.address, newValue, oldValue };
                         _resultsInPool++;
@@ -464,7 +464,7 @@ namespace CTRPluginFramework
                     u16 newValue = *(u16 *)res.address;
                     u16 oldValue = res.value.U16;
 
-                    if (DBL(oldValue, newValue, _checkValue.U16))
+                    if (DBL(newValue, oldValue, _checkValue.U16))
                     {
                         *result++ = { res.address, newValue, oldValue };
                         _resultsInPool++;
@@ -481,7 +481,7 @@ namespace CTRPluginFramework
                     u16 newValue = *(u16 *)res.address;
                     u16 oldValue = res.value.U16;
 
-                    if (DBM(oldValue, newValue, _checkValue.U16))
+                    if (DBM(newValue, oldValue, _checkValue.U16))
                     {
                         *result++ = { res.address, newValue, oldValue };
                         _resultsInPool++;
@@ -506,7 +506,7 @@ namespace CTRPluginFramework
                     u16 newValue = *(u16 *)res.address;
                     u16 oldValue = res.value.U16;
 
-                    if (EQ(oldValue, newValue))
+                    if (EQ(newValue, oldValue))
                     {
                         *result++ = { res.address, newValue, oldValue };
                         _resultsInPool++;
@@ -523,7 +523,7 @@ namespace CTRPluginFramework
                     u16 newValue = *(u16 *)res.address;
                     u16 oldValue = res.value.U16;
 
-                    if (NE(oldValue, newValue))
+                    if (NE(newValue, oldValue))
                     {
                         *result++ = { res.address, newValue, oldValue };
                         _resultsInPool++;
@@ -540,7 +540,7 @@ namespace CTRPluginFramework
                     u16 newValue = *(u16 *)res.address;
                     u16 oldValue = res.value.U16;
 
-                    if (GT(oldValue, newValue))
+                    if (GT(newValue, oldValue))
                     {
                         *result++ = { res.address, newValue, oldValue };
                         _resultsInPool++;
@@ -557,7 +557,7 @@ namespace CTRPluginFramework
                     u16 newValue = *(u16 *)res.address;
                     u16 oldValue = res.value.U16;
 
-                    if (GE(oldValue, newValue))
+                    if (GE(newValue, oldValue))
                     {
                         *result++ = { res.address, newValue, oldValue };
                         _resultsInPool++;
@@ -574,7 +574,7 @@ namespace CTRPluginFramework
                     u16 newValue = *(u16 *)res.address;
                     u16 oldValue = res.value.U16;
 
-                    if (LT(oldValue, newValue))
+                    if (LT(newValue, oldValue))
                     {
                         *result++ = { res.address, newValue, oldValue };
                         _resultsInPool++;
@@ -591,7 +591,7 @@ namespace CTRPluginFramework
                     u16 newValue = *(u16 *)res.address;
                     u16 oldValue = res.value.U16;
 
-                    if (LE(oldValue, newValue))
+                    if (LE(newValue, oldValue))
                     {
                         *result++ = { res.address, newValue, oldValue };
                         _resultsInPool++;
@@ -608,7 +608,7 @@ namespace CTRPluginFramework
                     u16 newValue = *(u16 *)res.address;
                     u16 oldValue = res.value.U16;
 
-                    if (DB(oldValue, newValue, _checkValue.U16))
+                    if (DB(newValue, oldValue, _checkValue.U16))
                     {
                         *result++ = { res.address, newValue, oldValue };
                         _resultsInPool++;
@@ -625,7 +625,7 @@ namespace CTRPluginFramework
                     u16 newValue = *(u16 *)res.address;
                     u16 oldValue = res.value.U16;
 
-                    if (DBL(oldValue, newValue, _checkValue.U16))
+                    if (DBL(newValue, oldValue, _checkValue.U16))
                     {
                         *result++ = { res.address, newValue, oldValue };
                         _resultsInPool++;
@@ -642,7 +642,7 @@ namespace CTRPluginFramework
                     u16 newValue = *(u16 *)res.address;
                     u16 oldValue = res.value.U16;
 
-                    if (DBM(oldValue, newValue, _checkValue.U16))
+                    if (DBM(newValue, oldValue, _checkValue.U16))
                     {
                         *result++ = { res.address, newValue, oldValue };
                         _resultsInPool++;
@@ -656,7 +656,7 @@ namespace CTRPluginFramework
         }
     }
 
-    void    Search32::SecondSearchSpecifiedU32(const std::vector<Results32>& data, SearchFlags compare, Results32WithOld* result)
+    void    Search32::SecondSearchSpecifiedU32(Storage<Results32>& data, SearchFlags compare, Results32WithOld* result)
     {
         u32 checkValue = _checkValue.U32;
 
@@ -673,7 +673,7 @@ namespace CTRPluginFramework
                     u32 oldValue = res.value.U32;
 
 
-                    if (EQ(checkValue, newValue))
+                    if (EQ(newValue, checkValue))
                     {
                         *result++ = { res.address, newValue, oldValue };
                         _resultsInPool++;
@@ -690,7 +690,7 @@ namespace CTRPluginFramework
                     u32 newValue = *(u32 *)res.address;
                     u32 oldValue = res.value.U32;
 
-                    if (NE(checkValue, newValue))
+                    if (NE(newValue, checkValue))
                     {
                         *result++ = { res.address, newValue, oldValue };
                         _resultsInPool++;
@@ -707,7 +707,7 @@ namespace CTRPluginFramework
                     u32 newValue = *(u32 *)res.address;
                     u32 oldValue = res.value.U32;
 
-                    if (GT(checkValue, newValue))
+                    if (GT(newValue, checkValue))
                     {
                         *result++ = { res.address, newValue, oldValue };
                         _resultsInPool++;
@@ -724,7 +724,7 @@ namespace CTRPluginFramework
                     u32 newValue = *(u32 *)res.address;
                     u32 oldValue = res.value.U32;
 
-                    if (GE(checkValue, newValue))
+                    if (GE(newValue, checkValue))
                     {
                         *result++ = { res.address, newValue, oldValue };
                         _resultsInPool++;
@@ -741,7 +741,7 @@ namespace CTRPluginFramework
                     u32 newValue = *(u32 *)res.address;
                     u32 oldValue = res.value.U32;
 
-                    if (LT(checkValue, newValue))
+                    if (LT(newValue, checkValue))
                     {
                         *result++ = { res.address, newValue, oldValue };
                         _resultsInPool++;
@@ -758,7 +758,7 @@ namespace CTRPluginFramework
                     u32 newValue = *(u32 *)res.address;
                     u32 oldValue = res.value.U32;
 
-                    if (LE(checkValue, newValue))
+                    if (LE(newValue, checkValue))
                     {
                         *result++ = { res.address, newValue, oldValue };
                         _resultsInPool++;
@@ -775,7 +775,7 @@ namespace CTRPluginFramework
                     u32 newValue = *(u32 *)res.address;
                     u32 oldValue = res.value.U32;
 
-                    if (DB(oldValue, newValue, _checkValue.U32))
+                    if (DB(newValue, oldValue, _checkValue.U32))
                     {
                         *result++ = { res.address, newValue, oldValue };
                         _resultsInPool++;
@@ -792,7 +792,7 @@ namespace CTRPluginFramework
                     u32 newValue = *(u32 *)res.address;
                     u32 oldValue = res.value.U32;
 
-                    if (DBL(oldValue, newValue, _checkValue.U32))
+                    if (DBL(newValue, oldValue, _checkValue.U32))
                     {
                         *result++ = { res.address, newValue, oldValue };
                         _resultsInPool++;
@@ -809,7 +809,7 @@ namespace CTRPluginFramework
                     u32 newValue = *(u32 *)res.address;
                     u32 oldValue = res.value.U32;
 
-                    if (DBM(oldValue, newValue, _checkValue.U32))
+                    if (DBM(newValue, oldValue, _checkValue.U32))
                     {
                         *result++ = { res.address, newValue, oldValue };
                         _resultsInPool++;
@@ -835,7 +835,7 @@ namespace CTRPluginFramework
                     u32 oldValue = res.value.U32;
 
 
-                    if (EQ(oldValue, newValue))
+                    if (EQ(newValue, oldValue))
                     {
                         *result++ = { res.address, newValue, oldValue };
                         _resultsInPool++;
@@ -852,7 +852,7 @@ namespace CTRPluginFramework
                     u32 newValue = *(u32 *)res.address;
                     u32 oldValue = res.value.U32;
 
-                    if (NE(oldValue, newValue))
+                    if (NE(newValue, oldValue))
                     {
                         *result++ = { res.address, newValue, oldValue };
                         _resultsInPool++;
@@ -869,7 +869,7 @@ namespace CTRPluginFramework
                     u32 newValue = *(u32 *)res.address;
                     u32 oldValue = res.value.U32;
 
-                    if (GT(oldValue, newValue))
+                    if (GT(newValue, oldValue))
                     {
                         *result++ = { res.address, newValue, oldValue };
                         _resultsInPool++;
@@ -886,7 +886,7 @@ namespace CTRPluginFramework
                     u32 newValue = *(u32 *)res.address;
                     u32 oldValue = res.value.U32;
 
-                    if (GE(oldValue, newValue))
+                    if (GE(newValue, oldValue))
                     {
                         *result++ = { res.address, newValue, oldValue };
                         _resultsInPool++;
@@ -903,7 +903,7 @@ namespace CTRPluginFramework
                     u32 newValue = *(u32 *)res.address;
                     u32 oldValue = res.value.U32;
 
-                    if (LT(oldValue, newValue))
+                    if (LT(newValue, oldValue))
                     {
                         *result++ = { res.address, newValue, oldValue };
                         _resultsInPool++;
@@ -920,7 +920,7 @@ namespace CTRPluginFramework
                     u32 newValue = *(u32 *)res.address;
                     u32 oldValue = res.value.U32;
 
-                    if (LE(oldValue, newValue))
+                    if (LE(newValue, oldValue))
                     {
                         *result++ = { res.address, newValue, oldValue };
                         _resultsInPool++;
@@ -937,7 +937,7 @@ namespace CTRPluginFramework
                     u32 newValue = *(u32 *)res.address;
                     u32 oldValue = res.value.U32;
 
-                    if (DB(oldValue, newValue, _checkValue.U32))
+                    if (DB(newValue, oldValue, _checkValue.U32))
                     {
                         *result++ = { res.address, newValue, oldValue };
                         _resultsInPool++;
@@ -954,7 +954,7 @@ namespace CTRPluginFramework
                     u32 newValue = *(u32 *)res.address;
                     u32 oldValue = res.value.U32;
 
-                    if (DBL(oldValue, newValue, _checkValue.U32))
+                    if (DBL(newValue, oldValue, _checkValue.U32))
                     {
                         *result++ = { res.address, newValue, oldValue };
                         _resultsInPool++;
@@ -971,7 +971,7 @@ namespace CTRPluginFramework
                     u32 newValue = *(u32 *)res.address;
                     u32 oldValue = res.value.U32;
 
-                    if (DBM(oldValue, newValue, _checkValue.U32))
+                    if (DBM(newValue, oldValue, _checkValue.U32))
                     {
                         *result++ = { res.address, newValue, oldValue };
                         _resultsInPool++;
@@ -985,7 +985,7 @@ namespace CTRPluginFramework
         }
     }
 
-    void    Search32::SecondSearchSpecifiedFloat(const std::vector<Results32>& data, SearchFlags compare, Results32WithOld* result)
+    void    Search32::SecondSearchSpecifiedFloat(Storage<Results32>& data, SearchFlags compare, Results32WithOld* result)
     {
         float checkValue = _checkValue.Float;
 
@@ -1001,9 +1001,11 @@ namespace CTRPluginFramework
                     float newValue = *(float *)res.address;
                     float oldValue = res.value.Float;
 
-                    if (EQ(checkValue, newValue))
+                    if (EQ(newValue, checkValue))
                     {
-                        *result++ = { res.address, newValue, oldValue };
+                        result->address = res.address;
+                        result->newValue.Float = newValue;
+                        result++->oldValue.Float = oldValue;
                         _resultsInPool++;
                         ResultsCount++;
                     }
@@ -1018,9 +1020,11 @@ namespace CTRPluginFramework
                     float newValue = *(float *)res.address;
                     float oldValue = res.value.Float;
 
-                    if (NE(checkValue, newValue))
+                    if (NE(newValue, checkValue))
                     {
-                        *result++ = { res.address, newValue, oldValue };
+                        result->address = res.address;
+                        result->newValue.Float = newValue;
+                        result++->oldValue.Float = oldValue;
                         _resultsInPool++;
                         ResultsCount++;
                     }
@@ -1035,9 +1039,11 @@ namespace CTRPluginFramework
                     float newValue = *(float *)res.address;
                     float oldValue = res.value.Float;
 
-                    if (GT(checkValue, newValue))
+                    if (GT(newValue, checkValue))
                     {
-                        *result++ = { res.address, newValue, oldValue };
+                        result->address = res.address;
+                        result->newValue.Float = newValue;
+                        result++->oldValue.Float = oldValue;
                         _resultsInPool++;
                         ResultsCount++;
                     }
@@ -1052,9 +1058,11 @@ namespace CTRPluginFramework
                     float newValue = *(float *)res.address;
                     float oldValue = res.value.Float;
 
-                    if (GE(checkValue, newValue))
+                    if (GE(newValue, checkValue))
                     {
-                        *result++ = { res.address, newValue, oldValue };
+                        result->address = res.address;
+                        result->newValue.Float = newValue;
+                        result++->oldValue.Float = oldValue;
                         _resultsInPool++;
                         ResultsCount++;
                     }
@@ -1069,9 +1077,11 @@ namespace CTRPluginFramework
                     float newValue = *(float *)res.address;
                     float oldValue = res.value.Float;
 
-                    if (LT(checkValue, newValue))
+                    if (LT(newValue, checkValue))
                     {
-                        *result++ = { res.address, newValue, oldValue };
+                        result->address = res.address;
+                        result->newValue.Float = newValue;
+                        result++->oldValue.Float = oldValue;
                         _resultsInPool++;
                         ResultsCount++;
                     }
@@ -1086,9 +1096,11 @@ namespace CTRPluginFramework
                     float newValue = *(float *)res.address;
                     float oldValue = res.value.Float;
 
-                    if (LE(checkValue, newValue))
+                    if (LE(newValue, checkValue))
                     {
-                        *result++ = { res.address, newValue, oldValue };
+                        result->address = res.address;
+                        result->newValue.Float = newValue;
+                        result++->oldValue.Float = oldValue;
                         _resultsInPool++;
                         ResultsCount++;
                     }
@@ -1103,9 +1115,11 @@ namespace CTRPluginFramework
                     float newValue = *(float *)res.address;
                     float oldValue = res.value.Float;
 
-                    if (DB(oldValue, newValue, _checkValue.Float))
+                    if (DB(newValue, oldValue, _checkValue.Float))
                     {
-                        *result++ = { res.address, newValue, oldValue };
+                        result->address = res.address;
+                        result->newValue.Float = newValue;
+                        result++->oldValue.Float = oldValue;
                         _resultsInPool++;
                         ResultsCount++;
                     }
@@ -1120,9 +1134,11 @@ namespace CTRPluginFramework
                     float newValue = *(float *)res.address;
                     float oldValue = res.value.Float;
 
-                    if (DBL(oldValue, newValue, _checkValue.Float))
+                    if (DBL(newValue, oldValue, _checkValue.Float))
                     {
-                        *result++ = { res.address, newValue, oldValue };
+                        result->address = res.address;
+                        result->newValue.Float = newValue;
+                        result++->oldValue.Float = oldValue;
                         _resultsInPool++;
                         ResultsCount++;
                     }
@@ -1137,9 +1153,11 @@ namespace CTRPluginFramework
                     float newValue = *(float *)res.address;
                     float oldValue = res.value.Float;
 
-                    if (DBM(oldValue, newValue, _checkValue.Float))
+                    if (DBM(newValue, oldValue, _checkValue.Float))
                     {
-                        *result++ = { res.address, newValue, oldValue };
+                        result->address = res.address;
+                        result->newValue.Float = newValue;
+                        result++->oldValue.Float = oldValue;
                         _resultsInPool++;
                         ResultsCount++;
                     }
@@ -1162,9 +1180,11 @@ namespace CTRPluginFramework
                     float newValue = *(float *)res.address;
                     float oldValue = res.value.Float;
 
-                    if (EQ(oldValue, newValue))
+                    if (EQ(newValue, oldValue))
                     {
-                        *result++ = { res.address, newValue, oldValue };
+                        result->address = res.address;
+                        result->newValue.Float = newValue;
+                        result++->oldValue.Float = oldValue;
                         _resultsInPool++;
                         ResultsCount++;
                     }
@@ -1179,9 +1199,11 @@ namespace CTRPluginFramework
                     float newValue = *(float *)res.address;
                     float oldValue = res.value.Float;
 
-                    if (NE(oldValue, newValue))
+                    if (NE(newValue, oldValue))
                     {
-                        *result++ = { res.address, newValue, oldValue };
+                        result->address = res.address;
+                        result->newValue.Float = newValue;
+                        result++->oldValue.Float = oldValue;
                         _resultsInPool++;
                         ResultsCount++;
                     }
@@ -1196,9 +1218,11 @@ namespace CTRPluginFramework
                     float newValue = *(float *)res.address;
                     float oldValue = res.value.Float;
 
-                    if (GT(oldValue, newValue))
+                    if (GT(newValue, oldValue))
                     {
-                        *result++ = { res.address, newValue, oldValue };
+                        result->address = res.address;
+                        result->newValue.Float = newValue;
+                        result++->oldValue.Float = oldValue;
                         _resultsInPool++;
                         ResultsCount++;
                     }
@@ -1213,9 +1237,11 @@ namespace CTRPluginFramework
                     float newValue = *(float *)res.address;
                     float oldValue = res.value.Float;
 
-                    if (GE(oldValue, newValue))
+                    if (GE(newValue, oldValue))
                     {
-                        *result++ = { res.address, newValue, oldValue };
+                        result->address = res.address;
+                        result->newValue.Float = newValue;
+                        result++->oldValue.Float = oldValue;
                         _resultsInPool++;
                         ResultsCount++;
                     }
@@ -1230,9 +1256,11 @@ namespace CTRPluginFramework
                     float newValue = *(float *)res.address;
                     float oldValue = res.value.Float;
 
-                    if (LT(oldValue, newValue))
+                    if (LT(newValue, oldValue))
                     {
-                        *result++ = { res.address, newValue, oldValue };
+                        result->address = res.address;
+                        result->newValue.Float = newValue;
+                        result++->oldValue.Float = oldValue;
                         _resultsInPool++;
                         ResultsCount++;
                     }
@@ -1247,9 +1275,11 @@ namespace CTRPluginFramework
                     float newValue = *(float *)res.address;
                     float oldValue = res.value.Float;
 
-                    if (LE(oldValue, newValue))
+                    if (LE(newValue, oldValue))
                     {
-                        *result++ = { res.address, newValue, oldValue };
+                        result->address = res.address;
+                        result->newValue.Float = newValue;
+                        result++->oldValue.Float = oldValue;
                         _resultsInPool++;
                         ResultsCount++;
                     }
@@ -1264,9 +1294,11 @@ namespace CTRPluginFramework
                     float newValue = *(float *)res.address;
                     float oldValue = res.value.Float;
 
-                    if (DB(oldValue, newValue, _checkValue.Float))
+                    if (DB(newValue, oldValue, _checkValue.Float))
                     {
-                        *result++ = { res.address, newValue, oldValue };
+                        result->address = res.address;
+                        result->newValue.Float = newValue;
+                        result++->oldValue.Float = oldValue;
                         _resultsInPool++;
                         ResultsCount++;
                     }
@@ -1281,9 +1313,11 @@ namespace CTRPluginFramework
                     float newValue = *(float *)res.address;
                     float oldValue = res.value.Float;
 
-                    if (DBL(oldValue, newValue, _checkValue.Float))
+                    if (DBL(newValue, oldValue, _checkValue.Float))
                     {
-                        *result++ = { res.address, newValue, oldValue };
+                        result->address = res.address;
+                        result->newValue.Float = newValue;
+                        result++->oldValue.Float = oldValue;
                         _resultsInPool++;
                         ResultsCount++;
                     }
@@ -1298,9 +1332,11 @@ namespace CTRPluginFramework
                     float newValue = *(float *)res.address;
                     float oldValue = res.value.Float;
 
-                    if (DBM(oldValue, newValue, _checkValue.Float))
+                    if (DBM(newValue, oldValue, _checkValue.Float))
                     {
-                        *result++ = { res.address, newValue, oldValue };
+                        result->address = res.address;
+                        result->newValue.Float = newValue;
+                        result++->oldValue.Float = oldValue;
                         _resultsInPool++;
                         ResultsCount++;
                     }
