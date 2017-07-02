@@ -117,7 +117,7 @@ namespace CTRPluginFramework
             if (_cancelBtn())
                 return (false);
 
-            bool finish = _currentSearch->DoSearch();
+            bool finish = _currentSearch->ExecuteSearch();
             _inSearch = !finish;
             if (finish)
             {
@@ -437,20 +437,20 @@ namespace CTRPluginFramework
     ************/
     void    PluginMenuSearch::_searchBtn_OnClick(void)
     {
-        // If it's not the first research, add it to the history
+        // If it's not the first search, add it to the history
         if (_currentSearch != nullptr)
             _searchHistory.push_back(_currentSearch);
 
         if (_searchHistory.size() > 5)
         {
-            SearchBase *search = _searchHistory.front();
+            Search *search = _searchHistory.front();
             
             _searchHistory.pop_front();
             delete search;
 
             search = _searchHistory.front();
 
-            search->_previousSearch = nullptr;
+            // TODO : search-> = nullptr;
         }
 
 
@@ -459,59 +459,70 @@ namespace CTRPluginFramework
 
         u32     startRange = _startRangeTextBox.Bits32;
         u32     endRange = _endRangeTextBox.Bits32;
+        SearchParameters parameters = { 0 };
 
-        /*if (_memoryRegions.SelectedItem == 0)
+        parameters.previous = _currentSearch;
+
+        // If first search
+        if (_currentSearch == nullptr)
+            parameters.flags = (u32)SearchFlags::First;
+        // If second search
+        else if (_currentSearch->Step == 0)
+            parameters.flags = (u32)SearchFlags::Second;
+
+        // Size flags
+        switch (_searchSize.SelectedItem)
         {
-            startRange = 0;
-            endRange = 0;
+            case 0: parameters.flags |= (u32)SearchFlags::U8;  break;
+            case 1: parameters.flags |= (u32)SearchFlags::U16;  break;
+            case 2: parameters.flags |= (u32)SearchFlags::U32;  break;
+            case 3: parameters.flags |= (u32)SearchFlags::U64;  break;
+            case 4: parameters.flags |= (u32)SearchFlags::Float;  break;
+            case 5: parameters.flags |= (u32)SearchFlags::Double;  break;
+            default: break;
         }
-        else
-        {
-            startRange = _regionsList[_memoryRegions.SelectedItem - 1].startAddress;
-            endRange = _regionsList[_memoryRegions.SelectedItem - 1].endAddress;  
-        }*/
 
-        //Flush memory
-        svcFlushProcessDataCache(Process::GetHandle(), (void *)startRange, endRange - startRange);
+        // Set Search Flags
+        parameters.flags |= _searchType.SelectedItem == 0 ? 0 : (u32)SearchFlags::Unknown;
 
-        // Create search object and set SearchSize
+        // Set Compare Flags
+        parameters.flags |= (u32)SearchFlags::Equal << _compareType.SelectedItem;
+
+        // Set CheckValue
+        parameters.value32.U32 = _valueTextBox.Bits32;
+        parameters.value64.U64 = _valueTextBox.Bits64;
+
+        // Full memory
         if (_memoryRegions.SelectedItem == 0)
         {
-            switch (_searchSize.SelectedItem)
-            {
-                case 0: _currentSearch = new Search<u8>(_valueTextBox.Bits8, _regionsList, _alignmentTextBox.Bits32, _currentSearch);  _currentSearch->Size = SearchSize::Bits8; break;
-                case 1: _currentSearch = new Search<u16>(_valueTextBox.Bits16, _regionsList, _alignmentTextBox.Bits32, _currentSearch); _currentSearch->Size = SearchSize::Bits16; break;
-                case 2: _currentSearch = new Search<u32>(_valueTextBox.Bits32, _regionsList, _alignmentTextBox.Bits32, _currentSearch); _currentSearch->Size = SearchSize::Bits32; break;
-                case 3: _currentSearch = new Search<u64>(_valueTextBox.Bits64, _regionsList, _alignmentTextBox.Bits32, _currentSearch); _currentSearch->Size = SearchSize::Bits64; break;
-                case 4: _currentSearch = new Search<float>(_valueTextBox.Single, _regionsList, _alignmentTextBox.Bits32, _currentSearch); _currentSearch->Size = SearchSize::FloatingPoint; break;
-                case 5: _currentSearch = new Search<double>(_valueTextBox.Double, _regionsList, _alignmentTextBox.Bits32, _currentSearch); _currentSearch->Size = SearchSize::Double; break;
-                default: break;
-            }
-
+            parameters.fullMemory = true;
+            parameters.ranges = _regionsList;
         }
+        // Range search
         else
         {
-            switch (_searchSize.SelectedItem)
-            {
-                case 0: _currentSearch = new Search<u8>(_valueTextBox.Bits8, startRange, endRange, _alignmentTextBox.Bits32, _currentSearch);  _currentSearch->Size = SearchSize::Bits8; break;
-                case 1: _currentSearch = new Search<u16>(_valueTextBox.Bits16, startRange, endRange, _alignmentTextBox.Bits32, _currentSearch); _currentSearch->Size = SearchSize::Bits16; break;
-                case 2: _currentSearch = new Search<u32>(_valueTextBox.Bits32, startRange, endRange, _alignmentTextBox.Bits32, _currentSearch); _currentSearch->Size = SearchSize::Bits32; break;
-                case 3: _currentSearch = new Search<u64>(_valueTextBox.Bits64, startRange, endRange, _alignmentTextBox.Bits32, _currentSearch); _currentSearch->Size = SearchSize::Bits64; break;
-                case 4: _currentSearch = new Search<float>(_valueTextBox.Single, startRange, endRange, _alignmentTextBox.Bits32, _currentSearch); _currentSearch->Size = SearchSize::FloatingPoint; break;
-                case 5: _currentSearch = new Search<double>(_valueTextBox.Double, startRange, endRange, _alignmentTextBox.Bits32, _currentSearch); _currentSearch->Size = SearchSize::Double; break;
-                default: break;
-            }
+            parameters.fullMemory = false;
+            Region range;
+            range.startAddress = startRange;
+            range.endAddress = endRange;
+            parameters.ranges.push_back(range);
         }
 
+        // Create Search item
+        if (_searchSize.SelectedItem == 3 || _searchSize.SelectedItem == 5)
+            _currentSearch = nullptr;
+        else
+            _currentSearch = new Search32(parameters);
+
         // Check for error
-        if (_currentSearch->PoolError)
+        if (_currentSearch->Error.pool)
         {
             delete _currentSearch;
             _currentSearch = nullptr;
 
             if (_searchHistory.size())
             {
-                SearchBase *search = _searchHistory.back();
+                Search *search = _searchHistory.back();
                 _searchHistory.pop_back();
                 _currentSearch = search;
             }
@@ -519,12 +530,6 @@ namespace CTRPluginFramework
             MessageBox("Error\n\nAn error occurred: pool alloc.")();
             return;
         }
-
-        // Set Search Type
-        _currentSearch->Type = static_cast<SearchType>(_searchType.SelectedItem);
-
-        // Set CompareType
-        _currentSearch->Compare = static_cast<CompareType>(_compareType.SelectedItem);
 
         // Lock memory region
         _memoryRegions.IsEnabled = false;
@@ -692,12 +697,12 @@ namespace CTRPluginFramework
         if (_inSearch)
         {
             // Draw Result count
-            std::string res = "Hit(s): " + std::to_string(_currentSearch->ResultCount);            
+            std::string res = "Hit(s): " + std::to_string(_currentSearch->ResultsCount);            
             Renderer::DrawString((char *)res.c_str(), 131, posY, blank);
         }
         if (!_inSearch)
         {
-            std::string res = std::to_string(_currentSearch->ResultCount) + " hit(s) found";
+            std::string res = std::to_string(_currentSearch->ResultsCount) + " hit(s) found";
             std::string res2 =  "in " + std::to_string(_currentSearch->SearchTime.AsSeconds()) + "s";            
             Renderer::DrawString((char *)res.c_str(), 131, posY, blank);
             Renderer::DrawString((char *)res2.c_str(), 131, posY, blank);
@@ -726,6 +731,7 @@ namespace CTRPluginFramework
     }
     extern "C" u32 __ctru_linear_heap;
     extern "C" u32 __ctru_linear_heap_size;
+
     void    PluginMenuSearch::_ListRegion(void)
     {
 

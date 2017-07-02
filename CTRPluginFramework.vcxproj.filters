@@ -150,9 +150,6 @@
     <ClInclude Include="Includes\CTRPluginFrameworkImpl\Menu\PluginMenuSearch.hpp">
       <Filter>Fichiers d%27en-tête</Filter>
     </ClInclude>
-    <ClInclude Include="Includes\CTRPluginFrameworkImpl\Menu\PluginMenuSearchStructs.hpp">
-      <Filter>Fichiers d%27en-tête</Filter>
-    </ClInclude>
     <ClInclude Include="Includes\CTRPluginFrameworkImpl\Menu\PluginMenuTools.hpp">
       <Filter>Fichiers d%27en-tête</Filter>
     </ClInclude>
@@ -447,6 +444,18 @@
     <ClInclude Include="Includes\CTRPluginFramework\System\Sleep.hpp">
       <Filter>Fichiers d%27en-tête</Filter>
     </ClInclude>
+    <ClInclude Include="Includes\ctrulib\allocator\newlibHeap.h">
+      <Filter>Fichiers d%27en-tête</Filter>
+    </ClInclude>
+    <ClInclude Include="Includes\CTRPluginFrameworkImpl\Search\Search.hpp">
+      <Filter>Fichiers d%27en-tête</Filter>
+    </ClInclude>
+    <ClInclude Include="Includes\CTRPluginFrameworkImpl\Search\SearchBase.hpp">
+      <Filter>Fichiers d%27en-tête</Filter>
+    </ClInclude>
+    <ClInclude Include="Includes\CTRPluginFrameworkImpl\Search\Search32.hpp">
+      <Filter>Fichiers d%27en-tête</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Sources\CTRPluginFramework\Graphics\Color.cpp">
@@ -633,9 +642,6 @@
       <Filter>Fichiers sources</Filter>
     </ClCompile>
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\Menu\PluginMenuSearch.cpp">
-      <Filter>Fichiers sources</Filter>
-    </ClCompile>
-    <ClCompile Include="Sources\CTRPluginFrameworkImpl\Menu\PluginMenuSearch_SearchFunctions.cpp">
       <Filter>Fichiers sources</Filter>
     </ClCompile>
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\Menu\PluginMenuTools.cpp">
@@ -876,6 +882,15 @@
       <Filter>Fichiers sources</Filter>
     </ClCompile>
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\Graphics\Icons\GameController15.c">
+      <Filter>Fichiers sources</Filter>
+    </ClCompile>
+    <ClCompile Include="Sources\ctrulib\allocator\newlibHeap.c">
+      <Filter>Fichiers sources</Filter>
+    </ClCompile>
+    <ClCompile Include="Sources\CTRPluginFrameworkImpl\Search\Search32.cpp">
+      <Filter>Fichiers sources</Filter>
+    </ClCompile>
+    <ClCompile Include="Sources\CTRPluginFrameworkImpl\Search\SearchBase.cpp">
       <Filter>Fichiers sources</Filter>
     </ClCompile>
   </ItemGroup>

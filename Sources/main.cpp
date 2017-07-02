@@ -8,6 +8,8 @@
 #include "3DS.h"
 #include "CTRPluginFrameworkImpl/Menu/HotkeysModifier.hpp"
 #include "CTRPluginFrameworkImpl/Preferences.hpp"
+#include "ctrulib/allocator/linear.h"
+#include "CTRPluginFrameworkImpl/Menu/MenuEntryTools.hpp"
 
 namespace CTRPluginFramework
 {    
@@ -148,6 +150,26 @@ namespace CTRPluginFramework
         MessageBox("Done !")();
     }
 
+    u32 spaceFree1;
+    u32 spaceFree2;
+    u32 spaceFree3;
+    void func(void)
+    {
+        std::string str;
+        Keyboard kb;
+
+        kb.Open(str);
+
+        spaceFree2 = getMemFree();
+    }
+
+    void func2(void)
+    {
+        spaceFree1 = getMemFree();
+        func();
+        spaceFree3 = getMemFree();
+    }
+
     int    main(void)
     {
         PluginMenu      *m = new PluginMenu("Zelda Ocarina Of Time 3D", about);// g_encAbout, Decoder);
@@ -158,17 +180,22 @@ namespace CTRPluginFramework
         ** Tests
         ********************/
 
-       /* MenuEntry *entry = new MenuEntry("Trigger FreeCheats", nullptr,
+        MenuEntry *entry = new MenuEntry("Heap infos", nullptr,
             [](MenuEntry *entry)
             {
-                static bool isEnabled = true;
+            char buff[0x200] = { 0 };
+            std::string str("This is a test");
+            sprintf(buff, "Heap used: %08X\nHeap free: %08X\nLinear free: %08X\nsizeof(std::string) = %08X\n%08X", getMemUsed(), getMemFree(), linearSpaceFree(), sizeof(std::string), sizeof(str));
 
-                reinterpret_cast<PluginMenu *>(entry->GetArg())->SetFreeCheatsState(isEnabled);
-                isEnabled = !isEnabled;
+            (MessageBox(buff))();
+            func2();
+
+            sprintf(buff, "1: %08X \n2: %08X\n3: %08X\nMenuEntryImpl: %08X,\n MenuEntryCheat: %08X", spaceFree1, spaceFree2, spaceFree3, sizeof(MenuEntryImpl), sizeof(MenuEntryTools));
+            (MessageBox(buff))();
         });
 
         entry->SetArg(m);
-        m->Append(entry);*/
+        m->Append(entry);
 
         /*
         ** Movements codes

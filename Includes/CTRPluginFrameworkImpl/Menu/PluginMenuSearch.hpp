@@ -3,7 +3,7 @@
 
 #include "CTRPluginFrameworkImpl/Graphics.hpp"
 #include "CTRPluginFrameworkImpl/Menu/Menu.hpp"
-#include "CTRPluginFrameworkImpl/Menu/PluginMenuSearchStructs.hpp"
+#include "CTRPluginFrameworkImpl/Search/Search32.hpp"
 #include "CTRPluginFrameworkImpl/Menu/PluginMenu_SearchMenu.hpp"
 #include "CTRPluginFrameworkImpl/Menu/PluginMenuFreeCheats.hpp"
 
@@ -44,8 +44,8 @@ namespace CTRPluginFramework
 
         // Members
         std::vector<Region>                 _regionsList;
-        std::list<SearchBase *>             _searchHistory;
-        SearchBase                          *_currentSearch;
+        std::list<Search *>                 _searchHistory;
+        Search                              *_currentSearch;
         HexEditor                           &_hexEditor;
 
         bool                                _inSearch;

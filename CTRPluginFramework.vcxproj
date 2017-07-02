@@ -137,6 +137,9 @@
     <ClInclude Include="Includes\CTRPluginFrameworkImpl\Menu\MenuEntryFreeCheat.hpp" />
     <ClInclude Include="Includes\CTRPluginFrameworkImpl\Menu\MenuEntryTools.hpp" />
     <ClInclude Include="Includes\CTRPluginFrameworkImpl\Menu\PluginMenuFreeCheats.hpp" />
+    <ClInclude Include="Includes\CTRPluginFrameworkImpl\Search\Search.hpp" />
+    <ClInclude Include="Includes\CTRPluginFrameworkImpl\Search\Search32.hpp" />
+    <ClInclude Include="Includes\CTRPluginFrameworkImpl\Search\SearchBase.hpp" />
     <ClInclude Include="Includes\CTRPluginFramework\System\Rect.hpp" />
     <ClInclude Include="Includes\CTRPluginFrameworkImpl\Graphics\Renderer.hpp" />
     <ClInclude Include="Includes\CTRPluginFrameworkImpl\Graphics\TextBox.hpp" />
@@ -158,7 +161,6 @@
     <ClInclude Include="Includes\CTRPluginFrameworkImpl\Menu\PluginMenuHome.hpp" />
     <ClInclude Include="Includes\CTRPluginFrameworkImpl\Menu\PluginMenuImpl.hpp" />
     <ClInclude Include="Includes\CTRPluginFrameworkImpl\Menu\PluginMenuSearch.hpp" />
-    <ClInclude Include="Includes\CTRPluginFrameworkImpl\Menu\PluginMenuSearchStructs.hpp" />
     <ClInclude Include="Includes\CTRPluginFrameworkImpl\Menu\PluginMenuTools.hpp" />
     <ClInclude Include="Includes\CTRPluginFrameworkImpl\Menu\PluginMenu_SearchMenu.hpp" />
     <ClInclude Include="Includes\CTRPluginFrameworkImpl\Preferences.hpp" />
@@ -188,6 +190,7 @@
     <ClInclude Include="Includes\CTRPluginFramework\System\Touch.hpp" />
     <ClInclude Include="Includes\ctrulib\allocator\linear.h" />
     <ClInclude Include="Includes\ctrulib\allocator\mappable.h" />
+    <ClInclude Include="Includes\ctrulib\allocator\newlibHeap.h" />
     <ClInclude Include="Includes\ctrulib\allocator\vram.h" />
     <ClInclude Include="Includes\ctrulib\env.h" />
     <ClInclude Include="Includes\ctrulib\font.h" />
@@ -323,10 +326,11 @@
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\Menu\HotkeysModifier.cpp" />
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\Menu\PluginMenuImpl.cpp" />
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\Menu\PluginMenuSearch.cpp" />
-    <ClCompile Include="Sources\CTRPluginFrameworkImpl\Menu\PluginMenuSearch_SearchFunctions.cpp" />
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\Menu\PluginMenuTools.cpp" />
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\Menu\PluginMenu_SearchMenu.cpp" />
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\Preferences.cpp" />
+    <ClCompile Include="Sources\CTRPluginFrameworkImpl\Search\Search32.cpp" />
+    <ClCompile Include="Sources\CTRPluginFrameworkImpl\Search\SearchBase.cpp" />
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\System\EventManager.cpp" />
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\System\ProcessImpl.cpp" />
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\System\Screen.cpp" />
@@ -350,6 +354,7 @@
     <ClCompile Include="Sources\ctrulib\allocator\linear.cpp" />
     <ClCompile Include="Sources\ctrulib\allocator\mappable.cpp" />
     <ClCompile Include="Sources\ctrulib\allocator\mem_pool.cpp" />
+    <ClCompile Include="Sources\ctrulib\allocator\newlibHeap.c" />
     <ClCompile Include="Sources\ctrulib\allocator\vram.cpp" />
     <ClCompile Include="Sources\ctrulib\cfgu.c" />
     <ClCompile Include="Sources\ctrulib\env.c" />

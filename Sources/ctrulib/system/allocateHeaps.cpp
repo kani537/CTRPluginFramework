@@ -24,7 +24,7 @@ namespace CTRPluginFramework
 
         // Allocate the main heap
         __ctru_heap = 0x07500000;
-        __ctru_heap_size = 0xB0000;
+        __ctru_heap_size = 0x100000;
 
         if (R_FAILED(arm11kSvcControlMemory(&__ctru_heap, __ctru_heap, __ctru_heap_size, 0x203u, MEMPERM_READ | MEMPERM_WRITE | MEMPERM_EXECUTE)))
         {

@@ -9,7 +9,7 @@
 
 namespace CTRPluginFramework
 {
-	SearchMenu::SearchMenu(SearchBase* &curSearch, HexEditor &hexEditor, bool &inEditor, bool &useHexInput, FreeCheats &freeCheats) :
+	SearchMenu::SearchMenu(Search* &curSearch, HexEditor &hexEditor, bool &inEditor, bool &useHexInput, FreeCheats &freeCheats) :
 	_currentSearch(curSearch),
 	_hexEditor(hexEditor),
     _freeCheats(freeCheats),
@@ -91,7 +91,7 @@ namespace CTRPluginFramework
                         {
                             if (!_submenuSelector)
                             {                                
-                                _index = std::min((int)(_index + _selector + 500),(int)(_currentSearch->ResultCount / 500 * 500));
+                                _index = std::min((int)(_index + _selector + 500),(int)(_currentSearch->ResultsCount / 500 * 500));
                                 _selector = 0;
                                 _startFastScroll.Restart();
                                 Update();
@@ -158,7 +158,7 @@ namespace CTRPluginFramework
                         }
                         case Key::DPadRight:
                         {
-                            _index = std::min((int)(_index + _selector + 500),(int)(_currentSearch->ResultCount / 500 * 500));
+                            _index = std::min((int)(_index + _selector + 500),(int)(_currentSearch->ResultsCount / 500 * 500));
                             _selector = 0;
                             _fastScroll.Restart();
                             Update();
@@ -201,7 +201,7 @@ namespace CTRPluginFramework
         {
             std::string str = "Step: " + std::to_string(_currentSearch->Step);
             Renderer::DrawString((char *)str.c_str(), 37, posY, blank);
-            str = "Hit(s): " + std::to_string(_currentSearch->ResultCount);
+            str = "Hit(s): " + std::to_string(_currentSearch->ResultsCount);
             Renderer::DrawString((char *)str.c_str(), 37, posY, blank);
         }
 
@@ -280,8 +280,8 @@ namespace CTRPluginFramework
         }
 
         start += _index;
-        std::string str = std::to_string(start) + "-" + std::to_string(std::min((u32)(start + 10), (u32)_currentSearch->ResultCount))
-                    + " / " + std::to_string(_currentSearch->ResultCount);
+        std::string str = std::to_string(start) + "-" + std::to_string(std::min((u32)(start + 10), (u32)_currentSearch->ResultsCount))
+                    + " / " + std::to_string(_currentSearch->ResultsCount);
         posY = 196;
         Renderer::DrawString((char *)str.c_str(), 37, posY, blank);
 
@@ -310,13 +310,13 @@ namespace CTRPluginFramework
             return;
         }
 
-        if (_index + _selector >= _currentSearch->ResultCount)
+        if (_index + _selector >= _currentSearch->ResultsCount)
         {
             _index = 0;
             _selector = 0;
         }
 
-        _currentSearch->FetchResults(_resultsAddress, _resultsNewValue, _resultsOldValue, _index, 500);
+        _currentSearch->ReadResults(_index, _resultsAddress, _resultsNewValue, _resultsOldValue);
     }
 
     void    SearchMenu::_DrawSubMenu(void)
@@ -399,12 +399,12 @@ namespace CTRPluginFramework
 
         MessageBox("Enter the name of the new cheat")();
 
-        if (_currentSearch->Size == SearchSize::Bits8) _freeCheats.Create(address, *(u8 *)address);
+     /*   if (_currentSearch->Size == SearchSize::Bits8) _freeCheats.Create(address, *(u8 *)address);
         if (_currentSearch->Size == SearchSize::Bits16) _freeCheats.Create(address, *(u16 *)address);
         if (_currentSearch->Size == SearchSize::Bits32) _freeCheats.Create(address, *(u32 *)address);
         if (_currentSearch->Size == SearchSize::Bits64) _freeCheats.Create(address, *(u64 *)address);
         if (_currentSearch->Size == SearchSize::FloatingPoint) _freeCheats.Create(address, *(float *)address);
-        if (_currentSearch->Size == SearchSize::Double) _freeCheats.Create(address, *(double *)address);
+        if (_currentSearch->Size == SearchSize::Double) _freeCheats.Create(address, *(double *)address);*/
     }
 
     void    SearchMenu::_Edit(void)
@@ -418,6 +418,7 @@ namespace CTRPluginFramework
 
         u32 address = strtoul(_resultsAddress[_selector].c_str(), NULL, 16);
 
+        /*
         switch (_currentSearch->Size)
         {
             case SearchSize::Bits8:
@@ -498,7 +499,7 @@ namespace CTRPluginFramework
                 }
                 break;
             }
-        }
+        }*/
     }
 
     void    SearchMenu::_JumpInEditor(void)

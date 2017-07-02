@@ -29,6 +29,7 @@ SOURCES 	:= 	Sources \
 				Sources\CTRPluginFrameworkImpl\Graphics \
 				Sources\CTRPluginFrameworkImpl\Graphics\Icons \
 				Sources\CTRPluginFrameworkImpl\Menu \
+				Sources\CTRPluginFrameworkImpl\Search \
 				Sources\CTRPluginFrameworkImpl\System \
 				Sources\ctrulib \
 				Sources\ctrulib\allocator \
@@ -92,7 +93,7 @@ export INCLUDE	:=	$(foreach dir,$(INCLUDES),-I$(CURDIR)/$(dir)) \
 
 export LIBPATHS	:=	$(foreach dir,$(LIBDIRS),-L $(dir)/lib) -L $(LIBDIRS)
 
-.PHONY: $(BUILD) clean all re send lib
+.PHONY: $(BUILD) clean all
 
 #---------------------------------------------------------------------------------
 all: $(BUILD)
@@ -109,18 +110,11 @@ clean:
 re:
 	@rm $(OUTPUT).plg $(OUTPUT).elf
 	make
-
-DEPENDS	:=	$(OFILES:.o=.d)
-EXCLUDE := main.o cheats.o
-
-lib: $(OUTPUT).a $(BUILD)
-	mv $(OUTPUT).a lib$(OUTPUT).a
-
+	
 send:
 	@echo "Sending the plugin over FTP"
 	@$(TOPDIR)/sendfile.py $(TARGET).plg $(FTP_PATH) "$(FTP_HOST)$(IP)" $(FTP_PORT)
 #---------------------------------------------------------------------------------
-
 
 else
 
@@ -129,12 +123,13 @@ else
 #---------------------------------------------------------------------------------
 
 DEPENDS	:=	$(OFILES:.o=.d)
-EXCLUDE := main.o cheats.o
+#EXCLUDE := main.o cheats.o
 
 
-$(OUTPUT).a	:	$(filter-out $(EXCLUDE), $(OFILES))	$(OUTPUT).plg
-$(OUTPUT).plg : $(OFILES)
-	
+#$(OUTPUT).a	:	$(filter-out $(EXCLUDE), $(OFILES))
+$(OUTPUT).plg : $(OUTPUT).elf
+
+$(OUTPUT).elf : $(OFILES)
 
 #---------------------------------------------------------------------------------
 # you need a rule like this for each extension you use as binary data
