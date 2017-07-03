@@ -7,12 +7,12 @@ namespace CTRPluginFramework
 {
     FreeCheats      *FreeCheats::_instance = nullptr;
 
-    static void   GetName(std::string &name)
+    static bool   GetName(std::string &name)
     {
         Keyboard    keyboard;
 
         keyboard.DisplayTopScreen = false;
-        keyboard.CanAbort(false);
+        //keyboard.CanAbort(false);
         keyboard.SetCompareCallback([](const void *in, std::string &error)
         {
             bool isValid = true;
@@ -27,7 +27,7 @@ namespace CTRPluginFramework
             return (isValid);
         });
 
-        keyboard.Open(name);
+        return (keyboard.Open(name) == 0);
     }
 
     FreeCheats::FreeCheats(HexEditor &hexEditor) :
@@ -71,48 +71,48 @@ namespace CTRPluginFramework
     {
         std::string name;
 
-        GetName(name);
-        _menu.Append(new MenuEntryFreeCheat(name, address, value));
+        if(GetName(name))
+            _menu.Append(new MenuEntryFreeCheat(name, address, value));
     }
 
     void    FreeCheats::Create(u32 address, u16 value) const
     {
         std::string name;
 
-        GetName(name);
-        _menu.Append(new MenuEntryFreeCheat(name, address, value));
+        if (GetName(name))
+            _menu.Append(new MenuEntryFreeCheat(name, address, value));
     }
 
     void    FreeCheats::Create(u32 address, u32 value) const
     {
         std::string name;
 
-        GetName(name);
-        _menu.Append(new MenuEntryFreeCheat(name, address, value));
+        if (GetName(name))
+            _menu.Append(new MenuEntryFreeCheat(name, address, value));
     }
 
     void    FreeCheats::Create(u32 address, u64 value) const
     {
         std::string name;
 
-        GetName(name);
-        _menu.Append(new MenuEntryFreeCheat(name, address, value));
+        if(GetName(name))
+            _menu.Append(new MenuEntryFreeCheat(name, address, value));
     }
 
     void    FreeCheats::Create(u32 address, float value) const
     {
         std::string name;
 
-        GetName(name);
-        _menu.Append(new MenuEntryFreeCheat(name, address, value));
+        if (GetName(name))
+            _menu.Append(new MenuEntryFreeCheat(name, address, value));
     }
 
     void    FreeCheats::Create(u32 address, double value) const
     {
         std::string name;
 
-        GetName(name);
-        _menu.Append(new MenuEntryFreeCheat(name, address, value));
+        if (GetName(name))
+            _menu.Append(new MenuEntryFreeCheat(name, address, value));
     }
 
     void    FreeCheats::Create(SavedCheat &savedCheat) const
