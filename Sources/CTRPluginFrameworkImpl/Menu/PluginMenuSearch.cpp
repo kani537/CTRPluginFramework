@@ -16,8 +16,7 @@ namespace CTRPluginFramework
     _searchSize(150, 85, 130, 15),
     _searchType(150, 105, 130, 15),
     _compareType(150, 125, 130, 15),
-    _alignmentTextBox(150, 145, 130, 15),
-    _valueTextBox(150, 165, 130, 15),
+    _valueTextBox(150, 145, 130, 15),
     _searchBtn("Search", *this, &PluginMenuSearch::_searchBtn_OnClick, IntRect(35, 195, 80, 15)),
     _undoBtn("Undo", *this, &PluginMenuSearch::_undoBtn_OnClick, IntRect(120, 195, 80, 15)),
     _cancelBtn("Cancel", *this, &PluginMenuSearch::_cancelBtn_OnClick, IntRect(120, 195, 80, 15)),
@@ -56,9 +55,6 @@ namespace CTRPluginFramework
         _cancelBtn.IsEnabled = false;
         _hexBtn.UseSysFont(false);
 
-        // Set 4 Bytes as default
-        u32   al = 4;
-        _alignmentTextBox.SetValue(al);
         _searchSize.SelectedItem = 2;
 
         // Set all memory search by default
@@ -186,12 +182,12 @@ namespace CTRPluginFramework
         {
             switch (_searchSize.SelectedItem)
             {
-                case 0: _alignmentTextBox.SetValue((u32)(1)); _valueTextBox.ValueType = NumericTextBox::Type::Bits8; break;
-                case 1: _alignmentTextBox.SetValue((u32)(2)); _valueTextBox.ValueType = NumericTextBox::Type::Bits16; break;
-                case 2: _alignmentTextBox.SetValue((u32)(4)); _valueTextBox.ValueType = NumericTextBox::Type::Bits32; break;
-                case 3: _alignmentTextBox.SetValue((u32)(8)); _valueTextBox.ValueType = NumericTextBox::Type::Bits64; break;
-                case 4: _alignmentTextBox.SetValue((u32)(4)); _valueTextBox.ValueType = NumericTextBox::Type::Float; break;
-                case 5: _alignmentTextBox.SetValue((u32)(8)); _valueTextBox.ValueType = NumericTextBox::Type::Double; break;
+                case 0: _valueTextBox.ValueType = NumericTextBox::Type::Bits8; break;
+                case 1: _valueTextBox.ValueType = NumericTextBox::Type::Bits16; break;
+                case 2: _valueTextBox.ValueType = NumericTextBox::Type::Bits32; break;
+                case 3: _valueTextBox.ValueType = NumericTextBox::Type::Bits64; break;
+                case 4: _valueTextBox.ValueType = NumericTextBox::Type::Float; break;
+                case 5: _valueTextBox.ValueType = NumericTextBox::Type::Double; break;
                 default: break;
             }
             _valueTextBox.Clear();
@@ -236,37 +232,6 @@ namespace CTRPluginFramework
         }
 
         // Check NumericTextBoxes
-        if (_alignmentTextBox())
-        {
-            int typeSize;
-            u32 alignment = _alignmentTextBox.Bits32;
-            bool isFloat = false;
-
-            switch (_searchSize.SelectedItem)
-            {
-            case 0: typeSize = 1; break;
-            case 1: typeSize = 2; break;
-            case 2: typeSize = 4; break;
-            case 3: typeSize = 8; break;
-            case 4: typeSize = 4; isFloat = true; break;
-            case 5: typeSize = 8; break;
-            default: typeSize = 4; break;
-            }
-
-            if (alignment == 0)
-            {
-                _alignmentTextBox.SetValue((u32)typeSize);
-            }
-            else if (typeSize == 8 || isFloat)
-            {
-                if (alignment % 4 != 0)
-                {
-                    alignment &= ~3;
-                    if (!alignment) alignment = 8;
-                    _alignmentTextBox.SetValue((u32)alignment);
-                }
-            }
-        }
         _valueTextBox();
         if (_startRangeTextBox())
         {
@@ -385,7 +350,6 @@ namespace CTRPluginFramework
         _compareType.Draw();
 
         // Draw NumericTextBoxes
-        _alignmentTextBox.Draw();
         _valueTextBox.Draw();
         _startRangeTextBox.Draw();
         _endRangeTextBox.Draw();
@@ -421,7 +385,6 @@ namespace CTRPluginFramework
         _compareType.Update(isTouched, touchPos);
 
         // Update NumericTextBoxes
-        _alignmentTextBox.Update(isTouched, touchPos);
         _valueTextBox.Update(isTouched, touchPos);
         _startRangeTextBox.Update(isTouched, touchPos);
         _endRangeTextBox.Update(isTouched, touchPos);
@@ -540,8 +503,6 @@ namespace CTRPluginFramework
         _endRangeTextBox.IsEnabled = false;
         // Lock search size
         _searchSize.IsEnabled = false;
-        // Lock alignment
-        _alignmentTextBox.IsEnabled = false;
 
         // Enable Cancel button
         _cancelBtn.IsEnabled = true;
@@ -593,8 +554,6 @@ namespace CTRPluginFramework
 
         // Unlock search size
         _searchSize.IsEnabled = true;
-        // Unlock alignment
-        _alignmentTextBox.IsEnabled = true;
 
         // Reset step
         _step = 0;

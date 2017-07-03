@@ -65,7 +65,6 @@ namespace CTRPluginFramework
     
         NumericTextBox                      _startRangeTextBox;
         NumericTextBox                      _endRangeTextBox;
-        NumericTextBox                      _alignmentTextBox;
         NumericTextBox                      _valueTextBox;
 
         // Buttons        
