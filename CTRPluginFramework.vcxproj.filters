@@ -456,6 +456,9 @@
     <ClInclude Include="Includes\CTRPluginFrameworkImpl\Search\Search32.hpp">
       <Filter>Fichiers d%27en-tête</Filter>
     </ClInclude>
+    <ClInclude Include="Includes\CTRPluginFrameworkImpl\System\Storage.hpp">
+      <Filter>Fichiers d%27en-tête</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Sources\CTRPluginFramework\Graphics\Color.cpp">
@@ -891,6 +894,21 @@
       <Filter>Fichiers sources</Filter>
     </ClCompile>
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\Search\SearchBase.cpp">
+      <Filter>Fichiers sources</Filter>
+    </ClCompile>
+    <ClCompile Include="Sources\CTRPluginFrameworkImpl\Search\Search32_FirstSearchSpecified.cpp">
+      <Filter>Fichiers sources</Filter>
+    </ClCompile>
+    <ClCompile Include="Sources\CTRPluginFrameworkImpl\Search\Search32_SecondSearchSpecified.cpp">
+      <Filter>Fichiers sources</Filter>
+    </ClCompile>
+    <ClCompile Include="Sources\CTRPluginFrameworkImpl\Search\Search32_SecondSearchUnknown.cpp">
+      <Filter>Fichiers sources</Filter>
+    </ClCompile>
+    <ClCompile Include="Sources\CTRPluginFrameworkImpl\Search\Search32_SubsidiarySearchUnknown.cpp">
+      <Filter>Fichiers sources</Filter>
+    </ClCompile>
+    <ClCompile Include="Sources\CTRPluginFrameworkImpl\Search\Search32_SubsidiarySearchSpecified.cpp">
       <Filter>Fichiers sources</Filter>
     </ClCompile>
   </ItemGroup>

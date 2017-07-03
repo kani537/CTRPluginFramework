@@ -68,6 +68,9 @@ namespace CTRPluginFramework
         _endRangeTextBox.IsEnabled = false;
 	    _valueTextBox.UseHexadecimal(false);
         _valueTextBox.SetValue((u32)0);
+
+        // Allocate search's pool
+        AllocatePool();
     }
 
     bool    PluginMenuSearch::operator()(EventList &eventList, Time &delta)

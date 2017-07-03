@@ -10,6 +10,8 @@
 
 namespace CTRPluginFramework
 {
+    extern void    *_pool;
+
     std::string ToHex(u32 x)
     {
         char buf[9] = { 0 };
@@ -22,14 +24,16 @@ namespace CTRPluginFramework
     Search32::Search32(SearchParameters& parameters) :
     Search(parameters.previous)
     {
-        u32 poolSize = AllocatePool(&_pool);
+        extern u32     _poolSize;
+        u32 poolSize = _poolSize;
 
         // If poolSize is 0 an error occured
         if (poolSize == 0 || _pool == nullptr)
         {
             Error.pool = true;
             if (_pool != nullptr)
-                delete[](u8 *)_pool;
+                ReleasePool();
+                //delete[](u8 *)_pool;
             return;
         }
 
@@ -373,5 +377,5 @@ namespace CTRPluginFramework
 
         return (false);
     }
-}   
+}
     

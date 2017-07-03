@@ -188,10 +188,10 @@ namespace CTRPluginFramework
             sprintf(buff, "Heap used: %08X\nHeap free: %08X\nLinear free: %08X\nsizeof(std::string) = %08X\n%08X", getMemUsed(), getMemFree(), linearSpaceFree(), sizeof(std::string), sizeof(str));
 
             (MessageBox(buff))();
-            func2();
+          //  func2();
 
-            sprintf(buff, "1: %08X \n2: %08X\n3: %08X\nMenuEntryImpl: %08X,\n MenuEntryCheat: %08X", spaceFree1, spaceFree2, spaceFree3, sizeof(MenuEntryImpl), sizeof(MenuEntryTools));
-            (MessageBox(buff))();
+           // sprintf(buff, "1: %08X \n2: %08X\n3: %08X\nMenuEntryImpl: %08X,\n MenuEntryCheat: %08X", spaceFree1, spaceFree2, spaceFree3, sizeof(MenuEntryImpl), sizeof(MenuEntryTools));
+           // (MessageBox(buff))();
         });
 
         entry->SetArg(m);

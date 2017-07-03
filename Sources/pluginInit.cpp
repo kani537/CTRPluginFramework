@@ -59,8 +59,8 @@ namespace CTRPluginFramework
 
         // Initialize newlib's syscalls
         __system_initSyscalls();
-
-        // Initialize services        
+        
+        // Initialize services
         srvInit();
         acInit();
         amInit();
@@ -184,7 +184,6 @@ namespace CTRPluginFramework
         // Initialize Globals settings
         Preferences::Initialize();    
         Window::Initialize();
-
 
         // Start plugin
         int ret = main();

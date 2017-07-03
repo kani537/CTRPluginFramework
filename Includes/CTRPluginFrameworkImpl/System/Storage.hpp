@@ -3,6 +3,7 @@
 
 #include <cstring>
 #include "types.h"
+#include "ctrulib/allocator/linear.h"
 
 namespace CTRPluginFramework
 {
@@ -26,6 +27,18 @@ namespace CTRPluginFramework
         Storage(u32 capacity) :
             _itemCount(0)
         {
+            if (capacity * sizeof(T) < linearSpaceFree())
+            {
+                _pool = (T *)linearAlloc(capacity * sizeof(T));
+
+                if (_pool != nullptr)
+                {
+                    _linear = true;
+                    _capacity = capacity;
+                    return;
+                }
+            }
+
             _pool = new T[capacity];
             if (_pool != nullptr)
                 _capacity = capacity;
@@ -36,7 +49,12 @@ namespace CTRPluginFramework
         ~Storage()
         {
             if (_pool != nullptr)
-                delete[] _pool;
+            {
+                if (_linear)
+                    linearFree(_pool);
+                else
+                    delete[] _pool;
+            }
         }
 
         T     *begin(void)
@@ -65,6 +83,8 @@ namespace CTRPluginFramework
         {
             if (size > _capacity)
             {
+                return;
+                /*
                 T   *newPool = new T[size];
 
                 if (newPool != nullptr)
@@ -74,7 +94,7 @@ namespace CTRPluginFramework
                     _pool = newPool;
                     _itemCount = size;
                     _capacity = size;
-                }
+                }*/
             }
             else
             {
@@ -111,6 +131,7 @@ namespace CTRPluginFramework
         }
 
     private:
+        bool    _linear;
         T       *_pool;
         u32     _capacity;
         u32     _itemCount;

@@ -140,6 +140,7 @@
     <ClInclude Include="Includes\CTRPluginFrameworkImpl\Search\Search.hpp" />
     <ClInclude Include="Includes\CTRPluginFrameworkImpl\Search\Search32.hpp" />
     <ClInclude Include="Includes\CTRPluginFrameworkImpl\Search\SearchBase.hpp" />
+    <ClInclude Include="Includes\CTRPluginFrameworkImpl\System\Storage.hpp" />
     <ClInclude Include="Includes\CTRPluginFramework\System\Rect.hpp" />
     <ClInclude Include="Includes\CTRPluginFrameworkImpl\Graphics\Renderer.hpp" />
     <ClInclude Include="Includes\CTRPluginFrameworkImpl\Graphics\TextBox.hpp" />
@@ -330,6 +331,11 @@
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\Menu\PluginMenu_SearchMenu.cpp" />
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\Preferences.cpp" />
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\Search\Search32.cpp" />
+    <ClCompile Include="Sources\CTRPluginFrameworkImpl\Search\Search32_FirstSearchSpecified.cpp" />
+    <ClCompile Include="Sources\CTRPluginFrameworkImpl\Search\Search32_SecondSearchSpecified.cpp" />
+    <ClCompile Include="Sources\CTRPluginFrameworkImpl\Search\Search32_SecondSearchUnknown.cpp" />
+    <ClCompile Include="Sources\CTRPluginFrameworkImpl\Search\Search32_SubsidiarySearchSpecified.cpp" />
+    <ClCompile Include="Sources\CTRPluginFrameworkImpl\Search\Search32_SubsidiarySearchUnknown.cpp" />
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\Search\SearchBase.cpp" />
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\System\EventManager.cpp" />
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\System\ProcessImpl.cpp" />

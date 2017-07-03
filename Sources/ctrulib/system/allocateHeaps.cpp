@@ -34,7 +34,7 @@ namespace CTRPluginFramework
         }
 
         // Allocate the linear heap
-        __ctru_linear_heap_size = 0xD0000;
+        __ctru_linear_heap_size = 0x100000;
         if (R_FAILED(arm11kSvcControlMemory(&__ctru_linear_heap, 0, __ctru_linear_heap_size, g_linearOp, MEMPERM_READ | MEMPERM_WRITE | MEMPERM_EXECUTE)))
         {
             // Try again with a different mode

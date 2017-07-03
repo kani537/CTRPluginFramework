@@ -61,8 +61,9 @@ Result gspInitEventHandler(Handle _gspEvent, vu8* _gspSharedMem, u8 gspThreadId)
 {
 	// Initialize events
 	int i;
-	for (i = 0; i < GSPGPU_EVENT_MAX; i ++)
-		LightEvent_Init(&gspEvents[i], RESET_STICKY);
+	//for (i = 0; i < GSPGPU_EVENT_MAX; i ++)
+		LightEvent_Init(&gspEvents[2], RESET_STICKY);
+        LightEvent_Init(&gspEvents[3], RESET_STICKY);
 
 	// Start event thread
 	gspEvent = _gspEvent;
@@ -82,6 +83,8 @@ void gspExitEventHandler(void)
 	svcWaitSynchronization(gspThreadEventHandle, U64_MAX);
 	//threadJoin(gspEventThread, U64_MAX);
 }
+
+bool   IsGamePrior(void);
 
 void gspWaitForEvent(GSPGPU_Event id, bool nextEvent)
 {
@@ -145,12 +148,11 @@ static int popInterrupt()
 		header.err = 0; // Should this really be set?
 
 		strexFailed = __strex((s32*)gspEventData, header.as_u32);
+
 	} while (__builtin_expect(strexFailed, 0));
 
 	return curEvt;
 }
-
-bool   IsGamePrior(void);
 
 void gspEventThreadMain(u32 arg)
 {
@@ -162,25 +164,20 @@ void gspEventThreadMain(u32 arg)
 
 		while (true)
 		{
-          /*  while (IsGamePrior())
-            {
-                svcSleepThread(0x1000);
-            }*/
-
 			int curEvt = popInterrupt();
 
 			if (curEvt == -1)
 				break;
 
-			if (curEvt < GSPGPU_EVENT_MAX)
+			if (curEvt == 2 || curEvt == 3 )// < GSPGPU_EVENT_MAX)
 			{
-				if (gspEventCb[curEvt])
+				/* (gspEventCb[curEvt])
 				{
 					ThreadFunc func = gspEventCb[curEvt];
 					if (gspEventCbOneShot[curEvt])
 						gspEventCb[curEvt] = NULL;
 					func(gspEventCbData[curEvt]);
-				}
+				}*/
 				LightEvent_Signal(&gspEvents[curEvt]);
 				do
 					__ldrex(&gspLastEvent);

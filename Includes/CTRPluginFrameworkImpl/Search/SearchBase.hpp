@@ -7,7 +7,8 @@ namespace CTRPluginFramework
 {
     // Allocate pool
     // Return pool size, 0 if an error occured
-    u32     AllocatePool(void **pool);
+    void    AllocatePool(void);
+    void    ReleasePool(void);
 
     class Search
     {
@@ -85,7 +86,7 @@ namespace CTRPluginFramework
         File    _file;
         Header  _header; ///< Initialized in child class
         Search  *_previous;
-        void    *_pool; ///< Initialized in child class
+       // void    *_pool; ///< Initialized in child class
 
         std::vector<RegionIndex> _indexTable;
     };

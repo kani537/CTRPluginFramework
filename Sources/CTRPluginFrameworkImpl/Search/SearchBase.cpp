@@ -4,23 +4,35 @@
 #include "CTRPluginFramework/Menu/MessageBox.hpp"
 #include "CTRPluginFrameworkImpl/System/ProcessImpl.hpp"
 #include "CTRPluginFramework/System/Controller.hpp"
+#include "ctrulib/allocator/linear.h"
 
 namespace CTRPluginFramework
 {
-    u32     AllocatePool(void **pool)
+    static  void *__pool = nullptr;
+    void    *_pool = nullptr; ///< Initialized in child class
+    u32     _poolSize = 0;
+
+    void     AllocatePool(void)
     {
         u32 size = 0x70000;
 
+        if (__pool != nullptr)
+            return;
         do
         {
             size -= 0x10000;
-            *pool = new u8[size];
-        } while (*pool == nullptr && size > 0x10000);
+            __pool = new u8[size];
+        } while (__pool == nullptr && size > 0x10000);
 
-        if (*pool == nullptr)
-            return (0);
+        if (__pool != nullptr)
+            _poolSize = size;
+    }
 
-        return (size);
+    void    ReleasePool(void)
+    {
+        delete[] static_cast<u8 *>(__pool);
+
+        __pool = _pool = nullptr;
     }
 
     Search::Search(Search *previous) :
@@ -39,8 +51,7 @@ namespace CTRPluginFramework
     _resultSize(0),
     _flags(0),
     _header({0}),
-    _previous(previous),
-    _pool(nullptr)
+    _previous(previous)
     {
         // Create files's path
         std::string path = "Search/";
@@ -64,6 +75,8 @@ namespace CTRPluginFramework
 
         // Write Header to reserve space
         WriteHeader();
+
+        _pool = __pool;
     }
 
     void    Search::Cancel(void)
@@ -80,9 +93,6 @@ namespace CTRPluginFramework
 
         // Set search time
         SearchTime = clock.Restart();
-
-        // Free pool
-        delete[] static_cast<u8 *>(_pool);
 
         // Set index to 0 so it's available to read results
         _indexRegion = 0;
@@ -142,8 +152,7 @@ namespace CTRPluginFramework
                 // Update Header
                 WriteHeader();
 
-                // Free pool
-                delete[] static_cast<u8 *>(_pool);
+                //delete[] static_cast<u8 *>(_pool);
 
                 // Set index to 0 so it's available to read results
                 _indexRegion = 0;
