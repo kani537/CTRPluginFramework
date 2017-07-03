@@ -42,6 +42,8 @@ namespace CTRPluginFramework
         u32             GetTotalResults(const Header &header) const;
         void            ExtractPreviousHits(void *data, u32 index, u32 structSize, u32 &nbItem, bool forced = false);
 
+        // Return the type targeted by the search
+        SearchFlags     GetType(void);
         virtual ~Search() {};
 
     protected:

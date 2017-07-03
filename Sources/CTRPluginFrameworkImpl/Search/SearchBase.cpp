@@ -238,6 +238,11 @@ namespace CTRPluginFramework
         }        
     }
 
+    SearchFlags     Search::GetType(void)
+    {
+        return ((SearchFlags)TypeFlags(_flags));
+    }
+
     void    Search::WriteHeader(void)
     {
         u64  offset = _file.Tell();
