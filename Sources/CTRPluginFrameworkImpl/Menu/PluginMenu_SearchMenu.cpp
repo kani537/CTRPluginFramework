@@ -63,17 +63,43 @@ namespace CTRPluginFramework
                             }
                             break;
                         }
-                        case Key::DPadDown:
+                        case Key::CPadDown:
                         {
                             if (!_isSubmenuOpen)
                             {
-                                _selector = std::min((int)(_selector + 1), (int)(_resultsAddress.size() - 1));
+                                _selector = std::min((int)(_selector + 5), (int)(_resultsAddress.size() - 1));
                                 _startFastScroll.Restart();
                             }     
                             else
                             {
                                 _submenuSelector = std::min((int)(_submenuSelector + 1), (int)4);
                             }       
+                            break;
+                        }
+                        case Key::CPadUp:
+                        {
+                            if (!_isSubmenuOpen)
+                            {
+                                _selector = std::max((int)(_selector - 5), (int)(0));
+                                _startFastScroll.Restart();
+                            }
+                            else
+                            {
+                                _submenuSelector = std::max((int)(_submenuSelector - 1), (int)0);
+                            }
+                            break;
+                        }
+                        case Key::DPadDown:
+                        {
+                            if (!_isSubmenuOpen)
+                            {
+                                _selector = std::min((int)(_selector + 1), (int)(_resultsAddress.size() - 1));
+                                _startFastScroll.Restart();
+                            }
+                            else
+                            {
+                                _submenuSelector = std::min((int)(_submenuSelector + 1), (int)4);
+                            }
                             break;
                         }
                         case Key::DPadLeft:
@@ -136,6 +162,18 @@ namespace CTRPluginFramework
                 {
                     switch (event.key.code)
                     {
+                        case Key::CPadDown:
+                        {
+                            _selector = std::min((int)(_selector + 5), (int)(_resultsAddress.size() - 1));
+                            _fastScroll.Restart();
+                            break;
+                        }
+                        case Key::CPadUp:
+                        {
+                            _selector = std::max((int)(_selector - 5), (int)(0));
+                            _startFastScroll.Restart();
+                            break;
+                        }
                         case Key::DPadUp:
                         {
                             _selector = std::max((int)(_selector - 1),(int)(0));
@@ -399,12 +437,14 @@ namespace CTRPluginFramework
 
         MessageBox("Enter the name of the new cheat")();
 
-     /*   if (_currentSearch->Size == SearchSize::Bits8) _freeCheats.Create(address, *(u8 *)address);
-        if (_currentSearch->Size == SearchSize::Bits16) _freeCheats.Create(address, *(u16 *)address);
-        if (_currentSearch->Size == SearchSize::Bits32) _freeCheats.Create(address, *(u32 *)address);
-        if (_currentSearch->Size == SearchSize::Bits64) _freeCheats.Create(address, *(u64 *)address);
-        if (_currentSearch->Size == SearchSize::FloatingPoint) _freeCheats.Create(address, *(float *)address);
-        if (_currentSearch->Size == SearchSize::Double) _freeCheats.Create(address, *(double *)address);*/
+        SearchFlags type = _currentSearch->GetType();
+
+        if (type == SearchFlags::U8) _freeCheats.Create(address, *(u8 *)address);
+        if (type == SearchFlags::U16) _freeCheats.Create(address, *(u16 *)address);
+        if (type == SearchFlags::U32) _freeCheats.Create(address, *(u32 *)address);
+        if (type == SearchFlags::U64) _freeCheats.Create(address, *(u64 *)address);
+        if (type == SearchFlags::Float) _freeCheats.Create(address, *(float *)address);
+        if (type == SearchFlags::Double) _freeCheats.Create(address, *(double *)address);
     }
 
     void    SearchMenu::_Edit(void)
@@ -418,10 +458,9 @@ namespace CTRPluginFramework
 
         u32 address = strtoul(_resultsAddress[_selector].c_str(), NULL, 16);
 
-        /*
-        switch (_currentSearch->Size)
+        switch (_currentSearch->GetType())
         {
-            case SearchSize::Bits8:
+            case SearchFlags::U8:
             {
                 u8 value = *(u8 *)(address);//strtoul(_resultsNewValue[_selector].c_str(), NULL, 16);
 
@@ -434,7 +473,7 @@ namespace CTRPluginFramework
                 }
                 break;
             }
-            case SearchSize::Bits16:
+            case SearchFlags::U16:
             {
                 u16 value = *(u16 *)(address);//strtoul(_resultsNewValue[_selector].c_str(), NULL, 16);
 
@@ -447,7 +486,7 @@ namespace CTRPluginFramework
                 }
                 break;
             }
-            case SearchSize::Bits32:
+            case SearchFlags::U32:
             {
                 u32 value = *(u32 *)(address);//strtoul(_resultsNewValue[_selector].c_str(), NULL, 16);
 
@@ -460,7 +499,7 @@ namespace CTRPluginFramework
                 }
                 break;
             }
-            case SearchSize::Bits64:
+            case SearchFlags::U64:
             {
                 u64 value = *(u64 *)(address);//strtoull(_resultsNewValue[_selector].c_str(), NULL, 16);
 
@@ -473,7 +512,7 @@ namespace CTRPluginFramework
                 }
                 break;
             }
-            case SearchSize::FloatingPoint:
+            case SearchFlags::Float:
             {
                 float value = *(float *)(address);//strtof(_resultsNewValue[_selector].c_str(), NULL);
 
@@ -486,7 +525,7 @@ namespace CTRPluginFramework
                 }
                 break;
             }
-            case SearchSize::Double:
+            case SearchFlags::Double:
             {
                 double value = *(double *)(address);//strtod(_resultsNewValue[_selector].c_str(), NULL);
 
@@ -499,7 +538,7 @@ namespace CTRPluginFramework
                 }
                 break;
             }
-        }*/
+        }
     }
 
     void    SearchMenu::_JumpInEditor(void)
