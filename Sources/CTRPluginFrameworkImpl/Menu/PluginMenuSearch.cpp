@@ -25,7 +25,6 @@ namespace CTRPluginFramework
     _firstRegionInit(false),
     _step(0),
     _waitForUser(false),
-    _buildResult(false),
 	_hexInput(false),
     _inEditor(false),
     _hexBtn("Hex", *this, nullptr, IntRect(110, 165, 38, 15), nullptr)
@@ -71,19 +70,11 @@ namespace CTRPluginFramework
 
     bool    PluginMenuSearch::operator()(EventList &eventList, Time &delta)
     {
-        static bool trigger = false;
-
         if (_inEditor)
         {
             if (_hexEditor(eventList))
                 _inEditor = false;
             return (false);
-        }
-
-        if (trigger)
-        {
-            trigger = false;
-            _searchMenu.Update();
         }
 
         // If we're on first search
@@ -95,11 +86,14 @@ namespace CTRPluginFramework
 
 
         // Process Event
-        _searchMenu.ProcessEvent(eventList, delta);
-        for (int i = 0; i < eventList.size(); i++)
+        if (!_inSearch)
         {
-            _ProcessEvent(eventList[i]);
-        }
+            _searchMenu.ProcessEvent(eventList, delta);
+            for (int i = 0; i < eventList.size(); i++)
+            {
+                _ProcessEvent(eventList[i]);
+            }
+        }       
 
         // Update
         _Update(delta);
@@ -125,15 +119,11 @@ namespace CTRPluginFramework
                 // If we just finished first search
                 if (_step == 1)
                     _PopulateSearchType(false);
+
+                // Update hits list
+                _searchMenu.Update();
             }
             return (false);
-        }
-
-        if (_buildResult)
-        {
-            _buildResult = false;
-            trigger = true;   
-            return (false);  
         }
 
         if (_waitForUser)
@@ -151,8 +141,7 @@ namespace CTRPluginFramework
 		{
 			_hexInput = !_hexInput;
 			_valueTextBox.UseHexadecimal(_hexInput);
-		}
-			
+		}			
 
         // Check ComboBox
 
@@ -260,7 +249,6 @@ namespace CTRPluginFramework
         if (_waitForUser && event.type == Event::KeyDown && event.key.code == Key::A)
         {
             _waitForUser = false;
-            _buildResult = true;
             _cancelBtn.IsEnabled = false;
             _resetBtn.IsEnabled = true;
             if (_searchHistory.size())
@@ -369,6 +357,9 @@ namespace CTRPluginFramework
     ************/
     void    PluginMenuSearch::_Update(Time delta)
     {
+        if (_waitForUser)
+            return;
+
         /*
         ** Buttons
         *************/
@@ -676,24 +667,6 @@ namespace CTRPluginFramework
         }
     }
 
-
-    void    PluginMenuSearch::_ShowBuildResultWindow(void) const
-    {
-        Color    black = Color::Black;
-        Color    dimGrey = Color::DimGrey;
-        Color    skyblue = Color::SkyBlue;
-        static IntRect  background(125, 80, 150, 70);
-
-        Renderer::SetTarget(TOP);
-
-        // Draw "window" background
-        Renderer::DrawRect2(background, black, dimGrey);
-
-        int posY = 107;
-
-        float   length = Renderer::GetTextSize("Build hit(s) list...");
-        Renderer::DrawSysString("Build hit(s) list...", 125 + ((150 - length) /2), posY, 300, skyblue);
-    }
     extern "C" u32 __ctru_linear_heap;
     extern "C" u32 __ctru_linear_heap_size;
 

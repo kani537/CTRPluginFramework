@@ -38,9 +38,6 @@ namespace CTRPluginFramework
         void    _cancelBtn_OnClick(void);
 
         void    _ShowProgressWindow(void) const;
-        void    _ShowBuildResultWindow(void) const;
-
-
 
         // Members
         std::vector<Region>                 _regionsList;
@@ -52,7 +49,6 @@ namespace CTRPluginFramework
         bool                                _inEditor;
         bool                                _firstRegionInit;
         bool                                _waitForUser;
-        bool                                _buildResult;
 		bool								_hexInput;
         int                                 _step;
 
