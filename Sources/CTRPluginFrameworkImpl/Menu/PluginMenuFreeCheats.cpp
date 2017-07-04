@@ -164,19 +164,19 @@ namespace CTRPluginFramework
 
         if (_u8CheckBox() && _selectedFC != nullptr)
         {
-            _selectedFC->Type = Type_e::Bits8;
+            _selectedFC->SetType(Type_e::Bits8);
             _UpdateInfos();
         }
 
         if (_u16CheckBox() && _selectedFC != nullptr)
         {
-            _selectedFC->Type = Type_e::Bits16;
+            _selectedFC->SetType(Type_e::Bits16);
             _UpdateInfos();
         }
 
         if (_u32CheckBox() && _selectedFC != nullptr)
         {
-            _selectedFC->Type = Type_e::Bits32;
+            _selectedFC->SetType(Type_e::Bits32);
             _UpdateInfos();
         }
 

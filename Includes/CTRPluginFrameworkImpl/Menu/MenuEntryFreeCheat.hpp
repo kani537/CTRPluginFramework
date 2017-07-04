@@ -36,6 +36,7 @@ namespace CTRPluginFramework
         bool    TriggerState(void);
         void    Enable(void);
         void    Disable(void);
+        void    SetType(Type_e type);
         void    ToSavedSearch(Preferences::SavedCheats &savedCheats);
 
         FuncPointer     Func;

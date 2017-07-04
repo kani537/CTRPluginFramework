@@ -155,6 +155,17 @@ namespace CTRPluginFramework
         PluginMenuExecuteLoop::Remove(this);
     }
 
+    void    MenuEntryFreeCheat::SetType(Type_e type)
+    {
+        Type = type;
+        if (Type == Type_e::Bits8) Func = Write8;
+        if (Type == Type_e::Bits16) Func = Write16;
+        if (Type == Type_e::Bits32) Func = Write32;
+        if (Type == Type_e::Bits64) Func = Write64;
+        if (Type == Type_e::Float) Func = WriteFloat;
+        if (Type == Type_e::Double) Func = WriteDouble;
+    }
+
     void    MenuEntryFreeCheat::ToSavedSearch(Preferences::SavedCheats &savedCheats)
     {
         savedCheats.flags = ((u8)Type) | (IsActivated() << 8);
