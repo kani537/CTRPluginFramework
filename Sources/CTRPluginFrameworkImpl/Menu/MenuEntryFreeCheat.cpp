@@ -102,10 +102,11 @@ namespace CTRPluginFramework
     }
 
     MenuEntryFreeCheat::MenuEntryFreeCheat(const MenuEntryFreeCheat& freeCheat) :
-        MenuEntryImpl(freeCheat.name)
+        MenuEntryImpl(freeCheat.name),
+        Func(freeCheat.Func),
+        Address(freeCheat.Address)
     {
-        Func = freeCheat.Func;
-        Address = freeCheat.Address;
+        _type = MenuType::FreeCheat;
         Type = freeCheat.Type;
         Value.Bits64 = freeCheat.Value.Bits64;
     }
