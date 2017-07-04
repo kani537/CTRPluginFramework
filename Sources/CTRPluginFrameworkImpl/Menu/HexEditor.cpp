@@ -4,6 +4,8 @@
 #include "CTRPluginFramework/Menu/Keyboard.hpp"
 
 #include "3DS.h"
+#include "CTRPluginFrameworkImpl/Menu/PluginMenuFreeCheats.hpp"
+#include "CTRPluginFramework/Menu/MessageBox.hpp"
 
 namespace CTRPluginFramework
 {   
@@ -50,9 +52,13 @@ namespace CTRPluginFramework
         // Init variables
         _invalid = true;
         _isModified = false;
+        _subMenuOpen = false;
+        _action = false;
         _startRegion = 0;
         _endRegion = 0;
         _cursor = 0;
+        _subCursor = 0;
+        _indexHistory = -1;
 
         // Clean buffer
         memset(_memory, 0, 256);
@@ -64,6 +70,15 @@ namespace CTRPluginFramework
         _keyboard._keys.at(15).Enable(false);
         // Disable enter key
         _keyboard._keys.at(16).Enable(false);
+
+        // Create options
+        _options.push_back("New FreeCheat");
+        _options.push_back("Jump to");
+        _options.push_back("Move backward");
+        _options.push_back("Move forward");
+        _options.push_back("Save this address");
+        _options.push_back("Browse history");
+        _options.push_back("Clear history");
 
         // Init memory etc
         Goto(target);
@@ -122,6 +137,8 @@ namespace CTRPluginFramework
             {
                 case Key::DPadLeft:
                 {
+                    if (_subMenuOpen)
+                        break;
                     if (_cursor > 15)
                     {
                         _cursor = std::max((int)(_cursor -1), (int)(_cursor & ~15));
@@ -133,19 +150,27 @@ namespace CTRPluginFramework
 
                 case Key::DPadRight:
                 {
+                    if (_subMenuOpen)
+                        break;
                     _cursor = std::min((int)(_cursor +1), (int)((_cursor & ~15) + 15));
                     break;
                 }
 
                 case Key::DPadUp:
                 {
-                    _cursor = std::max((int)(_cursor - 16), (int)(_cursor & 15));
+                    if (_subMenuOpen)
+                        _subCursor = std::max((int)(_subCursor - 1), 0);
+                    else
+                        _cursor = std::max((int)(_cursor - 16), (int)(_cursor & 15));
                     break;
                 }
 
                 case Key::DPadDown:
                 {
-                    _cursor = std::min((int)(_cursor + 16), (int)((_cursor & 15) + 144));
+                    if (_subMenuOpen)
+                        _subCursor = std::min((int)(_subCursor + 1), (int)(_options.size() - 1));
+                    else
+                        _cursor = std::min((int)(_cursor + 16), (int)((_cursor & 15) + 144));
                     break;
                 }
 
@@ -155,38 +180,65 @@ namespace CTRPluginFramework
                     {
                         _ApplyChanges();
                     }
+                    else if (_subMenuOpen)
+                    {
+                        if (_subCursor == 0) _CreateFreeCheat();
+                        else if (_subCursor == 1) _JumpTo();
+                        else if (_subCursor == 2) _MoveBackward();
+                        else if (_subCursor == 3) _MoveForward();
+                        else if (_subCursor == 4) _SaveThisAddress();
+                        else if (_subCursor == 5) _BrowseHistory();
+                        else if (_subCursor == 6) _ClearHistory();
+                    }
                     break;
                 }
+
                 case Key::B:
                 {
                     if (_isModified)
                     {
                         _DiscardChanges();
                     }
+                    else if (_subMenuOpen)
+                    {
+                        _subMenuOpen = false;
+                    }
                     break;
                 }
 
                 case Key::X:
                 {
-                    if (!_isModified)
+                    if (!_isModified && !_subMenuOpen)
                     {
-                        _JumpTo();
+                        _subMenuOpen = true;
                         break;
                     }
+                }
+                case Key::L:
+                {
+                    _GotoPreviousRegion();
+                    break;
+                }
+
+                case Key::R:
+                {
+                    _GotoNextRegion();
+                    break;
                 }
                 default: break;
             }
         }
         static Clock timer;
 
-        if (!_isModified && event.type == Event::KeyDown && timer.HasTimePassed(Seconds(0.2f)))
+        if (!_isModified && !_subMenuOpen && event.type == Event::KeyDown && timer.HasTimePassed(Seconds(0.2f)))
         {
             timer.Restart();
             switch (event.key.code)
             {
                 case Key::CPadUp:
                 {
-                    Goto((u32)_memoryAddress - 8);
+                    if ((u32)_memoryAddress > _startRegion)
+                        Goto((u32)_memoryAddress - 8);
                     break;
                 }
 
@@ -201,16 +253,77 @@ namespace CTRPluginFramework
     }
 
     #define OFF(d) ((i + d) * 8)
-    void    HexEditor::_RenderTop(void)
+
+    void    HexEditor::_DrawSubMenu(void)
     {
         Color    &black = Color::Black;
         Color    &blank = Color::Blank;
         Color    &dimGrey = Color::BlackGrey;
+        Color    &darkgrey = Color::DarkGrey;
+        Color    &gainsboro = Color::Gainsboro;
+        Color    &skyblue = Color::SkyBlue;
+        static IntRect  background(240, 20, 130, 200);
+
+        // DrawBackground
+        Renderer::DrawRect2(background, black, dimGrey);
+
+        int posY = 25;
+
+        // Draw title's menu
+        int xx = Renderer::DrawSysString("Options", 245, posY, 340, blank);
+        Renderer::DrawLine(245, posY, xx - 225, skyblue);
+
+        posY = 46;
+
+        IntRect selRect = IntRect(241, 45 + _subCursor * 12, 125, 12);
+
+        for (int i = 0; i < _options.size(); i++)
+        {
+            std::string &str = _options[i];
+
+            if (i == _subCursor)
+            {
+                if (_action || !_buttonFade.HasTimePassed(Seconds(0.2f)))
+                {
+                    if (_action)
+                    {
+                        _action = false;
+                        _buttonFade.Restart();
+                    }
+
+                    // Draw action rectangle
+                    Renderer::DrawRect(selRect, gainsboro);
+                    // Draw selector
+                    Renderer::DrawRect(selRect, darkgrey, false);
+                    // Draw text
+                    Renderer::DrawString((char *)str.c_str(), 245, posY, black);
+                }
+                else
+                {
+                    // Draw selector
+                    Renderer::DrawRect(selRect, darkgrey, false);
+
+                    // Draw text
+                    Renderer::DrawString((char *)str.c_str(), 245, posY, blank);
+                }
+            }
+            else
+            {
+                Renderer::DrawString((char *)str.c_str(), 245, posY, blank);
+            }
+            posY += 2;
+        }
+    }
+    void    HexEditor::_RenderTop(void)
+    {
+        Renderer::SetTarget(TOP);
+
+        Color    &black = Color::Black;
+        Color    &blank = Color::Blank;
         Color    &skyblue = Color::SkyBlue;
         Color    &deepskyblue = Color::DeepSkyBlue;
         Color    &dodgerblue = Color::DodgerBlue;
         Color    &red = Color::Red;
-        static IntRect  background(30, 20, 340, 200);
 
         u32     address = (u32)_memoryAddress;
         u32     cursorAddress = address + ((_cursor / 16) * 8) + ((_cursor & 15) >> 1);
@@ -220,21 +333,13 @@ namespace CTRPluginFramework
         int   posY = 25;
         int   posX = 40;
 
-        Renderer::SetTarget(TOP);
-
-        // Draw background
-        if (Preferences::topBackgroundImage->IsLoaded())
-            Preferences::topBackgroundImage->Draw(background.leftTop);
-        else
-        {
-            Renderer::DrawRect2(background, black, dimGrey);
-            Renderer::DrawRect(32, 22, 336, 196, blank, false);
-        }
+        Window::TopWindow.Draw();
 
         // Title
         int xx = Renderer::DrawSysString("HexEditor", posX, posY, 300, blank);
         Renderer::DrawLine(posX, posY, xx, dodgerblue);
 
+        
         posY += 20;
 
         // Column headers
@@ -327,10 +432,15 @@ namespace CTRPluginFramework
                 }
 
                 posY = yPos;
+
                 u8   original = _memoryAddress[i];
                 u8   buf = _memory[i];
+                bool diff = original != buf;
 
-                Color &c = original == buf ? black : red;
+                if (!_isModified && diff)
+                    _isModified = true;
+
+                Color &c = diff ? red : black;
 
                 // Convert value
                 sprintf(buffer, "%02X ", buf);
@@ -357,9 +467,15 @@ namespace CTRPluginFramework
         else
         {
             posY += 5;
-            Renderer::DrawString((char *)"Jump to address: ", 44, posY, blank);
+            Renderer::DrawString((char *)"Options: ", 44, posY, blank);
             posY -= 14;
-            Renderer::DrawSysString("\uE002", 166, posY, 330, blank);  
+            Renderer::DrawSysString("\uE002", 99, posY, 330, blank);  
+        }
+
+        if (_subMenuOpen)
+        {
+            _DrawSubMenu();
+            return;
         }
         
     }
@@ -379,6 +495,118 @@ namespace CTRPluginFramework
         _closeBtn.Update(isTouched, touchPos);
     }
 
+    u32     HexEditor::_GetCursorAddress(void) const
+    {
+        u32     address = (u32)_memoryAddress;
+        u32     cursorAddress = address + ((_cursor / 16) * 8) + ((_cursor & 15) >> 1);
+
+        return (cursorAddress);
+    }
+
+    void    HexEditor::_CreateFreeCheat(void)
+    {
+        _action = true;
+
+        if (_invalid)
+        {
+            MessageBox("Error\n\nAddress invalid, abort")();
+            return;
+        }
+
+        u32 address = _GetCursorAddress() & ~3;
+        FreeCheats::GetInstance()->Create(address, *(u32 *)address);
+    }
+
+    void    HexEditor::_MoveBackward(void)
+    {
+        _action = true;
+
+        // If there's nothing in the history
+        if (!_history.size())
+            return;
+
+        --_indexHistory;
+        if (_indexHistory <= -1)
+            _indexHistory = 0;
+
+        // Jump to address
+        Goto(_history[_indexHistory]);
+
+
+
+    }
+
+    void    HexEditor::_MoveForward(void)
+    {
+        _action = true;
+
+        // If there's nothing in the history
+        if (!_history.size())
+            return;
+
+        ++_indexHistory;
+        if (_indexHistory >= _history.size() - 1)
+            _indexHistory = _history.size() - 1;
+
+        // Jump to address
+        Goto(_history[_indexHistory]);
+
+        
+
+
+        
+    }
+
+    void    HexEditor::_SaveThisAddress(void)
+    {
+        _action = true;
+
+        u32 address = _GetCursorAddress();
+        if (_history.back() == address)
+            return;
+        _history.push_back(address);
+        _indexHistory = _history.size() - 1;
+    }
+
+    std::string ToHex(u32 x);
+
+
+    void    HexEditor::_BrowseHistory(void)
+    {
+        _action = true;
+        
+        if (_history.empty())
+        {
+            MessageBox("Error\n\nHistory is empty")();
+            return;
+        }
+
+        Keyboard    keyboard;
+        std::vector<std::string> addresses;
+
+        for (u32 v : _history)
+            addresses.push_back(ToHex(v));
+
+        keyboard.DisplayTopScreen = false;
+        keyboard.Populate(addresses);
+
+        int index = keyboard.Open();
+
+        if (index != -1)
+        {
+            _indexHistory = index;
+            Goto(_history[index]);
+        }
+    }
+
+    void    HexEditor::_ClearHistory(void)
+    {
+        _action = true;
+
+        _history.clear();
+        _indexHistory = -1;
+    }
+
     void    HexEditor::Goto(u32 address)
     {
         MemInfo mInfo;
@@ -395,13 +623,12 @@ namespace CTRPluginFramework
             if (address + 80 > _endRegion)
                 address = _endRegion - 80;
 
-            _memoryAddress = (u8 *)address;
+            //_cursor += -(((u32)_memoryAddress - address) * 2);
 
-            _cursor = (addrBak - address) * 2;
+            _memoryAddress = (u8 *)address;            
 
-            if (!_invalid)
-                if (!Process::CopyMemory(_memory, (void *)address, 80))
-                    _invalid = true;
+            _invalid = !Process::CopyMemory(_memory, (void *)address, 80);
+
             return;
         }
 
@@ -424,8 +651,10 @@ namespace CTRPluginFramework
             goto invalid;
         
     copy:
-        svcFlushProcessDataCache(Process::GetHandle(), (void *)address, 80);
-        std::memcpy(_memory, (void*)address, 80);
+        //svcFlushProcessDataCache(Process::GetHandle(), (void *)address, 80);
+
+        if (!Process::CopyMemory(_memory, (void *)address, 80))
+            goto invalid;
 
         _memoryAddress = (u8 *)address;
         _invalid = false;
@@ -461,6 +690,7 @@ namespace CTRPluginFramework
 
     void    HexEditor::_JumpTo(void)
     {
+        _action = true;
         Keyboard    keyboard;
 
         Color    &black = Color::Black;
@@ -496,6 +726,36 @@ namespace CTRPluginFramework
         if (keyboard.Open(address, address) != -1)
         {
             Goto(address);
+            _history.push_back(address);
+            _indexHistory = _history.size() - 1;
+        }
+    }
+
+    void    HexEditor::_GotoPreviousRegion(void)
+    {
+        if (_isModified || _subMenuOpen)
+            return;
+
+        if (_startRegion > 0)
+        {
+            Goto(_startRegion - 8);
+            _cursor = 0;
+            Goto(_startRegion);
+            _cursor = 0;
+        }
+    }
+
+    void    HexEditor::_GotoNextRegion()
+    {
+        if (_isModified || _subMenuOpen)
+            return;
+
+        if (_startRegion < 0x50000000)
+        {
+            Goto(_endRegion + 8);
+            _cursor = 0;
+            Goto(_startRegion);
+            _cursor = 0;
         }
     }
 
