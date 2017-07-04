@@ -45,11 +45,16 @@ namespace CTRPluginFramework
         NumericTextBox                      _addressTextBox;
         NumericTextBox                      _valueTextBox;
         CheckedButton<FreeCheats, void>     _hexBtn;
+        Button<FreeCheats, void>            _duplicateBtn;
         Button<FreeCheats, void>            _saveBtn;
         Button<FreeCheats, void>            _cancelBtn;
         Button<FreeCheats, void>            _deleteBtn;
         Button<FreeCheats, void>            _changeNameBtn;
         Button<FreeCheats, void>            _openInEditorBtn;
+
+        CheckBox                            _u8CheckBox;
+        CheckBox                            _u16CheckBox;
+        CheckBox                            _u32CheckBox;
         
         MenuEntryFreeCheat                  *_selectedFC;
 
@@ -61,6 +66,7 @@ namespace CTRPluginFramework
         void    _Update(void);
         void    _OpenInEditorBtn_OnClick(void);
         void    _ChangeNameBtn_OnClick(void);
+        void    _DuplicateBtn_OnClick(void);
         void    _SaveBtn_OnClick(void);
         void    _CancelBtn_OnClick(void);
         void    _DeleteBtn_OnClick(void);

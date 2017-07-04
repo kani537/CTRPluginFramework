@@ -31,19 +31,23 @@ namespace CTRPluginFramework
     }
 
     FreeCheats::FreeCheats(HexEditor &hexEditor) :
-    _hexEditor(hexEditor),
-    _inEditor(false),
-    _mustSave(false),
-    _nameChanged(false),
-    _menu("Free cheats"),
-    _addressTextBox(160, 60, 130, 15),
-    _valueTextBox(160, 80, 130, 15),
-    _hexBtn("Hex", *this, nullptr, IntRect(120, 80, 38, 15), nullptr),
-    _saveBtn("Save", *this, &FreeCheats::_SaveBtn_OnClick, IntRect(40, 140, 73, 15)),
-    _cancelBtn("Cancel", *this, &FreeCheats::_CancelBtn_OnClick, IntRect(123, 140, 73, 15)),
-    _deleteBtn("Delete", *this, &FreeCheats::_DeleteBtn_OnClick, IntRect(206, 140, 73, 15)),
-    _changeNameBtn("Change name", *this, &FreeCheats::_ChangeNameBtn_OnClick, IntRect(40, 120, 240, 15)),
-    _openInEditorBtn("Open in HexEditor", *this, &FreeCheats::_OpenInEditorBtn_OnClick, IntRect(40, 100, 240, 15))
+        _hexEditor(hexEditor),
+        _inEditor(false),
+        _mustSave(false),
+        _nameChanged(false),
+        _menu("Free cheats"),
+        _addressTextBox(160, 60, 130, 15),
+        _valueTextBox(160, 80, 130, 15),
+        _hexBtn("Hex", *this, nullptr, IntRect(120, 80, 38, 15), nullptr),
+        _saveBtn("Save", *this, &FreeCheats::_SaveBtn_OnClick, IntRect(40, 180, 73, 15)),
+        _cancelBtn("Cancel", *this, &FreeCheats::_CancelBtn_OnClick, IntRect(123, 180, 73, 15)),
+        _deleteBtn("Delete", *this, &FreeCheats::_DeleteBtn_OnClick, IntRect(206, 180, 73, 15)),
+        _openInEditorBtn("Open in HexEditor", *this, &FreeCheats::_OpenInEditorBtn_OnClick, IntRect(40, 120, 240, 15)),
+        _changeNameBtn("Change name", *this, &FreeCheats::_ChangeNameBtn_OnClick, IntRect(40, 140, 240, 15)),
+        _duplicateBtn("Duplicate", *this, &FreeCheats::_DuplicateBtn_OnClick, IntRect(40, 160, 240, 15)),
+        _u8CheckBox(60, 100),
+        _u16CheckBox(140, 100),
+        _u32CheckBox(220, 100)
     {
         if (_instance == nullptr)
             _instance = this;
@@ -57,11 +61,11 @@ namespace CTRPluginFramework
         _saveBtn.UseSysFont(false);
         _cancelBtn.UseSysFont(false);
         _deleteBtn.UseSysFont(false);
-        _changeNameBtn.UseSysFont(false);
         _openInEditorBtn.UseSysFont(false);
+        _changeNameBtn.UseSysFont(false);
+        _duplicateBtn.UseSysFont(false);
 
         _valueTextBox.UseHexadecimal(false);
-
 
         _saveBtn.IsLocked = true;
         _cancelBtn.IsLocked = true;
@@ -138,6 +142,7 @@ namespace CTRPluginFramework
             _saveBtn.IsLocked = false;
             _cancelBtn.IsLocked = false;
         }
+
         if (_valueTextBox())
         {
             _mustSave = true;
@@ -148,12 +153,31 @@ namespace CTRPluginFramework
         _saveBtn();
         _cancelBtn();
         _deleteBtn();
-        _changeNameBtn();
         _openInEditorBtn();
+        _changeNameBtn();
+        _duplicateBtn();
 
         if (_hexBtn())
         {
             _valueTextBox.UseHexadecimal(_hexBtn.GetState());
+        }
+
+        if (_u8CheckBox() && _selectedFC != nullptr)
+        {
+            _selectedFC->Type = Type_e::Bits8;
+            _UpdateInfos();
+        }
+
+        if (_u16CheckBox() && _selectedFC != nullptr)
+        {
+            _selectedFC->Type = Type_e::Bits16;
+            _UpdateInfos();
+        }
+
+        if (_u32CheckBox() && _selectedFC != nullptr)
+        {
+            _selectedFC->Type = Type_e::Bits32;
+            _UpdateInfos();
         }
 
         // Draw Top
@@ -267,6 +291,15 @@ namespace CTRPluginFramework
         _addressTextBox.Draw();
         _valueTextBox.Draw();
 
+        // Draw checkboxes and labels
+        _u8CheckBox.Draw();
+        _u16CheckBox.Draw();
+        _u32CheckBox.Draw();
+        posY = 104;
+        Renderer::DrawString((char *)"8Bits", 77, posY, Color::Blank); posY = 104;
+        Renderer::DrawString((char *)"16Bits", 157, posY, Color::Blank); posY = 104;
+        Renderer::DrawString((char *)"32Bits", 237, posY, Color::Blank);
+
         // Draw buttons
         _hexBtn.Draw();
         _saveBtn.Draw();
@@ -274,6 +307,7 @@ namespace CTRPluginFramework
         _deleteBtn.Draw();
         _changeNameBtn.Draw();
         _openInEditorBtn.Draw();
+        _duplicateBtn.Draw();
     }
 
     void    FreeCheats::_ProcessEvent(EventList& eventList)
@@ -306,9 +340,27 @@ namespace CTRPluginFramework
 
             _addressTextBox.SetValue(_selectedFC->Address);
 
-            if (_selectedFC->Type == Type_e::Bits8) _valueTextBox.SetValue(_selectedFC->Value.Bits8);
-            if (_selectedFC->Type == Type_e::Bits16) _valueTextBox.SetValue(_selectedFC->Value.Bits16);
-            if (_selectedFC->Type == Type_e::Bits32) _valueTextBox.SetValue(_selectedFC->Value.Bits32);
+            if (_selectedFC->Type == Type_e::Bits8)
+            {
+                _valueTextBox.SetValue(_selectedFC->Value.Bits8);
+                _u8CheckBox.SetState(true);
+                _u16CheckBox.SetState(false);
+                _u32CheckBox.SetState(false);
+            }
+            if (_selectedFC->Type == Type_e::Bits16)
+            {
+                _valueTextBox.SetValue(_selectedFC->Value.Bits16);
+                _u8CheckBox.SetState(false);
+                _u16CheckBox.SetState(true);
+                _u32CheckBox.SetState(false);
+            }
+            if (_selectedFC->Type == Type_e::Bits32)
+            {
+                _u8CheckBox.SetState(false);
+                _u16CheckBox.SetState(false);
+                _u32CheckBox.SetState(true);
+                _valueTextBox.SetValue(_selectedFC->Value.Bits32);
+            }
             if (_selectedFC->Type == Type_e::Bits64) _valueTextBox.SetValue(_selectedFC->Value.Bits64);
             if (_selectedFC->Type == Type_e::Float) _valueTextBox.SetValue(_selectedFC->Value.Float);
             if (_selectedFC->Type == Type_e::Double) _valueTextBox.SetValue(_selectedFC->Value.Double);
@@ -336,8 +388,12 @@ namespace CTRPluginFramework
             _saveBtn.Update(isTouchDown, touchPos);
             _cancelBtn.Update(isTouchDown, touchPos);
             _deleteBtn.Update(isTouchDown, touchPos);
-            _changeNameBtn.Update(isTouchDown, touchPos);
             _openInEditorBtn.Update(isTouchDown, touchPos);
+            _changeNameBtn.Update(isTouchDown, touchPos);
+            _duplicateBtn.Update(isTouchDown, touchPos);
+            _u8CheckBox.Update(isTouchDown, touchPos);
+            _u16CheckBox.Update(isTouchDown, touchPos);
+            _u32CheckBox.Update(isTouchDown, touchPos);
         }        
     }
 
@@ -407,5 +463,13 @@ namespace CTRPluginFramework
 
         _selectedFC = reinterpret_cast<MenuEntryFreeCheat*>(_menu.GetSelectedItem());
         _UpdateInfos();
+    }
+
+    void    FreeCheats::_DuplicateBtn_OnClick(void)
+    {
+        if (_selectedFC == nullptr)
+            return;
+
+        _menu.Append(new MenuEntryFreeCheat(*_selectedFC));
     }
 }
