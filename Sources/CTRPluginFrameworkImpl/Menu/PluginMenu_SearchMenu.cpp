@@ -165,13 +165,36 @@ namespace CTRPluginFramework
                         case Key::CPadDown:
                         {
                             _selector = std::min((int)(_selector + 5), (int)(_resultsAddress.size() - 1));
+
+                            int  half = _resultsAddress.size() / 2;
+
+                            if (_selector > half)
+                            {
+                                u32 bakIndex = _index;
+                                _index = std::min((int)(_index + half), (int)(_currentSearch->ResultsCount / 500 * 500));
+                                _selector -= _index - bakIndex;
+                                Update();
+                            }
+                            
                             _fastScroll.Restart();
+                            
                             break;
                         }
                         case Key::CPadUp:
                         {
                             _selector = std::max((int)(_selector - 5), (int)(0));
-                            _startFastScroll.Restart();
+
+                            int  half = _resultsAddress.size() / 2;
+
+                            if (_selector < half && _index > 0)
+                            {
+                                u32 bakIndex = _index;
+                                _index = std::max((int)(_index - half), (int)(0));
+                                _selector += bakIndex - _index;
+                                Update();
+                            }
+
+                            _fastScroll.Restart();
                             break;
                         }
                         case Key::DPadUp:

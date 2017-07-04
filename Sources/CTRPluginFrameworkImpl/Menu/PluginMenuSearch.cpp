@@ -27,7 +27,7 @@ namespace CTRPluginFramework
     _waitForUser(false),
 	_hexInput(false),
     _inEditor(false),
-    _hexBtn("Hex", *this, nullptr, IntRect(110, 165, 38, 15), nullptr)
+    _hexBtn("Hex", *this, nullptr, IntRect(110, 145, 38, 15), nullptr)
     {
         _currentSearch = nullptr;
 
@@ -321,10 +321,6 @@ namespace CTRPluginFramework
         // Scan Type
         Renderer::DrawString((char *)"Scan Type:", textPosX, posY, blank);
         posY = 147;
-
-        // Alignment
-        Renderer::DrawString((char *)"Alignment:", textPosX, posY, blank);
-        posY = 167;
 
         // Value
         Renderer::DrawString((char *)"Value:", textPosX, posY, blank);
