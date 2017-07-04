@@ -101,6 +101,15 @@ namespace CTRPluginFramework
         Value.Double = value;
     }
 
+    MenuEntryFreeCheat::MenuEntryFreeCheat(const MenuEntryFreeCheat& freeCheat) :
+        MenuEntryImpl(freeCheat.name)
+    {
+        Func = freeCheat.Func;
+        Address = freeCheat.Address;
+        Type = freeCheat.Type;
+        Value.Bits64 = freeCheat.Value.Bits64;
+    }
+
     MenuEntryFreeCheat::MenuEntryFreeCheat(const Preferences::SavedCheats& savedCheats) :
         MenuEntryImpl(savedCheats.name),
         Address(savedCheats.address)

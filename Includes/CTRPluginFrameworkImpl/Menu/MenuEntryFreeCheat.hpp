@@ -29,6 +29,7 @@ namespace CTRPluginFramework
         MenuEntryFreeCheat(const std::string &text, u32 addr, u64 value);
         MenuEntryFreeCheat(const std::string &text, u32 addr, float value);
         MenuEntryFreeCheat(const std::string &text, u32 addr, double value);
+        MenuEntryFreeCheat(const MenuEntryFreeCheat &freeCheat);
         explicit MenuEntryFreeCheat(const Preferences::SavedCheats &savedCheats);
         ~MenuEntryFreeCheat() {}
 
