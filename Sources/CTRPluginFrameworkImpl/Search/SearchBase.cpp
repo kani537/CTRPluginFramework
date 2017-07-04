@@ -156,6 +156,8 @@ namespace CTRPluginFramework
 
                 // Set index to 0 so it's available to read results
                 _indexRegion = 0;
+                if (_previous != nullptr)
+                    _previous->_indexRegion = 0;
 
                 // Construct index table
                 CreateIndexTable();
