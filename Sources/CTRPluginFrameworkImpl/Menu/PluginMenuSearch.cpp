@@ -240,6 +240,16 @@ namespace CTRPluginFramework
         return (false);
     }
 
+    void    PluginMenuSearch::GetRegionsList(std::vector<Region>& list)
+    {
+        list.clear();
+
+        _ListRegion();
+
+        for (Region &region : _regionsList)
+            list.push_back(region);
+    }
+
     /*
     ** Process Event
     *****************/

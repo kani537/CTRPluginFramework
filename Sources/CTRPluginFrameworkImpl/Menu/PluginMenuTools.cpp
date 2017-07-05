@@ -11,7 +11,8 @@ namespace CTRPluginFramework
         NORMAL = 0,
         ABOUT,
         HEXEDITOR,
-        FREECHEATS
+        FREECHEATS,
+        GWRAMDUMP,
     };
 
     static int  g_mode = NORMAL;
@@ -60,6 +61,8 @@ namespace CTRPluginFramework
         _mainMenu.Append(new MenuEntryTools("Hex Editor", [] { g_mode = HEXEDITOR; }, Icon::DrawGrid));
         _freecheatsEntry = new MenuEntryTools("Free Cheats", [] { g_mode = FREECHEATS; }, Icon::DrawCentreOfGravity);
         _mainMenu.Append(_freecheatsEntry);
+
+        _mainMenu.Append(new MenuEntryTools("Gateway RAM Dumper", [] { g_mode = GWRAMDUMP; }, nullptr));
         _mainMenu.Append(new MenuEntryTools("Settings", nullptr, Icon::DrawSettings, this));
 
         _settingsMenu.Append(new MenuEntryTools("Change menu hotkeys", MenuHotkeyModifier, Icon::DrawGameController));
@@ -96,6 +99,13 @@ namespace CTRPluginFramework
                 _abouttb.Open();
             else
                 g_mode = NORMAL;
+        }
+
+        if (g_mode == GWRAMDUMP)
+        {
+            _gatewayRamDumper();
+            g_mode = NORMAL;
+            return (false);
         }
 
         // Process Event
@@ -152,7 +162,7 @@ namespace CTRPluginFramework
         if (ret == MenuClose && settingsIsOpen)
         {
             settingsIsOpen = false;
-            _menu.Open(&_mainMenu, _freecheatsEntry->IsVisible() ? 3 : 2);
+            _menu.Open(&_mainMenu, _freecheatsEntry->IsVisible() ? 4 : 3);
         }
     }
 
@@ -216,7 +226,7 @@ namespace CTRPluginFramework
         // Draw Framework version
         {
             int posY = 205;
-            Renderer::DrawString((char *)"CTRPluginFramework Alpha V.0.0.16.2", 40, posY, blank);
+            Renderer::DrawString((char *)"CTRPluginFramework Alpha V.0.0.17 Prev", 40, posY, blank);
         }
     }
 

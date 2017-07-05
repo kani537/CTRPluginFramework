@@ -32,7 +32,7 @@ namespace CTRPluginFramework
 
         static void WriteEnabledCheatsToFile(Preferences::Header &header, File &settings);
         static void WriteFavoritesToFile(Preferences::Header &header, File &settings);
-
+        static void GetRegionsList(std::vector<Region> &list);
         // Used to forcefully exit a menu
         static void ForceExit(void);
 

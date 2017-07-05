@@ -35,6 +35,11 @@ namespace CTRPluginFramework
         __pool = _pool = nullptr;
     }
 
+    void    *GetPool(void)
+    {
+        return (__pool);
+    }
+
     Search::Search(Search *previous) :
     Error({ 0 }),
     ResultsCount(0),

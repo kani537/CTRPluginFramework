@@ -22,6 +22,7 @@ namespace CTRPluginFramework
 
         // Return true if the Close Button is pressed, else false
         bool    operator()(EventList &eventList, Time &delta);
+        void    GetRegionsList(std::vector<Region> &list);
     private:
 
         void    _ProcessEvent(Event &event);

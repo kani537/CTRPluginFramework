@@ -334,6 +334,12 @@ namespace CTRPluginFramework
         }
     }
 
+    void    PluginMenuImpl::GetRegionsList(std::vector<Region>& list)
+    {
+        if (_runningInstance != nullptr)
+            _runningInstance->_search->GetRegionsList(list);
+    }
+
     void    PluginMenuImpl::ForceExit(void)
     {
         if (_runningInstance != nullptr)

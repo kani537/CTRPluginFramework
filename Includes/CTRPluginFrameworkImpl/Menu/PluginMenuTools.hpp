@@ -10,6 +10,7 @@
 
 #include "CTRPluginFrameworkImpl/Menu/HexEditor.hpp"
 #include "CTRPluginFrameworkImpl/Menu/PluginMenuFreeCheats.hpp"
+#include "CTRPluginFrameworkImpl/Menu/GatewayRAMDumper.hpp"
 
 #include <vector>
 #include <string>
@@ -43,6 +44,7 @@ namespace CTRPluginFramework
         MenuEntryTools  *_freecheatsEntry;
         HexEditor       &_hexEditor;
         FreeCheats      &_freeCheats;
+        GatewayRAMDumper    _gatewayRamDumper;
         Menu            _menu;
         TextBox         _abouttb;
     };

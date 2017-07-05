@@ -9,6 +9,7 @@ namespace CTRPluginFramework
     // Return pool size, 0 if an error occured
     void    AllocatePool(void);
     void    ReleasePool(void);
+    void    *GetPool(void);
 
     class Search
     {
