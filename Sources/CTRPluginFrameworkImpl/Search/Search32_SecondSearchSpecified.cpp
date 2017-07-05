@@ -15,6 +15,9 @@ namespace CTRPluginFramework
             {
                 for (Results32 res : data)
                 {
+                    if (_resultsInPool > _maxResults)
+                        break;
+
                     u8 newValue = *(u8 *)res.address;
                     u8 oldValue = res.value.U8;
 
@@ -32,6 +35,9 @@ namespace CTRPluginFramework
             {
                 for (Results32 res : data)
                 {
+                    if (_resultsInPool > _maxResults)
+                        break;
+
                     u8 newValue = *(u8 *)res.address;
                     u8 oldValue = res.value.U8;
 
@@ -49,6 +55,9 @@ namespace CTRPluginFramework
             {
                 for (Results32 res : data)
                 {
+                    if (_resultsInPool > _maxResults)
+                        break;
+
                     u8 newValue = *(u8 *)res.address;
                     u8 oldValue = res.value.U8;
 
@@ -66,6 +75,9 @@ namespace CTRPluginFramework
             {
                 for (Results32 res : data)
                 {
+                    if (_resultsInPool > _maxResults)
+                        break;
+
                     u8 newValue = *(u8 *)res.address;
                     u8 oldValue = res.value.U8;
 
@@ -83,6 +95,9 @@ namespace CTRPluginFramework
             {
                 for (Results32 res : data)
                 {
+                    if (_resultsInPool > _maxResults)
+                        break;
+
                     u8 newValue = *(u8 *)res.address;
                     u8 oldValue = res.value.U8;
 
@@ -100,6 +115,9 @@ namespace CTRPluginFramework
             {
                 for (Results32 res : data)
                 {
+                    if (_resultsInPool > _maxResults)
+                        break;
+
                     u8 newValue = *(u8 *)res.address;
                     u8 oldValue = res.value.U8;
 
@@ -117,6 +135,9 @@ namespace CTRPluginFramework
             {
                 for (Results32 res : data)
                 {
+                    if (_resultsInPool > _maxResults)
+                        break;
+
                     u8 newValue = *(u8 *)res.address;
                     u8 oldValue = res.value.U8;
 
@@ -134,6 +155,9 @@ namespace CTRPluginFramework
             {
                 for (Results32 res : data)
                 {
+                    if (_resultsInPool > _maxResults)
+                        break;
+
                     u8 newValue = *(u8 *)res.address;
                     u8 oldValue = res.value.U8;
 
@@ -151,6 +175,9 @@ namespace CTRPluginFramework
             {
                 for (Results32 res : data)
                 {
+                    if (_resultsInPool > _maxResults)
+                        break;
+
                     u8 newValue = *(u8 *)res.address;
                     u8 oldValue = res.value.U8;
 
@@ -342,6 +369,9 @@ namespace CTRPluginFramework
             {
                 for (Results32 res : data)
                 {
+                    if (_resultsInPool > _maxResults)
+                        break;
+
                     u16 newValue = *(u16 *)res.address;
                     u16 oldValue = res.value.U16;
 
@@ -359,6 +389,9 @@ namespace CTRPluginFramework
             {
                 for (Results32 res : data)
                 {
+                    if (_resultsInPool > _maxResults)
+                        break;
+
                     u16 newValue = *(u16 *)res.address;
                     u16 oldValue = res.value.U16;
 
@@ -376,6 +409,9 @@ namespace CTRPluginFramework
             {
                 for (Results32 res : data)
                 {
+                    if (_resultsInPool > _maxResults)
+                        break;
+
                     u16 newValue = *(u16 *)res.address;
                     u16 oldValue = res.value.U16;
 
@@ -393,6 +429,9 @@ namespace CTRPluginFramework
             {
                 for (Results32 res : data)
                 {
+                    if (_resultsInPool > _maxResults)
+                        break;
+
                     u16 newValue = *(u16 *)res.address;
                     u16 oldValue = res.value.U16;
 
@@ -410,6 +449,9 @@ namespace CTRPluginFramework
             {
                 for (Results32 res : data)
                 {
+                    if (_resultsInPool > _maxResults)
+                        break;
+
                     u16 newValue = *(u16 *)res.address;
                     u16 oldValue = res.value.U16;
 
@@ -427,6 +469,9 @@ namespace CTRPluginFramework
             {
                 for (Results32 res : data)
                 {
+                    if (_resultsInPool > _maxResults)
+                        break;
+
                     u16 newValue = *(u16 *)res.address;
                     u16 oldValue = res.value.U16;
 
@@ -444,6 +489,9 @@ namespace CTRPluginFramework
             {
                 for (Results32 res : data)
                 {
+                    if (_resultsInPool > _maxResults)
+                        break;
+
                     u16 newValue = *(u16 *)res.address;
                     u16 oldValue = res.value.U16;
 
@@ -461,6 +509,9 @@ namespace CTRPluginFramework
             {
                 for (Results32 res : data)
                 {
+                    if (_resultsInPool > _maxResults)
+                        break;
+
                     u16 newValue = *(u16 *)res.address;
                     u16 oldValue = res.value.U16;
 
@@ -478,6 +529,9 @@ namespace CTRPluginFramework
             {
                 for (Results32 res : data)
                 {
+                    if (_resultsInPool > _maxResults)
+                        break;
+
                     u16 newValue = *(u16 *)res.address;
                     u16 oldValue = res.value.U16;
 
@@ -503,6 +557,9 @@ namespace CTRPluginFramework
             {
                 for (Results32 res : data)
                 {
+                    if (_resultsInPool > _maxResults)
+                        break;
+
                     u16 newValue = *(u16 *)res.address;
                     u16 oldValue = res.value.U16;
 
@@ -520,6 +577,9 @@ namespace CTRPluginFramework
             {
                 for (Results32 res : data)
                 {
+                    if (_resultsInPool > _maxResults)
+                        break;
+
                     u16 newValue = *(u16 *)res.address;
                     u16 oldValue = res.value.U16;
 
@@ -537,6 +597,9 @@ namespace CTRPluginFramework
             {
                 for (Results32 res : data)
                 {
+                    if (_resultsInPool > _maxResults)
+                        break;
+
                     u16 newValue = *(u16 *)res.address;
                     u16 oldValue = res.value.U16;
 
@@ -554,6 +617,9 @@ namespace CTRPluginFramework
             {
                 for (Results32 res : data)
                 {
+                    if (_resultsInPool > _maxResults)
+                        break;
+
                     u16 newValue = *(u16 *)res.address;
                     u16 oldValue = res.value.U16;
 
@@ -571,6 +637,9 @@ namespace CTRPluginFramework
             {
                 for (Results32 res : data)
                 {
+                    if (_resultsInPool > _maxResults)
+                        break;
+
                     u16 newValue = *(u16 *)res.address;
                     u16 oldValue = res.value.U16;
 
@@ -588,6 +657,9 @@ namespace CTRPluginFramework
             {
                 for (Results32 res : data)
                 {
+                    if (_resultsInPool > _maxResults)
+                        break;
+
                     u16 newValue = *(u16 *)res.address;
                     u16 oldValue = res.value.U16;
 
@@ -605,6 +677,9 @@ namespace CTRPluginFramework
             {
                 for (Results32 res : data)
                 {
+                    if (_resultsInPool > _maxResults)
+                        break;
+
                     u16 newValue = *(u16 *)res.address;
                     u16 oldValue = res.value.U16;
 
@@ -622,6 +697,9 @@ namespace CTRPluginFramework
             {
                 for (Results32 res : data)
                 {
+                    if (_resultsInPool > _maxResults)
+                        break;
+
                     u16 newValue = *(u16 *)res.address;
                     u16 oldValue = res.value.U16;
 
@@ -639,6 +717,9 @@ namespace CTRPluginFramework
             {
                 for (Results32 res : data)
                 {
+                    if (_resultsInPool > _maxResults)
+                        break;
+
                     u16 newValue = *(u16 *)res.address;
                     u16 oldValue = res.value.U16;
 
@@ -669,9 +750,11 @@ namespace CTRPluginFramework
             {
                 for (Results32 res : data)
                 {
+                    if (_resultsInPool > _maxResults)
+                        break;
+
                     u32 newValue = *(u32 *)res.address;
                     u32 oldValue = res.value.U32;
-
 
                     if (EQ(newValue, checkValue))
                     {
@@ -687,6 +770,9 @@ namespace CTRPluginFramework
             {
                 for (Results32 res : data)
                 {
+                    if (_resultsInPool > _maxResults)
+                        break;
+
                     u32 newValue = *(u32 *)res.address;
                     u32 oldValue = res.value.U32;
 
@@ -704,6 +790,9 @@ namespace CTRPluginFramework
             {
                 for (Results32 res : data)
                 {
+                    if (_resultsInPool > _maxResults)
+                        break;
+
                     u32 newValue = *(u32 *)res.address;
                     u32 oldValue = res.value.U32;
 
@@ -721,6 +810,9 @@ namespace CTRPluginFramework
             {
                 for (Results32 res : data)
                 {
+                    if (_resultsInPool > _maxResults)
+                        break;
+
                     u32 newValue = *(u32 *)res.address;
                     u32 oldValue = res.value.U32;
 
@@ -738,6 +830,9 @@ namespace CTRPluginFramework
             {
                 for (Results32 res : data)
                 {
+                    if (_resultsInPool > _maxResults)
+                        break;
+
                     u32 newValue = *(u32 *)res.address;
                     u32 oldValue = res.value.U32;
 
@@ -755,6 +850,9 @@ namespace CTRPluginFramework
             {
                 for (Results32 res : data)
                 {
+                    if (_resultsInPool > _maxResults)
+                        break;
+
                     u32 newValue = *(u32 *)res.address;
                     u32 oldValue = res.value.U32;
 
@@ -772,6 +870,9 @@ namespace CTRPluginFramework
             {
                 for (Results32 res : data)
                 {
+                    if (_resultsInPool > _maxResults)
+                        break;
+
                     u32 newValue = *(u32 *)res.address;
                     u32 oldValue = res.value.U32;
 
@@ -806,6 +907,9 @@ namespace CTRPluginFramework
             {
                 for (Results32 res : data)
                 {
+                    if (_resultsInPool > _maxResults)
+                        break;
+
                     u32 newValue = *(u32 *)res.address;
                     u32 oldValue = res.value.U32;
 
@@ -831,6 +935,9 @@ namespace CTRPluginFramework
             {
                 for (Results32 res : data)
                 {
+                    if (_resultsInPool > _maxResults)
+                        break;
+
                     u32 newValue = *(u32 *)res.address;
                     u32 oldValue = res.value.U32;
 
@@ -849,6 +956,9 @@ namespace CTRPluginFramework
             {
                 for (Results32 res : data)
                 {
+                    if (_resultsInPool > _maxResults)
+                        break;
+
                     u32 newValue = *(u32 *)res.address;
                     u32 oldValue = res.value.U32;
 
@@ -866,6 +976,9 @@ namespace CTRPluginFramework
             {
                 for (Results32 res : data)
                 {
+                    if (_resultsInPool > _maxResults)
+                        break;
+
                     u32 newValue = *(u32 *)res.address;
                     u32 oldValue = res.value.U32;
 
@@ -883,6 +996,9 @@ namespace CTRPluginFramework
             {
                 for (Results32 res : data)
                 {
+                    if (_resultsInPool > _maxResults)
+                        break;
+
                     u32 newValue = *(u32 *)res.address;
                     u32 oldValue = res.value.U32;
 
@@ -900,6 +1016,9 @@ namespace CTRPluginFramework
             {
                 for (Results32 res : data)
                 {
+                    if (_resultsInPool > _maxResults)
+                        break;
+
                     u32 newValue = *(u32 *)res.address;
                     u32 oldValue = res.value.U32;
 
@@ -917,6 +1036,9 @@ namespace CTRPluginFramework
             {
                 for (Results32 res : data)
                 {
+                    if (_resultsInPool > _maxResults)
+                        break;
+
                     u32 newValue = *(u32 *)res.address;
                     u32 oldValue = res.value.U32;
 
@@ -934,6 +1056,9 @@ namespace CTRPluginFramework
             {
                 for (Results32 res : data)
                 {
+                    if (_resultsInPool > _maxResults)
+                        break;
+
                     u32 newValue = *(u32 *)res.address;
                     u32 oldValue = res.value.U32;
 
@@ -951,6 +1076,9 @@ namespace CTRPluginFramework
             {
                 for (Results32 res : data)
                 {
+                    if (_resultsInPool > _maxResults)
+                        break;
+
                     u32 newValue = *(u32 *)res.address;
                     u32 oldValue = res.value.U32;
 
@@ -968,6 +1096,9 @@ namespace CTRPluginFramework
             {
                 for (Results32 res : data)
                 {
+                    if (_resultsInPool > _maxResults)
+                        break;
+
                     u32 newValue = *(u32 *)res.address;
                     u32 oldValue = res.value.U32;
 
@@ -998,6 +1129,9 @@ namespace CTRPluginFramework
             {
                 for (Results32 res : data)
                 {
+                    if (_resultsInPool > _maxResults)
+                        break;
+
                     float newValue = *(float *)res.address;
                     float oldValue = res.value.Float;
 
@@ -1017,6 +1151,9 @@ namespace CTRPluginFramework
             {
                 for (Results32 res : data)
                 {
+                    if (_resultsInPool > _maxResults)
+                        break;
+
                     float newValue = *(float *)res.address;
                     float oldValue = res.value.Float;
 
@@ -1036,6 +1173,9 @@ namespace CTRPluginFramework
             {
                 for (Results32 res : data)
                 {
+                    if (_resultsInPool > _maxResults)
+                        break;
+
                     float newValue = *(float *)res.address;
                     float oldValue = res.value.Float;
 
@@ -1055,6 +1195,9 @@ namespace CTRPluginFramework
             {
                 for (Results32 res : data)
                 {
+                    if (_resultsInPool > _maxResults)
+                        break;
+
                     float newValue = *(float *)res.address;
                     float oldValue = res.value.Float;
 
@@ -1074,6 +1217,9 @@ namespace CTRPluginFramework
             {
                 for (Results32 res : data)
                 {
+                    if (_resultsInPool > _maxResults)
+                        break;
+
                     float newValue = *(float *)res.address;
                     float oldValue = res.value.Float;
 
@@ -1093,6 +1239,9 @@ namespace CTRPluginFramework
             {
                 for (Results32 res : data)
                 {
+                    if (_resultsInPool > _maxResults)
+                        break;
+
                     float newValue = *(float *)res.address;
                     float oldValue = res.value.Float;
 
@@ -1112,6 +1261,9 @@ namespace CTRPluginFramework
             {
                 for (Results32 res : data)
                 {
+                    if (_resultsInPool > _maxResults)
+                        break;
+
                     float newValue = *(float *)res.address;
                     float oldValue = res.value.Float;
 
@@ -1131,6 +1283,9 @@ namespace CTRPluginFramework
             {
                 for (Results32 res : data)
                 {
+                    if (_resultsInPool > _maxResults)
+                        break;
+
                     float newValue = *(float *)res.address;
                     float oldValue = res.value.Float;
 
@@ -1150,6 +1305,9 @@ namespace CTRPluginFramework
             {
                 for (Results32 res : data)
                 {
+                    if (_resultsInPool > _maxResults)
+                        break;
+
                     float newValue = *(float *)res.address;
                     float oldValue = res.value.Float;
 
@@ -1177,6 +1335,9 @@ namespace CTRPluginFramework
             {
                 for (Results32 res : data)
                 {
+                    if (_resultsInPool > _maxResults)
+                        break;
+
                     float newValue = *(float *)res.address;
                     float oldValue = res.value.Float;
 
@@ -1196,6 +1357,9 @@ namespace CTRPluginFramework
             {
                 for (Results32 res : data)
                 {
+                    if (_resultsInPool > _maxResults)
+                        break;
+
                     float newValue = *(float *)res.address;
                     float oldValue = res.value.Float;
 
@@ -1215,6 +1379,9 @@ namespace CTRPluginFramework
             {
                 for (Results32 res : data)
                 {
+                    if (_resultsInPool > _maxResults)
+                        break;
+
                     float newValue = *(float *)res.address;
                     float oldValue = res.value.Float;
 
@@ -1234,6 +1401,9 @@ namespace CTRPluginFramework
             {
                 for (Results32 res : data)
                 {
+                    if (_resultsInPool > _maxResults)
+                        break;
+
                     float newValue = *(float *)res.address;
                     float oldValue = res.value.Float;
 
@@ -1253,6 +1423,9 @@ namespace CTRPluginFramework
             {
                 for (Results32 res : data)
                 {
+                    if (_resultsInPool > _maxResults)
+                        break;
+
                     float newValue = *(float *)res.address;
                     float oldValue = res.value.Float;
 
@@ -1272,6 +1445,9 @@ namespace CTRPluginFramework
             {
                 for (Results32 res : data)
                 {
+                    if (_resultsInPool > _maxResults)
+                        break;
+
                     float newValue = *(float *)res.address;
                     float oldValue = res.value.Float;
 
@@ -1291,6 +1467,9 @@ namespace CTRPluginFramework
             {
                 for (Results32 res : data)
                 {
+                    if (_resultsInPool > _maxResults)
+                        break;
+
                     float newValue = *(float *)res.address;
                     float oldValue = res.value.Float;
 
@@ -1310,6 +1489,9 @@ namespace CTRPluginFramework
             {
                 for (Results32 res : data)
                 {
+                    if (_resultsInPool > _maxResults)
+                        break;
+
                     float newValue = *(float *)res.address;
                     float oldValue = res.value.Float;
 
@@ -1329,6 +1511,9 @@ namespace CTRPluginFramework
             {
                 for (Results32 res : data)
                 {
+                    if (_resultsInPool > _maxResults)
+                        break;
+
                     float newValue = *(float *)res.address;
                     float oldValue = res.value.Float;
 

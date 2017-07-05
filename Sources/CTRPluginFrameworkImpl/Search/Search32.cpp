@@ -41,7 +41,7 @@ namespace CTRPluginFramework
         _checkValue.U32 = parameters.value32.U32;
         _flags = parameters.flags;
         _resultSize = IsFirstSearch(_flags) ? (IsUnknownSearch(_flags) ? sizeof(u32) : sizeof(Results32)) : sizeof(Results32WithOld);
-        _maxResults = poolSize / _resultSize;
+        _maxResults = (poolSize / _resultSize) - 1;
 
         // Init header
         _header.flags = _flags;

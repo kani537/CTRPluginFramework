@@ -654,7 +654,7 @@ namespace CTRPluginFramework
         }
         if (!_inSearch)
         {
-            std::string res = std::to_string(_currentSearch->ResultsCount) + " hit(s) found";
+            std::string res = std::to_string(_currentSearch->ResultsCount) + " hit(s)";
             std::string res2 =  "in " + std::to_string(_currentSearch->SearchTime.AsSeconds()) + "s";            
             Renderer::DrawString((char *)res.c_str(), 131, posY, blank);
             Renderer::DrawString((char *)res2.c_str(), 131, posY, blank);
