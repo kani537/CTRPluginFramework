@@ -3,6 +3,7 @@
 #include "CTRPluginFramework/System/Process.hpp"
 #include "3DS.h"
 #include "CTRPluginFramework/Menu/MessageBox.hpp"
+#include "CTRPluginFramework/System/Directory.hpp"
 
 namespace CTRPluginFramework
 {
@@ -518,6 +519,13 @@ namespace CTRPluginFramework
             _waitForUser = true;
             _compareType.IsEnabled = true;
             _cancelBtn.IsEnabled = false;
+
+            // If we canceled first search
+            if (_step == 1)
+                _PopulateSearchType(false);
+
+            // Update hits list
+            _searchMenu.Update();
     }
 
     void    PluginMenuSearch::_resetBtn_OnClick(void)
@@ -567,6 +575,26 @@ namespace CTRPluginFramework
         {
             _compareType.IsEnabled = false;
             _valueTextBox.IsEnabled = false;
+        }
+
+        // Delete every file in Search
+        // Open current directory
+        Directory dir;
+        if (Directory::Open(dir, "Search") == 0)
+        {
+            std::vector<std::string> files;
+
+            // List files
+            if (dir.ListFiles(files) > 0)
+            {
+                for (std::string &name : files)
+                {
+                    std::string path("Search/");
+
+                    path += name;
+                    File::Remove(path);
+                }
+            }
         }
     }
 
