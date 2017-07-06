@@ -25,7 +25,8 @@ namespace CTRPluginFramework
         _hexEditor(hexEditor),
         _freeCheats(freeCheats),
         _menu(&_mainMenu, nullptr),
-        _abouttb("About", _about, IntRect(30, 20, 340, 200))
+        _abouttb("About", _about, IntRect(30, 20, 340, 200)),
+        _exit(false)
     {
         InitMenu();
     }
@@ -62,7 +63,7 @@ namespace CTRPluginFramework
         _freecheatsEntry = new MenuEntryTools("Free Cheats", [] { g_mode = FREECHEATS; }, Icon::DrawCentreOfGravity);
         _mainMenu.Append(_freecheatsEntry);
 
-        _mainMenu.Append(new MenuEntryTools("Gateway RAM Dumper", [] { g_mode = GWRAMDUMP; }, nullptr));
+        _mainMenu.Append(new MenuEntryTools("Gateway RAM Dumper", [] { g_mode = GWRAMDUMP; }, Icon::DrawRAM));
         _mainMenu.Append(new MenuEntryTools("Settings", nullptr, Icon::DrawSettings, this));
 
         _settingsMenu.Append(new MenuEntryTools("Change menu hotkeys", MenuHotkeyModifier, Icon::DrawGameController));
@@ -123,7 +124,9 @@ namespace CTRPluginFramework
 
         // Check buttons
 
-        return (Window::BottomWindow.MustClose());
+        bool exit = _exit || Window::BottomWindow.MustClose();
+        _exit = false;
+        return (exit);
     }
 
     void    PluginMenuTools::TriggerFreeCheatsEntry(bool isEnabled) const
@@ -159,10 +162,17 @@ namespace CTRPluginFramework
             _menu.Open(&_settingsMenu);
         }
 
-        if (ret == MenuClose && settingsIsOpen)
+        if (ret == MenuClose)
         {
-            settingsIsOpen = false;
-            _menu.Open(&_mainMenu, _freecheatsEntry->IsVisible() ? 4 : 3);
+            if (settingsIsOpen)
+            {
+                settingsIsOpen = false;
+                _menu.Open(&_mainMenu, _freecheatsEntry->IsVisible() ? 4 : 3);
+            }
+            else
+            {
+                _exit = true;
+            }
         }
     }
 

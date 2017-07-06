@@ -47,6 +47,7 @@ namespace CTRPluginFramework
         GatewayRAMDumper    _gatewayRamDumper;
         Menu            _menu;
         TextBox         _abouttb;
+        bool            _exit;
     };
 }
 

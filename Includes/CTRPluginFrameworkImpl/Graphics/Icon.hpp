@@ -125,6 +125,12 @@ namespace CTRPluginFramework
         static int      DrawKeyboard(int posX, int posY, bool filled);
         
         /*
+        ** RAM
+        ** 15px * 15 px
+        **************/
+        static int      DrawRAM(int posX, int posY);
+
+        /*
         ** Search
         ** 15px * 15 px
         **************/
