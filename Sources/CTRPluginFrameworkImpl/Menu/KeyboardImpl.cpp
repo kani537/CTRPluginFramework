@@ -1276,10 +1276,14 @@ namespace CTRPluginFramework
 
             ret = _keys[i](temp);
 
+
             if (ret != -1)
             {
                 if (ret == 0x12345678)
                 {
+                    if (_layout == DECIMAL && _userInput.size() >= 18)
+                        return (false);
+
                     _userInput += temp;
                     _inputChangeEvent.type = InputChangeEvent::CharacterAdded;
                     decode_utf8(&_inputChangeEvent.codepoint, (const u8 *)temp.c_str());
@@ -1364,6 +1368,9 @@ namespace CTRPluginFramework
                 }
                 else
                 {
+                    if (_layout == DECIMAL && _userInput.length() >= 18)
+                        return (false);
+
                     if (_layout != Layout::QWERTY &&_userInput.length() == 0 && ret == '.')
                         _userInput += "0.";
                     else if (_max == 0 || _userInput.size() < _max)
