@@ -203,16 +203,20 @@ namespace CTRPluginFramework
 
         // Progressbar
         // Draw border
-        IntRect progBarBorder = IntRect(130, posY, 140, 15);
+        IntRect progBarBorder = IntRect(100, posY, 200, 15);
         Renderer::DrawRect(progBarBorder, gainsboro, false);
 
-        float percent = 138.f / 100.f;
+        float percent = 198.f / 100.f;
         float progress = 100.0f * (float)(_achievedSize) / (float)_totalSize;
         float prog = progress * percent;
 
         // Draw progress fill
-        IntRect progBarFill = IntRect(131, posY + 1, (u32)prog, 13);
+        IntRect progBarFill = IntRect(101, posY + 1, (u32)prog, 13);
         Renderer::DrawRect(progBarFill, limegreen);
+
+        Renderer::SetTarget(BOTTOM);
+
+        Window::BottomWindow.Draw();
 
         Renderer::EndFrame();
     }
