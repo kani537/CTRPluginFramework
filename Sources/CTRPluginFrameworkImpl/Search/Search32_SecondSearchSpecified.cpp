@@ -4,7 +4,7 @@ namespace CTRPluginFramework
 {
     void    Search32::SecondSearchSpecifiedU8(Storage<Results32>& data, SearchFlags compare, Results32WithOld* result)
     {
-        u8 checkValue = _checkValue.U8;
+        u8  checkValue = _checkValue.U8;
 
         // If current search is specified
         if (IsSpecifiedSearch(_flags))

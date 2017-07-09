@@ -72,15 +72,15 @@ namespace CTRPluginFramework
                     // If size mismatch
                     if (size < regionSize)
                     {
-                        std::string msg("Error: region mismatch\n\nAddress: ");
+                      /*  std::string msg("Error: region mismatch\n\nAddress: ");
 
                         msg += ToHex(region.startAddress) + "\n";
                         msg += "Expected size: " + ToHex(regionSize) + "\n";
                         msg += "Region size: " + ToHex(size) + "\n\n";
                      //   msg += "Action: region skipped";
 
-                        (MessageBox(msg))();
-
+                     //   (MessageBox(msg))();
+                     */
                         // Region is okay, add it to header
                         _header.regions[_header.nbRegions] = { region.startAddress, region.startAddress + size, 0, 0 };
                         _header.nbRegions++;
@@ -89,7 +89,7 @@ namespace CTRPluginFramework
                         _totalRegionSize += size;
                     }
                     else
-                    {
+                    {   
                         // Region is okay, add it to header
                         _header.regions[_header.nbRegions] = { region.startAddress, region.endAddress, 0, 0 };
                         _header.nbRegions++;
