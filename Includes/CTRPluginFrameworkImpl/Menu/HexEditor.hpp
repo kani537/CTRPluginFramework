@@ -19,7 +19,7 @@ namespace CTRPluginFramework
 
         // Return true if the user decided to close it
         bool    operator()(EventList &eventList);
-        void    Goto(u32 address);
+        void    Goto(u32 address, bool updateCursor = false);
 
     private:
 

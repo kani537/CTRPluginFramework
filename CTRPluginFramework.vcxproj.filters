@@ -459,6 +459,9 @@
     <ClInclude Include="Includes\CTRPluginFrameworkImpl\System\Storage.hpp">
       <Filter>Fichiers d%27en-tête</Filter>
     </ClInclude>
+    <ClInclude Include="Includes\CTRPluginFrameworkImpl\Menu\GatewayRAMDumper.hpp">
+      <Filter>Fichiers d%27en-tête</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Sources\CTRPluginFramework\Graphics\Color.cpp">
@@ -909,6 +912,9 @@
       <Filter>Fichiers sources</Filter>
     </ClCompile>
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\Search\Search32_SubsidiarySearchSpecified.cpp">
+      <Filter>Fichiers sources</Filter>
+    </ClCompile>
+    <ClCompile Include="Sources\CTRPluginFrameworkImpl\Menu\GatewayRAMDumper.cpp">
       <Filter>Fichiers sources</Filter>
     </ClCompile>
   </ItemGroup>

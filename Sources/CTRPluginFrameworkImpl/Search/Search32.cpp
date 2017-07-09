@@ -117,8 +117,6 @@ namespace CTRPluginFramework
             _endRegion = prevHeader.regions[0].nbResults;
             _totalRegionSize = _previous->GetTotalResults(_header);
         }
-            
-
     }
 
     Search32::~Search32()

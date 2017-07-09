@@ -94,7 +94,7 @@ namespace CTRPluginFramework
         _Update();
 
         int out;
-        if (_keyboard(out))
+        if (!_subMenuOpen && _keyboard(out))
         {
             if (!_invalid)
             {
@@ -176,11 +176,7 @@ namespace CTRPluginFramework
 
                 case Key::A:
                 {
-                    if (_isModified)
-                    {
-                        _ApplyChanges();
-                    }
-                    else if (_subMenuOpen)
+                    if (_subMenuOpen)
                     {
                         if (_subCursor == 0) _CreateFreeCheat();
                         else if (_subCursor == 1) _JumpTo();
@@ -190,18 +186,22 @@ namespace CTRPluginFramework
                         else if (_subCursor == 5) _BrowseHistory();
                         else if (_subCursor == 6) _ClearHistory();
                     }
+                    else if (_isModified)
+                    {
+                        _ApplyChanges();
+                    }
                     break;
                 }
 
                 case Key::B:
                 {
-                    if (_isModified)
-                    {
-                        _DiscardChanges();
-                    }
-                    else if (_subMenuOpen)
+                    if (_subMenuOpen)
                     {
                         _subMenuOpen = false;
+                    }
+                    else if (_isModified)
+                    {
+                        _DiscardChanges();
                     }
                     break;
                 }
@@ -530,10 +530,7 @@ namespace CTRPluginFramework
             _indexHistory = 0;
 
         // Jump to address
-        Goto(_history[_indexHistory]);
-
-
-
+        Goto(_history[_indexHistory], true);
     }
 
     void    HexEditor::_MoveForward(void)
@@ -549,12 +546,7 @@ namespace CTRPluginFramework
             _indexHistory = _history.size() - 1;
 
         // Jump to address
-        Goto(_history[_indexHistory]);
-
-        
-
-
-        
+        Goto(_history[_indexHistory], true);
     }
 
     void    HexEditor::_SaveThisAddress(void)
@@ -569,7 +561,6 @@ namespace CTRPluginFramework
     }
 
     std::string ToHex(u32 x);
-
 
     void    HexEditor::_BrowseHistory(void)
     {
@@ -595,7 +586,7 @@ namespace CTRPluginFramework
         if (index != -1)
         {
             _indexHistory = index;
-            Goto(_history[index]);
+            Goto(_history[index], true);
         }
     }
 
@@ -607,7 +598,7 @@ namespace CTRPluginFramework
         _indexHistory = -1;
     }
 
-    void    HexEditor::Goto(u32 address)
+    void    HexEditor::Goto(u32 address, bool updateCursor)
     {
         MemInfo mInfo;
         PageInfo pInfo;
@@ -623,7 +614,8 @@ namespace CTRPluginFramework
             if (address + 80 > _endRegion)
                 address = _endRegion - 80;
 
-            //_cursor += -(((u32)_memoryAddress - address) * 2);
+            if (updateCursor)
+                _cursor = (addrBak - address) * 2;
 
             _memoryAddress = (u8 *)address;            
 
@@ -725,7 +717,7 @@ namespace CTRPluginFramework
         u32 address = (u32)_memoryAddress;
         if (keyboard.Open(address, address) != -1)
         {
-            Goto(address);
+            Goto(address, true);
             _history.push_back(address);
             _indexHistory = _history.size() - 1;
         }
@@ -738,7 +730,12 @@ namespace CTRPluginFramework
 
         if (_startRegion > 0)
         {
-            Goto(_startRegion - 8);
+            u32 address = _startRegion - 8;
+
+            if (address >= 0x10000000 && address < 0x14000000)
+                address = 0x10000000 - 8;
+
+            Goto(address);
             _cursor = 0;
             Goto(_startRegion);
             _cursor = 0;
@@ -750,9 +747,14 @@ namespace CTRPluginFramework
         if (_isModified || _subMenuOpen)
             return;
 
-        if (_startRegion < 0x50000000)
+        u32 address = _endRegion + 8;
+
+        if (address < 0x50000000)
         {
-            Goto(_endRegion + 8);
+            if (address >= 0x10000000 && address < 0x14000000)
+                address = 0x14000000;
+
+            Goto(address);
             _cursor = 0;
             Goto(_startRegion);
             _cursor = 0;

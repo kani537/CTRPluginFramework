@@ -133,6 +133,7 @@
     <ClInclude Include="Includes\CTRPluginFrameworkImpl\Graphics\OSDImpl.hpp" />
     <ClInclude Include="Includes\CTRPluginFrameworkImpl\Graphics\PrivColor.hpp" />
     <ClInclude Include="Includes\CTRPluginFrameworkImpl\Graphics\Window.hpp" />
+    <ClInclude Include="Includes\CTRPluginFrameworkImpl\Menu\GatewayRAMDumper.hpp" />
     <ClInclude Include="Includes\CTRPluginFrameworkImpl\Menu\HotkeysModifier.hpp" />
     <ClInclude Include="Includes\CTRPluginFrameworkImpl\Menu\MenuEntryFreeCheat.hpp" />
     <ClInclude Include="Includes\CTRPluginFrameworkImpl\Menu\MenuEntryTools.hpp" />
@@ -312,6 +313,7 @@
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\Graphics\TouchKey.cpp" />
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\Graphics\TouchKeyString.cpp" />
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\Graphics\Window.cpp" />
+    <ClCompile Include="Sources\CTRPluginFrameworkImpl\Menu\GatewayRAMDumper.cpp" />
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\Menu\GuideReader.cpp" />
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\Menu\HexEditor.cpp" />
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\Menu\KeyboardImpl.cpp" />
