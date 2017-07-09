@@ -86,7 +86,7 @@ namespace CTRPluginFramework
         _hidMapperBtn.IsLocked = true;
         _arBtn.IsLocked = true;
 
-        // Decode strings Pwned MegaMew :p
+        // Decode strings
         g_ctrpfString = new char[19];
         g_bymeString = new char[13];
 
@@ -119,7 +119,6 @@ namespace CTRPluginFramework
             for (int i = 0; i < eventList.size(); i++)
                 _ProcessEvent(eventList[i]);
         }
-
 
         // Update UI
         _Update(delta);
@@ -222,7 +221,6 @@ namespace CTRPluginFramework
                 }
                 else
                     break;
-
             }
         }
 
@@ -423,10 +421,10 @@ namespace CTRPluginFramework
 			_keyboardBtn.Enable(false);
 			_keyboardBtn.SetState(false);
         }
+
         /*
         ** Update favorite state
         **************************/
-
         if (folder->ItemsCount() > 0 && _selector < folder->ItemsCount())
         {
             item = folder->_items[_selector];
@@ -467,23 +465,15 @@ namespace CTRPluginFramework
 
     void PluginMenuHome::_RenderTop(void)
     {
-        static Color black = Color();
         static Color blank(255, 255, 255);
-        static Color dimGrey(15, 15, 15);
         static Color silver(160, 160, 160);
-        static IntRect background(30, 20, 340, 200);
 
         int posY = 25;
         int posX = 40;
 
+
         // Draw background
-        if (Preferences::topBackgroundImage->IsLoaded())
-            Preferences::topBackgroundImage->Draw(background.leftTop);
-        else
-        {
-            Renderer::DrawRect2(background, black, dimGrey);
-            Renderer::DrawRect(32, 22, 336, 196, blank, false);
-        }
+        Window::TopWindow.Draw();
 
         MenuFolderImpl* folder = _starMode ? _starred : _folder;
 
@@ -526,26 +516,16 @@ namespace CTRPluginFramework
 
     void PluginMenuHome::_RenderBottom(void)
     {
-        Color& black = Color::Black;
         Color& blank = Color::Blank;
-        Color& dimGrey = Color::BlackGrey;
-        static IntRect background(20, 20, 280, 200);
         static Clock creditClock;
         static bool framework = true;
 
         Renderer::SetTarget(BOTTOM);
 
-        // Background
-        if (Preferences::bottomBackgroundImage->IsLoaded())
-            Preferences::bottomBackgroundImage->Draw(background.leftTop);
-        else
-        {
-            Renderer::DrawRect2(background, black, dimGrey);
-            Renderer::DrawRect(22, 22, 276, 196, blank, false);
-        }
-
+        Window::BottomWindow.Draw();
 
         int posY = 205;
+
         if (framework)
             Renderer::DrawString(g_ctrpfString, 100, posY, blank);
         else
@@ -606,6 +586,57 @@ namespace CTRPluginFramework
         /*
         ** Buttons
         *************/
+
+        // Buttons visibility
+
+        // If current folder is empty
+
+        MenuFolderImpl *folder = _starMode ? _starred : _folder;
+        if (folder->ItemsCount() == 0)
+        {
+            _AddFavoriteBtn.Enable(false);
+            _InfoBtn.Enable(false);
+            _keyboardBtn.Enable(false);
+        }
+
+        // If selected object is a folder
+        else if ((*folder)[_selector]->IsFolder())
+        {
+            MenuFolderImpl *e = reinterpret_cast<MenuFolderImpl *>((*folder)[_selector]);
+
+            // A folder will not have a menufunc
+            _keyboardBtn.Enable(false);
+            // Check if folder has a note
+            _InfoBtn.Enable(e->note.size());
+            // Enable AddFavorites icon
+            _AddFavoriteBtn.Enable(true);
+            _AddFavoriteBtn.SetState(e->_IsStarred());
+        }
+
+        // If selected object is an entry
+        else if ((*folder)[_selector]->IsEntry())
+        {
+            MenuEntryImpl *e = reinterpret_cast<MenuEntryImpl *>((*folder)[_selector]);
+
+            // Check if entry has a menu func
+            _keyboardBtn.Enable(e->MenuFunc != nullptr);
+            // Check if entry has a note
+            _InfoBtn.Enable(e->note.size());
+            // Enable AddFavorites icon
+            _AddFavoriteBtn.Enable(true);
+            _AddFavoriteBtn.SetState(e->_IsStarred());
+        }
+
+        // An error is happening
+        else
+        {
+            _AddFavoriteBtn.Enable(false);
+            _InfoBtn.Enable(false);
+            _keyboardBtn.Enable(false);
+        }
+
+        // Buttons status
+
         bool isTouched = Touch::IsDown();
         IntVector touchPos(Touch::GetPosition());
 
