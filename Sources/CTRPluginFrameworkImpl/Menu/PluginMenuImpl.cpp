@@ -81,11 +81,21 @@ namespace CTRPluginFramework
 
         // Load settings
         Preferences::LoadSettings();
-        _tools->UpdateSettings();
 
-        // Load favorites and enabled cheats
+        // Refresh hid
+        Controller::Update();
+
+        // If Start is pressed, don't auto enable the cheats
+        if (Controller::IsKeyPressed(Key::Start) || Controller::IsKeyDown(Key::Start))
+            Preferences::AutoLoadCheats = false;
+
+        _tools->UpdateSettings();
+        
+        // Load favorites
         if (Preferences::AutoLoadFavorites)
             Preferences::LoadSavedFavorites();
+
+         // Enable cheats
         if (Preferences::AutoLoadCheats)
             Preferences::LoadSavedEnabledCheats();
 
