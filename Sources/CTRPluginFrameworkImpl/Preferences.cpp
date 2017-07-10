@@ -99,7 +99,7 @@ namespace CTRPluginFramework
         File    settings;
         Header  header = { 0 };
 
-        if (File::Open(settings, "CTRPFData.bin") == 0)
+        if (File::Open(settings, "CTRPFData.bin") == 0 && settings.GetSize() > 0)
         {
             if (settings.Read(&header, sizeof(Header)) == 0)
             {
@@ -110,6 +110,10 @@ namespace CTRPluginFramework
                 AutoSaveFavorites = (header.flags & (u64)SettingsFlags::AutoSaveFavorites != 0);
             }
         }
+
+        // Check that hotkeys aren't 0
+        if (MenuHotkeys == 0)
+            MenuHotkeys = Key::Select;
     }
 
     void    Preferences::LoadFreeCheats(void)

@@ -176,7 +176,7 @@ namespace CTRPluginFramework
         PluginMenu      &menu = *m;
        
 
-        menu.ShowWelcomeMessage(false);
+        menu.SetHexEditorState(false);
         /*
         ** Tests
         ********************/
