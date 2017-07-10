@@ -75,6 +75,16 @@ namespace CTRPluginFramework
         _menu->TriggerFreeCheats(isEnabled);
     }
 
+    void    PluginMenu::SetHexEditorState(bool isEnabled) const
+    {
+        _menu->SetHexEditorState(isEnabled);
+    }
+
+    void    PluginMenu::ShowWelcomeMessage(bool showMsg) const
+    {
+        _menu->ShowWelcomeMessage(showMsg);
+    }
+
     bool    PluginMenu::IsOpen(void)
     {
         return (_menu->IsOpen());

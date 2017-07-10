@@ -29,6 +29,7 @@ namespace CTRPluginFramework
         _isOpen = false;
         _wasOpened = false;
         _pluginRun = true;
+        _showMsg = true;
     }
 
     PluginMenuImpl::~PluginMenuImpl(void)
@@ -94,7 +95,8 @@ namespace CTRPluginFramework
         // Update PluginMenuHome variables
         home.Init();
 
-        OSD::Notify("Plugin ready !", Color(255, 255, 255), Color());
+        if (_showMsg)
+            OSD::Notify("Plugin ready !", Color(255, 255, 255), Color());
 
         // Main loop
         while (_pluginRun)
@@ -375,6 +377,16 @@ namespace CTRPluginFramework
     void    PluginMenuImpl::TriggerFreeCheats(bool isEnabled) const
     {
         _tools->TriggerFreeCheatsEntry(isEnabled);
+    }
+
+    void    PluginMenuImpl::SetHexEditorState(bool isEnabled) const
+    {
+        _tools->TriggerHexEditor(isEnabled);
+    }
+
+    void    PluginMenuImpl::ShowWelcomeMessage(bool showMsg)
+    {
+        _showMsg = showMsg;
     }
 
     bool    PluginMenuImpl::IsOpen(void) const

@@ -22,6 +22,7 @@ namespace CTRPluginFramework
         _mainMenu("Tools"),
         _settingsMenu("Settings"),
         _freecheatsEntry(nullptr),
+        _hexEditorEntry(nullptr),
         _hexEditor(hexEditor),
         _freeCheats(freeCheats),
         _menu(&_mainMenu, nullptr),
@@ -59,7 +60,8 @@ namespace CTRPluginFramework
     void    PluginMenuTools::InitMenu(void)
     {
         _mainMenu.Append(new MenuEntryTools("About", [] { g_mode = ABOUT; }, Icon::DrawAbout));
-        _mainMenu.Append(new MenuEntryTools("Hex Editor", [] { g_mode = HEXEDITOR; }, Icon::DrawGrid));
+        _hexEditorEntry = new MenuEntryTools("Hex Editor", [] { g_mode = HEXEDITOR; }, Icon::DrawGrid);
+        _mainMenu.Append(_hexEditorEntry);
         _freecheatsEntry = new MenuEntryTools("Free Cheats", [] { g_mode = FREECHEATS; }, Icon::DrawCentreOfGravity);
         _mainMenu.Append(_freecheatsEntry);
 
@@ -140,6 +142,16 @@ namespace CTRPluginFramework
             _freecheatsEntry->Show();
     }
 
+    void PluginMenuTools::TriggerHexEditor(bool isEnabled) const
+    {
+        if (!isEnabled)
+        {
+            _hexEditorEntry->Hide();
+        }
+        else
+            _hexEditorEntry->Show();
+    }
+
     /*
     ** Process Event
     *****************/
@@ -167,7 +179,12 @@ namespace CTRPluginFramework
             if (settingsIsOpen)
             {
                 settingsIsOpen = false;
-                _menu.Open(&_mainMenu, _freecheatsEntry->IsVisible() ? 4 : 3);
+
+                int selector = 4;
+
+                if (!_freecheatsEntry->IsVisible()) selector--;
+                if (!_hexEditorEntry->IsVisible()) selector--;
+                _menu.Open(&_mainMenu, selector);
             }
             else
             {

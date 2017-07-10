@@ -30,6 +30,7 @@ namespace CTRPluginFramework
         // Return true if the Close Button is pressed, else false
         bool    operator()(EventList &eventList, Time &delta);
         void    TriggerFreeCheatsEntry(bool isEnabled) const;
+        void    TriggerHexEditor(bool isEnabled) const;
     private:
 
         void    _ProcessEvent(Event &event);
@@ -42,6 +43,7 @@ namespace CTRPluginFramework
         MenuFolderImpl  _mainMenu;
         MenuFolderImpl  _settingsMenu;
         MenuEntryTools  *_freecheatsEntry;
+        MenuEntryTools  *_hexEditorEntry;
         HexEditor       &_hexEditor;
         FreeCheats      &_freeCheats;
         GatewayRAMDumper    _gatewayRamDumper;

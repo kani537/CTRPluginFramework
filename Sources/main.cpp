@@ -176,6 +176,7 @@ namespace CTRPluginFramework
         PluginMenu      &menu = *m;
        
 
+        menu.ShowWelcomeMessage(false);
         /*
         ** Tests
         ********************/

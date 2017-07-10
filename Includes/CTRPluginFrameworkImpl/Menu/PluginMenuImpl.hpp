@@ -43,6 +43,9 @@ namespace CTRPluginFramework
         void    TriggerActionReplay(bool state) const;
         void    TriggerFreeCheats(bool isEnabled) const;
 
+        void    SetHexEditorState(bool isEnabled) const;
+        void    ShowWelcomeMessage(bool showMsg);
+
         bool    IsOpen(void) const;
         bool    WasOpened(void) const;
     private: 
@@ -52,6 +55,7 @@ namespace CTRPluginFramework
         bool                        _isOpen;
         bool                        _wasOpened;
         bool                        _pluginRun;
+        bool                        _showMsg;
         
         PluginMenuHome              *_home;
         PluginMenuSearch            *_search;
