@@ -8,10 +8,13 @@
 
 namespace CTRPluginFramework
 {
+    class MenuEntry;
     class Hotkey
-    {
+    {      
     public:
+
         Hotkey();
+
         /**
          * \brief Create a new Hotkey
          * \param keys The default keys of this hotkey
@@ -26,6 +29,7 @@ namespace CTRPluginFramework
          * \param keys the new keys value of the hotkey
          */
         void    operator=(u32 keys);
+
         /**
          * \brief Change the name of the hotkey
          * \param name The new name you want to appear on the note / the HotkeyModifier selector
@@ -37,10 +41,12 @@ namespace CTRPluginFramework
          * \return If the keys are down
          */
         bool    IsDown(void) const;
+
         /**
          * \brief Display a control for the user to select the keys
          */
         void    AskForKeys(void);
+
         /**
          * \brief Stringify the Hotkey
          * \param withName if the name of the Hotkey must be in the result
@@ -60,6 +66,13 @@ namespace CTRPluginFramework
     class HotkeyManager
     {
     public:
+        /**
+         *  \brief A callback type, the args are: 
+         *  MenuEntry *: the entry that own the Hotkey
+         *  int : the index in the HotkeyManager of the hotkey that changed
+         */
+        using OnHotkeyChangeClbk = void(*)(MenuEntry*, int);
+
         HotkeyManager(MenuEntry *owner);
         ~HotkeyManager();
 
@@ -68,6 +81,7 @@ namespace CTRPluginFramework
          * \param hotkey The Hotkey to add
          */
         void operator+=(const Hotkey &hotkey);
+
         /**
          * \brief Return a reference to the Hotkey from the manager
          * \param index The index of the Hotkey you want from the manager
@@ -80,10 +94,18 @@ namespace CTRPluginFramework
          * \return a string with all the Hotkey as string
          */
         std::string ToString(void);
+
         /**
          * \brief Display a control that allows the user to select which Hotkey he wants to edit
          */
         void        AskForKeys(void);
+
+        /**
+         * \brief Add a callback that be called when an Hotkey will change
+         * \param callback The callback to call
+         */
+        void        OnHotkeyChangeCallback(OnHotkeyChangeClbk callback);
+
         /**
          * \brief Get how many Hotkeys the manager currently have
          * \return The count of Hotkeys
@@ -91,7 +113,10 @@ namespace CTRPluginFramework
         u32         Count(void);
 
     private:
+        friend class PluginMenuHome;
+
         MenuEntry           *_owner;
+        OnHotkeyChangeClbk  _callback;
         std::vector<Hotkey> _hotkeys;
 
     };

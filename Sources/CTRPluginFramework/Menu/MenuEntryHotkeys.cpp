@@ -89,7 +89,8 @@ namespace CTRPluginFramework
     }
 
     HotkeyManager::HotkeyManager(MenuEntry *owner) :
-    _owner(owner)
+    _owner(owner),
+    _callback(nullptr)
     {
     }
 
@@ -143,10 +144,19 @@ namespace CTRPluginFramework
             if (ret != -1)
             {
                 _hotkeys[ret].AskForKeys();
+
+                if (_callback != nullptr)
+                    _callback(_owner, ret);
+                    
                 _owner->RefreshNote();
             }
                 
         } while (ret != -1);
+    }
+
+    void HotkeyManager::OnHotkeyChangeCallback(OnHotkeyChangeClbk callback)
+    {
+        _callback = callback;
     }
 
     u32     HotkeyManager::Count(void)

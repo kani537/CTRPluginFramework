@@ -24,6 +24,8 @@ namespace CTRPluginFramework
     extern "C" unsigned char *FolderFilled;
     extern "C" unsigned char *File15;
     extern "C" unsigned char *GameController15;
+    extern "C" unsigned char *GameController25;
+    extern "C" unsigned char *GameControllerFilled25;
     extern "C" unsigned char *Grid15;
     extern "C" unsigned char *Happy15;
     extern "C" unsigned char *HappyFilled15;
@@ -257,6 +259,12 @@ namespace CTRPluginFramework
     int     Icon::DrawGameController(int posX, int posY)
     {
         return (DrawImg(GameController15, posX, posY, 15, 15));
+    }
+
+    int Icon::DrawGameController(int posX, int posY, bool filled)
+    {
+        u8 *img = filled ? GameControllerFilled25 : GameController25;
+        return (DrawImg(img, posX, posY, 25, 25));
     }
 
     /*

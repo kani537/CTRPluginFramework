@@ -334,21 +334,6 @@ namespace CTRPluginFramework
 	    }
 	}
 
-    void    MoveFastSettings(MenuEntry *entry)
-	{
-        if (entry->GetArg() == nullptr)
-        {
-            std::string *name = new std::string(entry->Name());
-            entry->SetArg(name);
-        }
-        entry->Hotkeys[0].AskForKeys();
-        entry->RefreshNote();
-
-        std::string *name = reinterpret_cast<std::string *>(entry->GetArg());
-
-        entry->Name() = *name + " " + entry->Hotkeys[0].ToString();
-	}
-
 	void	CollectHeart(MenuEntry *entry)
 	{
 		Process::Write16(0x08720A84, 0x000000000);

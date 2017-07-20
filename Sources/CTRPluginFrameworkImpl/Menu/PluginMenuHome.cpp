@@ -60,7 +60,8 @@ namespace CTRPluginFramework
         _InfoBtn(*this, &PluginMenuHome::_DisplayNote, IntRect(90, 30, 25, 25), Icon::DrawInfo, false),
 
         _closeBtn(*this, nullptr, IntRect(275, 24, 20, 20), Icon::DrawClose),
-        _keyboardBtn(*this, nullptr, IntRect(130, 30, 25, 25), Icon::DrawKeyboard, false)
+        _keyboardBtn(*this, nullptr, IntRect(130, 30, 25, 25), Icon::DrawKeyboard, false),
+        _controllerBtn(*this, nullptr, IntRect(170, 30, 25, 25), Icon::DrawGameController, false)
     {
         _folder = new MenuFolderImpl(name);
         _starred = new MenuFolderImpl("Favorites");
@@ -189,6 +190,28 @@ namespace CTRPluginFramework
             note = !note;
 
         _AddFavoriteBtn();
+
+        if (_controllerBtn())
+        {
+            MenuFolderImpl* f = _starMode ? _starred : _folder;
+            MenuEntryImpl* e = reinterpret_cast<MenuEntryImpl *>(f->_items[_selector]);
+            MenuEntry *entry = e->_owner;
+
+            if (entry != nullptr)
+            {
+                if (entry->Hotkeys.Count() == 1)
+                {
+                    entry->Hotkeys[0].AskForKeys();
+                    if (entry->Hotkeys._callback != nullptr)
+                        entry->Hotkeys._callback(entry, 0);
+                    entry->RefreshNote();
+                }
+                else if (entry->Hotkeys.Count())
+                {
+                    entry->Hotkeys.AskForKeys();
+                }
+            }
+        }
 
         if (_keyboardBtn())
         {
@@ -557,6 +580,7 @@ namespace CTRPluginFramework
         _AddFavoriteBtn.Draw();
         _InfoBtn.Draw();
         _keyboardBtn.Draw();
+        _controllerBtn.Draw();
 
         _closeBtn.Draw();
     }
@@ -605,6 +629,7 @@ namespace CTRPluginFramework
             _AddFavoriteBtn.Enable(false);
             _InfoBtn.Enable(false);
             _keyboardBtn.Enable(false);
+            _controllerBtn.Enable(false);
         }
 
         // If selected object is a folder
@@ -619,6 +644,7 @@ namespace CTRPluginFramework
             // Enable AddFavorites icon
             _AddFavoriteBtn.Enable(true);
             _AddFavoriteBtn.SetState(e->_IsStarred());
+            _controllerBtn.Enable(false);
         }
 
         // If selected object is an entry
@@ -633,6 +659,11 @@ namespace CTRPluginFramework
             // Enable AddFavorites icon
             _AddFavoriteBtn.Enable(true);
             _AddFavoriteBtn.SetState(e->_IsStarred());
+            // Enable controller icon
+            bool enable = false;
+            if (e->_owner != nullptr)
+                enable = e->_owner->Hotkeys.Count() > 0;
+            _controllerBtn.Enable(enable);
 
             if (e->HasNoteChanged() && _noteTB != nullptr)
             {
@@ -647,6 +678,7 @@ namespace CTRPluginFramework
             _AddFavoriteBtn.Enable(false);
             _InfoBtn.Enable(false);
             _keyboardBtn.Enable(false);
+            _controllerBtn.Enable(false);
         }
 
         // Buttons status
@@ -664,6 +696,7 @@ namespace CTRPluginFramework
         _InfoBtn.Update(isTouched, touchPos);
         _AddFavoriteBtn.Update(isTouched, touchPos);
         _keyboardBtn.Update(isTouched, touchPos);
+        _controllerBtn.Update(isTouched, touchPos);
         _closeBtn.Update(isTouched, touchPos);
     }
 

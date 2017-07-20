@@ -282,48 +282,31 @@ namespace CTRPluginFramework
             entry->Hotkeys += hotkey;
             entry->SetArg(new std::string(entry->Name()));
             entry->Name() += " " + hotkey.ToString();
+            entry->Hotkeys.OnHotkeyChangeCallback([](MenuEntry *entry, int index)
+            {
+                std::string *name = reinterpret_cast<std::string *>(entry->GetArg());
+
+                entry->Name() = *name + " " + entry->Hotkeys[0].ToString();
+            });
         }            
 
         return (entry);
     }
 
-    bool    DoesUserWantToChangeHotkeys(MenuEntry *entry)
+    MenuEntry *EntryWithHotkey(MenuEntry *entry, const std::vector<Hotkey> &hotkeys)
     {
-        // If entry has no hotkeys, no need to ask anything
-        if (entry->Hotkeys.Count() == 0)
-            return (false);
-
-        Keyboard    keyboard("Info\n\nWhat do you want to do ?");
-        std::vector<std::string>    choices = { "Customize the hotkeys", "Configure the cheat" };
-
-        keyboard.Populate(choices);
-
-        int choice = keyboard.Open();
-
-        // If user abort the keyboard, return that there's nothing to do
-        if (choice == -1) return (true);
-
-        if (choice == 0)
+        if (entry != nullptr)
         {
-            // If entry has only one hotkey, directly ask for it
-            if (entry->Hotkeys.Count() == 1)
-                entry->Hotkeys[0].AskForKeys();
-
-            // Else display the keyboard for the user to select which one he wants to edit
-            else
-                entry->Hotkeys.AskForKeys();
-
-            return (true);
+            for (const Hotkey &hotkey : hotkeys)
+                entry->Hotkeys += hotkey;
         }
 
-        return (false);
+        return (entry);
     }
 
-    void    CheatsMenuFunc(MenuEntry *entry)
+    void    CheatsGameFunc(MenuEntry *entry)
     {
-        if (DoesUserWantToChangeHotkeys(entry))
-            return;
-        // Configure my cheat...
+        
     }
 
     int    main(void)
@@ -342,11 +325,12 @@ namespace CTRPluginFramework
         note = "Use \uE077 while pressing the hotkey(s) to move very fast.\n" \
                 "Be careful of the loading zone, it might put you out of bound.\n" \
                 "You can change the hotkey by touching the keyboard icon on the bottom screen.";
-        folder->Append(EntryWithHotkey(new MenuEntry("Fast Move \uE077 +", MoveFast, MoveFastSettings, note), Hotkey(Key::ZL, "Hold to run faster")));
+        folder->Append(EntryWithHotkey(new MenuEntry("Fast Move \uE077 +", MoveFast, note), Hotkey(Key::ZL, "Hold to run faster")));
         folder->Append(new MenuEntry("Epona have max carrots", EponaMaxCarrots));
         folder->Append(new MenuEntry("Epona have max carrots", EponaInfiniteCarrotsAllAreas));
         folder->Append(new MenuEntry("Epona MoonJump (\uE054 + \uE002)", EponaMoonJump));
 
+        menu.Append(EntryWithHotkey(new MenuEntry("Cheat", CheatsGameFunc, "Do things"), { Hotkey(Key::A, "Enable a thing"), Hotkey(Key::B, "Disable a thing") }));
         menu.Append(folder);
 
         /*

@@ -86,6 +86,12 @@ namespace CTRPluginFramework
         static int      DrawGameController(int posX, int posY);
 
         /*
+        ** Game Controller
+        ** 25px * 25px
+        ************/
+        static int      DrawGameController(int posX, int posY, bool filled);
+
+        /*
         ** Grid
         ** 15px * 15px
         ************/
