@@ -306,15 +306,24 @@ namespace CTRPluginFramework
         if (choice == 0)
         {
             // If entry has only one hotkey, directly ask for it
-            if (entry->Hotkeys)
+            if (entry->Hotkeys.Count() == 1)
+                entry->Hotkeys[0].AskForKeys();
+
+            // Else display the keyboard for the user to select which one he wants to edit
+            else
+                entry->Hotkeys.AskForKeys();
+
+            return (true);
         }
 
-       
+        return (false);
     }
 
     void    CheatsMenuFunc(MenuEntry *entry)
     {
-        
+        if (DoesUserWantToChangeHotkeys(entry))
+            return;
+        // Configure my cheat...
     }
 
     int    main(void)
