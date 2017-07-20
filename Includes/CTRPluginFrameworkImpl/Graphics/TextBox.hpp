@@ -28,7 +28,7 @@ namespace CTRPluginFramework
         // return false if the tb is closed
         bool    ProcessEvent(Event &event);
         // Update
-        void    Update(void);
+        void    Update(const std::string &title, std::string &text);
         // Draw
         void    Draw(void);
 
@@ -42,7 +42,7 @@ namespace CTRPluginFramework
 
         std::vector<u8 *>      _newline;
         std::string             _title;
-        std::string             &_text;
+        std::string             *_text;
         IntRect                 _box;
         IntRect                 _border;
         bool                    _isOpen;

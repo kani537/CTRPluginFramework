@@ -12,7 +12,7 @@ namespace CTRPluginFramework
     ** Constructor
     ***************/
     TextBox::TextBox(std::string title, std::string &text, IntRect box) :
-    _title(title), _text(text), _box(box)
+    _title(title), _text(&text), _box(box)
     {
         _currentLine = 0;
         _isOpen = false;
@@ -173,6 +173,40 @@ namespace CTRPluginFramework
         return (true);
     }
 
+    void    TextBox::Update(const std::string& title, std::string& text)
+    {
+        _currentLine = 0;
+        _title = title;
+        _text = &text;
+        _GetTextInfos();
+        if (_newline.size() <= _maxLines)
+        {
+            _maxLines = _newline.size();
+            _displayScrollbar = false;
+        }
+        else
+        {
+            int height = _box.size.y;
+
+            height -= 10;
+
+            int lines = _newline.size() + 1;
+            int lsize = 16 * lines;
+
+            float padding = (float)height / (float)lsize;
+            int cursorSize = padding * height;
+            _scrollbarSize = height;
+
+            if (cursorSize < 5)
+                cursorSize = 5;
+
+            _scrollCursorSize = cursorSize;
+            _scrollPadding = padding * 16.f;
+            _scrollPosition = 0.f;
+            _displayScrollbar = true;
+        }
+    }
+
     /*
     ** Draw
     ***********/
@@ -300,7 +334,9 @@ namespace CTRPluginFramework
     ******************/
     void     TextBox::_GetTextInfos(void)
     {
-        u8      *str = const_cast<u8 *>(reinterpret_cast<const u8*>(_text.c_str()));
+        _newline.clear();
+
+        u8      *str = const_cast<u8 *>(reinterpret_cast<const u8*>(_text->c_str()));
 
         const float maxWidth = static_cast<float>(_border.size.x) - 12.f;
 
