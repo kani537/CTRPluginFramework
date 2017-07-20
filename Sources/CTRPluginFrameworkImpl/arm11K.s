@@ -81,12 +81,19 @@ SetKProcessID:
 
 loc_1082AC:
         CMP         R3, #6
-        BNE         exit
+        BNE         ReadCTXID
 
 GetKProcessState:
         LDR         R1, [R4, #4]
         LDR         R2, [R1]
         STR         R2, [R4, #8]
+
+ReadCTXID:
+		CMP			R3, #7
+		BNE			exit
+
+		MRC         p15, 0, R1,c13,c0, 1
+		STR			R1, [R4]
 
 exit:
         LDMFD       SP!, {R4,PC};

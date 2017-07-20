@@ -59,6 +59,7 @@ namespace CTRPluginFramework
 
             // Draw box
             _Draw();
+            Renderer::SetTarget(BOTTOM);
             Renderer::EndFrame();
         }       
 

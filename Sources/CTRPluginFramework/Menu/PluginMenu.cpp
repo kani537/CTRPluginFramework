@@ -20,6 +20,14 @@ namespace CTRPluginFramework
         _menu = std::unique_ptr<PluginMenuImpl>(new PluginMenuImpl(name, aboutStr));
     }
 
+    PluginMenu::PluginMenu(std::string name, u32 major, u32 minor, u32 revision, std::string about) :
+        _menu(new PluginMenuImpl(name, about))
+    {
+        u32 version = (major & 0xFF) | ((minor & 0xFF) << 8) | ((revision & 0xFF) << 16);
+
+        _menu->AddPluginVersion(version);
+    }
+
     PluginMenu::~PluginMenu(void)
     {
     }

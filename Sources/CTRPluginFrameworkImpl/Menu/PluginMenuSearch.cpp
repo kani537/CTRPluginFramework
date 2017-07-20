@@ -36,9 +36,9 @@ namespace CTRPluginFramework
         _searchSize.Add("1 Byte");
         _searchSize.Add("2 Bytes");
         _searchSize.Add("4 Bytes");
-        _searchSize.Add("8 Bytes");
+       // _searchSize.Add("8 Bytes");
         _searchSize.Add("Float");
-        _searchSize.Add("Double");
+       // _searchSize.Add("Double");
 
         _searchType.Add("Specified value");
         _searchType.Add("Unknown search");
@@ -440,9 +440,9 @@ namespace CTRPluginFramework
             case 0: parameters.flags |= (u32)SearchFlags::U8;  break;
             case 1: parameters.flags |= (u32)SearchFlags::U16;  break;
             case 2: parameters.flags |= (u32)SearchFlags::U32;  break;
-            case 3: parameters.flags |= (u32)SearchFlags::U64;  break;
-            case 4: parameters.flags |= (u32)SearchFlags::Float;  break;
-            case 5: parameters.flags |= (u32)SearchFlags::Double;  break;
+            //case 3: parameters.flags |= (u32)SearchFlags::U64;  break;
+            case 3: parameters.flags |= (u32)SearchFlags::Float;  break;
+            //case 5: parameters.flags |= (u32)SearchFlags::Double;  break;
             default: break;
         }
 
@@ -473,9 +473,9 @@ namespace CTRPluginFramework
         }
 
         // Create Search item
-        if (_searchSize.SelectedItem == 3 || _searchSize.SelectedItem == 5)
-            _currentSearch = nullptr;
-        else
+        //if (_searchSize.SelectedItem == 3 || _searchSize.SelectedItem == 5)
+        //    _currentSearch = nullptr;
+       // else
             _currentSearch = new Search32(parameters);
 
         // Check for error

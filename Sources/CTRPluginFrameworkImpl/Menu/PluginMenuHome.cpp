@@ -72,6 +72,9 @@ namespace CTRPluginFramework
         _scrollOffset = 0.f;
         _maxScrollOffset = 0.f;
         _reverseFlow = false;
+        _showVersion = false;
+        _versionPosX = 0;
+
         _noteTB = nullptr;
 
         // Set rounding
@@ -478,10 +481,14 @@ namespace CTRPluginFramework
         MenuFolderImpl* folder = _starMode ? _starred : _folder;
 
         // Draw Title
-        int width;
-        width = Renderer::DrawSysString(folder->name.c_str(), posX, posY, 350, blank);
+        int maxWidth = _showVersion ? _versionPosX - 10 : 360;
+        int posYbak = posY;
+        int width = Renderer::DrawSysString(folder->name.c_str(), posX, posY, maxWidth, blank);
         Renderer::DrawLine(posX, posY, width, blank);
         posY += 7;
+
+        if (_showVersion)
+            Renderer::DrawSysString(_versionStr.c_str(), _versionPosX, posYbak, 360, blank);
 
         // Draw Entry
         int max = folder->ItemsCount();
@@ -781,11 +788,25 @@ namespace CTRPluginFramework
 
     void    PluginMenuHome::TriggerSearch(bool state)
     {
-        _searchBtn.IsLocked = state;
+        _searchBtn.IsLocked = !state;
     }
 
     void    PluginMenuHome::TriggerActionReplay(bool state)
     {
-        _arBtn.IsLocked = state;
+        _arBtn.IsLocked = !state;
+    }
+
+    void    PluginMenuHome::AddPluginVersion(u32 version)
+    {
+        char buffer[100];
+
+        sprintf(buffer, "[%d.%d.%d]", version & 0xFF, (version >> 8) & 0xFF, version >> 16);
+        _versionStr.clear();
+        _versionStr = buffer;
+
+        float width = Renderer::GetTextSize(buffer);
+
+        _versionPosX = 360 - (width + 1);
+        _showVersion = true;
     }
 }

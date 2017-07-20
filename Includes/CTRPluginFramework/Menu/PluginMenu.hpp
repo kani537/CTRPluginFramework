@@ -31,6 +31,16 @@ namespace CTRPluginFramework
         ******************************/
         PluginMenu(std::string name, void *about, DecipherPointer func);
 
+        /**
+         * \brief Create a new PluginMenu
+         * \param name The name of the menu / main folder
+         * \param major The major version number of the plugin version
+         * \param minor The minor version number of the plugin version
+         * \param revision The revision version number of the plugin version
+         * \param about Text to display in Tools About
+         */
+        PluginMenu(std::string name, u32 major, u32 minor, u32 revision, std::string about = "");
+
         /*
         ** Destructor
         ******************************/

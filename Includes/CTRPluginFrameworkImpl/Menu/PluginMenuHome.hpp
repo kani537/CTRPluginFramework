@@ -25,7 +25,8 @@ namespace CTRPluginFramework
         void    Init(void);
 
         void    TriggerSearch(bool state);
-        void    TriggerActionReplay(bool state);        
+        void    TriggerActionReplay(bool state);
+        void    AddPluginVersion(u32 version);
 
     private:
         friend class PluginMenuImpl;
@@ -53,6 +54,9 @@ namespace CTRPluginFramework
         float                       _scrollOffset;
         Clock                       _scrollClock;
         bool                        _reverseFlow;
+        bool                        _showVersion;
+        int                         _versionPosX;
+        std::string                 _versionStr;
 
         TextBox                     *_noteTB;
 

@@ -48,6 +48,7 @@ namespace CTRPluginFramework
 
         bool    IsOpen(void) const;
         bool    WasOpened(void) const;
+        void    AddPluginVersion(u32 version) const;
     private: 
 
         static PluginMenuImpl       *_runningInstance;

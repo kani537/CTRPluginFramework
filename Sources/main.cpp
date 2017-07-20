@@ -16,66 +16,13 @@ namespace CTRPluginFramework
     // This function is called on the plugin starts, before main
     void    PatchProcess(void)
     {
-        u64 tid = Process::GetTitleID();
 
-        // Pokemon Moon / Sun
-        // Patch game to prevent deconnection from Stream / debugger
-        /*if (tid == 0x0004000000175E00 
-            || tid == 0x0004000000164800)
-        {
-            u32     patch  = 0xE3A01000;
-            // Patch
-            Process::Patch(0x003DFFD0, reinterpret_cast<u8 *>(&patch), 4); 
-        }*/
     }
 
-    static u32  g_encAboutSize = 153;
-    static u32  g_encAbout[153] =
-    {
-        0x00000028, 0x00000154, 0x000001A8, 0x000001A8,
-        0x000001DC, 0x00000094, 0x000001D8, 0x000001AC,
-        0x000001F4, 0x000001B8, 0x0000018C, 0x00000194,
-        0x000000B0, 0x00000194, 0x000001BC, 0x000001F0,
-        0x00000080, 0x0000018C, 0x0000019C, 0x00000198,
-        0x000001A8, 0x00000094, 0x000001AC, 0x00000198,
-        0x000001B0, 0x000001B0, 0x000000A8, 0x000001A4,
-        0x000001D4, 0x0000001C, 0x0000010C, 0x000001A8,
-        0x0000019C, 0x00000180, 0x000000BC, 0x00000138,
-        0x00000184, 0x000001C8, 0x000000A0, 0x00000034,
-        0x00000008, 0x00000110, 0x00000194, 0x000001E4,
-        0x000001A4, 0x000000B4, 0x0000019C, 0x00000184,
-        0x00000198, 0x000001B8, 0x000001C0, 0x000001B8,
-        0x00000194, 0x000001C4, 0x000001BC, 0x000001A0,
-        0x00000198, 0x000000A4, 0x000001AC, 0x00000194,
-        0x000001A0, 0x000000B4, 0x000001EC, 0x000001FC,
-        0x00000190, 0x00000180, 0x000001D8, 0x00000198,
-        0x000001DC, 0x00000094, 0x000001C8, 0x000001A0,
-        0x000000C8, 0x0000000C, 0x00000188, 0x000001FC,
-        0x000001E0, 0x000001F4, 0x000001F4, 0x000000D4,
-        0x000000BC, 0x000000B8, 0x00000194, 0x000001A8,
-        0x000001C0, 0x000001B4, 0x000001CC, 0x00000194,
-        0x00000098, 0x000001A8, 0x00000194, 0x00000198,
-        0x0000008C, 0x00000100, 0x000001AC, 0x000001A0,
-        0x00000184, 0x000000B0, 0x0000013C, 0x00000198,
-        0x000001CC, 0x000000A8, 0x00000114, 0x0000014C,
-        0x00000168, 0x00000164, 0x00000130, 0x00000098,
-        0x00000170, 0x00000184, 0x000001EC, 0x000001A0,
-        0x000001A4, 0x000001BC, 0x000001C4, 0x00000024,
-        0x00000038, 0x0000010C, 0x0000018C, 0x00000188,
-        0x00000190, 0x000000A4, 0x000001B0, 0x000001E4,
-        0x000001A4, 0x000001A0, 0x000000B8, 0x000001EC,
-        0x000001BC, 0x00000084, 0x000001C0, 0x00000198,
-        0x000001D0, 0x000001A8, 0x000001D0, 0x000001CC,
-        0x000000A0, 0x000001A0, 0x00000190, 0x000001C8,
-        0x000000B0, 0x00000190, 0x000001F4, 0x000001F0,
-        0x000001D4, 0x00000190, 0x000001C4, 0x0000008C,
-        0x000001B0, 0x00000180, 0x000001D0, 0x00000188,
-        0x00000098,
-    };
 
 
     // Function to pass to plugin to decode the About text
-    void    Decoder(std::string &output, void *input)
+    /*void    Decoder(std::string &output, void *input)
     {
         u32     size = g_encAboutSize;
         u32     *in = static_cast<u32 *>(input);
@@ -91,15 +38,13 @@ namespace CTRPluginFramework
 
             size--;
         }
-    }
+    }*/
 
     //  
     std::string about = u8"\n" \
-        u8"This plugin has been made by\n" \
-        u8"Mega-Mew.\n\n" \
-        u8"More information and updates to:\n" \
-        u8"https://github.com/Mega-Mew/CTRPF-Plugins\n" \
-        u8"Feel free to report any issues here.";
+        u8"Plugin for Zelda Ocarina Of Time, V3.0\n\n"
+        u8"Most of these codes comes from Fort42 so a huge thanks to their original creator !!\n\n" \
+        u8"GBATemp's release thread: goo.gl/Rz1uhj";
 
     /*
     // Function to pass to plugin to decode the About text
@@ -170,33 +115,170 @@ namespace CTRPluginFramework
         spaceFree3 = getMemFree();
     }
 
+    void    Invincible(MenuEntry *entry)
+    {
+        static u32 original[4] = {0};
+
+        if (entry->WasJustActivated())
+        {
+            if (original[0] == 0)
+            {
+                Process::Read32(0x0035D398, original[0]);
+                Process::Read32(0x0035D3A8, original[1]);                
+                Process::Read32(0x00352E24, original[2]);
+                Process::Read32(0x00352E28, original[3]);              
+            }
+
+            Process::Write32(0x0035D398, 0xE3A00000);
+            Process::Write32(0x0035D3A8, 0xEA000000);
+            Process::Write32(0x00352E24, 0xE1D504B2);
+            Process::Write32(0x00352E28, 0xE1A00000);
+        }
+
+        if (!entry->IsActivated())
+        {
+            if (original[0] && original[1])
+            {
+                Process::Write32(0x0035D398, original[0]);
+                Process::Write32(0x0035D3A8, original[1]);
+                Process::Write32(0x00352E24, original[2]);
+                Process::Write32(0x00352E28, original[3]);
+            }
+        }
+    }
+
+    void    UnlockAllBottles(MenuEntry *entry)
+    {
+        Process::Write16(0x005879F6, 0x1414);
+        Process::Write8(0x005879F8, 0x14);
+        entry->Disable();
+    }
+
+    struct Item
+    {
+        u8  id;
+        std::string name;
+    };
+
+    const std::vector<Item> g_bottleItems = 
+    {
+        {0x15, "Red potion"},
+        {0x16, "Green potion"},
+        {0x17, "Blue potion"},
+        {0x18, "Fairy"},
+        {0x19, "Fish"},
+        {0x1A, "Milk, 2 Doses"},        
+        {0x1F, "Milk, 1 dose"},
+        {0x1B, "Letter"},
+        {0x1C, "Blue flamme"},
+        {0x1D, "Insect"},
+        {0x1E, "Soul"},
+        {0x20, "Spirit"},
+        {0x14, "Empty" },
+        {0xFF, "Locked" },
+        {0x00, "Unknown / Error"}
+    };
+
+    class Bottle
+    {
+    public:
+
+        Bottle(u32 id, u32 address) : ID(id), SelectedItem(0)
+        {
+            _address = reinterpret_cast<u8 *>(address);
+        }
+
+        ~Bottle(){}
+
+        void    operator=(const Item &item)
+        {
+            SelectedItem = item.id;
+            *_address = item.id;
+        }
+
+        void    WriteItem(void)
+        {
+            if (SelectedItem)
+                *_address = SelectedItem;
+        }
+
+        const Item &GetCurrentItem(void)
+        {
+            u8 id = *_address;
+
+            for (const Item &item : g_bottleItems)
+                if (item.id == id)
+                    return (item);
+
+            return (g_bottleItems.back());
+        }
+
+        std::string ToString(void)
+        {
+            std::string str("Bottle #");
+
+            str += std::to_string(ID);
+            str += " : " + GetCurrentItem().name;
+
+            return (str);
+        }
+
+        const  u32 ID;
+        u8     SelectedItem;
+
+    private:
+
+        u8   *_address;
+    };
+
+    Bottle    g_bottles[3] = 
+    {
+        Bottle(1, 0x005879F6),
+        Bottle(2, 0x005879F7),
+        Bottle(3, 0x005879F8)
+    };
+
+    void    BottleSettings(MenuEntry *entry)
+    {
+        Bottle      *bottle = reinterpret_cast<Bottle*>(entry->GetArg());
+        Keyboard    keyboard;
+        std::vector<std::string>    items;
+
+        for (const Item &item : g_bottleItems)
+            if (item.id != 0)
+                items.push_back(item.name);
+
+        keyboard.DisplayTopScreen = false;
+        keyboard.Populate(items);
+
+        int choice = keyboard.Open();
+
+        if (choice != -1)
+        {
+            *bottle = g_bottleItems[choice];
+        }
+
+        entry->Name() = bottle->ToString();
+    }
+
+    void    BottleManager(MenuEntry *entry)
+    {
+        Bottle *bottle = reinterpret_cast<Bottle*>(entry->GetArg());
+
+        bottle->WriteItem();
+    }
+
+    MenuEntry *AddArg(void *arg, MenuEntry *entry)
+    {
+        if(entry != nullptr)
+            entry->SetArg(arg);
+        return (entry);
+    }
+
     int    main(void)
     {
-        PluginMenu      *m = new PluginMenu("Zelda Ocarina Of Time 3D", about);// g_encAbout, Decoder);
+        PluginMenu      *m = new PluginMenu("Zelda Ocarina Of Time 3D", 1, 0, 0, about);// g_encAbout, Decoder);
         PluginMenu      &menu = *m;
-       
-
-        menu.SetHexEditorState(false);
-        /*
-        ** Tests
-        ********************/
-
-        MenuEntry *entry = new MenuEntry("Heap infos", nullptr,
-            [](MenuEntry *entry)
-            {
-            char buff[0x200] = { 0 };
-            std::string str("This is a test");
-            sprintf(buff, "Heap used: %08X\nHeap free: %08X\nLinear free: %08X\nsizeof(std::string) = %08X\n%08X", getMemUsed(), getMemFree(), linearSpaceFree(), sizeof(std::string), sizeof(str));
-
-            (MessageBox(buff))();
-          //  func2();
-
-           // sprintf(buff, "1: %08X \n2: %08X\n3: %08X\nMenuEntryImpl: %08X,\n MenuEntryCheat: %08X", spaceFree1, spaceFree2, spaceFree3, sizeof(MenuEntryImpl), sizeof(MenuEntryTools));
-           // (MessageBox(buff))();
-        });
-
-        entry->SetArg(m);
-        m->Append(entry);
 
         /*
         ** Movements codes
@@ -217,6 +299,7 @@ namespace CTRPluginFramework
         ******************/
 
         folder = new MenuFolder("Battle", "Need some boosters for your fights ?");
+        folder->Append(new MenuEntry("Invincible", Invincible, "With this code you'll be invincible !"));
         folder->Append(new MenuEntry("Refill Heart (\uE058)", RefillHeart, "Running low on heart ?\nThen touch the screen to fill you in."));
         folder->Append(new MenuEntry("Refill Magic (\uE058)", RefillLargeMagicbar, "Running low on magic ?\nThen touch the screen to refill the magic bar."));
         folder->Append(new MenuEntry("Unlock Heart", MaxHeart));
@@ -260,14 +343,22 @@ namespace CTRPluginFramework
         items->Append(new MenuEntry("Infinite Bombchu", InfiniteBombchu));
         items->Append(new MenuEntry("Infinite Slingshot", InfiniteSlingshot));
 
-        folder->Append(new MenuEntry("100 Skulltulas", Skulltulas));
-        folder->Append(new MenuEntry("Max Rupees", MaxRupees));
-
-
         folder->Append(sword);
         folder->Append(shield);
         folder->Append(suits);
         folder->Append(items);
+
+        folder->Append(new MenuEntry("100 Skulltulas", Skulltulas));
+        folder->Append(new MenuEntry("Max Rupees", MaxRupees));
+
+        std::string name = " : Read the note !";
+        std::string note = "Touch the keyboard icon to set the bottle's content then activate the entry.\n\nWarning: don't set the Locked value when the bottle is attributed to a key or it'll create a duplicate in your inventory and you'll loose an inventory slot.";
+        folder->Append(AddArg(&g_bottles[0], new MenuEntry("Bottle #1" + name, BottleManager, BottleSettings, note)));
+        folder->Append(AddArg(&g_bottles[1], new MenuEntry("Bottle #2" + name, BottleManager, BottleSettings, note)));
+        folder->Append(AddArg(&g_bottles[2], new MenuEntry("Bottle #3" + name, BottleManager, BottleSettings, note)));
+
+
+
 
         menu.Append(folder);
 
