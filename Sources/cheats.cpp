@@ -79,25 +79,25 @@ namespace CTRPluginFramework
 
 	void	Sunrise(MenuEntry *entry)
 	{
-		if (Controller::IsKeysDown(R + DPadLeft))
+		if (entry->Hotkeys[0].IsDown())
 			Process::Write16(0x0587964, 0x8001);
 	}
 
 	void	Daytime(MenuEntry *entry)
 	{
-		if (Controller::IsKeysDown(R + DPadUp))
+        if (entry->Hotkeys[0].IsDown())
 			Process::Write16(0x0587964, 0x680E);
 	}
 
 	void	Sunset(MenuEntry *entry)
 	{
-		if (Controller::IsKeysDown(R + DPadRight))
+        if (entry->Hotkeys[0].IsDown())
 			Process::Write16(0x0587964, 0xC001);
 	}
 
 	void	Night(MenuEntry *entry)
 	{
-		if (Controller::IsKeysDown(R + DPadDown))
+        if (entry->Hotkeys[0].IsDown())
 			Process::Write16(0x0587964, 0x0000);
 	}
 
@@ -300,7 +300,7 @@ namespace CTRPluginFramework
             if (!pointer)
                 return;
             pointer += 0x77;
-            if (Controller::IsKeyDown(Key::A))
+            if (entry->Hotkeys[0].IsDown())
                 Process::Write16(pointer, 0xCB40);
 	    }
 	}
@@ -516,7 +516,7 @@ namespace CTRPluginFramework
                 return;
 
             offset += 0x134;
-            if (Controller::IsKeysDown(Key::ZL + Key::X))
+            if (entry->Hotkeys[0].IsDown())
             {
                 if (Process::Read32(offset, offset) && offset)
                 {

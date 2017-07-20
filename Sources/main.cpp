@@ -321,17 +321,15 @@ namespace CTRPluginFramework
 
         MenuFolder *folder = new MenuFolder("Movement");
 
-        folder->Append(new MenuEntry("MoonJump (\uE000)", MoonJump, "Press \uE000 to be free of the gravity."));
+        folder->Append(EntryWithHotkey(new MenuEntry("MoonJump", MoonJump, "Press the hotkey to be free of the gravity."), Hotkey(Key::A, "Moonjump")));
+        
         note = "Use \uE077 while pressing the hotkey(s) to move very fast.\n" \
                 "Be careful of the loading zone, it might put you out of bound.\n" \
                 "You can change the hotkey by touching the keyboard icon on the bottom screen.";
-        folder->Append(EntryWithHotkey(new MenuEntry("Fast Move \uE077 +", MoveFast, note), Hotkey(Key::ZL, "Hold to run faster")));
+        folder->Append(EntryWithHotkey(new MenuEntry("Fast Move \uE077 +", MoveFast, note), Hotkey(Key::ZL, "Run faster")));
         folder->Append(new MenuEntry("Epona have max carrots", EponaMaxCarrots));
         folder->Append(new MenuEntry("Epona have max carrots", EponaInfiniteCarrotsAllAreas));
-        folder->Append(new MenuEntry("Epona MoonJump (\uE054 + \uE002)", EponaMoonJump));
-
-        menu.Append(EntryWithHotkey(new MenuEntry("Cheat", CheatsGameFunc, "Do things"), { Hotkey(Key::A, "Enable a thing"), Hotkey(Key::B, "Disable a thing") }));
-        menu.Append(folder);
+        folder->Append(EntryWithHotkey(new MenuEntry("Epona MoonJump", EponaMoonJump, "Press the hotkey to be free of the gravity."), Hotkey(Key::L | Key::A, "Epona Moonjump")));
 
         /*
         ** Battle codes
@@ -406,10 +404,10 @@ namespace CTRPluginFramework
         ***********/
         folder = new MenuFolder("Time");
 
-        folder->Append(new MenuEntry("Sunrise (\uE053 + \uE07B)", Sunrise));
-        folder->Append(new MenuEntry("Daytime (\uE053 + \uE07D)", Daytime));
-        folder->Append(new MenuEntry("Sunset (\uE053 + \uE07C)", Sunset));
-        folder->Append(new MenuEntry("Night (\uE053 + \uE07A)", Night));
+        folder->Append(EntryWithHotkey(new MenuEntry("Sunrise", Sunrise), Hotkey(Key::R | Key::DPadLeft, "Sunrise")));
+        folder->Append(EntryWithHotkey(new MenuEntry("Daytime", Daytime), Hotkey(Key::R | Key::DPadUp, "Daytime")));
+        folder->Append(EntryWithHotkey(new MenuEntry("Sunset", Sunset), Hotkey(Key::R | Key::DPadRight, "Sunset")));
+        folder->Append(EntryWithHotkey(new MenuEntry("Night", Night), Hotkey(Key::R | Key::DPadDown, "Night")));
         folder->Append(new MenuEntry("Sky is always raining", AlwaysRaining));
         menu.Append(folder);
 

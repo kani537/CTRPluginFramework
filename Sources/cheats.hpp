@@ -12,7 +12,6 @@ namespace CTRPluginFramework
     void	MoonJump(MenuEntry *entry);
     // ZL + PAD
     void	MoveFast(MenuEntry *entry);
-    void    MoveFastSettings(MenuEntry *entry);
     void	EponaMaxCarrots(MenuEntry *entry);
     void	EponaInfiniteCarrotsAllAreas(MenuEntry *entry);
     // ZL + X
