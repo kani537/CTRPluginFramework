@@ -21,7 +21,10 @@ namespace CTRPluginFramework
     {
     public:
         MenuItem(MenuType type) :
-        _type(type), _isStarred(false), _isVisible(true), _container(nullptr), _index(0), _uid(++_uidCounter)
+        _type(type), _isStarred(false),
+        _isVisible(true),
+        _hasNoteChanged(false),
+        _container(nullptr), _index(0), _uid(++_uidCounter)
         {
         }
 
@@ -65,6 +68,15 @@ namespace CTRPluginFramework
             return (*reinterpret_cast<MenuEntryTools *>(this));
         }
 
+        virtual std::string &GetNote(void)
+        {
+            return (note);
+        }
+
+        void    NoteChanged(void);
+        bool    HasNoteChanged(void) const;
+        void    HandledNoteChanges(void);
+
     protected:
         friend class MenuFolderImpl;
         friend class PluginMenuImpl;
@@ -88,6 +100,7 @@ namespace CTRPluginFramework
         MenuType    _type;
         bool        _isStarred;
         bool        _isVisible;
+        bool        _hasNoteChanged;
         MenuItem    *_container; /* MenuFolderImpl */
         int         _index;
         const u32   _uid;

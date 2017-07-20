@@ -44,6 +44,9 @@ namespace CTRPluginFramework
         FuncPointer     GameFunc;
         FuncPointer     MenuFunc;
 
+        virtual std::string &GetNote(void) override;
+
+        std::string     Note2;
     protected:
         friend class PluginMenuHome;
         friend class PluginMenuExecuteLoop;

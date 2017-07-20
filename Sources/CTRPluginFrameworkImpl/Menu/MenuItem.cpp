@@ -9,6 +9,21 @@ namespace CTRPluginFramework
 
     using   MenuIter = std::vector<MenuItem*>::iterator;
 
+    void MenuItem::NoteChanged()
+    {
+        _hasNoteChanged = true;
+    }
+
+    bool MenuItem::HasNoteChanged() const
+    {
+        return (_hasNoteChanged);
+    }
+
+    void MenuItem::HandledNoteChanges()
+    {
+        _hasNoteChanged = false;
+    }
+
     void    MenuItem::_DisableFolder(MenuFolderImpl *folder)
     {
         if (folder == nullptr)

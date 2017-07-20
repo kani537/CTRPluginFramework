@@ -57,24 +57,22 @@ namespace CTRPluginFramework
 
     void    HotkeysModifier::operator()(void)
     {
-        while (!Window::BottomWindow.MustClose())
+        while (!Window::BottomWindow.MustClose() || !_keys)
         {
             Controller::Update();
             _DrawTop();
             _DrawBottom();
             Renderer::EndFrame();
             _Update();
-        }
-        
-        u32 keys = 0;
 
-        for (int i = 0; i < 14; i++)
-        {
-            if (_checkboxs[i].IsChecked())
-                keys |= ktable[i];
-        }
+            _keys = 0;
 
-        _keys = keys;
+            for (int i = 0; i < 14; i++)
+            {
+                if (_checkboxs[i].IsChecked())
+                    _keys |= ktable[i];
+            }
+        }
     }
 
     void    HotkeysModifier::_DrawTop(void) const

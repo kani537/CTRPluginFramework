@@ -450,10 +450,10 @@ namespace CTRPluginFramework
                     _noteTB = nullptr;
                 }
 
-                if (item->note.size() > 0)
+                if (item->GetNote().size() > 0)
                 {
                     static IntRect noteRect(40, 30, 320, 180);
-                    _noteTB = new TextBox(item->name, item->note, noteRect);
+                    _noteTB = new TextBox(item->name, item->GetNote(), noteRect);
                     _InfoBtn.Enable(true);
                 }
                 else
@@ -487,7 +487,7 @@ namespace CTRPluginFramework
         Renderer::DrawLine(posX, posY, width, blank);
         posY += 7;
 
-        if (_showVersion)
+        if (_showVersion && !_starMode && !folder->HasParent())
             Renderer::DrawSysString(_versionStr.c_str(), _versionPosX, posYbak, 360, blank);
 
         // Draw Entry
@@ -599,6 +599,7 @@ namespace CTRPluginFramework
         // If current folder is empty
 
         MenuFolderImpl *folder = _starMode ? _starred : _folder;
+        
         if (folder->ItemsCount() == 0)
         {
             _AddFavoriteBtn.Enable(false);
@@ -624,14 +625,20 @@ namespace CTRPluginFramework
         else if ((*folder)[_selector]->IsEntry())
         {
             MenuEntryImpl *e = reinterpret_cast<MenuEntryImpl *>((*folder)[_selector]);
-
+            std::string &note = e->GetNote();
             // Check if entry has a menu func
             _keyboardBtn.Enable(e->MenuFunc != nullptr);
             // Check if entry has a note
-            _InfoBtn.Enable(e->note.size());
+            _InfoBtn.Enable(note.size());
             // Enable AddFavorites icon
             _AddFavoriteBtn.Enable(true);
             _AddFavoriteBtn.SetState(e->_IsStarred());
+
+            if (e->HasNoteChanged() && _noteTB != nullptr)
+            {
+                _noteTB->Update(e->name, e->GetNote());
+                e->HandledNoteChanges();
+            }
         }
 
         // An error is happening
@@ -783,7 +790,7 @@ namespace CTRPluginFramework
 
         // Init buttons state
         _AddFavoriteBtn.Enable(folder->ItemsCount() != 0);
-        _InfoBtn.Enable(item != nullptr ? !item->note.empty() : false);
+        _InfoBtn.Enable(item != nullptr ? !item->GetNote().empty() : false);
     }
 
     void    PluginMenuHome::TriggerSearch(bool state)

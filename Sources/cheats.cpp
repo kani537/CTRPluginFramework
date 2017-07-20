@@ -319,7 +319,7 @@ namespace CTRPluginFramework
             u32  jumpPointer = pointer + 0x77;
             pointer += 0x222C;
 
-            if (Controller::IsKeyDown(Key::CPad) && Controller::IsKeyDown(Key::ZL))
+            if (Controller::IsKeyDown(Key::CPad) && entry->Hotkeys[0].IsDown())
             {
                 if (jump < 3)
                 {
@@ -332,6 +332,21 @@ namespace CTRPluginFramework
             else
                 jump = 0;
 	    }
+	}
+
+    void    MoveFastSettings(MenuEntry *entry)
+	{
+        if (entry->GetArg() == nullptr)
+        {
+            std::string *name = new std::string(entry->Name());
+            entry->SetArg(name);
+        }
+        entry->Hotkeys[0].AskForKeys();
+        entry->RefreshNote();
+
+        std::string *name = reinterpret_cast<std::string *>(entry->GetArg());
+
+        entry->Name() = *name + " " + entry->Hotkeys[0].ToString();
 	}
 
 	void	CollectHeart(MenuEntry *entry)

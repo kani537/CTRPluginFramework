@@ -74,6 +74,11 @@ namespace CTRPluginFramework
         return (_items[index]);
     }
 
+    bool MenuFolderImpl::HasParent()
+    {
+        return (_parent[0] != nullptr || _parent[1] != nullptr);
+    }
+
     //#######################################################################
 
     void    MenuFolderImpl::_Open(MenuFolderImpl *parent, int position, bool starMode)

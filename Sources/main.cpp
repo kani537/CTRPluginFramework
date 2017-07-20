@@ -275,10 +275,53 @@ namespace CTRPluginFramework
         return (entry);
     }
 
+    MenuEntry *EntryWithHotkey(MenuEntry *entry, const Hotkey &hotkey)
+    {
+        if (entry != nullptr)
+        {
+            entry->Hotkeys += hotkey;
+            entry->SetArg(new std::string(entry->Name()));
+            entry->Name() += " " + hotkey.ToString();
+        }            
+
+        return (entry);
+    }
+
+    bool    DoesUserWantToChangeHotkeys(MenuEntry *entry)
+    {
+        // If entry has no hotkeys, no need to ask anything
+        if (entry->Hotkeys.Count() == 0)
+            return (false);
+
+        Keyboard    keyboard("Info\n\nWhat do you want to do ?");
+        std::vector<std::string>    choices = { "Customize the hotkeys", "Configure the cheat" };
+
+        keyboard.Populate(choices);
+
+        int choice = keyboard.Open();
+
+        // If user abort the keyboard, return that there's nothing to do
+        if (choice == -1) return (true);
+
+        if (choice == 0)
+        {
+            // If entry has only one hotkey, directly ask for it
+            if (entry->Hotkeys)
+        }
+
+       
+    }
+
+    void    CheatsMenuFunc(MenuEntry *entry)
+    {
+        
+    }
+
     int    main(void)
     {
-        PluginMenu      *m = new PluginMenu("Zelda Ocarina Of Time 3D", 1, 0, 0, about);// g_encAbout, Decoder);
+        PluginMenu      *m = new PluginMenu("Zelda Ocarina Of Time 3D", 3, 0, 1, about);// g_encAbout, Decoder);
         PluginMenu      &menu = *m;
+        std::string     note;
 
         /*
         ** Movements codes
@@ -287,7 +330,10 @@ namespace CTRPluginFramework
         MenuFolder *folder = new MenuFolder("Movement");
 
         folder->Append(new MenuEntry("MoonJump (\uE000)", MoonJump, "Press \uE000 to be free of the gravity."));
-        folder->Append(new MenuEntry("Fast Move (\uE077 + \uE054)", MoveFast, "Use \uE077 while pressing \uE054 to move very fast. Be careful of the loading zone, it might put you out of bound."));
+        note = "Use \uE077 while pressing the hotkey(s) to move very fast.\n" \
+                "Be careful of the loading zone, it might put you out of bound.\n" \
+                "You can change the hotkey by touching the keyboard icon on the bottom screen.";
+        folder->Append(EntryWithHotkey(new MenuEntry("Fast Move \uE077 +", MoveFast, MoveFastSettings, note), Hotkey(Key::ZL, "Hold to run faster")));
         folder->Append(new MenuEntry("Epona have max carrots", EponaMaxCarrots));
         folder->Append(new MenuEntry("Epona have max carrots", EponaInfiniteCarrotsAllAreas));
         folder->Append(new MenuEntry("Epona MoonJump (\uE054 + \uE002)", EponaMoonJump));
@@ -352,7 +398,7 @@ namespace CTRPluginFramework
         folder->Append(new MenuEntry("Max Rupees", MaxRupees));
 
         std::string name = " : Read the note !";
-        std::string note = "Touch the keyboard icon to set the bottle's content then activate the entry.\n\nWarning: don't set the Locked value when the bottle is attributed to a key or it'll create a duplicate in your inventory and you'll loose an inventory slot.";
+        note = "Touch the keyboard icon to set the bottle's content then activate the entry.\n\nWarning: don't set the Locked value when the bottle is attributed to a key or it'll create a duplicate in your inventory and you'll loose an inventory slot.";
         folder->Append(AddArg(&g_bottles[0], new MenuEntry("Bottle #1" + name, BottleManager, BottleSettings, note)));
         folder->Append(AddArg(&g_bottles[1], new MenuEntry("Bottle #2" + name, BottleManager, BottleSettings, note)));
         folder->Append(AddArg(&g_bottles[2], new MenuEntry("Bottle #3" + name, BottleManager, BottleSettings, note)));

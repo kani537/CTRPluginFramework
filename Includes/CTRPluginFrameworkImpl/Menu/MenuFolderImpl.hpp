@@ -22,6 +22,7 @@ namespace CTRPluginFramework
         void        DisableAll(void);
 
         MenuItem    *operator[](int index);
+        bool        HasParent(void);
     private:
         friend class MenuItem;
         friend class PluginMenuImpl;

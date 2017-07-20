@@ -6,30 +6,35 @@
 namespace CTRPluginFramework
 {
     MenuEntry::MenuEntry(std::string name, std::string note) : 
-        _item(new MenuEntryImpl(name, note, this))
+        _item(new MenuEntryImpl(name, note, this)),
+        Hotkeys(this)
     {   
     }
     
     MenuEntry::MenuEntry(std::string name, FuncPointer func, std::string note) : 
-        _item(new MenuEntryImpl(name, func, note, this))
+        _item(new MenuEntryImpl(name, func, note, this)),
+        Hotkeys(this)
     {
 
     }
 
     MenuEntry::MenuEntry(std::string name, FuncPointer GameFunc, FuncPointer MenuFunc, std::string note) :
-        _item(new MenuEntryImpl(name, GameFunc, note, this))
+        _item(new MenuEntryImpl(name, GameFunc, note, this)),
+        Hotkeys(this)
     {
         _item->MenuFunc = MenuFunc;
     }
 
     MenuEntry::MenuEntry(int radioId, std::string name, FuncPointer func, std::string note) : 
-        _item(new MenuEntryImpl(name, func, note, this))
+        _item(new MenuEntryImpl(name, func, note, this)),
+        Hotkeys(this)
     {
         _item->SetRadio(radioId);
     }
 
     MenuEntry::MenuEntry(int radioGroup, std::string name, FuncPointer GameFunc, FuncPointer MenuFunc, std::string note) :
-        _item(new MenuEntryImpl(name, GameFunc, note, this))
+        _item(new MenuEntryImpl(name, GameFunc, note, this)),
+        Hotkeys(this)
     {
         _item->SetRadio(radioGroup);
         _item->MenuFunc = MenuFunc;
@@ -97,6 +102,11 @@ namespace CTRPluginFramework
     void    MenuEntry::SetMenuFunc(FuncPointer func) const
     {
         _item->MenuFunc = func;
+    }
+
+    void MenuEntry::RefreshNote() const
+    {
+        _item->NoteChanged();
     }
 
     std::string &MenuEntry::Name(void) const

@@ -85,6 +85,16 @@ namespace CTRPluginFramework
 
     //##############################################################
 
+    std::string &MenuEntryImpl::GetNote()
+    {
+        if (_owner == nullptr || _owner->Hotkeys.Count() == 0)
+            return (note);
+
+        if (Note2.empty() || HasNoteChanged())
+            Note2 = note + "\n\n" + _owner->Hotkeys.ToString();
+        return (Note2);
+    }
+
     bool    MenuEntryImpl::_TriggerState(void)
     {
         // Disable if currently enabled
