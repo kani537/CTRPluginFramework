@@ -44,17 +44,25 @@ namespace CTRPluginFramework
     u16     Process::GetVersion(void)
     {
         AM_TitleEntry   entry = { 0 };
+        AM_TitleEntry   entryUpd = { 0 };
+        AM_TitleEntry   entryCard = { 0 };
 
         u64  tid = Process::GetTitleID();
         u64  tidupdate = tid | 0x000000E00000000;
 
-        if (R_FAILED(AM_GetTitleInfo(MEDIATYPE_SD, 1, &tidupdate, &entry)))
+        bool res = R_SUCCEEDED(AM_GetTitleInfo(MEDIATYPE_SD, 1, &tid, &entry));
+        bool resUpd = R_SUCCEEDED(AM_GetTitleInfo(MEDIATYPE_SD, 1, &tidupdate, &entryUpd));
+        bool resCard = R_SUCCEEDED(AM_GetTitleInfo(MEDIATYPE_GAME_CARD, 1, &tid, &entryCard));
+
+        if (resCard)
         {
-            if (R_FAILED(AM_GetTitleInfo(MEDIATYPE_SD, 1, &tid, &entry)))
-            {
-                AM_GetTitleInfo(MEDIATYPE_GAME_CARD, 1, &tid, &entry);
-            }
-        }        
+            if (resUpd)
+                return (std::max(entryUpd.version, entryCard.version));
+            return (entryCard.version);
+        }
+
+        if (resUpd)
+            return (entryUpd.version);      
 
         return (entry.version);
     }
