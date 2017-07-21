@@ -35,6 +35,7 @@ extern "C" u32 plgRegisterCallback(u32 type, void* callback, u32 param0);
 namespace CTRPluginFramework
 {
     bool    NTRImpl::IsOSDAvailable = false;
+    bool    NTRImpl::MessColors = false;
     OSDParams NTRImpl::OSDParameters = { 0 };
 
     u32 rtGenerateJumpCode(u32 dst, u32* buf) {
@@ -43,16 +44,102 @@ namespace CTRPluginFramework
         return 8;
     }
 
-    u32    MainOverlayCallback(u32 isBottom, u32 addr, u32 addrB, u32 stride, u32 format)
+    u32     GetBPP(GSPGPU_FramebufferFormats format);
+    u32 g_framebuffer = 0;
+
+    void    MessColor(u32 startAddr, u32 stride, u32 format)
     {
-        
+        u32 endBuffer = startAddr + (stride * 400);
+        u32 bpp = GetBPP((GSPGPU_FramebufferFormats)format);
+
+        PrivColor::SetFormat((GSPGPU_FramebufferFormats)format);
+
+        if (bpp == 4)
+        {
+
+            for (int x = 0; x < 400; ++x)
+            {
+                u32 *fb = (u32 *)(startAddr + stride * x);
+                u32 fbend = (u32)fb + 240 * 4;
+
+                while (fb < (u32 *)fbend)
+                {
+                    u32 c = *fb;
+
+                    //color.a = 255;
+                    u8 b = (c >> 16); //Swap R
+                    //u8 g = (c >> 8);
+                    u8 r = c; //Swap b
+
+                              //color.Fade(0.1f);
+
+                    c &= 0xFF00FF00;
+                    c |= r << 16;
+                    c |= b;
+
+                    *fb++ = c;
+                }
+            }
+        }
+
+        else if (bpp == 3)
+        {
+            for (int x = 0; x < 400; ++x)
+            {
+                u32 *fb = (u32 *)(startAddr + stride * x);
+                u32 fbend = (u32)fb + 240 * 3;
+
+                while (fb < (u32 *)fbend)
+                {
+                    u32 c = *fb;
+
+                    u8 b = (c >> 16); //Swap R
+                    u8 g = (c >> 8);
+                    u8 r = c; //Swap b
+
+                    c &= 0xFF000000;
+                    c |= r << 16;
+                    c |= g << 8;
+                    c |= b;
+
+                    *fb = c;
+                    fb = (u32 *)((u32)fb + 3);
+                }
+            }
+        }
+        else if (bpp == 2)
+        {
+            for (int x = 0; x < 400; ++x)
+            {                
+                u16 *fb = (u16 *)(startAddr + stride * x);
+                u16 *fbEnd = fb + 240;
+
+                while (fb < fbEnd)
+                {
+                    u16 c = *fb;
+
+                    u8 b = (c >> 8) & 0xF8; //Swap R
+                    u8 g = (c >> 3) & 0xFC;
+                    u8 r = (c << 3) & 0xF8; //Swap b
+
+                    c = (r & 0xF8) << 8;
+                    c |= (g & 0xFC) << 3;
+                    c |= (b & 0xF8) >> 3;
+
+                    *fb++ = c;
+                }
+            }            
+        }
+    }
+
+    u32    MainOverlayCallback(u32 isBottom, u32 addr, u32 addrB, u32 stride, u32 format)
+    {        
         // OSD is available
         NTRImpl::IsOSDAvailable = true;
+        static u32 lastAddr = 0;
 
-        PluginMenu *menu = PluginMenu::GetRunningInstance();
-
-        if (menu == nullptr || menu->IsOpen() || addr == 0 || isBottom)
-            return (1);
+        if (addr == lastAddr)
+            return(1);
 
         // Set OSDParams
         OSDParams &params = NTRImpl::OSDParameters;
@@ -62,15 +149,29 @@ namespace CTRPluginFramework
         params.leftFramebuffer = addr;
         params.rightFramebuffer = addrB;
         params.stride = stride;
-        params.format = format;
+        params.format = format & 0xf;
         params.screenWidth = isBottom ? 320 : 400;
+
+        PluginMenu *menu = PluginMenu::GetRunningInstance();
+
+        if (isBottom || menu == nullptr || menu->IsOpen() || addr == 0)
+            return (1);
+        
+        lastAddr = addr;
+        
 
         bool    isFbModified = false;
 
-        // Execute OSD
-        OSDImpl *osd = OSDImpl::GetInstance();
+        if (NTRImpl::MessColors)
+        {
+            isFbModified = true;
+            MessColor(addr, stride, format & 0xf);
+            if (params.is3DEnabled)
+                MessColor(addrB, stride, format & 0xf);
+        }
 
-        isFbModified = osd->Draw();
+        // Execute OSD
+        isFbModified |= OSDImpl::GetInstance()->Draw();
 
         return (!isFbModified);
     }
@@ -82,8 +183,6 @@ namespace CTRPluginFramework
 
         plgRegisterCallback(CALLBACK_OVERLAY, (void *)MainOverlayCallback, 0);
     }
-
-    u32 GetBPP(GSPGPU_FramebufferFormats format);
 
     bool    NTR::IsOSDAvailable(void)
     {
@@ -100,41 +199,51 @@ namespace CTRPluginFramework
         parameters = NTRImpl::OSDParameters;
     }
 
-    u32     NTR::GetLeftFramebuffer(int posX, int posY)
+    u32     NTR::GetLeftFramebuffer(u32 posX, u32 posY)
     {
         OSDParams &params = NTRImpl::OSDParameters;
 
         u32 bpp = GetBPP((GSPGPU_FramebufferFormats)params.format);
         u32 rowsize = params.stride / bpp;
 
-        posX = std::max(posX, 0);
-        posX = std::min(posX, (params.isBottom ? 320 : 400));
-        posY = std::max(posY, 0);
-        posY = std::min(posY, 240);
-
-        // Correct posY
-        //posY += rowsize - 240;
-        u32 offset = (rowsize - 1 - posY + posX * rowsize) * bpp;
-
-        return (params.leftFramebuffer + params.stride * posX + 240 * bpp - bpp * posY);
-        return (params.leftFramebuffer + offset);
-    }
-
-    u32     NTR::GetRightFramebuffer(int posX, int posY)
-    {
-        OSDParams &params = NTRImpl::OSDParameters;
-
-        u32 bpp = GetBPP((GSPGPU_FramebufferFormats)params.format);
-        u32 rowsize = params.stride / bpp;
-
-        posX = std::max(posX, 0);
-        posX = std::min(posX, (params.isBottom ? 320 : 400));
-        posY = std::max(posY, 0);
-        posY = std::min(posY, 240);
+        posX = std::min(posX, (params.isBottom ? (u32)320 : (u32)400));
+        posY = std::min(posY, (u32)240);
 
         // Correct posY
         posY += rowsize - 240;
+
         u32 offset = (rowsize - 1 - posY + posX * rowsize) * bpp;
+
+       /* 512
+        514
+        492 // Nothing
+        460 // Top
+
+        460 + (10 * 2) = 480 
+        */
+
+        return (params.leftFramebuffer + offset);
+        /*
+        int sposY = (int)posY - rowsize - 240;
+
+        u32 offset = params.stride * posX + 240 * bpp - bpp * sposY;
+
+        return (params.leftFramebuffer + offset); */
+    }
+
+    u32     NTR::GetRightFramebuffer(u32 posX, u32 posY)
+    {
+        OSDParams &params = NTRImpl::OSDParameters;
+
+        u32 bpp = GetBPP((GSPGPU_FramebufferFormats)params.format);
+        u32 rowsize = params.stride / bpp;
+
+        //posY -= rowsize - 240;
+
+        posX = std::min(posX, (params.isBottom ? (u32)320 : (u32)400));
+        posY = std::min(posY, (u32)240);
+
+        u32 offset = params.stride * posX + 240 * bpp - bpp * posY;
 
         return (params.rightFramebuffer + offset);
     }

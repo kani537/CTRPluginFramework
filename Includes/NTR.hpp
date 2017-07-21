@@ -24,8 +24,8 @@ namespace CTRPluginFramework
         static bool    IsOSDAvailable(void);
         static void    NewCallback(OverlayCallback callback);
         static void    FetchOSDParams(OSDParams &parameters);
-        static u32     GetLeftFramebuffer(int posX, int posY);
-        static u32     GetRightFramebuffer(int posX, int posY);
+        static u32     GetLeftFramebuffer(u32 posX, u32 posY);
+        static u32     GetRightFramebuffer(u32 posX, u32 posY);
     };
 }
 

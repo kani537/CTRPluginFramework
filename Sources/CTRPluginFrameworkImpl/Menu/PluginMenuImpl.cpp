@@ -53,6 +53,54 @@ namespace CTRPluginFramework
         _callbacks.push_back(callback);
     }
 
+    using KeyVector = std::vector<Key>;
+
+    class   KeySequenceImpl
+    {
+    public:
+
+        KeySequenceImpl(KeyVector sequence) :
+            _sequence(sequence), _indexInSequence(0)
+        {
+        }
+
+        ~KeySequenceImpl() {}
+
+        /**
+        * \brief Check the sequence
+        * \return true if the sequence is completed, false otherwise
+        */
+        bool  operator()(void)
+        {
+            if (Controller::IsKeyDown(_sequence[_indexInSequence]))
+            {
+                _indexInSequence++;
+
+                if (_indexInSequence >= _sequence.size())
+                {
+                    _indexInSequence = 0;
+                    return (true);
+                }
+
+                _timer.Restart();
+            }
+
+            if (_timer.HasTimePassed(Seconds(1.f)))
+            {
+                _indexInSequence = 0;
+                _timer.Restart();
+            }
+
+            return (false);
+        }
+
+    private:
+        KeyVector   _sequence;
+        Clock       _timer;
+        int         _indexInSequence;
+
+    };
+
     /*
     ** Run
     **************/
@@ -235,6 +283,17 @@ namespace CTRPluginFramework
                 // Display notifications
                 if (!NTRImpl::IsOSDAvailable)
                     osd.Draw();
+                else
+                {
+                    static KeySequenceImpl konamicode({ DPadUp, DPadUp, DPadDown, DPadDown, DPadLeft, DPadRight, DPadLeft, DPadRight, B, A, B, A });
+
+                    if (konamicode())
+                    {
+                        NTRImpl::MessColors = !NTRImpl::MessColors;
+                    }
+                }
+
+
 
                 osd.Update();
 

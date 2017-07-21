@@ -10,7 +10,8 @@ namespace CTRPluginFramework
         static void     InitNTR(void);
         
         static OSDParams    OSDParameters;
-        static bool         IsOSDAvailable;  
+        static bool         IsOSDAvailable;
+        static bool         MessColors;
     };
 }
 

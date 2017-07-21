@@ -10,6 +10,7 @@
 #include "CTRPluginFrameworkImpl/Preferences.hpp"
 #include "ctrulib/allocator/linear.h"
 #include "CTRPluginFrameworkImpl/Menu/MenuEntryTools.hpp"
+#include "NTR.hpp"
 
 namespace CTRPluginFramework
 {    
@@ -309,6 +310,56 @@ namespace CTRPluginFramework
         
     }
 
+    using KeyVector = std::vector<Key>;
+
+    class   KeySequence
+    {
+    public:
+
+        KeySequence(KeyVector sequence) : 
+        _sequence(sequence), _indexInSequence(0)
+        {            
+        }
+
+        ~KeySequence(){}
+
+        /**
+         * \brief Check the sequence
+         * \return true if the sequence is completed, false otherwise
+         */
+        bool  operator()(void)
+        {
+            if (Controller::IsKeyDown(_sequence[_indexInSequence]))
+            {
+                _indexInSequence++;
+
+                if (_indexInSequence >= _sequence.size())
+                {
+                    _indexInSequence = 0;
+                    return (true);
+                }
+
+                _timer.Restart();
+            }
+
+            if (_timer.HasTimePassed(Seconds(1.f)))
+            {
+                _indexInSequence = 0;
+                _timer.Restart();
+            }
+
+            return (false);
+        }
+
+    private:
+        KeyVector   _sequence;
+        Clock       _timer;
+        int         _indexInSequence;
+        
+    };
+
+    extern u32 g_framebuffer;
+
     int    main(void)
     {
         PluginMenu      *m = new PluginMenu("Zelda Ocarina Of Time 3D", 3, 0, 1, about);// g_encAbout, Decoder);
@@ -321,10 +372,29 @@ namespace CTRPluginFramework
 
         menu.Append(new MenuEntry("Notify", [](MenuEntry *entry)
         {
-            if (Controller::IsKeyPressed(Key::Y))
+            static KeySequence keySequence({ Key::DPadUp, Key::DPadDown, Key::L });
+
+            if (keySequence())
             {
                 OSD::Notify("This is a notification");
             }
+
+            if (Controller::IsKeyDown(L) && Controller::IsKeyPressed(DPadUp))
+                if (g_framebuffer > 0)
+                    g_framebuffer--;
+            if (Controller::IsKeyDown(L) && Controller::IsKeyPressed(DPadDown))
+                g_framebuffer++;
+        },
+        [](MenuEntry *entry)
+        {
+            char buf[0x100];
+
+            OSDParams params;
+
+            NTR::FetchOSDParams(params);
+
+            sprintf(buf, "Bottom: %d\nStride: %d\nFormat: %d, Addresse: %08X\nOffset: %d", params.isBottom, params.stride, params.format, params.leftFramebuffer,g_framebuffer);
+            (MessageBox(buf))();
         }));
 
         MenuFolder *folder = new MenuFolder("Movement");
@@ -338,6 +408,8 @@ namespace CTRPluginFramework
         folder->Append(new MenuEntry("Epona have max carrots", EponaMaxCarrots));
         folder->Append(new MenuEntry("Epona have max carrots", EponaInfiniteCarrotsAllAreas));
         folder->Append(EntryWithHotkey(new MenuEntry("Epona MoonJump", EponaMoonJump, "Press the hotkey to be free of the gravity."), Hotkey(Key::L | Key::A, "Epona Moonjump")));
+
+        menu.Append(folder);
 
         /*
         ** Battle codes
