@@ -3,6 +3,7 @@
 #include "CTRPluginFrameworkImpl/Graphics/PrivColor.hpp"
 #include "CTRPluginFrameworkImpl/System/Screen.hpp"
 #include "font6x10Linux.h"
+#include "CTRPluginFramework/System/Sleep.hpp"
 
 namespace CTRPluginFramework
 {
@@ -11,10 +12,20 @@ namespace CTRPluginFramework
     {
         OSDImpl *inst = OSDImpl::GetInstance();
 
-        if (inst == nullptr || inst->_list.size() >= 50)
+        if (inst == nullptr)
             return (-1);
 
+        while (inst->TryLock())
+            Sleep(Microseconds(1));
+
+        if (inst->_list.size() >= 50)
+        {
+            inst->Unlock();
+            return (-1);
+        }           
+
         inst->_list.push_back(OSDImpl::OSDMessage(str, fg, bg));
+        inst->Unlock();
         return (0);
     }
 

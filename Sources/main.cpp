@@ -319,6 +319,14 @@ namespace CTRPluginFramework
         ** Movements codes
         ********************/
 
+        menu.Append(new MenuEntry("Notify", [](MenuEntry *entry)
+        {
+            if (Controller::IsKeyPressed(Key::Y))
+            {
+                OSD::Notify("This is a notification");
+            }
+        }));
+
         MenuFolder *folder = new MenuFolder("Movement");
 
         folder->Append(EntryWithHotkey(new MenuEntry("MoonJump", MoonJump, "Press the hotkey to be free of the gravity."), Hotkey(Key::A, "Moonjump")));

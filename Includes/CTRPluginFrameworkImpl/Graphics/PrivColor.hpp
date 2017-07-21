@@ -19,10 +19,13 @@ namespace CTRPluginFramework
 
         static void    UseClamp(bool willUse, IntRect rect = IntRect());
 
+        static GSPGPU_FramebufferFormats GetFormat(void);
+        static void     SetFormat(GSPGPU_FramebufferFormats format);
+
     private:
         friend class Screen;
 
-        static void     _SetFormat(GSPGPU_FramebufferFormats format);
+        
 
         static Color    _ReadRGBA8(u8 *src);
         static Color    _ReadBGR8(u8 *src);

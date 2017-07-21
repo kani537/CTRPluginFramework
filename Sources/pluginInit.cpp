@@ -5,6 +5,7 @@
 #include "CTRPluginFrameworkImpl.hpp"
 #include "CTRPluginFramework.hpp"
 #include "CTRPluginFrameworkImpl/Graphics/Font.hpp"
+#include "NTRImpl.hpp"
 
 extern "C" void     abort(void);
 extern "C" void     initSystem();
@@ -148,6 +149,9 @@ namespace CTRPluginFramework
 
         //Init OSD
         OSDImpl::_Initialize();  
+
+        // Init NTR
+        NTRImpl::InitNTR();
 
         // Init Colors
         InitColors();

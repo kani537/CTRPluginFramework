@@ -112,3 +112,9 @@ executeKernelCmd:
         BL          dispatchArm11KernelCmd @ Branch with Link
         LDMFD       SP!, {R3-R11,PC} @ Load Block from Memory
 @ End of function executeKernelCmd
+
+.global plgRegisterCallback; 
+.type plgRegisterCallback, %function; 
+plgRegisterCallback:
+nop
+nop

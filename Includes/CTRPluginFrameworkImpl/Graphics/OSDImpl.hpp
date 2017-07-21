@@ -11,6 +11,7 @@
 #include <string>
 #include <list>
 #include <queue>
+#include "../../../Sources/ctrulib/internal.h"
 
 namespace CTRPluginFramework
 {
@@ -59,7 +60,13 @@ namespace CTRPluginFramework
 
 		void	Start(void);
 		void	Finalize(void);
-        void    operator()(void);		
+        bool    operator()(bool drawOnly = false);
+        void    Update(void);
+        bool    Draw(void);
+        
+        void    Lock(void);
+        bool    TryLock(void);
+        void    Unlock(void);
 
     private:
         friend class PluginMenu;
@@ -70,13 +77,15 @@ namespace CTRPluginFramework
         static  OSDImpl     *_single;
 
         OSDImpl(void);
-        void            _DrawMessage(OSDIter &iter, int posX, int &posY);
+        void            _DrawMessage(OSDMessage& message, int posX, int& posY);
         void            _DrawTop(std::string &text, int posX, int& posY, int offset, Color& fg, Color& bg);
         void            _DrawBottom(std::string &text, int posX, int& posY, Color& fg, Color& bg);
         
         std::list<OSDMessage>   _list;
 		bool					_topModified;
 		bool					_bottomModified;
+        LightLock               _lock;
+        
 
     };
 }

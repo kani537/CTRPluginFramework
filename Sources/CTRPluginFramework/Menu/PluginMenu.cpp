@@ -4,7 +4,7 @@
 
 namespace CTRPluginFramework
 {
-    static const PluginMenu   *g_runningInstance = nullptr;
+    static PluginMenu   *g_runningInstance = nullptr;
 
     PluginMenu::PluginMenu(std::string name, std::string about) :
         _menu(new PluginMenuImpl(name, about)) 
@@ -58,7 +58,7 @@ namespace CTRPluginFramework
 
     int    PluginMenu::Run(void) const
     {
-        g_runningInstance = this;
+        g_runningInstance = (PluginMenu *)this;
 
         int ret = _menu->Run();
 
@@ -103,8 +103,8 @@ namespace CTRPluginFramework
         return (_menu->WasOpened());
     }
 
-    PluginMenu  &PluginMenu::GetRunningInstance(void)
+    PluginMenu  *PluginMenu::GetRunningInstance(void)
     {
-        return (const_cast<PluginMenu &>(*g_runningInstance));
+        return (g_runningInstance);//(const_cast<PluginMenu &>(*g_runningInstance));
     }
 }

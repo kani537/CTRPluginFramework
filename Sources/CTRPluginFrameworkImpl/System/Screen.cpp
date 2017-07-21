@@ -174,7 +174,7 @@ namespace CTRPluginFramework
         _currentBuffer = *_currentBufferReg;
         // Get format
         _format = (GSPGPU_FramebufferFormats)(REG(_LCDSetup + LCDSetup::Format) & 0b111);
-        PrivColor::_SetFormat(_format);
+        PrivColor::SetFormat(_format);
         // Get width & height
         u32 wh = REG(_LCDSetup + LCDSetup::WidthHeight);
         _height = (u16)(wh & 0xFFFF);

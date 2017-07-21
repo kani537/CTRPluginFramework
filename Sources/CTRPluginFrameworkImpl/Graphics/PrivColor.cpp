@@ -17,12 +17,18 @@ namespace CTRPluginFramework
     {
         _useClamp = willUse;
         _clampArea = rect;
-        _SetFormat(_format);
+        SetFormat(_format);
     }
+
+    GSPGPU_FramebufferFormats PrivColor::GetFormat()
+    {
+        return (_format);
+    }
+
     /*
     ** Private
     *****************/
-    void    PrivColor::_SetFormat(GSPGPU_FramebufferFormats format)
+    void    PrivColor::SetFormat(GSPGPU_FramebufferFormats format)
     {
         _format = format;
         switch (format)

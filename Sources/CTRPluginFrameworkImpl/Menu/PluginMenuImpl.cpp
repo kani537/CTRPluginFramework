@@ -12,6 +12,7 @@
 #include "CTRPluginFrameworkImpl/System.hpp"
 #include "CTRPluginFramework/System.hpp"
 #include "CTRPluginFrameworkImpl/Preferences.hpp"
+#include "NTRImpl.hpp"
 
 namespace CTRPluginFramework
 {
@@ -232,7 +233,11 @@ namespace CTRPluginFramework
                 }
                 
                 // Display notifications
-                osd();
+                if (!NTRImpl::IsOSDAvailable)
+                    osd.Draw();
+
+                osd.Update();
+
                 if (_wasOpened)
                     _wasOpened = false;
             }

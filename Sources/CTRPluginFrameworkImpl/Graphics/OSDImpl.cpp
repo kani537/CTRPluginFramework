@@ -3,6 +3,9 @@
 #include "font6x10Linux.h"
 
 #include <vector>
+#include "NTR.hpp"
+#include "NTRImpl.hpp"
+#include "CTRPluginFramework/System/Sleep.hpp"
 
 namespace CTRPluginFramework
 {
@@ -19,6 +22,7 @@ namespace CTRPluginFramework
         if (_single != nullptr)
             return;
         _single = new OSDImpl();
+        LightLock_Init(&_single->_lock);
     }
 
     OSDImpl     *OSDImpl::GetInstance(void)
@@ -53,59 +57,150 @@ namespace CTRPluginFramework
 
 #define XEND    390
 
-    void    OSDImpl::operator()(void)
+    bool    OSDImpl::operator()(bool drawOnly)
     {
-        if (_list.empty())
-            return;        
+        Lock();
 
-        Screen::Top->Acquire(true);
+        if (_list.empty())
+        {
+            Unlock();
+            return (false);
+        }
+
+        if (!NTRImpl::IsOSDAvailable)
+            Screen::Top->Acquire(true);
+        else
+        {
+            PrivColor::SetFormat((GSPGPU_FramebufferFormats)NTRImpl::OSDParameters.format);
+        }
 
         int posX;
         int posY = std::min((u32)15, (u32)_list.size());
         posY = 230 - (15 * posY);
 
-        OSDIter iter = _list.begin();
-        OSDIter iterEnd = _list.end();
-
 		// Restart timer for every notif not displayed yet
-		for (; iter != iterEnd; ++iter)
-		{
-			
-			if (!iter->drawn)
-			    iter->time.Restart();
-		}
-
-		iter = _list.begin();
-
-        std::vector<OSDIter> remove;
-
-        for (; iter != iterEnd; ++iter)
+        for (OSDMessage &message : _list)
         {
-            posX = XEND - iter->width;
-            _DrawMessage(iter, posX, posY);
+            if (!message.drawn)
+                message.time.Restart();
+        }
 
-            if (!iter->drawn)
-                iter->drawn = true;
+        for (OSDMessage &message : _list)
+        {
+            posX = XEND - message.width;
+            _DrawMessage(message, posX, posY);
 
-            if (iter->time.HasTimePassed(Seconds(5)))
+            message.drawn = true;
+        }
+
+        if (drawOnly)
+        {
+            Unlock();
+            return (true);
+        }
+
+        if (!NTR::IsOSDAvailable())
+            Screen::Top->Invalidate();
+        
+
+        LightLock_Unlock(&_lock);
+
+        return (true);
+    }
+
+    void    OSDImpl::Update(void)
+    {
+        if (TryLock())
+            return;
+
+        std::vector<int> remove;
+        int index = 0;
+
+        for (OSDMessage &message : _list)
+        {
+            if (message.time.HasTimePassed(Seconds(5.f)))
+                remove.push_back(index);
+            index++;
+        }
+
+        if (!remove.empty())
+        {
+            if (_list.size() == 1)
+                _list.clear();
+            else
             {
-                remove.push_back(iter);
+                for (int i : remove)
+                {
+                    OSDIter iter = _list.begin();
+                    std::advance(iter, i);
+                    _list.erase(iter);
+                }
             }
         }
 
-        Screen::Top->Invalidate();
-
-        if (!remove.empty())
-            for (int i = remove.size() - 1; i >= 0; i--)
-            {
-                OSDIter rem = remove[i];
-                _list.erase(rem);
-            }
+        Unlock();
     }
 
-	void    OSDImpl::_DrawMessage(OSDIter &iter, int posX, int &posY)
+    bool    OSDImpl::Draw(void)
     {
-        _DrawTop(iter->text, posX, posY, 10, iter->foreground, iter->background);
+        Lock();
+
+        if (_list.empty())
+        {
+            Unlock();
+            return (false);
+        }
+
+        if (!NTRImpl::IsOSDAvailable)
+            Screen::Top->Acquire(true);
+        else
+        {
+            PrivColor::SetFormat((GSPGPU_FramebufferFormats)NTRImpl::OSDParameters.format);
+        }
+
+        int posX;
+        int posY = std::min((u32)15, (u32)_list.size());
+        posY = 230 - (15 * posY);
+        int count = 0;
+        for (OSDMessage &message : _list)
+        {
+            posX = XEND - message.width;
+            _DrawMessage(message, posX, posY);
+
+            if (!message.drawn)
+                message.time.Restart();
+
+            message.drawn = true;
+            count++;
+            if (count >= 15)
+                break;
+        }
+
+        if (!NTR::IsOSDAvailable())
+            Screen::Top->Invalidate();
+
+        Unlock();
+        return (true);
+    }
+
+    void    OSDImpl::Lock(void)
+    {
+        LightLock_Lock(&_lock);
+    }
+
+    bool OSDImpl::TryLock(void)
+    {
+        return (LightLock_TryLock(&_lock));
+    }
+
+    void    OSDImpl::Unlock(void)
+    {
+        LightLock_Unlock(&_lock);
+    }
+
+    void    OSDImpl::_DrawMessage(OSDMessage &message, int posX, int &posY)
+    {
+        _DrawTop(message.text, posX, posY, 10, message.foreground, message.background);
     }
 
     void    OSDImpl::_DrawTop(std::string &text, int posX, int &posY, int offset, Color &fg, Color &bg)
@@ -113,10 +208,106 @@ namespace CTRPluginFramework
        // Screen::Top->Acquire(true);
 
         const char  *str = text.c_str();
-        int         stride = Screen::Top->GetStride();
+        int         stride = NTRImpl::IsOSDAvailable ? NTRImpl::OSDParameters.stride : Screen::Top->GetStride();
         int         off3D = offset < 0 ? offset - 1 : offset + 1;
 
        // _topModified = true;
+
+        if (NTRImpl::IsOSDAvailable)
+        {
+            if (NTRImpl::OSDParameters.is3DEnabled)
+            {
+                {
+                    for (int x = -2; x < 0; x++)
+                    {
+                        for (int i = 0; i < 10; i++)
+                        {
+                            u8  *framebuf0 = (u8 *)NTR::GetLeftFramebuffer(posX + x, posY + i);
+                            u8  *framebuf1 = (u8 *)NTR::GetRightFramebuffer(posX + x - offset, posY + i);
+                            PrivColor::ToFramebuffer(framebuf0, bg);
+                            PrivColor::ToFramebuffer(framebuf1, bg);
+                        }
+                    }
+
+                }
+                while (*str)
+                {
+                    char c = *str;
+                    int index = c * 10;
+
+                    for (int yy = 0; yy < 10; yy++)
+                    {
+                        u8 charPos = font[index + yy];
+
+                        int x = 0;
+                        u8  *framebuf0 = (u8 *)NTR::GetLeftFramebuffer(posX, posY + yy);
+                        u8  *framebuf1 = (u8 *)NTR::GetRightFramebuffer(posX - offset, posY + yy);
+                        for (int xx = 6; xx >= 0; xx--, x++)
+                        {
+                            if ((charPos >> xx) & 1)
+                            {
+                                PrivColor::ToFramebuffer(framebuf0, fg);
+                                PrivColor::ToFramebuffer(framebuf1, fg);
+                            }
+                            else
+                            {
+                                PrivColor::ToFramebuffer(framebuf0, bg);
+                                PrivColor::ToFramebuffer(framebuf1, bg);
+                            }
+                            framebuf0 += stride;
+                            framebuf1 += stride;
+                        }
+                    }
+                    str++;
+                    posX += 6;
+                }            
+            }
+            // No 3D
+            else
+            {
+                {
+                    for (int x = -2; x < 0; x++)
+                    {
+                        for (int i = 0; i < 10; i++)
+                        {
+                            u8  *framebuf0 = (u8 *)NTR::GetLeftFramebuffer(posX + x, posY + i);
+                            PrivColor::ToFramebuffer(framebuf0, bg);
+                        }
+                    }
+
+                }
+                while (*str)
+                {
+                    char c = *str;
+                    int index = c * 10;
+
+                    for (int yy = 0; yy < 10; yy++)
+                    {
+                        u8 charPos = font[index + yy];
+
+                        int x = 0;
+                        u8  *framebuf0 = (u8 *)NTR::GetLeftFramebuffer(posX, posY + yy);
+                        for (int xx = 6; xx >= 0; xx--, x++)
+                        {
+                            if ((charPos >> xx) & 1)
+                            {
+                                PrivColor::ToFramebuffer(framebuf0, fg);
+                            }
+                            else
+                            {
+                                PrivColor::ToFramebuffer(framebuf0, bg);
+                            }
+                            framebuf0 += stride;
+                        }
+                    }
+                    str++;
+                    posX += 6;
+                }
+            }
+            
+            posY += 15;
+            return;
+        }
 
         // If 3D
         if (*(float *)(0x1FF81080) > 0.f)
