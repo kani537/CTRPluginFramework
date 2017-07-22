@@ -245,9 +245,14 @@ namespace CTRPluginFramework
         }        
     }
 
-    SearchFlags     Search::GetType(void)
+    SearchFlags     Search::GetType(void) const
     {
         return ((SearchFlags)TypeFlags(_flags));
+    }
+
+    bool    Search::IsFirstUnknownSearch(void) const
+    {
+        return (IsUnknownSearch(_flags) && IsFirstSearch(_flags));
     }
 
     void    Search::WriteHeader(void)

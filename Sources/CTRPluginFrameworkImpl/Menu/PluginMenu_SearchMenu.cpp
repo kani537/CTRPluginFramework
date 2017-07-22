@@ -39,6 +39,9 @@ namespace CTRPluginFramework
         static Clock    _fastScroll;
         static Clock    _startFastScroll;
 
+        if (_currentSearch != nullptr && _currentSearch->IsFirstUnknownSearch())
+            return (true);
+
         for (int i = 0; i < eventList.size(); i++)
         {
             Event &event = eventList[i];
@@ -345,6 +348,9 @@ namespace CTRPluginFramework
                     + " / " + std::to_string(_currentSearch->ResultsCount);
         posY = 196;
         Renderer::DrawString((char *)str.c_str(), 37, posY, blank);
+
+        if (_currentSearch->IsFirstUnknownSearch())
+            return;
 
         posY = 203;
         Renderer::DrawString((char *)"Options:", 260, posY, blank);
