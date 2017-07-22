@@ -9,7 +9,7 @@ namespace CTRPluginFramework
 {
 
     using FCPointer = Color (*)(u8 *);
-    using F8Pointer = u8*   (*)(u8 *, Color&);
+    using F8Pointer = u8*   (*)(u8 *, const Color&);
 
     class PrivColor
     {
@@ -33,17 +33,17 @@ namespace CTRPluginFramework
         static Color    _ReadRGB5A1(u8 *src);
         static Color    _ReadRGBA4(u8 *src);
 
-        static u8       *_WriteRGBA8(u8 *dst, Color &color);
-        static u8       *_WriteBGR8(u8 *dst, Color &color);
-        static u8       *_WriteRGB565(u8 *dst, Color &color);
-        static u8       *_WriteRGB5A1(u8 *dst, Color &color);
-        static u8       *_WriteRGBA4(u8 *dst,  Color &color);
+        static u8       *_WriteRGBA8(u8 *dst, const Color &color);
+        static u8       *_WriteBGR8(u8 *dst, const Color &color);
+        static u8       *_WriteRGB565(u8 *dst, const Color &color);
+        static u8       *_WriteRGB5A1(u8 *dst, const Color &color);
+        static u8       *_WriteRGBA4(u8 *dst, const Color &color);
 
-        static u8       *_WriteRGBA8Clamp(u8 *dst, Color &color);
-        static u8       *_WriteBGR8Clamp(u8 *dst, Color &color);
-        static u8       *_WriteRGB565Clamp(u8 *dst, Color &color);
-        static u8       *_WriteRGB5A1Clamp(u8 *dst, Color &color);
-        static u8       *_WriteRGBA4Clamp(u8 *dst,  Color &color);
+        static u8       *_WriteRGBA8Clamp(u8 *dst, const Color &color);
+        static u8       *_WriteBGR8Clamp(u8 *dst, const Color &color);
+        static u8       *_WriteRGB565Clamp(u8 *dst, const Color &color);
+        static u8       *_WriteRGB5A1Clamp(u8 *dst, const Color &color);
+        static u8       *_WriteRGBA4Clamp(u8 *dst, const Color &color);
 
         static bool     _useClamp;
         static IntRect  _clampArea;

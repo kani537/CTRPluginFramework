@@ -135,7 +135,7 @@ namespace CTRPluginFramework
         return (color);
     }
 
-    u8      *PrivColor::_WriteRGBA8(u8 *dst, Color &color)
+    u8      *PrivColor::_WriteRGBA8(u8 *dst, const Color &color)
     {
         *dst++ = color.a;
         *dst++ = color.b;
@@ -144,7 +144,7 @@ namespace CTRPluginFramework
         return (dst);
     }
 
-    u8      *PrivColor::_WriteBGR8(u8 *dst, Color &color)
+    u8      *PrivColor::_WriteBGR8(u8 *dst, const Color &color)
     {
         *dst++ = color.b;
         *dst++ = color.g;
@@ -152,7 +152,7 @@ namespace CTRPluginFramework
         return (dst);
     }
 
-    u8      *PrivColor::_WriteRGB565(u8 *dst, Color &color)
+    u8      *PrivColor::_WriteRGB565(u8 *dst, const Color &color)
     {
         union
         {
@@ -169,7 +169,7 @@ namespace CTRPluginFramework
         return (dst);
     }
 
-    u8      *PrivColor::_WriteRGB5A1(u8 *dst, Color &color)
+    u8      *PrivColor::_WriteRGB5A1(u8 *dst, const Color &color)
     {
         union
         {
@@ -187,7 +187,7 @@ namespace CTRPluginFramework
         return (dst);
     }
 
-    u8      *PrivColor::_WriteRGBA4(u8 *dst, Color &color)
+    u8      *PrivColor::_WriteRGBA4(u8 *dst, const Color &color)
     {
         union
         {
@@ -208,7 +208,7 @@ namespace CTRPluginFramework
     /*
     ** Clamp
     ************/
-    u8      *PrivColor::_WriteRGBA8Clamp(u8 *dst, Color &color)
+    u8      *PrivColor::_WriteRGBA8Clamp(u8 *dst, const Color &color)
     {
         int posX;
         int posY;
@@ -228,7 +228,7 @@ namespace CTRPluginFramework
         return (dst);
     }
 
-    u8      *PrivColor::_WriteBGR8Clamp(u8 *dst, Color &color)
+    u8      *PrivColor::_WriteBGR8Clamp(u8 *dst, const Color &color)
     {
         int posX;
         int posY;
@@ -247,7 +247,7 @@ namespace CTRPluginFramework
         return (dst);
     }
 
-    u8      *PrivColor::_WriteRGB565Clamp(u8 *dst, Color &color)
+    u8      *PrivColor::_WriteRGB565Clamp(u8 *dst, const Color &color)
     {
         int posX;
         int posY;
@@ -275,7 +275,7 @@ namespace CTRPluginFramework
         return (dst);
     }
 
-    u8      *PrivColor::_WriteRGB5A1Clamp(u8 *dst, Color &color)
+    u8      *PrivColor::_WriteRGB5A1Clamp(u8 *dst, const Color &color)
     {
         int posX;
         int posY;
@@ -304,7 +304,7 @@ namespace CTRPluginFramework
         return (dst);
     }
 
-    u8      *PrivColor::_WriteRGBA4Clamp(u8 *dst, Color &color)
+    u8      *PrivColor::_WriteRGBA4Clamp(u8 *dst, const Color &color)
     {
         int posX;
         int posY;
