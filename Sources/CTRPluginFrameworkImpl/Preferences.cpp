@@ -14,6 +14,7 @@ namespace CTRPluginFramework
     bool        Preferences::InjectBOnMenuClose = false;
     bool        Preferences::DrawTouchCursor = false;
     bool        Preferences::EcoMemoryMode = false;
+    bool        Preferences::DisplayFilesLoading = false;
     bool        Preferences::AutoSaveCheats = false;
     bool        Preferences::AutoSaveFavorites = false;
     bool        Preferences::AutoLoadCheats = false;

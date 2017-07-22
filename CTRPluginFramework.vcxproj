@@ -142,6 +142,7 @@
     <ClInclude Include="Includes\CTRPluginFrameworkImpl\Search\Search32.hpp" />
     <ClInclude Include="Includes\CTRPluginFrameworkImpl\Search\SearchBase.hpp" />
     <ClInclude Include="Includes\CTRPluginFrameworkImpl\System\Storage.hpp" />
+    <ClInclude Include="Includes\CTRPluginFramework\Menu\MenuEntryHotkeys.hpp" />
     <ClInclude Include="Includes\CTRPluginFramework\System\Rect.hpp" />
     <ClInclude Include="Includes\CTRPluginFrameworkImpl\Graphics\Renderer.hpp" />
     <ClInclude Include="Includes\CTRPluginFrameworkImpl\Graphics\TextBox.hpp" />
@@ -252,7 +253,8 @@
     <ClInclude Include="Includes\libntrplg\sharedfunc.h" />
     <ClInclude Include="Includes\libntrplg\ui.h" />
     <ClInclude Include="Includes\libntrplg\xprintf.h" />
-    <ClInclude Include="Includes\NTR.h" />
+    <ClInclude Include="Includes\NTR.hpp" />
+    <ClInclude Include="Includes\NTRImpl.hpp" />
     <ClInclude Include="Includes\types.h" />
     <ClInclude Include="Includes\Unicode.h" />
     <ClInclude Include="Sources\cheats.hpp" />
@@ -347,6 +349,7 @@
     <ClCompile Include="Sources\CTRPluginFramework\Graphics\OSD.cpp" />
     <ClCompile Include="Sources\CTRPluginFramework\Menu\Keyboard.cpp" />
     <ClCompile Include="Sources\CTRPluginFramework\Menu\MenuEntry.cpp" />
+    <ClCompile Include="Sources\CTRPluginFramework\Menu\MenuEntryHotkeys.cpp" />
     <ClCompile Include="Sources\CTRPluginFramework\Menu\MenuFolder.cpp" />
     <ClCompile Include="Sources\CTRPluginFramework\Menu\MessageBox.cpp" />
     <ClCompile Include="Sources\CTRPluginFramework\Menu\PluginMenu.cpp" />
@@ -382,7 +385,6 @@
     <ClCompile Include="Sources\ctrulib\services\gspgpu.c" />
     <ClCompile Include="Sources\ctrulib\services\hid.c" />
     <ClCompile Include="Sources\ctrulib\services\irrst.c" />
-    <ClCompile Include="Sources\ctrulib\srv.c" />
     <ClCompile Include="Sources\ctrulib\synchronization.c" />
     <ClCompile Include="Sources\ctrulib\system\allocateHeaps.cpp" />
     <ClCompile Include="Sources\ctrulib\system\appExit.c" />
@@ -413,6 +415,7 @@
     <ClCompile Include="Sources\ctrulib\util\utf\utf8_to_utf16.c" />
     <ClCompile Include="Sources\ctrulib\util\utf\utf8_to_utf32.c" />
     <ClCompile Include="Sources\main.cpp" />
+    <ClCompile Include="Sources\NTRImpl.cpp" />
     <ClCompile Include="Sources\pluginInit.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

@@ -3,6 +3,10 @@
 #include "CTRPluginFrameworkImpl/Menu/MenuEntryTools.hpp"
 #include "CTRPluginFrameworkImpl/Preferences.hpp"
 #include "CTRPluginFramework/Menu/MessageBox.hpp"
+#include "Hook.hpp"
+#include "CTRPluginFramework/System/Sleep.hpp"
+#include "CTRPluginFramework/System/Process.hpp"
+#include "CTRPluginFramework/Graphics/OSD.hpp"
 
 namespace CTRPluginFramework
 {
@@ -13,6 +17,8 @@ namespace CTRPluginFramework
         HEXEDITOR,
         FREECHEATS,
         GWRAMDUMP,
+        MISCELLANEOUS,
+        SETTINGS
     };
 
     static int  g_mode = NORMAL;
@@ -20,6 +26,7 @@ namespace CTRPluginFramework
     PluginMenuTools::PluginMenuTools(std::string &about, HexEditor &hexEditor, FreeCheats &freeCheats) :
         _about(about),
         _mainMenu("Tools"),
+        _miscellaneousMenu("Miscellaneous"),
         _settingsMenu("Settings"),
         _freecheatsEntry(nullptr),
         _hexEditorEntry(nullptr),
@@ -57,8 +64,114 @@ namespace CTRPluginFramework
         else _settingsMenu[4]->AsMenuEntryImpl().Disable();
     }
 
+    using   FsTryOpenFileType = u32(*)(u32, u16*, u32);
+
+    static Hook         g_FsTryOpenFileHook;
+    char                **g_filenames = nullptr;
+    int                 g_index = 0;
+    LightLock           g_OpenFileLock;
+
+    static u32 FindNearestSTMFD(u32 addr)
+    {
+        for (u32 i = 0; i < 1024; i++)
+        {
+            addr -= 4;
+            if (*(u16 *)(addr + 2) == 0xE92D)
+                return addr;
+        }
+        return (0);
+    }
+
+    static void      FindFunction(u32 &FsTryOpenFile)
+    {
+        const u8 tryOpenFilePat1[] = { 0x0D, 0x10, 0xA0, 0xE1, 0x00, 0xC0, 0x90, 0xE5, 0x04, 0x00, 0xA0, 0xE1, 0x3C, 0xFF, 0x2F, 0xE1 };
+        const u8 tryOpenFilePat2[] = { 0x10, 0x10, 0x8D, 0xE2, 0x00, 0xC0, 0x90, 0xE5, 0x05, 0x00, 0xA0, 0xE1, 0x3C, 0xFF, 0x2F, 0xE1 };
+
+        u32    *addr = (u32 *)0x00100000;
+        u32    *maxAddress = (u32 *)(Process::GetTextSize() + 0x00100000);
+
+        while (addr < maxAddress)
+        {
+            if (!memcmp(addr, tryOpenFilePat1, sizeof(tryOpenFilePat1)) || !memcmp(addr, tryOpenFilePat2, sizeof(tryOpenFilePat2)))
+            {
+                FsTryOpenFile = FindNearestSTMFD((u32)addr);
+                break;
+            }
+            addr++;
+        }
+    }
+
+    static u32 FsTryOpenFileCallback(u32 a1, u16 *fileName, u32 mode)
+    {
+        while (g_index >= 50)
+            Sleep(Microseconds(1));
+
+        LightLock_Lock(&g_OpenFileLock);
+
+        u8  *pname = (u8 *)g_filenames[g_index++];
+        u16 *name = fileName;
+        int i = 0;
+        while (*name && i++ < 79)
+            *pname++ = (u8)*name++;
+
+        *pname = 0;
+
+        LightLock_Unlock(&g_OpenFileLock);
+
+        return (((FsTryOpenFileType)g_FsTryOpenFileHook.returnCode)(a1, fileName, mode));
+    }
+
+    void    PluginMenuTools::_DisplayLoadedFiles(void)
+    {
+        // If we must enable the hook
+        if (_miscellaneousMenu[0]->AsMenuEntryTools().IsActivated())
+        {
+            // If buffer is null, allocate it
+            if (g_filenames == nullptr)
+            {
+                g_filenames = new char*[50];
+                for (int i = 0; i < 50; i++)
+                    g_filenames[i] = new char[80];
+            }
+
+            // If hook is not initialized
+            if (!g_FsTryOpenFileHook.isInitialized)
+            {
+                // Hook on OpenFile
+                u32 FsTryOpenFileAddress = 0;
+
+                FindFunction(FsTryOpenFileAddress);
+
+                // Check that we found the function
+                if (FsTryOpenFileAddress)
+                {
+                    LightLock_Init(&g_OpenFileLock);
+
+                    g_FsTryOpenFileHook.Initialize(FsTryOpenFileAddress, (u32)FsTryOpenFileCallback);
+                }
+                else
+                {
+                    OSD::Notify("Error: couldn't find OpenFile function");
+                    Preferences::DisplayFilesLoading = false;
+                    return;
+
+                }
+            }
+
+            // Enable the hook
+            g_FsTryOpenFileHook.Enable();
+            Preferences::DisplayFilesLoading = true;
+            return;
+        }
+
+        // If we must disable the hook
+        g_FsTryOpenFileHook.Disable();
+        Preferences::DisplayFilesLoading = false;
+    }
+
     void    PluginMenuTools::InitMenu(void)
     {
+        // Main menu
         _mainMenu.Append(new MenuEntryTools("About", [] { g_mode = ABOUT; }, Icon::DrawAbout));
         _hexEditorEntry = new MenuEntryTools("Hex Editor", [] { g_mode = HEXEDITOR; }, Icon::DrawGrid);
         _mainMenu.Append(_hexEditorEntry);
@@ -66,8 +179,13 @@ namespace CTRPluginFramework
         _mainMenu.Append(_freecheatsEntry);
 
         _mainMenu.Append(new MenuEntryTools("Gateway RAM Dumper", [] { g_mode = GWRAMDUMP; }, Icon::DrawRAM));
+        _mainMenu.Append(new MenuEntryTools("Miscellaneous", nullptr, nullptr, new u32(MISCELLANEOUS)));
         _mainMenu.Append(new MenuEntryTools("Settings", nullptr, Icon::DrawSettings, this));
 
+        // Miscellaneous menu
+        _miscellaneousMenu.Append(new MenuEntryTools("Display loaded files", [] { g_mode = MISCELLANEOUS; }, true));
+
+        // Settings menu
         _settingsMenu.Append(new MenuEntryTools("Change menu hotkeys", MenuHotkeyModifier, Icon::DrawGameController));
         _settingsMenu.Append(new MenuEntryTools("Auto save enabled cheats", [] { Preferences::AutoSaveCheats = !Preferences::AutoSaveCheats; }, true, Preferences::AutoSaveCheats));
         _settingsMenu.Append(new MenuEntryTools("Auto save favorites", [] { Preferences::AutoSaveFavorites = !Preferences::AutoSaveFavorites; }, true, Preferences::AutoSaveFavorites));
@@ -109,6 +227,12 @@ namespace CTRPluginFramework
             _gatewayRamDumper();
             g_mode = NORMAL;
             return (false);
+        }
+
+        if (g_mode == MISCELLANEOUS)
+        {
+            _DisplayLoadedFiles();
+            g_mode = NORMAL;
         }
 
         // Process Event
@@ -164,27 +288,42 @@ namespace CTRPluginFramework
         }
 
         MenuItem    *item = nullptr;
-        static bool settingsIsOpen = false;
+        static int mode = 0;
 
         int ret = _menu.ProcessEvent(event, &item);
 
-        if (ret == EntrySelected && item != nullptr && ((MenuEntryTools *)item)->GetArg() == this)
+        if (ret == EntrySelected && item != nullptr)
         {
-            settingsIsOpen = true;
-            _menu.Open(&_settingsMenu);
+            void *arg = ((MenuEntryTools *)item)->GetArg();
+
+            if (arg == this)
+            {
+                mode = SETTINGS;
+                _menu.Open(&_settingsMenu);
+            }
+            else if (arg != nullptr && *(u32 *)arg == MISCELLANEOUS)
+            {
+                mode = MISCELLANEOUS;
+                _menu.Open(&_miscellaneousMenu);
+            }
         }
 
         if (ret == MenuClose)
         {
-            if (settingsIsOpen)
+            if (mode == SETTINGS)
             {
-                settingsIsOpen = false;
+                mode = 0;
 
-                int selector = 4;
+                int selector = 5;
 
                 if (!_freecheatsEntry->IsVisible()) selector--;
                 if (!_hexEditorEntry->IsVisible()) selector--;
                 _menu.Open(&_mainMenu, selector);
+            }
+            else if (mode == MISCELLANEOUS)
+            {         
+                mode = 0;
+                _menu.Open(&_mainMenu, 4);
             }
             else
             {
@@ -254,7 +393,7 @@ namespace CTRPluginFramework
         {
             
             int posY = 205;
-            Renderer::DrawString((char *)"CTRPluginFramework Alpha V.0.1.3", 52, posY, blank); //40
+            Renderer::DrawString((char *)"CTRPluginFramework Alpha V.0.1.4", 52, posY, blank); //40
         }
     }
 

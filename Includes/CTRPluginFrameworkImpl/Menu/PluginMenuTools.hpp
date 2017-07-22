@@ -33,6 +33,8 @@ namespace CTRPluginFramework
         void    TriggerHexEditor(bool isEnabled) const;
     private:
 
+        void    _DisplayLoadedFiles(void);
+
         void    _ProcessEvent(Event &event);
         void    _RenderTop(void);
         void    _RenderTopMenu(void);
@@ -41,6 +43,7 @@ namespace CTRPluginFramework
 
         std::string     _about;
         MenuFolderImpl  _mainMenu;
+        MenuFolderImpl  _miscellaneousMenu;
         MenuFolderImpl  _settingsMenu;
         MenuEntryTools  *_freecheatsEntry;
         MenuEntryTools  *_hexEditorEntry;

@@ -279,6 +279,33 @@ namespace CTRPluginFramework
                 {
                     _callbacks[i]();
                 }
+
+                // Check filenames
+                if (Preferences::DisplayFilesLoading)
+                {
+                    extern char                **g_filenames;
+                    extern int                 g_index;
+                    extern LightLock           g_OpenFileLock;
+
+                    if (g_index)
+                    {
+                        if (!OSD::TryLock())
+                        {
+                            if (!LightLock_TryLock(&g_OpenFileLock))
+                            {
+                                while (g_index)
+                                {
+                                    OSD::Notify(g_filenames[g_index - 1]);
+                                    g_index--;
+                                }
+
+                                LightLock_Unlock(&g_OpenFileLock);
+                            }
+
+                            OSD::Unlock();
+                        }
+                    }
+                }
                 
                 // Display notifications
                 if (!NTRImpl::IsOSDAvailable)
@@ -292,8 +319,6 @@ namespace CTRPluginFramework
                         NTRImpl::MessColors = !NTRImpl::MessColors;
                     }
                 }
-
-
 
                 osd.Update();
 

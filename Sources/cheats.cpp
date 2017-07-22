@@ -572,4 +572,103 @@ namespace CTRPluginFramework
 	{
 		Process::Write32(0x098F7290, 0x00000000);
 	}
+
+    void 	UseAllItems(MenuEntry *entry)
+    {
+        if (!entry->IsActivated())
+            return;
+
+        for (int i = 0; i < 0x56; i++)
+        {
+            Process::Write8(0x506C58 + i, 0x09);
+        }
+
+        entry->Disable();
+    }
+
+    void	UnlockAllItems(MenuEntry *entry)
+    { 
+        if (!entry->IsActivated())
+            return;
+
+        static u8 buffer[] =
+        {
+            0x00, 0x01, 0x02,
+            0x03, 0x04, 0x05,
+            0x06, 0x08, 0x09,
+            0x0B, 0x0C, 0x0D,
+            0x0E, 0x0F, 0x10,
+            0x11, 0x12, 0x13,
+            0x18, 0x18, 0x18,
+            0x18, 0x37, 0x2B,
+            0x45, 0x46, 0x1E,
+            0x28, 0x28, 0x32
+        };
+
+        Process::CopyMemory((void *)0x5879E4, buffer, 0x1E);
+
+        entry->Disable();
+
+    }
+
+    void	TimeModifier(MenuEntry *entry)
+    {
+        static Clock timer;
+
+        Time delta = timer.Restart();
+
+        if (entry->Hotkeys[0].IsDown())
+            *(u16 *)(0x0587964) += (u16)(delta.AsSeconds() * 0x20f);
+        if (entry->Hotkeys[1].IsDown())
+            *(u16 *)(0x0587964) -= (u16)(delta.AsSeconds() * 0x20f);
+    }
+
+    void    InfiniteExplosives(MenuEntry *entry)
+    {
+        u32 offset;
+
+        if (Process::Read32(0xFFFE538, offset) && offset != 0)
+        {
+            Process::Write8(offset + 0x910, 0x0);
+        }
+    }
+
+    inline void	ColoredGaunlet(u8 value)
+    {
+        Process::Write16(0x587A10, 0xE500 + value);
+    }
+
+    void	PurpleGauntlet(MenuEntry *entry)
+    {
+        ColoredGaunlet(0x1B);
+    }
+
+    void    GreenGauntlet(MenuEntry *entry)
+    {
+        ColoredGaunlet(0x5B);
+    }
+
+    void	BlueGauntlet(MenuEntry *entry)
+    {
+        ColoredGaunlet(0x9B);
+    }
+
+    void	BlackGauntlet(MenuEntry *entry)
+    {
+        ColoredGaunlet(0xDB);
+    }
+
+    void	InventoryMod(MenuEntry *entry)
+    {
+      /*  if (is_pressed(Y + DU))
+        {
+            ADDU8(0x5879F8, 0x1);
+            wait_keys_released(DU);
+        }
+        if (is_pressed(Y + DD))
+        {
+            SUBU8(0x5879F8, 0x1);
+            wait_keys_released(DD);
+        }*/
+    }
 }

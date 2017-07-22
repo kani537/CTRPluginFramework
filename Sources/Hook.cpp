@@ -55,6 +55,8 @@ void    Hook::DeInitialize(void)
 
     if (isEnabled)
         Disable();
+
+    isInitialized = false;
 }
 
 void    Hook::Enable(void)

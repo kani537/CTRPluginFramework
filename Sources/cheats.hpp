@@ -46,14 +46,17 @@ namespace CTRPluginFramework
     void	UnlockZoraSuits(MenuEntry *entry);
     void	UnlockGoronSuits(MenuEntry *entry);
     void	UnlockAllSuits(MenuEntry *entry);
+    void	UnlockAllItems(MenuEntry *entry);
     void	InfiniteArrows(MenuEntry *entry);
     void	InfiniteNuts(MenuEntry *entry);
     void	InfiniteStick(MenuEntry *entry);
     void	InfiniteBomb(MenuEntry *entry);
     void	InfiniteBombchu(MenuEntry *entry);
     void	InfiniteSlingshot(MenuEntry *entry);
+    void    InfiniteExplosives(MenuEntry *entry);
     void	Skulltulas(MenuEntry *entry);
     void	MaxRupees(MenuEntry *entry);
+    void 	UseAllItems(MenuEntry *entry);
     /*
      * Time
      */
@@ -65,6 +68,7 @@ namespace CTRPluginFramework
     void	Sunset(MenuEntry *entry);
     // R + DPadLeft
     void	Night(MenuEntry *entry);
+    void	TimeModifier(MenuEntry *entry);
     void	AlwaysRaining(MenuEntry *entry);
     /*
      * Quest
