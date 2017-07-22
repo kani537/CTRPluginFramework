@@ -5,6 +5,7 @@
 #include <algorithm>
 #include "CTRPluginFramework/Menu/PluginMenu.hpp"
 #include "CTRPluginFrameworkImpl/Graphics/OSDImpl.hpp"
+#include "font6x10Linux.h"
 
 #define CALLBACK_OVERLAY (101)
 #define NS_CONFIGURE_ADDR	0x06000000
@@ -246,5 +247,204 @@ namespace CTRPluginFramework
         u32 offset = params.stride * posX + 240 * bpp - bpp * posY;
 
         return (params.rightFramebuffer + offset);
+    }
+
+    /*
+    {
+    for (int x = -2; x < 0; x++)
+    {
+    for (int i = 0; i < 10; i++)
+    {
+    u8  *framebuf0 = (u8 *)NTR::GetLeftFramebuffer(posX + x, posY + i);
+    u8  *framebuf1 = (u8 *)NTR::GetRightFramebuffer(posX + x - offset, posY + i);
+    PrivColor::ToFramebuffer(framebuf0, bg);
+    PrivColor::ToFramebuffer(framebuf1, bg);
+    }
+    }
+
+    }
+
+     */
+
+    static int     DrawCharacter(int posX, int posY, char c, const Color &fg)
+    {
+        int index = c * 10;
+        u32 stride = NTRImpl::OSDParameters.stride;
+
+        if (NTRImpl::OSDParameters.is3DEnabled)
+        {               
+            for (int yy = 0; yy < 10; yy++)
+            {
+                u8 charPos = font[index + yy];
+
+                int x = 0;
+                u8  *framebuf0 = (u8 *)NTR::GetLeftFramebuffer(posX, posY + yy);
+                u8  *framebuf1 = (u8 *)NTR::GetRightFramebuffer(posX - 10, posY + yy);
+
+                for (int xx = 6; xx >= 0; xx--, x++)
+                {
+                    if ((charPos >> xx) & 1)
+                    {
+                        PrivColor::ToFramebuffer(framebuf0, fg);
+                        PrivColor::ToFramebuffer(framebuf1, fg);
+                    }
+                    framebuf0 += stride;
+                    framebuf1 += stride;
+                }
+            }
+        }
+        // No 3D
+        else
+        {
+            for (int yy = 0; yy < 10; yy++)
+            {
+                u8 charPos = font[index + yy];
+
+                int x = 0;
+                u8  *framebuf0 = (u8 *)NTR::GetLeftFramebuffer(posX, posY + yy);
+
+                for (int xx = 6; xx >= 0; xx--, x++)
+                {
+                    if ((charPos >> xx) & 1)
+                        PrivColor::ToFramebuffer(framebuf0, fg);
+                    framebuf0 += stride;
+                }
+            }
+        }
+        return (posX + 6);
+    }
+
+    static int     DrawCharacter(int posX, int posY, char c, const Color &fg, const Color &bg)
+    {
+        int index = c * 10;
+        u32 stride = NTRImpl::OSDParameters.stride;
+
+        if (NTRImpl::OSDParameters.is3DEnabled)
+        {
+            for (int yy = 0; yy < 10; yy++)
+            {
+                u8 charPos = font[index + yy];
+
+                int x = 0;
+                u8  *framebuf0 = (u8 *)NTR::GetLeftFramebuffer(posX, posY + yy);
+                u8  *framebuf1 = (u8 *)NTR::GetRightFramebuffer(posX - 10, posY + yy);
+
+                for (int xx = 6; xx >= 0; xx--, x++)
+                {
+                    if ((charPos >> xx) & 1)
+                    {
+                        PrivColor::ToFramebuffer(framebuf0, fg);
+                        PrivColor::ToFramebuffer(framebuf1, fg);
+                    }
+                    else
+                    {
+                        PrivColor::ToFramebuffer(framebuf0, bg);
+                        PrivColor::ToFramebuffer(framebuf1, bg);
+                    }
+                    framebuf0 += stride;
+                    framebuf1 += stride;
+                }
+            }
+        }
+        // No 3D
+        else
+        {
+            for (int yy = 0; yy < 10; yy++)
+            {
+                u8 charPos = font[index + yy];
+
+                int x = 0;
+                u8  *framebuf0 = (u8 *)NTR::GetLeftFramebuffer(posX, posY + yy);
+
+                for (int xx = 6; xx >= 0; xx--, x++)
+                {
+                    if ((charPos >> xx) & 1)
+                        PrivColor::ToFramebuffer(framebuf0, fg);
+                    else
+                        PrivColor::ToFramebuffer(framebuf0, fg);
+                    framebuf0 += stride;
+                }
+            }
+        }
+        return (posX + 6);
+    }
+
+    int     Draw::String(int posX, int posY, const Color& foreground, const u8* str)
+    {
+        if (!str || !*str)
+            return (posY);
+
+        char    c;
+        int     posXX = posX;
+        OSDParams &params = NTRImpl::OSDParameters;
+
+        while ((c = *str++) != 0)
+        {
+            if (posX + 6 >= params.screenWidth)
+                break;
+
+            if (c == '\n')
+            {
+                posXX = posX;
+                posY += 10;
+                continue;
+            }
+
+            posXX = DrawCharacter(posXX, posY, c, foreground);
+        }
+
+        return (posY + 10);
+    }
+
+    int Draw::String(int posX, int posY, const Color& foreground, const Color& background, const u8* str)
+    {
+        if (!str || !*str)
+            return (posY);
+
+        char    c;
+        int     posXX = posX;
+        OSDParams &params = NTRImpl::OSDParameters;
+
+        for (int x = -2; x < 0; x++)
+        {
+            for (int i = 0; i < 10; i++)
+            {
+                u8  *framebuf0 = (u8 *)NTR::GetLeftFramebuffer(posX + x, posY + i);
+                PrivColor::ToFramebuffer(framebuf0, background);
+
+                if (params.is3DEnabled)
+                {
+                    u8  *framebuf1 = (u8 *)NTR::GetRightFramebuffer(posX + x - 10, posY + i);
+                    PrivColor::ToFramebuffer(framebuf1, background);
+                }
+            }
+        }
+
+        while ((c = *str++) != 0)
+        {
+            if (posX + 6 >= params.screenWidth)
+                break;
+
+            if (c == '\n')
+            {
+                posXX = posX;
+                posY += 10;
+                continue;
+            }
+
+            posXX = DrawCharacter(posXX, posY, c, foreground, background);
+        }
+
+        return (posY + 10);
+    }
+
+    int     Draw::String(int posX, int posY, const Color& foreground, const std::string& str)
+    {
+        return (String(posX, posY, foreground, str.c_str()));
+    }
+
+    int     Draw::String(int posX, int posY, const Color& foreground, const Color& background, const std::string& str)
+    {
+        return (String(posX, posY, foreground, background, str.c_str()));
     }
 }
