@@ -22,7 +22,7 @@ namespace CTRPluginFramework
         if (_single != nullptr)
             return;
         _single = new OSDImpl();
-        LightLock_Init(&_single->_lock);
+        RecursiveLock_Init(&_single->_lock);
     }
 
     OSDImpl     *OSDImpl::GetInstance(void)
@@ -61,7 +61,7 @@ namespace CTRPluginFramework
     {
         Lock();
 
-        if (_list.empty())
+        if (_messages.empty())
         {
             Unlock();
             return (false);
@@ -75,23 +75,24 @@ namespace CTRPluginFramework
         }
 
         int posX;
-        int posY = std::min((u32)15, (u32)_list.size());
+        int posY = std::min((u32)15, (u32)_messages.size());
         posY = 230 - (15 * posY);
 
 		// Restart timer for every notif not displayed yet
-        for (OSDMessage &message : _list)
+      /*  for (int i = 0; i < _messages.size(); i++)
         {
-            if (!message.drawn)
-                message.time.Restart();
-        }
+            OSDMessage *message = _messages[i];
+            if (!message->drawn)
+                message->time.Restart();
+        } 
 
-        for (OSDMessage &message : _list)
+        for (OSDMessage *message : _messages)
         {
             posX = XEND - message.width;
-            _DrawMessage(message, posX, posY);
+            _DrawMessage(*message, posX, posY);
 
             message.drawn = true;
-        }
+        } */
 
         if (drawOnly)
         {
@@ -103,7 +104,7 @@ namespace CTRPluginFramework
             Screen::Top->Invalidate();
         
 
-        LightLock_Unlock(&_lock);
+        RecursiveLock_Unlock(&_lock);
 
         return (true);
     }
@@ -113,29 +114,17 @@ namespace CTRPluginFramework
         if (TryLock())
             return;
 
-        std::vector<int> remove;
-        int index = 0;
-
-        for (OSDMessage &message : _list)
+        while (_messages.size() && _messages.front()->drawn)
         {
-            if (message.time.HasTimePassed(Seconds(5.f)))
-                remove.push_back(index);
-            index++;
-        }
+            OSDMessage *message = _messages.front();
 
-        if (!remove.empty())
-        {
-            if (_list.size() == 1)
-                _list.clear();
-            else
+            if (message->time.HasTimePassed(Seconds(5.f)))
             {
-                for (int i : remove)
-                {
-                    OSDIter iter = _list.begin();
-                    std::advance(iter, i);
-                    _list.erase(iter);
-                }
+                delete message;
+                _messages.pop_front();
             }
+            else
+                break;
         }
 
         Unlock();
@@ -145,7 +134,7 @@ namespace CTRPluginFramework
     {
         Lock();
 
-        if (_list.empty())
+        if (_messages.empty())
         {
             Unlock();
             return (false);
@@ -159,18 +148,20 @@ namespace CTRPluginFramework
         }
 
         int posX;
-        int posY = std::min((u32)15, (u32)_list.size());
+        int posY = std::min((u32)15, (u32)_messages.size());
         posY = 230 - (15 * posY);
         int count = 0;
-        for (OSDMessage &message : _list)
+
+        for (OSDMessage *message : _messages)
         {
-            posX = XEND - message.width;
-            _DrawMessage(message, posX, posY);
+            posX = XEND - message->width;
+            _DrawMessage(*message, posX, posY);
 
-            if (!message.drawn)
-                message.time.Restart();
+            if (!message->drawn)
+                message->time.Restart();
 
-            message.drawn = true;
+            message->drawn = true;
+
             count++;
             if (count >= 15)
                 break;
@@ -185,17 +176,17 @@ namespace CTRPluginFramework
 
     void    OSDImpl::Lock(void)
     {
-        LightLock_Lock(&_lock);
+        RecursiveLock_Lock(&_lock);
     }
 
     bool OSDImpl::TryLock(void)
     {
-        return (LightLock_TryLock(&_lock));
+        return (RecursiveLock_TryLock(&_lock));
     }
 
     void    OSDImpl::Unlock(void)
     {
-        LightLock_Unlock(&_lock);
+        RecursiveLock_Unlock(&_lock);
     }
 
     void    OSDImpl::_DrawMessage(OSDMessage &message, int posX, int &posY)

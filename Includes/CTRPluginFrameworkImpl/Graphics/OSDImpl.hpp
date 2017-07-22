@@ -81,10 +81,10 @@ namespace CTRPluginFramework
         void            _DrawTop(std::string &text, int posX, int& posY, int offset, Color& fg, Color& bg);
         void            _DrawBottom(std::string &text, int posX, int& posY, Color& fg, Color& bg);
         
-        std::list<OSDMessage>   _list;
+        std::list<OSDMessage*> _messages;
 		bool					_topModified;
 		bool					_bottomModified;
-        LightLock               _lock;
+        RecursiveLock           _lock;
         
 
     };

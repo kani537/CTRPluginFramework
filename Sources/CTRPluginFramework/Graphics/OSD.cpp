@@ -15,16 +15,16 @@ namespace CTRPluginFramework
         if (inst == nullptr)
             return (-1);
 
-        while (inst->TryLock())
-            Sleep(Microseconds(1));
+        //Sleep(Microseconds(1));
+        inst->Lock();
 
-        if (inst->_list.size() >= 50)
+        if (inst->_messages.size() >= 100)
         {
             inst->Unlock();
             return (-1);
         }           
 
-        inst->_list.push_back(OSDImpl::OSDMessage(str, fg, bg));
+        inst->_messages.push_back(new OSDImpl::OSDMessage(str, fg, bg));
         inst->Unlock();
         return (0);
     }
@@ -60,4 +60,34 @@ namespace CTRPluginFramework
             Screen::Top->Invalidate();
         }
 	}
+
+    void    OSD::Lock()
+    {
+        OSDImpl *inst = OSDImpl::GetInstance();
+
+        if (inst == nullptr)
+            return;
+
+        inst->Lock();
+    }
+
+    bool    OSD::TryLock()
+    {
+        OSDImpl *inst = OSDImpl::GetInstance();
+
+        if (inst == nullptr)
+            return (true);
+
+        return (inst->TryLock());
+    }
+
+    void OSD::Unlock()
+    {
+        OSDImpl *inst = OSDImpl::GetInstance();
+
+        if (inst == nullptr)
+            return;
+
+        inst->Unlock();
+    }
 }
