@@ -359,11 +359,109 @@ namespace CTRPluginFramework
         
     };
 
+    using   FsTryOpenFileType = u32(*)(u32, u16*, u32);
+    extern u32          g_FsTryOpenFileAddress;
+    static Hook         g_FsTryOpenFileHook;
+    static u32 FsTryOpenFileCallback(u32 a1, u16 *filename, u32 mode);
+    void      FindFunction(u32 &FsTryOpenFile);
+
+    void      ForceMapsLoading(MenuEntry *entry)
+    {
+        // If we must enable the hook
+        if (entry->WasJustActivated())
+        {
+            // If hook is not initialized
+            if (!g_FsTryOpenFileHook.isInitialized)
+            {
+                // Hook on OpenFile
+                u32 FsTryOpenFileAddress = g_FsTryOpenFileAddress;
+
+                if (!FsTryOpenFileAddress)
+                    FindFunction(FsTryOpenFileAddress);
+
+                // Check that we found the function
+                if (FsTryOpenFileAddress)
+                {
+                    g_FsTryOpenFileHook.Initialize(FsTryOpenFileAddress, (u32)FsTryOpenFileCallback);
+                }
+            }
+
+            // Enable the hook
+            g_FsTryOpenFileHook.Enable();
+            return;
+        }
+
+        // If we must disable the hook
+        if (!entry->IsActivated())
+            g_FsTryOpenFileHook.Disable();
+    }
+
+    struct Map
+    {
+        u16   *path;
+        const char  *name;
+    };
+
+    std::vector<Map>   g_maps =
+    {
+        { (u16 *)u"rom:/scene/link_info.zsi", "Link chamber" },
+        { (u16 *)u"rom:/scene/spot04_info.zsi", "Kokiri forest" },
+        { (u16 *)u"rom:/scene/spot10_info.zsi", "Kokiri - Hyrule Bridge" },
+        { (u16 *)u"rom:/scene/spot00_info.zsi", "Hyrule Field" }
+    };
+
+    u16     *strstr16(const u16 *haystack, const u16 *needle)
+    {
+        if (!needle || !haystack)
+            return ((u16 *)haystack);
+
+        while (*haystack)
+        {
+            const u16 *src = haystack;
+            const u16 *pattern = needle;
+
+            while (*src && *pattern && *src++ == *pattern++);
+
+            if (!*pattern)
+                return ((u16 *)haystack);
+
+            haystack++;
+        }
+
+        return (nullptr);
+    }
+
+    u32     strcmp16(const u16 *s1, const u16 *s2)
+    {
+        while (*s1 && *s2 && *s1++ == *s2++);
+
+        return (*s1 - *s2);
+    }
+
+    static u32 FsTryOpenFileCallback(u32 a1, u16 *filename, u32 mode)
+    {
+        if (strstr16(filename, (u16 *)u".zsi") != nullptr)
+        {
+            for (Map &map : g_maps)
+            {
+                if (strcmp16(map.path, filename) == 0)
+                {
+                    filename = g_maps[0].path;
+                    break;
+                }
+            }
+        }
+
+        return (((FsTryOpenFileType)g_FsTryOpenFileHook.returnCode)(a1, filename, mode));
+    }
+
     int    main(void)
     {
         PluginMenu      *m = new PluginMenu("Zelda Ocarina Of Time 3D", 3, 0, 1, about);
         PluginMenu      &menu = *m;
         std::string     note;
+
+        menu.Append(new MenuEntry("Map loading", ForceMapsLoading));
 
         /*
         ** Movements codes

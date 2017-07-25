@@ -378,9 +378,6 @@
     <ClInclude Include="Includes\font6x10Linux.h">
       <Filter>Fichiers d%27en-tête</Filter>
     </ClInclude>
-    <ClInclude Include="Includes\NTR.h">
-      <Filter>Fichiers d%27en-tête</Filter>
-    </ClInclude>
     <ClInclude Include="Includes\types.h">
       <Filter>Fichiers d%27en-tête</Filter>
     </ClInclude>
@@ -460,6 +457,18 @@
       <Filter>Fichiers d%27en-tête</Filter>
     </ClInclude>
     <ClInclude Include="Includes\CTRPluginFrameworkImpl\Menu\GatewayRAMDumper.hpp">
+      <Filter>Fichiers d%27en-tête</Filter>
+    </ClInclude>
+    <ClInclude Include="Includes\CTRPluginFramework\Menu\MenuEntryHotkeys.hpp">
+      <Filter>Fichiers d%27en-tête</Filter>
+    </ClInclude>
+    <ClInclude Include="Includes\NTR.hpp">
+      <Filter>Fichiers d%27en-tête</Filter>
+    </ClInclude>
+    <ClInclude Include="Includes\NTRImpl.hpp">
+      <Filter>Fichiers d%27en-tête</Filter>
+    </ClInclude>
+    <ClInclude Include="Includes\Hook.hpp">
       <Filter>Fichiers d%27en-tête</Filter>
     </ClInclude>
   </ItemGroup>
@@ -809,9 +818,6 @@
     <ClCompile Include="Sources\ctrulib\os.c">
       <Filter>Fichiers sources</Filter>
     </ClCompile>
-    <ClCompile Include="Sources\ctrulib\srv.c">
-      <Filter>Fichiers sources</Filter>
-    </ClCompile>
     <ClCompile Include="Sources\ctrulib\synchronization.c">
       <Filter>Fichiers sources</Filter>
     </ClCompile>
@@ -915,6 +921,15 @@
       <Filter>Fichiers sources</Filter>
     </ClCompile>
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\Menu\GatewayRAMDumper.cpp">
+      <Filter>Fichiers sources</Filter>
+    </ClCompile>
+    <ClCompile Include="Sources\CTRPluginFramework\Menu\MenuEntryHotkeys.cpp">
+      <Filter>Fichiers sources</Filter>
+    </ClCompile>
+    <ClCompile Include="Sources\NTRImpl.cpp">
+      <Filter>Fichiers sources</Filter>
+    </ClCompile>
+    <ClCompile Include="Sources\Hook.cpp">
       <Filter>Fichiers sources</Filter>
     </ClCompile>
   </ItemGroup>
