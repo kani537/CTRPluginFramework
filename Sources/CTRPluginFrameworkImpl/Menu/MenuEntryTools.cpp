@@ -6,6 +6,7 @@ namespace CTRPluginFramework
         MenuEntryImpl(text),
         Icon(icon),
         Func(func),
+        FuncArg(nullptr),
         UseCheckBox(false)
     {
         _type = EntryTools;
@@ -16,6 +17,7 @@ namespace CTRPluginFramework
         MenuEntryImpl(text, note),
         Icon(icon),
         Func(func),
+        FuncArg(nullptr),
         UseCheckBox(false)
     {
         _type = EntryTools;
@@ -25,6 +27,19 @@ namespace CTRPluginFramework
         MenuEntryImpl(text, note),
         Icon(nullptr),
         Func(func),
+        FuncArg(nullptr),
+        UseCheckBox(useCheckBox)
+    {
+        _type = EntryTools;
+        if (isEnabled)
+            _TriggerState();
+    }
+
+    MenuEntryTools::MenuEntryTools(const std::string& text, FuncPointerA func, bool useCheckBox, bool isEnabled, const std::string& note) :
+        MenuEntryImpl(text, note),
+        Icon(nullptr),
+        Func(nullptr),
+        FuncArg(func),
         UseCheckBox(useCheckBox)
     {
         _type = EntryTools;
