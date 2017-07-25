@@ -67,6 +67,7 @@ namespace CTRPluginFramework
     using   FsTryOpenFileType = u32(*)(u32, u16*, u32);
 
     static Hook         g_FsTryOpenFileHook;
+    u32                 g_FsTryOpenFileAddress = 0;
     char                **g_filenames = nullptr;
     int                 g_index = 0;
     LightLock           g_OpenFileLock;
@@ -82,7 +83,7 @@ namespace CTRPluginFramework
         return (0);
     }
 
-    static void      FindFunction(u32 &FsTryOpenFile)
+    void      FindFunction(u32 &FsTryOpenFile)
     {
         const u8 tryOpenFilePat1[] = { 0x0D, 0x10, 0xA0, 0xE1, 0x00, 0xC0, 0x90, 0xE5, 0x04, 0x00, 0xA0, 0xE1, 0x3C, 0xFF, 0x2F, 0xE1 };
         const u8 tryOpenFilePat2[] = { 0x10, 0x10, 0x8D, 0xE2, 0x00, 0xC0, 0x90, 0xE5, 0x05, 0x00, 0xA0, 0xE1, 0x3C, 0xFF, 0x2F, 0xE1 };
@@ -121,10 +122,10 @@ namespace CTRPluginFramework
         return (((FsTryOpenFileType)g_FsTryOpenFileHook.returnCode)(a1, fileName, mode));
     }
 
-    void    PluginMenuTools::_DisplayLoadedFiles(void)
+    void    _DisplayLoadedFiles(MenuEntryTools *entry)
     {
         // If we must enable the hook
-        if (_miscellaneousMenu[0]->AsMenuEntryTools().IsActivated())
+        if (entry->IsActivated())
         {
             // If buffer is null, allocate it
             if (g_filenames == nullptr)
@@ -148,6 +149,7 @@ namespace CTRPluginFramework
                     LightLock_Init(&g_OpenFileLock);
 
                     g_FsTryOpenFileHook.Initialize(FsTryOpenFileAddress, (u32)FsTryOpenFileCallback);
+                    g_FsTryOpenFileAddress = FsTryOpenFileAddress;
                 }
                 else
                 {
@@ -183,7 +185,7 @@ namespace CTRPluginFramework
         _mainMenu.Append(new MenuEntryTools("Settings", nullptr, Icon::DrawSettings, this));
 
         // Miscellaneous menu
-        _miscellaneousMenu.Append(new MenuEntryTools("Display loaded files", [] { g_mode = MISCELLANEOUS; }, true));
+        _miscellaneousMenu.Append(new MenuEntryTools("Display loaded files", _DisplayLoadedFiles, true));
 
         // Settings menu
         _settingsMenu.Append(new MenuEntryTools("Change menu hotkeys", MenuHotkeyModifier, Icon::DrawGameController));
@@ -227,12 +229,6 @@ namespace CTRPluginFramework
             _gatewayRamDumper();
             g_mode = NORMAL;
             return (false);
-        }
-
-        if (g_mode == MISCELLANEOUS)
-        {
-            _DisplayLoadedFiles();
-            g_mode = NORMAL;
         }
 
         // Process Event
@@ -393,7 +389,7 @@ namespace CTRPluginFramework
         {
             
             int posY = 205;
-            Renderer::DrawString((char *)"CTRPluginFramework Alpha V.0.1.4", 52, posY, blank); //40
+            Renderer::DrawString((char *)"CTRPluginFramework Alpha V.0.1.5", 52, posY, blank); //40
         }
     }
 

@@ -33,8 +33,6 @@ namespace CTRPluginFramework
         void    TriggerHexEditor(bool isEnabled) const;
     private:
 
-        void    _DisplayLoadedFiles(void);
-
         void    _ProcessEvent(Event &event);
         void    _RenderTop(void);
         void    _RenderTopMenu(void);

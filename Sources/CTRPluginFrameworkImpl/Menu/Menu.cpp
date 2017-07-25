@@ -329,8 +329,10 @@ namespace CTRPluginFramework
                         if (e->UseCheckBox)
                         {
                             e->TriggerState();
-                            if (e->Func != nullptr && e->IsActivated())
+                            if (e->Func != nullptr)
                                 e->Func();
+                            if (e->FuncArg != nullptr)
+                                e->FuncArg(e);
                         }
                             
                         else if (e->Func != nullptr)
