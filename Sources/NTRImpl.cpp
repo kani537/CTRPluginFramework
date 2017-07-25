@@ -361,7 +361,7 @@ namespace CTRPluginFramework
                     if ((charPos >> xx) & 1)
                         PrivColor::ToFramebuffer(framebuf0, fg);
                     else
-                        PrivColor::ToFramebuffer(framebuf0, fg);
+                        PrivColor::ToFramebuffer(framebuf0, bg);
                     framebuf0 += stride;
                 }
             }
@@ -436,15 +436,5 @@ namespace CTRPluginFramework
         }
 
         return (posY + 10);
-    }
-
-    int     Draw::String(int posX, int posY, const Color& foreground, const std::string& str)
-    {
-        return (String(posX, posY, foreground, str.c_str()));
-    }
-
-    int     Draw::String(int posX, int posY, const Color& foreground, const Color& background, const std::string& str)
-    {
-        return (String(posX, posY, foreground, background, str.c_str()));
     }
 }
