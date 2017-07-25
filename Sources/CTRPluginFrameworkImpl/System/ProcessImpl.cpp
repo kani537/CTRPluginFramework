@@ -79,19 +79,21 @@ namespace CTRPluginFramework
 	}
 
     extern "C" Handle g_gspSignalEvent;
-    extern "C" bool   IsGamePrior(void)
+    extern "C" Handle gspEvent;
+    extern "C" bool   IsPaused(void)
     {
-        return (!ProcessImpl::IsPaused());
+        return (ProcessImpl::IsPaused());
     }
 
 	void 	ProcessImpl::Pause(bool useFading)
 	{
+        _isPaused = true;
+
+        svcSignalEvent(gspEvent);
 		// Raising priority of Event Thread
 		while (R_FAILED(svcSetThreadPriority(gspThreadEventHandle, 0x19)));
 		// Raising priority of this thread        
-		while (R_FAILED(svcSetThreadPriority(_mainThreadHandle, 0x18)));
-
-        _isPaused = true;
+		while (R_FAILED(svcSetThreadPriority(_mainThreadHandle, 0x18)));        
 		
 		// Waking up Init thread
 		svcSignalEvent(g_keepEvent);

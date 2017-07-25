@@ -23,7 +23,7 @@ static bool gspEventCbOneShot[GSPGPU_EVENT_MAX];
 static volatile bool gspRunEvents;
 static Thread gspEventThread;
 
-static Handle gspEvent;
+Handle gspEvent;
 static vu8* gspEventData;
 
 static void gspEventThreadMain(u32 arg);
@@ -69,7 +69,7 @@ Result gspInitEventHandler(Handle _gspEvent, vu8* _gspSharedMem, u8 gspThreadId)
 	gspEvent = _gspEvent;
 	gspEventData = _gspSharedMem + gspThreadId*0x40;
 	gspRunEvents = true;
-	svcCreateThread(&gspThreadEventHandle, gspEventThreadMain, 0, (u32*)&gspThreadEventStack[0x1000], 0x19, -2);
+	svcCreateThread(&gspThreadEventHandle, gspEventThreadMain, 0, (u32*)&gspThreadEventStack[0x1000], 0x3F, -2);
 	//gspEventThread = threadCreate(gspEventThreadMain, gspThreadEventStack, 0x1000, 0x31, -2, true);
 	//gspThreadEventHandle = threadGetHandle(gspEventThread);
 	return 0;
@@ -85,9 +85,12 @@ void gspExitEventHandler(void)
 }
 
 bool   IsGamePrior(void);
+bool   IsPaused(void);
 
 void gspWaitForEvent(GSPGPU_Event id, bool nextEvent)
 {
+    if (!IsPaused())
+        return;
 	if(id>= GSPGPU_EVENT_MAX)return;
 
 	if (nextEvent)
@@ -99,6 +102,7 @@ void gspWaitForEvent(GSPGPU_Event id, bool nextEvent)
 
 GSPGPU_Event gspWaitForAnyEvent(void)
 {
+    return;
 	s32 x;
 	do
 	{
@@ -135,7 +139,7 @@ static int popInterrupt()
 		// Do a load on all header fields as an atomic unit
 		header.as_u32 = __ldrex((s32*)gspEventData);
 
-		if (__builtin_expect(header.count == 0, 0)) {
+		if (__builtin_expect(header.count == 0, 0) || !IsPaused()) {
 			__clrex();
 			return -1;
 		}
@@ -171,18 +175,7 @@ void gspEventThreadMain(u32 arg)
 
 			if (curEvt == 2 || curEvt == 3 )// < GSPGPU_EVENT_MAX)
 			{
-				/* (gspEventCb[curEvt])
-				{
-					ThreadFunc func = gspEventCb[curEvt];
-					if (gspEventCbOneShot[curEvt])
-						gspEventCb[curEvt] = NULL;
-					func(gspEventCbData[curEvt]);
-				}*/
 				LightEvent_Signal(&gspEvents[curEvt]);
-				do
-					__ldrex(&gspLastEvent);
-				while (__strex(&gspLastEvent, curEvt));
-				svcArbitrateAddress(__sync_get_arbiter(), (u32)&gspLastEvent, ARBITRATION_SIGNAL, 1, 0);
 				gspEventCounts[curEvt]++;
 			}
 		}
