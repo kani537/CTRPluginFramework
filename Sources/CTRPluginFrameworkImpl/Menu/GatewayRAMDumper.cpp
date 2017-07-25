@@ -126,9 +126,10 @@ namespace CTRPluginFramework
             Keyboard    keyboard;
 
             keyboard.DisplayTopScreen = false;
-            keyboard.CanAbort(false);
+            //keyboard.CanAbort(false);
 
-            keyboard.Open(_fileName);
+            if (keyboard.Open(_fileName) == -1)
+                return;
         }
         else
         {
