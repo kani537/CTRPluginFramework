@@ -104,6 +104,21 @@ int __libctru_gtod(struct _reent *ptr, struct timeval *tp, struct timezone *tz) 
 
 }
 
+u64 osGetTime1970(void)
+{
+    datetime_t dt = getSysTime();
+
+	u64 delta = svcGetSystemTick() - dt.update_tick;
+     
+    u64 offset =  dt.date_time + (u32)(u64_to_double(delta)/TICKS_PER_MSEC);
+
+    // adjust from 1900 to 1970
+    u64 now = ((dt.date_time - 2208988800000ULL) * 1000) + offset;
+
+    return (u32)(u64_to_double(now) / 1000.0);
+
+}
+
 // Returns number of milliseconds since 1st Jan 1900 00:00.
 //---------------------------------------------------------------------------------
 u64 osGetTime(void) {

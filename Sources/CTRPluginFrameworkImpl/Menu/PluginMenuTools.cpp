@@ -7,6 +7,9 @@
 #include "CTRPluginFramework/System/Sleep.hpp"
 #include "CTRPluginFramework/System/Process.hpp"
 #include "CTRPluginFramework/Graphics/OSD.hpp"
+#include <ctime>
+#include <cstring>
+#include <cstdio>
 
 namespace CTRPluginFramework
 {
@@ -66,7 +69,17 @@ namespace CTRPluginFramework
 
     using   FsTryOpenFileType = u32(*)(u32, u16*, u32);
 
+    enum HookFilesMode
+    {
+        NONE = 0,
+        OSD = 1,
+        FILE = 2
+    };
     static Hook         g_FsTryOpenFileHook;
+    static u32          g_HookMode = NONE;
+    static File         g_hookExportFile;
+    static char         *g_buffer = nullptr;
+    static char         *g_buffer2 = nullptr;
     u32                 g_FsTryOpenFileAddress = 0;
     char                **g_filenames = nullptr;
     int                 g_index = 0;
@@ -102,22 +115,54 @@ namespace CTRPluginFramework
         }
     }
 
+    u8  *Strcpy(u8 *dst, const u8 *src)
+    {
+        if (!dst || !src)
+            return (dst);
+
+        while (*src)
+            *dst++ = *src++;
+
+        *dst = 0;
+
+        return (dst);
+    }
+
     static u32 FsTryOpenFileCallback(u32 a1, u16 *fileName, u32 mode)
     {
-        while (g_index >= 50)
-            Sleep(Microseconds(1));
+        if (g_HookMode & OSD)
+        {
+            while (g_index >= 50)
+                Sleep(Microseconds(1));
 
-        LightLock_Lock(&g_OpenFileLock);
+            LightLock_Lock(&g_OpenFileLock);
 
-        u8  *pname = (u8 *)g_filenames[g_index++];
-        u16 *name = fileName;
-        int i = 0;
-        while (*name && i++ < 79)
-            *pname++ = (u8)*name++;
+            u8  *pname = (u8 *)g_filenames[g_index++];
+            u16 *name = fileName;
+            int i = 0;
+            while (*name && i++ < 79)
+                *pname++ = (u8)*name++;
 
-        *pname = 0;
+            *pname = 0;
 
-        LightLock_Unlock(&g_OpenFileLock);
+            LightLock_Unlock(&g_OpenFileLock);
+        }
+
+        if (g_HookMode & FILE)
+        {
+            u16 *name = fileName;
+            u8  *u8Name = (u8 *)g_buffer2;
+           // u8  *pBuf = (u8 *)g_buffer;
+
+            while (*name)
+                *u8Name++ = (u8)*name++;
+            *u8Name++ = '\r';
+            *u8Name++ = '\n';
+            *u8Name = 0;
+
+            g_hookExportFile.Write(g_buffer2, strlen(g_buffer2));
+            
+        }
 
         return (((FsTryOpenFileType)g_FsTryOpenFileHook.returnCode)(a1, fileName, mode));
     }
@@ -163,12 +208,75 @@ namespace CTRPluginFramework
             // Enable the hook
             g_FsTryOpenFileHook.Enable();
             Preferences::DisplayFilesLoading = true;
+            g_HookMode |= OSD;
             return;
         }
 
         // If we must disable the hook
-        g_FsTryOpenFileHook.Disable();
         Preferences::DisplayFilesLoading = false;
+        g_HookMode &= OSD;
+
+        if (!g_HookMode)
+            g_FsTryOpenFileHook.Disable();
+    }
+
+    void    _WriteLoadedFiles(MenuEntryTools *entry)
+    {
+        // If we must enable the hook
+        if (entry->IsActivated())
+        {
+
+            // If buffers aren't allocated
+            if (g_buffer == nullptr)
+                g_buffer = new char[256];
+            if (g_buffer2 == nullptr)
+                g_buffer2 = new char[256];
+
+            // If hook is not initialized
+            if (!g_FsTryOpenFileHook.isInitialized)
+            {
+                // Hook on OpenFile
+                u32 FsTryOpenFileAddress = 0;
+
+                FindFunction(FsTryOpenFileAddress);
+
+                // Check that we found the function
+                if (FsTryOpenFileAddress)
+                {
+                    LightLock_Init(&g_OpenFileLock);
+
+                    g_FsTryOpenFileHook.Initialize(FsTryOpenFileAddress, (u32)FsTryOpenFileCallback);
+                    g_FsTryOpenFileAddress = FsTryOpenFileAddress;
+                }
+                else
+                {
+                    OSD::Notify("Error: couldn't find OpenFile function");
+                    return;
+
+                }
+            }
+
+            // Open the file
+            int mode = File::READ | File::WRITE | File::CREATE | File::APPEND;
+            if (File::Open(g_hookExportFile, "LoadedFiles.txt", mode) != 0)
+            {
+                OSD::Notify("Error: couldn't open LoadedFiles.txt", Color::Red, Color::Blank);
+                return;
+            }
+                
+
+            // Enable the hook
+            g_FsTryOpenFileHook.Enable();
+            g_HookMode |= FILE;
+            return;
+        }
+
+        // If we must disable the hook
+        g_HookMode &= FILE;
+        g_hookExportFile.Flush();
+        g_hookExportFile.Close();
+        if (!g_HookMode)
+            g_FsTryOpenFileHook.Disable();
     }
 
     void    PluginMenuTools::InitMenu(void)
@@ -186,6 +294,7 @@ namespace CTRPluginFramework
 
         // Miscellaneous menu
         _miscellaneousMenu.Append(new MenuEntryTools("Display loaded files", _DisplayLoadedFiles, true));
+        _miscellaneousMenu.Append(new MenuEntryTools("Write loaded files to file", _WriteLoadedFiles, true));
 
         // Settings menu
         _settingsMenu.Append(new MenuEntryTools("Change menu hotkeys", MenuHotkeyModifier, Icon::DrawGameController));
@@ -389,7 +498,7 @@ namespace CTRPluginFramework
         {
             
             int posY = 205;
-            Renderer::DrawString((char *)"CTRPluginFramework Alpha V.0.1.5", 52, posY, blank); //40
+            Renderer::DrawString((char *)"CTRPluginFramework Alpha V.0.1.6", 52, posY, blank); //40
         }
     }
 

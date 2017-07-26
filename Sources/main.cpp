@@ -359,10 +359,10 @@ namespace CTRPluginFramework
         
     };
 
-    using   FsTryOpenFileType = u32(*)(u32, u16*, u32);
+    using   FsTryOpenFileType = u32(*)(u32, const u16*, u32);
     extern u32          g_FsTryOpenFileAddress;
     static Hook         g_FsTryOpenFileHook;
-    static u32 FsTryOpenFileCallback(u32 a1, u16 *filename, u32 mode);
+    static u32 FsTryOpenFileCallback(u32 a1, const u16 *filename, u32 mode);
     void      FindFunction(u32 &FsTryOpenFile);
 
     void      ForceMapsLoading(MenuEntry *entry)
@@ -398,16 +398,16 @@ namespace CTRPluginFramework
 
     struct Map
     {
-        u16   *path;
+        const u16   *path;
         const char  *name;
     };
 
     std::vector<Map>   g_maps =
     {
-        { (u16 *)u"rom:/scene/link_info.zsi", "Link chamber" },
-        { (u16 *)u"rom:/scene/spot04_info.zsi", "Kokiri forest" },
-        { (u16 *)u"rom:/scene/spot10_info.zsi", "Kokiri - Hyrule Bridge" },
-        { (u16 *)u"rom:/scene/spot00_info.zsi", "Hyrule Field" }
+        { (const u16 *)u"rom:/scene/link_info.zsi", "Link's TreeHouse" },
+        { (const u16 *)u"rom:/scene/spot04_info.zsi", "Kokiri forest" },
+        { (const u16 *)u"rom:/scene/spot10_info.zsi", "Kokiri - Hyrule Bridge" },
+        { (const u16 *)u"rom:/scene/spot00_info.zsi", "Hyrule Field" }
     };
 
     u16     *strstr16(const u16 *haystack, const u16 *needle)
@@ -438,7 +438,7 @@ namespace CTRPluginFramework
         return (*s1 - *s2);
     }
 
-    static u32 FsTryOpenFileCallback(u32 a1, u16 *filename, u32 mode)
+    static u32 FsTryOpenFileCallback(u32 a1, const u16 *filename, u32 mode)
     {
         if (strstr16(filename, (u16 *)u".zsi") != nullptr)
         {
