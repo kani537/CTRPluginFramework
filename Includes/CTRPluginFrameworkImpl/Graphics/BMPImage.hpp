@@ -1,5 +1,5 @@
-#ifndef CTRPLUGINFRAMEWORK_BMPIMAHE_HPP
-#define CTRPLUGINFRAMEWORK_BMPIMAHE_HPP
+#ifndef CTRPLUGINFRAMEWORK_BMPIMAGE_HPP
+#define CTRPLUGINFRAMEWORK_BMPIMAGE_HPP
 
 #include "types.h"
 
@@ -60,7 +60,7 @@ namespace CTRPluginFramework
             RGBtoBGR();
         }
 
-        BMPImage(const unsigned int width, const unsigned int height) : 
+        BMPImage(const u32 width, const u32 height) : 
         _data(nullptr),
         _dataSize(0),
         _fileName(""),

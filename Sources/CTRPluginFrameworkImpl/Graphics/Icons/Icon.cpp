@@ -33,6 +33,7 @@ namespace CTRPluginFramework
     extern "C" unsigned char *InfoFilled25;
     extern "C" unsigned char *HandCursor15;
     extern "C" unsigned char *Maintenance15;
+    extern "C" unsigned char *More15;
     extern "C" unsigned char *Keyboard25;
     extern "C" unsigned char *KeyboardFilled25;
     extern "C" unsigned char *RAM15;
@@ -385,6 +386,15 @@ namespace CTRPluginFramework
         u8 *img = filled ? KeyboardFilled25 : Keyboard25;
 
         return (DrawImg(img, posX, posY, 25, 25));
+    }
+
+    /*
+    ** More
+    ** 15px * 15px
+    **************/
+    int     Icon::DrawMore(int posX, int posY)
+    {
+        return (DrawImg(More15, posX, posY, 15, 15));
     }
 
     /*

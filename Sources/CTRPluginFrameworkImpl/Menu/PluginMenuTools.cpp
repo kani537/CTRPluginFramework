@@ -289,7 +289,7 @@ namespace CTRPluginFramework
         _mainMenu.Append(_freecheatsEntry);
 
         _mainMenu.Append(new MenuEntryTools("Gateway RAM Dumper", [] { g_mode = GWRAMDUMP; }, Icon::DrawRAM));
-        _mainMenu.Append(new MenuEntryTools("Miscellaneous", nullptr, nullptr, new u32(MISCELLANEOUS)));
+        _mainMenu.Append(new MenuEntryTools("Miscellaneous", nullptr, Icon::DrawMore, new u32(MISCELLANEOUS)));
         _mainMenu.Append(new MenuEntryTools("Settings", nullptr, Icon::DrawSettings, this));
 
         // Miscellaneous menu
