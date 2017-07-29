@@ -4,12 +4,16 @@
 #include "types.h"
 #include "ctrulib/os.h"
 #include "CTRPluginFrameworkImpl/Graphics/BMPImage.hpp"
+#include <vector>
 
 namespace CTRPluginFramework
 {
     class Preferences
     {
-        #define SETTINGS_VERSION SYSTEM_VERSION(1, 0, 0)
+        #define SETTINGS_VERSION1 SYSTEM_VERSION(1, 0, 0)
+        #define SETTINGS_VERSION11 SYSTEM_VERSION(1, 1, 0)
+
+        #define SETTINGS_VERSION SETTINGS_VERSION11
     public:
         enum class SettingsFlags
         {
@@ -19,7 +23,7 @@ namespace CTRPluginFramework
             AutoLoadFavorites = 1 << 3
         };
 
-        struct Header
+        struct HeaderV1
         {
             u32     version;
             u64     flags;
@@ -31,6 +35,23 @@ namespace CTRPluginFramework
             u32     favoritesCount;
             u64     favoritesOffset;
         } PACKED;
+
+        struct HeaderV11
+        {
+            u32     version;
+            u64     flags;
+            u32     hotkeys;
+            u32     freeCheatsCount;
+            u64     freeCheatsOffset;
+            u32     enabledCheatsCount;
+            u64     enabledCheatsOffset;
+            u32     favoritesCount;
+            u64     favoritesOffset;
+            u32     hotkeysCount;
+            u64     hotkeysOffset;
+        } PACKED;
+
+        using Header = HeaderV11;
 
         struct SavedCheats
         {
@@ -50,6 +71,13 @@ namespace CTRPluginFramework
             u32     uid;
         };
 
+        struct HotkeysInfos
+        {
+            u32     uid; ///< owner of the hotkeys
+            u32     count;
+            std::vector<u32>   hotkeys;
+        };
+
         static BMPImage     *topBackgroundImage;
         static BMPImage     *bottomBackgroundImage;
 
@@ -64,11 +92,12 @@ namespace CTRPluginFramework
         static bool         AutoLoadCheats;
         static bool         AutoLoadFavorites;
 
+        static int          OpenConfigFile(File &file, Header &header);
         static void         LoadSettings(void);
         static void         LoadFreeCheats(void);
         static void         LoadSavedEnabledCheats(void);
         static void         LoadSavedFavorites(void);
-
+        static void         LoadHotkeysFromFile(void);
         static void         WriteSettings(void);
 
     private:
@@ -76,6 +105,7 @@ namespace CTRPluginFramework
         static bool         _favoritesAlreadyLoaded;
 
         friend void     ThreadInit(void *arg);
+        
         static void     Initialize(void);
     };
 }

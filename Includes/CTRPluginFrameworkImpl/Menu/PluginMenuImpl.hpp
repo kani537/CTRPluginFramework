@@ -18,6 +18,7 @@ namespace CTRPluginFramework
 {
     class PluginMenuImpl
     {
+        using HotkeysVector = std::vector<Preferences::HotkeysInfos>;
     public:
 
         PluginMenuImpl(std::string &name, std::string &note);
@@ -29,9 +30,12 @@ namespace CTRPluginFramework
 
         static void LoadEnabledCheatsFromFile(const Preferences::Header &header, File &settings);
         static void LoadFavoritesFromFile(const Preferences::Header &header, File &settings);
+        static void LoadHotkeysFromFile(const Preferences::Header &header, File &settings);
 
         static void WriteEnabledCheatsToFile(Preferences::Header &header, File &settings);
         static void WriteFavoritesToFile(Preferences::Header &header, File &settings);
+        static void ExtractHotkeys(HotkeysVector &hotkeys, MenuFolderImpl *folder, u32 &size);
+        static void WriteHotkeysToFile(Preferences::Header &header, File &file);
         static void GetRegionsList(std::vector<Region> &list);
         // Used to forcefully exit a menu
         static void ForceExit(void);

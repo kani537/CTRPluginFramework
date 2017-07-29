@@ -39,6 +39,7 @@ namespace CTRPluginFramework
         bool    WasJustActivated(void) const;
         // Return if the entry is activated
         bool    IsActivated(void) const;
+        MenuEntry *AsMenuEntry(void) const;
 
         // Public members
         FuncPointer     GameFunc;

@@ -95,21 +95,43 @@ namespace CTRPluginFramework
         return (temp);
     }
 
+    int     Preferences::OpenConfigFile(File &settings, Header &header)
+    {
+
+        if (File::Open(settings, "CTRPFData.bin") == 0 && settings.GetSize() > 0)
+        {
+             // Check version
+            u32     version = 0;
+            int     res = 0;
+
+            if (settings.Read(&version, 4)) return (-2);
+
+            // Rewind file
+            settings.Rewind();
+
+            if (version == SETTINGS_VERSION)
+                res = settings.Read(&header, sizeof(Header));
+            if (version == SETTINGS_VERSION1)
+                res = settings.Read(&header, sizeof(HeaderV1));
+
+            return (res);
+        }
+
+        return (-1);
+    }
+
     void    Preferences::LoadSettings(void)
     {
         File    settings;
         Header  header = { 0 };
 
-        if (File::Open(settings, "CTRPFData.bin") == 0 && settings.GetSize() > 0)
+        if (OpenConfigFile(settings, header) == 0)
         {
-            if (settings.Read(&header, sizeof(Header)) == 0)
-            {
-                MenuHotkeys = header.hotkeys;
-                AutoLoadCheats = (header.flags & (u64)SettingsFlags::AutoLoadCheats != 0);
-                AutoLoadFavorites = (header.flags & (u64)SettingsFlags::AutoLoadFavorites != 0);
-                AutoSaveCheats = (header.flags & (u64)SettingsFlags::AutoSaveCheats != 0);
-                AutoSaveFavorites = (header.flags & (u64)SettingsFlags::AutoSaveFavorites != 0);
-            }
+            MenuHotkeys = header.hotkeys;
+            AutoLoadCheats = (header.flags & (u64)SettingsFlags::AutoLoadCheats != 0);
+            AutoLoadFavorites = (header.flags & (u64)SettingsFlags::AutoLoadFavorites != 0);
+            AutoSaveCheats = (header.flags & (u64)SettingsFlags::AutoSaveCheats != 0);
+            AutoSaveFavorites = (header.flags & (u64)SettingsFlags::AutoSaveFavorites != 0);
         }
 
         // Check that hotkeys aren't 0
@@ -122,13 +144,10 @@ namespace CTRPluginFramework
         File    settings;
         Header  header = { 0 };
 
-        if (File::Open(settings, "CTRPFData.bin") == 0)
+        if (OpenConfigFile(settings, header) == 0)
         {
-            if (settings.Read(&header, sizeof(Header)) == 0)
-            {
-                if (header.freeCheatsCount)
-                    FreeCheats::LoadFromFile(header, settings);
-            }
+            if (header.freeCheatsCount)
+                FreeCheats::LoadFromFile(header, settings);
         }
     }
 
@@ -143,14 +162,11 @@ namespace CTRPluginFramework
             return;
         }
 
-        if (File::Open(settings, "CTRPFData.bin") == 0)
+        if (OpenConfigFile(settings, header) == 0)
         {
-            if (settings.Read(&header, sizeof(Header)) == 0)
-            {
-                if (header.enabledCheatsCount != 0)
-                    PluginMenuImpl::LoadEnabledCheatsFromFile(header, settings);
-                _cheatsAlreadyLoaded = true;
-            }
+            if (header.enabledCheatsCount != 0)
+                PluginMenuImpl::LoadEnabledCheatsFromFile(header, settings);
+            _cheatsAlreadyLoaded = true;
         }
     }
 
@@ -165,14 +181,23 @@ namespace CTRPluginFramework
             return;
         }
 
-        if (File::Open(settings, "CTRPFData.bin") == 0)
+        if (OpenConfigFile(settings, header) == 0)
         {
-            if (settings.Read(&header, sizeof(Header)) == 0)
-            {
-                if (header.favoritesCount != 0)
-                    PluginMenuImpl::LoadFavoritesFromFile(header, settings);
-                _favoritesAlreadyLoaded = true;
-            }
+            if (header.favoritesCount != 0)
+                PluginMenuImpl::LoadFavoritesFromFile(header, settings);
+            _favoritesAlreadyLoaded = true;
+        }
+    }
+
+    void    Preferences::LoadHotkeysFromFile(void)
+    {
+        File    settings;
+        Header  header = { 0 };
+
+        if (OpenConfigFile(settings, header) == 0)
+        {
+            if (header.hotkeysCount != 0)
+                PluginMenuImpl::LoadHotkeysFromFile(header, settings);
         }
     }
 
@@ -198,6 +223,7 @@ namespace CTRPluginFramework
             FreeCheats::WriteToFile(header, settings);
             if (AutoSaveCheats) PluginMenuExecuteLoop::WriteEnabledCheatsToFile(header, settings);///PluginMenuImpl::WriteEnabledCheatsToFile(header, settings);
             if (AutoSaveFavorites) PluginMenuImpl::WriteFavoritesToFile(header, settings);
+            PluginMenuImpl::WriteHotkeysToFile(header, settings);
 
             settings.Rewind();
             settings.Write(&header, sizeof(Header));

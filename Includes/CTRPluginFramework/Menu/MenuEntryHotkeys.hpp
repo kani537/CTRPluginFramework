@@ -58,6 +58,7 @@ namespace CTRPluginFramework
 
     private:
         friend class HotkeyManager;
+        friend class PluginMenuImpl;
         u32 _keys;
         std::string _name;
     };

@@ -151,6 +151,9 @@ namespace CTRPluginFramework
         // Load FreeCheats
         Preferences::LoadFreeCheats();
 
+        // Load custom hotkeys
+        Preferences::LoadHotkeysFromFile();
+
         // Update PluginMenuHome variables
         home.Init();
 
@@ -384,6 +387,33 @@ namespace CTRPluginFramework
         }
     }
 
+    void    PluginMenuImpl::LoadHotkeysFromFile(const Preferences::Header &header, File &settings)
+    {
+        if (_runningInstance == nullptr || header.hotkeysCount == 0)
+            return;
+
+        settings.Seek(header.hotkeysOffset, File::SET);
+
+        u32     buffer[50];
+        MenuFolderImpl      *folder = _runningInstance->_home->_root;
+
+        for (int i = 0; i < header.hotkeysCount; i++)
+        {
+            if (settings.Read(buffer, sizeof(u32) * 2) == 0)
+            {
+                if (settings.Read(buffer, sizeof(u32) * buffer[1]) == 0)
+                {
+                    MenuEntry *entry = folder->GetItem(buffer[0])->AsMenuEntryImpl().AsMenuEntry();
+
+                    for (int i = 0; i < buffer[1]; i++)
+                        entry->Hotkeys[i] = buffer[2 + i];
+
+                    entry->RefreshNote();
+                }
+            }
+        }
+    }
+
     void    PluginMenuImpl::WriteEnabledCheatsToFile(Preferences::Header &header, File &settings)
     {
         if (_runningInstance == nullptr)
@@ -395,7 +425,7 @@ namespace CTRPluginFramework
         for (MenuItem *item : folder->_items)
         {
             if (item->IsEntry() && reinterpret_cast<MenuEntryImpl *>(item)->IsActivated())
-                uids.push_back(item->_uid);
+                uids.push_back(item->Uid);
         }
 
         if (uids.size())
@@ -420,7 +450,7 @@ namespace CTRPluginFramework
 
         for (MenuItem *item : folder->_items)
         {
-            uids.push_back(item->_uid);
+            uids.push_back(item->Uid);
         }
 
         if (uids.size())
@@ -431,6 +461,76 @@ namespace CTRPluginFramework
             {
                 header.favoritesCount = uids.size();
                 header.favoritesOffset = offset;
+            }
+        }
+    }
+
+    void    PluginMenuImpl::ExtractHotkeys(HotkeysVector &hotkeys, MenuFolderImpl *folder, u32 &size)
+    {
+        if (folder == nullptr)
+            return;
+
+        for (int i = 0; i < folder->ItemsCount(); i++)
+        {
+            MenuItem *item = (*folder)[i];
+
+            if (item->IsFolder())
+                ExtractHotkeys(hotkeys, reinterpret_cast<MenuFolderImpl*>(item), size);
+
+            MenuEntry *entry = item->AsMenuEntryImpl().AsMenuEntry();
+
+            if (entry && entry->Hotkeys.Count())
+            {
+                Preferences::HotkeysInfos hInfos = { 0 };
+
+                hInfos.uid = item->Uid;
+                hInfos.count = entry->Hotkeys.Count();
+
+                for (int j = 0; j < hInfos.count; j++)
+                {
+                    Hotkey &hk = entry->Hotkeys[j];
+
+                    hInfos.hotkeys.push_back(hk._keys);
+                }
+
+                hotkeys.push_back(hInfos);
+                size += 2 + hInfos.count;
+            }
+        }
+    }
+
+    void    PluginMenuImpl::WriteHotkeysToFile(Preferences::Header &header, File &settings)
+    {
+        if (_runningInstance != nullptr)
+        {
+            MenuFolderImpl  *root = _runningInstance->_home->_root;
+            HotkeysVector   hotkeys;
+            u32             size = 0;
+            u32             *buffer = nullptr;
+
+            ExtractHotkeys(hotkeys, root, size);
+            
+            if (size)
+            {
+                buffer = new u32[size];
+                u64     offset = settings.Tell();
+                int     i = 0;
+
+                for (Preferences::HotkeysInfos &hkInfos : hotkeys)
+                {
+                    buffer[i++] = hkInfos.uid;
+                    buffer[i++] = hkInfos.count;
+                    for (int j = 0; j < hkInfos.count; j++)
+                        buffer[i++] = hkInfos.hotkeys[j];
+                }
+
+                if (settings.Write(buffer, sizeof(u32) * size) == 0)
+                {
+                    header.hotkeysCount = hotkeys.size();
+                    header.hotkeysOffset = offset;
+                }
+
+                delete [] buffer;
             }
         }
     }

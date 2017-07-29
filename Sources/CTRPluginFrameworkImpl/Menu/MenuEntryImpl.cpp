@@ -83,6 +83,11 @@ namespace CTRPluginFramework
         return (_flags.state);
     }
 
+    MenuEntry *MenuEntryImpl::AsMenuEntry(void) const
+    {
+        return (_owner);
+    }
+
     //##############################################################
 
     std::string &MenuEntryImpl::GetNote()

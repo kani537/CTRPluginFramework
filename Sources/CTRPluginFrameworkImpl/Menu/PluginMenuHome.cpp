@@ -63,9 +63,8 @@ namespace CTRPluginFramework
         _keyboardBtn(*this, nullptr, IntRect(130, 30, 25, 25), Icon::DrawKeyboard, false),
         _controllerBtn(*this, nullptr, IntRect(170, 30, 25, 25), Icon::DrawGameController, false)
     {
-        _folder = new MenuFolderImpl(name);
-        _starred = new MenuFolderImpl("Favorites");
-        _starredConst = _starred;
+        _root = _folder = new MenuFolderImpl(name);
+        _starredConst = _starred = new MenuFolderImpl("Favorites");
 
         _starMode = false;
         _selector = 0;

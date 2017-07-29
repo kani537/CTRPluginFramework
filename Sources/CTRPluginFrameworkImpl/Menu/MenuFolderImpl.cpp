@@ -40,7 +40,7 @@ namespace CTRPluginFramework
     {
         for (MenuItem *item : _items)
         {
-            if (item->_uid == uid)
+            if (item->Uid == uid)
                 return (item);
 
             if (item->_type == MenuType::Folder)

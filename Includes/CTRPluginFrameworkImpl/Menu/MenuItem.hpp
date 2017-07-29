@@ -24,7 +24,7 @@ namespace CTRPluginFramework
         _type(type), _isStarred(false),
         _isVisible(true),
         _hasNoteChanged(false),
-        _container(nullptr), _index(0), _uid(++_uidCounter)
+        _container(nullptr), _index(0), Uid(++_uidCounter)
         {
         }
 
@@ -77,6 +77,7 @@ namespace CTRPluginFramework
         bool    HasNoteChanged(void) const;
         void    HandledNoteChanges(void);
 
+        const u32   Uid;
     protected:
         friend class MenuFolderImpl;
         friend class PluginMenuImpl;
@@ -103,7 +104,7 @@ namespace CTRPluginFramework
         bool        _hasNoteChanged;
         MenuItem    *_container; /* MenuFolderImpl */
         int         _index;
-        const u32   _uid;
+        
 
         static u32  _uidCounter;
     };
