@@ -72,6 +72,11 @@ namespace CTRPluginFramework
         return (ProcessImpl::_kCodeSet.textPages * 0x1000);
     }
 
+    bool    Process::IsPaused(void)
+	{
+        return (ProcessImpl::_isPaused);
+	}
+
     bool 	Process::Patch(u32 	addr, void *patch, u32 length, void *original)
 	{
 		return (ProcessImpl::PatchProcess(addr, static_cast<u8 *>(patch), length, static_cast<u8 *>(original)));
