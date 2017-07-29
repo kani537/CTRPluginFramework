@@ -141,6 +141,13 @@ namespace CTRPluginFramework
         ** 15px * 15 px
         **************/
         static int      DrawRAM(int posX, int posY);
+        
+        /*
+        ** Save
+        ** 25px * 25px
+        **************/
+        static int      DrawSave(int posX, int posY);
+        static int      DrawSaveNTR(int posX, int posY);
 
         /*
         ** Search
@@ -162,6 +169,7 @@ namespace CTRPluginFramework
 
     private:
         static int      DrawImg(u8 *img, int posX, int posY, int sizeX, int sizeY);
+        static int      DrawImgNTR(u8 *img, int posX, int posY, int sizeX, int sizeY);
     };
 }
 

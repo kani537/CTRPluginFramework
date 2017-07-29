@@ -3,6 +3,7 @@
 
 #include "CTRPluginFramework/Graphics.hpp"
 #include "CTRPluginFrameworkImpl/Graphics.hpp"
+#include "NTR.hpp"
 
 namespace CTRPluginFramework
 {
@@ -37,6 +38,7 @@ namespace CTRPluginFramework
     extern "C" unsigned char *Keyboard25;
     extern "C" unsigned char *KeyboardFilled25;
     extern "C" unsigned char *RAM15;
+    extern "C" unsigned char *Save25;
     extern "C" unsigned char *Search15;
     extern "C" unsigned char *Settings15;
     extern "C" unsigned char *Star15;
@@ -98,6 +100,63 @@ namespace CTRPluginFramework
         }
         return (posX + sizeX);
 
+    }
+
+    inline int Icon::DrawImgNTR(u8 *img, int posX, int posY, int sizeX, int sizeY)
+    {
+        u8      *framebuf = nullptr;
+        u8      *framebuf2 = nullptr;
+        OSDParams osdParams = { 0 };
+
+        posY += sizeY;     
+
+        NTR::FetchOSDParams(osdParams);
+        PrivColor::SetFormat((GSPGPU_FramebufferFormats)osdParams.format);
+        
+        framebuf = (u8 *)NTR::GetLeftFramebuffer(posX, posY);
+        framebuf2 = (u8 *)NTR::GetRightFramebuffer(posX, posY);
+        if (framebuf == nullptr)
+            return (posX);
+
+        // Draw
+        for (int x = 0; x < sizeX; x++)
+        {
+            u8 *dst = framebuf + osdParams.stride * x;
+            u8 *dst2 = framebuf2 + osdParams.stride * x;
+            int y = 0;
+
+            if (!osdParams.is3DEnabled)
+            {
+                while (y++ < sizeY)
+                {
+                    Pixel *pix = (Pixel *)img;
+                    Color px(pix->r, pix->g, pix->b, pix->a);// = PrivColor::FromMemory(img, RGBA8);
+                    Color bg = PrivColor::FromFramebuffer(dst);
+                    Color blended = bg.Blend(px, Color::BlendMode::Alpha);
+                    dst = PrivColor::ToFramebuffer(dst, blended);
+                    img += 4;
+                }
+            }
+            else
+            {
+                while (y++ < sizeY)
+                {
+                    Pixel   *pix = (Pixel *)img;
+                    Color   px(pix->r, pix->g, pix->b, pix->a);                    
+                    Color   bg = PrivColor::FromFramebuffer(dst);
+                    Color   blended = bg.Blend(px, Color::BlendMode::Alpha);
+
+                    dst = PrivColor::ToFramebuffer(dst, blended);
+
+                    bg = PrivColor::FromFramebuffer(dst2);
+                    blended = bg.Blend(px, Color::BlendMode::Alpha);
+                    dst2 = PrivColor::ToFramebuffer(dst2, blended);
+
+                    img += 4;
+                }
+            }
+        }
+        return (posX + sizeX);
     }
 
     /*
@@ -405,6 +464,20 @@ namespace CTRPluginFramework
     int     Icon::DrawRAM(int posX, int posY)
     {
         return (DrawImg(RAM15, posX, posY, 15, 15));
+    }
+
+    /*
+    ** Save
+    ** 25px * 25px
+    **************/
+    int     Icon::DrawSave(int posX, int posY)
+    {
+        return (DrawImg(Save25, posX, posY, 25, 25));
+    }
+
+    int     Icon::DrawSaveNTR(int posX, int posY)
+    {
+        return (DrawImgNTR(Save25, posX, posY, 25, 25));
     }
 
     /*
