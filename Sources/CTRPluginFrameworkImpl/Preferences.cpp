@@ -15,6 +15,7 @@ namespace CTRPluginFramework
     bool        Preferences::DrawTouchCursor = false;
     bool        Preferences::EcoMemoryMode = false;
     bool        Preferences::DisplayFilesLoading = false;
+    bool        Preferences::SavingInProgress = false;
     bool        Preferences::AutoSaveCheats = false;
     bool        Preferences::AutoSaveFavorites = false;
     bool        Preferences::AutoLoadCheats = false;
@@ -203,6 +204,8 @@ namespace CTRPluginFramework
 
     void    Preferences::WriteSettings(void)
     {
+        SavingInProgress = true;
+
         File    settings;
         int     mode = File::READ | File::WRITE | File::CREATE | File::TRUNCATE | File::SYNC;
         Header  header = { 0 };
@@ -227,9 +230,11 @@ namespace CTRPluginFramework
 
             settings.Rewind();
             settings.Write(&header, sizeof(Header));
-        error:
-            return;
         }
+
+    error:
+        SavingInProgress = false;
+        return;
     }
 
     void    Preferences::Initialize(void)

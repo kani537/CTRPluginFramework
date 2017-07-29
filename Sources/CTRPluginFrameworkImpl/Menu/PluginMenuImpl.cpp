@@ -401,12 +401,18 @@ namespace CTRPluginFramework
         {
             if (settings.Read(buffer, sizeof(u32) * 2) == 0)
             {
-                if (settings.Read(buffer, sizeof(u32) * buffer[1]) == 0)
+                if (settings.Read(&buffer[2], sizeof(u32) * buffer[1]) == 0)
                 {
                     MenuEntry *entry = folder->GetItem(buffer[0])->AsMenuEntryImpl().AsMenuEntry();
+                    HotkeyManager::OnHotkeyChangeClbk callback = entry->Hotkeys._callback;
 
                     for (int i = 0; i < buffer[1]; i++)
+                    {
                         entry->Hotkeys[i] = buffer[2 + i];
+                        if (callback != nullptr)
+                            callback(entry, i);
+                    }
+                        
 
                     entry->RefreshNote();
                 }
@@ -470,12 +476,16 @@ namespace CTRPluginFramework
         if (folder == nullptr)
             return;
 
-        for (int i = 0; i < folder->ItemsCount(); i++)
+        for (MenuItem *item : folder->_items)
         {
-            MenuItem *item = (*folder)[i];
+            if (item == nullptr)
+                continue;
 
             if (item->IsFolder())
+            {
                 ExtractHotkeys(hotkeys, reinterpret_cast<MenuFolderImpl*>(item), size);
+                continue;
+            }                
 
             MenuEntry *entry = item->AsMenuEntryImpl().AsMenuEntry();
 
@@ -520,8 +530,8 @@ namespace CTRPluginFramework
                 {
                     buffer[i++] = hkInfos.uid;
                     buffer[i++] = hkInfos.count;
-                    for (int j = 0; j < hkInfos.count; j++)
-                        buffer[i++] = hkInfos.hotkeys[j];
+                    for (u32 keys : hkInfos.hotkeys)
+                        buffer[i++] = keys;
                 }
 
                 if (settings.Write(buffer, sizeof(u32) * size) == 0)

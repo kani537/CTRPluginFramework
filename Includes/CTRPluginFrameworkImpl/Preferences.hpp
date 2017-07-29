@@ -86,6 +86,7 @@ namespace CTRPluginFramework
         static bool         DrawTouchCursor;
         static bool         EcoMemoryMode;
         static bool         DisplayFilesLoading;
+        static bool         SavingInProgress;
 
         static bool         AutoSaveCheats;
         static bool         AutoSaveFavorites;

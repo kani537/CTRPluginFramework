@@ -6,6 +6,8 @@
 #include "CTRPluginFramework/Menu/PluginMenu.hpp"
 #include "CTRPluginFrameworkImpl/Graphics/OSDImpl.hpp"
 #include "font6x10Linux.h"
+#include "CTRPluginFrameworkImpl/Preferences.hpp"
+#include "CTRPluginFrameworkImpl/Graphics/Icon.hpp"
 
 #define CALLBACK_OVERLAY (101)
 #define NS_CONFIGURE_ADDR	0x06000000
@@ -170,6 +172,9 @@ namespace CTRPluginFramework
             if (params.is3DEnabled)
                 MessColor(addrB, stride, format & 0xf);
         }
+
+        if (Preferences::SavingInProgress)
+            Icon::DrawSaveNTR(370, 10);
 
         // Execute OSD
         isFbModified |= OSDImpl::GetInstance()->Draw();

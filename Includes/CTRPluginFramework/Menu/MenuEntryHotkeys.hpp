@@ -115,6 +115,7 @@ namespace CTRPluginFramework
 
     private:
         friend class PluginMenuHome;
+        friend class PluginMenuImpl;
 
         MenuEntry           *_owner;
         OnHotkeyChangeClbk  _callback;
