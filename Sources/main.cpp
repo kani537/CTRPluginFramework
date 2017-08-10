@@ -593,7 +593,7 @@ namespace CTRPluginFramework
 
         menu.Append(folder);
 
-        menu.Callback([] {Sleep(Milliseconds(1)); });
+        menu.Callback([] { Sleep(Milliseconds(1)); });
         // Launch menu and mainloop
         menu.Run();
 

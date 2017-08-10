@@ -406,15 +406,17 @@ namespace CTRPluginFramework
                     MenuEntry *entry = folder->GetItem(buffer[0])->AsMenuEntryImpl().AsMenuEntry();
                     HotkeyManager::OnHotkeyChangeClbk callback = entry->Hotkeys._callback;
 
-                    for (int i = 0; i < buffer[1]; i++)
+                    if (entry->Hotkeys.Count() == buffer[1])
                     {
-                        entry->Hotkeys[i] = buffer[2 + i];
-                        if (callback != nullptr)
-                            callback(entry, i);
-                    }
-                        
+                        for (int i = 0; i < buffer[1]; i++)
+                        {
+                            entry->Hotkeys[i] = buffer[2 + i];
+                            if (callback != nullptr)
+                                callback(entry, i);
+                        }
 
-                    entry->RefreshNote();
+                        entry->RefreshNote();
+                    }
                 }
             }
         }
