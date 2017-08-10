@@ -38,10 +38,18 @@ namespace CTRPluginFramework
         void    _RenderBottom(void);
         void    _Update(Time delta);
 
-        void    _DisplayNote(void);
         void    _StarItem(void);
         void    _TriggerEntry(void);
 
+
+        void    _showStarredBtn_OnClick(void);
+        void    _controllerBtn_OnClick(void);
+        void    _keyboardBtn_OnClick(void);
+
+        void    _gameGuideBtn_OnClick(void); // 2
+        void    _searchBtn_OnClick(void); // 3
+        void    _toolsBtn_OnClick(void);  // 5
+        void    _InfoBtn_OnClick(void); // note
 
         // Members
         MenuFolderImpl                  *_root;
@@ -49,6 +57,8 @@ namespace CTRPluginFramework
         MenuFolderImpl                  *_starred;        
         MenuFolderImpl                  *_starredConst;
 
+        int                         _mode;
+        int                         _note;
         bool                        _starMode;
         int                         _selector;
         int                         _selectedTextSize;
@@ -79,7 +89,6 @@ namespace CTRPluginFramework
         ToggleButton<PluginMenuHome, void>      _InfoBtn;
 
         UIContainer                         _uiContainer;
-
     };
 }
 

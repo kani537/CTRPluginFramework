@@ -11,7 +11,7 @@
 
 namespace CTRPluginFramework
 {
-    class TouchKeyString : public Drawable
+    class TouchKeyString
     {
     public:
 
@@ -24,10 +24,10 @@ namespace CTRPluginFramework
         void    Enable(bool enable = true);
 
         // Draw
-        void    Draw(void) override;
+        void    Draw(void);
 
         // Update
-        void    Update(bool touchIsDown, IntVector touchPos) override;
+        void    Update(bool touchIsDown, IntVector touchPos);
 
         // Scrolls
         void    Scroll(float amount);

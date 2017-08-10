@@ -31,7 +31,7 @@ namespace CTRPluginFramework
         void    Update(bool touchIsDown, IntVector touchPos) override;
 
         // Executer
-        virtual bool    operator()(Args ...args);
+        virtual bool    operator()(void) override;
 
         // Enabler
         void    Enable(bool enable = true);
@@ -93,12 +93,12 @@ namespace CTRPluginFramework
 
     // Executer
     template <class C, class T, class ...Args>
-    bool    TIconButton::operator()(Args ...args)
+    bool    TIconButton::operator()(void)
     {
         if (_enabled && _execute)
         {
             if (_callback != nullptr)
-                (_caller.*_callback)(args...);
+                (_caller.*_callback)();
             _execute = false;
             return (true);
         }

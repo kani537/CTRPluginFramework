@@ -26,7 +26,7 @@ namespace CTRPluginFramework
         // Update
         void    Update(bool isTouchDown, IntVector touchPos) override;
         // Execute
-        bool    operator()(Args ...args);
+        bool    operator()(void) override;
         // Return if the button is checked or not
         bool    GetState(void) const
         {
@@ -223,12 +223,12 @@ namespace CTRPluginFramework
 
     // Operator
     template <class C, class T, class ...Args>
-    bool    TCheckedButton::operator()(Args ...args)
+    bool    TCheckedButton::operator()(void)
     {
         if (_execute)
         {
             if (_callback != nullptr)
-                (_caller.*_callback)(args...);
+                (_caller.*_callback)();
             _execute = false;
             return (true);
         }

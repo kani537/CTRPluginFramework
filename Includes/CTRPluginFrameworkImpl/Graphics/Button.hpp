@@ -50,12 +50,12 @@ namespace CTRPluginFramework
         }
         ~Button(){};
 
-        bool    operator ()(Args&... args)
+        bool    operator ()(void) override
         {
             if (!IsLocked && IsEnabled && _execute)
             {
                 if (_callback != nullptr)
-                    (_caller.*(_callback))(args...);
+                    (_caller.*(_callback))();
                 _execute = false;
                 return (true);
             }

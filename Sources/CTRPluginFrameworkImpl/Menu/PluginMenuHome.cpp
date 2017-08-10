@@ -49,19 +49,19 @@ namespace CTRPluginFramework
     }
 
     PluginMenuHome::PluginMenuHome(std::string &name) :
-        _showStarredBtn("Favorite", *this, nullptr, IntRect(30, 70, 120, 30), Icon::DrawFavorite),
+        _showStarredBtn("Favorite", *this,  &PluginMenuHome::_showStarredBtn_OnClick, IntRect(30, 70, 120, 30), Icon::DrawFavorite),
         _hidMapperBtn("Mapper", *this, nullptr, IntRect(165, 70, 120, 30), Icon::DrawController),
-        _gameGuideBtn("Game Guide", *this, nullptr, IntRect(30, 105, 120, 30), Icon::DrawGuide),
-        _searchBtn("Search", *this, nullptr, IntRect(165, 105, 120, 30), Icon::DrawSearch),
+        _gameGuideBtn("Game Guide", *this, &PluginMenuHome::_gameGuideBtn_OnClick, IntRect(30, 105, 120, 30), Icon::DrawGuide),
+        _searchBtn("Search", *this, &PluginMenuHome::_searchBtn_OnClick, IntRect(165, 105, 120, 30), Icon::DrawSearch),
         _arBtn("ActionReplay", *this, nullptr, IntRect(30, 140, 120, 30)),
-        _toolsBtn("Tools", *this, nullptr, IntRect(165, 140, 120, 30), Icon::DrawTools),
+        _toolsBtn("Tools", *this, &PluginMenuHome::_toolsBtn_OnClick, IntRect(165, 140, 120, 30), Icon::DrawTools),
 
         _AddFavoriteBtn(*this, &PluginMenuHome::_StarItem, IntRect(50, 30, 25, 25), Icon::DrawAddFavorite),
-        _InfoBtn(*this, &PluginMenuHome::_DisplayNote, IntRect(90, 30, 25, 25), Icon::DrawInfo, false),
+        _InfoBtn(*this, &PluginMenuHome::_InfoBtn_OnClick, IntRect(90, 30, 25, 25), Icon::DrawInfo, false),
 
        // _closeBtn(*this, nullptr, IntRect(275, 24, 20, 20), Icon::DrawClose),
-        _keyboardBtn(*this, nullptr, IntRect(130, 30, 25, 25), Icon::DrawKeyboard, false),
-        _controllerBtn(*this, nullptr, IntRect(170, 30, 25, 25), Icon::DrawGameController, false)
+        _keyboardBtn(*this, &PluginMenuHome::_keyboardBtn_OnClick, IntRect(130, 30, 25, 25), Icon::DrawKeyboard, false),
+        _controllerBtn(*this, &PluginMenuHome::_controllerBtn_OnClick, IntRect(170, 30, 25, 25), Icon::DrawGameController, false)
     {
         _root = _folder = new MenuFolderImpl(name);
         _starredConst = _starred = new MenuFolderImpl("Favorites");
@@ -76,6 +76,8 @@ namespace CTRPluginFramework
         _versionPosX = 0;
 
         _noteTB = nullptr;
+        _note = 0;
+        _mode = 0;
 
         // Set rounding
         _showStarredBtn.RoundedRatio(7);
@@ -114,17 +116,19 @@ namespace CTRPluginFramework
 
     bool PluginMenuHome::operator()(EventList& eventList, int& mode, Time& delta)
     {
-        static int note = 0;
+        //static int note = 0;
+
+        _mode = mode;
 
         // Process events
-        if (note && !_noteTB)
-            note = 0;
-        else if (note)
+        if (_note && !_noteTB)
+            _note = 0;
+        else if (_note)
         {
             for (int i = 0; i < eventList.size(); i++)
                 if (_noteTB->ProcessEvent(eventList[i]) == false)
                 {
-                    note = 0;
+                    _note = 0;
                     _InfoBtn.SetState(false);
                     break;
                 }
@@ -140,7 +144,7 @@ namespace CTRPluginFramework
 
         // Render top
         Renderer::SetTarget(TOP);
-        if (note)
+        if (_note)
             _noteTB->Draw();
         else
             _RenderTop();
@@ -148,88 +152,10 @@ namespace CTRPluginFramework
         // RenderBottom
         _RenderBottom();
 
-        // If Favorites button is (de) activated
-        if (_showStarredBtn())
-        {
-            static int bak = 0;
-            std::swap(bak, _selector);
-            _starMode = !_starMode;
+        // Execute UIControls
+        _uiContainer.ExecuteAll();
 
-            MenuFolderImpl* f = _starMode ? _starred : _folder;
-            if (f->ItemsCount() == 0)
-            {
-                _InfoBtn.Enable(false);
-                _AddFavoriteBtn.Enable(false);
-                _keyboardBtn.Enable(false);
-                _selectedTextSize = 0;
-            }
-            else
-            {
-                MenuEntryImpl* e = reinterpret_cast<MenuEntryImpl *>(f->_items[_selector]);
-                _InfoBtn.Enable(e->note.size() > 0);
-                _keyboardBtn.Enable(e->MenuFunc != nullptr);
-                _AddFavoriteBtn.Enable(true);
-                _AddFavoriteBtn.SetState(e->_IsStarred());
-
-                // Update entry infos
-                _selectedTextSize = Renderer::GetTextSize(e->name.c_str());
-                _maxScrollOffset = static_cast<float>(_selectedTextSize) - 200.f;
-                _scrollClock.Restart();
-                _scrollOffset = 0.f;
-                _reverseFlow = false;
-            }
-        }
-
-        /*
-        else if (_hidMapperBtn())
-            mode = 1;
-        */
-
-        else if (_gameGuideBtn())
-            mode = 2;
-        else if (_searchBtn())
-            mode = 3;
-        /*
-        else if (_arBtn())
-            mode = 4;
-        */
-
-        else if (_toolsBtn())
-            mode = 5;
-
-        if (_InfoBtn())
-            note = !note;
-
-        _AddFavoriteBtn();
-
-        if (_controllerBtn())
-        {
-            MenuFolderImpl* f = _starMode ? _starred : _folder;
-            MenuEntryImpl* e = reinterpret_cast<MenuEntryImpl *>(f->_items[_selector]);
-            MenuEntry *entry = e->_owner;
-
-            if (entry != nullptr)
-            {
-                if (entry->Hotkeys.Count() == 1)
-                {
-                    entry->Hotkeys[0].AskForKeys();
-                    if (entry->Hotkeys._callback != nullptr)
-                        entry->Hotkeys._callback(entry, 0);
-                    entry->RefreshNote();
-                }
-                else if (entry->Hotkeys.Count())
-                {
-                    entry->Hotkeys.AskForKeys();
-                }
-            }
-        }
-
-        if (_keyboardBtn())
-        {
-            MenuFolderImpl* f = _starMode ? _starred : _folder;
-            MenuEntryImpl* e = reinterpret_cast<MenuEntryImpl *>(f->_items[_selector]);
-            e->MenuFunc(e->_owner);
-        }
+        mode = _mode;
 
         return (Window::BottomWindow.MustClose());
     }
@@ -774,9 +700,86 @@ namespace CTRPluginFramework
         }
     }
 
-
-    void PluginMenuHome::_DisplayNote(void)
+    void PluginMenuHome::_showStarredBtn_OnClick()
     {
+        static int bak = 0;
+        std::swap(bak, _selector);
+        _starMode = !_starMode;
+
+        MenuFolderImpl* f = _starMode ? _starred : _folder;
+        if (f->ItemsCount() == 0)
+        {
+            _InfoBtn.Enable(false);
+            _AddFavoriteBtn.Enable(false);
+            _keyboardBtn.Enable(false);
+            _selectedTextSize = 0;
+        }
+        else
+        {
+            MenuEntryImpl* e = reinterpret_cast<MenuEntryImpl *>(f->_items[_selector]);
+            _InfoBtn.Enable(e->note.size() > 0);
+            _keyboardBtn.Enable(e->MenuFunc != nullptr);
+            _AddFavoriteBtn.Enable(true);
+            _AddFavoriteBtn.SetState(e->_IsStarred());
+
+            // Update entry infos
+            _selectedTextSize = Renderer::GetTextSize(e->name.c_str());
+            _maxScrollOffset = static_cast<float>(_selectedTextSize) - 200.f;
+            _scrollClock.Restart();
+            _scrollOffset = 0.f;
+            _reverseFlow = false;
+        }
+    }
+
+    void    PluginMenuHome::_controllerBtn_OnClick(void)
+    {
+        MenuFolderImpl* f = _starMode ? _starred : _folder;
+        MenuEntryImpl* e = reinterpret_cast<MenuEntryImpl *>(f->_items[_selector]);
+        MenuEntry *entry = e->_owner;
+
+        if (entry != nullptr)
+        {
+            if (entry->Hotkeys.Count() == 1)
+            {
+                entry->Hotkeys[0].AskForKeys();
+                if (entry->Hotkeys._callback != nullptr)
+                    entry->Hotkeys._callback(entry, 0);
+                entry->RefreshNote();
+            }
+            else if (entry->Hotkeys.Count())
+            {
+                entry->Hotkeys.AskForKeys();
+            }
+        }
+    }
+
+    void    PluginMenuHome::_keyboardBtn_OnClick(void)
+    {
+        MenuFolderImpl *f = _starMode ? _starred : _folder;
+        MenuEntryImpl *e = reinterpret_cast<MenuEntryImpl *>((*f)[_selector]);
+        
+        if (e->MenuFunc != nullptr)
+            e->MenuFunc(e->_owner);
+    }
+
+    void    PluginMenuHome::_gameGuideBtn_OnClick(void)
+    {
+        _mode = 2;
+    }
+
+    void    PluginMenuHome::_searchBtn_OnClick(void)
+    {
+        _mode = 3;
+    }
+
+    void    PluginMenuHome::_toolsBtn_OnClick(void)
+    {
+        _mode = 5;
+    }
+
+    void    PluginMenuHome::_InfoBtn_OnClick(void)
+    {
+        _note = 1;
         if (_noteTB != nullptr)
         {
             if (_noteTB->IsOpen())

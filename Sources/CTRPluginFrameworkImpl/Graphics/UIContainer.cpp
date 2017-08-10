@@ -29,4 +29,10 @@ namespace CTRPluginFramework
         for (Drawable *uiControl : _uiControls)
             uiControl->Update(isTouchDown, touchPos);
     }
+
+    void    UIContainer::ExecuteAll(void)
+    {
+        for (Drawable *uiControl : _uiControls)
+            (*uiControl)();
+    }
 }
