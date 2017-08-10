@@ -39,8 +39,8 @@ SOURCES 	:= 	Sources \
 				Sources\ctrulib\util\utf \
 				Sources\ctrulib\util\rbtree \
 				Sources\NTR
-IP			:=  57
-FTP_HOST 	:=	192.168.137.
+IP			:=  5
+FTP_HOST 	:=	192.168.1.
 FTP_PORT	:=	"5000"
 FTP_PATH	:=	"plugin/0004000000033600/"
 
@@ -123,10 +123,10 @@ else
 #---------------------------------------------------------------------------------
 
 DEPENDS	:=	$(OFILES:.o=.d)
-#EXCLUDE := main.o cheats.o
+EXCLUDE := main.o cheats.o
 
 
-#$(OUTPUT).a	:	$(filter-out $(EXCLUDE), $(OFILES))
+$(OUTPUT).a	:	$(filter-out $(EXCLUDE), $(OFILES))
 $(OUTPUT).plg : $(OUTPUT).elf
 
 $(OUTPUT).elf : $(OFILES)

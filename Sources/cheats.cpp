@@ -309,14 +309,11 @@ namespace CTRPluginFramework
 	{
         u32	pointer;
 	    
-	    if (Process::Read32(g_basePointer, pointer))
+	    if (Process::Read32(g_basePointer, pointer) && pointer != 0)
 	    {
-            if (!pointer)
-                return;
-
             static u32 jump = 0;
-
             u32  jumpPointer = pointer + 0x77;
+
             pointer += 0x222C;
 
             if (Controller::IsKeyDown(Key::CPad) && entry->Hotkeys[0].IsDown())
@@ -327,7 +324,9 @@ namespace CTRPluginFramework
                     jump++;
                 }
                 else
+                {
                     Process::Write32(pointer, 0x41A00000);
+                }
             }
             else
                 jump = 0;

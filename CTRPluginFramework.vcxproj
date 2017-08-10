@@ -288,6 +288,8 @@
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\Graphics\Icons\File15.c" />
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\Graphics\Icons\FolderFilled.c" />
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\Graphics\Icons\GameController15.c" />
+    <ClCompile Include="Sources\CTRPluginFrameworkImpl\Graphics\Icons\GameController25.c" />
+    <ClCompile Include="Sources\CTRPluginFrameworkImpl\Graphics\Icons\GameControllerFilled25.c" />
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\Graphics\Icons\Grid15.c" />
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\Graphics\Icons\HandCursor15.c" />
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\Graphics\Icons\Happy15.c" />
@@ -298,6 +300,9 @@
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\Graphics\Icons\Keyboard25.c" />
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\Graphics\Icons\KeyboardFilled25.c" />
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\Graphics\Icons\Maintenance15.c" />
+    <ClCompile Include="Sources\CTRPluginFrameworkImpl\Graphics\Icons\More15.c" />
+    <ClCompile Include="Sources\CTRPluginFrameworkImpl\Graphics\Icons\RAM15.c" />
+    <ClCompile Include="Sources\CTRPluginFrameworkImpl\Graphics\Icons\Save25.c" />
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\Graphics\Icons\Search15.c" />
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\Graphics\Icons\Settings15.c" />
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\Graphics\Icons\Star15.c" />
