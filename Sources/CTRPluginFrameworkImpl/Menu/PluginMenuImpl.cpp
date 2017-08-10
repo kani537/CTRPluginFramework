@@ -397,7 +397,7 @@ namespace CTRPluginFramework
         u32     buffer[50];
         MenuFolderImpl      *folder = _runningInstance->_home->_root;
 
-        for (int i = 0; i < header.hotkeysCount; i++)
+        for (int count = 0; count < header.hotkeysCount; count++)
         {
             if (settings.Read(buffer, sizeof(u32) * 2) == 0)
             {
@@ -518,7 +518,7 @@ namespace CTRPluginFramework
             MenuFolderImpl  *root = _runningInstance->_home->_root;
             HotkeysVector   hotkeys;
             u32             size = 0;
-            u32             *buffer = nullptr;
+            u32             *buffer;
 
             ExtractHotkeys(hotkeys, root, size);
             
