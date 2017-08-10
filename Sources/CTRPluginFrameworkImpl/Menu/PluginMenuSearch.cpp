@@ -4,6 +4,7 @@
 #include "3DS.h"
 #include "CTRPluginFramework/Menu/MessageBox.hpp"
 #include "CTRPluginFramework/System/Directory.hpp"
+#include <iterator>
 
 namespace CTRPluginFramework
 {
@@ -67,6 +68,19 @@ namespace CTRPluginFramework
 
         // Allocate search's pool
         AllocatePool();
+
+        _uiContainer += &_memoryRegions;
+        _uiContainer += &_searchSize;
+        _uiContainer += &_searchType;
+        _uiContainer += &_compareType;
+        _uiContainer += &_startRangeTextBox;
+        _uiContainer += &_endRangeTextBox;
+        _uiContainer += &_valueTextBox;
+        _uiContainer += &_searchBtn;
+        _uiContainer += &_cancelBtn;
+        _uiContainer += &_undoBtn;
+        _uiContainer += &_resetBtn;
+        _uiContainer += &_hexBtn;
     }
 
     bool    PluginMenuSearch::operator()(EventList &eventList, Time &delta)
@@ -337,7 +351,10 @@ namespace CTRPluginFramework
         Renderer::DrawString((char *)"Value:", textPosX, posY, blank);
         posY = 187;
 
+        // Draw UIControls
+        _uiContainer.Draw();
 
+        /*
         // Draw ComboBoxes
         _memoryRegions.Draw();
         _searchSize.Draw();
@@ -356,7 +373,7 @@ namespace CTRPluginFramework
         _cancelBtn.Draw();
         _undoBtn.Draw();
         _resetBtn.Draw();
-		_hexBtn.Draw();
+		_hexBtn.Draw();*/
     }
 
     /*
@@ -376,6 +393,10 @@ namespace CTRPluginFramework
         // Update Window
         Window::BottomWindow.Update(isTouched, touchPos);
 
+        // Update UIControls
+        _uiContainer.Update(isTouched, touchPos);
+
+        /*
         // Update ComboBoxes
         _memoryRegions.Update(isTouched, touchPos);
         _searchSize.Update(isTouched, touchPos);
@@ -394,6 +415,7 @@ namespace CTRPluginFramework
         _undoBtn.Update(isTouched, touchPos);
         _resetBtn.Update(isTouched, touchPos);
 		_hexBtn.Update(isTouched, touchPos);
+        */
     }
 
     /*
@@ -405,18 +427,17 @@ namespace CTRPluginFramework
         if (_currentSearch != nullptr)
             _searchHistory.push_back(_currentSearch);
 
-        if (_searchHistory.size() > 5)
+        if (_searchHistory.size() > 6)
         {
-            Search *search = _searchHistory.front();
-            
-            _searchHistory.pop_front();
-            delete search;
+            auto it = _searchHistory.begin();
 
-            search = _searchHistory.front();
+            std::advance(it, 1);
+
+            _searchHistory.erase(it);
+            delete *it;
 
             // TODO : search-> = nullptr;
         }
-
 
         if (_memoryRegions.SelectedItem == -1 || _memoryRegions.SelectedItem > _regionsList.size())
             return;
@@ -706,7 +727,6 @@ namespace CTRPluginFramework
 
     void    PluginMenuSearch::_ListRegion(void)
     {
-
         Handle      target = Process::GetHandle();
         PageInfo    page_info;
         MemInfo     meminfo;

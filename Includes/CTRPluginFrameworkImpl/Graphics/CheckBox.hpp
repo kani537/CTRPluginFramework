@@ -1,7 +1,7 @@
 #ifndef CTRPLUGINFRAMEWORKIMPL_CHECKBOX_HPP
 #define CTRPLUGINFRAMEWORKIMPL_CHECKBOX_HPP
 
-#include "IconButton.hpp"
+#include "CTRPluginFrameworkImpl/Graphics/IconButton.hpp"
 
 namespace CTRPluginFramework
 {

@@ -59,7 +59,7 @@ namespace CTRPluginFramework
         _AddFavoriteBtn(*this, &PluginMenuHome::_StarItem, IntRect(50, 30, 25, 25), Icon::DrawAddFavorite),
         _InfoBtn(*this, &PluginMenuHome::_DisplayNote, IntRect(90, 30, 25, 25), Icon::DrawInfo, false),
 
-        _closeBtn(*this, nullptr, IntRect(275, 24, 20, 20), Icon::DrawClose),
+       // _closeBtn(*this, nullptr, IntRect(275, 24, 20, 20), Icon::DrawClose),
         _keyboardBtn(*this, nullptr, IntRect(130, 30, 25, 25), Icon::DrawKeyboard, false),
         _controllerBtn(*this, nullptr, IntRect(170, 30, 25, 25), Icon::DrawGameController, false)
     {
@@ -98,6 +98,18 @@ namespace CTRPluginFramework
 
         decoder(g_ctrpfString, g_ctrpf, 18);
         decoder(g_bymeString, g_byme, 12);
+
+        _uiContainer += &_showStarredBtn;
+        _uiContainer += &_hidMapperBtn;
+        _uiContainer += &_gameGuideBtn;
+        _uiContainer += &_searchBtn;
+        _uiContainer += &_arBtn;
+        _uiContainer += &_toolsBtn;
+       // _uiContainer += &_closeBtn;
+        _uiContainer += &_keyboardBtn;
+        _uiContainer += &_controllerBtn;
+        _uiContainer += &_AddFavoriteBtn;
+        _uiContainer += &_InfoBtn;
     }
 
     bool PluginMenuHome::operator()(EventList& eventList, int& mode, Time& delta)
@@ -219,7 +231,7 @@ namespace CTRPluginFramework
             e->MenuFunc(e->_owner);
         }
 
-        return (_closeBtn());
+        return (Window::BottomWindow.MustClose());
     }
 
     void PluginMenuHome::Append(MenuItem* item) const
@@ -568,6 +580,11 @@ namespace CTRPluginFramework
 
         posY = 35;
 
+        // Draw UIControls
+        _uiContainer.Draw();
+
+        /*
+
         // Draw buttons
         _showStarredBtn.Draw();
         _gameGuideBtn.Draw();
@@ -582,6 +599,7 @@ namespace CTRPluginFramework
         _controllerBtn.Draw();
 
         _closeBtn.Draw();
+        */
     }
 
     //###########################################
@@ -685,6 +703,12 @@ namespace CTRPluginFramework
         bool isTouched = Touch::IsDown();
         IntVector touchPos(Touch::GetPosition());
 
+        // Update UIControls
+        _uiContainer.Update(isTouched, touchPos);
+
+        Window::BottomWindow.Update(isTouched, touchPos);
+
+        /*
         _showStarredBtn.Update(isTouched, touchPos);
         _gameGuideBtn.Update(isTouched, touchPos);
         _arBtn.Update(isTouched, touchPos);
@@ -697,6 +721,7 @@ namespace CTRPluginFramework
         _keyboardBtn.Update(isTouched, touchPos);
         _controllerBtn.Update(isTouched, touchPos);
         _closeBtn.Update(isTouched, touchPos);
+        */
     }
 
     void PluginMenuHome::_TriggerEntry(void)

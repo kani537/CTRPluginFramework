@@ -1,6 +1,7 @@
 #ifndef CTRPLUGINFRAMEWORKIMPL_NUMERICTEXTBOX_HPP
 #define CTRPLUGINFRAMEWORKIMPL_NUMERICTEXTBOX_HPP
 
+#include "CTRPluginFrameworkImpl/Graphics/Drawable.hpp"
 #include "CTRPluginFramework/System/Vector.hpp"
 #include "CTRPluginFramework/System/Rect.hpp"
 #include <string>
@@ -8,7 +9,7 @@
 
 namespace CTRPluginFramework
 {
-    class NumericTextBox
+    class NumericTextBox : public Drawable
     {
     public:
 
@@ -34,8 +35,8 @@ namespace CTRPluginFramework
 		void	UseHexadecimal(bool useHex);
 
         void    Clear(void);
-        void    Draw(void) const;
-        void    Update(bool isTouchDown, IntVector touchPos);
+        void    Draw(void) override;
+        void    Update(bool isTouchDown, IntVector touchPos) override;
         bool    operator()(void);
 
         bool    IsEnabled;

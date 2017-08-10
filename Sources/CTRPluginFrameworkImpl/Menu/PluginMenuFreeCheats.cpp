@@ -69,6 +69,19 @@ namespace CTRPluginFramework
 
         _saveBtn.IsLocked = true;
         _cancelBtn.IsLocked = true;
+
+        _uiContainer += &_addressTextBox;
+        _uiContainer += &_valueTextBox;
+        _uiContainer += &_hexBtn;
+        _uiContainer += &_duplicateBtn;
+        _uiContainer += &_saveBtn;
+        _uiContainer += &_cancelBtn;
+        _uiContainer += &_deleteBtn;
+        _uiContainer += &_changeNameBtn;
+        _uiContainer += &_openInEditorBtn;
+        _uiContainer += &_u8CheckBox;
+        _uiContainer += &_u16CheckBox;
+        _uiContainer += &_u32CheckBox;
     }
 
     void    FreeCheats::Create(u32 address, u8 value) const
@@ -287,6 +300,7 @@ namespace CTRPluginFramework
         posY = 83;
         Renderer::DrawString("Freeze val.: ", 35, posY, Color::Blank);
 
+        /*
         // Draw TextBox
         _addressTextBox.Draw();
         _valueTextBox.Draw();
@@ -294,12 +308,15 @@ namespace CTRPluginFramework
         // Draw checkboxes and labels
         _u8CheckBox.Draw();
         _u16CheckBox.Draw();
-        _u32CheckBox.Draw();
+        _u32CheckBox.Draw(); */
         posY = 104;
         Renderer::DrawString((char *)"8Bits", 77, posY, Color::Blank); posY = 104;
         Renderer::DrawString((char *)"16Bits", 157, posY, Color::Blank); posY = 104;
         Renderer::DrawString((char *)"32Bits", 237, posY, Color::Blank);
 
+        // Draw UIControls
+        _uiContainer.Draw();
+        /*
         // Draw buttons
         _hexBtn.Draw();
         _saveBtn.Draw();
@@ -307,7 +324,7 @@ namespace CTRPluginFramework
         _deleteBtn.Draw();
         _changeNameBtn.Draw();
         _openInEditorBtn.Draw();
-        _duplicateBtn.Draw();
+        _duplicateBtn.Draw();*/
     }
 
     void    FreeCheats::_ProcessEvent(EventList& eventList)
@@ -382,6 +399,9 @@ namespace CTRPluginFramework
 
         if (_selectedFC != nullptr)
         {
+            // Update UIControls
+            _uiContainer.Update(isTouchDown, touchPos);
+            /*
             _addressTextBox.Update(isTouchDown, touchPos);
             _valueTextBox.Update(isTouchDown, touchPos);
             _hexBtn.Update(isTouchDown, touchPos);
@@ -394,6 +414,7 @@ namespace CTRPluginFramework
             _u8CheckBox.Update(isTouchDown, touchPos);
             _u16CheckBox.Update(isTouchDown, touchPos);
             _u32CheckBox.Update(isTouchDown, touchPos);
+            */
         }        
     }
 

@@ -5,7 +5,7 @@
 #include "CTRPluginFramework/Graphics/Color.hpp"
 #include "CTRPluginFramework/System/Touch.hpp"
 #include "CTRPluginFrameworkImpl/Graphics/Renderer.hpp"
-
+#include "CTRPluginFrameworkImpl/Graphics/Drawable.hpp"
 #include <string>
 #include <vector>
 
@@ -16,7 +16,7 @@ namespace CTRPluginFramework
     // class T -> return type of the callback
     // Args -> potential args for the callback
     template <class C, class T, class... Args>
-    class Button
+    class Button : public Drawable
     {
         
     public:
@@ -62,8 +62,8 @@ namespace CTRPluginFramework
             return (false);
         }
 
-        void    Draw(void);
-        void    Update(bool isTouchDown, IntVector touchPos);
+        void    Draw(void) override;
+        void    Update(bool isTouchDown, IntVector touchPos) override;
         void    UseSysFont(bool use);
         void    RoundedRatio(u32 ratio)
         {

@@ -1,7 +1,7 @@
 #ifndef CTRPLUGINFRAMEWORKIMPL_ICONBUTTON_HPP
 #define CTRPLUGINFRAMEWORKIMPL_ICONBUTTON_HPP
 
-
+#include "CTRPluginFrameworkImpl/Graphics/Drawable.hpp"
 #include "CTRPluginFramework/Graphics/Color.hpp"
 #include "CTRPluginFramework/System/Rect.hpp"
 #include "CTRPluginFramework/System/Touch.hpp"
@@ -11,7 +11,7 @@
 namespace CTRPluginFramework
 {
     template <class C, class T, class ...Args>
-    class IconButton
+    class IconButton : public Drawable
     {
     public:
         using EventCallback = T (C::*)(Args...);
@@ -25,10 +25,10 @@ namespace CTRPluginFramework
         void    SetState(bool state);
 
         // Draw
-        void    Draw(void);
+        void    Draw(void) override;
 
         // Update
-        virtual void    Update(bool touchIsDown, IntVector touchPos);
+        void    Update(bool touchIsDown, IntVector touchPos) override;
 
         // Executer
         virtual bool    operator()(Args ...args);

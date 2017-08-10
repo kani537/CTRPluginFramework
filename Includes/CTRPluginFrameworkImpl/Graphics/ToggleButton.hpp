@@ -1,7 +1,7 @@
 #ifndef CTRPLUGINFRAMEWORK_TOGGLEBUTTON_HPP
 #define CTRPLUGINFRAMEWORK_TOGGLEBUTTON_HPP
 
-
+#include "CTRPluginFrameworkImpl/Graphics/Drawable.hpp"
 #include "CTRPluginFramework/Graphics/Color.hpp"
 #include "CTRPluginFrameworkImpl/Graphics.hpp"
 
@@ -12,7 +12,7 @@
 namespace CTRPluginFramework
 {
     template <class C, class T, class ...Args>
-    class ToggleButton
+    class ToggleButton : public Drawable
     {
     public:
         using EventCallback = T (C::*)(Args...);
@@ -26,10 +26,10 @@ namespace CTRPluginFramework
         void    SetState(bool state);
 
         // Draw
-        void    Draw(void);
+        void    Draw(void) override;
 
         // Update
-        void    Update(bool touchIsDown, IntVector touchPos);
+        void    Update(bool touchIsDown, IntVector touchPos) override;
 
         // Executer
         bool    operator()(Args ...args);

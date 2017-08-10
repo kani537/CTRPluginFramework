@@ -1,7 +1,7 @@
 #ifndef CTRPLUGINFRAMEWORKIMPL_KEY_KEYBOARD_HPP
 #define CTRPLUGINFRAMEWORKIMPL_KEY_KEYBOARD_HPP
 
-
+#include "CTRPluginFrameworkImpl/Graphics/Drawable.hpp"
 #include "CTRPluginFramework/Graphics/Color.hpp"
 #include "CTRPluginFrameworkImpl/Graphics.hpp"
 
@@ -15,7 +15,7 @@ namespace CTRPluginFramework
         std::string     text;
         float           width;
     };
-    class TouchKey
+    class TouchKey : public Drawable
     {
     public:
         using IconCallback = int (*)(int, int, bool);
@@ -38,10 +38,10 @@ namespace CTRPluginFramework
 
         // Draw
         void    DrawCharacter(const IntRect &rect, Color &color);
-        void    Draw(void);
+        void    Draw(void) override;
 
         // Update
-        void    Update(bool touchIsDown, IntVector touchPos);
+        void    Update(bool touchIsDown, IntVector touchPos) override;
 
         // Executer
         // Return -1 if not pressed, _character value or 0x12345678 otherwise

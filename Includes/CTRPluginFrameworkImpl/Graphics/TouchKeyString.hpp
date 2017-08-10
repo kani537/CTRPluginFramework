@@ -1,7 +1,7 @@
 #ifndef CTRPLUGINFRAMEWORKIMPL_TOUCHKEYSTRING_KEYBOARD_HPP
 #define CTRPLUGINFRAMEWORKIMPL_TOUCHKEYSTRING_KEYBOARD_HPP
 
-
+#include "CTRPluginFrameworkImpl/Graphics/Drawable.hpp"
 #include "CTRPluginFramework/Graphics/Color.hpp"
 #include "CTRPluginFrameworkImpl/Graphics.hpp"
 
@@ -11,7 +11,7 @@
 
 namespace CTRPluginFramework
 {
-    class TouchKeyString
+    class TouchKeyString : public Drawable
     {
     public:
 
@@ -24,10 +24,10 @@ namespace CTRPluginFramework
         void    Enable(bool enable = true);
 
         // Draw
-        void    Draw(void);
+        void    Draw(void) override;
 
         // Update
-        void    Update(bool touchIsDown, IntVector touchPos);
+        void    Update(bool touchIsDown, IntVector touchPos) override;
 
         // Scrolls
         void    Scroll(float amount);

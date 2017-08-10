@@ -112,7 +112,7 @@ namespace CTRPluginFramework
         _UpdateVal();
     }
 
-    void    NumericTextBox::Draw(void) const
+    void    NumericTextBox::Draw(void)
     {
        // static Color    blank = Color(255, 255, 255);
         Color    &black = Color::Black;

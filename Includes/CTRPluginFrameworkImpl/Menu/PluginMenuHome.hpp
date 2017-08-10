@@ -8,6 +8,8 @@
 #include "CTRPluginFrameworkImpl/Menu/MenuItem.hpp"
 
 #include <vector>
+#include "CTRPluginFrameworkImpl/Graphics/UIContainer.hpp"
+
 namespace CTRPluginFramework
 {
     class PluginMenuHome
@@ -68,13 +70,15 @@ namespace CTRPluginFramework
         Button<PluginMenuHome, void>          _arBtn;       
         Button<PluginMenuHome, void>          _toolsBtn;
         
-        IconButton<PluginMenuHome, void>     _closeBtn;
+       // IconButton<PluginMenuHome, void>     _closeBtn;
         IconButton<PluginMenuHome, void>     _keyboardBtn;
         IconButton<PluginMenuHome, void>     _controllerBtn;
 
         // Entry button
         ToggleButton<PluginMenuHome, void>      _AddFavoriteBtn;
         ToggleButton<PluginMenuHome, void>      _InfoBtn;
+
+        UIContainer                         _uiContainer;
 
     };
 }

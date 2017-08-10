@@ -1,6 +1,7 @@
 #ifndef CTRPLUGINFRAMEWORKIMPL_COMBOBOX_HPP
 #define CTRPLUGINFRAMEWORKIMPL_COMBOBOX_HPP
 
+#include "CTRPluginFrameworkImpl/Graphics/Drawable.hpp"
 #include "CTRPluginFramework/System/Vector.hpp"
 #include "CTRPluginFramework/System/Rect.hpp"
 #include <string>
@@ -8,15 +9,15 @@
 
 namespace CTRPluginFramework
 {
-    class ComboBox
+    class ComboBox : public Drawable
     {
     public:
         ComboBox(int posX, int posY, int width, int height);
 
         void    Add(std::string item);
         void    Clear(void);
-        void    Draw(void);
-        void    Update(bool isTouchDown, IntVector touchPos);
+        void    Draw(void) override;
+        void    Update(bool isTouchDown, IntVector touchPos) override;
         bool    operator()(void);
 
         bool    IsEnabled;

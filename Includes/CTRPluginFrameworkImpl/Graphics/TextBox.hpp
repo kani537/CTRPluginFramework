@@ -1,6 +1,7 @@
 #ifndef CTRPLUGINFRAMEWORK_TEXTBOX_HPP
 #define CTRPLUGINFRAMEWORK_TEXTBOX_HPP
 
+#include "CTRPluginFrameworkImpl/Graphics/Drawable.hpp"
 #include "CTRPluginFramework/Graphics/Color.hpp"
 #include "CTRPluginFrameworkImpl/Graphics.hpp"
 #include "CTRPluginFrameworkImpl/System.hpp"
@@ -10,7 +11,7 @@
 
 namespace CTRPluginFramework
 {
-    class TextBox
+    class TextBox : public Drawable
     {
     public:
         TextBox(std::string title, std::string &text, IntRect box);
@@ -30,7 +31,8 @@ namespace CTRPluginFramework
         // Update
         void    Update(const std::string &title, std::string &text);
         // Draw
-        void    Draw(void);
+        void    Draw(void) override;
+        void    Update(bool isTouchDown, IntVector pos) override;
 
         Color   titleColor;
         Color   textColor;

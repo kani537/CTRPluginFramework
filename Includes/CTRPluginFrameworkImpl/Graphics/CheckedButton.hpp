@@ -4,6 +4,7 @@
 #include "CTRPluginFrameworkImpl/Graphics.hpp"
 #include "CTRPluginFramework/Graphics/Color.hpp"
 #include "CTRPluginFramework/System/Clock.hpp"
+#include "CTRPluginFrameworkImpl/Graphics/Drawable.hpp"
 
 #include <vector>
 #include <string>
@@ -11,7 +12,7 @@
 namespace CTRPluginFramework
 {
     template <class C, class T, class ...Args>
-    class CheckedButton
+    class CheckedButton : public Drawable
     {
     public:
         using EventCallback = T (C::*)(Args...);
@@ -21,9 +22,9 @@ namespace CTRPluginFramework
         ~CheckedButton(){}
 
         // Draw
-        void    Draw(void);
+        void    Draw(void) override;
         // Update
-        void    Update(bool isTouchDown, IntVector touchPos);
+        void    Update(bool isTouchDown, IntVector touchPos) override;
         // Execute
         bool    operator()(Args ...args);
         // Return if the button is checked or not

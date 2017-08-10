@@ -271,6 +271,10 @@ namespace CTRPluginFramework
 
     }
 
+    void    TextBox::Update(bool isTouchDown, IntVector pos)
+    {
+    }
+
     /*
     ** Text infos
     ***************/

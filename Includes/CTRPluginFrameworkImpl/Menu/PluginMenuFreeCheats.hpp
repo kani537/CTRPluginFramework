@@ -6,6 +6,7 @@
 #include "CTRPluginFrameworkImpl/Menu/Menu.hpp"
 #include "CTRPluginFrameworkImpl/Menu/MenuEntryFreeCheat.hpp"
 #include "CTRPluginFrameworkImpl/Menu/HexEditor.hpp"
+#include "CTRPluginFrameworkImpl/Graphics/UIContainer.hpp"
 
 namespace CTRPluginFramework
 {
@@ -55,6 +56,8 @@ namespace CTRPluginFramework
         CheckBox                            _u8CheckBox;
         CheckBox                            _u16CheckBox;
         CheckBox                            _u32CheckBox;
+
+        UIContainer                         _uiContainer;
         
         MenuEntryFreeCheat                  *_selectedFC;
 

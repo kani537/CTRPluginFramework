@@ -10,6 +10,7 @@
 
 #include <vector>
 #include <list>
+#include "CTRPluginFrameworkImpl/Graphics/UIContainer.hpp"
 
 namespace CTRPluginFramework
 {
@@ -74,6 +75,7 @@ namespace CTRPluginFramework
 
         CheckedButton<PluginMenuSearch, void>       _hexBtn;
 
+        UIContainer                         _uiContainer;
     };
 }
 
