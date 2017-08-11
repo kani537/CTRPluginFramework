@@ -259,6 +259,7 @@ namespace CTRPluginFramework
         {
             _keyboard->SetMaxInput(2);
         }
+        _keyboard->CanChangeLayout(true);
         _keyboard->SetConvertCallback(ConvertToU8);
         _keyboard->DisplayTopScreen = DisplayTopScreen;
 
@@ -267,7 +268,7 @@ namespace CTRPluginFramework
         if (ret != -1)
         {
             std::string &input = _keyboard->GetInput();
-            output = *(static_cast<u8 *>(ConvertToU8(input, _hexadecimal)));
+            output = *(static_cast<u8 *>(ConvertToU8(input, _keyboard->IsHexadecimal())));
         }
         return (ret);
     }
@@ -289,6 +290,7 @@ namespace CTRPluginFramework
             snprintf(buffer, 0x100, "%d", start);        
             input = buffer;
         }
+        _keyboard->CanChangeLayout(true);
         _keyboard->SetConvertCallback(ConvertToU8);
         _keyboard->DisplayTopScreen = DisplayTopScreen;
 
@@ -296,7 +298,7 @@ namespace CTRPluginFramework
 
         if (ret != -1)
         {
-            output = *(static_cast<u8 *>(ConvertToU8(input, _hexadecimal)));
+            output = *(static_cast<u8 *>(ConvertToU8(input, _keyboard->IsHexadecimal())));
         }
         return (ret);
     }
@@ -312,6 +314,7 @@ namespace CTRPluginFramework
         {
             _keyboard->SetMaxInput(4);
         }
+        _keyboard->CanChangeLayout(true);
         _keyboard->SetConvertCallback(ConvertToU16);
         _keyboard->DisplayTopScreen = DisplayTopScreen;
 
@@ -320,7 +323,7 @@ namespace CTRPluginFramework
         if (ret != -1)
         {
             std::string &input = _keyboard->GetInput();
-            output = *(static_cast<u16 *>(ConvertToU16(input, _hexadecimal)));
+            output = *(static_cast<u16 *>(ConvertToU16(input, _keyboard->IsHexadecimal())));
         }
         return (ret);
     }
@@ -342,6 +345,7 @@ namespace CTRPluginFramework
             snprintf(buffer, 0x100, "%d", start);        
             input = buffer;
         }
+        _keyboard->CanChangeLayout(true);
         _keyboard->SetConvertCallback(ConvertToU16);
         _keyboard->DisplayTopScreen = DisplayTopScreen;
 
@@ -349,7 +353,7 @@ namespace CTRPluginFramework
 
         if (ret != -1)
         {
-            output = *(static_cast<u16 *>(ConvertToU16(input, _hexadecimal)));
+            output = *(static_cast<u16 *>(ConvertToU16(input, _keyboard->IsHexadecimal())));
         }
         return (ret);
     }
@@ -365,6 +369,7 @@ namespace CTRPluginFramework
         {
             _keyboard->SetMaxInput(8);
         }
+        _keyboard->CanChangeLayout(true);
         _keyboard->SetConvertCallback(ConvertToU32);
         _keyboard->DisplayTopScreen = DisplayTopScreen;
 
@@ -373,7 +378,7 @@ namespace CTRPluginFramework
         if (ret != -1)
         {
             std::string &input = _keyboard->GetInput();
-            output = *(static_cast<u32 *>(ConvertToU32(input, _hexadecimal)));
+            output = *(static_cast<u32 *>(ConvertToU32(input, _keyboard->IsHexadecimal())));
         }
         return (ret);
     }
@@ -395,6 +400,7 @@ namespace CTRPluginFramework
             snprintf(buffer, 0x100, "%d", start);        
             input = buffer;
         }
+        _keyboard->CanChangeLayout(true);
         _keyboard->SetConvertCallback(ConvertToU32);
         _keyboard->DisplayTopScreen = DisplayTopScreen;
 
@@ -402,7 +408,7 @@ namespace CTRPluginFramework
 
         if (ret != -1)
         {
-            output = *(static_cast<u32 *>(ConvertToU32(input, _hexadecimal)));
+            output = *(static_cast<u32 *>(ConvertToU32(input, _keyboard->IsHexadecimal())));
         }
         return (ret);
     }
@@ -418,6 +424,7 @@ namespace CTRPluginFramework
         {
             _keyboard->SetMaxInput(16);
         }
+        _keyboard->CanChangeLayout(true);
         _keyboard->SetConvertCallback(ConvertToU64);
         _keyboard->DisplayTopScreen = DisplayTopScreen;
 
@@ -426,7 +433,7 @@ namespace CTRPluginFramework
         if (ret != -1)
         {
             std::string &input = _keyboard->GetInput();
-            output = *(static_cast<u64 *>(ConvertToU64(input, _hexadecimal)));
+            output = *(static_cast<u64 *>(ConvertToU64(input, _keyboard->IsHexadecimal())));
         }
         return (ret);
     }
@@ -448,6 +455,7 @@ namespace CTRPluginFramework
             snprintf(buffer, 0x100, "%ld", start);        
             input = buffer;
         }
+        _keyboard->CanChangeLayout(true);
         _keyboard->SetConvertCallback(ConvertToU64);
         _keyboard->DisplayTopScreen = DisplayTopScreen;
 
@@ -455,7 +463,7 @@ namespace CTRPluginFramework
 
         if (ret != -1)
         {
-            output = *(static_cast<u64 *>(ConvertToU64(input, _hexadecimal)));
+            output = *(static_cast<u64 *>(ConvertToU64(input, _keyboard->IsHexadecimal())));
         }
         return (ret);
     }
@@ -475,7 +483,7 @@ namespace CTRPluginFramework
         if (ret != -1)
         {
             std::string &input = _keyboard->GetInput();
-            output = *(static_cast<float *>(ConvertToFloat(input, _hexadecimal)));
+            output = *(static_cast<float *>(ConvertToFloat(input, _keyboard->IsHexadecimal())));
         }
         return (ret);
     }
@@ -495,7 +503,7 @@ namespace CTRPluginFramework
 
         if (ret != -1)
         {
-            output = *(static_cast<float *>(ConvertToFloat(input, _hexadecimal)));
+            output = *(static_cast<float *>(ConvertToFloat(input, _keyboard->IsHexadecimal())));
         }
         return (ret);
     }
@@ -515,7 +523,7 @@ namespace CTRPluginFramework
         if (ret != -1)
         {
             std::string &input = _keyboard->GetInput();
-            output = *(static_cast<double *>(ConvertToDouble(input, _hexadecimal)));
+            output = *(static_cast<double *>(ConvertToDouble(input, _keyboard->IsHexadecimal())));
         }
         return (ret);
     }
@@ -535,7 +543,7 @@ namespace CTRPluginFramework
 
         if (ret != -1)
         {
-            output = *(static_cast<double *>(ConvertToDouble(input, _hexadecimal)));
+            output = *(static_cast<double *>(ConvertToDouble(input, _keyboard->IsHexadecimal())));
         }
         return (ret);
     }

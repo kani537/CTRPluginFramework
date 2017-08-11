@@ -31,7 +31,7 @@ namespace CTRPluginFramework
         _text = text;
         _error = "";
         _userInput = "";
-
+        _canChangeLayout = false;
         _canAbort = true;
         _isOpen = false;
         _userAbort = false;
@@ -75,7 +75,7 @@ namespace CTRPluginFramework
         _text = text;
         _error = "";
         _userInput = "";
-
+        _canChangeLayout = false;
         _canAbort = true;
         _isOpen = false;
         _userAbort = false;
@@ -136,6 +136,11 @@ namespace CTRPluginFramework
     void    KeyboardImpl::SetHexadecimal(bool isHex)
     {
         _isHex = isHex;
+    }
+
+    bool    KeyboardImpl::IsHexadecimal(void) const
+    {
+        return (_isHex);
     }
 
     void    KeyboardImpl::SetMaxInput(int max)
@@ -538,6 +543,25 @@ namespace CTRPluginFramework
                 if (_canAbort)
                     _userAbort = true;
                 return;
+            }
+            if (!_customKeyboard && event.key.code == Y && _userInput.size())
+            {
+                _userInput.clear();
+                _inputChangeEvent.type = InputChangeEvent::EventType::InputWasCleared;
+                _inputChangeEvent.codepoint = 0;
+                _errorMessage = !_CheckInput();
+                if (_onInputChange != nullptr && _owner != nullptr)
+                    _onInputChange(*_owner, _inputChangeEvent);
+            }
+            if (event.key.code == X && !_customKeyboard && _layout != QWERTY && _canChangeLayout)
+            {
+                _userInput.clear();
+                _inputChangeEvent.type = InputChangeEvent::EventType::InputWasCleared;
+                _inputChangeEvent.codepoint = 0;
+                _errorMessage = !_CheckInput();
+                if (_onInputChange != nullptr && _owner != nullptr)
+                    _onInputChange(*_owner, _inputChangeEvent);
+                SetLayout(_layout == DECIMAL ? HEXADECIMAL : DECIMAL);
             }
         }
 
@@ -1465,5 +1489,10 @@ namespace CTRPluginFramework
             return (true);
         }
         return (false);
+    }
+
+    void    KeyboardImpl::CanChangeLayout(bool canChange)
+    {
+        _canChangeLayout = canChange;
     }
 }

@@ -14,7 +14,8 @@ namespace CTRPluginFramework
         enum EventType
         {
             CharacterAdded,
-            CharacterRemoved
+            CharacterRemoved,
+            InputWasCleared
         };
 
         EventType   type;       ///< Type of the event

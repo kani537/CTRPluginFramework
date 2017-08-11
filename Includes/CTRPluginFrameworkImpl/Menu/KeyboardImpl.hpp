@@ -36,8 +36,10 @@ namespace CTRPluginFramework
 
         void        SetLayout(Layout layout);
         void        SetHexadecimal(bool isHex);
+        bool        IsHexadecimal(void) const;
         void        SetMaxInput(int max);
         void        CanAbort(bool canAbort);
+        void        CanChangeLayout(bool canChange);
         std::string &GetInput(void);
         std::string &GetMessage(void);
         void        SetError(std::string &error);
@@ -81,6 +83,7 @@ namespace CTRPluginFramework
         std::string             _error;
         std::string             _userInput;
 
+        bool                    _canChangeLayout;
         bool                    _canAbort;
         bool                    _isOpen;
         bool                    _askForExit;
