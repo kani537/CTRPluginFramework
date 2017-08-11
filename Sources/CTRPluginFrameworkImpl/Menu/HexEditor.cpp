@@ -66,10 +66,6 @@ namespace CTRPluginFramework
         // Construct keyboard
         _keyboard.SetLayout(Layout::HEXADECIMAL);
         _keyboard._Hexadecimal();
-        // Disable backspace key
-        _keyboard._keys.at(15).Enable(false);
-        // Disable enter key
-        _keyboard._keys.at(16).Enable(false);
 
         // Create options
         _options.push_back("New FreeCheat");
@@ -86,6 +82,17 @@ namespace CTRPluginFramework
 
     bool    HexEditor::operator()(EventList &eventList)
     {
+        static bool keysAreDisabled = false;
+
+        if (!keysAreDisabled)
+        {
+            // Disable clear key
+            _keyboard._keys->at(15).Enable(false);
+            // Disable enter key
+            _keyboard._keys->at(16).Enable(false);
+            keysAreDisabled = true;
+        }
+
         // Process event
         for (int i = 0; i < eventList.size(); i++)
             _ProcessEvent(eventList[i]);
@@ -124,7 +131,14 @@ namespace CTRPluginFramework
         _RenderBottom();
 
         if (_closeBtn())
+        {
+            // Enable clear key
+            _keyboard._keys->at(15).Enable(true);
+            // Enable enter key
+            _keyboard._keys->at(16).Enable(true);
+            keysAreDisabled = false;
             return (true);
+        }
 
         return (false);
     }

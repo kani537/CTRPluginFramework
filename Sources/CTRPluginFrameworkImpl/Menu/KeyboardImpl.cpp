@@ -19,6 +19,10 @@ namespace CTRPluginFramework
     #define KEY_SYMBOLS_PAGE -6
     #define KEY_NINTENDO_PAGE -7
 
+    std::vector<TouchKey>    KeyboardImpl::_DecimalKeys;
+    std::vector<TouchKey>    KeyboardImpl::_HexaDecimalKeys;
+    std::vector<TouchKey>    KeyboardImpl::_QwertyKeys;
+
 
     KeyboardImpl::KeyboardImpl(std::string text)
     {
@@ -40,7 +44,7 @@ namespace CTRPluginFramework
         _isHex = false;
         _max = 0;
         _layout = HEXADECIMAL;
-
+        _keys = nullptr;
         _convert = nullptr;
         _compare = nullptr;
         _onInputChange = nullptr;
@@ -88,6 +92,7 @@ namespace CTRPluginFramework
         _convert = nullptr;
         _compare = nullptr;
         _onInputChange = nullptr;
+        _keys = nullptr;
 
         _customKeyboard = false;
         _displayScrollbar = false;
@@ -110,17 +115,22 @@ namespace CTRPluginFramework
 
     KeyboardImpl::~KeyboardImpl(void)
     {
-        for (KeyIter iter = _keys.begin(); iter != _keys.end(); ++iter)
-            iter->Clear();
+      //  for (KeyIter iter = _keys.begin(); iter != _keys.end(); ++iter)
+      //      iter->Clear();
     }
 
     void    KeyboardImpl::SetLayout(Layout layout)
     {
         _layout = layout;
-        if (layout == HEXADECIMAL)
+        _isHex = false;
+        _userInput.clear();
+        if (_layout == QWERTY) _Qwerty();
+        else if (_layout == DECIMAL) _Decimal();
+        else if (_layout == HEXADECIMAL)
+        {
             _isHex = true;
-        else
-            _isHex = false;
+            _Hexadecimal();
+        }
     }
 
     void    KeyboardImpl::SetHexadecimal(bool isHex)
@@ -402,11 +412,9 @@ namespace CTRPluginFramework
             if (_layout != Layout::QWERTY)
             {
                 // Draw keys
-                KeyIter iter = _keys.begin();
-
-                for (; iter != _keys.end(); iter++)
+                for (TouchKey &key : *_keys)
                 {
-                    (*iter).Draw();
+                    key.Draw();
                 }
             }
             // Qwerty layout
@@ -431,7 +439,7 @@ namespace CTRPluginFramework
 
                     for (; start < end; start++)
                     {
-                        _keys[start].Draw();
+                        (*_keys)[start].Draw();
                     }
                 }
                 // Nintendo
@@ -453,7 +461,7 @@ namespace CTRPluginFramework
 
                     for (; start < end; start++)
                     {
-                        _keys[start].Draw();
+                        (*_keys)[start].Draw();
                     }
                 }
                 // Letters
@@ -465,7 +473,7 @@ namespace CTRPluginFramework
                         /*36 - 71*/
                         for (int i = 36; i < 72; i++)
                         {
-                            _keys[i].Draw();
+                            (*_keys)[i].Draw();
                         }
                     }
                     // Lower Case
@@ -474,7 +482,7 @@ namespace CTRPluginFramework
                         /* 0 - 35*/
                         for (int i = 0; i < 36; i++)
                         {
-                            _keys[i].Draw();
+                            (*_keys)[i].Draw();
                         }
                     }
                 }
@@ -582,7 +590,7 @@ namespace CTRPluginFramework
         if (!_customKeyboard)
         {
             int start = 0;
-            int end = _keys.size();
+            int end = _keys->size();
 
             if (_layout == Layout::QWERTY)
             {
@@ -633,7 +641,7 @@ namespace CTRPluginFramework
 
             for (int i = start; i < end; i++)
             {
-                _keys[i].Update(isTouchDown, touchPos);
+                (*_keys)[i].Update(isTouchDown, touchPos);
             }            
         }
         else
@@ -746,56 +754,56 @@ namespace CTRPluginFramework
         IntRect pos(20, 36, 25, 40);
 
         /*low case*/
-        _keys.push_back(TouchKey('q', pos)); pos.leftTop.x += 25;
-        _keys.push_back(TouchKey('w', pos)); pos.leftTop.x += 25;
-        _keys.push_back(TouchKey('e', pos)); pos.leftTop.x += 25;
-        _keys.push_back(TouchKey('r', pos)); pos.leftTop.x += 25;
-        _keys.push_back(TouchKey('t', pos)); pos.leftTop.x += 25;
-        _keys.push_back(TouchKey('y', pos)); pos.leftTop.x += 25;
-        _keys.push_back(TouchKey('u', pos)); pos.leftTop.x += 25;
-        _keys.push_back(TouchKey('i', pos)); pos.leftTop.x += 25;
-        _keys.push_back(TouchKey('o', pos)); pos.leftTop.x += 25;
-        _keys.push_back(TouchKey('p', pos)); pos.leftTop.x += 25;
-        _keys.push_back(TouchKey(KEY_BACKSPACE, Icon::DrawClearSymbol, pos));
+        _QwertyKeys.push_back(TouchKey('q', pos)); pos.leftTop.x += 25;
+        _QwertyKeys.push_back(TouchKey('w', pos)); pos.leftTop.x += 25;
+        _QwertyKeys.push_back(TouchKey('e', pos)); pos.leftTop.x += 25;
+        _QwertyKeys.push_back(TouchKey('r', pos)); pos.leftTop.x += 25;
+        _QwertyKeys.push_back(TouchKey('t', pos)); pos.leftTop.x += 25;
+        _QwertyKeys.push_back(TouchKey('y', pos)); pos.leftTop.x += 25;
+        _QwertyKeys.push_back(TouchKey('u', pos)); pos.leftTop.x += 25;
+        _QwertyKeys.push_back(TouchKey('i', pos)); pos.leftTop.x += 25;
+        _QwertyKeys.push_back(TouchKey('o', pos)); pos.leftTop.x += 25;
+        _QwertyKeys.push_back(TouchKey('p', pos)); pos.leftTop.x += 25;
+        _QwertyKeys.push_back(TouchKey(KEY_BACKSPACE, Icon::DrawClearSymbol, pos));
 
         pos.leftTop.x = 20;
         pos.leftTop.y = 76;
 
-        _keys.push_back(TouchKey('a', pos)); pos.leftTop.x += 25;
-        _keys.push_back(TouchKey('s', pos)); pos.leftTop.x += 25;
-        _keys.push_back(TouchKey('d', pos)); pos.leftTop.x += 25;
-        _keys.push_back(TouchKey('f', pos)); pos.leftTop.x += 25;
-        _keys.push_back(TouchKey('g', pos)); pos.leftTop.x += 25;
-        _keys.push_back(TouchKey('h', pos)); pos.leftTop.x += 25;
-        _keys.push_back(TouchKey('j', pos)); pos.leftTop.x += 25;
-        _keys.push_back(TouchKey('k', pos)); pos.leftTop.x += 25;
-        _keys.push_back(TouchKey('l', pos)); pos.leftTop.x += 25;
-        _keys.push_back(TouchKey('\'', pos)); pos.leftTop.x += 25;
-        _keys.push_back(TouchKey(KEY_ENTER, Icon::DrawEnterKey, pos));
+        _QwertyKeys.push_back(TouchKey('a', pos)); pos.leftTop.x += 25;
+        _QwertyKeys.push_back(TouchKey('s', pos)); pos.leftTop.x += 25;
+        _QwertyKeys.push_back(TouchKey('d', pos)); pos.leftTop.x += 25;
+        _QwertyKeys.push_back(TouchKey('f', pos)); pos.leftTop.x += 25;
+        _QwertyKeys.push_back(TouchKey('g', pos)); pos.leftTop.x += 25;
+        _QwertyKeys.push_back(TouchKey('h', pos)); pos.leftTop.x += 25;
+        _QwertyKeys.push_back(TouchKey('j', pos)); pos.leftTop.x += 25;
+        _QwertyKeys.push_back(TouchKey('k', pos)); pos.leftTop.x += 25;
+        _QwertyKeys.push_back(TouchKey('l', pos)); pos.leftTop.x += 25;
+        _QwertyKeys.push_back(TouchKey('\'', pos)); pos.leftTop.x += 25;
+        _QwertyKeys.push_back(TouchKey(KEY_ENTER, Icon::DrawEnterKey, pos));
 
         pos.leftTop.x = 20;
         pos.leftTop.y = 116;
 
-        _keys.push_back(TouchKey(KEY_CAPS, Icon::DrawCapsLockOn, pos)); pos.leftTop.x += 25;
-        _keys.push_back(TouchKey('z', pos)); pos.leftTop.x += 25;
-        _keys.push_back(TouchKey('x', pos)); pos.leftTop.x += 25;
-        _keys.push_back(TouchKey('c', pos)); pos.leftTop.x += 25;
-        _keys.push_back(TouchKey('v', pos)); pos.leftTop.x += 25;
-        _keys.push_back(TouchKey('b', pos)); pos.leftTop.x += 25;
-        _keys.push_back(TouchKey('n', pos)); pos.leftTop.x += 25;
-        _keys.push_back(TouchKey('m', pos)); pos.leftTop.x += 25;
-        _keys.push_back(TouchKey(',', pos)); pos.leftTop.x += 25;
-        _keys.push_back(TouchKey('.', pos)); pos.leftTop.x += 25;
-        _keys.push_back(TouchKey('?', pos));
+        _QwertyKeys.push_back(TouchKey(KEY_CAPS, Icon::DrawCapsLockOn, pos)); pos.leftTop.x += 25;
+        _QwertyKeys.push_back(TouchKey('z', pos)); pos.leftTop.x += 25;
+        _QwertyKeys.push_back(TouchKey('x', pos)); pos.leftTop.x += 25;
+        _QwertyKeys.push_back(TouchKey('c', pos)); pos.leftTop.x += 25;
+        _QwertyKeys.push_back(TouchKey('v', pos)); pos.leftTop.x += 25;
+        _QwertyKeys.push_back(TouchKey('b', pos)); pos.leftTop.x += 25;
+        _QwertyKeys.push_back(TouchKey('n', pos)); pos.leftTop.x += 25;
+        _QwertyKeys.push_back(TouchKey('m', pos)); pos.leftTop.x += 25;
+        _QwertyKeys.push_back(TouchKey(',', pos)); pos.leftTop.x += 25;
+        _QwertyKeys.push_back(TouchKey('.', pos)); pos.leftTop.x += 25;
+        _QwertyKeys.push_back(TouchKey('?', pos));
 
         pos.leftTop.x = 20;
         pos.leftTop.y = 156;
 
         pos.size.x = 40;
-        _keys.push_back(TouchKey("+=@", pos, KEY_SYMBOLS)); pos.leftTop.x += 40;
-        _keys.push_back(TouchKey("\uE008", pos, KEY_SMILEY)); pos.leftTop.x += 40;
+        _QwertyKeys.push_back(TouchKey("+=@", pos, KEY_SYMBOLS)); pos.leftTop.x += 40;
+        _QwertyKeys.push_back(TouchKey("\uE008", pos, KEY_SMILEY)); pos.leftTop.x += 40;
         pos.size.x = 120;
-        _keys.push_back(TouchKey("\uE057", pos, KEY_SPACE));
+        _QwertyKeys.push_back(TouchKey("\uE057", pos, KEY_SPACE));
     }
 
     void    KeyboardImpl::_QwertyUpCase(void)
@@ -804,56 +812,56 @@ namespace CTRPluginFramework
         IntRect pos(20, 36, 25, 40);
 
         /*low case*/
-        _keys.push_back(TouchKey('Q', pos)); pos.leftTop.x += 25;
-        _keys.push_back(TouchKey('W', pos)); pos.leftTop.x += 25;
-        _keys.push_back(TouchKey('E', pos)); pos.leftTop.x += 25;
-        _keys.push_back(TouchKey('R', pos)); pos.leftTop.x += 25;
-        _keys.push_back(TouchKey('T', pos)); pos.leftTop.x += 25;
-        _keys.push_back(TouchKey('Y', pos)); pos.leftTop.x += 25;
-        _keys.push_back(TouchKey('U', pos)); pos.leftTop.x += 25;
-        _keys.push_back(TouchKey('I', pos)); pos.leftTop.x += 25;
-        _keys.push_back(TouchKey('O', pos)); pos.leftTop.x += 25;
-        _keys.push_back(TouchKey('P', pos)); pos.leftTop.x += 25;
-        _keys.push_back(TouchKey(KEY_BACKSPACE, Icon::DrawClearSymbol, pos));
+        _QwertyKeys.push_back(TouchKey('Q', pos)); pos.leftTop.x += 25;
+        _QwertyKeys.push_back(TouchKey('W', pos)); pos.leftTop.x += 25;
+        _QwertyKeys.push_back(TouchKey('E', pos)); pos.leftTop.x += 25;
+        _QwertyKeys.push_back(TouchKey('R', pos)); pos.leftTop.x += 25;
+        _QwertyKeys.push_back(TouchKey('T', pos)); pos.leftTop.x += 25;
+        _QwertyKeys.push_back(TouchKey('Y', pos)); pos.leftTop.x += 25;
+        _QwertyKeys.push_back(TouchKey('U', pos)); pos.leftTop.x += 25;
+        _QwertyKeys.push_back(TouchKey('I', pos)); pos.leftTop.x += 25;
+        _QwertyKeys.push_back(TouchKey('O', pos)); pos.leftTop.x += 25;
+        _QwertyKeys.push_back(TouchKey('P', pos)); pos.leftTop.x += 25;
+        _QwertyKeys.push_back(TouchKey(KEY_BACKSPACE, Icon::DrawClearSymbol, pos));
 
         pos.leftTop.x = 20;
         pos.leftTop.y = 76;
 
-        _keys.push_back(TouchKey('A', pos)); pos.leftTop.x += 25;
-        _keys.push_back(TouchKey('S', pos)); pos.leftTop.x += 25;
-        _keys.push_back(TouchKey('D', pos)); pos.leftTop.x += 25;
-        _keys.push_back(TouchKey('F', pos)); pos.leftTop.x += 25;
-        _keys.push_back(TouchKey('G', pos)); pos.leftTop.x += 25;
-        _keys.push_back(TouchKey('H', pos)); pos.leftTop.x += 25;
-        _keys.push_back(TouchKey('J', pos)); pos.leftTop.x += 25;
-        _keys.push_back(TouchKey('K', pos)); pos.leftTop.x += 25;
-        _keys.push_back(TouchKey('L', pos)); pos.leftTop.x += 25;
-        _keys.push_back(TouchKey('"', pos)); pos.leftTop.x += 25;
-        _keys.push_back(TouchKey(KEY_ENTER, Icon::DrawEnterKey, pos));
+        _QwertyKeys.push_back(TouchKey('A', pos)); pos.leftTop.x += 25;
+        _QwertyKeys.push_back(TouchKey('S', pos)); pos.leftTop.x += 25;
+        _QwertyKeys.push_back(TouchKey('D', pos)); pos.leftTop.x += 25;
+        _QwertyKeys.push_back(TouchKey('F', pos)); pos.leftTop.x += 25;
+        _QwertyKeys.push_back(TouchKey('G', pos)); pos.leftTop.x += 25;
+        _QwertyKeys.push_back(TouchKey('H', pos)); pos.leftTop.x += 25;
+        _QwertyKeys.push_back(TouchKey('J', pos)); pos.leftTop.x += 25;
+        _QwertyKeys.push_back(TouchKey('K', pos)); pos.leftTop.x += 25;
+        _QwertyKeys.push_back(TouchKey('L', pos)); pos.leftTop.x += 25;
+        _QwertyKeys.push_back(TouchKey('"', pos)); pos.leftTop.x += 25;
+        _QwertyKeys.push_back(TouchKey(KEY_ENTER, Icon::DrawEnterKey, pos));
 
         pos.leftTop.x = 20;
         pos.leftTop.y = 116;
 
-        _keys.push_back(TouchKey(KEY_CAPS, Icon::DrawCapsLockOn, pos)); pos.leftTop.x += 25;
-        _keys.push_back(TouchKey('Z', pos)); pos.leftTop.x += 25;
-        _keys.push_back(TouchKey('X', pos)); pos.leftTop.x += 25;
-        _keys.push_back(TouchKey('C', pos)); pos.leftTop.x += 25;
-        _keys.push_back(TouchKey('V', pos)); pos.leftTop.x += 25;
-        _keys.push_back(TouchKey('B', pos)); pos.leftTop.x += 25;
-        _keys.push_back(TouchKey('N', pos)); pos.leftTop.x += 25;
-        _keys.push_back(TouchKey('M', pos)); pos.leftTop.x += 25;
-        _keys.push_back(TouchKey(';', pos)); pos.leftTop.x += 25;
-        _keys.push_back(TouchKey(':', pos)); pos.leftTop.x += 25;
-        _keys.push_back(TouchKey('!', pos));
+        _QwertyKeys.push_back(TouchKey(KEY_CAPS, Icon::DrawCapsLockOn, pos)); pos.leftTop.x += 25;
+        _QwertyKeys.push_back(TouchKey('Z', pos)); pos.leftTop.x += 25;
+        _QwertyKeys.push_back(TouchKey('X', pos)); pos.leftTop.x += 25;
+        _QwertyKeys.push_back(TouchKey('C', pos)); pos.leftTop.x += 25;
+        _QwertyKeys.push_back(TouchKey('V', pos)); pos.leftTop.x += 25;
+        _QwertyKeys.push_back(TouchKey('B', pos)); pos.leftTop.x += 25;
+        _QwertyKeys.push_back(TouchKey('N', pos)); pos.leftTop.x += 25;
+        _QwertyKeys.push_back(TouchKey('M', pos)); pos.leftTop.x += 25;
+        _QwertyKeys.push_back(TouchKey(';', pos)); pos.leftTop.x += 25;
+        _QwertyKeys.push_back(TouchKey(':', pos)); pos.leftTop.x += 25;
+        _QwertyKeys.push_back(TouchKey('!', pos));
 
         pos.leftTop.x = 20;
         pos.leftTop.y = 156;
 
         pos.size.x = 40;
-        _keys.push_back(TouchKey("+=@", pos, KEY_SYMBOLS)); pos.leftTop.x += 40;
-        _keys.push_back(TouchKey("\uE008", pos, KEY_SMILEY)); pos.leftTop.x += 40;
+        _QwertyKeys.push_back(TouchKey("+=@", pos, KEY_SYMBOLS)); pos.leftTop.x += 40;
+        _QwertyKeys.push_back(TouchKey("\uE008", pos, KEY_SMILEY)); pos.leftTop.x += 40;
         pos.size.x = 120;
-        _keys.push_back(TouchKey("\uE057", pos, KEY_SPACE));
+        _QwertyKeys.push_back(TouchKey("\uE057", pos, KEY_SPACE));
     }
 
     void KeyboardImpl::_QwertySymbols(void)
@@ -862,116 +870,116 @@ namespace CTRPluginFramework
         IntRect pos(20, 36, 25, 40);
 
         /*page 1*/
-        _keys.push_back(TouchKey('?', pos)); pos.leftTop.x += 25;
-        _keys.push_back(TouchKey('!', pos)); pos.leftTop.x += 25;
-        _keys.push_back(TouchKey('@', pos)); pos.leftTop.x += 25;
-        _keys.push_back(TouchKey('#', pos)); pos.leftTop.x += 25;
-        _keys.push_back(TouchKey('$', pos)); pos.leftTop.x += 25;
-        _keys.push_back(TouchKey('%', pos)); pos.leftTop.x += 25;
-        _keys.push_back(TouchKey('&', pos)); pos.leftTop.x += 25;
-        _keys.push_back(TouchKey('1', pos)); pos.leftTop.x += 25;
-        _keys.push_back(TouchKey('2', pos)); pos.leftTop.x += 25;
-        _keys.push_back(TouchKey('3', pos)); pos.leftTop.x += 25;
-        _keys.push_back(TouchKey(KEY_BACKSPACE, Icon::DrawClearSymbol, pos));
+        _QwertyKeys.push_back(TouchKey('?', pos)); pos.leftTop.x += 25;
+        _QwertyKeys.push_back(TouchKey('!', pos)); pos.leftTop.x += 25;
+        _QwertyKeys.push_back(TouchKey('@', pos)); pos.leftTop.x += 25;
+        _QwertyKeys.push_back(TouchKey('#', pos)); pos.leftTop.x += 25;
+        _QwertyKeys.push_back(TouchKey('$', pos)); pos.leftTop.x += 25;
+        _QwertyKeys.push_back(TouchKey('%', pos)); pos.leftTop.x += 25;
+        _QwertyKeys.push_back(TouchKey('&', pos)); pos.leftTop.x += 25;
+        _QwertyKeys.push_back(TouchKey('1', pos)); pos.leftTop.x += 25;
+        _QwertyKeys.push_back(TouchKey('2', pos)); pos.leftTop.x += 25;
+        _QwertyKeys.push_back(TouchKey('3', pos)); pos.leftTop.x += 25;
+        _QwertyKeys.push_back(TouchKey(KEY_BACKSPACE, Icon::DrawClearSymbol, pos));
 
         pos.leftTop.x = 20;
         pos.leftTop.y = 76;
 
-        _keys.push_back(TouchKey('(', pos)); pos.leftTop.x += 25;
-        _keys.push_back(TouchKey(')', pos)); pos.leftTop.x += 25;
-        _keys.push_back(TouchKey('-', pos)); pos.leftTop.x += 25;
-        _keys.push_back(TouchKey('_', pos)); pos.leftTop.x += 25;
-        _keys.push_back(TouchKey('=', pos)); pos.leftTop.x += 25;
-        _keys.push_back(TouchKey("\u00F7", pos)); pos.leftTop.x += 25;
-        _keys.push_back(TouchKey('+', pos)); pos.leftTop.x += 25;
-        _keys.push_back(TouchKey('4', pos)); pos.leftTop.x += 25;
-        _keys.push_back(TouchKey('5', pos)); pos.leftTop.x += 25;
-        _keys.push_back(TouchKey('6', pos)); pos.leftTop.x += 25;
-        _keys.push_back(TouchKey(KEY_ENTER, Icon::DrawEnterKey, pos));
+        _QwertyKeys.push_back(TouchKey('(', pos)); pos.leftTop.x += 25;
+        _QwertyKeys.push_back(TouchKey(')', pos)); pos.leftTop.x += 25;
+        _QwertyKeys.push_back(TouchKey('-', pos)); pos.leftTop.x += 25;
+        _QwertyKeys.push_back(TouchKey('_', pos)); pos.leftTop.x += 25;
+        _QwertyKeys.push_back(TouchKey('=', pos)); pos.leftTop.x += 25;
+        _QwertyKeys.push_back(TouchKey("\u00F7", pos)); pos.leftTop.x += 25;
+        _QwertyKeys.push_back(TouchKey('+', pos)); pos.leftTop.x += 25;
+        _QwertyKeys.push_back(TouchKey('4', pos)); pos.leftTop.x += 25;
+        _QwertyKeys.push_back(TouchKey('5', pos)); pos.leftTop.x += 25;
+        _QwertyKeys.push_back(TouchKey('6', pos)); pos.leftTop.x += 25;
+        _QwertyKeys.push_back(TouchKey(KEY_ENTER, Icon::DrawEnterKey, pos));
 
         pos.leftTop.x = 20;
         pos.leftTop.y = 116;
 
-        _keys.push_back(TouchKey("\u2192", pos, KEY_SYMBOLS_PAGE)); pos.leftTop.x += 25;
-        _keys.push_back(TouchKey('\\', pos)); pos.leftTop.x += 25;
-        _keys.push_back(TouchKey(';', pos)); pos.leftTop.x += 25;
-        _keys.push_back(TouchKey(':', pos)); pos.leftTop.x += 25;
-        _keys.push_back(TouchKey('"', pos)); pos.leftTop.x += 25;
-        _keys.push_back(TouchKey('*', pos)); pos.leftTop.x += 25;
-        _keys.push_back(TouchKey('/', pos)); pos.leftTop.x += 25;
-        _keys.push_back(TouchKey('7', pos)); pos.leftTop.x += 25;
-        _keys.push_back(TouchKey('8', pos)); pos.leftTop.x += 25;
-        _keys.push_back(TouchKey('9', pos));
+        _QwertyKeys.push_back(TouchKey("\u2192", pos, KEY_SYMBOLS_PAGE)); pos.leftTop.x += 25;
+        _QwertyKeys.push_back(TouchKey('\\', pos)); pos.leftTop.x += 25;
+        _QwertyKeys.push_back(TouchKey(';', pos)); pos.leftTop.x += 25;
+        _QwertyKeys.push_back(TouchKey(':', pos)); pos.leftTop.x += 25;
+        _QwertyKeys.push_back(TouchKey('"', pos)); pos.leftTop.x += 25;
+        _QwertyKeys.push_back(TouchKey('*', pos)); pos.leftTop.x += 25;
+        _QwertyKeys.push_back(TouchKey('/', pos)); pos.leftTop.x += 25;
+        _QwertyKeys.push_back(TouchKey('7', pos)); pos.leftTop.x += 25;
+        _QwertyKeys.push_back(TouchKey('8', pos)); pos.leftTop.x += 25;
+        _QwertyKeys.push_back(TouchKey('9', pos));
 
         pos.leftTop.x = 20;
         pos.leftTop.y = 156;
 
         pos.size.x = 40;
-        _keys.push_back(TouchKey("+=@", pos, KEY_SYMBOLS)); pos.leftTop.x += 40;
-        _keys.push_back(TouchKey("\uE008", pos, KEY_SMILEY)); pos.leftTop.x += 40;
+        _QwertyKeys.push_back(TouchKey("+=@", pos, KEY_SYMBOLS)); pos.leftTop.x += 40;
+        _QwertyKeys.push_back(TouchKey("\uE008", pos, KEY_SMILEY)); pos.leftTop.x += 40;
         pos.size.x = 120;
-        _keys.push_back(TouchKey("\uE057", pos, KEY_SPACE)); pos.leftTop.x += 120;
+        _QwertyKeys.push_back(TouchKey("\uE057", pos, KEY_SPACE)); pos.leftTop.x += 120;
         pos.size.x = 25;
-        _keys.push_back(TouchKey('0', pos)); pos.leftTop.x += 25;
-        _keys.push_back(TouchKey('.', pos));
+        _QwertyKeys.push_back(TouchKey('0', pos)); pos.leftTop.x += 25;
+        _QwertyKeys.push_back(TouchKey('.', pos));
 
         pos.leftTop.x = 20;
         pos.leftTop.y = 36;
 
         /*page 2*/
-        _keys.push_back(TouchKey("\u2022", pos)); pos.leftTop.x += 25;
-        _keys.push_back(TouchKey("\u00A9", pos)); pos.leftTop.x += 25;
-        _keys.push_back(TouchKey("\u20AC", pos)); pos.leftTop.x += 25;
-        _keys.push_back(TouchKey("\u00A3", pos)); pos.leftTop.x += 25;
-        _keys.push_back(TouchKey("\u00A5", pos)); pos.leftTop.x += 25;
-        _keys.push_back(TouchKey("\u00B5", pos)); pos.leftTop.x += 25;
-        _keys.push_back(TouchKey("\u00A7", pos)); pos.leftTop.x += 25;
-        _keys.push_back(TouchKey('1', pos)); pos.leftTop.x += 25;
-        _keys.push_back(TouchKey('2', pos)); pos.leftTop.x += 25;
-        _keys.push_back(TouchKey('3', pos)); pos.leftTop.x += 25;
-        _keys.push_back(TouchKey(KEY_BACKSPACE, Icon::DrawClearSymbol, pos));
+        _QwertyKeys.push_back(TouchKey("\u2022", pos)); pos.leftTop.x += 25;
+        _QwertyKeys.push_back(TouchKey("\u00A9", pos)); pos.leftTop.x += 25;
+        _QwertyKeys.push_back(TouchKey("\u20AC", pos)); pos.leftTop.x += 25;
+        _QwertyKeys.push_back(TouchKey("\u00A3", pos)); pos.leftTop.x += 25;
+        _QwertyKeys.push_back(TouchKey("\u00A5", pos)); pos.leftTop.x += 25;
+        _QwertyKeys.push_back(TouchKey("\u00B5", pos)); pos.leftTop.x += 25;
+        _QwertyKeys.push_back(TouchKey("\u00A7", pos)); pos.leftTop.x += 25;
+        _QwertyKeys.push_back(TouchKey('1', pos)); pos.leftTop.x += 25;
+        _QwertyKeys.push_back(TouchKey('2', pos)); pos.leftTop.x += 25;
+        _QwertyKeys.push_back(TouchKey('3', pos)); pos.leftTop.x += 25;
+        _QwertyKeys.push_back(TouchKey(KEY_BACKSPACE, Icon::DrawClearSymbol, pos));
 
         pos.leftTop.x = 20;
         pos.leftTop.y = 76;
 
-        _keys.push_back(TouchKey("\u2122", pos)); pos.leftTop.x += 25;
-        _keys.push_back(TouchKey('<', pos)); pos.leftTop.x += 25;
-        _keys.push_back(TouchKey('>', pos)); pos.leftTop.x += 25;
-        _keys.push_back(TouchKey('[', pos)); pos.leftTop.x += 25;
-        _keys.push_back(TouchKey(']', pos)); pos.leftTop.x += 25;
-        _keys.push_back(TouchKey('{', pos)); pos.leftTop.x += 25;
-        _keys.push_back(TouchKey('}', pos)); pos.leftTop.x += 25;
-        _keys.push_back(TouchKey('4', pos)); pos.leftTop.x += 25;
-        _keys.push_back(TouchKey('5', pos)); pos.leftTop.x += 25;
-        _keys.push_back(TouchKey('6', pos)); pos.leftTop.x += 25;
-        _keys.push_back(TouchKey(KEY_ENTER, Icon::DrawEnterKey, pos));
+        _QwertyKeys.push_back(TouchKey("\u2122", pos)); pos.leftTop.x += 25;
+        _QwertyKeys.push_back(TouchKey('<', pos)); pos.leftTop.x += 25;
+        _QwertyKeys.push_back(TouchKey('>', pos)); pos.leftTop.x += 25;
+        _QwertyKeys.push_back(TouchKey('[', pos)); pos.leftTop.x += 25;
+        _QwertyKeys.push_back(TouchKey(']', pos)); pos.leftTop.x += 25;
+        _QwertyKeys.push_back(TouchKey('{', pos)); pos.leftTop.x += 25;
+        _QwertyKeys.push_back(TouchKey('}', pos)); pos.leftTop.x += 25;
+        _QwertyKeys.push_back(TouchKey('4', pos)); pos.leftTop.x += 25;
+        _QwertyKeys.push_back(TouchKey('5', pos)); pos.leftTop.x += 25;
+        _QwertyKeys.push_back(TouchKey('6', pos)); pos.leftTop.x += 25;
+        _QwertyKeys.push_back(TouchKey(KEY_ENTER, Icon::DrawEnterKey, pos));
 
         pos.leftTop.x = 20;
         pos.leftTop.y = 116;
 
-        _keys.push_back(TouchKey("\u2190", pos, KEY_SYMBOLS_PAGE)); pos.leftTop.x += 25;
-        _keys.push_back(TouchKey('|', pos)); pos.leftTop.x += 25;
-        _keys.push_back(TouchKey("\u00B2", pos)); pos.leftTop.x += 25;
-        _keys.push_back(TouchKey('`', pos)); pos.leftTop.x += 25;
-        _keys.push_back(TouchKey("\u00B0", pos)); pos.leftTop.x += 25;
-        _keys.push_back(TouchKey('~', pos)); pos.leftTop.x += 25;
-        _keys.push_back(TouchKey('^', pos)); pos.leftTop.x += 25;
-        _keys.push_back(TouchKey('7', pos)); pos.leftTop.x += 25;
-        _keys.push_back(TouchKey('8', pos)); pos.leftTop.x += 25;
-        _keys.push_back(TouchKey('9', pos)); pos.leftTop.x += 25;
-        _keys.push_back(TouchKey("\u00B1", pos));
+        _QwertyKeys.push_back(TouchKey("\u2190", pos, KEY_SYMBOLS_PAGE)); pos.leftTop.x += 25;
+        _QwertyKeys.push_back(TouchKey('|', pos)); pos.leftTop.x += 25;
+        _QwertyKeys.push_back(TouchKey("\u00B2", pos)); pos.leftTop.x += 25;
+        _QwertyKeys.push_back(TouchKey('`', pos)); pos.leftTop.x += 25;
+        _QwertyKeys.push_back(TouchKey("\u00B0", pos)); pos.leftTop.x += 25;
+        _QwertyKeys.push_back(TouchKey('~', pos)); pos.leftTop.x += 25;
+        _QwertyKeys.push_back(TouchKey('^', pos)); pos.leftTop.x += 25;
+        _QwertyKeys.push_back(TouchKey('7', pos)); pos.leftTop.x += 25;
+        _QwertyKeys.push_back(TouchKey('8', pos)); pos.leftTop.x += 25;
+        _QwertyKeys.push_back(TouchKey('9', pos)); pos.leftTop.x += 25;
+        _QwertyKeys.push_back(TouchKey("\u00B1", pos));
 
         pos.leftTop.x = 20;
         pos.leftTop.y = 156;
 
         pos.size.x = 40;
-        _keys.push_back(TouchKey("+=@", pos, KEY_SYMBOLS)); pos.leftTop.x += 40;
-        _keys.push_back(TouchKey("\uE008", pos, KEY_SMILEY)); pos.leftTop.x += 40;
+        _QwertyKeys.push_back(TouchKey("+=@", pos, KEY_SYMBOLS)); pos.leftTop.x += 40;
+        _QwertyKeys.push_back(TouchKey("\uE008", pos, KEY_SMILEY)); pos.leftTop.x += 40;
         pos.size.x = 120;
-        _keys.push_back(TouchKey("\uE057", pos, KEY_SPACE)); pos.leftTop.x += 120;
+        _QwertyKeys.push_back(TouchKey("\uE057", pos, KEY_SPACE)); pos.leftTop.x += 120;
         pos.size.x = 25;
-        _keys.push_back(TouchKey('0', pos)); pos.leftTop.x += 25;
-        _keys.push_back(TouchKey('.', pos));
+        _QwertyKeys.push_back(TouchKey('0', pos)); pos.leftTop.x += 25;
+        _QwertyKeys.push_back(TouchKey('.', pos));
     }
 
     void KeyboardImpl::_QwertyNintendo()
@@ -980,116 +988,121 @@ namespace CTRPluginFramework
         IntRect pos(20, 36, 25, 40);
 
         /*page 1*/
-        _keys.push_back(TouchKey("\uE000" /* A */, pos)); pos.leftTop.x += 25;
-        _keys.push_back(TouchKey("\uE001" /* B */, pos)); pos.leftTop.x += 25;
-        _keys.push_back(TouchKey("\uE002" /* X */, pos)); pos.leftTop.x += 25;
-        _keys.push_back(TouchKey("\uE003" /* Y */, pos)); pos.leftTop.x += 25;
-        _keys.push_back(TouchKey("\uE004" /* L */, pos)); pos.leftTop.x += 25;
-        _keys.push_back(TouchKey("\uE005" /* R */, pos)); pos.leftTop.x += 25;
-        _keys.push_back(TouchKey("\uE054" /* ZL */, pos)); pos.leftTop.x += 25;
-        _keys.push_back(TouchKey("\uE055" /* ZR */, pos)); pos.leftTop.x += 25;
-        _keys.push_back(TouchKey("\uE006" /* DPAD */, pos)); pos.leftTop.x += 25;
-        _keys.push_back(TouchKey("\uE041" /* DPAD Wii*/, pos)); pos.leftTop.x += 25;
-        _keys.push_back(TouchKey(KEY_BACKSPACE, Icon::DrawClearSymbol, pos));
+        _QwertyKeys.push_back(TouchKey("\uE000" /* A */, pos)); pos.leftTop.x += 25;
+        _QwertyKeys.push_back(TouchKey("\uE001" /* B */, pos)); pos.leftTop.x += 25;
+        _QwertyKeys.push_back(TouchKey("\uE002" /* X */, pos)); pos.leftTop.x += 25;
+        _QwertyKeys.push_back(TouchKey("\uE003" /* Y */, pos)); pos.leftTop.x += 25;
+        _QwertyKeys.push_back(TouchKey("\uE004" /* L */, pos)); pos.leftTop.x += 25;
+        _QwertyKeys.push_back(TouchKey("\uE005" /* R */, pos)); pos.leftTop.x += 25;
+        _QwertyKeys.push_back(TouchKey("\uE054" /* ZL */, pos)); pos.leftTop.x += 25;
+        _QwertyKeys.push_back(TouchKey("\uE055" /* ZR */, pos)); pos.leftTop.x += 25;
+        _QwertyKeys.push_back(TouchKey("\uE006" /* DPAD */, pos)); pos.leftTop.x += 25;
+        _QwertyKeys.push_back(TouchKey("\uE041" /* DPAD Wii*/, pos)); pos.leftTop.x += 25;
+        _QwertyKeys.push_back(TouchKey(KEY_BACKSPACE, Icon::DrawClearSymbol, pos));
 
         pos.leftTop.x = 20;
         pos.leftTop.y = 76;
 
-        _keys.push_back(TouchKey("\uE04C" /* a */, pos)); pos.leftTop.x += 25;
-        _keys.push_back(TouchKey("\uE04D" /* b */, pos)); pos.leftTop.x += 25;
-        _keys.push_back(TouchKey("\uE04E" /* x */, pos)); pos.leftTop.x += 25;
-        _keys.push_back(TouchKey("\uE04F" /* y */, pos)); pos.leftTop.x += 25;
-        _keys.push_back(TouchKey("\uE052" /* l */, pos)); pos.leftTop.x += 25;
-        _keys.push_back(TouchKey("\uE053" /* r */, pos)); pos.leftTop.x += 25;
-        _keys.push_back(TouchKey("\uE050" /* L Stick */, pos)); pos.leftTop.x += 25;
-        _keys.push_back(TouchKey("\uE051" /* R Stick */, pos)); pos.leftTop.x += 25;
-        _keys.push_back(TouchKey("\uE042" /* A Wii */, pos)); pos.leftTop.x += 25;
-        _keys.push_back(TouchKey("\uE043" /* B Wii */, pos)); pos.leftTop.x += 25;
-        _keys.push_back(TouchKey(KEY_ENTER, Icon::DrawEnterKey, pos));
+        _QwertyKeys.push_back(TouchKey("\uE04C" /* a */, pos)); pos.leftTop.x += 25;
+        _QwertyKeys.push_back(TouchKey("\uE04D" /* b */, pos)); pos.leftTop.x += 25;
+        _QwertyKeys.push_back(TouchKey("\uE04E" /* x */, pos)); pos.leftTop.x += 25;
+        _QwertyKeys.push_back(TouchKey("\uE04F" /* y */, pos)); pos.leftTop.x += 25;
+        _QwertyKeys.push_back(TouchKey("\uE052" /* l */, pos)); pos.leftTop.x += 25;
+        _QwertyKeys.push_back(TouchKey("\uE053" /* r */, pos)); pos.leftTop.x += 25;
+        _QwertyKeys.push_back(TouchKey("\uE050" /* L Stick */, pos)); pos.leftTop.x += 25;
+        _QwertyKeys.push_back(TouchKey("\uE051" /* R Stick */, pos)); pos.leftTop.x += 25;
+        _QwertyKeys.push_back(TouchKey("\uE042" /* A Wii */, pos)); pos.leftTop.x += 25;
+        _QwertyKeys.push_back(TouchKey("\uE043" /* B Wii */, pos)); pos.leftTop.x += 25;
+        _QwertyKeys.push_back(TouchKey(KEY_ENTER, Icon::DrawEnterKey, pos));
 
         pos.leftTop.x = 20;
         pos.leftTop.y = 116;
 
-        _keys.push_back(TouchKey("\u2192", pos, KEY_NINTENDO_PAGE)); pos.leftTop.x += 25;
-        _keys.push_back(TouchKey("\uE040" /* Power */, pos)); pos.leftTop.x += 25;
-        _keys.push_back(TouchKey("\uE044" /* Home */, pos)); pos.leftTop.x += 25;
-        _keys.push_back(TouchKey("\uE045" /* + */, pos)); pos.leftTop.x += 25;
-        _keys.push_back(TouchKey("\uE046" /* - */, pos)); pos.leftTop.x += 25;
-        _keys.push_back(TouchKey("\uE047" /* 1 */, pos)); pos.leftTop.x += 25;
-        _keys.push_back(TouchKey("\uE048" /* 2 */, pos)); pos.leftTop.x += 25;
-        _keys.push_back(TouchKey("\uE049" /* Stick */, pos)); pos.leftTop.x += 25;
-        _keys.push_back(TouchKey("\uE04A" /* C */, pos)); pos.leftTop.x += 25;
-        _keys.push_back(TouchKey("\uE04B" /* Z */, pos)); pos.leftTop.x += 25;
+        _QwertyKeys.push_back(TouchKey("\u2192", pos, KEY_NINTENDO_PAGE)); pos.leftTop.x += 25;
+        _QwertyKeys.push_back(TouchKey("\uE040" /* Power */, pos)); pos.leftTop.x += 25;
+        _QwertyKeys.push_back(TouchKey("\uE044" /* Home */, pos)); pos.leftTop.x += 25;
+        _QwertyKeys.push_back(TouchKey("\uE045" /* + */, pos)); pos.leftTop.x += 25;
+        _QwertyKeys.push_back(TouchKey("\uE046" /* - */, pos)); pos.leftTop.x += 25;
+        _QwertyKeys.push_back(TouchKey("\uE047" /* 1 */, pos)); pos.leftTop.x += 25;
+        _QwertyKeys.push_back(TouchKey("\uE048" /* 2 */, pos)); pos.leftTop.x += 25;
+        _QwertyKeys.push_back(TouchKey("\uE049" /* Stick */, pos)); pos.leftTop.x += 25;
+        _QwertyKeys.push_back(TouchKey("\uE04A" /* C */, pos)); pos.leftTop.x += 25;
+        _QwertyKeys.push_back(TouchKey("\uE04B" /* Z */, pos)); pos.leftTop.x += 25;
 
         pos.leftTop.x = 20;
         pos.leftTop.y = 156;
 
         pos.size.x = 40;
-        _keys.push_back(TouchKey("+=@", pos, KEY_SYMBOLS)); pos.leftTop.x += 40;
-        _keys.push_back(TouchKey("\uE008", pos, KEY_SMILEY)); pos.leftTop.x += 40;
+        _QwertyKeys.push_back(TouchKey("+=@", pos, KEY_SYMBOLS)); pos.leftTop.x += 40;
+        _QwertyKeys.push_back(TouchKey("\uE008", pos, KEY_SMILEY)); pos.leftTop.x += 40;
 
         pos.size.x = 120;
-        _keys.push_back(TouchKey("\uE057", pos, KEY_SPACE));
+        _QwertyKeys.push_back(TouchKey("\uE057", pos, KEY_SPACE));
         pos.size.x = 25;
 
         pos.leftTop.x = 20;
         pos.leftTop.y = 36;
 
         /*page 2*/
-        _keys.push_back(TouchKey("\uE079" /* DPAD UP */, pos)); pos.leftTop.x += 25;
-        _keys.push_back(TouchKey("\uE07B" /* DPAD DOWN */, pos)); pos.leftTop.x += 25;
-        _keys.push_back(TouchKey("\uE07C" /* DPAD LEFT */, pos)); pos.leftTop.x += 25;
-        _keys.push_back(TouchKey("\uE07D" /* DPAD RIGHT */, pos)); pos.leftTop.x += 25;
-        _keys.push_back(TouchKey("\uE07E" /* DPAD UP&DOWN */, pos)); pos.leftTop.x += 25;
-        _keys.push_back(TouchKey("\uE07F" /* DPAD LEFT&RIGHT */, pos)); pos.leftTop.x += 25;
-        _keys.push_back(TouchKey("\uE077" /* Wii Stick */, pos)); pos.leftTop.x += 25;
-        _keys.push_back(TouchKey("\uE078" /* Wii Power */, pos)); pos.leftTop.x += 25;
-        _keys.push_back(TouchKey("\uE056" /* Enter */, pos)); pos.leftTop.x += 25;
-        _keys.push_back(TouchKey("\uE057" /* Space*/, pos)); pos.leftTop.x += 25;
-        _keys.push_back(TouchKey(KEY_BACKSPACE, Icon::DrawClearSymbol, pos));
+        _QwertyKeys.push_back(TouchKey("\uE079" /* DPAD UP */, pos)); pos.leftTop.x += 25;
+        _QwertyKeys.push_back(TouchKey("\uE07B" /* DPAD DOWN */, pos)); pos.leftTop.x += 25;
+        _QwertyKeys.push_back(TouchKey("\uE07C" /* DPAD LEFT */, pos)); pos.leftTop.x += 25;
+        _QwertyKeys.push_back(TouchKey("\uE07D" /* DPAD RIGHT */, pos)); pos.leftTop.x += 25;
+        _QwertyKeys.push_back(TouchKey("\uE07E" /* DPAD UP&DOWN */, pos)); pos.leftTop.x += 25;
+        _QwertyKeys.push_back(TouchKey("\uE07F" /* DPAD LEFT&RIGHT */, pos)); pos.leftTop.x += 25;
+        _QwertyKeys.push_back(TouchKey("\uE077" /* Wii Stick */, pos)); pos.leftTop.x += 25;
+        _QwertyKeys.push_back(TouchKey("\uE078" /* Wii Power */, pos)); pos.leftTop.x += 25;
+        _QwertyKeys.push_back(TouchKey("\uE056" /* Enter */, pos)); pos.leftTop.x += 25;
+        _QwertyKeys.push_back(TouchKey("\uE057" /* Space*/, pos)); pos.leftTop.x += 25;
+        _QwertyKeys.push_back(TouchKey(KEY_BACKSPACE, Icon::DrawClearSymbol, pos));
 
         pos.leftTop.x = 20;
         pos.leftTop.y = 76;
 
-        _keys.push_back(TouchKey("\uE007" /* Clock */, pos)); pos.leftTop.x += 25;
-        _keys.push_back(TouchKey("\uE008" /* Happy */, pos)); pos.leftTop.x += 25;
-        _keys.push_back(TouchKey("\uE009" /* Angry */, pos)); pos.leftTop.x += 25;
-        _keys.push_back(TouchKey("\uE00A" /* Sad */, pos)); pos.leftTop.x += 25;
-        _keys.push_back(TouchKey("\uE00B" /* ExpressionLess */, pos)); pos.leftTop.x += 25;
-        _keys.push_back(TouchKey("\uE00C" /* Sun */, pos)); pos.leftTop.x += 25;
-        _keys.push_back(TouchKey("\uE00D" /* Cloud */, pos)); pos.leftTop.x += 25;
-        _keys.push_back(TouchKey("\uE00E" /* Umbrella */, pos)); pos.leftTop.x += 25;
-        _keys.push_back(TouchKey("\uE00F" /* Snowman */, pos)); pos.leftTop.x += 25;
-        _keys.push_back(TouchKey("\uE06B" /* ? */, pos)); pos.leftTop.x += 25;
-        _keys.push_back(TouchKey(KEY_ENTER, Icon::DrawEnterKey, pos));
+        _QwertyKeys.push_back(TouchKey("\uE007" /* Clock */, pos)); pos.leftTop.x += 25;
+        _QwertyKeys.push_back(TouchKey("\uE008" /* Happy */, pos)); pos.leftTop.x += 25;
+        _QwertyKeys.push_back(TouchKey("\uE009" /* Angry */, pos)); pos.leftTop.x += 25;
+        _QwertyKeys.push_back(TouchKey("\uE00A" /* Sad */, pos)); pos.leftTop.x += 25;
+        _QwertyKeys.push_back(TouchKey("\uE00B" /* ExpressionLess */, pos)); pos.leftTop.x += 25;
+        _QwertyKeys.push_back(TouchKey("\uE00C" /* Sun */, pos)); pos.leftTop.x += 25;
+        _QwertyKeys.push_back(TouchKey("\uE00D" /* Cloud */, pos)); pos.leftTop.x += 25;
+        _QwertyKeys.push_back(TouchKey("\uE00E" /* Umbrella */, pos)); pos.leftTop.x += 25;
+        _QwertyKeys.push_back(TouchKey("\uE00F" /* Snowman */, pos)); pos.leftTop.x += 25;
+        _QwertyKeys.push_back(TouchKey("\uE06B" /* ? */, pos)); pos.leftTop.x += 25;
+        _QwertyKeys.push_back(TouchKey(KEY_ENTER, Icon::DrawEnterKey, pos));
 
         pos.leftTop.x = 20;
         pos.leftTop.y = 116;
 
-        _keys.push_back(TouchKey("\u2190", pos, KEY_NINTENDO_PAGE)); pos.leftTop.x += 25;
-        _keys.push_back(TouchKey("\uE015" /*  */, pos)); pos.leftTop.x += 25;
-        _keys.push_back(TouchKey("\uE016" /*  */, pos)); pos.leftTop.x += 25;
-        _keys.push_back(TouchKey("\uE017" /*  */, pos)); pos.leftTop.x += 25;
-        _keys.push_back(TouchKey("\uE018" /*  */, pos)); pos.leftTop.x += 25;
-        _keys.push_back(TouchKey("\uE019" /* Arrow Right */, pos)); pos.leftTop.x += 25;
-        _keys.push_back(TouchKey("\uE01A" /* Arrow Left */, pos)); pos.leftTop.x += 25;
-        _keys.push_back(TouchKey("\uE01B" /* Arrow Up */, pos)); pos.leftTop.x += 25;
-        _keys.push_back(TouchKey("\uE01C" /* Arow Down */, pos)); pos.leftTop.x += 25;
-        _keys.push_back(TouchKey("\uE01E" /* Camera */, pos)); pos.leftTop.x += 25;
+        _QwertyKeys.push_back(TouchKey("\u2190", pos, KEY_NINTENDO_PAGE)); pos.leftTop.x += 25;
+        _QwertyKeys.push_back(TouchKey("\uE015" /*  */, pos)); pos.leftTop.x += 25;
+        _QwertyKeys.push_back(TouchKey("\uE016" /*  */, pos)); pos.leftTop.x += 25;
+        _QwertyKeys.push_back(TouchKey("\uE017" /*  */, pos)); pos.leftTop.x += 25;
+        _QwertyKeys.push_back(TouchKey("\uE018" /*  */, pos)); pos.leftTop.x += 25;
+        _QwertyKeys.push_back(TouchKey("\uE019" /* Arrow Right */, pos)); pos.leftTop.x += 25;
+        _QwertyKeys.push_back(TouchKey("\uE01A" /* Arrow Left */, pos)); pos.leftTop.x += 25;
+        _QwertyKeys.push_back(TouchKey("\uE01B" /* Arrow Up */, pos)); pos.leftTop.x += 25;
+        _QwertyKeys.push_back(TouchKey("\uE01C" /* Arow Down */, pos)); pos.leftTop.x += 25;
+        _QwertyKeys.push_back(TouchKey("\uE01E" /* Camera */, pos)); pos.leftTop.x += 25;
 
         pos.leftTop.x = 20;
         pos.leftTop.y = 156;
 
         pos.size.x = 40;
-        _keys.push_back(TouchKey("+=@", pos, KEY_SYMBOLS)); pos.leftTop.x += 40;
-        _keys.push_back(TouchKey("\uE008", pos, KEY_SMILEY)); pos.leftTop.x += 40;
+        _QwertyKeys.push_back(TouchKey("+=@", pos, KEY_SYMBOLS)); pos.leftTop.x += 40;
+        _QwertyKeys.push_back(TouchKey("\uE008", pos, KEY_SMILEY)); pos.leftTop.x += 40;
         pos.size.x = 120;
-        _keys.push_back(TouchKey("\uE057", pos, KEY_SPACE));
+        _QwertyKeys.push_back(TouchKey("\uE057", pos, KEY_SPACE));
     }
 
 
     void    KeyboardImpl::_Qwerty(void)
     {
+        _keys = &_QwertyKeys;
+
+        if (!_QwertyKeys.empty())
+            return;
+
         /* 0 - 35*/
         _QwertyLowCase();
         /*36 - 71*/
@@ -1126,7 +1139,7 @@ namespace CTRPluginFramework
     ** [18] = '0'
     *************************/
 
-    void    KeyboardImpl::_DigitKeyboard(void)
+    void    KeyboardImpl::_DigitKeyboard(std::vector<TouchKey> &keys)
     {
         //Start
         IntRect pos(20, 36, 46, 46);
@@ -1135,7 +1148,7 @@ namespace CTRPluginFramework
         char c = 'A';
         for (int i = 0; i < 6; i++, c++)
         {
-            _keys.push_back(TouchKey(c, pos));
+            keys.push_back(TouchKey(c, pos));
             pos.leftTop.x += 46;
 
             if (i % 2)
@@ -1152,7 +1165,7 @@ namespace CTRPluginFramework
         c = '1';
         for (int i = 0; i < 9; i++, c++)
         {
-            _keys.push_back(TouchKey(c, pos));
+            keys.push_back(TouchKey(c, pos));
             pos.leftTop.x += 46;
 
             if (i % 3 == 2)
@@ -1167,51 +1180,61 @@ namespace CTRPluginFramework
         pos.leftTop.x = 250;
 
         // Clear key
-        _keys.push_back(TouchKey(KEY_BACKSPACE, Icon::DrawClearSymbol, pos));
+        keys.push_back(TouchKey(KEY_BACKSPACE, Icon::DrawClearSymbol, pos));
         pos.leftTop.y += 46;
 
         // Enter key
-        _keys.push_back(TouchKey(KEY_ENTER, Icon::DrawEnterKey, pos));
+        keys.push_back(TouchKey(KEY_ENTER, Icon::DrawEnterKey, pos));
         pos.leftTop.y += 46;
 
         // Dot key
-        _keys.push_back(TouchKey('.', pos));
+        keys.push_back(TouchKey('.', pos));
 
         // 0 key
         pos.leftTop.y = 174;
         pos.leftTop.x = 112;
         pos.size.x = 138;
-        _keys.push_back(TouchKey('0', pos));    
+        keys.push_back(TouchKey('0', pos));    
     }
 
     void    KeyboardImpl::_Decimal(void)
     {
-        _DigitKeyboard();
+        _keys = &_DecimalKeys;
+
+        if (!_DecimalKeys.empty())
+            return;
+
+        _DigitKeyboard(_DecimalKeys);
 
         // Disable Hex keys
-        KeyIter  iter = _keys.begin();
+        KeyIter  iter = _DecimalKeys.begin();
         KeyIter  end = iter;
         std::advance(end, 6);
 
-        for (; iter != end; iter++)
+        for (; iter != end; ++iter)
             (*iter).Enable(false);
     }
 
     void    KeyboardImpl::_Hexadecimal(void)
     {
-        _DigitKeyboard();
+        _keys = &_HexaDecimalKeys;
+
+        if (!_HexaDecimalKeys.empty())
+            return;
+
+        _DigitKeyboard(_HexaDecimalKeys);
 
         // Disable dot key
-        _keys.at(17).Enable(false);
+        _HexaDecimalKeys.at(17).Enable(false);
 
         // Disable Hex keys if users asks so
         if (!_isHex)
         {
-            KeyIter  iter = _keys.begin();
+            KeyIter  iter = _HexaDecimalKeys.begin();
             KeyIter  end = iter;
             std::advance(end, 6);
 
-            for (; iter != end; iter++)
+            for (; iter != end; ++iter)
                 (*iter).Enable(false);
         }
     }
@@ -1221,7 +1244,7 @@ namespace CTRPluginFramework
         int ret = -1;
 
         int start = 0;
-        int end = _keys.size();
+        int end = _keys->size();
 
         if (_layout == Layout::QWERTY)
         {
@@ -1274,7 +1297,7 @@ namespace CTRPluginFramework
         {
             std::string  temp;
 
-            ret = _keys[i](temp);
+            ret = (*_keys)[i](temp);
 
 
             if (ret != -1)

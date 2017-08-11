@@ -66,7 +66,7 @@ namespace CTRPluginFramework
         void    _QwertyUpCase(void);
         void    _QwertySymbols(void);
         void    _QwertyNintendo(void);
-        void    _DigitKeyboard(void);
+        static void    _DigitKeyboard(std::vector<TouchKey> &keys);
         void    _Decimal(void);
         void    _Hexadecimal(void);
 
@@ -100,7 +100,11 @@ namespace CTRPluginFramework
         ConvertCallback         _convert;
         OnInputChangeCallback   _onInputChange;
         InputChangeEvent        _inputChangeEvent;
-        std::vector<TouchKey>    _keys;
+        std::vector<TouchKey>    *_keys;
+
+        static std::vector<TouchKey>    _DecimalKeys;
+        static std::vector<TouchKey>    _HexaDecimalKeys;
+        static std::vector<TouchKey>    _QwertyKeys;
 
         // Custom keyboard stuff
         bool                    _customKeyboard;
@@ -119,6 +123,7 @@ namespace CTRPluginFramework
         Clock                   _touchTimer;
 
         std::vector<TouchKeyString> _strKeys;
+
 
     };
 }
