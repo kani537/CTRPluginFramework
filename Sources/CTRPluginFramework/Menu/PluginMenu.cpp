@@ -50,6 +50,30 @@ namespace CTRPluginFramework
         _menu->Append(folder);
     }
 
+    void    PluginMenu::operator+=(const MenuEntry *entry) const
+    {
+        if (entry == nullptr)
+            return;
+
+        MenuEntryImpl *e = entry->_item.get();
+        _menu->Append(e);
+    }
+
+    void    PluginMenu::operator+=(const MenuFolder *folder) const
+    {
+        if (folder == nullptr)
+            return;
+
+        MenuFolderImpl *f = folder->_item.get();
+        _menu->Append(f);
+    }
+
+    void    PluginMenu::operator+=(CallbackPointer callback) const
+    {
+        if (callback != nullptr)
+            _menu->Callback(callback);
+    }
+
     void    PluginMenu::Callback(CallbackPointer callback) const
     {
         if (callback != nullptr)

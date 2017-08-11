@@ -566,34 +566,42 @@ namespace CTRPluginFramework
         ************/
 
         folder = new MenuFolder("Quest");
+        {
+            MenuFolder &quest = *folder;
 
-        folder->Append(new MenuEntry("Unlock All Best Equipment", UnlockAllBest));
-        folder->Append(new MenuEntry("Unlock All Stones", UnlockAllStones));
-        folder->Append(new MenuEntry("Unlock All Medallions", UnlockAllMedallions));
-        folder->Append(new MenuEntry("Unlock Enhanced Defense", UnlockEnhancedDefense));
-        folder->Append(new MenuEntry("Unlock Heart Pieces", UnlockHeartpieces));
-        folder->Append(new MenuEntry("Infinite Small Dungeon Keys", InfiniteSmallKeysAllDungeons));
-        folder->Append(new MenuEntry("Unlock Map and Boss Key of all Dungeons", HaveMapCompassAndBossKeyAllDungeon));
-        menu.Append(folder);
+            quest += new MenuEntry("Unlock All Best Equipment", UnlockAllBest);
+            quest += new MenuEntry("Unlock All Stones", UnlockAllStones);
+            quest += new MenuEntry("Unlock All Medallions", UnlockAllMedallions);
+            quest += new MenuEntry("Unlock Enhanced Defense", UnlockEnhancedDefense);
+            quest += new MenuEntry("Unlock Heart Pieces", UnlockHeartpieces);
+            quest += new MenuEntry("Infinite Small Dungeon Keys", InfiniteSmallKeysAllDungeons);
+            quest += new MenuEntry("Unlock Map and Boss Key of all Dungeons", HaveMapCompassAndBossKeyAllDungeon);
+
+            menu += folder;
+        }
+
         /*
         ** Misc codes
         *************/
         folder = new MenuFolder("Misc.");
+        {
+            MenuFolder &misc = *folder;
 
-        folder->Append(new MenuEntry("Giant Link", GiantLink));
-        folder->Append(new MenuEntry("Normal Link", NormalLink));
-        folder->Append(new MenuEntry("Mini Link", MiniLink));
-        folder->Append(new MenuEntry("Paper Link", PaperLink));
-        folder->Append(new MenuEntry("Link always have his child voice", AlwaysChildLinkVoice));
-        folder->Append(new MenuEntry("Link always have his adult voice", AlwaysAdultLinkVoice));
-        folder->Append(new MenuEntry("Open Chest Many Times", OpenAnyChestInTheGameAsManyTimes));
-        folder->Append(new MenuEntry("Collect Heart Piece Many Times", CollectHeartPiecesInOverworldAsMany));
-        folder->Append(new MenuEntry("No Damage From Falling", NeverTakeDamageFromFalling));
-        folder->Append(new MenuEntry("Giant knife won't break", GiantsKnifeNeverBreaks));
+            misc += new MenuEntry("Giant Link", GiantLink);
+            misc += new MenuEntry("Normal Link", NormalLink);
+            misc += new MenuEntry("Mini Link", MiniLink);
+            misc += new MenuEntry("Paper Link", PaperLink);
+            misc += new MenuEntry("Link always have his child voice", AlwaysChildLinkVoice);
+            misc += new MenuEntry("Link always have his adult voice", AlwaysAdultLinkVoice);
+            misc += new MenuEntry("Open Chest Many Times", OpenAnyChestInTheGameAsManyTimes);
+            misc += new MenuEntry("Collect Heart Piece Many Times", CollectHeartPiecesInOverworldAsMany);
+            misc += new MenuEntry("No Damage From Falling", NeverTakeDamageFromFalling);
+            misc += new MenuEntry("Giant knife won't break", GiantsKnifeNeverBreaks);
 
-        menu.Append(folder);
+            menu += folder;
+        }
 
-        menu.Callback([] { Sleep(Milliseconds(1)); });
+        menu += [] { Sleep(Milliseconds(1)); };
         // Launch menu and mainloop
         menu.Run();
 

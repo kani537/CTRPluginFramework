@@ -48,4 +48,21 @@ namespace CTRPluginFramework
     {
         return (_item->ItemsCount());
     }
+
+    MenuFolder    *MenuFolder::operator += (const MenuEntry *item)
+    {
+        MenuEntryImpl *entry = item->_item.get();
+
+        _item->Append(entry);
+
+        return (this);
+    }
+
+    MenuFolder  *MenuFolder::operator+=(const MenuFolder *folder)
+    {
+        MenuFolderImpl *f = folder->_item.get();
+
+        _item->Append(f);
+        return (this);
+    }
 }
