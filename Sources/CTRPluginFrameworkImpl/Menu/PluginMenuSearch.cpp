@@ -29,7 +29,8 @@ namespace CTRPluginFramework
     _waitForUser(false),
 	_hexInput(false),
     _inEditor(false),
-    _hexBtn("Hex", *this, nullptr, IntRect(110, 145, 38, 15), nullptr)
+    _hexBtn("Hex", *this, nullptr, IntRect(110, 145, 38, 15), nullptr),
+    _compareFirstSearch("Compare with first search", *this, nullptr, IntRect(30, 165, 230, 15), nullptr)
     {
         _currentSearch = nullptr;
 
@@ -55,6 +56,7 @@ namespace CTRPluginFramework
         _cancelBtn.UseSysFont(false);
         _cancelBtn.IsEnabled = false;
         _hexBtn.UseSysFont(false);
+        _compareFirstSearch.UseSysFont(false);
 
         _searchSize.SelectedItem = 2;
 
@@ -81,6 +83,7 @@ namespace CTRPluginFramework
         _uiContainer += &_undoBtn;
         _uiContainer += &_resetBtn;
         _uiContainer += &_hexBtn;
+        _uiContainer += &_compareFirstSearch;
     }
 
     bool    PluginMenuSearch::operator()(EventList &eventList, Time &delta)
@@ -448,12 +451,17 @@ namespace CTRPluginFramework
 
         parameters.previous = _currentSearch;
 
+
         // If first search
         if (_currentSearch == nullptr)
             parameters.flags = (u32)SearchFlags::First;
-        // If second search
-        else if (_currentSearch->Step == 0)
+        // If second search or compare with first search
+        else if (_currentSearch->Step == 0 || _compareFirstSearch.GetState())
+        {
             parameters.flags = (u32)SearchFlags::Second;
+            parameters.previous = _searchHistory.front();
+        }
+            
 
         // Size flags
         switch (_searchSize.SelectedItem)

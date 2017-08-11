@@ -74,6 +74,7 @@ namespace CTRPluginFramework
         Button<PluginMenuSearch, void>              _resetBtn;
 
         CheckedButton<PluginMenuSearch, void>       _hexBtn;
+        CheckedButton<PluginMenuSearch, void>       _compareFirstSearch;
 
         UIContainer                         _uiContainer;
     };
