@@ -30,7 +30,7 @@ namespace CTRPluginFramework
 	_hexInput(false),
     _inEditor(false),
     _hexBtn("Hex", *this, nullptr, IntRect(110, 145, 38, 15), nullptr),
-    _compareFirstSearch("Compare with first search", *this, nullptr, IntRect(30, 165, 230, 15), nullptr)
+    _compareFirstSearch("Compare with first search", *this, nullptr, IntRect(30, 165, 250, 15), nullptr)
     {
         _currentSearch = nullptr;
 

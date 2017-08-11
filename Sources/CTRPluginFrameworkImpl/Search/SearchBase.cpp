@@ -5,6 +5,8 @@
 #include "CTRPluginFrameworkImpl/System/ProcessImpl.hpp"
 #include "CTRPluginFramework/System/Controller.hpp"
 #include "ctrulib/allocator/linear.h"
+#include <cstdarg>
+#include <cstdio>
 
 namespace CTRPluginFramework
 {
@@ -101,6 +103,8 @@ namespace CTRPluginFramework
 
         // Set index to 0 so it's available to read results
         _indexRegion = 0;
+        if (_previous != nullptr)
+            _previous->_indexRegion = 0;
 
         // Construct index table
         CreateIndexTable();
@@ -199,6 +203,18 @@ namespace CTRPluginFramework
         return (totalResults);
     }
 
+    std::string     Format(const char *fmt, ...)
+    {
+        char        buffer[0x100] = { 0 };
+        va_list     argList;
+
+        va_start(argList, fmt);
+        vsnprintf(buffer, sizeof(buffer), fmt, argList);
+        va_end(argList);
+
+        return (std::string(buffer));
+    }
+
     void    Search::ExtractPreviousHits(void *data, u32 index, u32 structSize, u32 &nbItem, bool forced)
     {
         if (!forced)
@@ -217,7 +233,12 @@ namespace CTRPluginFramework
                 nbItem = region.nbResults - index;
 
             // Read results to data
-            _file.Read(data, structSize * nbItem);
+            u32 error = 0;
+            if ((error = _file.Read(data, structSize * nbItem)) != 0)
+            {
+                MessageBox("Error\n\n" + Format("Couldn't read previous results !\nError: %08X\nreadSize: 0x%X\nOffset: 0x%llX\nSize: 0x%llX",
+                    error, structSize * nbItem, offset, _file.GetSize()))();
+            }
         }
         else
         {
@@ -241,7 +262,12 @@ namespace CTRPluginFramework
                 nbItem = ResultsCount;
 
             // Read results to data
-            _file.Read(data, structSize * nbItem);
+            u32 error = 0;
+            if ((error = _file.Read(data, structSize * nbItem)) != 0)
+            {
+                MessageBox("Error\n\n" + Format("Couldn't read previous results !\nError: %08X\nreadSize: 0x%X\nOffset: 0x%llX\nSize: 0x%llX",
+                    error, structSize * nbItem, offset, _file.GetSize()))();
+            }
         }        
     }
 
