@@ -26,6 +26,7 @@ namespace CTRPluginFramework
 
         void    Append(MenuItem *item) const;
         void    Callback(CallbackPointer callback);
+        void    RemoveCallback(CallbackPointer callback);
         int     Run(void);
 
         static void LoadEnabledCheatsFromFile(const Preferences::Header &header, File &settings);

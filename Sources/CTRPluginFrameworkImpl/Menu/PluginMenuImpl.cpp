@@ -53,6 +53,17 @@ namespace CTRPluginFramework
         _callbacks.push_back(callback);
     }
 
+    void    PluginMenuImpl::RemoveCallback(CallbackPointer callback)
+    {
+        for (int i = _callbacks.size() - 1; i >= 0; i--)
+        {
+            if (_callbacks[i] == callback)
+            {
+                _callbacks.erase(_callbacks.begin() + i);
+            }
+        }
+    }
+
     using KeyVector = std::vector<Key>;
 
     class   KeySequenceImpl

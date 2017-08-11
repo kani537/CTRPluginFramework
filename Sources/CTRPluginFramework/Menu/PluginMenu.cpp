@@ -74,6 +74,12 @@ namespace CTRPluginFramework
             _menu->Callback(callback);
     }
 
+    void    PluginMenu::operator-=(CallbackPointer callback) const
+    {
+        if (callback != nullptr)
+            _menu->RemoveCallback(callback);
+    }
+
     void    PluginMenu::Callback(CallbackPointer callback) const
     {
         if (callback != nullptr)

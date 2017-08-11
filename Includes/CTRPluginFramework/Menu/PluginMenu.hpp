@@ -61,6 +61,7 @@ namespace CTRPluginFramework
         void    operator += (const MenuEntry *entry) const;
         void    operator += (const MenuFolder *folder) const;
         void    operator += (CallbackPointer callback) const;
+        void    operator -= (CallbackPointer callback) const;
 
         /*
         ** Add a callback to the menu
