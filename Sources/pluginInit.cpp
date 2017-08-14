@@ -176,7 +176,7 @@ namespace CTRPluginFramework
         // Protect HID Shared Memory in case we want to push inputs
         Process::ProtectMemory((u32)hidSharedMem, 0x1000);      
     }
-
+    void    InitializeRandomEngine(void);
     // Main thread's start
     void  ThreadInit(void *arg)
     {
@@ -188,6 +188,7 @@ namespace CTRPluginFramework
         // Initialize Globals settings
         Preferences::Initialize();    
         Window::Initialize();
+        InitializeRandomEngine();
 
         // Start plugin
         int ret = main();
