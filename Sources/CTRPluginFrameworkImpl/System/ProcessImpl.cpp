@@ -159,7 +159,7 @@ namespace CTRPluginFramework
 
     bool     ProcessImpl::PatchProcess(u32 addr, u8 *patch, u32 length, u8 *original)
     {
-        if (!(Process::ProtectMemory(((addr / 0x1000) * 0x1000), 0x1000))) goto error;
+  //      if (!(Process::ProtectMemory(((addr / 0x1000) * 0x1000), 0x1000))) goto error;
  
  		if (original != nullptr)
  		{
