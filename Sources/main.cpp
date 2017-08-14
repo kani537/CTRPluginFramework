@@ -12,6 +12,11 @@
 #include "CTRPluginFrameworkImpl/Menu/MenuEntryTools.hpp"
 #include "NTR.hpp"
 #include "Hook.hpp"
+#include "CTRPluginFramework/Graphics/OSD.hpp"
+#include "CTRPluginFrameworkImpl/Menu/Menu.hpp"
+#include <limits>
+#include <random>
+#include "CTRPluginFrameworkImpl/ActionReplay/ARCode.hpp"
 
 namespace CTRPluginFramework
 {    
@@ -21,7 +26,10 @@ namespace CTRPluginFramework
 
     }
 
-
+    /*
+     * ARCode
+     */
+    
 
     // Function to pass to plugin to decode the About text
     /*void    Decoder(std::string &output, void *input)
@@ -68,55 +76,6 @@ namespace CTRPluginFramework
         }
     }*/
     
-#define FORMAT(str, fmt, ...) {char buffer[0X100] = {0}; sprintf(buffer, fmt, ##__VA_ARGS__); str += buffer;}
-    
-    void    GetHandlesInfo(MenuEntry *entry)
-    {
-        std::string &note = entry->Note();
-        note.clear();
-
-        KProcessHandleTable table;
-        std::vector<HandleDescriptor>  handles;
-
-        ProcessImpl::GetHandleTable(table, handles);
-
-        // Display table infos
-        FORMAT(note, "Handle table: %08X\n", (u32)table.handleTable);
-        FORMAT(note, "Max handles: %d\n", table.maxHandle);
-        FORMAT(note, "Handles open: %d\n", table.openedHandleCounter);
-        FORMAT(note, "Next HandleDescriptor: %08X\n", (u32)table.nextOpenHandleDecriptor);
-        FORMAT(note, "Total handles: %d\n", table.totalHandles);
-        FORMAT(note, "Handles in use: %d\n\n", table.handlesCount);
-
-        for (HandleDescriptor &desc : handles)
-        {
-            u32 pid = arm11kGetKProcessId(desc.kObjectPointer);
-            FORMAT(note, "Handle: %08X, KObj: %08X, Pid: %d\n", desc.handleInfo, desc.kObjectPointer, pid);
-        }
-
-        MessageBox("Done !")();
-    }
-
-    u32 spaceFree1;
-    u32 spaceFree2;
-    u32 spaceFree3;
-    void func(void)
-    {
-        std::string str;
-        Keyboard kb;
-
-        kb.Open(str);
-
-        spaceFree2 = getMemFree();
-    }
-
-    void func2(void)
-    {
-        spaceFree1 = getMemFree();
-        func();
-        spaceFree3 = getMemFree();
-    }
-
     void    Invincible(MenuEntry *entry)
     {
         static u32 original[4] = {0};
@@ -306,59 +265,6 @@ namespace CTRPluginFramework
         return (entry);
     }
 
-    void    CheatsGameFunc(MenuEntry *entry)
-    {
-        
-    }
-
-    using KeyVector = std::vector<Key>;
-
-    class   KeySequence
-    {
-    public:
-
-        KeySequence(KeyVector sequence) : 
-        _sequence(sequence), _indexInSequence(0)
-        {            
-        }
-
-        ~KeySequence(){}
-
-        /**
-         * \brief Check the sequence
-         * \return true if the sequence is completed, false otherwise
-         */
-        bool  operator()(void)
-        {
-            if (Controller::IsKeyDown(_sequence[_indexInSequence]))
-            {
-                _indexInSequence++;
-
-                if (_indexInSequence >= _sequence.size())
-                {
-                    _indexInSequence = 0;
-                    return (true);
-                }
-
-                _timer.Restart();
-            }
-
-            if (_timer.HasTimePassed(Seconds(1.f)))
-            {
-                _indexInSequence = 0;
-                _timer.Restart();
-            }
-
-            return (false);
-        }
-
-    private:
-        KeyVector   _sequence;
-        Clock       _timer;
-        int         _indexInSequence;
-        
-    };
-
     using   FsTryOpenFileType = u32(*)(u32, const u16*, u32);
     extern u32          g_FsTryOpenFileAddress;
     static Hook         g_FsTryOpenFileHook;
@@ -455,6 +361,41 @@ namespace CTRPluginFramework
         return (((FsTryOpenFileType)g_FsTryOpenFileHook.returnCode)(a1, filename, mode));
     }
 
+    void    LineReadTest(MenuEntry *entry)
+    {
+        static ARCodeVector     arcodes;
+
+        if (!entry->IsActivated())
+        {
+            arcodes.clear();
+            return;
+        }
+
+        if (arcodes.size() == 0)
+        {
+            File        file;
+            LineReader  reader(file);
+
+            if (File::Open(file , "test.txt") == 0)
+            {
+                std::string line;
+                bool error;
+                while (reader(line))
+                {
+                    
+                    ARCode code(line, error);
+
+                    if (error)
+                        OSD::Notify("Error: " + line);
+                    else
+                        arcodes.push_back(code);
+                }
+            }
+        }
+
+        ARHandler::Execute(arcodes);
+    }
+
     int    main(void)
     {
         PluginMenu      *m = new PluginMenu("Zelda Ocarina Of Time 3D", 3, 0, 1, about);
@@ -462,6 +403,7 @@ namespace CTRPluginFramework
         std::string     note;
 
         menu.Append(new MenuEntry("Map loading", ForceMapsLoading));
+        menu += new MenuEntry("Read line", LineReadTest);
 
         /*
         ** Movements codes

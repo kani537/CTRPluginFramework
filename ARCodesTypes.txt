@@ -1,0 +1,119 @@
+SPECIAL KEYPAD CODE
+===================
+0x1         A
+0x2         B
+0x4         Select
+0x8         Start
+0x10        Right
+0x20        Left
+0x40        Up
+0x80        Down
+0x100       R
+0x200       L
+0x400       X
+0x800       Y
+0x4000      ZL (N3DS Only)
+0x8000      ZR (N3DS Only)
+0x100000    Touchpad (any position)
+0x1000000   CStick-Right (N3DS Only)
+0x2000000   CStick-Left (N3DS Only)
+0x4000000   CStick-Up (N3DS Only)
+0x8000000   CStick-Down (N3DS Only)
+0x10000000  CPad-Right
+0x20000000  CPad-Left
+0x40000000  CPad-Up
+0x80000000  CPad-Down
+
+NOTE: default value of offset and data registers is zero.
+
+Memory Writes:
+0XXXXXXX YYYYYYYY – 32bit write to [XXXXXXX + offset]
+1XXXXXXX 0000YYYY – 16bit write to [XXXXXXX + offset]
+2XXXXXXX 000000YY – 8bit write to [XXXXXXX + offset]
+
+Conditional 32bit codes:
+3XXXXXXX YYYYYYYY – Greater Than (YYYYYYYY > [XXXXXXX + offset])
+4XXXXXXX YYYYYYYY – Less Than (YYYYYYYY < [XXXXXXX + offset])
+5XXXXXXX YYYYYYYY – Equal To (YYYYYYYY == [XXXXXXX + offset])
+6XXXXXXX YYYYYYYY – Not Equal To (YYYYYYYY != [XXXXXXX + offset])
+
+Conditional 16bit deref + write codes:
+7XXXXXXX ZZZZYYYY – Greater Than (YYYY > [XXXXXXX + offset] & ~ZZZZ)
+8XXXXXXX ZZZZYYYY – Less Than (YYYY < [XXXXXXX + offset] & ~ZZZZ)
+9XXXXXXX ZZZZYYYY – Equal To (YYYY == [XXXXXXX + offset] & ~ZZZZ)
+AXXXXXXX ZZZZYYYY – Not Equal To (YYYY != [XXXXXXX + offset] & ~ZZZZ)
+
+Offset Codes:
+BXXXXXXX 00000000 – offset = *(XXXXXXX + offset)
+D3000000 XXXXXXXX – set offset to immediate value
+DC000000 XXXXXXXX – Adds an value to the current offset
+
+Loop Code:
+CX000000 YYYYYYYY – Sets the repeat value to: Y if X == 0, data #1 if X == 1 or data #2 if X == 2
+D2000000 0000000X - Full terminator (0: legacy one, 1: exit code directly)
+D1000000 00000000 – Loop execute
+D0000000 00000000 – Terminator code
+
+Data Register Codes:
+D4000000 XXXXXXXX – Adds XXXXXXXX to the data register
+D500000Z XXXXXXXX – Sets the data register #Z (0: data#1, 1: data#2) to XXXXXXXX
+D6000000 XXXXXXXX – (32bit) [XXXXXXXX+offset] = data ; offset += 4
+D7000000 XXXXXXXX – (16bit) [XXXXXXXX+offset] = data & 0xffff ; offset += 2
+D8000000 XXXXXXXX – (8bit) [XXXXXXXX+offset] = data & 0xff ; offset++
+D9000000 XXXXXXXX – (32bit) sets data to [XXXXXXXX+offset]
+DA000000 XXXXXXXX – (16bit) sets data to [XXXXXXXX+offset] & 0xFFFF
+DB000000 XXXXXXXX – (8bit) sets data to [XXXXXXXX+offset] & 0xFF
+
+Patch Code:
+EXXXXXXX YYYYYYYY - Copy Y bytes (Z) to [XXXXXXX + offset]
+ZZZZZZZZ ZZZZZZZZ
+
+Special Codes:
+DD000000 XXXXXXXX – if KEYPAD has value XXXXXXXX execute next block
+DE000000 WWXXYYZZ - if touchpos is between WW <= posX <= XX && YY <= posY <= ZZ
+
+Registers operations:
+DF00XXXX YYYYZZZZ - Operations:
+
+DFFFFFFF 00000000 - Conditional codes are compared to YYYY
+DFFFFFFF 00000001 - Conditional codes are compared to data
+
+DF000000 00000000 - Select offset register #1
+DF000000 00000001 - Select offset register #2
+DF000001 00000000 - Select data register #1
+DF000001 00000001 - Select data register #2
+
+DF000000 00010000 - Copy offset #1 to offset #2
+DF000000 00010001 - Copy offset #2 to offset #1
+DF000001 00010000 - Copy data #1 to data #2
+DF000001 00010001 - Copy data #2 to data #1
+DF000002 00010000 - Copy storage #1 to data #1
+DF000002 00010001 - Copy storage #2 to data #2
+
+DF000000 00020000 - Copy offset #1 to data #1
+DF000000 00020001 - Copy offset #2 to data #2
+DF000001 00020000 - Copy data #1 to offset #1
+DF000001 00020001 - Copy data #2 to offset #2
+DF000002 00020000 - Copy data #1 to storage #1
+DF000002 00020001 - Copy data #2 to storage #2
+
+Custom Codes:
+F1XXXXXX YYYYYYYY - *(XXXXXX + offset) += YYYYYYYY
+F2XXXXXX YYYYYYYY - *(XXXXXX + offset) *= YYYYYYYY
+F3XXXXXX YYYYYYYY - *(XXXXXX + offset) /= YYYYYYYY
+F4000000 YYYYYYYY - MUL => data *= YYYYYYYY
+F5000000 YYYYYYYY - DIV => data /= YYYYYYYY
+F6000000 YYYYYYYY - AND => data &= YYYYYYYY
+F7000000 YYYYYYYY - OR => data |= YYYYYYYY
+F8000000 YYYYYYYY - XOR => data ^= YYYYYYYY
+F9000000 YYYYYYYY - NOT => data = ~data
+FA000000 YYYYYYYY - Left shift => data <<= YYYYYYYY
+FB000000 YYYYYYYY - Right shift => data >>= YYYYYYYY
+FC000000 YYYYYYYY - Copy Y bytes from [offset#2] to [offset#1] 
+
+FD000000 YYYYYYYY - Execute asm codes (Z), Y is the instructions count
+ZZZZZZZZ ZZZZZZZZ
+FEXXXXXX YYYYYYYY - Hook code, XXX: instructions count, YYY => address to hook (offset's not added)
+ZZZZZZZZ ZZZZZZZZ - ZZ => code to be hooked to
+
+FF000000 00000000 - Generate a random number min/max can be set in data#1, data#2
