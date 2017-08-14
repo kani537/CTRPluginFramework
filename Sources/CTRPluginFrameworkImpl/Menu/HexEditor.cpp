@@ -729,12 +729,21 @@ namespace CTRPluginFramework
         keyboard.DisplayTopScreen = false;
 
         u32 address = (u32)_memoryAddress;
+
+        // Enable clear key
+        _keyboard._keys->at(15).Enable(true);
+        // Enable enter key
+        _keyboard._keys->at(16).Enable(true);
         if (keyboard.Open(address, address) != -1)
         {
             Goto(address, true);
             _history.push_back(address);
             _indexHistory = _history.size() - 1;
         }
+        // Disable clear key
+        _keyboard._keys->at(15).Enable(false);
+        // Disable enter key
+        _keyboard._keys->at(16).Enable(false);
     }
 
     void    HexEditor::_GotoPreviousRegion(void)
