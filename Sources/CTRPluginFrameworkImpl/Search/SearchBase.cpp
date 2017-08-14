@@ -7,6 +7,7 @@
 #include "ctrulib/allocator/linear.h"
 #include <cstdarg>
 #include <cstdio>
+#include "CTRPluginFramework/Utils/Utils.hpp"
 
 namespace CTRPluginFramework
 {
@@ -203,18 +204,6 @@ namespace CTRPluginFramework
         return (totalResults);
     }
 
-    std::string     Format(const char *fmt, ...)
-    {
-        char        buffer[0x100] = { 0 };
-        va_list     argList;
-
-        va_start(argList, fmt);
-        vsnprintf(buffer, sizeof(buffer), fmt, argList);
-        va_end(argList);
-
-        return (std::string(buffer));
-    }
-
     void    Search::ExtractPreviousHits(void *data, u32 index, u32 structSize, u32 &nbItem, bool forced)
     {
         if (!forced)
@@ -236,7 +225,7 @@ namespace CTRPluginFramework
             u32 error = 0;
             if ((error = _file.Read(data, structSize * nbItem)) != 0)
             {
-                MessageBox("Error\n\n" + Format("Couldn't read previous results !\nError: %08X\nreadSize: 0x%X\nOffset: 0x%llX\nSize: 0x%llX",
+                MessageBox("Error\n\n" + Utils::Format("Couldn't read previous results !\nError: %08X\nreadSize: 0x%X\nOffset: 0x%llX\nSize: 0x%llX",
                     error, structSize * nbItem, offset, _file.GetSize()))();
             }
         }
@@ -265,7 +254,7 @@ namespace CTRPluginFramework
             u32 error = 0;
             if ((error = _file.Read(data, structSize * nbItem)) != 0)
             {
-                MessageBox("Error\n\n" + Format("Couldn't read previous results !\nError: %08X\nreadSize: 0x%X\nOffset: 0x%llX\nSize: 0x%llX",
+                MessageBox("Error\n\n" + Utils::Format("Couldn't read previous results !\nError: %08X\nreadSize: 0x%X\nOffset: 0x%llX\nSize: 0x%llX",
                     error, structSize * nbItem, offset, _file.GetSize()))();
             }
         }        
