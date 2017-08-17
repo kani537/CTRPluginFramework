@@ -13,68 +13,68 @@ namespace CTRPluginFramework
 {
     extern FS_Archive   _sdmcArchive;
 
-    int     File::Create(std::string path)
+    int     File::Create(const std::string &path)
     {
         FS_Path fsPath = Directory::_SdmcUtf16Path(path);
 
         if (fsPath.data == nullptr)
-            return (-1);
+            return (INVALID_PATH);
 
         Result res;
 
         res = FSUSER_CreateFile(_sdmcArchive, fsPath, 0, 0);
         if (R_SUCCEEDED(res))
-            return (0);
+            return (SUCCESS);
         return (res);
     }
 
-    int     File::Rename(std::string oldPath, std::string newPath)
+    int     File::Rename(const std::string &oldPath, const std::string &newPath)
     {
         FS_Path oldFsPath = Directory::_SdmcUtf16Path(oldPath);
         FS_Path newFsPath;
         uint16_t    path[PATH_MAX + 1] = {0};
 
         if (oldFsPath.data == nullptr)
-            return (-1);
+            return (INVALID_PATH);
 
         std::memcpy(path, oldFsPath.data, PATH_MAX);
         oldFsPath.data = (u8 *)path;
 
         newFsPath = Directory::_SdmcUtf16Path(newPath);
         if (newFsPath.data == nullptr)
-            return (-1);
+            return (INVALID_PATH);
 
         Result res;
 
         res = FSUSER_RenameFile(_sdmcArchive, oldFsPath, _sdmcArchive, newFsPath);
         if (R_SUCCEEDED(res))
-            return (0);
+            return (SUCCESS);
 
         return (res);
     }
 
-    int     File::Remove(std::string path)
+    int     File::Remove(const std::string &path)
     {
         FS_Path fsPath = Directory::_SdmcUtf16Path(path);
 
         if (fsPath.data == nullptr)
-            return (-1);
+            return (INVALID_PATH);
 
         Result res;
 
         res = FSUSER_DeleteFile(_sdmcArchive, fsPath);
         if (R_SUCCEEDED(res))
-            return (0);
+            return (SUCCESS);
 
         return (res);
     }
 
-    int     File::Exists(std::string path)
+    int     File::Exists(const std::string &path)
     {
         FS_Path fsPath = Directory::_SdmcUtf16Path(path);
 
         if (fsPath.data == nullptr)
-            return (-1);
+            return (INVALID_PATH);
 
         Result res;
         Handle handle;
@@ -88,12 +88,15 @@ namespace CTRPluginFramework
         return (0);
     }
 
-    int     File::Open(File &output, std::string path, int mode)
+    int     File::Open(File &output, const std::string &path, int mode)
     {
+        if (output._isOpen)
+            output.Close();
+
         FS_Path fsPath = Directory::_SdmcUtf16Path(path);
 
         if (fsPath.data == nullptr)
-            return (-1);
+            return (INVALID_PATH);
 
         int fsmode = mode & 0b111;
         Handle handle;
@@ -107,36 +110,25 @@ namespace CTRPluginFramework
         output._handle = handle;
         output._mode = mode;
         output._path = path;
+        Directory::_SdmcFixPath(output._path);
         output._offset = 0;
         output._isOpen = true;
 
         if (mode & TRUNCATE)
             FSFILE_SetSize(handle, 0);
-
-        u32     pos = path.rfind('/');
-
-        if (pos != std::string::npos)
-            path = path.substr(pos);
-
-        pos = path.rfind('.');
-        if (pos != std::string::npos)
-            output._name = path.substr(0, pos);
-        else
-            output._name = path;
         return (res);
     }
 
-    int     File::Close(void)
+    int     File::Close(void) const
     {
         if (!_isOpen)
-            return (-1);
+            return (NOT_OPEN);
 
         Result res = FSFILE_Close(_handle);
         
         if (R_SUCCEEDED(res))
         {
             _path = "";
-            _name = "";
             _handle = 0;
             _offset = 0;
             _mode = 0;
@@ -146,12 +138,12 @@ namespace CTRPluginFramework
         return (res);
     }
 
-    int     File::Read(void *buffer, u32 length)
+    int     File::Read(void *buffer, u32 length) const
     {
-        if (!_isOpen || !buffer)
-            return (-1);
-        if (length == 0)
-            return (0);
+        if (!_isOpen) return (NOT_OPEN);
+        if (!(_mode & READ)) return (INVALID_MODE);
+        if (!buffer || !Process::CheckAddress((u32)buffer, MEMPERM_WRITE)) return (INVALID_ARG);
+        if (length == 0) return (SUCCESS);
 
         Result  res;
         u32     bytes;
@@ -160,29 +152,32 @@ namespace CTRPluginFramework
         if (R_FAILED(res))
             return (res);
         _offset += bytes;
-        return (0);
+        return (SUCCESS);
     }
 
     int     File::Write(const void *data, u32 length)
     {
-        if (!_isOpen || !data || !(_mode & WRITE))
-            return (-1);
-        if (length == 0)
-            return (0);
+        if (!_isOpen) return (NOT_OPEN);
+        if (!(_mode & WRITE)) return (INVALID_MODE);
+        if (!data || !Process::CheckAddress((u32)data, MEMPERM_READ)) return (INVALID_ARG);
+        if (length == 0) return (SUCCESS);
 
-        Result  res;
+        Result  res = 0;
         u32     bytes;
         u32     sync = _mode & SYNC ?  FS_WRITE_FLUSH | FS_WRITE_UPDATE_TIME : 0;
 
         if (_mode & APPEND)
-            FSFILE_GetSize(_handle, &_offset);
+            res = FSFILE_GetSize(_handle, &_offset);
+
+        if (R_FAILED(res))
+            return (res);
 
         res = FSFILE_Write(_handle, &bytes, _offset, (u32 *)data, length, sync);
         if (R_FAILED(res))
             return (res);
 
         _offset += bytes;
-        return (0);
+        return (SUCCESS);
     }
 
     int     File::WriteLine(std::string line)
@@ -191,10 +186,10 @@ namespace CTRPluginFramework
         return (Write(line.c_str(), line.size()));
     }
 
-    int     File::Seek(s64 position, SeekPos rel)
+    int     File::Seek(s64 position, SeekPos rel) const
     {
         if (!_isOpen)
-            return (-1);
+            return (NOT_OPEN);
 
         u64 offset;
 
@@ -212,21 +207,22 @@ namespace CTRPluginFramework
             }
             case END:
             {
-                if (R_FAILED(FSFILE_GetSize(_handle, &offset)))
-                    return (-1);
+                Result res = FSFILE_GetSize(_handle, &offset);
+                if (R_FAILED(res))
+                    return (res);
                 break;
             }
             default:
             {
-                return (-1);
+                return (INVALID_ARG);
             }
         }
 
         if (position < 0 && offset < -position)
-            return (-1);
+            return (INVALID_ARG);
 
         _offset = offset + position;
-        return (0);
+        return (SUCCESS);
     }
 
     u64     File::Tell(void) const
@@ -234,7 +230,7 @@ namespace CTRPluginFramework
         return (_offset);
     }
 
-    void    File::Rewind(void)
+    void    File::Rewind(void) const
     {
         _offset = 0;
     }
@@ -247,21 +243,25 @@ namespace CTRPluginFramework
     u64     File::GetSize(void) const
     {
         if (!_isOpen)
-            return (0);
+            return (NOT_OPEN);
         
         u64 size = 0;
-
-        if (R_FAILED(FSFILE_GetSize(_handle, &size)))
-            return (-1);
+        Result res = FSFILE_GetSize(_handle, &size);
+        if (R_FAILED(res))
+            return (res);
         return (size);
     }
 
     int     File::Dump(u32 address, u32 length)
     {
-        if (!_isOpen)
-            return (-1);
+        if (!_isOpen) return (NOT_OPEN);
+        if (!(_mode & WRITE)) return (INVALID_MODE);
+        if (!Process::CheckAddress(address, MEMPERM_READ))
+            return(INVALID_ARG);
 
         bool    unpause = false;
+        Result  res = SUCCESS;
+
         // If game not paused, then pause it
         if (!ProcessImpl::IsPaused())
         {
@@ -269,42 +269,39 @@ namespace CTRPluginFramework
             unpause = true;
         }
 
-        if (!Process::ProtectMemory(address, length))
-            goto clean;
-
         svcFlushProcessDataCache(Process::GetHandle(), (void *)address, length);
 
         // Dump in chunk of 32kb
         do
         {
             int size = length > 0x8000 ? 0x8000 : length;
-            Write((void *)address, size);
+            res = Write((void *)address, size);
 
             address += size;
             length -= size;
 
-        } while (length > 0);
+        } while (length > 0 && R_SUCCEEDED(res));
 
         if (unpause)
             ProcessImpl::Play(false);
-        return (0);
-    clean:
-        if (unpause)
-            ProcessImpl::Play(false);
-        return (-1);
+        return (res);
     }
 
-    int     File::Inject(u32 address, u32 length)
+    int     File::Inject(u32 address, u32 length) const
     {
-        if (!_isOpen)
-            return (-1);
+        if (!_isOpen) return (NOT_OPEN);
+        if (!(_mode & READ)) return (INVALID_MODE);
+        if (!Process::CheckAddress(address)) return (INVALID_ARG);
 
-        u8  *buffer = new u8[0x40000]; //256KB
+        u8      *buffer = new u8[0x40000]; //256KB
+        
 
-        if (buffer == nullptr || !Process::CheckAddress(address, MEMPERM_READ))
-            return (-1);
+        if (buffer == nullptr)
+            return (MAKERESULT(RL_USAGE, RS_OUTOFRESOURCE, 0, RD_OUT_OF_MEMORY)); ///< I think it'll abort() so it won't be reached anyway
 
         bool    unpause = false;
+        Result  res = SUCCESS;
+
         // If game not paused, then pause it
         if (!ProcessImpl::IsPaused())
         {
@@ -316,35 +313,61 @@ namespace CTRPluginFramework
         {
             int size = length <= 0x40000 ? length : 0x40000;
             // First read file
-            if (Read(buffer, size) != 0)
-                goto clean;
+            res = Read(buffer, size);
+            if (R_FAILED(res))
+                break;
+
             // Then patch process
             if (!Process::Patch(address, buffer, size))
-                goto clean;
+                res = UNEXPECTED_ERROR;
 
             // refresh data
             address += size;
             length -= size;
 
-        } while (length > 0);
+        } while (length > 0 && res == SUCCESS);
 
         delete[] buffer;
         if (unpause)
             ProcessImpl::Play(false);
-        return (0);
-    clean:
-        delete[] buffer;
-        if (unpause)
-            ProcessImpl::Play(false);
-        return (-1);
-    }
-
-    File::File(): _handle(0), _offset(0), _mode(0), _isOpen(false)
-    {
+        return (res);
     }
 
     bool    File::IsOpen(void) const
     {
         return (_isOpen);
+    }
+
+    std::string     File::GetFullName(void) const
+    {
+        return (_path);
+    }
+
+    std::string     File::GetFileName(void) const
+    {
+        int pos = _path.rfind("/");
+
+        if (pos != std::string::npos)
+            return (_path.substr(pos));
+        return (_path); ///< Better return the full path than nothing
+    }
+
+    std::string     File::GetExtension(void) const
+    {
+        int pos = _path.rfind(".");
+
+        if (pos != std::string::npos)
+            return (_path.substr(pos));
+        return (std::string());
+    }
+
+    File::File(void): _handle(0), _offset(0), _mode(0), _isOpen(false)
+    {
+    }
+
+    File::File(const std::string& path, u32 mode) :
+        _handle(0), _offset(0), _mode(0), _isOpen(false)
+    {
+        Open(*this, path, mode);
     }
 }
