@@ -348,7 +348,7 @@ namespace CTRPluginFramework
         int pos = _path.rfind("/");
 
         if (pos != std::string::npos)
-            return (_path.substr(pos));
+            return (_path.substr(pos + 1));
         return (_path); ///< Better return the full path than nothing
     }
 
@@ -357,7 +357,7 @@ namespace CTRPluginFramework
         int pos = _path.rfind(".");
 
         if (pos != std::string::npos)
-            return (_path.substr(pos));
+            return (_path.substr(pos + 1));
         return (std::string());
     }
 
