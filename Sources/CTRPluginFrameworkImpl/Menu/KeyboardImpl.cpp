@@ -5,6 +5,7 @@
 
 #include <cmath>
 #include "ctrulib/util/utf.h"
+#include "CTRPluginFramework/Utils/Utils.hpp"
 
 namespace CTRPluginFramework
 {
@@ -1328,7 +1329,8 @@ namespace CTRPluginFramework
             {
                 if (ret == 0x12345678)
                 {
-                    if (_layout == DECIMAL && _userInput.size() >= 18)
+                    if ((_layout == DECIMAL && _userInput.size() >= 18)
+                        || (_layout == QWERTY && _max && Utils::GetSize(_userInput) >= _max))
                         return (false);
 
                     _userInput += temp;
@@ -1344,41 +1346,15 @@ namespace CTRPluginFramework
                 }
                 else if (ret == KEY_BACKSPACE)
                 {
-                    int size = _userInput.length();
-
-                    if (!size)
-                        return false;
-                    
-                    u8 buffer[0x100] = { 0 };
-
-                    std::memcpy(buffer, _userInput.data(), _userInput.size());
-                    u8 *str = buffer;//(u8 *)strdup(_userInput.c_str());// reinterpret_cast<u8 *>(const_cast<char *>(_userInput.c_str()));
-                    //u8 *bak = str;
-
-                    while (*str)
+                    _inputChangeEvent.codepoint = Utils::RemoveLastChar(_userInput);
+                    if (_inputChangeEvent.codepoint != 0)
                     {
-                        u32 code;
-                        int units = decode_utf8(&code, str);
-
-                        if (units == -1)
-                            break;
-
-                        if (*(str + units))
-                            str += units;
-                        else
-                        {
-                            *str = '\0';
-                            _userInput = reinterpret_cast<char *>(buffer);
-                            _inputChangeEvent.type = InputChangeEvent::CharacterRemoved;
-                            _inputChangeEvent.codepoint = code;
-                            //free(bak);
-                            return (true);
-                        }                        
-                    }
+                        _inputChangeEvent.type = InputChangeEvent::CharacterRemoved;
+                        return (true);
+                    }                        
                     return (false);
-                    //return (true);
                 }
-                else if (ret == KEY_SPACE)
+                else if (ret == KEY_SPACE && (!_max || Utils::GetSize(_userInput) < _max))
                 {
                     _userInput += ' ';
                     return (true);
@@ -1420,7 +1396,7 @@ namespace CTRPluginFramework
 
                     if (_layout != Layout::QWERTY &&_userInput.length() == 0 && ret == '.')
                         _userInput += "0.";
-                    else if (_max == 0 || _userInput.size() < _max)
+                    else if (_max == 0 || Utils::GetSize(_userInput) < _max)
                     {
                         _userInput += ret;
                         _inputChangeEvent.type = InputChangeEvent::CharacterAdded;
