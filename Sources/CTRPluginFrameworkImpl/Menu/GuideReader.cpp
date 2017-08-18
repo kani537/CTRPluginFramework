@@ -21,7 +21,7 @@ namespace CTRPluginFramework
         mFolder->note = path;
 
         // List all directories
-        folder.ListFolders(directories);
+        folder.ListDirectories(directories);
         if (!directories.empty())
         {
             for (int i = 0; i < directories.size(); i++)
@@ -274,14 +274,14 @@ namespace CTRPluginFramework
                 {
                     _currentBMP--;
                     delete _image;
-                    _image = new BMPImage(_currentDirectory.GetPath() + "/" + _bmpList[_currentBMP]);
+                    _image = new BMPImage(_currentDirectory.GetName() + "/" + _bmpList[_currentBMP]);
                     _image = PostProcess(_image);
                 }
                 else if (event.key.code == Key::R && _currentBMP < _bmpList.size() -1)
                 {
                     _currentBMP++;
                     delete _image;
-                    _image = new BMPImage(_currentDirectory.GetPath() + "/" + _bmpList[_currentBMP]);
+                    _image = new BMPImage(_currentDirectory.GetName() + "/" + _bmpList[_currentBMP]);
                     _image = PostProcess(_image);            
                 }
             }
@@ -291,14 +291,14 @@ namespace CTRPluginFramework
                 {
                     _currentBMP--;
                     delete _image;
-                    _image = new BMPImage(_currentDirectory.GetPath() + "/" + _bmpList[_currentBMP]);
+                    _image = new BMPImage(_currentDirectory.GetName() + "/" + _bmpList[_currentBMP]);
                     _image = PostProcess(_image);
                 }
                 else if (event.swip.direction == Event::SwipDirection::Right && _currentBMP < _bmpList.size() -1)
                 {
                     _currentBMP++;
                     delete _image;
-                    _image = new BMPImage(_currentDirectory.GetPath() + "/" + _bmpList[_currentBMP]);
+                    _image = new BMPImage(_currentDirectory.GetName() + "/" + _bmpList[_currentBMP]);
                     _image = PostProcess(_image);           
                 }  
             }
