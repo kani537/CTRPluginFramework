@@ -38,7 +38,7 @@ namespace CTRPluginFramework
             NOT_OPEN = -2,      ///< The File instance is not opened
             INVALID_MODE = -3,  ///< The mode passed when opened the file doesn't allow this operation
             INVALID_ARG = -4,   ///< One of the args passed to the operation is invalid (nullptr, address unreachable, etc)
-            UNEXPECTED_ERROR = 5 ///< An error occured
+            UNEXPECTED_ERROR = -5 ///< An error occured
         };
 
         /**
@@ -190,7 +190,7 @@ namespace CTRPluginFramework
          * \brief Get the file name
          * \return An std::string with the name of the file
          */
-        std::string     GetFileName(void) const;
+        std::string     GetName(void) const;
 
         /**
          * \brief Get the extension of the file

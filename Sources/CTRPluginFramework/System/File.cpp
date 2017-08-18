@@ -1,9 +1,7 @@
-#include "CTRPluginFramework/System/Directory.hpp"
 #include "CTRPluginFramework/System/File.hpp"
 #include "CTRPluginFramework/System/Process.hpp"
 #include "CTRPluginFrameworkImpl/System/ProcessImpl.hpp"
-#include "ctrulib/allocator/linear.h"
-
+#include "ctrulib/services/fs.h"
 #include "ctrulib/util/utf.h"
 #include "ctrulib/result.h"
 #include <limits.h>
@@ -13,9 +11,14 @@ namespace CTRPluginFramework
 {
     extern FS_Archive   _sdmcArchive;
 
+    namespace _Path {
+        int     SdmcFixPath(std::string &path);
+        FS_Path SdmcUtf16Path(std::string path);
+    }
+
     int     File::Create(const std::string &path)
     {
-        FS_Path fsPath = Directory::_SdmcUtf16Path(path);
+        FS_Path fsPath = _Path::SdmcUtf16Path(path);
 
         if (fsPath.data == nullptr)
             return (INVALID_PATH);
@@ -30,7 +33,7 @@ namespace CTRPluginFramework
 
     int     File::Rename(const std::string &oldPath, const std::string &newPath)
     {
-        FS_Path oldFsPath = Directory::_SdmcUtf16Path(oldPath);
+        FS_Path oldFsPath = _Path::SdmcUtf16Path(oldPath);
         FS_Path newFsPath;
         uint16_t    path[PATH_MAX + 1] = {0};
 
@@ -40,7 +43,7 @@ namespace CTRPluginFramework
         std::memcpy(path, oldFsPath.data, PATH_MAX);
         oldFsPath.data = (u8 *)path;
 
-        newFsPath = Directory::_SdmcUtf16Path(newPath);
+        newFsPath = _Path::SdmcUtf16Path(newPath);
         if (newFsPath.data == nullptr)
             return (INVALID_PATH);
 
@@ -55,7 +58,7 @@ namespace CTRPluginFramework
 
     int     File::Remove(const std::string &path)
     {
-        FS_Path fsPath = Directory::_SdmcUtf16Path(path);
+        FS_Path fsPath = _Path::SdmcUtf16Path(path);
 
         if (fsPath.data == nullptr)
             return (INVALID_PATH);
@@ -71,7 +74,7 @@ namespace CTRPluginFramework
 
     int     File::Exists(const std::string &path)
     {
-        FS_Path fsPath = Directory::_SdmcUtf16Path(path);
+        FS_Path fsPath = _Path::SdmcUtf16Path(path);
 
         if (fsPath.data == nullptr)
             return (INVALID_PATH);
@@ -93,7 +96,7 @@ namespace CTRPluginFramework
         if (output._isOpen)
             output.Close();
 
-        FS_Path fsPath = Directory::_SdmcUtf16Path(path);
+        FS_Path fsPath = _Path::SdmcUtf16Path(path);
 
         if (fsPath.data == nullptr)
             return (INVALID_PATH);
@@ -110,7 +113,7 @@ namespace CTRPluginFramework
         output._handle = handle;
         output._mode = mode;
         output._path = path;
-        Directory::_SdmcFixPath(output._path);
+        _Path::SdmcFixPath(output._path);
         output._offset = 0;
         output._isOpen = true;
 
@@ -343,7 +346,7 @@ namespace CTRPluginFramework
         return (_path);
     }
 
-    std::string     File::GetFileName(void) const
+    std::string     File::GetName(void) const
     {
         int pos = _path.rfind("/");
 
