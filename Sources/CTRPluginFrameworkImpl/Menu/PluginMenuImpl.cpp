@@ -414,7 +414,11 @@ namespace CTRPluginFramework
             {
                 if (settings.Read(&buffer[2], sizeof(u32) * buffer[1]) == 0)
                 {
-                    MenuEntry *entry = folder->GetItem(buffer[0])->AsMenuEntryImpl().AsMenuEntry();
+                    MenuItem  *item = folder->GetItem(buffer[0]);
+
+                    if (item == nullptr || !item->IsEntry()) return; ///< An error occurred, abort operation
+
+                    MenuEntry *entry = item->AsMenuEntryImpl().AsMenuEntry();
                     HotkeyManager::OnHotkeyChangeClbk callback = entry->Hotkeys._callback;
 
                     if (entry->Hotkeys.Count() == buffer[1])
@@ -428,6 +432,8 @@ namespace CTRPluginFramework
 
                         entry->RefreshNote();
                     }
+                    else
+                        return; ///< An error occurred so abort operation
                 }
             }
         }

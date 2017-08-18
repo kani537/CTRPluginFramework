@@ -8,6 +8,8 @@
 #include "font6x10Linux.h"
 #include "CTRPluginFrameworkImpl/Preferences.hpp"
 #include "CTRPluginFrameworkImpl/Graphics/Icon.hpp"
+#include "CTRPluginFrameworkImpl/System/ProcessImpl.hpp"
+#include "CTRPluginFramework/System/Sleep.hpp"
 
 #define CALLBACK_OVERLAY (101)
 #define NS_CONFIGURE_ADDR	0x06000000
@@ -136,7 +138,14 @@ namespace CTRPluginFramework
     }
 
     u32    MainOverlayCallback(u32 isBottom, u32 addr, u32 addrB, u32 stride, u32 format)
-    {        
+    {
+        if (ProcessImpl::_isPaused)
+        {
+            while (ProcessImpl::_isPaused)
+                Sleep(Seconds(1));
+            return (1);
+        }
+
         // OSD is available
         NTRImpl::IsOSDAvailable = true;
         static u32 lastAddr = 0;
@@ -154,14 +163,11 @@ namespace CTRPluginFramework
         params.stride = stride;
         params.format = format & 0xf;
         params.screenWidth = isBottom ? 320 : 400;
-
-        PluginMenu *menu = PluginMenu::GetRunningInstance();
-
-        if (isBottom || menu == nullptr || menu->IsOpen() || addr == 0)
+        
+        if (isBottom || addr == 0)
             return (1);
         
-        lastAddr = addr;
-        
+        lastAddr = addr;        
 
         bool    isFbModified = false;
 
