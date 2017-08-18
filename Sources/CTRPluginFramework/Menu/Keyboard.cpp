@@ -210,7 +210,7 @@ namespace CTRPluginFramework
     ** Compare
     ***********/
 
-    Keyboard::Keyboard(std::string text) : _keyboard(new KeyboardImpl(this, text))
+    Keyboard::Keyboard(const std::string &text) : _keyboard(new KeyboardImpl(this, text))
     {
         _hexadecimal = true;
         _isPopulated = false;
@@ -225,6 +225,11 @@ namespace CTRPluginFramework
     void    Keyboard::IsHexadecimal(bool isHex)
     {
         _hexadecimal = isHex;
+    }
+
+    void    Keyboard::SetMaxLength(u32 maxValue) const
+    {
+        _keyboard->SetMaxInput(maxValue);
     }
 
     void    Keyboard::SetCompareCallback(CompareCallback callback) const

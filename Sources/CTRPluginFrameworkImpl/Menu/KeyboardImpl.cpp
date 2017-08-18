@@ -25,7 +25,7 @@ namespace CTRPluginFramework
     std::vector<TouchKey>    KeyboardImpl::_QwertyKeys;
 
 
-    KeyboardImpl::KeyboardImpl(std::string text)
+    KeyboardImpl::KeyboardImpl(const std::string &text)
     {
         _owner = nullptr;
 
@@ -69,7 +69,7 @@ namespace CTRPluginFramework
         DisplayTopScreen = true;
     }
 
-    KeyboardImpl::KeyboardImpl(Keyboard* kb, std::string text)
+    KeyboardImpl::KeyboardImpl(Keyboard* kb, const std::string &text)
     {
         _owner = kb;
 
