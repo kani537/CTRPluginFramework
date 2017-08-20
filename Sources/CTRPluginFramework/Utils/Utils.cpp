@@ -94,4 +94,9 @@ namespace CTRPluginFramework
         }
         return (0);
     }
+
+    std::string     Utils::ToString(float fpval, int precision)
+    {
+        return (fpval > 999999.f ? Format(Format("%%.%de", precision).c_str(), fpval) : Format(Format("%%.%df", precision).c_str(), fpval));
+    }
 }

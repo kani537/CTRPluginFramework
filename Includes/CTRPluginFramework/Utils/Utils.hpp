@@ -45,6 +45,8 @@ namespace CTRPluginFramework
          * \return The codepoint value of the char removed
          */
         static u32          RemoveLastChar(std::string &str);
+
+        static std::string  ToString(float fpval, int precision = 2);
     };
 }
 
