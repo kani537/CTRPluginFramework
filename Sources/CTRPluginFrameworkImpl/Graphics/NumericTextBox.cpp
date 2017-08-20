@@ -3,6 +3,7 @@
 #include "CTRPluginFramework/Menu/Keyboard.hpp"
 
 #include <cstdio>
+#include "CTRPluginFramework/Utils/Utils.hpp"
 
 namespace CTRPluginFramework
 {
@@ -14,16 +15,14 @@ namespace CTRPluginFramework
     IsEnabled(true),
     IsVisible(true),
     ValueType(Type::Bits32),
-    Bits64(0)
+    Bits32(0)
     {
         Clear();
     }
 
     void    NumericTextBox::_UpdateVal(void)
     {
-        char buffer[17] = {0};
-
-		if (_isHexadecimal)
+		/*if (_isHexadecimal)
 		{
 			switch (ValueType)
 			{
@@ -46,9 +45,12 @@ namespace CTRPluginFramework
 			case Type::Float: sprintf(buffer, "%.4f", Single); break;
 			case Type::Double: sprintf(buffer, "%.4lf", Double); break;
 			}
-		}
+		} */
 
-        _text = buffer;
+        if (ValueType == Type::Float)
+            _text = Utils::ToString(Float, 4);
+        else
+            _text = Utils::Format(_isHexadecimal ? "%X" : "%d", Bits32);
     }
 
     void    NumericTextBox::SetValue(u8 val)
@@ -74,30 +76,30 @@ namespace CTRPluginFramework
 
         _UpdateVal();
     }
-
+    /*
     void    NumericTextBox::SetValue(u64 val)
     {
         ValueType = Type::Bits64;
         Bits64 = val;
 
         _UpdateVal();
-    }
+    }*/
 
     void    NumericTextBox::SetValue(float val)
     {
         ValueType = Type::Float;
-        Single = val;
+        Float = val;
 
         _UpdateVal();
     }
-
+    /*
     void    NumericTextBox::SetValue(double val)
     {
         ValueType = Type::Double;
         Double = val;
 
         _UpdateVal();
-    }
+    }*/
 
 	void	NumericTextBox::UseHexadecimal(bool useHex)
 	{
@@ -107,7 +109,7 @@ namespace CTRPluginFramework
 
     void    NumericTextBox::Clear(void)
     {
-        Bits64 = 0;
+        Bits32 = 0;
 
         _UpdateVal();
     }
@@ -167,9 +169,9 @@ namespace CTRPluginFramework
                 case Type::Bits8: out = keyboard.Open(Bits8, Bits8); break;
                 case Type::Bits16: out = keyboard.Open(Bits16, Bits16); break;
                 case Type::Bits32: out = keyboard.Open(Bits32, Bits32); break;
-                case Type::Bits64: out = keyboard.Open(Bits64, Bits64); break;
-                case Type::Float: out = keyboard.Open(Single, Single); break;
-                case Type::Double: out = keyboard.Open(Double, Double); break;
+             //   case Type::Bits64: out = keyboard.Open(Bits64, Bits64); break;
+                case Type::Float: out = keyboard.Open(Float, Float); break;
+             //   case Type::Double: out = keyboard.Open(Double, Double); break;
             }
 
             if (out != -1)

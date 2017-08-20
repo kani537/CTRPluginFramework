@@ -108,13 +108,13 @@ namespace CTRPluginFramework
             _menu.Append(new MenuEntryFreeCheat(name, address, value));
     }
 
-    void    FreeCheats::Create(u32 address, u64 value) const
+  /*  void    FreeCheats::Create(u32 address, u64 value) const
     {
         std::string name;
 
         if(GetName(name))
             _menu.Append(new MenuEntryFreeCheat(name, address, value));
-    }
+    } */
 
     void    FreeCheats::Create(u32 address, float value) const
     {
@@ -124,13 +124,13 @@ namespace CTRPluginFramework
             _menu.Append(new MenuEntryFreeCheat(name, address, value));
     }
 
-    void    FreeCheats::Create(u32 address, double value) const
+    /*void    FreeCheats::Create(u32 address, double value) const
     {
         std::string name;
 
         if (GetName(name))
             _menu.Append(new MenuEntryFreeCheat(name, address, value));
-    }
+    }*/
 
     void    FreeCheats::Create(SavedCheat &savedCheat) const
     {
@@ -378,9 +378,9 @@ namespace CTRPluginFramework
                 _u32CheckBox.SetState(true);
                 _valueTextBox.SetValue(_selectedFC->Value.Bits32);
             }
-            if (_selectedFC->Type == Type_e::Bits64) _valueTextBox.SetValue(_selectedFC->Value.Bits64);
-            if (_selectedFC->Type == Type_e::Float) _valueTextBox.SetValue(_selectedFC->Value.Float);
-            if (_selectedFC->Type == Type_e::Double) _valueTextBox.SetValue(_selectedFC->Value.Double);
+            //if (_selectedFC->Type == Type_e::Bits64) _valueTextBox.SetValue(_selectedFC->Value.Bits64);
+            //if (_selectedFC->Type == Type_e::Float) _valueTextBox.SetValue(_selectedFC->Value.Float);
+            //if (_selectedFC->Type == Type_e::Double) _valueTextBox.SetValue(_selectedFC->Value.Double);
         }
     }
 
@@ -448,7 +448,7 @@ namespace CTRPluginFramework
         _mustSave = false;
         _nameChanged = false;
         _selectedFC->Address = _addressTextBox.Bits32;
-        _selectedFC->Value.Bits64 = _valueTextBox.Bits64;
+        _selectedFC->Value.Bits32 = _valueTextBox.Bits32;
         _savedName.clear();
         _saveBtn.IsLocked = true;
         _cancelBtn.IsLocked = true;

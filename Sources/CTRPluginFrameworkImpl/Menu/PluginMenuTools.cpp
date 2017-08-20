@@ -498,7 +498,7 @@ namespace CTRPluginFramework
         {
             
             int posY = 205;
-            Renderer::DrawString((char *)"CTRPluginFramework Alpha V.0.2.2", 52, posY, blank); //40
+            Renderer::DrawString((char *)"CTRPluginFramework Alpha V.0.2.3", 52, posY, blank); //40
         }
     }
 

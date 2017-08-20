@@ -21,21 +21,21 @@ namespace CTRPluginFramework
     {
         Process::Write32(entry->Address, entry->Value.Bits32);
     }
-
+    /*
     static void Write64(MenuEntryFreeCheat *entry)
     {
         Process::Write64(entry->Address, entry->Value.Bits64);
-    }
+    }*/
 
     static void WriteFloat(MenuEntryFreeCheat *entry)
     {
         Process::WriteFloat(entry->Address, entry->Value.Float);
     }
-
+    /*
     static void WriteDouble(MenuEntryFreeCheat *entry)
     {
         Process::WriteDouble(entry->Address, entry->Value.Double);
-    }
+    }*/
 
     MenuEntryFreeCheat::MenuEntryFreeCheat(const std::string& text, u32 addr, u8 value) :
         MenuEntryImpl(text),
@@ -44,8 +44,7 @@ namespace CTRPluginFramework
     {
         _type = MenuType::FreeCheat;
         Type = Type_e::Bits8;
-        Value.Bits64 = 0;
-        Value.Bits8 = value;
+        Value.Bits32 = value;
     }
 
     MenuEntryFreeCheat::MenuEntryFreeCheat(const std::string& text, u32 addr, u16 value) :
@@ -55,8 +54,7 @@ namespace CTRPluginFramework
     {
         _type = MenuType::FreeCheat;
         Type = Type_e::Bits16;
-        Value.Bits64 = 0;
-        Value.Bits16 = value;
+        Value.Bits32 = value;
     }
 
     MenuEntryFreeCheat::MenuEntryFreeCheat(const std::string& text, u32 addr, u32 value) :
@@ -66,11 +64,10 @@ namespace CTRPluginFramework
     {
         _type = MenuType::FreeCheat;
         Type = Type_e::Bits32;
-        Value.Bits64 = 0;
         Value.Bits32 = value;
     }
 
-    MenuEntryFreeCheat::MenuEntryFreeCheat(const std::string& text, u32 addr, u64 value) :
+    /*MenuEntryFreeCheat::MenuEntryFreeCheat(const std::string& text, u32 addr, u64 value) :
         MenuEntryImpl(text),
         Func(Write64),
         Address(addr)
@@ -78,7 +75,7 @@ namespace CTRPluginFramework
         _type = MenuType::FreeCheat;
         Type = Type_e::Bits64;
         Value.Bits64 = value;
-    }
+    }*/
 
     MenuEntryFreeCheat::MenuEntryFreeCheat(const std::string& text, u32 addr, float value) :
         MenuEntryImpl(text),
@@ -87,11 +84,10 @@ namespace CTRPluginFramework
     {
         _type = MenuType::FreeCheat;
         Type = Type_e::Float;
-        Value.Bits64 = 0;
         Value.Float = value;
     }
 
-    MenuEntryFreeCheat::MenuEntryFreeCheat(const std::string& text, u32 addr, double value) :
+    /*MenuEntryFreeCheat::MenuEntryFreeCheat(const std::string& text, u32 addr, double value) :
         MenuEntryImpl(text),
         Func(WriteDouble),
         Address(addr)
@@ -99,7 +95,7 @@ namespace CTRPluginFramework
         _type = MenuType::FreeCheat;
         Type = Type_e::Double;
         Value.Double = value;
-    }
+    }*/
 
     MenuEntryFreeCheat::MenuEntryFreeCheat(const MenuEntryFreeCheat& freeCheat) :
         MenuEntryImpl(freeCheat.name),
@@ -108,7 +104,7 @@ namespace CTRPluginFramework
     {
         _type = MenuType::FreeCheat;
         Type = freeCheat.Type;
-        Value.Bits64 = freeCheat.Value.Bits64;
+        Value.Bits32 = freeCheat.Value.Bits32;
     }
 
     MenuEntryFreeCheat::MenuEntryFreeCheat(const Preferences::SavedCheats& savedCheats) :
@@ -117,7 +113,7 @@ namespace CTRPluginFramework
     {
         _type = MenuType::FreeCheat;
         Type = (Type_e)(savedCheats.flags & 0xFF);
-        Value.Bits64 = savedCheats.value;
+        Value.Bits32 = savedCheats.value;
 
         if (savedCheats.flags >> 8 && Preferences::AutoLoadCheats)
             Enable();
@@ -127,9 +123,9 @@ namespace CTRPluginFramework
         if (Type == Type_e::Bits8) Func = Write8;
         if (Type == Type_e::Bits16) Func = Write16;
         if (Type == Type_e::Bits32) Func = Write32;
-        if (Type == Type_e::Bits64) Func = Write64;
+        //if (Type == Type_e::Bits64) Func = Write64;
         if (Type == Type_e::Float) Func = WriteFloat;
-        if (Type == Type_e::Double) Func = WriteDouble;
+        //if (Type == Type_e::Double) Func = WriteDouble;
     }
 
     bool    MenuEntryFreeCheat::TriggerState(void)
@@ -161,16 +157,16 @@ namespace CTRPluginFramework
         if (Type == Type_e::Bits8) Func = Write8;
         if (Type == Type_e::Bits16) Func = Write16;
         if (Type == Type_e::Bits32) Func = Write32;
-        if (Type == Type_e::Bits64) Func = Write64;
+      //  if (Type == Type_e::Bits64) Func = Write64;
         if (Type == Type_e::Float) Func = WriteFloat;
-        if (Type == Type_e::Double) Func = WriteDouble;
+      //  if (Type == Type_e::Double) Func = WriteDouble;
     }
 
     void    MenuEntryFreeCheat::ToSavedSearch(Preferences::SavedCheats &savedCheats)
     {
         savedCheats.flags = ((u8)Type) | (IsActivated() << 8);
         savedCheats.address = Address; 
-        savedCheats.value = Value.Bits64;
+        savedCheats.value = Value.Bits32;
 
         std::memset(savedCheats.name, 0, 50);
         std::strncpy(savedCheats.name, name.c_str(), 49);      

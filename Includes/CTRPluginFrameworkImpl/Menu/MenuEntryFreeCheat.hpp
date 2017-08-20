@@ -14,9 +14,9 @@ namespace CTRPluginFramework
         Bits8 = 1,
         Bits16 = 1 << 1,
         Bits32 = 1 << 2,
-        Bits64 = 1 << 3,
+       // Bits64 = 1 << 3,
         Float = 1 << 4,
-        Double = 1 << 5
+       // Double = 1 << 5
     };
 
     class MenuEntryFreeCheat : public MenuEntryImpl
@@ -26,9 +26,9 @@ namespace CTRPluginFramework
         MenuEntryFreeCheat(const std::string &text, u32 addr, u8 value);
         MenuEntryFreeCheat(const std::string &text, u32 addr, u16 value);
         MenuEntryFreeCheat(const std::string &text, u32 addr, u32 value);
-        MenuEntryFreeCheat(const std::string &text, u32 addr, u64 value);
+       // MenuEntryFreeCheat(const std::string &text, u32 addr, u64 value);
         MenuEntryFreeCheat(const std::string &text, u32 addr, float value);
-        MenuEntryFreeCheat(const std::string &text, u32 addr, double value);
+       // MenuEntryFreeCheat(const std::string &text, u32 addr, double value);
         MenuEntryFreeCheat(const MenuEntryFreeCheat &freeCheat);
         explicit MenuEntryFreeCheat(const Preferences::SavedCheats &savedCheats);
         ~MenuEntryFreeCheat() {}
@@ -48,9 +48,9 @@ namespace CTRPluginFramework
             u8      Bits8;
             u16     Bits16;
             u32     Bits32;
-            u64     Bits64;
+           // u64     Bits64;
             float   Float;
-            double  Double;
+           // double  Double;
         }               Value;
     };
 }

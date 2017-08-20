@@ -18,9 +18,9 @@ namespace CTRPluginFramework
             Bits8,
             Bits16,
             Bits32,
-            Bits64,
+         //   Bits64,
             Float,
-            Double
+         //   Double
         };
 
         NumericTextBox(int posX, int posY, int width, int height);
@@ -28,9 +28,9 @@ namespace CTRPluginFramework
         void    SetValue(u8 val);
         void    SetValue(u16 val);
         void    SetValue(u32 val);
-        void    SetValue(u64 val);
+      //  void    SetValue(u64 val);
         void    SetValue(float val);
-        void    SetValue(double val);
+       // void    SetValue(double val);
 
 		void	UseHexadecimal(bool useHex);
 
@@ -48,9 +48,9 @@ namespace CTRPluginFramework
             u8      Bits8;
             u16     Bits16;
             u32     Bits32;
-            u64     Bits64;
-            float   Single;
-            double  Double;
+          //  u64     Bits64;
+            float   Float;
+          //  double  Double;
         };
 
     private:

@@ -189,9 +189,9 @@ namespace CTRPluginFramework
                 case 0: _valueTextBox.ValueType = NumericTextBox::Type::Bits8; break;
                 case 1: _valueTextBox.ValueType = NumericTextBox::Type::Bits16; break;
                 case 2: _valueTextBox.ValueType = NumericTextBox::Type::Bits32; break;
-                case 3: _valueTextBox.ValueType = NumericTextBox::Type::Bits64; break;
-                case 4: _valueTextBox.ValueType = NumericTextBox::Type::Float; break;
-                case 5: _valueTextBox.ValueType = NumericTextBox::Type::Double; break;
+               // case 3: _valueTextBox.ValueType = NumericTextBox::Type::Bits64; break;
+                case 3: _valueTextBox.ValueType = NumericTextBox::Type::Float; break;
+              //  case 5: _valueTextBox.ValueType = NumericTextBox::Type::Double; break;
                 default: break;
             }
             _valueTextBox.Clear();
@@ -483,7 +483,7 @@ namespace CTRPluginFramework
 
         // Set CheckValue
         parameters.value32.U32 = _valueTextBox.Bits32;
-        parameters.value64.U64 = _valueTextBox.Bits64;
+        //parameters.value64.U64 = _valueTextBox.Bits64;
 
         // Full memory
         if (_memoryRegions.SelectedItem == 0)

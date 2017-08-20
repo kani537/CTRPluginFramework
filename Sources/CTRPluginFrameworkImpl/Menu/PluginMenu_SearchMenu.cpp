@@ -471,9 +471,9 @@ namespace CTRPluginFramework
         if (type == SearchFlags::U8) _freeCheats.Create(address, *(u8 *)address);
         if (type == SearchFlags::U16) _freeCheats.Create(address, *(u16 *)address);
         if (type == SearchFlags::U32) _freeCheats.Create(address, *(u32 *)address);
-        if (type == SearchFlags::U64) _freeCheats.Create(address, *(u64 *)address);
+      //  if (type == SearchFlags::U64) _freeCheats.Create(address, *(u64 *)address);
         if (type == SearchFlags::Float) _freeCheats.Create(address, *(float *)address);
-        if (type == SearchFlags::Double) _freeCheats.Create(address, *(double *)address);
+      //  if (type == SearchFlags::Double) _freeCheats.Create(address, *(double *)address);
     }
 
     void    SearchMenu::_Edit(void)
@@ -528,7 +528,7 @@ namespace CTRPluginFramework
                 }
                 break;
             }
-            case SearchFlags::U64:
+          /*  case SearchFlags::U64:
             {
                 u64 value = *(u64 *)(address);//strtoull(_resultsNewValue[_selector].c_str(), NULL, 16);
 
@@ -540,7 +540,7 @@ namespace CTRPluginFramework
                         *(u64 *)(address) = value;
                 }
                 break;
-            }
+            }*/
             case SearchFlags::Float:
             {
                 float value = *(float *)(address);//strtof(_resultsNewValue[_selector].c_str(), NULL);
@@ -554,7 +554,7 @@ namespace CTRPluginFramework
                 }
                 break;
             }
-            case SearchFlags::Double:
+           /* case SearchFlags::Double:
             {
                 double value = *(double *)(address);//strtod(_resultsNewValue[_selector].c_str(), NULL);
 
@@ -566,7 +566,9 @@ namespace CTRPluginFramework
                         *(double *)(address) = value;
                 }
                 break;
-            }
+            }*/
+            default:
+                break;
         }
     }
 

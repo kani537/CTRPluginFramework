@@ -21,9 +21,9 @@ namespace CTRPluginFramework
         void    Create(u32 address, u8 value) const;
         void    Create(u32 address, u16 value) const;
         void    Create(u32 address, u32 value) const;
-        void    Create(u32 address, u64 value) const;
+        //void    Create(u32 address, u64 value) const;
         void    Create(u32 address, float value) const;
-        void    Create(u32 address, double value) const;
+        //void    Create(u32 address, double value) const;
         void    Create(SavedCheat &savedCheat) const;
 
         // Display menu
