@@ -17,6 +17,8 @@ namespace CTRPluginFramework
          * \return The formatted std::string
          */
         static std::string  Format(const char *fmt, ...);
+        static std::string  ToHex(u32 value);
+        static std::string  ToString(float fpval, int precision = 2);
 
         /**
          * \brief Get a random number
@@ -45,8 +47,6 @@ namespace CTRPluginFramework
          * \return The codepoint value of the char removed
          */
         static u32          RemoveLastChar(std::string &str);
-
-        static std::string  ToString(float fpval, int precision = 2);
     };
 }
 

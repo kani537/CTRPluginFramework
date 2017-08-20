@@ -6,6 +6,7 @@
 #include "3DS.h"
 #include "CTRPluginFrameworkImpl/Menu/PluginMenuFreeCheats.hpp"
 #include "CTRPluginFramework/Menu/MessageBox.hpp"
+#include "CTRPluginFramework/Utils/Utils.hpp"
 
 namespace CTRPluginFramework
 {   
@@ -574,8 +575,6 @@ namespace CTRPluginFramework
         _indexHistory = _history.size() - 1;
     }
 
-    std::string ToHex(u32 x);
-
     void    HexEditor::_BrowseHistory(void)
     {
         _action = true;
@@ -590,7 +589,7 @@ namespace CTRPluginFramework
         std::vector<std::string> addresses;
 
         for (u32 v : _history)
-            addresses.push_back(ToHex(v));
+            addresses.push_back(Utils::ToHex(v));
 
         keyboard.DisplayTopScreen = false;
         keyboard.Populate(addresses);

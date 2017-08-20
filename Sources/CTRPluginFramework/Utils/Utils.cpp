@@ -19,6 +19,20 @@ namespace CTRPluginFramework
         return (std::string(buffer));
     }
 
+    std::string Utils::ToHex(u32 x)
+    {
+        char buf[9] = { 0 };
+
+        sprintf(buf, "%08X", x);
+
+        return (buf);
+    }
+
+    std::string     Utils::ToString(float fpval, int precision)
+    {
+        return (fpval > 999999.f || fpval < -999999.f ? Format(Format("%%.%de", precision).c_str(), fpval) : Format(Format("%%.%df", precision).c_str(), fpval));
+    }
+
     static std::mt19937    g_rng; ///< Engine
 
     void    InitializeRandomEngine(void)
@@ -93,10 +107,5 @@ namespace CTRPluginFramework
             }
         }
         return (0);
-    }
-
-    std::string     Utils::ToString(float fpval, int precision)
-    {
-        return (fpval > 999999.f ? Format(Format("%%.%de", precision).c_str(), fpval) : Format(Format("%%.%df", precision).c_str(), fpval));
     }
 }

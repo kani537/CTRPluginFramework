@@ -7,19 +7,11 @@
 #include "CTRPluginFramework/Menu/MessageBox.hpp"
 #include <algorithm>
 #include "3DS.h"
+#include "CTRPluginFramework/Utils/Utils.hpp"
 
 namespace CTRPluginFramework
 {
     extern void    *_pool;
-
-    std::string ToHex(u32 x)
-    {
-        char buf[9] = { 0 };
-
-        sprintf(buf, "%08X", x);
-
-        return (buf);
-    }
     
     Search32::Search32(SearchParameters& parameters) :
     Search(parameters.previous)
@@ -148,11 +140,22 @@ namespace CTRPluginFramework
                 // Resize container in case nbItem is smaller
                 previousHits.resize(nbItem);
 
-                for (Results32 &result : previousHits)
+                if (GetType() == SearchFlags::Float)
                 {
-                    addr.push_back(ToHex(result.address));
-                    newVal.push_back(ToHex(result.value.U32));
+                    for (Results32 &result : previousHits)
+                    {
+                        addr.push_back(Utils::ToHex(result.address));
+                        newVal.push_back(Utils::ToString(result.value.Float, 4));
+                    }
                 }
+                else
+                {
+                    for (Results32 &result : previousHits)
+                    {
+                        addr.push_back(Utils::ToHex(result.address));
+                        newVal.push_back(Utils::ToHex(result.value.U32));
+                    }
+                }                
                 return;
             }
             // Unknown Search
@@ -175,12 +178,24 @@ namespace CTRPluginFramework
             // Resize container in case nbItem is smaller
             previousHits.resize(nbItem);
 
-            for (Results32WithOld &result : previousHits)
+            if (GetType() == SearchFlags::Float)
             {
-                addr.push_back(ToHex(result.address));
-                newVal.push_back(ToHex(result.newValue.U32));
-                oldVal.push_back(ToHex(result.oldValue.U32));   
+                for (Results32WithOld &result : previousHits)
+                {
+                    addr.push_back(Utils::ToHex(result.address));
+                    newVal.push_back(Utils::ToString(result.newValue.Float, 4));
+                    oldVal.push_back(Utils::ToString(result.oldValue.Float, 4));
+                }
             }
+            else
+            {
+                for (Results32WithOld &result : previousHits)
+                {
+                    addr.push_back(Utils::ToHex(result.address));
+                    newVal.push_back(Utils::ToHex(result.newValue.U32));
+                    oldVal.push_back(Utils::ToHex(result.oldValue.U32));
+                }
+            }            
         }
     }
 

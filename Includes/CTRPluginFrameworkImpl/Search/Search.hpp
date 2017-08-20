@@ -157,7 +157,7 @@ namespace CTRPluginFramework
     {
         u32                     flags;
         Types32_u               value32;
-        Types64_u               value64;
+       // Types64_u               value64;
         bool                    fullMemory;
         std::vector<Region>     ranges;
         Search                  *previous;
