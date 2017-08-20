@@ -706,7 +706,7 @@ namespace CTRPluginFramework
         float prog = _inSearch ? _currentSearch->Progress * percent : 138.f;      
 
         // Draw progress fill
-        IntRect progBarFill = IntRect(131, posY + 1, (u32)prog, 13);
+        IntRect progBarFill = IntRect(131, posY + 1, std::min((u32)prog, (u32)138), 13);
         Renderer::DrawRect(progBarFill, limegreen);
         posY += 20;
 
