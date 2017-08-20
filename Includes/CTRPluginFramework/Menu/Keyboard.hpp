@@ -46,6 +46,8 @@ namespace CTRPluginFramework
          * \param text  The message to display on the top screen if displayed
          */
         Keyboard(const std::string &text = "");
+        Keyboard(const std::string &text, const std::vector<std::string> &options);
+        Keyboard(const std::vector<std::string> &options);
         ~Keyboard(void);
 
         /**

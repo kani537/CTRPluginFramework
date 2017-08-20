@@ -3,6 +3,7 @@
 
 #include <string>
 #include <limits.h>
+#include "CTRPluginFramework/Utils/Utils.hpp"
 
 namespace CTRPluginFramework
 {
@@ -214,7 +215,25 @@ namespace CTRPluginFramework
     {
         _hexadecimal = true;
         _isPopulated = false;
-        DisplayTopScreen = true;
+        DisplayTopScreen = !text.empty();
+    }
+
+    Keyboard::Keyboard(const std::string& text, const std::vector<std::string>& options) :
+        _keyboard(new KeyboardImpl(this, text))
+    {
+        _hexadecimal = false;
+        DisplayTopScreen = !text.empty();
+        _keyboard->Populate(options);
+        _isPopulated = !options.empty();
+    }
+
+    Keyboard::Keyboard(const std::vector<std::string> &options) :
+        _keyboard(new KeyboardImpl(this))
+    {
+        _hexadecimal = false;
+        DisplayTopScreen = false;
+        _keyboard->Populate(options);
+        _isPopulated = !options.empty();
     }
 
     Keyboard::~Keyboard(void)
@@ -285,16 +304,10 @@ namespace CTRPluginFramework
         if (_hexadecimal)
         {
             _keyboard->SetMaxInput(2);
-            char buffer[0x100];
-            snprintf(buffer, 0x100, "%X", start);        
-            input = buffer;
+            input = Utils::Format("%X", start);
         }
         else
-        {
-            char buffer[0x100];
-            snprintf(buffer, 0x100, "%d", start);        
-            input = buffer;
-        }
+            input = Utils::Format("%d", start);
         _keyboard->CanChangeLayout(true);
         _keyboard->SetConvertCallback(ConvertToU8);
         _keyboard->DisplayTopScreen = DisplayTopScreen;
@@ -340,16 +353,10 @@ namespace CTRPluginFramework
         if (_hexadecimal)
         {
             _keyboard->SetMaxInput(4);
-            char buffer[0x100];
-            snprintf(buffer, 0x100, "%X", start);        
-            input = buffer;
+            input = Utils::Format("%X", start);
         }
         else
-        {
-            char buffer[0x100];
-            snprintf(buffer, 0x100, "%d", start);        
-            input = buffer;
-        }
+            input = Utils::Format("%d", start);
         _keyboard->CanChangeLayout(true);
         _keyboard->SetConvertCallback(ConvertToU16);
         _keyboard->DisplayTopScreen = DisplayTopScreen;
@@ -395,16 +402,10 @@ namespace CTRPluginFramework
         if (_hexadecimal)
         {
             _keyboard->SetMaxInput(8);
-            char buffer[0x100];
-            snprintf(buffer, 0x100, "%X", start);        
-            input = buffer;
+            input = Utils::Format("%X", start);
         }
         else
-        {
-            char buffer[0x100];
-            snprintf(buffer, 0x100, "%d", start);        
-            input = buffer;
-        }
+            input = Utils::Format("%d", start);
         _keyboard->CanChangeLayout(true);
         _keyboard->SetConvertCallback(ConvertToU32);
         _keyboard->DisplayTopScreen = DisplayTopScreen;
@@ -450,16 +451,10 @@ namespace CTRPluginFramework
         if (_hexadecimal)
         {
             _keyboard->SetMaxInput(16);
-            char buffer[0x100];
-            snprintf(buffer, 0x100, "%llX", start);        
-            input = buffer;
+            input = Utils::Format("%X", start);
         }
         else
-        {
-            char buffer[0x100];
-            snprintf(buffer, 0x100, "%ld", start);        
-            input = buffer;
-        }
+            input = Utils::Format("%d", start);
         _keyboard->CanChangeLayout(true);
         _keyboard->SetConvertCallback(ConvertToU64);
         _keyboard->DisplayTopScreen = DisplayTopScreen;
@@ -499,10 +494,8 @@ namespace CTRPluginFramework
         _keyboard->SetConvertCallback(ConvertToFloat);
         _keyboard->DisplayTopScreen = DisplayTopScreen;
 
-        char buffer[0x100];
-        snprintf(buffer, 0x100, "%f", start);
         std::string &input = _keyboard->GetInput();
-        input = buffer;
+        input = Utils::Format("%f.4", start);
 
         int ret = _keyboard->Run();
 
@@ -539,10 +532,8 @@ namespace CTRPluginFramework
         _keyboard->SetConvertCallback(ConvertToDouble);
         _keyboard->DisplayTopScreen = DisplayTopScreen;
 
-        char buffer[0x100];
-        snprintf(buffer, 0x100, "%lf", start);
         std::string &input = _keyboard->GetInput();
-        input = buffer;
+        input = Utils::Format("%lf.4", start);
 
         int ret = _keyboard->Run();
 
