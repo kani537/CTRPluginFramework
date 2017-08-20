@@ -54,6 +54,7 @@ namespace CTRPluginFramework
         u32                     _maxLines;
         u32                     _scrollbarSize;
         u32                     _scrollCursorSize;
+        u32                     _maxScrollCursorPosY;
         float                   _scrollPadding;
         float                   _scrollPosition;
         Clock                   _inputClock;

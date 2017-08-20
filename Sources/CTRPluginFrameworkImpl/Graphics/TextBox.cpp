@@ -41,6 +41,7 @@ namespace CTRPluginFramework
                 cursorSize = 5;
 
             _scrollCursorSize = cursorSize;
+            _maxScrollCursorPosY = _box.leftTop.y + 5 + _scrollbarSize - cursorSize;
             _scrollPadding = padding * 16.f;
             _scrollPosition = 0.f;
             _displayScrollbar = true;
@@ -203,6 +204,7 @@ namespace CTRPluginFramework
             _scrollCursorSize = cursorSize;
             _scrollPadding = padding * 16.f;
             _scrollPosition = 0.f;
+            _maxScrollCursorPosY = _box.leftTop.y + 5 + _scrollbarSize - cursorSize;
             _displayScrollbar = true;
         }
     }
@@ -264,6 +266,8 @@ namespace CTRPluginFramework
         Renderer::DrawLine(posX + 2, posY + 1, 1, silver, _scrollbarSize - 2);
 
         posY += (int)(_scrollPosition);// * _scrollbarSize);
+
+        posY = std::min((u32)posY, _maxScrollCursorPosY);
 
         Renderer::DrawLine(posX, posY + 1, 1, dimGrey, _scrollCursorSize - 2);
         Renderer::DrawLine(posX + 1, posY, 1, dimGrey, _scrollCursorSize);
