@@ -29,8 +29,7 @@ namespace CTRPluginFramework
     _waitForUser(false),
 	_hexInput(false),
     _inEditor(false),
-    _hexBtn("Hex", *this, nullptr, IntRect(110, 145, 38, 15), nullptr),
-    _compareFirstSearch("Compare with first search", *this, nullptr, IntRect(30, 165, 250, 15), nullptr)
+    _hexBtn("Hex", *this, nullptr, IntRect(110, 145, 38, 15), nullptr)
     {
         _currentSearch = nullptr;
 
@@ -56,7 +55,6 @@ namespace CTRPluginFramework
         _cancelBtn.UseSysFont(false);
         _cancelBtn.IsEnabled = false;
         _hexBtn.UseSysFont(false);
-        _compareFirstSearch.UseSysFont(false);
 
         _searchSize.SelectedItem = 2;
 
@@ -83,7 +81,6 @@ namespace CTRPluginFramework
         _uiContainer += &_undoBtn;
         _uiContainer += &_resetBtn;
         _uiContainer += &_hexBtn;
-        _uiContainer += &_compareFirstSearch;
     }
 
     bool    PluginMenuSearch::operator()(EventList &eventList, Time &delta)
@@ -240,18 +237,24 @@ namespace CTRPluginFramework
 
         // Check NumericTextBoxes
         _valueTextBox();
+
         if (_startRangeTextBox())
         {
             Region  &region = _regionsList[_memoryRegions.SelectedItem - 1];
 
-            if (_startRangeTextBox.Bits32 >= region.endAddress || _startRangeTextBox.Bits32 < region.startAddress)
+            if (_startRangeTextBox.Bits32 >= region.endAddress
+                || _startRangeTextBox.Bits32 < region.startAddress
+                || _startRangeTextBox.Bits32 >= _endRangeTextBox.Bits32)
                 _startRangeTextBox.SetValue(region.startAddress);
         }
+
         if (_endRangeTextBox())
         {
             Region  &region = _regionsList[_memoryRegions.SelectedItem - 1];
 
-            if (_endRangeTextBox.Bits32 > region.endAddress || _endRangeTextBox.Bits32 <= region.startAddress)
+            if (_endRangeTextBox.Bits32 > region.endAddress
+                || _endRangeTextBox.Bits32 <= region.startAddress
+                || _endRangeTextBox.Bits32 <= _startRangeTextBox.Bits32)
                 _endRangeTextBox.SetValue(region.endAddress);
         }
 
@@ -430,14 +433,12 @@ namespace CTRPluginFramework
         if (_currentSearch != nullptr)
             _searchHistory.push_back(_currentSearch);
 
-        if (_searchHistory.size() > 6)
+        if (_searchHistory.size() > 5)
         {
-            auto it = _searchHistory.begin();
+            auto first = _searchHistory.front();
 
-            std::advance(it, 1);
-
-            _searchHistory.erase(it);
-            delete *it;
+            _searchHistory.pop_front();
+            delete first;
 
             // TODO : search-> = nullptr;
         }
@@ -451,12 +452,11 @@ namespace CTRPluginFramework
 
         parameters.previous = _currentSearch;
 
-
         // If first search
         if (_currentSearch == nullptr)
             parameters.flags = (u32)SearchFlags::First;
         // If second search or compare with first search
-        else if (_currentSearch->Step == 0 || _compareFirstSearch.GetState())
+        else if (_currentSearch->Step == 0)
         {
             parameters.flags = (u32)SearchFlags::Second;
             parameters.previous = _searchHistory.front();
