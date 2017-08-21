@@ -19,24 +19,24 @@ Hook::Hook(void)
     memset(returnCode, 0, 16);
 }
 
-void    Hook::Initialize(u32 targetAddr, u32 callbackAddr)
+void    Hook::Initialize(u32 addr, u32 callbackAddr)
 {
     if (isInitialized)
         return;
 
     isEnabled = false;
-    targetAddress = targetAddr;
-    afterHookAddress = targetAddr + 8;
+    targetAddress = addr;
+    afterHookAddress = addr + 8;
 
     // Backup original code
-    if (!CTRPluginFramework::Process::CopyMemory(targetCode, (void *)targetAddr, 8))
+    if (!CTRPluginFramework::Process::CopyMemory(targetCode, (void *)addr, 8))
         goto error;
 
     // Generate jump instruction
     generate_jump_code(callbackAddr, jumpCode);
 
     // Create return code
-    if (!CTRPluginFramework::Process::CopyMemory(returnCode, (void *)targetAddr, 8))
+    if (!CTRPluginFramework::Process::CopyMemory(returnCode, (void *)addr, 8))
         goto error;
 
     generate_jump_code(targetAddress + 8, &returnCode[2]);

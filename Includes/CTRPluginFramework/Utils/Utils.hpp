@@ -17,7 +17,22 @@ namespace CTRPluginFramework
          * \return The formatted std::string
          */
         static std::string  Format(const char *fmt, ...);
+
+        /**
+         * \brief Get the hexadecimal representation of a value
+         * \param value The value to convert
+         * \return An std::string with the the hexadecimal representation of value
+         */
         static std::string  ToHex(u32 value);
+
+        /**
+         * \brief Get the string representation of a float value
+         * \param fpval The value to convert
+         * \param precision The number of digit after the .
+         * \return An std::string with the representation of the value\n
+         * Values between -999999.f && 999999.f will be a fixed representation \n
+         * while anything lower / higher will be a scientific representation
+         */
         static std::string  ToString(float fpval, int precision = 2);
 
         /**

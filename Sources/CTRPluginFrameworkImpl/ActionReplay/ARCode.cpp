@@ -34,7 +34,7 @@ namespace CTRPluginFramework
         error = false;
     }
 
-    std::string     ARCode::ToString(void)
+    std::string     ARCode::ToString(void) const
     {
         if (Type == 0xE0)
         {
@@ -48,7 +48,7 @@ namespace CTRPluginFramework
 
             while (size >= 4)
             {
-                ret += Utils::Format("%08X", (u32 *)&Data[pos]);
+                ret += Utils::Format("%08X", *(u32 *)&Data[pos]);
                 if (space)
                 {
                     ret += " ";
@@ -68,9 +68,9 @@ namespace CTRPluginFramework
                 size--;
             }
 
-            if (space)
+            if (space && left)
                 ret += Utils::Format("%08X 00000000", left);
-            else
+            else if (!space)
                 ret += Utils::Format("%08X", left);
             return (ret);
         }

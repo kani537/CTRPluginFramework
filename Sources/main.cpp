@@ -17,64 +17,31 @@
 #include <limits>
 #include <random>
 #include "CTRPluginFrameworkImpl/ActionReplay/ARCode.hpp"
+#include "CTRPluginFrameworkImpl/ActionReplay/ARHandler.hpp"
+#include <locale>
+#include <cstring>
+#include "csvc.h"
 
 namespace CTRPluginFramework
-{    
+{
     // This function is called on the plugin starts, before main
     void    PatchProcess(void)
-    {
+    {        
+        // Patch HomeButton
+       /* u32 pa = svcConvertVAToPA((void *)0x00124F68, false);
 
+        if (pa)
+        {
+            pa |= 1u << 31;
+            *(u32 *)pa = 0xEA00005A;
+        }*/
     }
 
-    /*
-     * ARCode
-     */
-    
-
-    // Function to pass to plugin to decode the About text
-    /*void    Decoder(std::string &output, void *input)
-    {
-        u32     size = g_encAboutSize;
-        u32     *in = static_cast<u32 *>(input);
-        int     i = 0;
-
-        while (size)
-        {
-            u32 c = *in++;
-
-            c = (c >> 2) ^ (i++ & 0xF);
-
-            output.push_back(static_cast<char>(c));
-
-            size--;
-        }
-    }*/
-
-    //  
     std::string about = u8"\n" \
         u8"Plugin for Zelda Ocarina Of Time, V3.0\n\n"
         u8"Most of these codes comes from Fort42 so a huge thanks to their original creator !!\n\n" \
         u8"GBATemp's release thread: goo.gl/Rz1uhj";
 
-    /*
-    // Function to pass to plugin to decode the About text
-    void    Decoder(std::string &output, void *input)
-    {
-        u32     size = g_encAboutSize;
-        u32     *in = static_cast<u32 *>(input);
-        int     i = 0;
-
-        while (size)
-        {
-            u32 c = *in++;
-
-            c = (c >> 2) ^ (i++ & 0xF);
-
-            output += static_cast<char>(c);
-
-            size--;
-        }
-    }*/
     
     void    Invincible(MenuEntry *entry)
     {
@@ -361,49 +328,190 @@ namespace CTRPluginFramework
         return (((FsTryOpenFileType)g_FsTryOpenFileHook.returnCode)(a1, filename, mode));
     }
 
-    void    LineReadTest(MenuEntry *entry)
+    PluginMenu  *g_menu;
+    MenuFolder  *g_folder = new MenuFolder("Action Replay");
+
+    struct AREntry
     {
-        static ARCodeVector     arcodes;
+        ARCodeVector     arcodes;
+        u32     Storage[2];
+    };
 
-        if (!entry->IsActivated())
-        {
-            arcodes.clear();
-            return;
-        }
+    void    ExecuteARCodes(MenuEntry *entry)
+    {
+        AREntry *ar = static_cast<AREntry *>(entry->GetArg());
 
-        if (arcodes.size() == 0)
-        {
-            File        file;
-            LineReader  reader(file);
-
-            if (File::Open(file , "test.txt") == 0)
-            {
-                std::string line;
-                bool error;
-                while (reader(line))
-                {
-                    
-                    ARCode code(line, error);
-
-                    if (error)
-                        OSD::Notify("Error: " + line);
-                    else
-                        arcodes.push_back(code);
-                }
-            }
-        }
-
-        ARHandler::Execute(arcodes);
+        ARHandler::Execute(ar->arcodes, ar->Storage);
     }
 
+    MenuEntry *CreateAREntry(const std::string &name, ARCodeVector &arcodes)
+    {
+        MenuEntry *entry = new MenuEntry(name, ExecuteARCodes);
+
+        AREntry *ar = new AREntry;
+
+        ar->Storage[0] = 0;
+        ar->Storage[1] = 0;
+        ar->arcodes = arcodes;
+
+        entry->SetArg(ar);
+        return (entry);
+    }
+
+    // trim from end (in place)
+    static inline void rtrim(std::string &s) {
+        s.erase(std::find_if(s.rbegin(), s.rend(), [](int ch) {
+            return !std::isspace(ch);
+        }).base(), s.end());
+    }
+    /*
+    void    LogEntry(void)
+    {
+        File file;
+
+        File::Open(file, "Log.txt", File::WRITE | File::SYNC | File::APPEND | File::CREATE);
+
+        MenuFolderImpl *folder = g_folder->_item.get();
+        for (int i = 0; i < folder->ItemsCount(); i++)
+        {
+            MenuEntry *entry = (*folder)[i]->AsMenuEntryImpl().AsMenuEntry();
+            AREntry *ar = (AREntry *)entry->GetArg();
+
+            file.WriteLine(Utils::Format("[%s]", entry->Name().c_str()));
+            for (const ARCode &code : ar->arcodes)
+                file.WriteLine(code.ToString());
+            file.WriteLine(" ");
+        }
+    }*/
+
+
+    void    LineReadTest(MenuEntry *entry)
+    {
+
+        File        file;
+        LineReader  reader(file);
+
+        if (File::Open(file , "cheats.txt") == 0)
+        {
+            std::string line;
+
+            std::string     name;
+            ARCodeVector    arcodes;
+
+            bool error;
+            bool ecode = false;
+            int  count = 0;
+            int index = 0;
+
+            while (reader(line))
+            {
+                if (line.empty())
+                {
+                    if (!name.empty() && !arcodes.empty())
+                        *g_folder += CreateAREntry(name, arcodes);
+                    arcodes.clear();
+                    name.clear();
+                    ecode = false;
+                    continue;
+                }
+                // If we're in emode
+                if (ecode)
+                {
+                    u32  *data = reinterpret_cast<u32 *>(&arcodes.back().Data[index]);
+                    std::string lStr = line.substr(0, 8);
+                    std::string rStr = line.substr(9, 8);
+                    u32 left = static_cast<u32>(std::stoul(lStr, nullptr, 16));
+                    u32 right = static_cast<u32>(std::stoul(rStr, nullptr, 16));
+
+                    *data++ = left;
+                    *data = right;
+                    index += 8;
+                    count--;
+                    if (count == 0)
+                    {
+                        ecode = false;
+                    }
+                        
+                    continue;
+                }
+
+                // If we found a name pattern
+                if (line[0] == '[')
+                {
+                    if (!name.empty() && !arcodes.empty())
+                        *g_folder += CreateAREntry(name, arcodes);
+                    arcodes.clear();
+                    name.clear();
+
+                    rtrim(line);
+                    name = line.substr(1, line.size() - 2);
+                    continue;
+                }
+
+                ARCode code(line, error);
+
+                if (error)
+                {
+                    OSD::Notify("Error: " + line);
+                    break;
+                }               
+
+                if (code.Type == 0xE0)
+                {
+                    ecode = true;
+                    count = code.Right / 8 + (code.Right % 8 != 0 ? 1 : 0);
+                    code.Data = new u8[count * 8];
+                    index = 0;
+                }
+
+                arcodes.push_back(code);
+            }
+
+            if (!name.empty() && !arcodes.empty())
+                *g_folder += CreateAREntry(name, arcodes);
+
+            MessageBox(Utils::Format("Found %d cheats !", g_folder->ItemsCount()))();
+
+           // LogEntry();
+            //entry->Disable();
+        }
+    }
+
+    void    Crash(MenuEntry *entry)
+    {
+        *(u32*)0 = 0;
+    }
+#define ARVERSION 1
     int    main(void)
     {
-        PluginMenu      *m = new PluginMenu("Zelda Ocarina Of Time 3D", 3, 0, 1, about);
-        PluginMenu      &menu = *m;
+#if ARVERSION
+        g_menu = new PluginMenu("Action Replay Test", 0, 0, 1);
+        PluginMenu      &menu = *g_menu;
+
+        menu += new MenuEntry("Load cheats from file", nullptr, LineReadTest);
+        menu += g_folder;
+#else
+        /*PluginMenu      **/g_menu = new PluginMenu("Zelda Ocarina Of Time 3D", 3, 0, 1, about);
+        PluginMenu      &menu = *g_menu;
         std::string     note;
 
         menu.Append(new MenuEntry("Map loading", ForceMapsLoading));
-        menu += new MenuEntry("Read line", LineReadTest);
+        menu += new MenuEntry("Load cheats from file", nullptr, LineReadTest);
+        menu += new MenuEntry("Crash", nullptr, Crash);
+        menu += new MenuEntry("Test file funcs", nullptr, [](MenuEntry *entry)
+        {
+            File file("CTRPluginFramework.plg");
+
+            if (file.IsOpen())
+            {
+                MessageBox(file.GetExtension() + "\n"
+                    + file.GetName() + "\n"
+                    + file.GetFullName())();
+            }
+            else
+                MessageBox("File isn't open")();
+        });
+        menu += g_folder;
 
         /*
         ** Movements codes
@@ -542,8 +650,10 @@ namespace CTRPluginFramework
 
             menu += folder;
         }
-
-        menu += [] { Sleep(Milliseconds(1)); };
+#endif
+        menu += [] { 
+            Sleep(Milliseconds(5));
+        };
         // Launch menu and mainloop
         menu.Run();
 

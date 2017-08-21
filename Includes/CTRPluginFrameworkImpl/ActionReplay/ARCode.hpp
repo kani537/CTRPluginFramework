@@ -2,6 +2,7 @@
 #define CTRPLUGINFRAMEWORKIMPL_ACTIONREPLAY_ARCODE_HPP
 
 #include "types.h"
+#include <string>
 #include <vector>
 
 namespace CTRPluginFramework
@@ -17,7 +18,7 @@ namespace CTRPluginFramework
         u32     Right;
         u8      *Data; ///< Pointer to data for E code
 
-        virtual std::string ToString(void);
+        virtual std::string ToString(void) const;
 
         ARCode(u8 type, u32 left, u32 right) :
             Type(type), Left(left), Right(right), Data(nullptr) {}

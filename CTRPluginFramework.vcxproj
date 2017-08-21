@@ -115,8 +115,11 @@
     <ClInclude Include="Includes\3DS.h" />
     <ClInclude Include="Includes\colors.h" />
     <ClInclude Include="Includes\common.h" />
+    <ClInclude Include="Includes\csvc.h" />
     <ClInclude Include="Includes\CTRPluginFramework.hpp" />
     <ClInclude Include="Includes\CTRPluginFrameworkImpl.hpp" />
+    <ClInclude Include="Includes\CTRPluginFrameworkImpl\ActionReplay\ARCode.hpp" />
+    <ClInclude Include="Includes\CTRPluginFrameworkImpl\ActionReplay\ARHandler.hpp" />
     <ClInclude Include="Includes\CTRPluginFrameworkImpl\arm11kCommands.h" />
     <ClInclude Include="Includes\CTRPluginFrameworkImpl\Graphics.hpp" />
     <ClInclude Include="Includes\CTRPluginFrameworkImpl\Graphics\BMPImage.hpp" />
@@ -124,6 +127,7 @@
     <ClInclude Include="Includes\CTRPluginFrameworkImpl\Graphics\CheckBox.hpp" />
     <ClInclude Include="Includes\CTRPluginFrameworkImpl\Graphics\CheckedButton.hpp" />
     <ClInclude Include="Includes\CTRPluginFrameworkImpl\Graphics\ComboBox.hpp" />
+    <ClInclude Include="Includes\CTRPluginFrameworkImpl\Graphics\Drawable.hpp" />
     <ClInclude Include="Includes\CTRPluginFrameworkImpl\Graphics\Font.hpp" />
     <ClInclude Include="Includes\CTRPluginFrameworkImpl\Graphics\Icon.hpp" />
     <ClInclude Include="Includes\CTRPluginFrameworkImpl\Graphics\IconButton.hpp" />
@@ -132,6 +136,7 @@
     <ClInclude Include="Includes\CTRPluginFrameworkImpl\Graphics\NumericTextBox.hpp" />
     <ClInclude Include="Includes\CTRPluginFrameworkImpl\Graphics\OSDImpl.hpp" />
     <ClInclude Include="Includes\CTRPluginFrameworkImpl\Graphics\PrivColor.hpp" />
+    <ClInclude Include="Includes\CTRPluginFrameworkImpl\Graphics\UIContainer.hpp" />
     <ClInclude Include="Includes\CTRPluginFrameworkImpl\Graphics\Window.hpp" />
     <ClInclude Include="Includes\CTRPluginFrameworkImpl\Menu\GatewayRAMDumper.hpp" />
     <ClInclude Include="Includes\CTRPluginFrameworkImpl\Menu\HotkeysModifier.hpp" />
@@ -191,6 +196,9 @@
     <ClInclude Include="Includes\CTRPluginFramework\System\System.hpp" />
     <ClInclude Include="Includes\CTRPluginFramework\System\Time.hpp" />
     <ClInclude Include="Includes\CTRPluginFramework\System\Touch.hpp" />
+    <ClInclude Include="Includes\CTRPluginFramework\Utils.hpp" />
+    <ClInclude Include="Includes\CTRPluginFramework\Utils\LineReader.hpp" />
+    <ClInclude Include="Includes\CTRPluginFramework\Utils\Utils.hpp" />
     <ClInclude Include="Includes\ctrulib\allocator\linear.h" />
     <ClInclude Include="Includes\ctrulib\allocator\mappable.h" />
     <ClInclude Include="Includes\ctrulib\allocator\newlibHeap.h" />
@@ -267,6 +275,8 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Sources\cheats.cpp" />
+    <ClCompile Include="Sources\CTRPluginFrameworkImpl\ActionReplay\ARCode.cpp" />
+    <ClCompile Include="Sources\CTRPluginFrameworkImpl\ActionReplay\ARHandler.cpp" />
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\arm11kCommands.c" />
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\Graphics\BMPImage.cpp" />
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\Graphics\ComboBox.cpp" />
@@ -320,6 +330,7 @@
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\Graphics\TextBox.cpp" />
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\Graphics\TouchKey.cpp" />
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\Graphics\TouchKeyString.cpp" />
+    <ClCompile Include="Sources\CTRPluginFrameworkImpl\Graphics\UIContainer.cpp" />
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\Graphics\Window.cpp" />
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\Menu\GatewayRAMDumper.cpp" />
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\Menu\GuideReader.cpp" />
@@ -368,6 +379,8 @@
     <ClCompile Include="Sources\CTRPluginFramework\System\System.cpp" />
     <ClCompile Include="Sources\CTRPluginFramework\System\Time.cpp" />
     <ClCompile Include="Sources\CTRPluginFramework\System\Touch.cpp" />
+    <ClCompile Include="Sources\CTRPluginFramework\Utils\LineReader.cpp" />
+    <ClCompile Include="Sources\CTRPluginFramework\Utils\Utils.cpp" />
     <ClCompile Include="Sources\ctrulib\allocator\linear.cpp" />
     <ClCompile Include="Sources\ctrulib\allocator\mappable.cpp" />
     <ClCompile Include="Sources\ctrulib\allocator\mem_pool.cpp" />
@@ -424,6 +437,9 @@
     <ClCompile Include="Sources\main.cpp" />
     <ClCompile Include="Sources\NTRImpl.cpp" />
     <ClCompile Include="Sources\pluginInit.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Sources\csvc.s" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
