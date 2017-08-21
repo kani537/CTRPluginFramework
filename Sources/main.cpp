@@ -485,7 +485,7 @@ namespace CTRPluginFramework
     int    main(void)
     {
 #if ARVERSION
-        g_menu = new PluginMenu("Action Replay Test", 0, 0, 1);
+        g_menu = new PluginMenu("Action Replay Test \u00B1", 0, 0, 1);
         PluginMenu      &menu = *g_menu;
 
         menu += new MenuEntry("Load cheats from file", nullptr, LineReadTest);

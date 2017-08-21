@@ -19,6 +19,7 @@ namespace CTRPluginFramework
     #define KEY_SPACE -5
     #define KEY_SYMBOLS_PAGE -6
     #define KEY_NINTENDO_PAGE -7
+    #define KEY_PLUS_MINUS -8
 
     std::vector<TouchKey>    KeyboardImpl::_DecimalKeys;
     std::vector<TouchKey>    KeyboardImpl::_HexaDecimalKeys;
@@ -1214,6 +1215,10 @@ namespace CTRPluginFramework
 
         // Dot key
         keys.push_back(TouchKey('.', pos));
+        pos.leftTop.y += 46;
+
+        // Plus-Minus key
+        keys.push_back(TouchKey("\u00B1", pos));
 
         // 0 key
         pos.leftTop.y = 174;
@@ -1252,8 +1257,11 @@ namespace CTRPluginFramework
         // Disable dot key
         _HexaDecimalKeys.at(17).Enable(false);
 
+        // Disable pllus-minus key
+        _HexaDecimalKeys.at(18).Enable(false);
+
         // Disable Hex keys if users asks so
-        if (!_isHex)
+        /*if (!_isHex)
         {
             KeyIter  iter = _HexaDecimalKeys.begin();
             KeyIter  end = iter;
@@ -1261,7 +1269,7 @@ namespace CTRPluginFramework
 
             for (; iter != end; ++iter)
                 (*iter).Enable(false);
-        }
+        } */
     }
 
     bool    KeyboardImpl::_CheckKeys(void)
@@ -1333,9 +1341,18 @@ namespace CTRPluginFramework
                         || (_layout == QWERTY && _max && Utils::GetSize(_userInput) >= _max))
                         return (false);
 
-                    _userInput += temp;
                     _inputChangeEvent.type = InputChangeEvent::CharacterAdded;
                     decode_utf8(&_inputChangeEvent.codepoint, (const u8 *)temp.c_str());
+
+                    if (_inputChangeEvent.codepoint == 0x00B1)
+                    {
+                        if (_userInput[0] == '-')
+                            _userInput.erase(0, 1);
+                        else
+                            _userInput.insert(0, 1, '-');
+                    }
+                    else
+                        _userInput += temp;
 
                     return (true);
                 }

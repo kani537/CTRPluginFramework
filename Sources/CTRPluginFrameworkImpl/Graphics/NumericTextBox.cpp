@@ -166,11 +166,11 @@ namespace CTRPluginFramework
 
            switch (ValueType)
             {
-                case Type::Bits8: out = keyboard.Open(Bits8, Bits8); break;
-                case Type::Bits16: out = keyboard.Open(Bits16, Bits16); break;
-                case Type::Bits32: out = keyboard.Open(Bits32, Bits32); break;
+                case Type::Bits8: out = keyboard.Open(Bits8); break;
+                case Type::Bits16: out = keyboard.Open(Bits16); break;
+                case Type::Bits32: out = keyboard.Open(Bits32); break;
              //   case Type::Bits64: out = keyboard.Open(Bits64, Bits64); break;
-                case Type::Float: out = keyboard.Open(Float, Float); break;
+                case Type::Float: out = keyboard.Open(Float); break;
              //   case Type::Double: out = keyboard.Open(Double, Double); break;
             }
 
