@@ -13,7 +13,7 @@ namespace CTRPluginFramework
     class MenuFolderImpl : public MenuItem
     {
     public:
-        MenuFolderImpl(std::string name, std::string note = "");
+        MenuFolderImpl(const std::string &name, const std::string &note = "");
         ~MenuFolderImpl();
 
         void        Append(MenuItem *item, bool isStar = false);

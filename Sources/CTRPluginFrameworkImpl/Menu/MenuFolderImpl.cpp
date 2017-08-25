@@ -4,7 +4,7 @@
 
 namespace CTRPluginFramework
 {
-    MenuFolderImpl::MenuFolderImpl(std::string name, std::string note) :
+    MenuFolderImpl::MenuFolderImpl(const std::string &name, const std::string &note) :
     MenuItem(MenuType::Folder)
     {
         this->name = name;

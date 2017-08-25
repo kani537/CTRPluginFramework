@@ -6,7 +6,7 @@
 
 namespace CTRPluginFramework
 {
-    MenuEntryImpl::MenuEntryImpl(std::string name, std::string note, MenuEntry *owner) : MenuItem(MenuType::Entry)
+    MenuEntryImpl::MenuEntryImpl(const std::string &name, const std::string &note, MenuEntry *owner) : MenuItem(MenuType::Entry)
     {
         this->name = name;
         this->note = note;
@@ -21,7 +21,7 @@ namespace CTRPluginFramework
         this->_owner = owner;
     }
 
-    MenuEntryImpl::MenuEntryImpl(std::string name, FuncPointer func, std::string note, MenuEntry *owner) : MenuItem(MenuType::Entry)
+    MenuEntryImpl::MenuEntryImpl(const std::string &name, FuncPointer func, const std::string &note, MenuEntry *owner) : MenuItem(MenuType::Entry)
     {
         this->name = name;
         this->note = note;
