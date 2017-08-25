@@ -90,6 +90,8 @@ namespace CTRPluginFramework
         _isPaused = true;
 
         svcSignalEvent(gspEvent);
+
+        Sleep(Milliseconds(1.f));
 		// Raising priority of Event Thread
 		while (R_FAILED(svcSetThreadPriority(gspThreadEventHandle, 0x19)));
 		// Raising priority of this thread        
@@ -125,7 +127,7 @@ namespace CTRPluginFramework
         	gspWaitForVBlank(); 
         	if (System::IsNew3DS())
         		while (t.GetElapsedTime() < limit);       	
-        }       
+        }
 	}
 
 	void 	ProcessImpl::Play(bool useFading)

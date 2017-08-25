@@ -2,7 +2,7 @@
 
 namespace CTRPluginFramework
 {
-    TouchKeyString::TouchKeyString(std::string content, IntRect ui, bool isEnabled)
+    TouchKeyString::TouchKeyString(const std::string &content, IntRect ui, bool isEnabled)
     {
         _content = content;
         _uiProperties = ui;
@@ -30,23 +30,20 @@ namespace CTRPluginFramework
 
     void    TouchKeyString::Draw(void)
     {
-        static Color    background(51, 51, 51); // sort of grey
-       // static Color    pressed(192, 192, 192); // silver
-        Color    &blank = Color::Blank; // blank
-        Color    &textSe = Color::Black; // black
+        static Color    background(51, 51, 51); ///< Sort of grey
+        Color    &blank = Color::Blank;
+        Color    &textSe = Color::Black;
         Color    &pressed = Color::Gainsboro; 
        
 
-        // if key is disabled
+        // If key is disabled
         if (!_enabled)
-        {
             return;
-        }
-        else if (_isPressed)
+
+        if (_isPressed)
         {
             // Background
             Renderer::DrawRect(_uiProperties, pressed);
-
             int posX = ((_uiProperties.size.x - (int)_contentLength) / 2) + _uiProperties.leftTop.x;
             int posY = ((_uiProperties.size.y - 16) / 2) + _uiProperties.leftTop.y;
             int maxX = _uiProperties.leftTop.x + _uiProperties.size.x;

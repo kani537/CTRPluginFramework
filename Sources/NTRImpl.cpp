@@ -141,8 +141,8 @@ namespace CTRPluginFramework
     {
         if (ProcessImpl::_isPaused)
         {
-            while (ProcessImpl::_isPaused)
-                Sleep(Seconds(1));
+            //while (ProcessImpl::_isPaused)
+            //    Sleep(Seconds(1));
             return (1);
         }
 
@@ -151,7 +151,7 @@ namespace CTRPluginFramework
         static u32 lastAddr = 0;
 
         if (addr == lastAddr)
-            return(1);
+            return (1);
 
         // Set OSDParams
         OSDParams &params = NTRImpl::OSDParameters;

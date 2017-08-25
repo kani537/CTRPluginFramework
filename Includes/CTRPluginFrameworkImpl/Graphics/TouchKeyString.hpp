@@ -16,7 +16,7 @@ namespace CTRPluginFramework
     public:
 
         // Key with string
-        TouchKeyString(std::string content, IntRect ui, bool enabled = true);
+        TouchKeyString(const std::string &content, IntRect ui, bool enabled = true);
 
         ~TouchKeyString(){}
 

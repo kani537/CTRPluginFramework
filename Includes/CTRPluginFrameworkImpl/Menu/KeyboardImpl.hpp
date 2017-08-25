@@ -125,7 +125,7 @@ namespace CTRPluginFramework
         IntVector               _lastTouch;
         Clock                   _touchTimer;
 
-        std::vector<TouchKeyString> _strKeys;
+        std::vector<TouchKeyString *> _strKeys;
 
 
     };

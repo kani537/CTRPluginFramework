@@ -140,7 +140,7 @@ namespace CTRPluginFramework
         }
     }
 
-    bool     Process::CopyMemory(void *dst, void *src, u32 size)
+    bool     Process::CopyMemory(void *dst, const void *src, u32 size)
     {
         if (!CheckAddress((u32)src)) goto error;
         if (!CheckAddress((u32)dst)) goto error;

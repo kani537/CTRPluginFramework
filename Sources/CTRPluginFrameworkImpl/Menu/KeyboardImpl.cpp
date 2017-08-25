@@ -119,6 +119,8 @@ namespace CTRPluginFramework
     {
       //  for (KeyIter iter = _keys.begin(); iter != _keys.end(); ++iter)
       //      iter->Clear();
+        for (TouchKeyString *tks : _strKeys)
+            delete tks;
     }
 
     void    KeyboardImpl::SetLayout(Layout layout)
@@ -189,6 +191,9 @@ namespace CTRPluginFramework
     void    KeyboardImpl::Populate(const std::vector<std::string> &input)
     {
         _customKeyboard = true;
+        _currentPosition = 0;
+        for (TouchKeyString *tks : _strKeys)
+            delete tks;
         _strKeys.clear();
 
         int posY = 30;
@@ -228,7 +233,7 @@ namespace CTRPluginFramework
 
         for (const std::string &str : input)
         {
-            _strKeys.push_back(TouchKeyString(str, box));
+            _strKeys.push_back(new TouchKeyString(str, box, true));
             box.leftTop.y += 36;
         }
     }
@@ -508,7 +513,7 @@ namespace CTRPluginFramework
 
             for (int i = _currentPosition; i < max && i < _strKeys.size(); i++)
             {
-                _strKeys[i].Draw();
+                _strKeys[i]->Draw();
             }
 
             PrivColor::UseClamp(false);
@@ -534,7 +539,6 @@ namespace CTRPluginFramework
             Renderer::DrawLine(posX + 2, posY + 1, 1, dimGrey, _scrollCursorSize - 2); 
         }
     }
-
 
     void    KeyboardImpl::_ProcessEvent(Event &event)
     {
@@ -700,24 +704,18 @@ namespace CTRPluginFramework
                 if (std::abs(_inertialVelocity) < INERTIA_THRESHOLD)
                     _inertialVelocity = 0.f;
 
-                KeyStringIter iter = _strKeys.begin();
-
                 float scr = -_scrollSize * _scrollJump;
 
-                for (; iter != _strKeys.end(); iter++)
-                {                
-                    (*iter).Scroll(scr);
-                    (*iter).Update(isTouchDown, touchPos);
-                }                
+                for (TouchKeyString *tks : _strKeys)
+                {
+                    tks->Scroll(scr);
+                    tks->Update(isTouchDown, touchPos);
+                }
             }
             else
             {
-                KeyStringIter iter = _strKeys.begin();
-
-                for (; iter != _strKeys.end(); ++iter)
-                {                
-                    (*iter).Update(isTouchDown, touchPos);
-                }                 
+                for (TouchKeyString *tks : _strKeys)
+                    tks->Update(isTouchDown, touchPos);
             }
         }
     }
@@ -1452,9 +1450,10 @@ namespace CTRPluginFramework
 
     bool    KeyboardImpl::_CheckButtons(int &ret)
     {
+
         for (int i = 0; i < _strKeys.size(); i++)
         {
-            ret = _strKeys[i]();
+            ret = (*_strKeys[i])();
             if (ret != -1)
             {
                 ret = i;
