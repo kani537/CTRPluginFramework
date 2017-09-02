@@ -1,4 +1,4 @@
-﻿SPECIAL KEYPAD CODE
+SPECIAL KEYPAD CODE
 ===================
 0x1         A
 0x2         B
@@ -109,5 +109,11 @@ F8000000 YYYYYYYY - XOR => data ^= YYYYYYYY
 F9000000 YYYYYYYY - NOT => data = ~data
 FA000000 YYYYYYYY - Left shift => data <<= YYYYYYYY
 FB000000 YYYYYYYY - Right shift => data >>= YYYYYYYY
-FC000000 YYYYYYYY - Copy Y bytes from [offset#2] to [offset#1]
+FC000000 YYYYYYYY - Copy Y bytes from [offset#2] to [offset#1] 
+
+FD000000 YYYYYYYY - Execute asm codes (Z), Y is the instructions count
+ZZZZZZZZ ZZZZZZZZ
+FEXXXXXX YYYYYYYY - Hook code, XXX: instructions count, YYY => address to hook (offset's not added)
+ZZZZZZZZ ZZZZZZZZ - ZZ => code to be hooked to
+
 FF000000 00000000 - Generate a random number min/max can be set in data#1, data#2

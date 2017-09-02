@@ -12,9 +12,9 @@ namespace CTRPluginFramework
 
     u32     g_fontAllocated = 0;
     u32     g_glyphAllocated = 0;
-    u32     *defaultSysFont = nullptr;
-    u8      *glyph = nullptr;
-    u8      *tileData = nullptr;
+    static u32     *defaultSysFont = nullptr;
+    static u8      *glyph = nullptr;
+    static u8      *tileData = nullptr;
 
     float Glyph::Width(void) const
     {
@@ -63,12 +63,12 @@ namespace CTRPluginFramework
         return (GetGlyph(s));
     }
 
+    // Original code by ObsidianX
+    // https://github.com/ObsidianX/3dstools/blob/master/bffnt.py
     u8    *GetOriginalGlyph(u32 glyphIndex)
     {
         TGLP_s  *tglp = fontGetGlyphInfo();
         u8      *data = (u8 *)fontGetGlyphSheetTex(glyphIndex / charPerSheet);
-       // u8      *glyph = nullptr;
-        //u8      *tileData = nullptr;
 
         int     width = tglp->sheetWidth;
         int     height = tglp->sheetHeight;
@@ -84,13 +84,6 @@ namespace CTRPluginFramework
 
         int tileWidth = width / 8;
         int tileHeight = height / 8;
-
-        // Allocate buffers
-       /* if (tileData == nullptr || glyph == nullptr)
-        {
-            tileData = (u8 *)linearMemAlign(4096, 0x1000);
-            glyph = (u8 *)linearMemAlign(1000, 0x1000);
-        }*/
 
         std::memset(tileData, 0, 4096);
         std::memset(glyph, 0, 1000);
@@ -116,10 +109,10 @@ namespace CTRPluginFramework
                                 {
                                     for (int xxx = 0; xxx < 2; xxx++)
                                     {
-                                        // if the final y value is beyond the input data's height then don't read it
+                                        // If the final y value is beyond the input data's height then don't read it
                                         if (tileY + y + yy + yyy >= dataHeight)
                                             continue;
-                                        // same for the x and the input data width
+                                        // Same for the x and the input data width
                                         if (tileX + x + xx + xxx >= dataWidth)
                                             continue;
 
@@ -158,89 +151,75 @@ namespace CTRPluginFramework
             }
         }
 
-       // linearFree(tileData);
         return (glyph);
     }
 
-    void    ShrinkGlyph(u8 *dest, int dheight, u8 *src)
+#define GLYPH_HEIGHT    32
+#define GLYPH_WIDTH     25
+#define SHRINK_GLYPH_HEIGHT 16
+
+    void    ShrinkGlyph(u8 *dest, u8 *src)
     {
-        int   x, y;
-        int   i, ii;
-        float alpha;
-        float xfrag, yfrag, xfrag2, yfrag2;
-        float xt, yt, dx, dy;
-        int   xi, yi;
-        int sheight = 32;
-        int swidth = 25;
-        float ratio = ((float)dheight) / 32.f;
-        int   dwidth = std::round((float)(swidth) * ratio);
+        constexpr const int  outWidth = std::round(static_cast<float>(GLYPH_WIDTH)
+            * (static_cast<float>(SHRINK_GLYPH_HEIGHT) / static_cast<float>(GLYPH_HEIGHT)));
+        constexpr const float dx = std::round(static_cast<float>(GLYPH_WIDTH) / outWidth);
+        constexpr const float dy = std::round(static_cast<float>(GLYPH_HEIGHT) / static_cast<float>(SHRINK_GLYPH_HEIGHT));
 
-        dx = std::round(((float)swidth)/dwidth);
-        dy = std::round(((float)sheight)/dheight);
+        int i, ii = 0;
 
-        for(yt = 0, y = 0; y < dheight; y++, yt += dy)
+        for (float yt = 0.f, y = 0.f; y < SHRINK_GLYPH_HEIGHT; y++, yt += dy)
         {
-            yfrag = ceil(yt) - yt;
-            if(yfrag == 0)
-                yfrag = 1;
-            yfrag2 = yt+dy - (float)floor(yt + dy);
-            if(yfrag2 == 0 && dy != 1.0f)
-                yfrag2 = 1;
+            float yfrag = ceil(yt) - yt;
 
-            for(xt = 0, x = 0; x < dwidth; x++, xt += dx)
+            if (yfrag == 0.f)
+                yfrag = 1.f;
+            float yfrag2 = yt+dy - floor(yt + dy);
+
+            if(yfrag2 == 0.f && dy != 1.0f)
+                yfrag2 = 1.f;
+
+            for (float xt = 0.f, x = 0.f; x < outWidth; x++, xt += dx)
             {
-                xi = (int)xt;
-                yi = (int)yt;
-                xfrag = (float)ceil(xt) - xt;
-                if(xfrag == 0)
-                    xfrag = 1;
-                xfrag2 = xt + dx - (float)floor(xt+dx);
-                if(xfrag2 == 0 && dx != 1.0f)
-                    xfrag2 = 1;
-                alpha =  xfrag * yfrag * src[(yi * swidth + xi)];
+                int xi = static_cast<int>(xt);
+                int yi = static_cast<int>(yt);
+                float xfrag = ceil(xt) - xt;
+                if(xfrag == 0.f)
+                    xfrag = 1.f;
+                float xfrag2 = xt + dx - floor(xt+dx);
+                if(xfrag2 == 0.f && dx != 1.0f)
+                    xfrag2 = 1.f;
+                float alpha = xfrag * yfrag * src[(yi * GLYPH_WIDTH + xi)];
           
                 for(i=0; xi + i + 1 < xt+dx-1; i++)
-                {
-                    alpha += yfrag * src[(yi * swidth + xi + i + 1)];
-                } 
+                    alpha += yfrag * src[(yi * GLYPH_WIDTH + xi + i + 1)];
                 
-                alpha += xfrag2 * yfrag * src[(yi*swidth+xi+i+1)];
+                alpha += xfrag2 * yfrag * src[(yi*GLYPH_WIDTH +xi+i+1)];
             
-                for(i = 0; yi + i + 1 < yt + dy - 1 && yi + i + 1 < sheight; i++)
+                for(i = 0; yi + i + 1 < yt + dy - 1 && yi + i + 1 < GLYPH_HEIGHT; i++)
                 {
-                    alpha += xfrag * src[((yi + i + 1) * swidth + xi)];
+                    alpha += xfrag * src[((yi + i + 1) * GLYPH_WIDTH + xi)];
             
-                    for (ii = 0; xi + ii + 1 < xt + dx - 1 && xi + ii + 1 < swidth; ii++)
-                    {
-                        alpha += src[((yi + i + 1) * swidth + xi + ii + 1)];
-                    }
+                    for (ii = 0; xi + ii + 1 < xt + dx - 1 && xi + ii + 1 < GLYPH_WIDTH; ii++)
+                        alpha += src[((yi + i + 1) * GLYPH_WIDTH + xi + ii + 1)];
               
-                    if (yi + i + 1 < sheight && xi + ii + 1 < swidth)
-                    {
-                        alpha += xfrag2 * src[((yi + i + 1) * swidth + xi + ii + 1)];
-                    }
+                    if (yi + i + 1 < GLYPH_WIDTH && xi + ii + 1 < GLYPH_WIDTH)
+                        alpha += xfrag2 * src[((yi + i + 1) * GLYPH_WIDTH + xi + ii + 1)];
                 }
 
-                if (yi + i + 1 < sheight)
+                if (yi + i + 1 < GLYPH_HEIGHT)
                 {
-                    alpha += xfrag * yfrag2 * src[((yi + i + 1) * swidth + xi)];
+                    alpha += xfrag * yfrag2 * src[((yi + i + 1) * GLYPH_WIDTH + xi)];
 
-                    for (ii = 0; xi + ii + 1 < xt + dx - 1 && xi + ii + 1 < swidth; ii++)
-                    {
-                        alpha += yfrag2 * src[((yi + i + 1) * swidth + xi + ii + 1)];
-                    }
+                    for (ii = 0; xi + ii + 1 < xt + dx - 1 && xi + ii + 1 < GLYPH_WIDTH; ii++)
+                        alpha += yfrag2 * src[((yi + i + 1) * GLYPH_WIDTH + xi + ii + 1)];
                 }
           
-                if (yi + i + 1 < sheight && xi + ii + 1 < swidth)
-                {
-                    alpha += xfrag2 * yfrag2 * src[((yi + i + 1) * swidth + xi + ii + 1)];
-                }
+                if (yi + i + 1 < GLYPH_HEIGHT && xi + ii + 1 < GLYPH_WIDTH)
+                    alpha += xfrag2 * yfrag2 * src[((yi + i + 1) * GLYPH_WIDTH + xi + ii + 1)];
             
                 alpha /= dx * dy;
-
                 alpha = alpha <= 0.f ? 0.f : (alpha >= 255.f ? 255.f : alpha);
-
-                dest[(y * dwidth + x)] = (unsigned char) alpha;
+                dest[(static_cast<u32>(y) * outWidth + static_cast<u32>(x))] = static_cast<u8>(alpha);
             }
         }
     }
@@ -253,15 +232,12 @@ namespace CTRPluginFramework
 
         u8  *originalGlyph = GetOriginalGlyph(glyphIndex);
         // 16px * 14px = 224
-        u8  *newGlyph = new u8[224]; //(u8 *)linearAlloc(224);
+        u8  *newGlyph = new u8[224];
         g_fontAllocated += 224;
         std::memset(newGlyph, 0, 224);
 
-        // Shrink glyph data to the requiered size
-        ShrinkGlyph(newGlyph, 16, originalGlyph);
-
-        // Free original glyph data
-        //linearFree(originalGlyph);
+        // Shrink glyph data to the required size
+        ShrinkGlyph(newGlyph, originalGlyph);
 
         // Allocate new Glyph
         Glyph *glyph = new Glyph; //static_cast<Glyph *>(linearAlloc(sizeof(Glyph)));

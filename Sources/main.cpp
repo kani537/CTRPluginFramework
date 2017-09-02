@@ -477,41 +477,21 @@ namespace CTRPluginFramework
         }
     }
 
-    void    Crash(MenuEntry *entry)
-    {
-        *(u32*)0 = 0;
-    }
+    extern "C" Handle gspGpuHandle;
 #define ARVERSION 1
     int    main(void)
     {
 #if ARVERSION
-        g_menu = new PluginMenu("Action Replay Test \u00B1", 0, 0, 1);
+        g_menu = new PluginMenu("Action Replay Test", 0, 0, 1);
         PluginMenu      &menu = *g_menu;
 
         menu += new MenuEntry("Load cheats from file", nullptr, LineReadTest);
         menu += g_folder;
+
 #else
-        /*PluginMenu      **/g_menu = new PluginMenu("Zelda Ocarina Of Time 3D", 3, 0, 1, about);
-        PluginMenu      &menu = *g_menu;
+        PluginMenu      *m = new PluginMenu("Zelda Ocarina Of Time 3D", 3, 0, 1, about);
+        PluginMenu      &menu = *m;
         std::string     note;
-
-        menu.Append(new MenuEntry("Map loading", ForceMapsLoading));
-        menu += new MenuEntry("Load cheats from file", nullptr, LineReadTest);
-        menu += new MenuEntry("Crash", nullptr, Crash);
-        menu += new MenuEntry("Test file funcs", nullptr, [](MenuEntry *entry)
-        {
-            File file("CTRPluginFramework.plg");
-
-            if (file.IsOpen())
-            {
-                MessageBox(file.GetExtension() + "\n"
-                    + file.GetName() + "\n"
-                    + file.GetFullName())();
-            }
-            else
-                MessageBox("File isn't open")();
-        });
-        menu += g_folder;
 
         /*
         ** Movements codes
@@ -651,9 +631,11 @@ namespace CTRPluginFramework
             menu += folder;
         }
 #endif
-        menu += [] { 
+        menu += []
+        { 
             Sleep(Milliseconds(5));
         };
+
         // Launch menu and mainloop
         menu.Run();
 

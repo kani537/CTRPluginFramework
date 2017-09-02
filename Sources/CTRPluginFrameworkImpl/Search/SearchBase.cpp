@@ -109,7 +109,6 @@ namespace CTRPluginFramework
 
         // Construct index table
         CreateIndexTable();
-
     }
 
     bool    Search::ExecuteSearch(void)

@@ -119,7 +119,7 @@ Result svcControlMemoryEx(u32* addr_out, u32 addr0, u32 addr1, u32 size, MemOp o
  * @brief Performs actions related to services or global handles.
  * @param op The operation to perform, see @ref ServiceOp.
  *
- * Examples: dd
+ * Examples:
  *     svcControlService(SERVICEOP_GET_NAME, (char [12])outName, (Handle)clientOrSessionHandle);
  *     svcControlService(SERVICEOP_STEAL_CLIENT_SESSION, (Handle *)&outHandle, (const char *)name);
  */
