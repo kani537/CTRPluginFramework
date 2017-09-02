@@ -40,6 +40,11 @@ namespace CTRPluginFramework
         HotkeysModifier(_keys, "Select the keys you want to use for:\n" + _name)();
     }
 
+    u32     Hotkey::GetKeys(void)
+    {
+        return (_keys);
+    }
+
     static const std::string g_keyName[16] =
     {
         FONT_A,

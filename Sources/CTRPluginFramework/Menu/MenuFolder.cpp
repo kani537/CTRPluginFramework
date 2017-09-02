@@ -5,20 +5,20 @@
 namespace CTRPluginFramework
 {
     MenuFolder::MenuFolder(const std::string &name, const std::string &note) :
-        _item(new MenuFolderImpl(name, note))
+        _item(new MenuFolderImpl(this, name, note))
     {
 
     }
 
     MenuFolder::MenuFolder(const std::string& name, const std::vector<MenuEntry*>& entries) :
-        _item(new MenuFolderImpl(name))
+        _item(new MenuFolderImpl(this, name))
     {
         for (MenuEntry *entry : entries)
             Append(entry);
     }
 
     MenuFolder::MenuFolder(const std::string& name, const std::string& note, const std::vector<MenuEntry*>& entries) :
-        _item(new MenuFolderImpl(name, note))
+        _item(new MenuFolderImpl(this, name, note))
     {
         for (MenuEntry *entry : entries)
             Append(entry);
@@ -56,6 +56,16 @@ namespace CTRPluginFramework
         MenuFolderImpl *folder = item->_item.get();
 
         _item->Append(folder);
+    }
+
+    std::vector<MenuEntry *>    MenuFolder::GetEntryList(void) const
+    {
+        return (_item->GetEntryList());
+    }
+
+    std::vector<MenuFolder *>   MenuFolder::GetFolderList(void) const
+    {
+        return (_item->GetFolderList());
     }
 
     u32    MenuFolder::ItemsCount(void) const

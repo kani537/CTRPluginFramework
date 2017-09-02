@@ -97,6 +97,16 @@ namespace CTRPluginFramework
         return (ret);
     }
 
+    std::vector<MenuEntry*> PluginMenu::GetEntryList() const
+    {
+        return (_menu->GetRoot()->GetEntryList());
+    }
+
+    std::vector<MenuFolder*> PluginMenu::GetFolderList() const
+    {
+        return (_menu->GetRoot()->GetFolderList());
+    }
+
     void    PluginMenu::SetSearchButtonState(bool isEnabled) const
     {
         _menu->TriggerSearch(isEnabled);

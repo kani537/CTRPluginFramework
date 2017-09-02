@@ -617,6 +617,11 @@ namespace CTRPluginFramework
         _showMsg = showMsg;
     }
 
+    MenuFolderImpl* PluginMenuImpl::GetRoot() const
+    {
+        return (_home->_root);
+    }
+
     bool    PluginMenuImpl::IsOpen(void) const
     {
         return (_isOpen);

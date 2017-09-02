@@ -68,6 +68,11 @@ namespace CTRPluginFramework
             return (*reinterpret_cast<MenuEntryTools *>(this));
         }
 
+        MenuFolderImpl &AsMenuFolderImpl(void)
+        {
+            return (*reinterpret_cast<MenuFolderImpl *>(this));
+        }
+
         virtual std::string &GetNote(void)
         {
             return (note);

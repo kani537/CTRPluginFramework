@@ -15,6 +15,17 @@ namespace CTRPluginFramework
         this->_parent[1] = nullptr;
     }
 
+    MenuFolderImpl::MenuFolderImpl(MenuFolder* owner, const std::string& name, const std::string& note) :
+    MenuItem(MenuType::Folder), _owner(owner)
+    {
+        this->name = name;
+        this->note = note;
+        this->_position[0] = -1;
+        this->_position[1] = -1;
+        this->_parent[0] = nullptr;
+        this->_parent[1] = nullptr;
+    }
+
     MenuFolderImpl::~MenuFolderImpl()
     {
 
@@ -64,6 +75,41 @@ namespace CTRPluginFramework
             if (item->IsFolder())
                 reinterpret_cast<MenuFolderImpl *>(item)->DisableAll();
         }
+    }
+
+    std::vector<MenuEntry *> MenuFolderImpl::GetEntryList(void) const
+    {
+        std::vector<MenuEntry *> entries;
+
+        for (MenuItem *item : _items)
+        {
+            if (item->IsEntry())
+            {
+                MenuEntry *entry = item->AsMenuEntryImpl().AsMenuEntry();
+
+                if (entry != nullptr)
+                    entries.push_back(entry);
+            }
+        }
+        return (entries);
+    }
+
+    std::vector<MenuFolder *> MenuFolderImpl::GetFolderList(void) const
+    {
+        std::vector<MenuFolder *> folders;
+
+        for (MenuItem *item : _items)
+        {
+            if (item->IsFolder())
+            {
+                MenuFolder *folder = item->AsMenuFolderImpl()._owner;
+
+                if (folder != nullptr)
+                    folders.push_back(folder);
+            }
+        }
+
+        return (folders);
     }
 
     MenuItem* MenuFolderImpl::operator[](int index)
