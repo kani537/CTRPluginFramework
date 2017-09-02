@@ -17,7 +17,7 @@ namespace CTRPluginFramework
     u8  _topBuf[sizeof(Screen)];
     u8  _botBuf[sizeof(Screen)];
 
-    Screen *Screen::Top = nullptr;
+    Screen  *Screen::Top = nullptr;
     Screen  *Screen::Bottom = nullptr;
 
     extern "C" void    UpdateCtrulibGfx(void);
@@ -220,7 +220,7 @@ namespace CTRPluginFramework
             svcInvalidateProcessDataCache(Process::GetHandle(), (void *)_leftFramebuffersV[!_currentBuffer], size);
 
             // Copy current buffer in the other one
-            memcpy((void *)_leftFramebuffersV[!_currentBuffer], (void *)_leftFramebuffersV[_currentBuffer], size);
+            std::memcpy((void *)_leftFramebuffersV[!_currentBuffer], (void *)_leftFramebuffersV[_currentBuffer], size);
             // Flush second buffer
             if (R_FAILED(GSPGPU_FlushDataCache((void *)_leftFramebuffersV[!_currentBuffer], size)))
                 svcFlushProcessDataCache(Process::GetHandle(), (void *)_leftFramebuffersV[!_currentBuffer], size);  
@@ -398,49 +398,6 @@ namespace CTRPluginFramework
         rowstride = _stride;
         bpp = _bytesPerPixel;
         format = _format;
-    }
-
-    int    Screen::Debug(int posX, int posY)
-    {
-        char buffer[50];
-        Color blank = Color(255, 255, 255);
-
-        sprintf(buffer, "left0: %08X", _leftFramebuffersV[0]);
-        Renderer::DrawString(buffer, posX, posY, blank);
-        //posY += 10;
-
-        sprintf(buffer, "left1: %08X", _leftFramebuffersV[1]);
-        Renderer::DrawString(buffer, posX, posY, blank);
-
-        sprintf(buffer, "GPU left0: %08X", REG(_LCDSetup + FramebufferA1));
-        Renderer::DrawString(buffer, posX, posY, blank);
-        //posY += 10;
-
-        sprintf(buffer, "GPU left1: %08X", REG(_LCDSetup + FramebufferA2));
-        Renderer::DrawString(buffer, posX, posY, blank);
-        //posY += 10;
-
-        sprintf(buffer, "right0: %08X", _rightFramebuffersV[0]);
-        Renderer::DrawString(buffer, posX, posY, blank);
-        //posY += 10;
-
-        sprintf(buffer, "right1: %08X", _rightFramebuffersV[1]);
-        Renderer::DrawString(buffer, posX, posY, blank);
-       // posY += 10;
-
-        sprintf(buffer, "format: %d", _format);
-        Renderer::DrawString(buffer, posX, posY, blank);
-        //posY += 10;
-
-        sprintf(buffer, "stride: %d, w: %d, h: %d", _stride, _width, _height);
-        Renderer::DrawString(buffer, posX, posY, blank);
-       // posY += 10;
-        /*u32 io = System::GetIOBasePDC();
-        sprintf(buffer, "GPU Busy: %08X, P3D: %08X", REG(io + 0x34), 0);
-        Renderer::DrawString(buffer, posX, posY, blank);*/
-        //posY += 10;
-
-        return (posY);
     }
 
     /*
