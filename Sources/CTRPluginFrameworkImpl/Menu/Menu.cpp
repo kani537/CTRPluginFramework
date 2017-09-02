@@ -11,30 +11,32 @@
 
 namespace CTRPluginFramework
 {
-    Menu::Menu(std::string title, IconCallback iconCallback)
+    Menu::Menu(const std::string &title, IconCallback iconCallback)
     {
-       // _background = IntRect(30, 20, 340, 200);
-        //_border = IntRect(32, 22, 336, 196);
         _selector = 0;
         _folder = new MenuFolderImpl(title);
         _iconCallback = iconCallback;
+        _scrollOffset = 0.f;
     }
 
     Menu::Menu(MenuFolderImpl *folder, IconCallback iconCallback)
     {
-       // _background = IntRect(30, 20, 340, 200);
-       // _border = IntRect(32, 22, 336, 196);
         _selector = 0;
         _folder = folder;
         _iconCallback = iconCallback;
         if (_folder == nullptr)
             _folder = new MenuFolderImpl("Menu");
+        _scrollOffset = 0.f;
     }
 
-    void    Menu::Open(MenuFolderImpl* folder, int selector)
+    MenuFolderImpl    *Menu::Open(MenuFolderImpl *folder, int selector)
     {
+        MenuFolderImpl *f = _folder;
+
         _selector = std::max((int)0, (int)std::min(selector, (int)(folder->ItemsCount() - 1)));
         _folder = folder;
+
+        return (f);
     }
 
     Menu::~Menu(void)
@@ -148,8 +150,7 @@ namespace CTRPluginFramework
 
                     if (e->UseCheckBox)
                     {
-                        Icon::DrawCheckBox(posX, posY, e->IsActivated());
-                        Renderer::DrawSysString(item->name.c_str(), posX + 20, posY, XMAX, c);
+                        Renderer::DrawSysCheckBox(item->name.c_str(), posX, posY, XMAX, c, e->IsActivated());
                     }
                     else
                     {
@@ -163,8 +164,7 @@ namespace CTRPluginFramework
                 {
                     MenuEntryImpl *e = reinterpret_cast<MenuEntryImpl *>(item);
 
-                    Icon::DrawCheckBox(posX, posY, e->IsActivated());
-                    Renderer::DrawSysString(item->name.c_str(), posX + 20, posY, XMAX, c);
+                    Renderer::DrawSysCheckBox(item->name.c_str(), posX, posY, XMAX, c, e->IsActivated());
                 }
                 // MenuFolderImpl
                 else
@@ -173,82 +173,6 @@ namespace CTRPluginFramework
                 posY += 4;
             }      
         }
-
-
-    }
-
-    int     Menu::ProcessEvent(Event &event, std::string &userchoice)
-    {
-        if (_folder->ItemsCount() == 0)
-        {
-            return (-1);
-        }
-
-        // Scrolling Event
-        if (event.type == Event::KeyDown)
-        {
-            switch (event.key.code)
-            {
-                case CPadUp:
-                case DPadUp:
-                {
-                    if (!_input.HasTimePassed(Milliseconds(200)))
-                        return (MenuEvent::SelectorChanged);
-                    if (_selector > 0)
-                        _selector--;
-                    else
-                        _selector = std::max(0, (int)_folder->ItemsCount() - 1);
-                    _input.Restart();
-                    break;
-                }
-                case CPadDown:
-                case DPadDown:
-                {
-                    if (!_input.HasTimePassed(Milliseconds(200)))
-                        break;
-                    if (_selector < _folder->ItemsCount() - 1)
-                        _selector++;
-                    else
-                        _selector = 0;
-                    _input.Restart();
-                    break;
-                }
-                default: break;
-            }            
-        }
-        // Other event
-        else if (event.type == Event::KeyPressed)
-        {
-            MenuItem *item = _folder->_items[_selector];
-            switch (event.key.code)
-            {
-                case A:
-                {
-                    // MenuEntryImpl
-                    if (item->_type == MenuType::Entry)
-                    {
-                        userchoice = item->name;
-                        return (_selector);
-                    }
-                    // if it's a folder
-                    MenuFolderImpl *folder = reinterpret_cast<MenuFolderImpl *>(item);
-                    folder->_Open(_folder, _selector);
-                    _selector = 0;
-                    break;
-                }
-                case B:
-                {
-                    MenuFolderImpl *p = _folder->_Close(_selector);
-                    if (p != nullptr)
-                        _folder = p;
-                    else
-                        return (-2);
-                    break;
-                }
-                default: break;
-            }
-        }
-        return (-1);
     }
 
     // Return a MenuEvent value
