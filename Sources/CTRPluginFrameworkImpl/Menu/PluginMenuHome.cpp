@@ -459,19 +459,35 @@ namespace CTRPluginFramework
 
         for (; i < max; i++)
         {
-            MenuItem* item = folder->_items[i];
+            MenuItem    *item = folder->_items[i];
+            const char  *name = item->name.c_str();
+            Color       &fg = i == _selector ? blank : silver;
+            float       offset = i == _selector ? _scrollOffset : 0.f;
+
+            // Draw cursor
             if (i == _selector)
-            {
                 Renderer::MenuSelector(posX - 5, posY - 3, 320, 20);
-            }
+
+            // Draw entry
             if (item->_type == MenuType::Entry)
             {
-                MenuEntryImpl* entry = reinterpret_cast<MenuEntryImpl *>(item);
-                Renderer::DrawSysCheckBox(entry->name.c_str(), posX, posY, 350, i == _selector ? blank : silver, entry->IsActivated(), i == _selector ? _scrollOffset : 0.f);
+                MenuEntryImpl   *entry = reinterpret_cast<MenuEntryImpl *>(item);
+
+                if (entry->GameFunc != nullptr)
+                    Renderer::DrawSysCheckBox(name, posX, posY, 350, fg, entry->IsActivated(), offset);
+                else
+                {
+                    if (entry->MenuFunc != nullptr)
+                        Icon::DrawSettings(posX, posY);
+
+                    Renderer::DrawSysString(name, posX + 20, posY, 350, fg, offset);
+                    posY += 1;
+                }
             }
+            // Draw folder
             else
             {
-                Renderer::DrawSysFolder(item->name.c_str(), posX, posY, 350, i == _selector ? blank : silver, i == _selector ? _scrollOffset : 0.f);
+                Renderer::DrawSysFolder(name, posX, posY, 350, fg, offset);
             }
             posY += 4;
         }
@@ -667,13 +683,13 @@ namespace CTRPluginFramework
         {
             MenuEntryImpl* entry = reinterpret_cast<MenuEntryImpl *>(item);
 
-            // Change the state
-            bool just = entry->_flags.justChanged;
-            bool state = entry->_TriggerState();
-
             // If the entry has a valid funcpointer
             if (entry->GameFunc != nullptr)
             {
+                // Change the state
+                bool just = entry->_flags.justChanged;
+                bool state = entry->_TriggerState();
+
                 // If is activated add to executeLoop
                 if (state)
                 {
@@ -683,6 +699,10 @@ namespace CTRPluginFramework
                 {
                     PluginMenuExecuteLoop::Remove(entry);
                 }
+            }
+            else if (entry->MenuFunc != nullptr)
+            {
+                entry->MenuFunc(entry->_owner);
             }
         }
         /*
