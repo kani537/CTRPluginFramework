@@ -55,6 +55,25 @@ namespace CTRPluginFramework
         do
         {
             if (!*c) break;
+
+            if (*c == '\r' || *c == '\n')
+            {
+                c++;
+                continue;
+            }
+
+            if (*c == 0x18)
+            {
+                c++;
+                continue;
+            }
+
+            if (*c == 0x1B)
+            {
+                c += 4;
+                continue;
+            }
+
             Glyph *glyph = Font::GetGlyph(c);
             if (glyph == nullptr) break;
 
@@ -74,11 +93,29 @@ namespace CTRPluginFramework
 
         while (*c)
         {
+            if (*c == '\r')
+            {
+                c++;
+                continue;
+            }
+
             if (*c == '\n')
             {
                 lineCount++;
                 w = 0.f;
                 c++;
+                continue;
+            }
+
+            if (*c == 0x18)
+            {
+                c++;
+                continue;
+            }
+
+            if (*c == 0x1B)
+            {
+                c += 4;
                 continue;
             }
 
@@ -121,6 +158,18 @@ namespace CTRPluginFramework
                     lineMaxWidth = w;
                 w = 0.f;
                 c++;
+                continue;
+            }
+
+            if (*c == 0x18)
+            {
+                c++;
+                continue;
+            }
+
+            if (*c == 0x1B)
+            {
+                c += 4;
                 continue;
             }
 
@@ -233,7 +282,7 @@ namespace CTRPluginFramework
         // Check for a valid pointer
         if (!(stri && *stri))
             return (posX);
-
+        Color           bakColor(color);
         int             lineCount = 1;
         u8              *str = const_cast<u8 *>(stri);
         int             x = posX;
@@ -246,14 +295,32 @@ namespace CTRPluginFramework
 
         do
         {
-            if (*str == '\r')
+            u8 c = *str;
+
+            if (c == '\r')
                 str++;
-            if (*str == '\n')
+            if (c == '\n')
             {
                 x = posX;
                 lineCount++;    
                 posY += 16;
                 str++;
+                continue;
+            }
+
+            if (c == 0x18)
+            {
+                color = bakColor;
+                str++;
+                continue;
+            }
+
+            if (c == 0x1B)
+            {
+                str++;
+                color.r = *str++;
+                color.g = *str++;
+                color.b = *str++;
                 continue;
             }
 
@@ -282,6 +349,7 @@ namespace CTRPluginFramework
 
     int Renderer::DrawSysString(const char *stri, int posX, int &posY, int xLimits, Color color, float offset, const char *end)
     {
+        Color   bakColor(color);
         Glyph   *glyph;
         int      x = posX;
         //u8      *str = (u8 *)stri.c_str();
@@ -298,13 +366,32 @@ namespace CTRPluginFramework
 
         do
         {
+            u8 c = *str;
+
             if (x >= xLimits || str == (u8 *)end)
             {
                 break;
             }
-            if (*str == '\n' || *str == '\r')
+
+            if (c == '\n' || c == '\r')
             {
                 str++;
+                continue;
+            }
+
+            if (c == 0x18)
+            {
+                color = bakColor;
+                str++;
+                continue;
+            }
+
+            if (c == 0x1B)
+            {
+                str++;
+                color.r = *str++;
+                color.g = *str++;
+                color.b = *str++;
                 continue;
             }
 
