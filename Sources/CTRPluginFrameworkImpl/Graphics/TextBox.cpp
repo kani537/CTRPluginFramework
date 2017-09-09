@@ -290,8 +290,9 @@ namespace CTRPluginFramework
         if (!str || !(*str))
             return (nullptr);
         
-        while (*str != '\n')
+        while (*str != '\n' && *str != 0x18 && *str != 0x1B)
         {
+
             bool isSpace = *str == ' ' ? true : false;
             Glyph *glyph = Font::GetGlyph(str);
 
@@ -313,7 +314,7 @@ namespace CTRPluginFramework
         if (!str || !(*str))
             return (nullptr);
 
-        while (*str != '\n')
+        while (*str != '\n' && *str != 0x18 && *str != 0x1B)
         {
             bool isSpace = *str == ' ' ? true : false;
 
@@ -359,13 +360,17 @@ namespace CTRPluginFramework
         
         while (true)
         {
-            if (*str == '\n')
+            if (*str == '\n' || *str == 0x18)
             {
                 str++;
             }
+            if (*str == 0x1B)
+            {
+                str += 4;
+            }
+
             u8 *s = str;            
             float line = 0.f;
-
 
             while (line < maxWidth && s != nullptr)
             {
