@@ -150,9 +150,9 @@ namespace CTRPluginFramework
         Renderer::SetTarget(BOTTOM);
 
         static IntRect  background(20, 20, 280, 200);
-        Color    &black = Color::Black;
-        Color    &blank = Color::Blank;
-        Color    &dimGrey = Color::BlackGrey;
+        const Color     &black = Color::Black;
+        const Color     &blank = Color::Blank;
+        const Color     &dimGrey = Color::BlackGrey;
 
         if (_image != nullptr && _image->IsLoaded())
         {

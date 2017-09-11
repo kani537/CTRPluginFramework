@@ -354,10 +354,10 @@ namespace CTRPluginFramework
 
     void    KeyboardImpl::_RenderTop(void)
     {
-        Color    &black = Color::Black;
-        Color    &red = Color::Red;
-        Color    &blank = Color::Blank;
-        Color    &dimGrey = Color::BlackGrey;
+        const Color     &black = Color::Black;
+        const Color     &red = Color::Red;
+        const Color     &blank = Color::Blank;
+        const Color     &dimGrey = Color::BlackGrey;
         static IntRect  background1(30, 20, 340, 200);
         static IntRect  background2(50, 30, 300, 180);
 
@@ -392,9 +392,9 @@ namespace CTRPluginFramework
 
     void    KeyboardImpl::_RenderBottom(void)
     {
-        Color    &black = Color::Black;
-        Color    &blank = Color::Blank;
-        Color    &grey = Color::BlackGrey;
+        const Color     &black = Color::Black;
+        const Color     &blank = Color::Blank;
+        const Color     &grey = Color::BlackGrey;
         static IntRect  background(20, 20, 280, 200);
         static IntRect  background2(22, 22, 276, 196);
         static IntRect  background3(22, 25, 270, 190);
@@ -498,8 +498,7 @@ namespace CTRPluginFramework
                         }
                     }
                 }
-            }
-          
+            }          
         }
         else
         {
@@ -521,8 +520,8 @@ namespace CTRPluginFramework
                 return;
 
             // Draw scroll bar
-            Color &dimGrey = Color::DimGrey;
-            Color &silver = Color::Silver;
+            const Color &dimGrey = Color::DimGrey;
+            const Color &silver = Color::Silver;
 
             // Background
             int posX = 292;

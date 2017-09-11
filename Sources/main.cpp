@@ -26,15 +26,7 @@ namespace CTRPluginFramework
 {
     // This function is called on the plugin starts, before main
     void    PatchProcess(void)
-    {        
-        // Patch HomeButton
-       /* u32 pa = svcConvertVAToPA((void *)0x00124F68, false);
-
-        if (pa)
-        {
-            pa |= 1u << 31;
-            *(u32 *)pa = 0xEA00005A;
-        }*/
+    {
     }
 
     std::string about = u8"\n" \
@@ -477,8 +469,110 @@ namespace CTRPluginFramework
         }
     }
 
+    void    Corrupter(MenuEntry *entry)
+    {
+        u32     memSize = 0;
+        float   *address = reinterpret_cast<float *>(0x30000000);
+
+        if (Process::CheckRegion(0x30000000, memSize))
+        {
+            while (memSize--)
+            {
+                float value = *address++;
+                if (value >= 1.0f && value < 2.0f)
+                {
+                    int rng = Utils::Random(0, 20);
+                    Process::WriteFloat(reinterpret_cast<u32>(address), 0.1f * rng);
+                }
+            }
+        }
+    }
+
+#define C_RESET "\x18"
+#define C_RED "\x1B\xFF\x01\x01"
+#define C_BLUE "\x1B\x01\x01\xFF"
+#define C_GREEN "\x1B\x01\xFF\x01"
+#define C_ORANGE "\x1B\xFF\x45\x01"
+#define C_YELLOW "\x1B\xFF\xD7\x01"
+
+    std::string &operator <<(std::string &left, const char *right)
+    {
+        left += right;
+        return (left);
+    }
+
+
+    std::string operator <<(const std::string &left, const char *right)
+    {
+        return (left + right);
+    }
+
+    std::string operator <<(const char *left, const std::string &right)
+    {
+        std::string str(left);
+
+        str += right;
+        return (str);
+    }
+
+    std::string &operator <<(std::string &str, const Color &color)
+    {
+        char  strColor[5] = { 0 };
+
+        strColor[0] = 0x1B;
+        strColor[1] = std::max((u8)1, color.r);
+        strColor[2] = std::max((u8)1, color.g);
+        strColor[3] = std::max((u8)1, color.b);
+
+        str += strColor;
+        return (str);
+    }
+
+    std::string operator <<(const std::string &str, const Color &color)
+    {
+        char  strColor[5] = { 0 };
+
+        strColor[0] = 0x1B;
+        strColor[1] = std::max((u8)1, color.r);
+        strColor[2] = std::max((u8)1, color.g);
+        strColor[3] = std::max((u8)1, color.b);
+
+        return (str + strColor);
+    }
+
+    std::string operator <<(const char *left, const Color &color)
+    {
+        char  strColor[5] = { 0 };
+
+        strColor[0] = 0x1B;
+        strColor[1] = std::max((u8)1, color.r);
+        strColor[2] = std::max((u8)1, color.g);
+        strColor[3] = std::max((u8)1, color.b);
+
+        return (std::string(left) + strColor);
+    }
+
+    std::string operator <<(const Color &color, const std::string &str)
+    {
+        char  strColor[5] = { 0 };
+
+        strColor[0] = 0x1B;
+        strColor[1] = std::max((u8)1, color.r);
+        strColor[2] = std::max((u8)1, color.g);
+        strColor[3] = std::max((u8)1, color.b);
+
+        return (strColor + str);
+    }
+
+    template <typename T>
+    std::string &operator <<(std::string &left, T right)
+    {
+        left += std::to_string(right);
+        return (left);
+    }
+
     extern "C" Handle gspGpuHandle;
-#define ARVERSION 1
+#define ARVERSION 0
     int    main(void)
     {
 #if ARVERSION
@@ -488,17 +582,33 @@ namespace CTRPluginFramework
         menu += new MenuEntry("Load cheats from file", nullptr, LineReadTest);
         menu += g_folder;
 
-#else
-        PluginMenu      *m = new PluginMenu("Zelda Ocarina Of Time 3D", 3, 0, 1, about);
+#else        
+        PluginMenu      *m = new PluginMenu(C_RED "Zelda" C_GREEN " Ocarina Of Time 3D", 3, 0, 1, about);
         PluginMenu      &menu = *m;
         std::string     note;
+
+        menu += new MenuEntry("Notify", [](MenuEntry *entry)
+        {
+           if (Controller::IsKeyPressed(X))
+           {
+               Color colors[10] =
+               {
+                   Color::Turquoise, Color::Brown, Color::Yellow, Color::Red, Color::DeepSkyBlue,
+                   Color::Blank, Color::DarkGrey, Color::LimeGreen, Color::Magenta, Color::Orange
+               };
+
+               Color &fg = colors[Utils::Random(0, 9)];
+               Color &bg = colors[Utils::Random(0, 9)];
+               OSD::Notify("That incredibly long notification !!", fg, bg);
+           }
+        });
 
         /*
         ** Movements codes
         ********************/
 
         MenuFolder *folder = new MenuFolder("Movement");
-
+            
         folder->Append(EntryWithHotkey(new MenuEntry("MoonJump", MoonJump, "Press the hotkey to be free of the gravity."), Hotkey(Key::A, "Moonjump")));
         
         note = "Use \uE077 while pressing the hotkey(s) to move very fast.\n" \
@@ -515,7 +625,7 @@ namespace CTRPluginFramework
         ** Battle codes
         ******************/
 
-        folder = new MenuFolder("Battle", "Need some boosters for your fights ?");
+        folder = new MenuFolder(C_ORANGE"Battle", "Need some boosters for your fights ?");
         folder->Append(new MenuEntry("Invincible", Invincible, "With this code you'll be invincible !"));
         folder->Append(new MenuEntry("Refill Heart (\uE058)", RefillHeart, "Running low on heart ?\nThen touch the screen to fill you in."));
         folder->Append(new MenuEntry("Refill Magic (\uE058)", RefillLargeMagicbar, "Running low on magic ?\nThen touch the screen to refill the magic bar."));
@@ -568,8 +678,12 @@ namespace CTRPluginFramework
         folder->Append(new MenuEntry("100 Skulltulas", Skulltulas));
         folder->Append(new MenuEntry("Max Rupees", MaxRupees));
 
-        std::string name = " : Read the note !";
-        note = "Touch the keyboard icon to set the bottle's content then activate the entry.\n\nWarning: don't set the Locked value when the bottle is attributed to a key or it'll create a duplicate in your inventory and you'll loose an inventory slot.";
+        std::string name = " : " << Color::Red << "Read the note !";
+
+        note = "Touch the keyboard icon to set the bottle's content then activate the entry.\n\n";
+        note << Color::Red << "Warning:\n"
+             << Color::Orange << "Don't set the Locked value when the bottle is attributed to a key or it'll create a duplicate in your inventory and you'll loose an inventory slot.";
+        
         folder->Append(AddArg(&g_bottles[0], new MenuEntry("Bottle #1" + name, BottleManager, BottleSettings, note)));
         folder->Append(AddArg(&g_bottles[1], new MenuEntry("Bottle #2" + name, BottleManager, BottleSettings, note)));
         folder->Append(AddArg(&g_bottles[2], new MenuEntry("Bottle #3" + name, BottleManager, BottleSettings, note)));
@@ -613,23 +727,19 @@ namespace CTRPluginFramework
         /*
         ** Misc codes
         *************/
-        folder = new MenuFolder("Misc.");
+        menu += new MenuFolder("Misc.", std::vector<MenuEntry *>(
         {
-            MenuFolder &misc = *folder;
-
-            misc += new MenuEntry("Giant Link", GiantLink);
-            misc += new MenuEntry("Normal Link", NormalLink);
-            misc += new MenuEntry("Mini Link", MiniLink);
-            misc += new MenuEntry("Paper Link", PaperLink);
-            misc += new MenuEntry("Link always have his child voice", AlwaysChildLinkVoice);
-            misc += new MenuEntry("Link always have his adult voice", AlwaysAdultLinkVoice);
-            misc += new MenuEntry("Open Chest Many Times", OpenAnyChestInTheGameAsManyTimes);
-            misc += new MenuEntry("Collect Heart Piece Many Times", CollectHeartPiecesInOverworldAsMany);
-            misc += new MenuEntry("No Damage From Falling", NeverTakeDamageFromFalling);
-            misc += new MenuEntry("Giant knife won't break", GiantsKnifeNeverBreaks);
-
-            menu += folder;
-        }
+            new MenuEntry("Giant Link", GiantLink),
+            new MenuEntry("Normal Link", NormalLink),
+            new MenuEntry("Mini Link", MiniLink),
+            new MenuEntry("Paper Link", PaperLink),
+            new MenuEntry("Link always have his child voice", AlwaysChildLinkVoice),
+            new MenuEntry("Link always have his adult voice", AlwaysAdultLinkVoice),
+            new MenuEntry("Open Chest Many Times", OpenAnyChestInTheGameAsManyTimes),
+            new MenuEntry("Collect Heart Piece Many Times", CollectHeartPiecesInOverworldAsMany),
+            new MenuEntry("No Damage From Falling", NeverTakeDamageFromFalling),
+            new MenuEntry("Giant knife won't break", GiantsKnifeNeverBreaks)
+        }));
 #endif
         menu += []
         { 

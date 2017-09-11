@@ -5,8 +5,9 @@
 #include "CTRPluginFrameworkImpl/Graphics.hpp"
 #include "CTRPluginFramework/System.hpp"
 #include "CTRPluginFrameworkImpl/System.hpp"
-
+#include <cstring>
 #include <cstdio>
+#include "NTR.hpp"
 
 
 namespace CTRPluginFramework
@@ -157,6 +158,33 @@ namespace CTRPluginFramework
         }
     }
 
+    void    Screen::Acquire(OSDParams &params)
+    {
+        memset(&params, 0, sizeof(params));
+        params.isBottom = !_isTopScreen;
+        params.is3DEnabled = Is3DEnabled();
+        params.leftFramebuffer = *_currentBufferReg & 1u ? REG(_LCDSetup + FramebufferA2) : REG(_LCDSetup + FramebufferA1);
+        params.leftFramebuffer = FromPhysicalToVirtual(params.leftFramebuffer);
+
+        if (_isTopScreen)
+        {
+            params.rightFramebuffer = *_currentBufferReg & 1u ? REG(_LCDSetup + FramebufferB2) : REG(_LCDSetup + FramebufferB1);
+            params.rightFramebuffer = FromPhysicalToVirtual(params.rightFramebuffer);
+        }
+
+        params.stride = REG(_LCDSetup + LCDSetup::Stride);
+        params.format = REG(_LCDSetup + LCDSetup::Format) & 0b111;
+        params.screenWidth = REG(_LCDSetup + LCDSetup::WidthHeight) >> 16;
+
+        u32 size = params.stride * params.screenWidth;
+
+        // Invalidate buffer
+       GSPGPU_InvalidateDataCache((void *)params.leftFramebuffer, size);
+
+        if (Is3DEnabled())
+            GSPGPU_InvalidateDataCache((void *)params.rightFramebuffer, size);
+    }
+
     void    Screen::Acquire(bool acquiringOSD)
     {
         
@@ -171,7 +199,7 @@ namespace CTRPluginFramework
             goto again;
         }
 
-        _currentBuffer = *_currentBufferReg;
+        _currentBuffer = *_currentBufferReg & 1u;
         // Get format
         _format = (GSPGPU_FramebufferFormats)(REG(_LCDSetup + LCDSetup::Format) & 0b111);
         PrivColor::SetFormat(_format);
@@ -336,7 +364,10 @@ namespace CTRPluginFramework
         _currentBuffer = !_currentBuffer;
 
         // Set gpu buffer
-        *_currentBufferReg = _currentBuffer;
+        if (!_currentBuffer)
+            *_currentBufferReg &= ~1u;
+        else
+            *_currentBufferReg |= 1u;
 
         if (copy)
         {

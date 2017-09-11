@@ -5,6 +5,7 @@
 #include "CTRPluginFramework/Menu/MessageBox.hpp"
 #include "CTRPluginFramework/System/Directory.hpp"
 #include <iterator>
+#include "CTRPluginFramework/Utils/Utils.hpp"
 
 namespace CTRPluginFramework
 {
@@ -293,9 +294,9 @@ namespace CTRPluginFramework
 
     void    PluginMenuSearch::_RenderTop(void)
     {
-        Color    &black = Color::Black;
-        Color    &blank = Color::Blank;
-        Color    &dimGrey = Color::BlackGrey;
+        const Color    &black = Color::Black;
+        const Color    &blank = Color::Blank;
+        const Color    &dimGrey = Color::BlackGrey;
         //static IntRect  background(30, 20, 340, 200);
 
         // Enable renderer
@@ -316,9 +317,9 @@ namespace CTRPluginFramework
     *****************/
     void    PluginMenuSearch::_RenderBottom(void)
     {
-        Color    &black = Color::Black;
-        Color    &blank = Color::Blank;
-        Color    &dimGrey = Color::BlackGrey;
+        const Color    &black = Color::Black;
+        const Color    &blank = Color::Blank;
+        const Color    &dimGrey = Color::BlackGrey;
         //static IntRect  background(20, 20, 280, 200);
 
         // Enable renderer
@@ -580,10 +581,10 @@ namespace CTRPluginFramework
         _memoryRegions.IsEnabled = true;
 
         // Set all memory search by default
-        _startRangeTextBox.SetValue((u32)(0x0));
-        _endRangeTextBox.SetValue((u32)(0xFFFFFFF0));
-        _startRangeTextBox.IsEnabled = false;
-        _endRangeTextBox.IsEnabled = false;
+        //_startRangeTextBox.SetValue((u32)(0x0));
+        //_endRangeTextBox.SetValue((u32)(0xFFFFFFF0));
+        //_startRangeTextBox.IsEnabled = false;
+        //_endRangeTextBox.IsEnabled = false;
 
 
         // Unlock search size
@@ -608,22 +609,14 @@ namespace CTRPluginFramework
 
         // Delete every file in Search
         // Open current directory
-        Directory dir;
-        if (Directory::Open(dir, "Search") == 0)
+        Directory dir("Search");
+        std::vector<std::string> files;
+
+        // List files
+        if (dir.ListFiles(files) > 0)
         {
-            std::vector<std::string> files;
-
-            // List files
-            if (dir.ListFiles(files) > 0)
-            {
-                for (std::string &name : files)
-                {
-                    std::string path("Search/");
-
-                    path += name;
-                    File::Remove(path);
-                }
-            }
+            for (std::string &name : files)
+                File::Remove("Search/" + name);
         }
     }
 
@@ -652,12 +645,12 @@ namespace CTRPluginFramework
 
     void    PluginMenuSearch::_ShowProgressWindow(void) const
     {
-        Color    &black = Color::Black;
-        Color    &blank = Color::Blank;
-        Color    &gainsboro = Color::Gainsboro;
-        Color    &dimGrey = Color::BlackGrey;
-        Color    &skyblue = Color::SkyBlue;
-        Color    &limegreen = Color::LimeGreen;
+        const Color    &black = Color::Black;
+        const Color    &blank = Color::Blank;
+        const Color    &gainsboro = Color::Gainsboro;
+        const Color    &dimGrey = Color::BlackGrey;
+        const Color    &skyblue = Color::SkyBlue;
+        const Color    &limegreen = Color::LimeGreen;
         static IntRect  background(125, 80, 150, 70);
         static IntRect  background2(125, 80, 150, 85);
         static Clock    timer;
@@ -740,31 +733,20 @@ namespace CTRPluginFramework
         MemInfo     meminfo;
         u32         save_addr;
         int         i;
-        int         index = _memoryRegions.SelectedItem;
+        Region      bakRegion = _regionsList.size() > _memoryRegions.SelectedItem ? _regionsList[_memoryRegions.SelectedItem] : (Region){0};
         Result      ret;
 
         _regionsList.clear();
         _memoryRegions.Clear();
 
-        {
-            _memoryRegions.Add("All memory");
-            //_memoryRegions.Add("Custom range");
-            if (index == 1)
-            {
-                _memoryRegions.SelectedItem = 1;
-                _startRangeTextBox.IsEnabled = true;
-                _endRangeTextBox.IsEnabled = true;
-            }
-        }
+        _memoryRegions.Add("All memory");
 
         svcQueryProcessMemory(&meminfo, &page_info, target, 0x00100000);
         {
             Region reg = (Region){meminfo.base_addr, meminfo.base_addr + meminfo.size};
             _regionsList.push_back(reg);
-            char    buffer[0x100] = {0};
 
-            sprintf(buffer, "%08X-%08X", reg.startAddress, reg.endAddress);
-            _memoryRegions.Add(buffer);
+            _memoryRegions.Add(Utils::Format("%08X-%08X", reg.startAddress, reg.endAddress));
         }
         save_addr = meminfo.base_addr + meminfo.size + 1;
         i = 1;
@@ -799,16 +781,32 @@ namespace CTRPluginFramework
 
                     Region reg = (Region){meminfo.base_addr, meminfo.base_addr + meminfo.size};
                     _regionsList.push_back(reg);
-                    char    buffer[0x100] = {0};
-
-                    sprintf(buffer, "%08X-%08X", reg.startAddress, reg.endAddress);
-                    _memoryRegions.Add(buffer);
+                    _memoryRegions.Add(Utils::Format("%08X-%08X", reg.startAddress, reg.endAddress));
                     i++;
                 }
             }
             
             if (meminfo.base_addr >= 0x50000000)
                 break;
+        }
+
+        // Restore custom range
+        if (bakRegion.startAddress && bakRegion.endAddress)
+        {
+            int index = 0;
+            for (Region  &reg : _regionsList)
+            {
+                if (reg.startAddress == bakRegion.startAddress)
+                {
+                    _memoryRegions.SelectedItem = index;
+                    _startRangeTextBox.IsEnabled = true;
+                    _endRangeTextBox.IsEnabled = true;
+
+                    if (_endRangeTextBox.Bits32 >= reg.endAddress)
+                        _endRangeTextBox.SetValue(reg.endAddress);
+                }
+                index++;
+            }                      
         }
     }
 

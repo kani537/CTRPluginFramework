@@ -2,6 +2,7 @@
 #define CTRPLUGINFRAMEWORK_SCREEN_HPP
 
 #include "ctrulib/services/gspgpu.h"
+#include "NTR.hpp"
 
 namespace CTRPluginFramework
 {
@@ -59,6 +60,7 @@ namespace CTRPluginFramework
         void                        GetPosFromAddress(u32 address, int &posX, int &posY);
 
         void                        Fade(float fade, bool copy = false);
+        void Acquire(OSDParams& params);
         void                        Flush(void);
 		void						Invalidate(void);
         void                        Copy(void);

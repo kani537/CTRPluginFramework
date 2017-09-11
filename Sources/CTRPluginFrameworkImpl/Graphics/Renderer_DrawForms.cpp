@@ -673,7 +673,7 @@ namespace CTRPluginFramework
         }
     }
 
-    void        Renderer::DrawRect(const IntRect &rect, Color &color, bool fill)
+    void        Renderer::DrawRect(const IntRect &rect, const Color &color, bool fill)
     {
         if (fill)
         {
@@ -696,7 +696,7 @@ namespace CTRPluginFramework
         }
     }
 
-    void        Renderer::DrawRect2(const IntRect &rect, Color &color1, Color &color2)
+    void        Renderer::DrawRect2(const IntRect &rect, const Color &color1, const Color &color2)
     {
         int height = rect.size.y;
 
@@ -706,7 +706,7 @@ namespace CTRPluginFramework
 
         while (--height >= 0)
         {
-            Color &c = height % 2 ? color1 : color2;
+            const Color &c = height % 2 ? color1 : color2;
             // DrawLine line
             DrawLine(posX, posY, width, c);
             posY++;    

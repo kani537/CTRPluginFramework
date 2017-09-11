@@ -37,7 +37,7 @@ namespace CTRPluginFramework
         void    ChangeContent(std::string content);
 
         // Draw
-        void    DrawCharacter(const IntRect &rect, Color &color);
+        void    DrawCharacter(const IntRect &rect, const Color &color);
         void    Draw(void) override;
 
         // Update

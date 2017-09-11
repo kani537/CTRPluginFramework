@@ -39,7 +39,7 @@ void    Hook::Initialize(u32 addr, u32 callbackAddr)
     if (!CTRPluginFramework::Process::CopyMemory(returnCode, (void *)addr, 8))
         goto error;
 
-    generate_jump_code(targetAddress + 8, &returnCode[2]);
+    generate_jump_code(targetAddress + 8, returnCode + 2);
 
     isInitialized = true;
     return;

@@ -195,8 +195,8 @@ namespace CTRPluginFramework
                         }
                     }
 
-                    // If MenuHotkeys are pressed
-                    if (isHotkeysDown)
+                    // If MenuHotkeys are pressed but not Luma's default hotkey
+                    if (isHotkeysDown && !(Preferences::MenuHotkeys == Key::Select && Controller::IsKeysDown(Key::L + Key::DPadDown)))
                     {
                         if (_isOpen)
                         {

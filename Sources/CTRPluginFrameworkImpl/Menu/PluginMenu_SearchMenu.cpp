@@ -241,12 +241,12 @@ namespace CTRPluginFramework
     ********/
     void    SearchMenu::Draw(void)
     {
-        Color    &black = Color::Black;
-        Color    &blank = Color::Blank;
-        Color    &darkgrey = Color::DarkGrey;
-        Color    &gainsboro = Color::Gainsboro;
-        Color    &skyblue = Color::SkyBlue;
-        Color    &silver = Color::Silver;
+        const Color    &black = Color::Black;
+        const Color    &blank = Color::Blank;
+        const Color    &darkgrey = Color::DarkGrey;
+        const Color    &gainsboro = Color::Gainsboro;
+        const Color    &skyblue = Color::SkyBlue;
+        const Color    &silver = Color::Silver;
         //static IntRect  background(30, 20, 340, 200);
 
         /*330
@@ -291,7 +291,7 @@ namespace CTRPluginFramework
         /*************************     Grid    ********************************/
         /**/    for (int i = 0; i < 10; i++)
         /**/    {
-        /**/        Color &c = i % 2 ? gainsboro : blank;
+        /**/        const Color &c = i % 2 ? gainsboro : blank;
         /**/        Renderer::DrawRect(35, posY, 330, 10, c);
         /**/        posY += 10;
         /**/    }
@@ -388,12 +388,12 @@ namespace CTRPluginFramework
 
     void    SearchMenu::_DrawSubMenu(void)
     {
-        Color    &black = Color::Black;
-        Color    &blank = Color::Blank;
-        Color    &dimGrey = Color::BlackGrey;
-        Color    &darkgrey = Color::DarkGrey;
-        Color    &gainsboro = Color::Gainsboro;
-        Color    &skyblue = Color::SkyBlue;
+        const Color    &black = Color::Black;
+        const Color    &blank = Color::Blank;
+        const Color    &dimGrey = Color::BlackGrey;
+        const Color    &darkgrey = Color::DarkGrey;
+        const Color    &gainsboro = Color::Gainsboro;
+        const Color    &skyblue = Color::SkyBlue;
         static IntRect  background(240, 20, 130, 200);
 
         // DrawBackground

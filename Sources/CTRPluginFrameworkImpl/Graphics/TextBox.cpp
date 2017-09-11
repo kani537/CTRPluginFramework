@@ -212,6 +212,10 @@ namespace CTRPluginFramework
     /*
     ** Draw
     ***********/
+    namespace RendererPriv
+    {
+        extern Color g_customColor;
+    }
     void    TextBox::Draw(void)
     {
         if (_currentLine >= _newline.size())
@@ -219,9 +223,9 @@ namespace CTRPluginFramework
 
         int  max = std::min((u32)(_currentLine + _maxLines), (u32)(_newline.size()));
 
-        Color &black = Color::Black;
-        Color &blank = Color::Blank;
-        Color &grey = Color::BlackGrey;
+        const Color  &black = Color::Black;
+        const Color  &blank = Color::Blank;
+        const Color  &grey = Color::BlackGrey;
 
         // Draw Background
         if (Preferences::topBackgroundImage->IsLoaded() 
@@ -245,17 +249,18 @@ namespace CTRPluginFramework
         posY += 7;
 
         // Draw Text
+        RendererPriv::g_customColor = textColor;
         for (int i = _currentLine; i < max; i++)
         {
-            Renderer::DrawSysString((char *)_newline[i], posX, posY, xLimit, textColor, 0, (char *)_newline[i + 1]);
+            Renderer::DrawSysString((char *)_newline[i], posX, posY, xLimit, RendererPriv::g_customColor, 0, (char *)_newline[i + 1]);
         }
 
         if (!_displayScrollbar)
             return;
 
         // Draw scroll bar
-        Color &dimGrey = Color::DimGrey;
-        Color &silver = Color::Silver;
+        const Color  &dimGrey = Color::DimGrey;
+        const Color  &silver = Color::Silver;
 
         // Background
         posX = _box.leftTop.x + _box.size.x - 8;

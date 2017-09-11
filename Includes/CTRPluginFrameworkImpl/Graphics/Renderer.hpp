@@ -47,12 +47,12 @@ namespace CTRPluginFramework
         static void     DrawLine(int posX, int posY, int length, Color color, int width = 1);
         static void     DrawLine(IntVector &start, IntVector &end, Color color);
         static void     DrawRect(int posX, int posY, int width, int height, Color color, bool fill = true, int thickness = 1);
-        static void     DrawRect(const IntRect &rect, Color &color, bool fill = true);
-        static void     DrawRect2(const IntRect &rect, Color &color1, Color &color2);
+        static void     DrawRect(const IntRect& rect, const Color& color, bool fill = true);
+        static void     DrawRect2(const IntRect &rect, const Color &color1, const Color &color2);
 
 #if GEOMETRY
         template <typename T>
-        static void     Line(Vector<T> &start, Vector<T> &end, Color color);
+        static void     Line(Vector<T> &start, Vector<T>    &end, Color color);
         static void     Arc(int x, int y, int r, Color color);
         static void     Ellipse(int posX, int posY, long a, long b, Color color);
         static void     EllipseIncomplete(int posX, int posY, float a, float b, int max, int aff, Color color);
@@ -87,8 +87,8 @@ namespace CTRPluginFramework
 
         static void     DrawSysCheckBox(const char *str, int posX, int &posY, int xLimits, Color color, bool isChecked = false, float offset = 0);
         static void     DrawSysFolder(const char *str, int posX, int &posY, int xLimits, Color color, float offset = 0);
-        static int      DrawGlyph(Glyph* glyph, int posX, int posY, Color& color);
-        static int      DrawGlyph(Glyph* glyph, int posX, int posY, float& offset, Color& color);
+        static int      DrawGlyph(Glyph* glyph, int posX, int posY, Color color);
+        static int      DrawGlyph(Glyph* glyph, int posX, int posY, float& offset, Color color);
 
         //static int      DrawSysString2(const char *str, int posX, int &posY, int max, Color color, float offset = 0.f, const char *end = nullptr);
 

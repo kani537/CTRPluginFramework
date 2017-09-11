@@ -193,8 +193,8 @@ namespace CTRPluginFramework
 
     void    GatewayRAMDumper::_DrawProgress()
     {
-        Color    &gainsboro = Color::Gainsboro;
-        Color    &limegreen = Color::LimeGreen;
+        const Color     &gainsboro = Color::Gainsboro;
+        const Color     &limegreen = Color::LimeGreen;
 
         Renderer::SetTarget(TOP);
 

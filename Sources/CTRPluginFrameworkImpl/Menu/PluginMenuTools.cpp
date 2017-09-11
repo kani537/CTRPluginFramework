@@ -473,9 +473,9 @@ namespace CTRPluginFramework
     *****************/
     void    PluginMenuTools::_RenderBottom(void)
     {
-        Color    &black = Color::Black;
-        Color    &blank = Color::Blank;
-        Color    &dimGrey = Color::BlackGrey;
+        const Color    &black = Color::Black;
+        const Color    &blank = Color::Blank;
+        const Color    &dimGrey = Color::BlackGrey;
 
         // Enable renderer
         Renderer::SetTarget(BOTTOM);

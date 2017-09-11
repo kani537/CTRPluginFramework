@@ -499,7 +499,7 @@ namespace CTRPluginFramework
 
     void PluginMenuHome::_RenderBottom(void)
     {
-        Color& blank = Color::Blank;
+        const Color& blank = Color::Blank;
         static Clock creditClock;
         static bool framework = true;
 

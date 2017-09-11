@@ -271,12 +271,12 @@ namespace CTRPluginFramework
 
     void    HexEditor::_DrawSubMenu(void)
     {
-        Color    &black = Color::Black;
-        Color    &blank = Color::Blank;
-        Color    &dimGrey = Color::BlackGrey;
-        Color    &darkgrey = Color::DarkGrey;
-        Color    &gainsboro = Color::Gainsboro;
-        Color    &skyblue = Color::SkyBlue;
+        const Color     &black = Color::Black;
+        const Color     &blank = Color::Blank;
+        const Color     &dimGrey = Color::BlackGrey;
+        const Color     &darkgrey = Color::DarkGrey;
+        const Color     &gainsboro = Color::Gainsboro;
+        const Color     &skyblue = Color::SkyBlue;
         static IntRect  background(240, 20, 130, 200);
 
         // DrawBackground
@@ -333,12 +333,12 @@ namespace CTRPluginFramework
     {
         Renderer::SetTarget(TOP);
 
-        Color    &black = Color::Black;
-        Color    &blank = Color::Blank;
-        Color    &skyblue = Color::SkyBlue;
-        Color    &deepskyblue = Color::DeepSkyBlue;
-        Color    &dodgerblue = Color::DodgerBlue;
-        Color    &red = Color::Red;
+        const Color     &black = Color::Black;
+        const Color     &blank = Color::Blank;
+        const Color     &skyblue = Color::SkyBlue;
+        const Color     &deepskyblue = Color::DeepSkyBlue;
+        const Color     &dodgerblue = Color::DodgerBlue;
+        const Color     &red = Color::Red;
 
         u32     address = (u32)_memoryAddress;
         u32     cursorAddress = address + ((_cursor / 16) * 8) + ((_cursor & 15) >> 1);
@@ -455,7 +455,7 @@ namespace CTRPluginFramework
                 if (!_isModified && diff)
                     _isModified = true;
 
-                Color &c = diff ? red : black;
+                const Color &c = diff ? red : black;
 
                 // Convert value
                 sprintf(buffer, "%02X ", buf);
@@ -698,9 +698,9 @@ namespace CTRPluginFramework
         _action = true;
         Keyboard    keyboard;
 
-        Color    &black = Color::Black;
-        Color    &dimGrey = Color::BlackGrey;
-        Color    &skyblue = Color::SkyBlue;
+        const Color     &black = Color::Black;
+        const Color     &dimGrey = Color::BlackGrey;
+        const Color     &skyblue = Color::SkyBlue;
         static IntRect  background(93, 95, 213, 50);
         
 

@@ -51,21 +51,13 @@ namespace CTRPluginFramework
         u64  tid = Process::GetTitleID();
         u64  tidupdate = tid | 0x000000E00000000;
 
-        bool res = R_SUCCEEDED(AM_GetTitleInfo(MEDIATYPE_SD, 1, &tid, &entry));
-        bool resUpd = R_SUCCEEDED(AM_GetTitleInfo(MEDIATYPE_SD, 1, &tidupdate, &entryUpd));
-        bool resCard = R_SUCCEEDED(AM_GetTitleInfo(MEDIATYPE_GAME_CARD, 1, &tid, &entryCard));
+        AM_GetTitleInfo(MEDIATYPE_SD, 1, &tid, &entry);
+        AM_GetTitleInfo(MEDIATYPE_SD, 1, &tidupdate, &entryUpd);
 
-        if (resCard)
-        {
-            if (resUpd)
-                return (std::max(entryUpd.version, entryCard.version));
-            return (entryCard.version);
-        }
+        if (R_SUCCEEDED(AM_GetTitleInfo(MEDIATYPE_GAME_CARD, 1, &tid, &entryCard)))
+            return (std::max(entryUpd.version, entryCard.version));
 
-        if (resUpd)
-            return (entryUpd.version);      
-
-        return (entry.version);
+        return (std::max(entryUpd.version, entry.version));
     }
 
     u32     Process::GetTextSize(void)
@@ -146,11 +138,11 @@ namespace CTRPluginFramework
         if (!CheckAddress((u32)dst)) goto error;
 
         svcFlushProcessDataCache(ProcessImpl::_processHandle, src, size);
-        svcFlushProcessDataCache(ProcessImpl::_processHandle, dst, size);
+        svcInvalidateProcessDataCache(ProcessImpl::_processHandle, dst, size);
 
         std::memcpy(dst, src, size);
 
-        svcInvalidateProcessDataCache(ProcessImpl::_processHandle, dst, size);
+        svcFlushProcessDataCache(ProcessImpl::_processHandle, dst, size);
 
         return (true);
     error:

@@ -3,9 +3,14 @@
 #include "font6x10Linux.h"
 
 #include <vector>
+#include <cstring>
 #include "NTR.hpp"
 #include "NTRImpl.hpp"
 #include "CTRPluginFramework/System/Sleep.hpp"
+#include "CTRPluginFramework/Utils/Utils.hpp"
+#include "CTRPluginFramework/Menu/MessageBox.hpp"
+#include "Hook.hpp"
+#include "CTRPluginFramework/System/Process.hpp"
 
 namespace CTRPluginFramework
 {
@@ -17,8 +22,10 @@ namespace CTRPluginFramework
     {        
     }
 
+    void    InstallOSD(void);
     void    OSDImpl::_Initialize(void)
     {
+        InstallOSD();
         if (_single != nullptr)
             return;
         _single = new OSDImpl();
@@ -77,22 +84,6 @@ namespace CTRPluginFramework
         int posX;
         int posY = std::min((u32)15, (u32)_messages.size());
         posY = 230 - (15 * posY);
-
-		// Restart timer for every notif not displayed yet
-      /*  for (int i = 0; i < _messages.size(); i++)
-        {
-            OSDMessage *message = _messages[i];
-            if (!message->drawn)
-                message->time.Restart();
-        } 
-
-        for (OSDMessage *message : _messages)
-        {
-            posX = XEND - message.width;
-            _DrawMessage(*message, posX, posY);
-
-            message.drawn = true;
-        } */
 
         if (drawOnly)
         {
@@ -464,5 +455,141 @@ namespace CTRPluginFramework
         posY += 15;
 
         Screen::Bottom->Invalidate();
+    }
+
+    static const u32    g_OSDPattern[] =
+    {
+        0xE1833000, // ORR R3, R3, R0  ///< Here 0x14
+        0xE2044CFF, // AND R4, R4, #0xFF00
+        0xE3C33CFF, // BIC R3, R3, #0xFF00
+        0xE1833004, // ORR R3, R3, R4
+        0xE1824F93, // STREX R4, R3, [R2]
+        0xE8830E60, // STMIA R3, {R5, R6, R9 - R11} ///< Here 0x10
+        0xEE078F9A, // MCR p15, 0, R8, c7, c10, 4 // Data Synchronization Barrier
+        0xE3A03001, // MOV R3, #1
+        0xE7902104, // LDR R2, [R0, R4, LSL#2]
+        0xEE076F9A, // MCR p15, 0, R6, c7, c10, 4 // Data Synchronization Barrier ///< Here 0x14
+        0xE3A02001, // MOV R2, #1
+        0xE7901104, // LDR R1, [R0, R4, LSL#2]
+        0xE1911F9F, // LDREX R1, [R1]
+        0xE3C110FF, // BIC R1, R1, #0xFF
+        0x06200000  // STREQT R0, [R0], -R0
+    };
+
+    static u8       *memsearch(u8 *startPos, const void *pattern, u32 size, u32 patternSize)
+    {
+        const u8 *patternc = (const u8 *)pattern;
+        u32 table[256];
+
+        //Preprocessing
+        for (u32 i = 0; i < 256; i++)
+            table[i] = patternSize;
+        for (u32 i = 0; i < patternSize - 1; i++)
+            table[patternc[i]] = patternSize - i - 1;
+
+        //Searching
+        u32 j = 0;
+        while (j <= size - patternSize)
+        {
+            u8 c = startPos[j + patternSize - 1];
+            if (patternc[patternSize - 1] == c && memcmp(pattern, startPos + j, patternSize - 1) == 0)
+                return startPos + j;
+            j += table[c];
+        }
+
+        return nullptr;
+    }
+
+    u32     SearchOSD(void)
+    {
+        u8  *address = memsearch((u8 *)0x100000, g_OSDPattern, Process::GetTextSize(), 0x14);
+
+        if (address == nullptr)
+        {
+            address = memsearch((u8 *)0x100000, &g_OSDPattern[5], Process::GetTextSize(), 0x10);
+
+            if (address == nullptr)
+                address = memsearch((u8 *)0x100000, &g_OSDPattern[9], Process::GetTextSize(), 0x14);
+        }
+
+        return ((u32)address);
+    }
+
+    u32    MainOverlayCallback(u32 isBottom, u32 addr, u32 addrB, u32 stride, u32 format);
+
+    static Hook g_osdHook;
+    using OSDReturn = int(*)(u32, int, void *, void *, int, int, int);
+
+    int OSDHooked(u32 isBottom, int arg2, void *addr, void *addrB, int stride, int format, int arg7)
+    {
+        if (!addr)
+            return (((OSDReturn)g_osdHook.returnCode)(isBottom, arg2, addr, addrB, stride, format, arg7));
+
+        u32     size = isBottom ? stride * 320 : stride * 400;
+        Handle  handle = Process::GetHandle();
+
+        svcInvalidateProcessDataCache(handle, addr, size);
+
+        if (!isBottom && addrB && addrB != addr)
+            svcInvalidateProcessDataCache(handle, addrB, size);
+
+        if (MainOverlayCallback(isBottom, (u32)addr, (u32)addrB, stride, format))
+        {
+            svcFlushProcessDataCache(handle, addr, size);
+
+            if (!isBottom && addrB && addrB != addr)
+                svcInvalidateProcessDataCache(handle, addrB, size);
+        }
+
+        return (((OSDReturn)g_osdHook.returnCode)(isBottom, arg2, addr, addrB, stride, format, arg7));
+    }
+
+    void    InstallOSD(void)
+    {
+        const u32   stmfd2 = 0xE92D47F0; // STMFD SP!, {R4-R10,LR}
+        const u32   stmfd1 = 0xE92D5FF0; // STMFD SP!, {R4-R12, LR}
+        u32         found = SearchOSD();
+        u32         result = 0;
+        u32         *end = (u32 *)(found - 0x400);
+
+        if (!found)
+        {
+            MessageBox("OSD couldn't be installed: #1 !")();
+            return;
+        }
+
+        // MessageBox(Utils::Format("OSD #1 Found: %08X", found))();
+
+        for (u32 *addr = (u32 *)found; addr > end; addr--)
+        {
+            if (*addr == stmfd1)
+            {
+                result = (u32)addr;
+                break;
+            }
+        }
+
+        if (result == 0)
+        {
+            for (u32 *addr = (u32 *)found; addr > end; addr--)
+            {
+                if (*addr == stmfd2)
+                {
+                    result = (u32)addr;
+                    break;
+                }
+            }
+
+            if (result == 0)
+            {
+                MessageBox("OSD couldn't be installed: #2 !")();
+                return;
+            }
+        }
+
+        //MessageBox(Utils::Format("OSD #2 Found: %08X", result))();
+
+        g_osdHook.Initialize(result, (u32)OSDHooked);
+        g_osdHook.Enable();
     }
 }

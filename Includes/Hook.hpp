@@ -3,8 +3,6 @@
 
 #include "types.h"
 
-#define HookReturn(hook) __asm__ __volatile__("mov pc,%0" :: "r" (hook.returnCode))
-
 struct  Hook
 {
     bool        isInitialized;

@@ -39,7 +39,7 @@ extern "C" u32 plgRegisterCallback(u32 type, void* callback, u32 param0);
 
 namespace CTRPluginFramework
 {
-    bool    NTRImpl::IsOSDAvailable = false;
+    bool    NTRImpl::IsOSDAvailable = true;
     bool    NTRImpl::MessColors = false;
     OSDParams NTRImpl::OSDParameters = { 0 };
 
@@ -137,14 +137,16 @@ namespace CTRPluginFramework
         }
     }
 
+    static std::vector<NTR::OverlayCallback> g_callbacks;
+
     u32    MainOverlayCallback(u32 isBottom, u32 addr, u32 addrB, u32 stride, u32 format)
     {
-        if (ProcessImpl::_isPaused)
+        /*if (ProcessImpl::_isPaused)
         {
             //while (ProcessImpl::_isPaused)
             //    Sleep(Seconds(1));
             return (1);
-        }
+        }*/
 
         // OSD is available
         NTRImpl::IsOSDAvailable = true;
@@ -164,8 +166,16 @@ namespace CTRPluginFramework
         params.format = format & 0xf;
         params.screenWidth = isBottom ? 320 : 400;
         
+        u32 edited = 1;
+        for (NTR::OverlayCallback cb : g_callbacks)
+        {
+            u32 ret = cb(isBottom, addr, addrB, stride, format);
+            if (edited)
+                edited = ret;
+        }
+
         if (isBottom || addr == 0)
-            return (1);
+            return (edited);
         
         lastAddr = addr;        
 
@@ -190,10 +200,10 @@ namespace CTRPluginFramework
 
     void    NTRImpl::InitNTR(void)
     {
-        rtGenerateJumpCode(((NS_CONFIG *)(NS_CONFIGURE_ADDR))->sharedFunc[5], (u32 *)plgRegisterCallback);
+        /*rtGenerateJumpCode(((NS_CONFIG *)(NS_CONFIGURE_ADDR))->sharedFunc[5], (u32 *)plgRegisterCallback);
         svcFlushProcessDataCache(Process::GetHandle(), (void*)plgRegisterCallback, 8);
 
-        plgRegisterCallback(CALLBACK_OVERLAY, (void *)MainOverlayCallback, 0);
+        plgRegisterCallback(CALLBACK_OVERLAY, (void *)MainOverlayCallback, 0);*/
     }
 
     bool    NTR::IsOSDAvailable(void)
@@ -203,7 +213,8 @@ namespace CTRPluginFramework
 
     void    NTR::NewCallback(OverlayCallback callback)
     {
-        plgRegisterCallback(CALLBACK_OVERLAY, (void *)callback, 0);
+        g_callbacks.push_back(callback);
+        //plgRegisterCallback(CALLBACK_OVERLAY, (void *)callback, 0);
     }
 
     void    NTR::FetchOSDParams(OSDParams& parameters)
@@ -274,8 +285,7 @@ namespace CTRPluginFramework
     }
 
     }
-
-     */
+    */
 
     static int     DrawCharacter(int posX, int posY, char c, const Color &fg)
     {

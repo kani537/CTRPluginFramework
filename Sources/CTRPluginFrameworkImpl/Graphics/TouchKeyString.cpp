@@ -31,9 +31,9 @@ namespace CTRPluginFramework
     void    TouchKeyString::Draw(void)
     {
         static Color    background(51, 51, 51); ///< Sort of grey
-        Color    &blank = Color::Blank;
-        Color    &textSe = Color::Black;
-        Color    &pressed = Color::Gainsboro; 
+        const Color     &blank = Color::Blank;
+        const Color     &textSe = Color::Black;
+        const Color     &pressed = Color::Gainsboro; 
        
 
         // If key is disabled

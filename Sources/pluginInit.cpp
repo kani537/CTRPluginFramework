@@ -6,6 +6,7 @@
 #include "CTRPluginFramework.hpp"
 #include "CTRPluginFrameworkImpl/Graphics/Font.hpp"
 #include "NTRImpl.hpp"
+#include "csvc.h"
 
 extern "C" void     abort(void);
 extern "C" void     initSystem();
@@ -52,6 +53,8 @@ namespace CTRPluginFramework
 
     extern "C" Result __sync_init(void);
     extern "C" void __system_initSyscalls(void);
+
+    u32    MainOverlayCallback(u32 isBottom, u32 addr, u32 addrB, u32 stride, u32 format);
 
     void    KeepThreadMain(void *arg)
     {
@@ -102,6 +105,9 @@ namespace CTRPluginFramework
         initLib();
         //initSystem();
 
+
+        Time osdsleep = Milliseconds(5);
+
         // If heap error, exit
         if (g_heapError)
             goto exit;
@@ -111,16 +117,53 @@ namespace CTRPluginFramework
 
         svcCreateEvent(&g_keepEvent, RESET_ONESHOT);
 
+        Sleep(Seconds(1.f));
+
         while (g_keepRunning)
         {
             svcWaitSynchronization(g_keepEvent, U64_MAX); 
             svcClearEvent(g_keepEvent);
+            //Sleep(osdsleep);
 
             while (ProcessImpl::IsPaused())
             {
                 if (ProcessImpl::IsAcquiring())
                     Sleep(Milliseconds(100));
-            }               
+            }
+
+         /*   u32         framebufferUpdated;
+            OSDParams   params;
+
+            // OSD Top Screen
+            Screen::Top->Acquire(params);
+            framebufferUpdated = MainOverlayCallback(params.isBottom, params.leftFramebuffer, params.rightFramebuffer, params.stride, params.format);
+            
+            // Flush data
+            if (!framebufferUpdated)
+            {
+                u32 size = params.stride * params.screenWidth;
+
+                // Invalidate buffer
+                GSPGPU_FlushDataCache((void *)params.leftFramebuffer, size);
+                //svcFlushProcessDataCache(Process::GetHandle(), (void *)params.leftFramebuffer, size);
+
+                if (params.is3DEnabled)
+                    GSPGPU_FlushDataCache((void *)params.rightFramebuffer, size);
+                    //svcFlushProcessDataCache(Process::GetHandle(), (void *)params.rightFramebuffer, size);
+            }
+
+            // OSD Bottom Screen
+            Screen::Bottom->Acquire(params);
+            framebufferUpdated = MainOverlayCallback(params.isBottom, params.leftFramebuffer, params.rightFramebuffer, params.stride, params.format);
+
+            // Flush data
+            if (!framebufferUpdated)
+            {
+                u32 size = params.stride * params.screenWidth;
+
+                // Invalidate buffer
+                svcFlushProcessDataCache(Process::GetHandle(), (void *)params.leftFramebuffer, size);
+            }*/
         }
 
         threadJoin(g_mainThread, U64_MAX);
@@ -134,6 +177,10 @@ namespace CTRPluginFramework
     void    InitColors(void);
     void    Initialize(void)
     {
+        Process::CheckAddress(0x00100000, 7);
+        Process::CheckAddress(0x00102000, 7);
+        svcInvalidateEntireInstructionCache();
+
         // Init HID
         hidInit();
 
@@ -152,9 +199,6 @@ namespace CTRPluginFramework
 
         // Init NTR
         NTRImpl::InitNTR();
-
-        // Init Colors
-        InitColors();
 
         // Init sdmcArchive
         {

@@ -80,8 +80,8 @@ namespace CTRPluginFramework
 
     void    Menu::Draw(void) const
     {
-        Color &blank = Color::Blank;
-        Color &silver = Color::DarkGrey;
+        const Color &blank = Color::Blank;
+        const Color &silver = Color::DarkGrey;
 
         int   posY = 25;
         int   posX = 40;
@@ -105,7 +105,7 @@ namespace CTRPluginFramework
         {
             for (; i < max; i++)
             {
-                Color &c = i == _selector ? blank : silver;
+                const Color &c = i == _selector ? blank : silver;
                 MenuItem *item = _folder->_items[i];
 
                 if (i == _selector)
@@ -130,7 +130,7 @@ namespace CTRPluginFramework
         {
             for (; i < max; i++)
             {
-                Color &c = i == _selector ? blank : silver;
+                const Color &c = i == _selector ? blank : silver;
                 MenuItem *item = _folder->_items[i];
 
                 if (i == _selector)

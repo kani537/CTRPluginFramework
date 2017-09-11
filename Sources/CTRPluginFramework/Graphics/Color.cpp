@@ -3,39 +3,26 @@
 
 namespace CTRPluginFramework
 {
-    Color   Color::Black;
-    Color   Color::Blank;
-    Color   Color::Red;
-    Color   Color::Green;
-    Color   Color::Blue;
-    Color   Color::BlackGrey;
-    Color   Color::DarkGrey;
-    Color   Color::Grey;
-    Color   Color::Silver;
-    Color   Color::Gainsboro;
-    Color   Color::DimGrey;
-    Color   Color::LimeGreen;
-    Color   Color::SkyBlue;
-    Color   Color::DeepSkyBlue;
-    Color   Color::DodgerBlue;
-
-    void    InitColors(void)
-    {
-        Color::Blank = Color(255, 255, 255);
-        Color::Red = Color(255, 0, 0);
-        Color::Green = Color(0, 255, 0);
-        Color::Blue = Color(0, 0, 255);
-        Color::BlackGrey = Color(15, 15, 15);
-        Color::DimGrey = Color(105, 105, 105);
-        Color::Grey = Color(128, 128, 128);
-        Color::DarkGrey = Color(169, 169, 169);
-        Color::Silver = Color(192, 192, 192);
-        Color::Gainsboro = Color(220, 220, 220);    
-        Color::LimeGreen = Color(50, 205, 50);
-        Color::SkyBlue = Color(135, 206, 235);
-        Color::DeepSkyBlue = Color(0, 191, 255);
-        Color::DodgerBlue = Color(30, 144, 255);
-    }
+    const Color     Color::Black;
+    const Color     Color::Blank = Color(255, 255, 255);
+    const Color     Color::Blue = Color(0, 0, 255);
+    const Color     Color::BlackGrey = Color(15, 15, 15);
+    const Color     Color::Brown = Color(150, 75, 0);
+    const Color     Color::DarkGrey = Color(169, 169, 169);
+    const Color     Color::DeepSkyBlue = Color(0, 191, 255);
+    const Color     Color::DimGrey = Color(105, 105, 105);
+    const Color     Color::DodgerBlue = Color(30, 144, 255);
+    const Color     Color::Gainsboro = Color(220, 220, 220);
+    const Color     Color::Green = Color(0, 255, 0);
+    const Color     Color::Grey = Color(128, 128, 128);
+    const Color     Color::LimeGreen = Color(50, 205, 50);
+    const Color     Color::Magenta = Color(255, 0, 255);
+    const Color     Color::Orange = Color(255, 128, 0);
+    const Color     Color::Red = Color(255, 0, 0);
+    const Color     Color::Silver = Color(192, 192, 192);
+    const Color     Color::SkyBlue = Color(135, 206, 235);
+    const Color     Color::Turquoise = Color(64, 224, 208);
+    const Color     Color::Yellow = Color(255, 255, 0);
 
     Color::Color(u8 red, u8 green, u8 blue, u8 alpha) 
     : r(red), g(green), b(blue), a(alpha)

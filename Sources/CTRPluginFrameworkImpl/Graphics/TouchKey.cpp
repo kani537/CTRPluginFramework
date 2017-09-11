@@ -63,7 +63,7 @@ namespace CTRPluginFramework
         }
     }
 
-    void    TouchKey::DrawCharacter(const IntRect &rect, Color &color)
+    void    TouchKey::DrawCharacter(const IntRect &rect, const Color &color)
     {
         // If not a string
         if (_content == nullptr)
@@ -103,10 +103,10 @@ namespace CTRPluginFramework
 
     void    TouchKey::Draw(void)
     {
-        Color    &background = Color::Black;
-        Color    &pressed = Color::Silver;
-        Color    &character = Color::Blank;
-        Color    &characterDis = Color::DimGrey;
+        const Color     &background = Color::Black;
+        const Color     &pressed = Color::Silver;
+        const Color     &character = Color::Blank;
+        const Color     &characterDis = Color::DimGrey;
 
         // if key is disabled
         if (!_enabled)

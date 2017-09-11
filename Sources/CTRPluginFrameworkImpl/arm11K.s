@@ -1,5 +1,15 @@
 .arm
+.fpu vfp
 .align(4)
+
+.macro FUNCTION name
+    .section .text.\name
+    .global \name
+    .type \name, %function
+    .align 2
+\name:
+.endm
+
 .section .text
 .global  dispatchArm11KernelCmd
 .type    dispatchArm11KernelCmd, %function
@@ -109,8 +119,6 @@ executeKernelCmd:
         LDMFD       SP!, {R3-R11,PC}
 @ End of function executeKernelCmd
 
-.global plgRegisterCallback; 
-.type plgRegisterCallback, %function; 
-plgRegisterCallback:
+FUNCTION plgRegisterCallback
 nop
 nop

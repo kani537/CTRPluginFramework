@@ -215,7 +215,7 @@ namespace CTRPluginFramework
         posY += 1;
     }
 
-    int Renderer::DrawGlyph(Glyph *glyph, int posX, int posY, Color &color)
+    int Renderer::DrawGlyph(Glyph *glyph, int posX, int posY, Color color)
     {
         posX += glyph->xOffset;
         int  x = posX;
@@ -242,7 +242,7 @@ namespace CTRPluginFramework
         return (posX + glyph->xAdvance);
     }
 
-    int Renderer::DrawGlyph(Glyph *glyph, int posX, int posY, float &offset, Color &color)
+    int Renderer::DrawGlyph(Glyph *glyph, int posX, int posY, float &offset, Color color)
     {
         posX += glyph->xOffset;
 
@@ -347,6 +347,11 @@ namespace CTRPluginFramework
         return (x);
     }
 
+    namespace RendererPriv
+    {
+        Color   g_customColor;
+    }
+    
     int Renderer::DrawSysString(const char *stri, int posX, int &posY, int xLimits, Color color, float offset, const char *end)
     {
         Color   bakColor(color);
@@ -381,7 +386,7 @@ namespace CTRPluginFramework
 
             if (c == 0x18)
             {
-                color = bakColor;
+                RendererPriv::g_customColor = color = bakColor;
                 str++;
                 continue;
             }
@@ -392,6 +397,7 @@ namespace CTRPluginFramework
                 color.r = *str++;
                 color.g = *str++;
                 color.b = *str++;
+                RendererPriv::g_customColor = color;
                 continue;
             }
 
