@@ -3,6 +3,7 @@
 
 #include "CTRPluginFramework/Graphics/Color.hpp"
 #include <string>
+#include <type_traits>
 
 namespace CTRPluginFramework
 {
@@ -13,11 +14,11 @@ namespace CTRPluginFramework
     std::string operator <<(const std::string &left, const Color &color);
     std::string operator <<(const Color &color, const std::string &right);
 
-    template <typename T>
-    std::string &operator <<(std::string &left, T right)
+    template <typename T, 
+        typename std::enable_if<!std::is_same<T, const char *>::value>::type* = nullptr>
+    std::string operator <<(const std::string &left, T right)
     {
-        left += std::to_string(right);
-        return (left);
+        return (left + std::to_string(right));
     }
 }
 
