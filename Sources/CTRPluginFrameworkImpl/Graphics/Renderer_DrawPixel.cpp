@@ -5,6 +5,7 @@
 
 namespace CTRPluginFramework
 {
+    /*
     inline u32   GetFramebufferOffset(int posX, int posY, int bpp, int rowsize)
     {
         return ((rowsize - 1 - posY + posX * rowsize) * bpp);
@@ -101,12 +102,7 @@ again:
         half.u |= (color.r & 0xF0);
         half.u |= 0x0F;
 
-again:
-        int     length = _length;
-        while (--length >= 0)
-        {
-            *(screen++) = half.b[0];
-            *(screen++) = half.b[1];
-        }
-    }
+        *(screen++) = half.b[0];
+        *(screen++) = half.b[1];
+    } */
 }

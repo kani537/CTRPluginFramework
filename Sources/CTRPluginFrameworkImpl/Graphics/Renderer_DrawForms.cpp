@@ -29,8 +29,8 @@ namespace CTRPluginFramework
             height--;
         }
 
-        u8 *dst = _screen->GetLeftFramebuffer(posX, posY + height - 1);
-        u32 stride = _rowstride;
+        u8  *dst = _screen->GetLeftFramebuffer(posX, posY + height - 1);
+        u32 stride = _screen->GetStride();
 
         while (width-- > 0)
         {
@@ -57,8 +57,8 @@ namespace CTRPluginFramework
             height--;
         }
 
-        u8 *dst = _screen->GetLeftFramebuffer(posX, posY + height - 1);
-        u32 stride = _rowstride;
+        u8  *dst = _screen->GetLeftFramebuffer(posX, posY + height - 1);
+        u32 stride = _screen->GetStride();
 
         while (width-- > 0)
         {
@@ -712,64 +712,5 @@ namespace CTRPluginFramework
             posY++;    
         }
 
-    }
-
-    void    Renderer::FormFiller(const IntVector &start, const IntRect &area, bool singlePoint, Color &fill, Color &limit) 
-    {
-       /* std::queue<IntVector> fpQueue;
-
-        const int minX = area._leftTopCorner.x;
-        const int minY = area._leftTopCorner.y;        
-        const int maxX = minX + area._size.x;
-        const int maxY = minY + area._size.y;
-
-        Screen *scr = _screens[_target];
-        GSPGPU_FramebufferFormats fmt = scr->GetFormat();
-
-        int y = start.y;
-
-        do
-        {
-            int x = start.x;
-            // Get line frontiers points
-            do
-            {
-                Color bg = Color::FromMemory(scr->GetLeftFramebuffer(x, y), fmt);
-                if (bg != limit && x < maxX)
-                {
-                    do 
-                    {
-                        x++;
-                        bg = Color::FromMemory(scr->GetLeftFramebuffer(x, y), fmt);
-                    } while ((bg != limit) && x < maxX);     
-                    // Store frontier point
-                    if (bg == limit)
-                        fpQueue.push(IntVector(x, y));    
-                }            
-                x++;
-            } while (x < maxX && !singlePoint);
-            // While queue isn't empty
-            while (!fpQueue.empty())
-            {
-                IntVector rPoint = fpQueue.front();
-                fpQueue.pop();
-
-                int left = rPoint.x;
-                Color bg;
-                do
-                {
-                    left--;
-                    bg = Color::FromMemory(scr->GetLeftFramebuffer(left, y), fmt);
-                } while (bg != limit && left > minX);
-
-                // If width is at least 1, draw line
-                if (rPoint.x - left > 1)
-                {
-                    IntVector lPoint = IntVector(left + 1, y);
-                    DrawLine(lPoint, rPoint, fill);
-                }
-            }
-            y++;
-        } while (y <= maxY);*/
     }
 }

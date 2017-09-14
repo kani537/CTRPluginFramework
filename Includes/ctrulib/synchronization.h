@@ -87,6 +87,8 @@ void LightLock_Init(LightLock* lock);
  */
 void LightLock_Lock(LightLock* lock);
 
+bool LightLock_IsLocked(LightLock *lock);
+
 /**
  * @brief Attempts to lock a light lock.
  * @param lock Pointer to the lock.

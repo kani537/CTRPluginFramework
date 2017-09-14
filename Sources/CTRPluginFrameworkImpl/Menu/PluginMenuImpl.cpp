@@ -133,7 +133,6 @@ namespace CTRPluginFramework
         PluginMenuExecuteLoop   &executer = *_executeLoop;
 
         Time            delta;
-        OSDImpl         &osd = *(OSDImpl::GetInstance());
         std::vector<Event>     eventList;
 
         // Set _runningInstance to this menu
@@ -225,8 +224,7 @@ namespace CTRPluginFramework
             }
             
             if (_isOpen)
-            {   
-
+            {
                 if (mode == 0)
                 { /* Home */
                     shouldClose = home(eventList, mode, delta);
@@ -274,14 +272,7 @@ namespace CTRPluginFramework
 
                     // Save settings
                     Preferences::WriteSettings();
-                }    
-
-               /* if (Controller::IsKeysDown((L + R + Start)))
-                {
-                    ProcessImpl::Play(true);
-                    _pluginRun = false;                    
-                    _isOpen = false;     
-                } */
+                }
             }
             else
             {
@@ -321,20 +312,12 @@ namespace CTRPluginFramework
                     }
                 }
                 
-                // Display notifications
-                if (!NTRImpl::IsOSDAvailable)
-                    osd.Draw();
-                else
-                {
-                    static KeySequenceImpl konamicode({ DPadUp, DPadUp, DPadDown, DPadDown, DPadLeft, DPadRight, DPadLeft, DPadRight, B, A, B, A });
+                static KeySequenceImpl konamicode({ DPadUp, DPadUp, DPadDown, DPadDown, DPadLeft, DPadRight, DPadLeft, DPadRight, B, A, B, A });
 
-                    if (konamicode())
-                    {
-                        NTRImpl::MessColors = !NTRImpl::MessColors;
-                    }
-                }
+                if (konamicode())
+                    NTRImpl::MessColors = !NTRImpl::MessColors;
 
-                osd.Update();
+                OSDImpl::Update();
 
                 if (_wasOpened)
                     _wasOpened = false;

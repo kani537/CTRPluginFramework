@@ -109,7 +109,7 @@ namespace CTRPluginFramework
     void     BMPImage::Draw(int x, int y)
     {    
         bool topScreen = Renderer::_target == 1;
-        Screen *scr = topScreen ? Screen::Top : Screen::Bottom;
+        ScreenImpl *scr = topScreen ? ScreenImpl::Top : ScreenImpl::Bottom;
 
         int posX = topScreen ? x + (340 - _width) / 2 : x + (280 - _width) / 2;
         int posY = y + (200 - _height) / 2;
@@ -137,7 +137,7 @@ namespace CTRPluginFramework
     void     BMPImage::Draw(IntRect &area, float fade)
     {    
         bool topScreen = Renderer::_target == 1;
-        Screen *scr = topScreen ? Screen::Top : Screen::Bottom;
+        ScreenImpl *scr = topScreen ? ScreenImpl::Top : ScreenImpl::Bottom;
 
         int posX = area.leftTop.x;
         int posY = area.leftTop.y;

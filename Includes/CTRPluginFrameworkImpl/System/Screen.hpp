@@ -1,5 +1,5 @@
-#ifndef CTRPLUGINFRAMEWORK_SCREEN_HPP
-#define CTRPLUGINFRAMEWORK_SCREEN_HPP
+#ifndef CTRPLUGINFRAMEWORK_SCREENIMPL_HPP
+#define CTRPLUGINFRAMEWORK_SCREENIMPL_HPP
 
 #include "ctrulib/services/gspgpu.h"
 #include "NTR.hpp"
@@ -7,7 +7,7 @@
 namespace CTRPluginFramework
 {
     class Color;
-    class Screen
+    class ScreenImpl
     {
     public:
 
@@ -23,13 +23,10 @@ namespace CTRPluginFramework
             FramebufferB2 = 0x98    ///< Framebuffer B second address    For top screen, this is the right eye 3D framebuffer. Unused for bottom screen.
         };
 
-        static  Screen *Top; 
-        static  Screen *Bottom;
+        static  ScreenImpl *Top; 
+        static  ScreenImpl *Bottom;
 
-        Screen(u32 lcdSetupInfo, u32 fillColorAddress, bool isTopScreen = false);
-
-        // Useless ?
-        void                        SetCtrulibScreen(void);
+        ScreenImpl(u32 lcdSetupInfo, u32 fillColorAddress, bool isTopScreen = false);
 
         bool                        IsTopScreen(void);
         bool                        Is3DEnabled(void);
@@ -37,6 +34,7 @@ namespace CTRPluginFramework
         void                        Flash(Color &color);
 
         void                        Acquire(bool acquiringOSD = false);
+        void                        Acquire(u32 left, u32 right, u32 stride, u32 format);
         void                        SwapBuffer(bool flush = false, bool copy = false);
 
         GSPGPU_FramebufferFormats   GetFormat(void);
@@ -53,19 +51,14 @@ namespace CTRPluginFramework
 
         u8                          *GetLeftFramebuffer(bool current = false);
         u8                          *GetLeftFramebuffer(int posX, int posY);
-        u8                          *GetLeftFramebuffer(int posX, int posY, bool second);
         u8                          *GetRightFramebuffer(bool current = false);
         u8                          *GetRightFramebuffer(int posX, int posY); 
-        u8                          *GetRightFramebuffer(int posX, int posY, bool current);                 
         void                        GetPosFromAddress(u32 address, int &posX, int &posY);
 
         void                        Fade(float fade, bool copy = false);
-        void Acquire(OSDParams& params);
         void                        Flush(void);
 		void						Invalidate(void);
-        void                        Copy(void);
-        int                         Debug(int posX, int posY);
-	    
+        void                        Copy(void);	    
 
     private:
         friend class Renderer;
@@ -75,10 +68,8 @@ namespace CTRPluginFramework
 
         u32                         _LCDSetup;
         u32                         _FillColor;
-        u32                         _leftFramebuffersP[2];
-        u32                         _leftFramebuffersV[2];
-        u32                         _rightFramebuffersP[2];
-        u32                         _rightFramebuffersV[2];
+        u32                         _leftFramebuffers[2];
+        u32                         _rightFramebuffers[2];
         u32                         _currentBuffer;
         u32                         *_currentBufferReg;
         u16                         _width;

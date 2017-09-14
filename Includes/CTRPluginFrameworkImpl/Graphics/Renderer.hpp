@@ -31,19 +31,18 @@ namespace CTRPluginFramework
     using DrawDataP = void(*)(int, int, u8*, int);
 
     class Icon;
-    class Screen;
+    class ScreenImpl;
     class TextBox;
     class Renderer
     {
     public:
 
         static void     SetTarget(Target target);
-        static void     StartFrame(bool current = false);
         static void     EndFrame(bool copy = false);
 
         // Forms
         //#############################################################################################
-
+        static void     DrawPixel(int posX, int posY, const Color &color);
         static void     DrawLine(int posX, int posY, int length, Color color, int width = 1);
         static void     DrawLine(IntVector &start, IntVector &end, Color color);
         static void     DrawRect(int posX, int posY, int width, int height, Color color, bool fill = true, int thickness = 1);
@@ -60,23 +59,20 @@ namespace CTRPluginFramework
 #endif
 
         static    void  ComputeRoundedRectangle(std::vector<IntLine> &out, const IntRect &rect, float radius, int max);
-        static    void  FormFiller(const IntVector &start, const IntRect &area, bool singlePoint, Color &fill, Color &limit);
         // Menu
         //#############################################################################################
         static    void        MenuSelector(int posX, int posY, int width, int height);
+        
         // Linux Font
         //#############################################################################################
         // Draw Character without background
         static void     DrawCharacter(int c, int posX, int posY, Color fg);
         // Draw Character with background
         static void     DrawCharacter(int c, int posX, int posY, Color fg, Color bg);
-        // Draw Character with offset
-        static void     DrawCharacter(int c, int offset, int posX, int posY, Color fg);
-        //
-        static int      DrawString(char *str, int posX, int &posY, Color fg);
-        static int      DrawString(char *str, int posX, int &posY, Color fg, Color bg);
-        static int      DrawString(char *str, int offset, int posX, int &posY, Color fg);
-        static void     DrawCheckBoxString(char *str, int posX, int &posY, bool isChecked, Color fg, Color checked);
+
+        static int      DrawString(const char *str, int posX, int &posY, Color fg);
+        static int      DrawString(const char *str, int posX, int &posY, Color fg, Color bg);
+
         // System Font
         //#############################################################################################
         static int      DrawSysString(const char *str, int posX, int &posY, int max, Color color, float offset = 0.f, const char *end = nullptr);
@@ -90,11 +86,8 @@ namespace CTRPluginFramework
         static int      DrawGlyph(Glyph* glyph, int posX, int posY, Color color);
         static int      DrawGlyph(Glyph* glyph, int posX, int posY, float& offset, Color color);
 
-        //static int      DrawSysString2(const char *str, int posX, int &posY, int max, Color color, float offset = 0.f, const char *end = nullptr);
-
         // Misc
         //#############################################################################################
-        static DrawPixelP   _DrawPixel;
     private:
 
         friend void     Initialize(void);
@@ -106,25 +99,17 @@ namespace CTRPluginFramework
         friend class    TextBox;
         friend class    BMPImage;
 
-        // Initalize Renderer
-        static void     Initialize(void);
         // Calulate sysfont glyph
         static void     FontCalcGlyphPos(fontGlyphPos_s *out, charWidthInfo_s **cwout, int glyphIndex, float scaleX, float scaleY);
 
-        static Target       _target;
-        static Screen       *_screen;
-        static u32          _rowstride;
-        static GSPGPU_FramebufferFormats _format;
-        static int          _length;
+        static Target           _target;
+        static ScreenImpl       *_screen;
 
-        static void         RenderRGBA8(int posX, int posY, Color &color);
+       /* static void         RenderRGBA8(int posX, int posY, Color &color);
         static void         RenderBGR8(int posX, int posY, Color &color);
         static void         RenderRGB565(int posX, int posY, Color &color);
         static void         RenderRGB5A1(int posX, int posY, Color &color);
-        static void         RenderRGBA4(int posX, int posY, Color &color);
-
-
-        static DrawDataP    _DrawData;
+        static void         RenderRGBA4(int posX, int posY, Color &color);*/
 
     };
 

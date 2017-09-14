@@ -8,6 +8,7 @@
 #include <ctrulib/services/gspgpu.h>
 #include <ctrulib/ipc.h>
 #include <ctrulib/thread.h>
+#include "ctrulib/allocator/mappable.h"
 
 #define GSP_EVENT_STACK_SIZE 0x1000
 
@@ -22,10 +23,11 @@ static void* gspEventCbData[GSPGPU_EVENT_MAX];
 static bool gspEventCbOneShot[GSPGPU_EVENT_MAX];
 static volatile bool gspRunEvents;
 static Thread gspEventThread;
+static u8 gfxThreadID;
+static u8 *gfxSharedMemory;
 
-Handle gspEvent;
 static vu8* gspEventData;
-
+Handle gspEvent, gspSharedMemHandle;
 static void gspEventThreadMain(u32 arg);
 
 Handle gspThreadEventHandle;
@@ -36,15 +38,44 @@ Handle __sync_get_arbiter(void);
 Result gspInit(void)
 {
 	Result res=0;
-	if (AtomicPostIncrement(&gspRefCount)) return 0;
+	if (AtomicPostIncrement(&gspRefCount))
+        return 0;
 	res = srvGetServiceHandle(&gspGpuHandle, "gsp::Gpu");
-	if (R_FAILED(res)) AtomicDecrement(&gspRefCount);
+	if (R_FAILED(res))
+        AtomicDecrement(&gspRefCount);
+
+    gfxSharedMemory = (u8 *)mappableAlloc(0x1000);
+
+    // Setup our gsp shared mem section
+    svcCreateEvent(&gspEvent, RESET_ONESHOT);
+    GSPGPU_RegisterInterruptRelayQueue(gspEvent, 0x1, &gspSharedMemHandle, &gfxThreadID);
+    svcMapMemoryBlock(gspSharedMemHandle, (u32)gfxSharedMemory, 0x3, 0x10000000);
+
+    // Initialize even handler
+    gspInitEventHandler(gspEvent, (vu8*)gfxSharedMemory, gfxThreadID);
+
 	return res;
 }
 
 void gspExit(void)
 {
 	if (AtomicDecrement(&gspRefCount)) return;
+
+    // Exit event handler
+    gspExitEventHandler();
+
+    // Unmap GSP shared mem
+    svcUnmapMemoryBlock(gspSharedMemHandle, (u32)gfxSharedMemory);
+
+    svcCloseHandle(gspSharedMemHandle);
+    if (gfxSharedMemory != NULL)
+    {
+        mappableFree(gfxSharedMemory);
+        gfxSharedMemory = NULL;
+    }
+
+    svcCloseHandle(gspEvent);
+
 	svcCloseHandle(gspGpuHandle);
 }
 
@@ -160,7 +191,6 @@ static int popInterrupt()
 
 void gspEventThreadMain(u32 arg)
 {
-
 	while (gspRunEvents)
 	{
 		svcWaitSynchronization(gspEvent, U64_MAX);

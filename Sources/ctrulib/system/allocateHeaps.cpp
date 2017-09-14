@@ -28,7 +28,7 @@ namespace CTRPluginFramework
 
         if (R_FAILED(arm11kSvcControlMemory(&__ctru_heap, __ctru_heap, __ctru_heap_size, 0x203u, MEMPERM_READ | MEMPERM_WRITE | MEMPERM_EXECUTE)))
         {
-            Screen::Top->Flash(red);
+            ScreenImpl::Top->Flash(red);
             g_heapError = true;
             return;
         }
@@ -49,7 +49,7 @@ namespace CTRPluginFramework
                 {
                     if (R_FAILED(arm11kSvcControlMemory(&__ctru_linear_heap, 0, __ctru_linear_heap_size, 0x10203u, MEMPERM_READ | MEMPERM_WRITE | MEMPERM_EXECUTE)))
                     {
-                        Screen::Bottom->Flash(red);
+                        ScreenImpl::Bottom->Flash(red);
                         g_heapError = true;
                     }
                 }

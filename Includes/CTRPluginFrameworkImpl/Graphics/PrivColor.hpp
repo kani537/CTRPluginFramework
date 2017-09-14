@@ -23,7 +23,7 @@ namespace CTRPluginFramework
         static void     SetFormat(GSPGPU_FramebufferFormats format);
 
     private:
-        friend class Screen;
+        friend class ScreenImpl;
 
         
 

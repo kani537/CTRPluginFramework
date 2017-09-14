@@ -15,12 +15,7 @@ namespace CTRPluginFramework
     
 
     Target      Renderer::_target = BOTTOM;
-    Screen      *Renderer::_screen = Screen::Bottom;
-    DrawPixelP  Renderer::_DrawPixel = nullptr;
-    DrawDataP   Renderer::_DrawData = nullptr;
-    int         Renderer::_length = 1;
-    u32         Renderer::_rowstride;
-    GSPGPU_FramebufferFormats Renderer::_format = GSP_BGR8_OES;
+    ScreenImpl* Renderer::_screen = ScreenImpl::Bottom;
 
 
     inline u32   GetFramebufferOffset(int posX, int posY, int bpp, int rowsize)
@@ -28,48 +23,15 @@ namespace CTRPluginFramework
         return ((rowsize - 1 - posY + posX * rowsize) * bpp);
     }
 
-    void        Renderer::Initialize(void)
-    {
-        // TODO: Remove this function ?
-    }
-
     void        Renderer::SetTarget(Target target)
     {
         _target = target;
         if (_target == BOTTOM)
-            _screen = Screen::Bottom;
+            _screen = ScreenImpl::Bottom;
         else
-            _screen = Screen::Top;
-        _format = _screen->GetFormat();
-        _rowstride = _screen->GetStride();
-        switch (_format)
-        {
-            case GSP_RGBA8_OES:
-                _DrawPixel = RenderRGBA8;
-             //   _DrawData = RenderRGBA8;
-                break;
-            case GSP_BGR8_OES:
-                _DrawPixel = RenderBGR8;
-             //   _DrawData = RenderBGR8;
-                break;
-            case GSP_RGB565_OES:
-                _DrawPixel = RenderRGB565;
-             //   _DrawData = RenderRGB565;
-                break;
-            case GSP_RGB5_A1_OES:
-                _DrawPixel = RenderRGB5A1;
-             //   _DrawData = RenderRGB5A1;
-                break;
-            case GSP_RGBA4_OES:
-                _DrawPixel = RenderRGBA4;
-             //   _DrawData = RenderRGBA4;
-                break;        
-        }
-    }
+            _screen = ScreenImpl::Top;
 
-    void        Renderer::StartFrame(bool current)
-    {
-        // TODO: remove this function ?
+        PrivColor::SetFormat(_screen->GetFormat());
     }
 
     void        Renderer::EndFrame(bool copy)
@@ -100,8 +62,8 @@ namespace CTRPluginFramework
         sprintf(buffer, "FPS: %.02f", Seconds(1.f).AsSeconds() / delta.AsSeconds());
         int posY = 30;
         DrawString(buffer, 200, posY, blank, black);*/
-        Screen::Bottom->SwapBuffer(true, copy);
-        Screen::Top->SwapBuffer(true, copy);
+        ScreenImpl::Bottom->SwapBuffer(true, copy);
+        ScreenImpl::Top->SwapBuffer(true, copy);
         gspWaitForVBlank();
     }
 
@@ -140,11 +102,11 @@ namespace CTRPluginFramework
         int j = 0;
         float fading = 0.0f;
 
-        Color l = Color(255, 255, 255);
+        Color l(255, 255, 255);
         posY += height;
         u8 *dst = _screen->GetLeftFramebuffer(posX + (width - tier), posY);
         u8 *rtier = dst;
-        Color black = Color(60, 60, 60);
+        Color black(60, 60, 60);
         // Right tier
         for (int i = tier; i > 0; --i)
         {

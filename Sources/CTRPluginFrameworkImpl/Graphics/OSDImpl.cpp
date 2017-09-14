@@ -11,108 +11,39 @@
 #include "CTRPluginFramework/Menu/MessageBox.hpp"
 #include "Hook.hpp"
 #include "CTRPluginFramework/System/Process.hpp"
+#include "CTRPluginFrameworkImpl/System/ProcessImpl.hpp"
+#include "CTRPluginFrameworkImpl/Graphics/Renderer.hpp"
 
 namespace CTRPluginFramework
 {
-    OSDImpl     *OSDImpl::_single = nullptr;
-
-	OSDImpl::OSDImpl(void) :
-	_topModified(false),
-	_bottomModified(false)
-    {        
-    }
+    Hook    OSDImpl::OSDHook;
+    RecursiveLock OSDImpl::RecLock;
+    std::list<OSDImpl::OSDMessage*> OSDImpl::Notifications;
+    std::vector<OSDCallback> OSDImpl::Callbacks;
 
     void    InstallOSD(void);
+
     void    OSDImpl::_Initialize(void)
     {
         InstallOSD();
-        if (_single != nullptr)
-            return;
-        _single = new OSDImpl();
-        RecursiveLock_Init(&_single->_lock);
+        RecursiveLock_Init(&RecLock);
     }
-
-    OSDImpl     *OSDImpl::GetInstance(void)
-    {
-        return (_single);
-    }
-
-	void	OSDImpl::Start(void)
-	{
-       // Screen::Top->Acquire(true);
-       // Screen::Top->Flush();
-			
-       // Screen::Bottom->Acquire(true);
-      //  Screen::Bottom->Flush();
-	}
-
-	void	OSDImpl::Finalize(void)
-	{
-		if (_topModified)
-		{
-			Screen::Top->Invalidate();
-			_topModified = false;
-		}
-
-		if (_bottomModified)
-		{
-			Screen::Bottom->Invalidate();
-			_bottomModified = false;
-		}
-	}
-
 
 #define XEND    390
-
-    bool    OSDImpl::operator()(bool drawOnly)
-    {
-        Lock();
-
-        if (_messages.empty())
-        {
-            Unlock();
-            return (false);
-        }
-
-        if (!NTRImpl::IsOSDAvailable)
-            Screen::Top->Acquire(true);
-        else
-        {
-            PrivColor::SetFormat((GSPGPU_FramebufferFormats)NTRImpl::OSDParameters.format);
-        }
-
-        int posX;
-        int posY = std::min((u32)15, (u32)_messages.size());
-        posY = 230 - (15 * posY);
-
-        if (drawOnly)
-        {
-            Unlock();
-            return (true);
-        }
-
-        if (!NTR::IsOSDAvailable())
-            Screen::Top->Invalidate();
-        
-
-        RecursiveLock_Unlock(&_lock);
-
-        return (true);
-    }
 
     void    OSDImpl::Update(void)
     {
         if (TryLock())
             return;
 
-        while (_messages.size() && _messages.front()->drawn)
+        while (Notifications.size() && Notifications.front()->drawn)
         {
-            OSDMessage *message = _messages.front();
+            OSDMessage *message = Notifications.front();
 
             if (message->time.HasTimePassed(Seconds(5.f)))
             {
                 delete message;
-                _messages.pop_front();
+                Notifications.pop_front();
             }
             else
                 break;
@@ -125,29 +56,22 @@ namespace CTRPluginFramework
     {
         Lock();
 
-        if (_messages.empty())
+        if (Notifications.empty())
         {
             Unlock();
             return (false);
         }
 
-        if (!NTRImpl::IsOSDAvailable)
-            Screen::Top->Acquire(true);
-        else
-        {
-            PrivColor::SetFormat((GSPGPU_FramebufferFormats)NTRImpl::OSDParameters.format);
-        }
-
         int posX;
-        int posY = std::min((u32)15, (u32)_messages.size());
+        int posY = std::min((u32)15, (u32)Notifications.size());
         posY = 230 - (15 * posY);
         int count = 0;
 
-        for (OSDMessage *message : _messages)
+        for (OSDMessage *message : Notifications)
         {
             posX = XEND - message->width;
-            _DrawMessage(*message, posX, posY);
-
+            Renderer::DrawString(message->text.c_str(), posX, posY, message->foreground, message->background);
+            posY += 5;
             if (!message->drawn)
                 message->time.Restart();
 
@@ -158,303 +82,90 @@ namespace CTRPluginFramework
                 break;
         }
 
-        if (!NTR::IsOSDAvailable())
-            Screen::Top->Invalidate();
-
         Unlock();
         return (true);
     }
 
     void    OSDImpl::Lock(void)
     {
-        RecursiveLock_Lock(&_lock);
+        RecursiveLock_Lock(&RecLock);
     }
 
     bool OSDImpl::TryLock(void)
     {
-        return (RecursiveLock_TryLock(&_lock));
+        return (RecursiveLock_TryLock(&RecLock));
     }
 
     void    OSDImpl::Unlock(void)
     {
-        RecursiveLock_Unlock(&_lock);
+        RecursiveLock_Unlock(&RecLock);
     }
 
-    void    OSDImpl::_DrawMessage(OSDMessage &message, int posX, int &posY)
+    u32 GetBPP(GSPFormat format);
+
+    int OSDImpl::MainCallback(u32 isBottom, int arg2, void* addr, void* addrB, int stride, int format, int arg7)
     {
-        _DrawTop(message.text, posX, posY, 10, message.foreground, message.background);
-    }
+        if (!addr)
+            return (((OSDReturn)OSDHook.returnCode)(isBottom, arg2, addr, addrB, stride, format, arg7));
 
-    void    OSDImpl::_DrawTop(std::string &text, int posX, int &posY, int offset, Color &fg, Color &bg)
-    {
-       // Screen::Top->Acquire(true);
-
-        const char  *str = text.c_str();
-        int         stride = NTRImpl::IsOSDAvailable ? NTRImpl::OSDParameters.stride : Screen::Top->GetStride();
-        int         off3D = offset < 0 ? offset - 1 : offset + 1;
-
-       // _topModified = true;
-
-        if (NTRImpl::IsOSDAvailable)
+        if (ProcessImpl::_isPaused)
         {
-            if (NTRImpl::OSDParameters.is3DEnabled)
-            {
-                {
-                    for (int x = -2; x < 0; x++)
-                    {
-                        for (int i = 0; i < 10; i++)
-                        {
-                            u8  *framebuf0 = (u8 *)NTR::GetLeftFramebuffer(posX + x, posY + i);
-                            u8  *framebuf1 = (u8 *)NTR::GetRightFramebuffer(posX + x - offset, posY + i);
-                            PrivColor::ToFramebuffer(framebuf0, bg);
-                            PrivColor::ToFramebuffer(framebuf1, bg);
-                        }
-                    }
-
-                }
-                while (*str)
-                {
-                    char c = *str;
-                    int index = c * 10;
-
-                    for (int yy = 0; yy < 10; yy++)
-                    {
-                        u8 charPos = font[index + yy];
-
-                        int x = 0;
-                        u8  *framebuf0 = (u8 *)NTR::GetLeftFramebuffer(posX, posY + yy);
-                        u8  *framebuf1 = (u8 *)NTR::GetRightFramebuffer(posX - offset, posY + yy);
-                        for (int xx = 6; xx >= 0; xx--, x++)
-                        {
-                            if ((charPos >> xx) & 1)
-                            {
-                                PrivColor::ToFramebuffer(framebuf0, fg);
-                                PrivColor::ToFramebuffer(framebuf1, fg);
-                            }
-                            else
-                            {
-                                PrivColor::ToFramebuffer(framebuf0, bg);
-                                PrivColor::ToFramebuffer(framebuf1, bg);
-                            }
-                            framebuf0 += stride;
-                            framebuf1 += stride;
-                        }
-                    }
-                    str++;
-                    posX += 6;
-                }            
-            }
-            // No 3D
-            else
-            {
-                {
-                    for (int x = -2; x < 0; x++)
-                    {
-                        for (int i = 0; i < 10; i++)
-                        {
-                            u8  *framebuf0 = (u8 *)NTR::GetLeftFramebuffer(posX + x, posY + i);
-                            PrivColor::ToFramebuffer(framebuf0, bg);
-                        }
-                    }
-
-                }
-                while (*str)
-                {
-                    char c = *str;
-                    int index = c * 10;
-
-                    for (int yy = 0; yy < 10; yy++)
-                    {
-                        u8 charPos = font[index + yy];
-
-                        int x = 0;
-                        u8  *framebuf0 = (u8 *)NTR::GetLeftFramebuffer(posX, posY + yy);
-                        for (int xx = 6; xx >= 0; xx--, x++)
-                        {
-                            if ((charPos >> xx) & 1)
-                            {
-                                PrivColor::ToFramebuffer(framebuf0, fg);
-                            }
-                            else
-                            {
-                                PrivColor::ToFramebuffer(framebuf0, bg);
-                            }
-                            framebuf0 += stride;
-                        }
-                    }
-                    str++;
-                    posX += 6;
-                }
-            }
-            
-            posY += 15;
-            return;
+            GSPGPU_SaveVramSysArea();
+            svcSignalEvent(ProcessImpl::FrameEvent);
+            LightLock_Lock(&ProcessImpl::FrameLock);
+            GSPGPU_RestoreVramSysArea();
+            LightLock_Unlock(&ProcessImpl::FrameLock);
         }
 
-        // If 3D
-        if (*(float *)(0x1FF81080) > 0.f)
+        if (Callbacks.empty() && Notifications.empty())
+            return (((OSDReturn)OSDHook.returnCode)(isBottom, arg2, addr, addrB, stride, format, arg7));
+
+        u32     size = isBottom ? stride * 320 : stride * 400;
+        Handle  handle = Process::GetHandle();
+
+        svcInvalidateProcessDataCache(handle, addr, size);
+
+        if (!isBottom && addrB && addrB != addr)
+            svcInvalidateProcessDataCache(handle, addrB, size);
+
+        bool mustFlush = false;
+
+        // Draw notifications
+        if (!isBottom)
         {
-            {
-                for (int x = -2; x < 0; x++)
-                {
-                    for (int i = 0; i < 10; i++)
-                    {
-                        u8  *framebuf0 = Screen::Top->GetLeftFramebuffer(posX + x, posY + i);
-                        u8  *framebuf1 = Screen::Top->GetLeftFramebuffer(posX + x, posY + i, true);
-                        u8  *framebuf2 = Screen::Top->GetRightFramebuffer(posX - off3D, posY + i);
-                        u8  *framebuf3 = Screen::Top->GetRightFramebuffer(posX - off3D, posY + i, true);
-                        PrivColor::ToFramebuffer(framebuf0, bg);
-                        PrivColor::ToFramebuffer(framebuf1, bg);
-                        PrivColor::ToFramebuffer(framebuf2, bg);
-                        PrivColor::ToFramebuffer(framebuf3, bg);
-                    }
-                }
-            }
-            while (*str)
-            {
-                char c = *str;
-
-                for (int yy = 0; yy < 10; yy++)
-                {
-                    u8 charPos = font[c * 10 + yy];
-                    u8  *framebuf0 = Screen::Top->GetLeftFramebuffer(posX, posY + yy);
-                    u8  *framebuf1 = Screen::Top->GetLeftFramebuffer(posX, posY + yy, true);
-                    u8  *framebuf2 = Screen::Top->GetRightFramebuffer(posX - offset, posY + yy);
-                    u8  *framebuf3 = Screen::Top->GetRightFramebuffer(posX - offset, posY + yy, true);
-
-                    int x = 0;
-                    for (int xx = 6; xx >= 0; xx--, x++)
-                    {
-                        if ((charPos >> xx) & 1)
-                        {
-                            PrivColor::ToFramebuffer(framebuf0, fg);
-                            PrivColor::ToFramebuffer(framebuf1, fg);
-                            PrivColor::ToFramebuffer(framebuf2, fg);
-                            PrivColor::ToFramebuffer(framebuf3, fg);
-                        }
-                        else
-                        {
-                            PrivColor::ToFramebuffer(framebuf0, bg);
-                            PrivColor::ToFramebuffer(framebuf1, bg);
-                            PrivColor::ToFramebuffer(framebuf2, bg);
-                            PrivColor::ToFramebuffer(framebuf3, bg);
-                        }
-                        framebuf0 += stride;
-                        framebuf1 += stride;
-                        framebuf2 += stride;
-                        framebuf3 += stride;
-                    }
-                }
-                str++;
-                posX += 6;
-            }
+            ScreenImpl::Top->Acquire((u32)addr, (u32)addrB, stride, format & 0b111);
+            Renderer::SetTarget(TOP);
+            mustFlush = OSDImpl::Draw();
         }
-        else
+
+        // Call OSD Callbacks
+        if (Callbacks.size())
         {
-            {
-                for (int x = -2; x < 0; x++)
-                {
-                    for (int i = 0; i < 10; i++)
-                    {
-                        u8  *framebuf0 = Screen::Top->GetLeftFramebuffer(posX + x, posY + i);
-                        u8  *framebuf1 = Screen::Top->GetLeftFramebuffer(posX + x, posY + i, true);
-                        PrivColor::ToFramebuffer(framebuf0, bg);
-                        PrivColor::ToFramebuffer(framebuf1, bg);
-                    }
-                }
+            Screen screen = { 0 };
 
-            }
-            while (*str)
-            {
-                char c = *str;
-                int index = c * 10;
+            screen.IsTop = !isBottom;
+            screen.Is3DEnabled = isBottom ? false : ScreenImpl::Top->Is3DEnabled();
+            screen.LeftFramebuffer = (u32)addr;
+            screen.RightFramebuffer = (u32)addrB;
+            screen.Stride = stride;
+            screen.BytesPerPixel = GetBPP((GSPFormat)format);
+            screen.Format = (GSPFormat)format;
 
-                for (int yy = 0; yy < 10; yy++)
-                {
-                    u8 charPos = font[index + yy];
-
-                    int x = 0;
-                    u8  *framebuf0 = Screen::Top->GetLeftFramebuffer(posX, posY + yy);
-                    u8  *framebuf1 = Screen::Top->GetLeftFramebuffer(posX, posY + yy, true);
-                    for (int xx = 6; xx >= 0; xx--, x++)
-                    {
-                        if ((charPos >> xx) & 1)
-                        {
-                            PrivColor::ToFramebuffer(framebuf0, fg);
-                            PrivColor::ToFramebuffer(framebuf1, fg);
-                        }
-                        else
-                        {
-                            PrivColor::ToFramebuffer(framebuf0, bg);
-                            PrivColor::ToFramebuffer(framebuf1, bg);
-                        }
-                        framebuf0 += stride;
-                        framebuf1 += stride;
-                    }
-                }
-                str++;
-                posX += 6;
-            }
+            for (OSDCallback cb : Callbacks)
+                mustFlush |= cb(screen);
         }
-        posY += 15;
-    }
 
-    void    OSDImpl::_DrawBottom(std::string &text, int posX, int &posY, Color &fg, Color &bg)
-    {
-        Screen::Bottom->Acquire(true);
 
-        const char *str = text.c_str();
-        int     stride = Screen::Bottom->GetStride();
-
-        _bottomModified = true;
-
+        if (mustFlush)
         {
-            for (int x = -2; x < 0; x++)
-            {
-                for (int i = 0; i < 10; i++)
-                {
-                    u8  *framebuf0 = Screen::Bottom->GetLeftFramebuffer(posX + x, posY + i);
-                    u8  *framebuf1 = Screen::Bottom->GetLeftFramebuffer(posX + x, posY + i, true);
-                    PrivColor::ToFramebuffer(framebuf0, bg);
-                    PrivColor::ToFramebuffer(framebuf1, bg);
-                }
-            }
+            svcFlushProcessDataCache(handle, addr, size);
 
+            if (!isBottom && addrB && addrB != addr)
+                svcFlushProcessDataCache(handle, addrB, size);
         }
-        while (*str)
-        {
-            char c = *str;
-            int index = c * 10;
 
-            for (int yy = 0; yy < 10; yy++)
-            {
-                u8 charPos = font[index + yy];
+        return (((OSDReturn)OSDHook.returnCode)(isBottom, arg2, addr, addrB, stride, format, arg7));
 
-                int x = 0;
-                u8  *framebuf0 = Screen::Bottom->GetLeftFramebuffer(posX, posY + yy);
-                u8  *framebuf1 = Screen::Bottom->GetLeftFramebuffer(posX, posY + yy, true);
-                for (int xx = 6; xx >= 0; xx--, x++)
-                {
-                    if ((charPos >> xx) & 1)
-                    {
-                        PrivColor::ToFramebuffer(framebuf0, fg);
-                        PrivColor::ToFramebuffer(framebuf1, fg);
-                    }
-                    else
-                    {
-                        PrivColor::ToFramebuffer(framebuf0, bg);
-                        PrivColor::ToFramebuffer(framebuf1, bg);
-                    }
-                    framebuf0 += stride;
-                    framebuf1 += stride;
-                }
-            }
-            str++;
-            posX += 6;
-        }
-        posY += 15;
-
-        Screen::Bottom->Invalidate();
     }
 
     static const u32    g_OSDPattern[] =
@@ -500,7 +211,7 @@ namespace CTRPluginFramework
         return nullptr;
     }
 
-    u32     SearchOSD(void)
+    static u32     SearchOSD(void)
     {
         u8  *address = memsearch((u8 *)0x100000, g_OSDPattern, Process::GetTextSize(), 0x14);
 
@@ -513,35 +224,6 @@ namespace CTRPluginFramework
         }
 
         return ((u32)address);
-    }
-
-    u32    MainOverlayCallback(u32 isBottom, u32 addr, u32 addrB, u32 stride, u32 format);
-
-    static Hook g_osdHook;
-    using OSDReturn = int(*)(u32, int, void *, void *, int, int, int);
-
-    int OSDHooked(u32 isBottom, int arg2, void *addr, void *addrB, int stride, int format, int arg7)
-    {
-        if (!addr)
-            return (((OSDReturn)g_osdHook.returnCode)(isBottom, arg2, addr, addrB, stride, format, arg7));
-
-        u32     size = isBottom ? stride * 320 : stride * 400;
-        Handle  handle = Process::GetHandle();
-
-        svcInvalidateProcessDataCache(handle, addr, size);
-
-        if (!isBottom && addrB && addrB != addr)
-            svcInvalidateProcessDataCache(handle, addrB, size);
-
-        if (MainOverlayCallback(isBottom, (u32)addr, (u32)addrB, stride, format))
-        {
-            svcFlushProcessDataCache(handle, addr, size);
-
-            if (!isBottom && addrB && addrB != addr)
-                svcInvalidateProcessDataCache(handle, addrB, size);
-        }
-
-        return (((OSDReturn)g_osdHook.returnCode)(isBottom, arg2, addr, addrB, stride, format, arg7));
     }
 
     void    InstallOSD(void)
@@ -587,9 +269,7 @@ namespace CTRPluginFramework
             }
         }
 
-        //MessageBox(Utils::Format("OSD #2 Found: %08X", result))();
-
-        g_osdHook.Initialize(result, (u32)OSDHooked);
-        g_osdHook.Enable();
+        OSDImpl::OSDHook.Initialize(result, (u32)OSDImpl::MainCallback);
+        OSDImpl::OSDHook.Enable();
     }
 }

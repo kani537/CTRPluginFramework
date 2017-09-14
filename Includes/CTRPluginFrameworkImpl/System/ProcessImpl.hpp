@@ -2,6 +2,7 @@
 #define CTRPLUGINFRAMEWORKIMPL_PROCESSIMPL_HPP
 
 #include "ctrulib/svc.h"
+#include "ctrulib/synchronization.h"
 #include <vector>
 
 namespace CTRPluginFramework
@@ -70,7 +71,7 @@ namespace CTRPluginFramework
             static bool     PatchProcess(u32 addr, u8 *patch, u32 length, u8 *original);
             static void     GetHandleTable(KProcessHandleTable &table, std::vector<HandleDescriptor> &handleDescriptors);
 
-            static u32          _processID;
+        static u32          _processID;
             static u64          _titleID;
             static char         _processName[8];
             static u32          _kProcess;
@@ -80,7 +81,9 @@ namespace CTRPluginFramework
             static Handle       _mainThreadHandle;
             static bool         _isPaused;
             static bool         _isAcquiring;
-            //static u32          _finishedStateDMA;
+            static Handle       FrameEvent;
+            static LightLock    FrameLock;
+        //static u32          _finishedStateDMA;
             //static u32          *_kProcessHandleTable;          
     };
 }

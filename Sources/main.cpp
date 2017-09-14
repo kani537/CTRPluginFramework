@@ -21,6 +21,7 @@
 #include <locale>
 #include <cstring>
 #include "csvc.h"
+#include "NTRImpl.hpp"
 
 namespace CTRPluginFramework
 {
@@ -488,6 +489,30 @@ namespace CTRPluginFramework
         }
     }
 
+
+    void    MyCheat(MenuEntry *entry)
+    {
+        // The osd callback
+        auto osd = [](const Screen &screen)
+        {
+            // Only draw if the screen is the top screen;
+            if (!screen.IsTop)
+                return (false); ///< We didn't draw a thing
+
+            screen.Draw("What a nice callback !", 10, 10, Color::LimeGreen, Color::Blank);
+
+            return (true); ///< We did changed the framebuffer
+        };
+
+        // If my cheat was just activated, I enable the callback
+        if (entry->WasJustActivated())
+            OSD::Run(osd);
+
+        // When my cheat is disabled, I remove the callback
+        if (!entry->IsActivated())
+            OSD::Remove(osd);
+    }
+
 #define C_RESET "\x18"
 #define C_RED "\x1B\xFF\x01\x01"
 #define C_BLUE "\x1B\x01\x01\xFF"
@@ -510,6 +535,8 @@ namespace CTRPluginFramework
         PluginMenu      *m = new PluginMenu(C_RED "Zelda" C_GREEN " Ocarina Of Time 3D", 3, 0, 1, about);
         PluginMenu      &menu = *m;
         std::string     note;
+
+        menu += new MenuEntry("OSD Callback", MyCheat);
 
         menu += new MenuEntry("Notify", [](MenuEntry *entry)
         {

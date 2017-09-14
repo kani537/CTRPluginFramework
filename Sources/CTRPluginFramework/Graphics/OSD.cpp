@@ -2,92 +2,92 @@
 #include "CTRPluginFrameworkImpl/Graphics/OSDImpl.hpp"
 #include "CTRPluginFrameworkImpl/Graphics/PrivColor.hpp"
 #include "CTRPluginFrameworkImpl/System/Screen.hpp"
+#include "CTRPluginFrameworkImpl/Graphics/Renderer.hpp"
 #include "font6x10Linux.h"
 #include "CTRPluginFramework/System/Sleep.hpp"
+#include <algorithm>
 
 namespace CTRPluginFramework
 {
+    u8  *Screen::GetFramebuffer(u32 posX, u32 posY, bool useRightFb) const
+    {
+        if (useRightFb && (!IsTop || !Is3DEnabled))
+            return (nullptr);
+
+        u8  *fb = useRightFb ? (u8 *)RightFramebuffer : (u8 *)LeftFramebuffer;
+        u32 rowsize = Stride / BytesPerPixel;
+
+        posX = std::min(posX, (IsTop ? (u32)400 : (u32)320));
+        posY = std::min(posY, (u32)240);
+
+        // Correct posY
+        posY += rowsize - 240;
+        u32 offset = (rowsize - 1 - posY + posX * rowsize) * BytesPerPixel;
+
+        return (fb + offset);
+    }
+
+    u32 Screen::Draw(const std::string &str, u32 posX, u32 posY, const Color& foreground, const Color& background) const
+    {
+        Renderer::DrawString(str.c_str(), posX, (int &)posY, foreground, background);
+        return (posY);
+    }
+
+    void    Screen::DrawRect(u32 posX, u32 posY, u32 width, u32 height, const Color& color, bool filled) const
+    {
+        Renderer::DrawRect(posX, posY, width, height, color, filled);
+    }
+
+    void Screen::DrawPixel(u32 posX, u32 posY, const Color& color) const
+    {
+        Renderer::DrawPixel(posX, posY, color);
+    }
+
+    void Screen::ReadPixel(u32 posX, u32 posY, Color& pixel, bool fromRightFb) const
+    {
+        u8 *fb = GetFramebuffer(posX, posY, fromRightFb);
+
+        pixel = PrivColor::FromFramebuffer(fb);
+    }
 
     int     OSD::Notify(std::string str, Color fg, Color bg)
     {
-        OSDImpl *inst = OSDImpl::GetInstance();
+        OSDImpl::Lock();
 
-        if (inst == nullptr)
-            return (-1);
-
-        //Sleep(Microseconds(1));
-        inst->Lock();
-
-        if (inst->_messages.size() >= 100)
+        if (OSDImpl::Notifications.size() >= 50)
         {
-            inst->Unlock();
+            OSDImpl::Unlock();
             return (-1);
         }           
 
-        inst->_messages.push_back(new OSDImpl::OSDMessage(str, fg, bg));
-        inst->Unlock();
+        OSDImpl::Notifications.push_back(new OSDImpl::OSDMessage(str, fg, bg));
+        OSDImpl::Unlock();
+
         return (0);
     }
 
-    void    OSD::WriteLine(int screen, std::string line, int posX, int posY, Color fg, Color bg)
+    void OSD::Run(OSDCallback cb)
     {
-		OSDImpl *inst = OSDImpl::GetInstance();
-
-        if (inst == nullptr || line.size() == 0 || posX < 0 || posY < 0 || posY > 240)
-            return;
-
-        if (!screen) inst->_DrawBottom(line, posX, posY, fg, bg);
-        else
-        {
-            Screen::Top->Acquire(true);
-            inst->_DrawTop(line, posX, posY, 10, fg, bg);
-            Screen::Top->Invalidate();
-        }
+        OSDImpl::Callbacks.push_back(cb);
     }
 
-	void    OSD::WriteLine(int screen, std::string line, int posX, int posY, int offset, Color fg, Color bg)
-	{
-		OSDImpl *inst = OSDImpl::GetInstance();
-
-		if (inst == nullptr || line.size() == 0 || posX < 0 || posY < 0 || posY > 240)
-			return;
-
-        if (!screen) inst->_DrawBottom(line, posX, posY, fg, bg);
-        else
-        {
-            Screen::Top->Acquire(true);
-            inst->_DrawTop(line, posX, posY, offset, fg, bg);
-            Screen::Top->Invalidate();
-        }
-	}
+    void OSD::Remove(OSDCallback cb)
+    {
+        OSDImpl::Callbacks.erase(std::remove(OSDImpl::Callbacks.begin(), OSDImpl::Callbacks.end(), cb), OSDImpl::Callbacks.end());
+    }
 
     void    OSD::Lock()
     {
-        OSDImpl *inst = OSDImpl::GetInstance();
-
-        if (inst == nullptr)
-            return;
-
-        inst->Lock();
+        OSDImpl::Lock();
     }
 
     bool    OSD::TryLock()
     {
-        OSDImpl *inst = OSDImpl::GetInstance();
-
-        if (inst == nullptr)
-            return (true);
-
-        return (inst->TryLock());
+        return (OSDImpl::TryLock());
     }
 
     void OSD::Unlock()
     {
-        OSDImpl *inst = OSDImpl::GetInstance();
-
-        if (inst == nullptr)
-            return;
-
-        inst->Unlock();
+        OSDImpl::Unlock();
     }
 }

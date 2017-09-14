@@ -214,9 +214,9 @@ namespace CTRPluginFramework
         int posY;
 
         if (Renderer::_target == BOTTOM)
-            Screen::Bottom->GetPosFromAddress((u32)dst, posX, posY);
+            ScreenImpl::Bottom->GetPosFromAddress((u32)dst, posX, posY);
         else
-            Screen::Top->GetPosFromAddress((u32)dst, posX, posY);
+            ScreenImpl::Top->GetPosFromAddress((u32)dst, posX, posY);
 
         if (!_clampArea.Contains(posX, posY))
             return (dst + 4);
@@ -234,9 +234,9 @@ namespace CTRPluginFramework
         int posY;
 
         if (Renderer::_target == BOTTOM)
-            Screen::Bottom->GetPosFromAddress((u32)dst, posX, posY);
+            ScreenImpl::Bottom->GetPosFromAddress((u32)dst, posX, posY);
         else
-            Screen::Top->GetPosFromAddress((u32)dst, posX, posY);
+            ScreenImpl::Top->GetPosFromAddress((u32)dst, posX, posY);
 
         if (!_clampArea.Contains(posX, posY))
             return (dst + 3);
@@ -253,9 +253,9 @@ namespace CTRPluginFramework
         int posY;
 
         if (Renderer::_target == BOTTOM)
-            Screen::Bottom->GetPosFromAddress((u32)dst, posX, posY);
+            ScreenImpl::Bottom->GetPosFromAddress((u32)dst, posX, posY);
         else
-            Screen::Top->GetPosFromAddress((u32)dst, posX, posY);
+            ScreenImpl::Top->GetPosFromAddress((u32)dst, posX, posY);
 
         if (!_clampArea.Contains(posX, posY))
             return (dst + 2);
@@ -281,9 +281,9 @@ namespace CTRPluginFramework
         int posY;
 
         if (Renderer::_target == BOTTOM)
-            Screen::Bottom->GetPosFromAddress((u32)dst, posX, posY);
+            ScreenImpl::Bottom->GetPosFromAddress((u32)dst, posX, posY);
         else
-            Screen::Top->GetPosFromAddress((u32)dst, posX, posY);
+            ScreenImpl::Top->GetPosFromAddress((u32)dst, posX, posY);
 
         if (!_clampArea.Contains(posX, posY))
             return (dst + 2);
@@ -310,9 +310,9 @@ namespace CTRPluginFramework
         int posY;
 
         if (Renderer::_target == BOTTOM)
-            Screen::Bottom->GetPosFromAddress((u32)dst, posX, posY);
+            ScreenImpl::Bottom->GetPosFromAddress((u32)dst, posX, posY);
         else
-            Screen::Top->GetPosFromAddress((u32)dst, posX, posY);
+            ScreenImpl::Top->GetPosFromAddress((u32)dst, posX, posY);
 
         if (!_clampArea.Contains(posX, posY))
             return (dst + 2);

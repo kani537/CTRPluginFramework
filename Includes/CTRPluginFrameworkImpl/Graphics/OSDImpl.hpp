@@ -12,9 +12,13 @@
 #include <list>
 #include <queue>
 #include "../../../Sources/ctrulib/internal.h"
+#include "CTRPluginFramework/Graphics/OSD.hpp"
+#include "Hook.hpp"
 
 namespace CTRPluginFramework
 {
+    using OSDReturn = int(*)(u32, int, void *, void *, int, int, int);
+
     class OSDImpl
     {
         struct  OSDMessage
@@ -26,7 +30,7 @@ namespace CTRPluginFramework
             Color           background;
             Clock           time;
 
-            OSDMessage(std::string str, Color fg, Color bg)
+            OSDMessage(const std::string &str, const Color &fg, const Color &bg)
             {
                 text = str;
                 width = text.size() * 6;
@@ -37,36 +41,23 @@ namespace CTRPluginFramework
             }
         };
 
-		struct	WriteLineInstruction
-		{
-			int				screen;
-			std::string		text;			
-			u16				posX;
-			u16				posY;
-			u16				offset;
-			Color			foreground;
-			Color			background;
-
-			WriteLineInstruction(int scr, std::string &str, u16 x, u16 y, u16 offs, Color &fg, Color &bg) :
-			screen(scr), text(str), posX(x), posY(y), offset(offs), foreground(fg), background(bg)
-			{				
-			}
-		};
-
         using OSDIter = std::list<OSDMessage>::iterator;
 
     public:
-        static OSDImpl      *GetInstance(void);
 
-		void	Start(void);
-		void	Finalize(void);
-        bool    operator()(bool drawOnly = false);
-        void    Update(void);
-        bool    Draw(void);
+        static void    Update(void);
+        static bool    Draw(void);
         
-        void    Lock(void);
-        bool    TryLock(void);
-        void    Unlock(void);
+        static void    Lock(void);
+        static bool    TryLock(void);
+        static void    Unlock(void);
+        
+        static  Hook            OSDHook;
+        static  RecursiveLock   RecLock;
+        static  std::list<OSDMessage*>      Notifications;
+        static  std::vector<OSDCallback>    Callbacks;
+
+        static  int MainCallback(u32 isBottom, int arg2, void *addr, void *addrB, int stride, int format, int arg7);
 
     private:
         friend class PluginMenu;
@@ -74,19 +65,6 @@ namespace CTRPluginFramework
         friend void  Initialize(void);
 
         static  void    _Initialize(void);
-        static  OSDImpl     *_single;
-
-        OSDImpl(void);
-        void            _DrawMessage(OSDMessage& message, int posX, int& posY);
-        void            _DrawTop(std::string &text, int posX, int& posY, int offset, Color& fg, Color& bg);
-        void            _DrawBottom(std::string &text, int posX, int& posY, Color& fg, Color& bg);
-        
-        std::list<OSDMessage*> _messages;
-		bool					_topModified;
-		bool					_bottomModified;
-        RecursiveLock           _lock;
-        
-
     };
 }
 

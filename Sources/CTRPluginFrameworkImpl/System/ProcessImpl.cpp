@@ -18,6 +18,8 @@ namespace CTRPluginFramework
 	KCodeSet    ProcessImpl::_kCodeSet = {0};
 	Handle 		ProcessImpl::_processHandle = 0;
 	Handle 		ProcessImpl::_mainThreadHandle = 0;
+    Handle      ProcessImpl::FrameEvent = 0;
+    LightLock   ProcessImpl::FrameLock;
 	bool 		ProcessImpl::_isPaused = false;
 	bool 		ProcessImpl::_isAcquiring = false;
 
@@ -66,6 +68,9 @@ namespace CTRPluginFramework
     void    ProcessImpl::UpdateThreadHandle(void)
     {
         _mainThreadHandle = threadGetCurrent()->handle;
+        LightLock_Init(&FrameLock);
+        svcCreateEvent(&FrameEvent, RESET_ONESHOT);
+        svcSetThreadPriority(_mainThreadHandle, 0x3F);        
     }
 
 	bool 	ProcessImpl::IsPaused(void)
@@ -89,21 +94,32 @@ namespace CTRPluginFramework
 	{
         _isPaused = true;
 
+        // Lock at game's new frame
+        LightLock_Lock(&FrameLock);
+
+        // Wait for the frame event
+        svcWaitSynchronization(FrameEvent, U64_MAX);
+        svcClearEvent(FrameEvent);
+
+        // Wake up gsp event thread
         svcSignalEvent(gspEvent);
 
-        Sleep(Milliseconds(1.f));
+        
+
+
+
 		// Raising priority of Event Thread
-		while (R_FAILED(svcSetThreadPriority(gspThreadEventHandle, 0x19)));
+		//while (R_FAILED(svcSetThreadPriority(gspThreadEventHandle, 0x19)));
 		// Raising priority of this thread        
-		while (R_FAILED(svcSetThreadPriority(_mainThreadHandle, 0x18)));        
+		//while (R_FAILED(svcSetThreadPriority(_mainThreadHandle, 0x18)));        
 		
 		// Waking up Init thread
-		svcSignalEvent(g_keepEvent);
+		//svcSignalEvent(g_keepEvent);
 
-		_isAcquiring = true;
-		Screen::Top->Acquire(false);
-        Screen::Bottom->Acquire(false);
-		_isAcquiring = false;
+		//_isAcquiring = true;
+		ScreenImpl::Top->Acquire(false);
+        ScreenImpl::Bottom->Acquire(false);
+		//_isAcquiring = false;
 
         if (!useFading)
             return;
@@ -119,11 +135,11 @@ namespace CTRPluginFramework
         	delta = t.Restart();        	
         	fade += pitch * delta.AsMilliseconds();
 
-        	Screen::Top->Fade(fade);
-        	Screen::Bottom->Fade(fade);
+        	ScreenImpl::Top->Fade(fade);
+        	ScreenImpl::Bottom->Fade(fade);
 
-        	Screen::Top->SwapBuffer(true, true);
-        	Screen::Bottom->SwapBuffer(true, true);
+        	ScreenImpl::Top->SwapBuffer(true, true);
+        	ScreenImpl::Bottom->SwapBuffer(true, true);
         	gspWaitForVBlank(); 
         	if (System::IsNew3DS())
         		while (t.GetElapsedTime() < limit);       	
@@ -131,32 +147,33 @@ namespace CTRPluginFramework
 	}
 
 	void 	ProcessImpl::Play(bool useFading)
-	{	
-		Time limit = Seconds(1) / 10.f;
-		Time delta;
-        float pitch = 0.10f;
-        Clock t = Clock();
-
+	{
 		if (useFading)
 		{
+            Time limit = Seconds(1) / 10.f;
+            Time delta;
+            float pitch = 0.10f;
+            Clock t = Clock();
 	        float fade = -0.1f;
 	        while (fade >= -0.9f)
 	        {
 	        	delta = t.Restart();
-	        	Screen::Top->Fade(fade);
-	        	Screen::Bottom->Fade(fade);
+	        	ScreenImpl::Top->Fade(fade);
+	        	ScreenImpl::Bottom->Fade(fade);
 	        	fade -= 0.001f * delta.AsMilliseconds();
 	        	//Sleep(Milliseconds(10));
-	        	Screen::Top->SwapBuffer(true, true);
-	        	Screen::Bottom->SwapBuffer(true, true);
+	        	ScreenImpl::Top->SwapBuffer(true, true);
+	        	ScreenImpl::Bottom->SwapBuffer(true, true);
 	        	gspWaitForVBlank();
 	        	if (System::IsNew3DS())
 	        	  while (t.GetElapsedTime() < limit); //<- On New3DS frequencies, the alpha would be too dense
 	        }			
 		}
         _isPaused = false;
-		while(R_FAILED(svcSetThreadPriority(gspThreadEventHandle, 0x3F)));
-		while(R_FAILED(svcSetThreadPriority(_mainThreadHandle, 0x3F)));
+        if (LightLock_IsLocked(&ProcessImpl::FrameLock))
+            LightLock_Unlock(&ProcessImpl::FrameLock);
+		//while(R_FAILED(svcSetThreadPriority(gspThreadEventHandle, 0x3F)));
+		//while(R_FAILED(svcSetThreadPriority(_mainThreadHandle, 0x3F)));
 	}
 
     bool     ProcessImpl::PatchProcess(u32 addr, u8 *patch, u32 length, u8 *original)

@@ -28,6 +28,13 @@ void LightLock_Init(LightLock* lock)
 	while (__strex(lock, 1));
 }
 
+bool LightLock_IsLocked(LightLock *lock)
+{
+    s32 val = __ldrex(lock);
+    __clrex();
+    return (val < 0);
+}
+
 void LightLock_Lock(LightLock* lock)
 {
 	s32 val;

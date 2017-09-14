@@ -3,13 +3,10 @@
 
 namespace CTRPluginFramework
 {
-    struct OSDParams;
     class NTRImpl
     {
     public:
-        static void     InitNTR(void);
         
-        static OSDParams    OSDParameters;
         static bool         IsOSDAvailable;
         static bool         MessColors;
     };

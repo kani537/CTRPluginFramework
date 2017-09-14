@@ -1,80 +1,133 @@
 #include "types.h"
 #include "CTRPluginFrameworkImpl/Graphics/Renderer.hpp"
+#include "CTRPluginFrameworkImpl/Graphics/PrivColor.hpp"
+#include "CTRPluginFrameworkImpl/System/Screen.hpp"
 #include "font6x10Linux.h"
 
 namespace CTRPluginFramework
 {
+    void Renderer::DrawPixel(int posX, int posY, const Color& color)
+    {
+        PrivColor::ToFramebuffer(_screen->GetLeftFramebuffer(posX, posY), color);
+    }
+
     // Draw Character without background
     void     Renderer::DrawCharacter(int c, int posX, int posY, Color fg)
     {
+        u32 stride = _screen->GetStride();
+        u32 bpp = _screen->GetBytesPerPixel();
+        int posXX = posX - 10;
+        int posYY = posY;
+
         for (int yy = 0; yy < 10; yy++)
         {
-            u8 charPos = font[c * 10 + yy];
-            int x = 0;
-            for (int xx = 6; xx >= 0; xx--, x++)
+            u8  charPos = font[c * 10 + yy];
+            u8  *fb = _screen->GetLeftFramebuffer(posX, posY++);
+
+            for (int xx = 6; xx >= 0; xx--)
             {
                 if ((charPos >> xx) & 1)
+                    PrivColor::ToFramebuffer(fb, fg);
+                fb += stride;
+            }
+        }
+
+        if (_screen->Is3DEnabled())
+        {
+            for (int yy = 0; yy < 10; yy++)
+            {
+                u8  charPos = font[c * 10 + yy];
+                u8  *fb = _screen->GetRightFramebuffer(posXX, posYY++);
+
+                for (int xx = 6; xx >= 0; xx--)
                 {
-                    _DrawPixel(posX + x, posY + yy, fg);
+                    if ((charPos >> xx) & 1)
+                        PrivColor::ToFramebuffer(fb, fg);
+                    fb += stride;
                 }
             }
-        }        
+        }
     }
+
     // Draw Character with background
     void     Renderer::DrawCharacter(int c, int posX, int posY, Color fg, Color bg)
     {
+        u32 stride = _screen->GetStride();
+        u32 bpp = _screen->GetBytesPerPixel();
+        int posXX = posX - 10;
+        int posYY = posY;
+
         for (int yy = 0; yy < 10; yy++)
         {
-            u8 charPos = font[c * 10 + yy];
-            int x = 0;
-            for (int xx = 6; xx >= 0; xx--, x++)
+            u8  charPos = font[c * 10 + yy];
+            u8  *fb = _screen->GetLeftFramebuffer(posX, posY++);
+
+            for (int xx = 6; xx >= 0; xx--)
             {
-                if ((charPos >> xx) & 1)
-                {
-                    _DrawPixel(posX + x, posY + yy, fg);
-                }
-                else
-                {
-                    _DrawPixel(posX + x, posY + yy, bg);
-                }
+                PrivColor::ToFramebuffer(fb, (charPos >> xx) & 1 ? fg : bg);
+                fb += stride;
             }
-        } 
-    }
-    // Draw Character with offset
-    void     Renderer::DrawCharacter(int c, int offset, int posX, int posY, Color fg)
-    {      
-        for (int yy = 0; yy < 10; yy++)
+        }
+
+        if (_screen->Is3DEnabled())
         {
-            u8 charPos = font[c * 10 + yy];
-            int x = 0;
-            for (int xx = 6 - offset; xx >= 0; xx--, x++)
+            for (int yy = 0; yy < 10; yy++)
             {
-                if ((charPos >> xx) & 1)
+                u8  charPos = font[c * 10 + yy];
+                u8  *fb = _screen->GetRightFramebuffer(posXX, posYY++);
+
+                for (int xx = 6; xx >= 0; xx--)
                 {
-                    _DrawPixel(posX + x, posY + yy, fg);
+                    PrivColor::ToFramebuffer(fb, (charPos >> xx) & 1 ? fg : bg);
+                    fb += stride;
                 }
             }
-        }  
+        }
     }
 
-    int    Renderer::DrawString(char *str, int posX, int &posY, Color fg)
+    int    Renderer::DrawString(const char *str, int posX, int &posY, Color fg)
     {
-        // Correct posY
-       // int y = posY + (_rowSize[_target] - 240);
+        if (_screen->Is3DEnabled())
+            posX -= 10;
 
         while (*str)
         {
             DrawCharacter(*str++, posX++, posY, fg);
             posX += 6;
         }
-            posY += 10;
+        posY += 10;
         return (posY);
     }
 
-    int    Renderer::DrawString(char *str, int posX, int &posY, Color fg, Color bg)
+    int    Renderer::DrawString(const char *str, int posX, int &posY, Color fg, Color bg)
     {
-        // Correct posY
-        //int y = posY + (_rowSize[_target] - 240);
+        u32 bpp = _screen->GetBytesPerPixel();
+
+        if (_screen->Is3DEnabled())
+            posX -= 10;
+
+        for (int i = 0; i < 2; i++)
+        {
+            u8 *fb = _screen->GetLeftFramebuffer(posX + i, posY);
+            for (int y = 0; y < 10; y++)
+            {
+                PrivColor::ToFramebuffer(fb, bg);
+                fb -= bpp;
+            }
+        }
+
+        if (_screen->Is3DEnabled())
+        {
+            for (int i = 0; i < 2; i++)
+            {
+                u8 *fb = _screen->GetRightFramebuffer(posX++, posY);
+                for (int y = 0; y < 10; y++)
+                {
+                    PrivColor::ToFramebuffer(fb, bg);
+                    fb -= bpp;
+                }
+            }
+        }
 
         while (*str)
         {
@@ -83,60 +136,5 @@ namespace CTRPluginFramework
         }
         posY += 10;
         return (posY);
-    }
-
-    int    Renderer::DrawString(char *str, int offset, int posX, int &posY, Color fg)
-    {
-        // Correct posY
-        //int y = posY + (_rowSize[_target] - 240);
-        str += (offset / 6);
-        offset %= 6;
-        while (*str)
-        {
-            DrawCharacter(*str++, offset, posX, posY, fg);
-            if (offset)
-            {                          
-                posX -= offset;      
-                offset = 0;
-            }
-            posX += 6;
-        }
-        posY += 10;
-        return (posY);
-    }
-
-    void    Renderer::DrawCheckBoxString(char *str, int posX, int &posY, bool isChecked, Color fg, Color color)
-    {
-        // Correct posY
-        //int y = posY + (_rowSize[_target] - 240);
-
-        u8 unchecked[] =
-        {
-            0xFF, 0x81, 0x81, 0x81, 0x81, 0x81, 0x81, 0xFF
-        };
-
-        u8 checked[] =
-        {
-            0x0, 0x0, 0x2, 0x46, 0x6C, 0x38, 0x10, 0x0
-        };
-
-        for (int yy = 0; yy < 8; yy++)
-        {
-            u8 u = unchecked[yy];
-            u8 c = checked[yy];
-            int x = 0;
-            for (int xx = 7; xx >= 0; xx--, x++)
-            {
-                if ((u >> xx) & 1)
-                {
-                    _DrawPixel(posX + x, posY + yy, fg);
-                }
-                if (isChecked && (c >> xx) & 1)
-                {
-                    _DrawPixel(posX + x, posY + yy, color);
-                }
-            }
-        }
-        DrawString(str, posX + 10, posY, fg);
     }
 }

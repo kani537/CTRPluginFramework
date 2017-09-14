@@ -139,8 +139,8 @@ namespace CTRPluginFramework
             {
                 IntLine &line = _lines[i];
                 // Draw border
-                Renderer::_DrawPixel(line.start.x, line.start.y, bordColor);
-                Renderer::_DrawPixel(line.end.x, line.end.y, bordColor);
+                Renderer::DrawPixel(line.start.x, line.start.y, bordColor);
+                Renderer::DrawPixel(line.end.x, line.end.y, bordColor);
 
                 // Fill line
                 IntVector left(line.start);

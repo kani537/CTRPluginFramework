@@ -20,12 +20,14 @@ namespace CTRPluginFramework
 void abort(void)
 {
     CTRPluginFramework::Color c(255, 69, 0); //red(255, 0, 0);
-    CTRPluginFramework::Screen::Top->Flash(c);
-    CTRPluginFramework::Screen::Bottom->Flash(c);
+    CTRPluginFramework::ScreenImpl::Top->Flash(c);
+    CTRPluginFramework::ScreenImpl::Bottom->Flash(c);
 
     CTRPluginFramework::ThreadExit();
 }
 
+extern "C" Thread  g_mainThread;
+Thread      g_mainThread = nullptr;
 namespace CTRPluginFramework
 {
     // Threads stacks
@@ -37,7 +39,7 @@ namespace CTRPluginFramework
     Handle      g_keepThreadHandle;
     Handle      g_keepEvent = 0;
     bool        g_keepRunning = true;
-    Thread      g_mainThread = nullptr;
+
 
     void    ThreadInit(void *arg);
 
@@ -78,7 +80,7 @@ namespace CTRPluginFramework
         ProcessImpl::Initialize();
 
         // Init Screen
-        Screen::Initialize();
+        ScreenImpl::Initialize();
 
         // Patch process before it starts
         PatchProcess();
@@ -103,10 +105,6 @@ namespace CTRPluginFramework
 
         // Init heap and newlib's syscalls
         initLib();
-        //initSystem();
-
-
-        Time osdsleep = Milliseconds(5);
 
         // If heap error, exit
         if (g_heapError)
@@ -123,47 +121,12 @@ namespace CTRPluginFramework
         {
             svcWaitSynchronization(g_keepEvent, U64_MAX); 
             svcClearEvent(g_keepEvent);
-            //Sleep(osdsleep);
 
             while (ProcessImpl::IsPaused())
             {
                 if (ProcessImpl::IsAcquiring())
                     Sleep(Milliseconds(100));
             }
-
-         /*   u32         framebufferUpdated;
-            OSDParams   params;
-
-            // OSD Top Screen
-            Screen::Top->Acquire(params);
-            framebufferUpdated = MainOverlayCallback(params.isBottom, params.leftFramebuffer, params.rightFramebuffer, params.stride, params.format);
-            
-            // Flush data
-            if (!framebufferUpdated)
-            {
-                u32 size = params.stride * params.screenWidth;
-
-                // Invalidate buffer
-                GSPGPU_FlushDataCache((void *)params.leftFramebuffer, size);
-                //svcFlushProcessDataCache(Process::GetHandle(), (void *)params.leftFramebuffer, size);
-
-                if (params.is3DEnabled)
-                    GSPGPU_FlushDataCache((void *)params.rightFramebuffer, size);
-                    //svcFlushProcessDataCache(Process::GetHandle(), (void *)params.rightFramebuffer, size);
-            }
-
-            // OSD Bottom Screen
-            Screen::Bottom->Acquire(params);
-            framebufferUpdated = MainOverlayCallback(params.isBottom, params.leftFramebuffer, params.rightFramebuffer, params.stride, params.format);
-
-            // Flush data
-            if (!framebufferUpdated)
-            {
-                u32 size = params.stride * params.screenWidth;
-
-                // Invalidate buffer
-                svcFlushProcessDataCache(Process::GetHandle(), (void *)params.leftFramebuffer, size);
-            }*/
         }
 
         threadJoin(g_mainThread, U64_MAX);
@@ -185,20 +148,13 @@ namespace CTRPluginFramework
         hidInit();
 
         // Init classes
-        Renderer::Initialize();
         Font::Initialize();
 
-        // could probably get swapped for lighter implement of gspevent init
-        gfxInit(Screen::Top->GetFormat(), Screen::Bottom->GetFormat(), false);
-
-        // Init Process info
-        ProcessImpl::UpdateThreadHandle();
+        // Init event thread
+        gspInit();
 
         //Init OSD
-        OSDImpl::_Initialize();  
-
-        // Init NTR
-        NTRImpl::InitNTR();
+        OSDImpl::_Initialize();
 
         // Init sdmcArchive
         {
@@ -218,7 +174,10 @@ namespace CTRPluginFramework
         Process::ProtectRegion(0x1F000000, 3);
 
         // Protect HID Shared Memory in case we want to push inputs
-        Process::ProtectMemory((u32)hidSharedMem, 0x1000);      
+        Process::ProtectMemory((u32)hidSharedMem, 0x1000);
+
+        // Init Process info
+        ProcessImpl::UpdateThreadHandle();
     }
     void    InitializeRandomEngine(void);
     // Main thread's start
@@ -227,7 +186,7 @@ namespace CTRPluginFramework
         CTRPluginFramework::Initialize();
 
         // Reduce Priority
-        ProcessImpl::Play(false);
+        //ProcessImpl::Play(false);
 
         // Initialize Globals settings
         Preferences::Initialize();    
@@ -251,7 +210,7 @@ namespace CTRPluginFramework
             ProcessImpl::Play(false);
 
             // Exit services
-            gfxExit();
+            gspExit();
 
             // Exit loop in keep thread
             g_keepRunning = false;

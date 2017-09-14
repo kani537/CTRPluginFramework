@@ -198,6 +198,7 @@
     <ClInclude Include="Includes\CTRPluginFramework\System\Touch.hpp" />
     <ClInclude Include="Includes\CTRPluginFramework\Utils.hpp" />
     <ClInclude Include="Includes\CTRPluginFramework\Utils\LineReader.hpp" />
+    <ClInclude Include="Includes\CTRPluginFramework\Utils\StringExtensions.hpp" />
     <ClInclude Include="Includes\CTRPluginFramework\Utils\Utils.hpp" />
     <ClInclude Include="Includes\ctrulib\allocator\linear.h" />
     <ClInclude Include="Includes\ctrulib\allocator\mappable.h" />
@@ -380,6 +381,7 @@
     <ClCompile Include="Sources\CTRPluginFramework\System\Time.cpp" />
     <ClCompile Include="Sources\CTRPluginFramework\System\Touch.cpp" />
     <ClCompile Include="Sources\CTRPluginFramework\Utils\LineReader.cpp" />
+    <ClCompile Include="Sources\CTRPluginFramework\Utils\StringExtensions.cpp" />
     <ClCompile Include="Sources\CTRPluginFramework\Utils\Utils.cpp" />
     <ClCompile Include="Sources\ctrulib\allocator\linear.cpp" />
     <ClCompile Include="Sources\ctrulib\allocator\mappable.cpp" />
@@ -389,7 +391,6 @@
     <ClCompile Include="Sources\ctrulib\cfgu.c" />
     <ClCompile Include="Sources\ctrulib\env.c" />
     <ClCompile Include="Sources\ctrulib\font.c" />
-    <ClCompile Include="Sources\ctrulib\gfx.c" />
     <ClCompile Include="Sources\ctrulib\gpu\gpu-old.c" />
     <ClCompile Include="Sources\ctrulib\gpu\gpu.c" />
     <ClCompile Include="Sources\ctrulib\gpu\gx.c" />

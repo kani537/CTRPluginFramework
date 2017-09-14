@@ -285,7 +285,6 @@ namespace CTRPluginFramework
             // Update current keys
             _Update(clock.Restart().AsSeconds());
 
-            Renderer::StartFrame();
             // Render Top Screen
             if (DisplayTopScreen)
                 _RenderTop();
