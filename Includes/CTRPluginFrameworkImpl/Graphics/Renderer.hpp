@@ -66,9 +66,9 @@ namespace CTRPluginFramework
         // Linux Font
         //#############################################################################################
         // Draw Character without background
-        static void     DrawCharacter(int c, int posX, int posY, Color fg);
+        static void     DrawCharacter(int c, int posX, int posY, const Color &fg);
         // Draw Character with background
-        static void     DrawCharacter(int c, int posX, int posY, Color fg, Color bg);
+        static void     DrawCharacter(int c, int posX, int posY, const Color &fg, const Color &bg);
 
         static int      DrawString(const char *str, int posX, int &posY, Color fg);
         static int      DrawString(const char *str, int posX, int &posY, Color fg, Color bg);
@@ -80,12 +80,12 @@ namespace CTRPluginFramework
         static float    GetTextSize(const char *text);
         static int      GetLineCount(const char *text, float maxWidth);
         static void     GetTextInfos(const char* text, int& lineCount, float& lineMaxWidth, float maxWidth);
+        static  u32     LinuxFontSize(const char *str);
 
         static void     DrawSysCheckBox(const char *str, int posX, int &posY, int xLimits, Color color, bool isChecked = false, float offset = 0);
         static void     DrawSysFolder(const char *str, int posX, int &posY, int xLimits, Color color, float offset = 0);
         static int      DrawGlyph(Glyph* glyph, int posX, int posY, Color color);
         static int      DrawGlyph(Glyph* glyph, int posX, int posY, float& offset, Color color);
-
         // Misc
         //#############################################################################################
     private:

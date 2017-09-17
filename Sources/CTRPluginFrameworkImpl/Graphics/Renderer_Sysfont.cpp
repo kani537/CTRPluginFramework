@@ -218,25 +218,27 @@ namespace CTRPluginFramework
     int Renderer::DrawGlyph(Glyph *glyph, int posX, int posY, Color color)
     {
         posX += glyph->xOffset;
-        int  x = posX;
-        int  y = posY;
+
+        u32  stride = _screen->_stride;
+        u32  bpp = _screen->_bytesPerPixel;
         u8   *data = glyph->glyph;
+        u8   *left = static_cast<u8 *>(_screen->GetLeftFramebuffer(posX, posY));
+        u8   *fb = left;
 
         for (int i = 0; i < 208; i++)
         {
             if (i != 0 && i % 13 == 0)
             {
-                y++;
-                x = posX;
+                left -= bpp;
+                fb = left;
             }
             color.a = data[i];
 
-            u8 *left = static_cast<u8 *>(_screen->GetLeftFramebuffer(x, y));
-            Color l = PrivColor::FromFramebuffer(left);
-            Color c = l.Blend(color, Color::BlendMode::Alpha);
+            Color &&l = PrivColor::FromFramebuffer(fb);
+            Color &&c = l.Blend(color, Color::BlendMode::Alpha);
 
-            PrivColor::ToFramebuffer(left, c);
-            x++;
+            PrivColor::ToFramebuffer(fb, c);
+            fb += stride;
         }
 
         return (posX + glyph->xAdvance);
@@ -246,27 +248,27 @@ namespace CTRPluginFramework
     {
         posX += glyph->xOffset;
 
-        int  x = posX;
-        int  y = posY;
+        u32  stride = _screen->_stride;
+        u32  bpp = _screen->_bytesPerPixel;
         u8   *data = glyph->glyph;
+        u8   *left = static_cast<u8 *>(_screen->GetLeftFramebuffer(posX, posY));
+        u8   *fb = left;
 
         for (int i = static_cast<int>(offset); i < 208; i++)
         {
             if (i != 0 && i % 13 == 0)
             {
-                y++;
-                x = posX;
                 if (offset)
                     i += offset;
+                left -= bpp;
+                fb = left;
             }
             color.a = data[i];
+            Color &&l = PrivColor::FromFramebuffer(fb);
+            Color &&c = l.Blend(color, Color::BlendMode::Alpha);
 
-            u8 *left = static_cast<u8 *>(_screen->GetLeftFramebuffer(x, y));
-            Color l = PrivColor::FromFramebuffer(left);
-            Color c = l.Blend(color, Color::BlendMode::Alpha);
-
-            PrivColor::ToFramebuffer(left, c);
-            x++;
+            PrivColor::ToFramebuffer(fb, c);
+            fb += stride;
         }
         if (offset > 0.f)
         {

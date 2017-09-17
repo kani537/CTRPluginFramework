@@ -13,9 +13,12 @@
 #include "CTRPluginFramework/System/Process.hpp"
 #include "CTRPluginFrameworkImpl/System/ProcessImpl.hpp"
 #include "CTRPluginFrameworkImpl/Graphics/Renderer.hpp"
+#include "CTRPluginFrameworkImpl/Graphics/Icon.hpp"
+#include "CTRPluginFramework/System/Touch.hpp"
 
 namespace CTRPluginFramework
 {
+    bool    OSDImpl::DrawSaveIcon = false;
     Hook    OSDImpl::OSDHook;
     RecursiveLock OSDImpl::RecLock;
     std::list<OSDImpl::OSDMessage*> OSDImpl::Notifications;
@@ -117,7 +120,9 @@ namespace CTRPluginFramework
             LightLock_Unlock(&ProcessImpl::FrameLock);
         }
 
-        if (Callbacks.empty() && Notifications.empty())
+        bool drawTouch = Touch::IsDown() && isBottom;
+
+        if (!drawTouch && !DrawSaveIcon && Callbacks.empty() && Notifications.empty())
             return (((OSDReturn)OSDHook.returnCode)(isBottom, arg2, addr, addrB, stride, format, arg7));
 
         u32     size = isBottom ? stride * 320 : stride * 400;
@@ -130,12 +135,31 @@ namespace CTRPluginFramework
 
         bool mustFlush = false;
 
-        // Draw notifications
+        // Draw notifications & icon
         if (!isBottom)
         {
             ScreenImpl::Top->Acquire((u32)addr, (u32)addrB, stride, format & 0b111);
             Renderer::SetTarget(TOP);
-            mustFlush = OSDImpl::Draw();
+            mustFlush = OSDImpl::Draw() | DrawSaveIcon;
+
+            if (DrawSaveIcon)
+                Icon::DrawSave(10, 10);
+        }
+        // Draw touch cursor
+        else
+        {
+            if (drawTouch)
+            {
+                ScreenImpl::Bottom->Acquire((u32)addr, (u32)addrB, stride, format & 0b111);
+                Renderer::SetTarget(BOTTOM);
+                IntVector touchPos(Touch::GetPosition());
+
+                int posX = touchPos.x - 2;
+                int posY = touchPos.y - 1;
+                //Renderer::DrawSysString("\uE058", posX, posY, 320, Color::Brown);
+                Icon::DrawHandCursor(posX, posY);
+                mustFlush = true;
+            }
         }
 
         // Call OSD Callbacks

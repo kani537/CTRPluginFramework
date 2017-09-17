@@ -204,7 +204,7 @@ namespace CTRPluginFramework
 
     void    Preferences::WriteSettings(void)
     {
-        SavingInProgress = true;
+        OSDImpl::DrawSaveIcon = true;
 
         File    settings;
         int     mode = File::READ | File::WRITE | File::CREATE | File::TRUNCATE | File::SYNC;
@@ -233,7 +233,7 @@ namespace CTRPluginFramework
         }
 
     error:
-        SavingInProgress = false;
+        OSDImpl::DrawSaveIcon = false;
         return;
     }
 

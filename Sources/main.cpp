@@ -538,6 +538,20 @@ namespace CTRPluginFramework
 
         menu += new MenuEntry("OSD Callback", MyCheat);
 
+        menu += new MenuEntry("L for keyboard", [](MenuEntry *entry)
+        {
+            if (Controller::IsKeyPressed(L))
+            {
+                Keyboard kb;
+
+                u32 i;
+
+                kb.Open(i);
+            }
+        });
+
+        menu += new MenuEntry("Clean", nullptr, [](MenuEntry *entry) {ScreenImpl::Clean(); });
+
         menu += new MenuEntry("Notify", [](MenuEntry *entry)
         {
            if (Controller::IsKeyPressed(X))

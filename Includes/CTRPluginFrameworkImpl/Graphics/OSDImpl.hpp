@@ -52,6 +52,7 @@ namespace CTRPluginFramework
         static bool    TryLock(void);
         static void    Unlock(void);
         
+        static  bool            DrawSaveIcon;
         static  Hook            OSDHook;
         static  RecursiveLock   RecLock;
         static  std::list<OSDMessage*>      Notifications;

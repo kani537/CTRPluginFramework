@@ -16,35 +16,35 @@ namespace CTRPluginFramework
     //
     static const int    _cursorPositions[] =
     {
-        POS(115, 82), POS(122, 82),     POS(136, 82), POS(143, 82),    POS(157, 82), POS(164, 82),  POS(178, 82), POS(185, 82),
-        POS(206, 82), POS(213, 82),     POS(227, 82), POS(234, 82),    POS(248, 82), POS(255, 82),  POS(269, 82), POS(276, 82),
+        POS(115, 82), POS(121, 82),     POS(136, 82), POS(142, 82),    POS(157, 82), POS(163, 82),  POS(178, 82), POS(184, 82),
+        POS(206, 82), POS(212, 82),     POS(227, 82), POS(233, 82),    POS(248, 82), POS(254, 82),  POS(269, 82), POS(275, 82),
 
-        POS(115, 92), POS(122, 92),     POS(136, 92), POS(143, 92),    POS(157, 92), POS(164, 92),  POS(178, 92), POS(185, 92),
-        POS(206, 92), POS(213, 92),     POS(227, 92), POS(234, 92),    POS(248, 92), POS(255, 92),  POS(269, 92), POS(276, 92),
+        POS(115, 92), POS(121, 92),     POS(136, 92), POS(142, 92),    POS(157, 92), POS(163, 92),  POS(178, 92), POS(184, 92),
+        POS(206, 92), POS(212, 92),     POS(227, 92), POS(233, 92),    POS(248, 92), POS(254, 92),  POS(269, 92), POS(275, 92),
 
-        POS(115, 102), POS(122, 102),     POS(136, 102), POS(143, 102),    POS(157, 102), POS(164, 102),  POS(178, 102), POS(185, 102),
-        POS(206, 102), POS(213, 102),     POS(227, 102), POS(234, 102),    POS(248, 102), POS(255, 102),  POS(269, 102), POS(276, 102),
+        POS(115, 102), POS(121, 102),     POS(136, 102), POS(142, 102),    POS(157, 102), POS(163, 102),  POS(178, 102), POS(184, 102),
+        POS(206, 102), POS(212, 102),     POS(227, 102), POS(233, 102),    POS(248, 102), POS(254, 102),  POS(269, 102), POS(275, 102),
 
-        POS(115, 112), POS(122, 112),     POS(136, 112), POS(143, 112),    POS(157, 112), POS(164, 112),  POS(178, 112), POS(185, 112),
-        POS(206, 112), POS(213, 112),     POS(227, 112), POS(234, 112),    POS(248, 112), POS(255, 112),  POS(269, 112), POS(276, 112),
+        POS(115, 112), POS(121, 112),     POS(136, 112), POS(142, 112),    POS(157, 112), POS(163, 112),  POS(178, 112), POS(184, 112),
+        POS(206, 112), POS(212, 112),     POS(227, 112), POS(233, 112),    POS(248, 112), POS(254, 112),  POS(269, 112), POS(275, 112),
 
-        POS(115, 122), POS(122, 122),     POS(136, 122), POS(143, 122),    POS(157, 122), POS(164, 122),  POS(178, 122), POS(185, 122),
-        POS(206, 122), POS(213, 122),     POS(227, 122), POS(234, 122),    POS(248, 122), POS(255, 122),  POS(269, 122), POS(276, 122),
+        POS(115, 122), POS(121, 122),     POS(136, 122), POS(142, 122),    POS(157, 122), POS(163, 122),  POS(178, 122), POS(184, 122),
+        POS(206, 122), POS(212, 122),     POS(227, 122), POS(233, 122),    POS(248, 122), POS(254, 122),  POS(269, 122), POS(275, 122),
 
-        POS(115, 132), POS(122, 132),     POS(136, 132), POS(143, 132),    POS(157, 132), POS(164, 132),  POS(178, 132), POS(185, 132),
-        POS(206, 132), POS(213, 132),     POS(227, 132), POS(234, 132),    POS(248, 132), POS(255, 132),  POS(269, 132), POS(276, 132),
+        POS(115, 132), POS(121, 132),     POS(136, 132), POS(142, 132),    POS(157, 132), POS(163, 132),  POS(178, 132), POS(184, 132),
+        POS(206, 132), POS(212, 132),     POS(227, 132), POS(233, 132),    POS(248, 132), POS(254, 132),  POS(269, 132), POS(275, 132),
 
-        POS(115, 142), POS(122, 142),     POS(136, 142), POS(143, 142),    POS(157, 142), POS(164, 142),  POS(178, 142), POS(185, 142),
-        POS(206, 142), POS(213, 142),     POS(227, 142), POS(234, 142),    POS(248, 142), POS(255, 142),  POS(269, 142), POS(276, 142),
+        POS(115, 142), POS(121, 142),     POS(136, 142), POS(142, 142),    POS(157, 142), POS(163, 142),  POS(178, 142), POS(184, 142),
+        POS(206, 142), POS(212, 142),     POS(227, 142), POS(233, 142),    POS(248, 142), POS(254, 142),  POS(269, 142), POS(275, 142),
 
-        POS(115, 152), POS(122, 152),     POS(136, 152), POS(143, 152),    POS(157, 152), POS(164, 152),  POS(178, 152), POS(185, 152),
-        POS(206, 152), POS(213, 152),     POS(227, 152), POS(234, 152),    POS(248, 152), POS(255, 152),  POS(269, 152), POS(276, 152),
+        POS(115, 152), POS(121, 152),     POS(136, 152), POS(142, 152),    POS(157, 152), POS(163, 152),  POS(178, 152), POS(184, 152),
+        POS(206, 152), POS(212, 152),     POS(227, 152), POS(233, 152),    POS(248, 152), POS(254, 152),  POS(269, 152), POS(275, 152),
 
-        POS(115, 162), POS(122, 162),     POS(136, 162), POS(143, 162),    POS(157, 162), POS(164, 162),  POS(178, 162), POS(185, 162),
-        POS(206, 162), POS(213, 162),     POS(227, 162), POS(234, 162),    POS(248, 162), POS(255, 162),  POS(269, 162), POS(276, 162),
+        POS(115, 162), POS(121, 162),     POS(136, 162), POS(142, 162),    POS(157, 162), POS(163, 162),  POS(178, 162), POS(184, 162),
+        POS(206, 162), POS(212, 162),     POS(227, 162), POS(233, 162),    POS(248, 162), POS(254, 162),  POS(269, 162), POS(275, 162),
 
-        POS(115, 172), POS(122, 172),     POS(136, 172), POS(143, 172),    POS(157, 172), POS(164, 172),  POS(178, 172), POS(185, 172),
-        POS(206, 172), POS(213, 172),     POS(227, 172), POS(234, 172),    POS(248, 172), POS(255, 172),  POS(269, 172), POS(276, 172),
+        POS(115, 172), POS(121, 172),     POS(136, 172), POS(142, 172),    POS(157, 172), POS(163, 172),  POS(178, 172), POS(184, 172),
+        POS(206, 172), POS(212, 172),     POS(227, 172), POS(233, 172),    POS(248, 172), POS(254, 172),  POS(269, 172), POS(275, 172),
     };
 
     HexEditor::HexEditor(u32 target) :
@@ -94,12 +94,12 @@ namespace CTRPluginFramework
             keysAreDisabled = true;
         }
 
+        // Update components (Only Close btn)
+        _Update();
+
         // Process event
         for (int i = 0; i < eventList.size(); i++)
             _ProcessEvent(eventList[i]);
-
-        // Update components
-        _Update();
 
         int out;
         if (!_subMenuOpen && _keyboard(out))
@@ -176,7 +176,16 @@ namespace CTRPluginFramework
                     if (_subMenuOpen)
                         _subCursor = std::max((int)(_subCursor - 1), 0);
                     else
+                    {
+                        int oldcursor = _cursor;
                         _cursor = std::max((int)(_cursor - 16), (int)(_cursor & 15));
+
+                        if (oldcursor == _cursor)
+                        {
+                            if ((u32)_memoryAddress > _startRegion)
+                                Goto((u32)_memoryAddress - 8);
+                        }
+                    }                        
                     break;
                 }
 
@@ -185,7 +194,13 @@ namespace CTRPluginFramework
                     if (_subMenuOpen)
                         _subCursor = std::min((int)(_subCursor + 1), (int)(_options.size() - 1));
                     else
+                    {
+                        int oldcursor = _cursor;
                         _cursor = std::min((int)(_cursor + 16), (int)((_cursor & 15) + 144));
+
+                        if (oldcursor == _cursor)
+                            Goto((u32)_memoryAddress + 8);
+                    }
                     break;
                 }
 
@@ -218,6 +233,8 @@ namespace CTRPluginFramework
                     {
                         _DiscardChanges();
                     }
+                    else
+                        _closeBtn.SetState(true);
                     break;
                 }
 
@@ -260,6 +277,18 @@ namespace CTRPluginFramework
                 case Key::CPadDown:
                 {
                     Goto((u32)_memoryAddress + 8);
+                    break;
+                }
+                case Key::CStickUp:
+                {
+                    if ((u32)_memoryAddress > _startRegion)
+                        Goto((u32)_memoryAddress - 16);
+                    break;
+                }
+
+                case Key::CStickDown:
+                {
+                    Goto((u32)_memoryAddress + 16);
                     break;
                 }
                 default: break;
@@ -363,14 +392,14 @@ namespace CTRPluginFramework
         // Second column: 178px : 168 + 10
         // last column: 66px : 56 + 10
         // Total:  310px
-        // MArgin between column: 10 px: 330px
+        // Margin between column: 10 px: 330px
         // Margin left / right: 5px : 340px
 
         // Selector address header 
         Renderer::DrawRect(44, posY, 66, 20, skyblue);
         posY += 5;
         sprintf(buffer, "%08X", cursorAddress);
-        Renderer::DrawString(buffer, 50, posY, black);
+        Renderer::DrawString(buffer, 54, posY, black);
         posY += 6;
         // Address body
         Renderer::DrawRect(44, posY, 66, 100, deepskyblue);
@@ -380,7 +409,15 @@ namespace CTRPluginFramework
         // Values header
         Renderer::DrawRect(111, posY, 178, 20, deepskyblue);
         posY += 5;
-        Renderer::DrawString((char *)"00 01 02 03  04 05 06 07", 116, posY, black);
+        static const char * bytePos[] = { "00", "01", "02", "03", "04", "05", "06", "07" };
+        // Values
+        for (int i = 0, posXX = 116, posy = posY; i < 8; i++, posXX += 21)
+        {
+            posY = posy;
+            Renderer::DrawString(bytePos[i], posXX, posY, black);
+            if (i % 8 == 3)
+                posXX += 7;
+        }
         posY += 6;
         // Values body
         Renderer::DrawRect(111, posY, 178, 100, blank);
@@ -405,17 +442,22 @@ namespace CTRPluginFramework
             for (int i = 0; i < 10; i++)
             {
                 int posy = posY;
-                int posyy = posY;
 
                 // Address
                 sprintf(buffer, "%08X", address);
-                Renderer::DrawString(buffer, 50, posY, black);
+                Renderer::DrawString(buffer, 54, posy, black);
 
                 // Values
-                Renderer::DrawString((char *)"?? ?? ?? ??  ?? ?? ?? ??", 116, posy, black);
+                for (int j = 0, posXX = 116; j < 8; j++, posXX += 21)
+                {
+                    posy = posY;
+                    Renderer::DrawString("??", posXX, posy, black);
+                    if (j % 8 == 3)
+                        posXX += 7;
+                }
 
                 // Char
-                Renderer::DrawString((char *)"........", 295, posyy, black);
+                Renderer::DrawString("........", 299, posY, black);
 
                 address += 8;
             }
@@ -430,11 +472,11 @@ namespace CTRPluginFramework
             {
                 int yy = posY;
                 sprintf(buffer, "%08X", address);
-                Renderer::DrawString(buffer, 50, posY, black);
+                Renderer::DrawString(buffer, 54, posY, black);
                 address += 8;
 
                 _GetChar((u8 *)buffer, i * 8);
-                Renderer::DrawString(buffer, 295, yy, black);
+                Renderer::DrawString(buffer, 299, yy, black);
             }
 
             // Values
@@ -470,29 +512,25 @@ namespace CTRPluginFramework
         if (_isModified)
         {
             posY += 5;
-            Renderer::DrawString((char *)"Apply changes: ", 44, posY, blank);
+            Renderer::DrawString("Apply changes: ", 44, posY, blank);
             posY -= 14;
             Renderer::DrawSysString("\uE000", 149, posY, 330, blank);
 
             posY +=2;
-            Renderer::DrawString((char *)"Discard changes: ", 44, posY, blank);
+            Renderer::DrawString("Discard changes: ", 44, posY, blank);
             posY -= 14;
-            Renderer::DrawSysString("\uE001", 163, posY, 330, blank);
+            Renderer::DrawSysString("\uE001", 149, posY, 330, blank);
         }
         else
         {
             posY += 5;
-            Renderer::DrawString((char *)"Options: ", 44, posY, blank);
+            Renderer::DrawString("Options: ", 44, posY, blank);
             posY -= 14;
             Renderer::DrawSysString("\uE002", 99, posY, 330, blank);  
         }
 
         if (_subMenuOpen)
-        {
             _DrawSubMenu();
-            return;
-        }
-        
     }
 
     void    HexEditor::_RenderBottom(void)
@@ -656,8 +694,6 @@ namespace CTRPluginFramework
             goto invalid;
         
     copy:
-        //svcFlushProcessDataCache(Process::GetHandle(), (void *)address, 80);
-
         if (!Process::CopyMemory(_memory, (void *)address, 80))
             goto invalid;
 
@@ -680,9 +716,9 @@ namespace CTRPluginFramework
 
     void    HexEditor::_ApplyChanges(void)
     {
-        std::memcpy(_memoryAddress, _memory, 80);
         svcFlushProcessDataCache(Process::GetHandle(), (void *)_memoryAddress, 80);
         svcInvalidateProcessDataCache(Process::GetHandle(), (void *)_memoryAddress, 80);
+        std::memcpy(_memoryAddress, _memory, 80);
         _isModified = false;
     }
 
@@ -710,9 +746,10 @@ namespace CTRPluginFramework
         Renderer::DrawRect2(background, black, dimGrey);
 
         int posY = 115;
+        static const char *addrPrompt = "Enter the address to jump to:";
+        Renderer::DrawString(addrPrompt, 98, posY, skyblue);
 
-        Renderer::DrawString((char *)"Enter the address to jump to:", 98, posY, skyblue);
-
+        // We write to second framebuffer too because of keyboard below
         Renderer::EndFrame();
 
         Renderer::SetTarget(TOP);
@@ -722,7 +759,7 @@ namespace CTRPluginFramework
 
         posY = 115;
 
-        Renderer::DrawString((char *)"Enter the address to jump to:", 98, posY, skyblue);
+        Renderer::DrawString(addrPrompt, 98, posY, skyblue);
 
 
         keyboard.DisplayTopScreen = false;

@@ -147,7 +147,6 @@ namespace CTRPluginFramework
         ** 25px * 25px
         **************/
         static int      DrawSave(int posX, int posY);
-        static int      DrawSaveNTR(int posX, int posY);
 
         /*
         ** Search

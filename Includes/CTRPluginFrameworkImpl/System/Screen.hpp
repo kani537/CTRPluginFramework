@@ -33,7 +33,8 @@ namespace CTRPluginFramework
 
         void                        Flash(Color &color);
 
-        void                        Acquire(bool acquiringOSD = false);
+        static void                 Clean(void);
+        void                        Acquire(void);
         void                        Acquire(u32 left, u32 right, u32 stride, u32 format);
         void                        SwapBuffer(bool flush = false, bool copy = false);
 
@@ -46,8 +47,6 @@ namespace CTRPluginFramework
         u32                         GetFramebufferSize(void);
 
         void                        GetFramebufferInfos(int &rowstride, int &bpp, GSPGPU_FramebufferFormats &format);
-
-        
 
         u8                          *GetLeftFramebuffer(bool current = false);
         u8                          *GetLeftFramebuffer(int posX, int posY);

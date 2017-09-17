@@ -107,37 +107,41 @@ namespace CTRPluginFramework
     }
 
     void     BMPImage::Draw(int x, int y)
-    {    
-        bool topScreen = Renderer::_target == 1;
-        ScreenImpl *scr = topScreen ? ScreenImpl::Top : ScreenImpl::Bottom;
+    {
+        ScreenImpl *scr = Renderer::_screen;
 
-        int posX = topScreen ? x + (340 - _width) / 2 : x + (280 - _width) / 2;
+        int posX = scr->IsTopScreen() ? x + (340 - _width) / 2 : x + (280 - _width) / 2;
         int posY = y + (200 - _height) / 2;
 
         
-        u8 *img = (u8 *)data();
-        int width = _width;
-        int height = _height;
-        int stride = scr->GetStride();
+        u8      *img = (u8 *)data();
+        u8      *left = scr->GetLeftFramebuffer(posX, posY);
+        int     bpp = scr->GetBytesPerPixel();
+        int     width = _width;
+        int     height = _height;
+        int     stride = scr->GetStride();
+        Color   imgc;
 
-        for (int y = 0; y < height; y++)
+        while (height--)
         {
-            u8 *framebuf = scr->GetLeftFramebuffer(posX, posY + y);
-            for (int x = 0; x < width; x++)
+            u8 *framebuf = left;
+            for (x = 0; x < width; x++)
             {
                 Pixel *pix = (Pixel *)img;
-                Color imgc(pix->r, pix->g, pix->b);
+                imgc.r = pix->r;
+                imgc.g = pix->g;
+                imgc.b = pix->b;
                 PrivColor::ToFramebuffer(framebuf, imgc);
                 framebuf += stride;
                 img += 3;
             }
+            left -= bpp;
         }
     }
 
     void     BMPImage::Draw(IntRect &area, float fade)
     {    
-        bool topScreen = Renderer::_target == 1;
-        ScreenImpl *scr = topScreen ? ScreenImpl::Top : ScreenImpl::Bottom;
+        ScreenImpl *scr = Renderer::_screen;
 
         int posX = area.leftTop.x;
         int posY = area.leftTop.y;
@@ -166,40 +170,57 @@ namespace CTRPluginFramework
       
         if (xOffset < 0)
           xOffset = 0;
-        int stride = scr->GetStride();
+        
+        Color   imgc;
+        u32     bpp = scr->GetBytesPerPixel();
+        u32     stride = scr->GetStride();
 
         if (fade == 0.f)
         {
-            for (int y = 0; y < height; y++)
-            {
-                u8 *framebuf = scr->GetLeftFramebuffer(posX, posY + y);
-                u8 *img = Row(startY + y) + xOffset;
+            u8 *left = scr->GetLeftFramebuffer(posX, posY);
 
+            while (height--)
+            {                
+                u8 *img = Row(startY++) + xOffset;
+                u8 *framebuf = left;
                 for (int x = 0; x < width; x++)
                 {
                     Pixel *pix = (Pixel *)img;
-                    Color imgc(pix->r, pix->g, pix->b);
+
+                    imgc.r = pix->r;
+                    imgc.g = pix->g;
+                    imgc.b = pix->b;
+
                     PrivColor::ToFramebuffer(framebuf, imgc);
+
                     framebuf += stride;
                     img += 3;
                 }
-            }               
+                left -= bpp;
+            }
         }
         else
         {
-            for (int y = 0; y < height; y++)
+            u8 *left = scr->GetLeftFramebuffer(posX, posY);
+
+            while (height--)
             {
-                u8 *framebuf = scr->GetLeftFramebuffer(posX, posY + y);
-                u8 *img = Row(startY + y) + xOffset;
+                u8 *framebuf = left;
+                u8 *img = Row(startY++) + xOffset;
 
                 for (int x = 0; x < width; x++)
                 {
                     Pixel *pix = (Pixel *)img;
-                    Color imgc(pix->r, pix->g, pix->b);
+
+                    imgc.r = pix->r;
+                    imgc.g = pix->g;
+                    imgc.b = pix->b;
+
                     PrivColor::ToFramebuffer(framebuf, imgc.Fade(fade));
                     framebuf += stride;
                     img += 3;
                 }
+                left -= bpp;
             }               
         }
     }

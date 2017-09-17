@@ -9,7 +9,7 @@
 
 namespace CTRPluginFramework
 {
-    u8  *Screen::GetFramebuffer(u32 posX, u32 posY, bool useRightFb) const
+    u8      *Screen::GetFramebuffer(u32 posX, u32 posY, bool useRightFb) const
     {
         if (useRightFb && (!IsTop || !Is3DEnabled))
             return (nullptr);
@@ -27,7 +27,7 @@ namespace CTRPluginFramework
         return (fb + offset);
     }
 
-    u32 Screen::Draw(const std::string &str, u32 posX, u32 posY, const Color& foreground, const Color& background) const
+    u32     Screen::Draw(const std::string &str, u32 posX, u32 posY, const Color& foreground, const Color& background) const
     {
         Renderer::DrawString(str.c_str(), posX, (int &)posY, foreground, background);
         return (posY);
@@ -38,12 +38,12 @@ namespace CTRPluginFramework
         Renderer::DrawRect(posX, posY, width, height, color, filled);
     }
 
-    void Screen::DrawPixel(u32 posX, u32 posY, const Color& color) const
+    void    Screen::DrawPixel(u32 posX, u32 posY, const Color& color) const
     {
         Renderer::DrawPixel(posX, posY, color);
     }
 
-    void Screen::ReadPixel(u32 posX, u32 posY, Color& pixel, bool fromRightFb) const
+    void    Screen::ReadPixel(u32 posX, u32 posY, Color& pixel, bool fromRightFb) const
     {
         u8 *fb = GetFramebuffer(posX, posY, fromRightFb);
 
@@ -66,12 +66,12 @@ namespace CTRPluginFramework
         return (0);
     }
 
-    void OSD::Run(OSDCallback cb)
+    void    OSD::Run(OSDCallback cb)
     {
         OSDImpl::Callbacks.push_back(cb);
     }
 
-    void OSD::Remove(OSDCallback cb)
+    void    OSD::Remove(OSDCallback cb)
     {
         OSDImpl::Callbacks.erase(std::remove(OSDImpl::Callbacks.begin(), OSDImpl::Callbacks.end(), cb), OSDImpl::Callbacks.end());
     }

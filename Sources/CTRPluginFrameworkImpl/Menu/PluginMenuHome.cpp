@@ -8,6 +8,7 @@ namespace CTRPluginFramework
     static char* g_ctrpfString = nullptr;
     static char* g_bymeString = nullptr;
 
+    static u32 g_size[2] = { 0 };
     static const u32 g_ctrpf[18] =
     {
         0x00000043, 0x00000054, 0x00000148, 0x00000140, 0x0000006C, 0x00000075, 0x0000019C, 0x000001A4, 0x00006E00, 0x00004600, 0x0001C800, 0x00018400, 0x00006D00, 0x00006500, 0x0001DC00, 0x0001BC00, 0x00000072, 0x0000006B,
@@ -100,6 +101,8 @@ namespace CTRPluginFramework
 
         decoder(g_ctrpfString, g_ctrpf, 18);
         decoder(g_bymeString, g_byme, 12);
+        g_size[0] = Renderer::LinuxFontSize(g_ctrpfString);
+        g_size[1] = Renderer::LinuxFontSize(g_bymeString);
 
         _uiContainer += &_showStarredBtn;
         _uiContainer += &_hidMapperBtn;

@@ -3,7 +3,6 @@
 
 #include "CTRPluginFramework/Graphics.hpp"
 #include "CTRPluginFrameworkImpl/Graphics.hpp"
-#include "NTR.hpp"
 
 namespace CTRPluginFramework
 {
@@ -61,6 +60,7 @@ namespace CTRPluginFramework
         int     rowstride;
         int     bpp;
         bool    is3d = false;
+        Color   px;
 
         posY += sizeY;
         GSPGPU_FramebufferFormats fmt;
@@ -94,9 +94,13 @@ namespace CTRPluginFramework
             while (y++ < sizeY)
             {
                 Pixel *pix = (Pixel *)img;
-                Color px(pix->r, pix->g, pix->b, pix->a);// = PrivColor::FromMemory(img, RGBA8);
-                Color bg = PrivColor::FromFramebuffer(dst);
-                Color blended = bg.Blend(px, Color::BlendMode::Alpha);
+                px.a = pix->a;
+                px.r = pix->r;
+                px.g = pix->g;
+                px.b = pix->b;
+
+                Color &&bg = PrivColor::FromFramebuffer(dst);
+                Color &&blended = bg.Blend(px, Color::BlendMode::Alpha);
                 dst = PrivColor::ToFramebuffer(dst, blended);
                 img += 4;
             }
@@ -328,54 +332,7 @@ namespace CTRPluginFramework
     ***************/
     int     Icon::DrawHandCursor(int posX, int posY)
     {
-       /* u8      *framebuf = nullptr;
-        u8      *framebuf2 = nullptr;
-        int     rowstride;
-        int     bpp;
-
-        posY += 15;
-        GSPGPU_FramebufferFormats fmt;
-        // Get target infos
-        switch (Renderer::_target)
-        {
-            case Target::TOP:
-            {
-                framebuf = ScreenImpl::Top->GetLeftFramebuffer(posX, posY);
-                framebuf2 = ScreenImpl::Top->GetLeftFramebuffer(posX, posY, true);
-                ScreenImpl::Top->GetFramebufferInfos(rowstride, bpp, fmt);
-                break;
-            }
-            case Target::BOTTOM:
-            {
-                framebuf = ScreenImpl::Bottom->GetLeftFramebuffer(posX, posY);
-                framebuf2 = ScreenImpl::Bottom->GetLeftFramebuffer(posX, posY, true);
-                ScreenImpl::Bottom->GetFramebufferInfos(rowstride, bpp, fmt);
-                break;                
-            }
-            default:
-                return (posX);
-        }
-        if (framebuf == nullptr)
-            return (posX);
-
-        u8 *img = HandCursor15;
-        // Draw
-        for (int x = 0; x < 15; x++)
-        {
-            u8 *dst = framebuf + rowstride * x;
-            u8 *dst2 = framebuf2 + rowstride * x;
-            int y = 0;
-            while (y++ < 15)
-            {
-                Pixel *pix = (Pixel *)img;
-                Color px(pix->r, pix->g, pix->b, pix->a);//PrivColor::FromMemory(img, RGBA8);
-                Color bg = PrivColor::FromFramebuffer(dst);
-                Color blended = bg.Blend(px, Color::BlendMode::Alpha);
-                dst = PrivColor::ToFramebuffer(dst, blended);
-                dst2 = PrivColor::ToFramebuffer(dst2, blended);
-                img += 4;
-            }
-        }*/
+        DrawImg(HandCursor15, posX, posY, 15, 15);
         return (posX + 15);
     }
 
@@ -427,11 +384,6 @@ namespace CTRPluginFramework
     int     Icon::DrawSave(int posX, int posY)
     {
         return (DrawImg(Save25, posX, posY, 25, 25));
-    }
-
-    int     Icon::DrawSaveNTR(int posX, int posY)
-    {
-        return (DrawImgNTR(Save25, posX, posY, 25, 25));
     }
 
     /*

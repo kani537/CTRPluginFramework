@@ -483,22 +483,13 @@ namespace CTRPluginFramework
         // Window
         Window::BottomWindow.Draw();
 
-        // Draw About text
-        {
-            int posY = 30;
-            int maxY = 200;
-            int posX = 30;
-            int maxX = 290;
-
-            //Renderer::DrawSysStringReturn(reinterpret_cast<const u8 *>(_about.c_str()), 
-            //                              posX, posY, maxX, blank, maxY);
-        }
-
         // Draw Framework version
         {
-            
+            static const char *version = "CTRPluginFramework Alpha V.0.2.7";
+            static const u32 xpos = (320 - Renderer::LinuxFontSize(version)) / 2;
+
             int posY = 205;
-            Renderer::DrawString((char *)"CTRPluginFramework Alpha V.0.2.7", 52, posY, blank); //40
+            Renderer::DrawString(version, xpos, posY, blank);
         }
     }
 

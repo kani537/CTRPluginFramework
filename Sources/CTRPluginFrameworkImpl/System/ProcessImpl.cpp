@@ -104,22 +104,8 @@ namespace CTRPluginFramework
         // Wake up gsp event thread
         svcSignalEvent(gspEvent);
 
-        
-
-
-
-		// Raising priority of Event Thread
-		//while (R_FAILED(svcSetThreadPriority(gspThreadEventHandle, 0x19)));
-		// Raising priority of this thread        
-		//while (R_FAILED(svcSetThreadPriority(_mainThreadHandle, 0x18)));        
-		
-		// Waking up Init thread
-		//svcSignalEvent(g_keepEvent);
-
-		//_isAcquiring = true;
-		ScreenImpl::Top->Acquire(false);
-        ScreenImpl::Bottom->Acquire(false);
-		//_isAcquiring = false;
+		ScreenImpl::Top->Acquire();
+        ScreenImpl::Bottom->Acquire();
 
         if (!useFading)
             return;
@@ -170,16 +156,13 @@ namespace CTRPluginFramework
 	        }			
 		}
         _isPaused = false;
+
         if (LightLock_IsLocked(&ProcessImpl::FrameLock))
             LightLock_Unlock(&ProcessImpl::FrameLock);
-		//while(R_FAILED(svcSetThreadPriority(gspThreadEventHandle, 0x3F)));
-		//while(R_FAILED(svcSetThreadPriority(_mainThreadHandle, 0x3F)));
 	}
 
     bool     ProcessImpl::PatchProcess(u32 addr, u8 *patch, u32 length, u8 *original)
     {
-  //      if (!(Process::ProtectMemory(((addr / 0x1000) * 0x1000), 0x1000))) goto error;
- 
  		if (original != nullptr)
  		{
  			if (!Process::CopyMemory((void *)original, (void *)addr, length))
@@ -188,6 +171,7 @@ namespace CTRPluginFramework
 
  		if (!Process::CopyMemory((void *)addr, (void *)patch, length))
  			goto error;
+
         return (true);
     error:
         return (false);
