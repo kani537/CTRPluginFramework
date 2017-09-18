@@ -87,9 +87,26 @@ namespace CTRPluginFramework
 
     int    Renderer::DrawString(const char *str, int posX, int &posY, Color fg)
     {
+        Color bak = fg;
+
         while (*str)
         {
-            DrawCharacter(*str++, posX, posY, fg);
+            char c = *str++;
+
+            if (c == 0x18)
+            {
+                fg = bak;
+                continue;
+            }
+            if (c == 0x1B)
+            {
+                fg.r = *str++;
+                fg.g = *str++;
+                fg.b = *str++;
+                continue;
+            }
+
+            DrawCharacter(c, posX, posY, fg);
             posX += 6;
         }
         posY += 10;
@@ -99,6 +116,7 @@ namespace CTRPluginFramework
     int    Renderer::DrawString(const char *str, int posX, int &posY, Color fg, Color bg)
     {
         u32 bpp = _screen->GetBytesPerPixel();
+        Color bak = fg;
 
         for (int i = 0; i < 2; i++)
         {
@@ -126,7 +144,21 @@ namespace CTRPluginFramework
         posX += 2;
         while (*str)
         {
-            DrawCharacter(*str++, posX, posY, fg, bg);
+            char c = *str++;
+
+            if (c == 0x18)
+            {
+                fg = bak;
+                continue;
+            }
+            if (c == 0x1B)
+            {
+                fg.r = *str++;
+                fg.g = *str++;
+                fg.b = *str++;
+                continue;
+            }
+            DrawCharacter(c, posX, posY, fg, bg);
             posX += 6;
         }
         posY += 10;

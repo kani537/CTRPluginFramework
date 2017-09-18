@@ -10,10 +10,11 @@ namespace CTRPluginFramework
     // Return a string with the charcter that reset the color (0x18)
     std::string     ResetColor(void);
 
+    std::string &operator << (std::string &left, const char *right);
     std::string operator <<(const std::string &left, const std::string &right);
     std::string operator <<(const std::string &left, const Color &color);
     std::string operator <<(const Color &color, const std::string &right);
-
+    
     template <typename T, 
         typename std::enable_if<!std::is_same<T, const char *>::value>::type* = nullptr>
     std::string operator <<(const std::string &left, T right)

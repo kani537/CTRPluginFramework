@@ -12,11 +12,8 @@
 
 namespace CTRPluginFramework
 {
-    
-
     Target      Renderer::_target = BOTTOM;
     ScreenImpl* Renderer::_screen = ScreenImpl::Bottom;
-
 
     inline u32   GetFramebufferOffset(int posX, int posY, int bpp, int rowsize)
     {
@@ -56,11 +53,11 @@ namespace CTRPluginFramework
         }
 
         // Draw fps counter
-        char buffer[20] = {0};
+        /*char buffer[20] = {0};
 
         sprintf(buffer, "FPS: %.02f",  second / fpsCounter.Restart().AsSeconds());
         int posY = 30;
-        DrawString(buffer, 200, posY, Color::Blank, Color::Black);
+        DrawString(buffer, 200, posY, Color::Blank, Color::Black);*/
 
         ScreenImpl::Bottom->SwapBuffer(true, copy);
         ScreenImpl::Top->SwapBuffer(true, copy); 

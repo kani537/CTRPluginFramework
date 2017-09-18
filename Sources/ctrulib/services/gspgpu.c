@@ -6,11 +6,14 @@
 #include <ctrulib/srv.h>
 #include <ctrulib/synchronization.h>
 #include <ctrulib/services/gspgpu.h>
+#include <ctrulib/gpu/gpu.h>
 #include <ctrulib/ipc.h>
 #include <ctrulib/thread.h>
 #include "ctrulib/allocator/mappable.h"
+#include <ctrulib/allocator/linear.h>
 
 #define GSP_EVENT_STACK_SIZE 0x1000
+extern u32* gxCmdBuf; ///< GX command buffer.
 
 Handle gspGpuHandle;
 static int gspRefCount;

@@ -15,7 +15,6 @@ namespace CTRPluginFramework
     bool        Preferences::DrawTouchCursor = false;
     bool        Preferences::EcoMemoryMode = false;
     bool        Preferences::DisplayFilesLoading = false;
-    bool        Preferences::SavingInProgress = false;
     bool        Preferences::AutoSaveCheats = false;
     bool        Preferences::AutoSaveFavorites = false;
     bool        Preferences::AutoLoadCheats = false;
@@ -133,6 +132,7 @@ namespace CTRPluginFramework
             AutoLoadFavorites = (header.flags & (u64)SettingsFlags::AutoLoadFavorites != 0);
             AutoSaveCheats = (header.flags & (u64)SettingsFlags::AutoSaveCheats != 0);
             AutoSaveFavorites = (header.flags & (u64)SettingsFlags::AutoSaveFavorites != 0);
+            DrawTouchCursor = (header.flags & (u64)SettingsFlags::DrawTouchCursor != 0);
         }
 
         // Check that hotkeys aren't 0
@@ -216,6 +216,7 @@ namespace CTRPluginFramework
         if (AutoLoadCheats) header.flags |= (u64)SettingsFlags::AutoLoadCheats;
         if (AutoSaveFavorites) header.flags |= (u64)SettingsFlags::AutoSaveFavorites;
         if (AutoLoadFavorites) header.flags |= (u64)SettingsFlags::AutoLoadFavorites;
+        if (DrawTouchCursor) header.flags |= (u64)SettingsFlags::DrawTouchCursor;
 
         header.hotkeys = MenuHotkeys;
 

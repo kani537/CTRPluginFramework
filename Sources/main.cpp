@@ -22,19 +22,20 @@
 #include <cstring>
 #include "csvc.h"
 #include "NTRImpl.hpp"
+#include "ctrulib/gpu/gx.h"
 
 namespace CTRPluginFramework
 {
     // This function is called on the plugin starts, before main
     void    PatchProcess(void)
     {
+
     }
 
     std::string about = u8"\n" \
         u8"Plugin for Zelda Ocarina Of Time, V3.0\n\n"
         u8"Most of these codes comes from Fort42 so a huge thanks to their original creator !!\n\n" \
         u8"GBATemp's release thread: goo.gl/Rz1uhj";
-
     
     void    Invincible(MenuEntry *entry)
     {
@@ -549,6 +550,14 @@ namespace CTRPluginFramework
                 kb.Open(i);
             }
         });
+
+        OSD::Run([](const Screen &screen)
+        {
+            screen.Draw(screen.IsTop ?  "Top: " : "Bottom: ", 10, 10);
+            return (true);
+        });
+
+        OSD::Notify(Color::Red << "Notification" << Color::LimeGreen << "Colored");
 
         menu += new MenuEntry("Clean", nullptr, [](MenuEntry *entry) {ScreenImpl::Clean(); });
 

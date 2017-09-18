@@ -8,6 +8,8 @@
 #include <cstring>
 #include <cstdio>
 #include "NTR.hpp"
+#include "ctrulib/gpu/gx.h"
+#include "CTRPluginFramework/Utils/Utils.hpp"
 
 
 namespace CTRPluginFramework

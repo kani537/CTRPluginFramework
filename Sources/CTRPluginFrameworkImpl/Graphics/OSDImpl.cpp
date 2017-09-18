@@ -15,6 +15,7 @@
 #include "CTRPluginFrameworkImpl/Graphics/Renderer.hpp"
 #include "CTRPluginFrameworkImpl/Graphics/Icon.hpp"
 #include "CTRPluginFramework/System/Touch.hpp"
+#include "CTRPluginFrameworkImpl/Preferences.hpp"
 
 namespace CTRPluginFramework
 {
@@ -33,6 +34,16 @@ namespace CTRPluginFramework
     }
 
 #define XEND    390
+
+    OSDImpl::OSDMessage::OSDMessage(const std::string& str, const Color& fg, const Color& bg)
+    {
+        text = str;
+        width = Renderer::LinuxFontSize(text.c_str());
+        drawn = false;
+        foreground = fg;
+        background = bg;
+        time = Clock();
+    }
 
     void    OSDImpl::Update(void)
     {
@@ -120,13 +131,18 @@ namespace CTRPluginFramework
             LightLock_Unlock(&ProcessImpl::FrameLock);
         }
 
-        bool drawTouch = Touch::IsDown() && isBottom;
+        bool drawTouch =  Preferences::DrawTouchCursor && Touch::IsDown() && isBottom;
 
         if (!drawTouch && !DrawSaveIcon && Callbacks.empty() && Notifications.empty())
             return (((OSDReturn)OSDHook.returnCode)(isBottom, arg2, addr, addrB, stride, format, arg7));
 
         u32     size = isBottom ? stride * 320 : stride * 400;
         Handle  handle = Process::GetHandle();
+
+        if (!isBottom)
+            ScreenImpl::Top->Acquire((u32)addr, (u32)addrB, stride, format & 0b111);
+        else
+            ScreenImpl::Bottom->Acquire((u32)addr, (u32)addrB, stride, format & 0b111);
 
         svcInvalidateProcessDataCache(handle, addr, size);
 
@@ -138,7 +154,7 @@ namespace CTRPluginFramework
         // Draw notifications & icon
         if (!isBottom)
         {
-            ScreenImpl::Top->Acquire((u32)addr, (u32)addrB, stride, format & 0b111);
+            //ScreenImpl::Top->Acquire((u32)addr, (u32)addrB, stride, format & 0b111);
             Renderer::SetTarget(TOP);
             mustFlush = OSDImpl::Draw() | DrawSaveIcon;
 
@@ -165,6 +181,8 @@ namespace CTRPluginFramework
         // Call OSD Callbacks
         if (Callbacks.size())
         {
+            Renderer::SetTarget(isBottom ? BOTTOM : TOP);
+
             Screen screen = { 0 };
 
             screen.IsTop = !isBottom;

@@ -7,6 +7,13 @@ namespace CTRPluginFramework
     {
         return ("\x18");
     }
+
+    std::string& operator<<(std::string& left, const char* right)
+    {
+        left += right;
+        return (left);
+    }
+
     std::string operator <<(const std::string &left, const std::string &right)
     {
         return (left + right);

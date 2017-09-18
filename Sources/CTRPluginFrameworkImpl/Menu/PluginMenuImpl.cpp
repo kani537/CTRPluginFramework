@@ -298,12 +298,11 @@ namespace CTRPluginFramework
                         {
                             if (!LightLock_TryLock(&g_OpenFileLock))
                             {
-                                while (g_index)
+                                for (int i = 0; i < g_index; i++)
                                 {
-                                    OSD::Notify(g_filenames[g_index - 1]);
-                                    g_index--;
+                                    OSD::Notify(g_filenames[i]);
                                 }
-
+                                g_index = 0;
                                 LightLock_Unlock(&g_OpenFileLock);
                             }
 

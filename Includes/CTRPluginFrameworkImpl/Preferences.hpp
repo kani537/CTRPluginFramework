@@ -20,7 +20,8 @@ namespace CTRPluginFramework
             AutoSaveCheats = 1,
             AutoSaveFavorites = 1 << 1,
             AutoLoadCheats = 1 << 2,
-            AutoLoadFavorites = 1 << 3
+            AutoLoadFavorites = 1 << 3,
+            DrawTouchCursor = 1 << 4
         };
 
         struct HeaderV1
@@ -86,7 +87,6 @@ namespace CTRPluginFramework
         static bool         DrawTouchCursor;
         static bool         EcoMemoryMode;
         static bool         DisplayFilesLoading;
-        static bool         SavingInProgress;
 
         static bool         AutoSaveCheats;
         static bool         AutoSaveFavorites;

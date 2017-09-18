@@ -65,6 +65,9 @@ namespace CTRPluginFramework
 
         if (Preferences::AutoLoadFavorites) _settingsMenu[4]->AsMenuEntryImpl().Enable();
         else _settingsMenu[4]->AsMenuEntryImpl().Disable();
+
+        if (Preferences::DrawTouchCursor) _miscellaneousMenu[0]->AsMenuEntryTools().Enable();
+        else _settingsMenu[0]->AsMenuEntryTools().Disable();
     }
 
     using   FsTryOpenFileType = u32(*)(u32, u16*, u32);
@@ -96,7 +99,7 @@ namespace CTRPluginFramework
         return (0);
     }
 
-    void      FindFunction(u32 &FsTryOpenFile)
+    static void      FindFunction(u32 &FsTryOpenFile)
     {
         const u8 tryOpenFilePat1[] = { 0x0D, 0x10, 0xA0, 0xE1, 0x00, 0xC0, 0x90, 0xE5, 0x04, 0x00, 0xA0, 0xE1, 0x3C, 0xFF, 0x2F, 0xE1 };
         const u8 tryOpenFilePat2[] = { 0x10, 0x10, 0x8D, 0xE2, 0x00, 0xC0, 0x90, 0xE5, 0x05, 0x00, 0xA0, 0xE1, 0x3C, 0xFF, 0x2F, 0xE1 };
@@ -113,19 +116,6 @@ namespace CTRPluginFramework
             }
             addr++;
         }
-    }
-
-    u8  *Strcpy(u8 *dst, const u8 *src)
-    {
-        if (!dst || !src)
-            return (dst);
-
-        while (*src)
-            *dst++ = *src++;
-
-        *dst = 0;
-
-        return (dst);
     }
 
     static u32 FsTryOpenFileCallback(u32 a1, u16 *fileName, u32 mode)
@@ -160,14 +150,13 @@ namespace CTRPluginFramework
             *u8Name++ = '\n';
             *u8Name = 0;
 
-            g_hookExportFile.Write(g_buffer2, strlen(g_buffer2));
-            
+            g_hookExportFile.Write(g_buffer2, strlen(g_buffer2));            
         }
 
         return (((FsTryOpenFileType)g_FsTryOpenFileHook.returnCode)(a1, fileName, mode));
     }
 
-    void    _DisplayLoadedFiles(MenuEntryTools *entry)
+    static void    _DisplayLoadedFiles(MenuEntryTools *entry)
     {
         // If we must enable the hook
         if (entry->IsActivated())
@@ -220,7 +209,7 @@ namespace CTRPluginFramework
             g_FsTryOpenFileHook.Disable();
     }
 
-    void    _WriteLoadedFiles(MenuEntryTools *entry)
+    static void    _WriteLoadedFiles(MenuEntryTools *entry)
     {
         // If we must enable the hook
         if (entry->IsActivated())
@@ -295,6 +284,7 @@ namespace CTRPluginFramework
         // Miscellaneous menu
         _miscellaneousMenu.Append(new MenuEntryTools("Display loaded files", _DisplayLoadedFiles, true));
         _miscellaneousMenu.Append(new MenuEntryTools("Write loaded files to file", _WriteLoadedFiles, true));
+        _miscellaneousMenu.Append(new MenuEntryTools("Draw touch cursor", [] {Preferences::DrawTouchCursor = !Preferences::DrawTouchCursor; }, true, Preferences::DrawTouchCursor));
 
         // Settings menu
         _settingsMenu.Append(new MenuEntryTools("Change menu hotkeys", MenuHotkeyModifier, Icon::DrawGameController));

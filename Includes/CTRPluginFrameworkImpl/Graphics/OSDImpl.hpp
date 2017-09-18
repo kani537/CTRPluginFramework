@@ -30,15 +30,7 @@ namespace CTRPluginFramework
             Color           background;
             Clock           time;
 
-            OSDMessage(const std::string &str, const Color &fg, const Color &bg)
-            {
-                text = str;
-                width = text.size() * 6;
-				drawn = false;
-                foreground = fg;
-                background = bg;
-                time = Clock();
-            }
+            OSDMessage(const std::string &str, const Color &fg, const Color &bg);
         };
 
         using OSDIter = std::list<OSDMessage>::iterator;

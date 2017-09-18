@@ -5,6 +5,7 @@
 
 #include <cstdio>
 #include <cstring>
+#include "ctrulib/gpu/gpu.h"
 
 extern 		Handle gspThreadEventHandle;
 
@@ -124,9 +125,11 @@ namespace CTRPluginFramework
         	ScreenImpl::Top->Fade(fade);
         	ScreenImpl::Bottom->Fade(fade);
 
+            GPUCMD_Run();
+            GPUCMD_Finalize();
         	ScreenImpl::Top->SwapBuffer(true, true);
         	ScreenImpl::Bottom->SwapBuffer(true, true);
-        	gspWaitForVBlank(); 
+        	gspWaitForVBlank();
         	if (System::IsNew3DS())
         		while (t.GetElapsedTime() < limit);       	
         }
