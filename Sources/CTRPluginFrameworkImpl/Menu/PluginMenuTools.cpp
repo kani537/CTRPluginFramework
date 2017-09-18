@@ -66,8 +66,8 @@ namespace CTRPluginFramework
         if (Preferences::AutoLoadFavorites) _settingsMenu[4]->AsMenuEntryImpl().Enable();
         else _settingsMenu[4]->AsMenuEntryImpl().Disable();
 
-        if (Preferences::DrawTouchCursor) _miscellaneousMenu[0]->AsMenuEntryTools().Enable();
-        else _settingsMenu[0]->AsMenuEntryTools().Disable();
+        if (Preferences::DrawTouchCursor) _miscellaneousMenu[2]->AsMenuEntryTools().Enable();
+        else _miscellaneousMenu[2]->AsMenuEntryTools().Disable();
     }
 
     using   FsTryOpenFileType = u32(*)(u32, u16*, u32);
@@ -284,7 +284,7 @@ namespace CTRPluginFramework
         // Miscellaneous menu
         _miscellaneousMenu.Append(new MenuEntryTools("Display loaded files", _DisplayLoadedFiles, true));
         _miscellaneousMenu.Append(new MenuEntryTools("Write loaded files to file", _WriteLoadedFiles, true));
-        _miscellaneousMenu.Append(new MenuEntryTools("Draw touch cursor", [] {Preferences::DrawTouchCursor = !Preferences::DrawTouchCursor; }, true, Preferences::DrawTouchCursor));
+        _miscellaneousMenu.Append(new MenuEntryTools("Draw touch cursor", [] { Preferences::DrawTouchCursor = !Preferences::DrawTouchCursor; }, true, Preferences::DrawTouchCursor));
 
         // Settings menu
         _settingsMenu.Append(new MenuEntryTools("Change menu hotkeys", MenuHotkeyModifier, Icon::DrawGameController));
@@ -296,7 +296,6 @@ namespace CTRPluginFramework
         _settingsMenu.Append(new MenuEntryTools("Load favorites now", [] { Preferences::LoadSavedFavorites(); }, nullptr));
 
         //_settingsMenu.Append(new MenuEntryTools("Inject B when closing the menu", [] { Preferences::InjectBOnMenuClose = !Preferences::InjectBOnMenuClose; }, true));
-        //_settingsMenu.Append(new MenuEntryTools("Touch Cursor", [] { Preferences::DrawTouchCursor = !Preferences::DrawTouchCursor; }, true));
     }
 
     bool    PluginMenuTools::operator()(EventList &eventList, Time &delta)

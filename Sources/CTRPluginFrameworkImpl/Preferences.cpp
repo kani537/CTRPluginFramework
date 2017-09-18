@@ -128,11 +128,11 @@ namespace CTRPluginFramework
         if (OpenConfigFile(settings, header) == 0)
         {
             MenuHotkeys = header.hotkeys;
-            AutoLoadCheats = (header.flags & (u64)SettingsFlags::AutoLoadCheats != 0);
-            AutoLoadFavorites = (header.flags & (u64)SettingsFlags::AutoLoadFavorites != 0);
-            AutoSaveCheats = (header.flags & (u64)SettingsFlags::AutoSaveCheats != 0);
-            AutoSaveFavorites = (header.flags & (u64)SettingsFlags::AutoSaveFavorites != 0);
-            DrawTouchCursor = (header.flags & (u64)SettingsFlags::DrawTouchCursor != 0);
+            AutoLoadCheats = (header.flags & (u64)SettingsFlags::AutoLoadCheats) != 0;
+            AutoLoadFavorites = (header.flags & (u64)SettingsFlags::AutoLoadFavorites) != 0;
+            AutoSaveCheats = (header.flags & (u64)SettingsFlags::AutoSaveCheats) != 0;
+            AutoSaveFavorites = (header.flags & (u64)SettingsFlags::AutoSaveFavorites) != 0;
+            DrawTouchCursor = (header.flags & (u64)SettingsFlags::DrawTouchCursor) != 0;
         }
 
         // Check that hotkeys aren't 0
