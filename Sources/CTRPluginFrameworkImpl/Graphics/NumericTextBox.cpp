@@ -56,7 +56,7 @@ namespace CTRPluginFramework
     void    NumericTextBox::SetValue(u8 val)
     {
         ValueType = Type::Bits8;
-        Bits8 = val;
+        Bits32 = val;
         
         _UpdateVal();
     }
@@ -64,7 +64,7 @@ namespace CTRPluginFramework
     void    NumericTextBox::SetValue(u16 val)
     {
         ValueType = Type::Bits16;
-        Bits16 = val;
+        Bits32 = val;
 
         _UpdateVal();
     }

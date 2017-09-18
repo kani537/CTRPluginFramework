@@ -117,6 +117,9 @@ namespace CTRPluginFramework
 
     u32 GetBPP(GSPFormat format);
 
+    static const float  g_second = Seconds(1.f).AsSeconds();
+    static Clock        g_fpsClock[2];
+
     int OSDImpl::MainCallback(u32 isBottom, int arg2, void* addr, void* addrB, int stride, int format, int arg7)
     {
         if (!addr)
@@ -132,31 +135,36 @@ namespace CTRPluginFramework
         }
 
         bool drawTouch =  Preferences::DrawTouchCursor && Touch::IsDown() && isBottom;
+        bool drawFps = (Preferences::ShowBottomFps && isBottom) || (Preferences::ShowTopFps && !isBottom);
 
-        if (!drawTouch && !DrawSaveIcon && Callbacks.empty() && Notifications.empty())
+        if (!drawTouch && !drawFps && !DrawSaveIcon
+            && Callbacks.empty() && Notifications.empty())
             return (((OSDReturn)OSDHook.returnCode)(isBottom, arg2, addr, addrB, stride, format, arg7));
 
         u32     size = isBottom ? stride * 320 : stride * 400;
+        bool    mustFlush = drawFps;
         Handle  handle = Process::GetHandle();
 
         if (!isBottom)
+        {
             ScreenImpl::Top->Acquire((u32)addr, (u32)addrB, stride, format & 0b111);
+            Renderer::SetTarget(TOP);
+        }
         else
+        {
             ScreenImpl::Bottom->Acquire((u32)addr, (u32)addrB, stride, format & 0b111);
+            Renderer::SetTarget(BOTTOM);
+        }
 
         svcInvalidateProcessDataCache(handle, addr, size);
 
         if (!isBottom && addrB && addrB != addr)
             svcInvalidateProcessDataCache(handle, addrB, size);
 
-        bool mustFlush = false;
-
         // Draw notifications & icon
         if (!isBottom)
         {
-            //ScreenImpl::Top->Acquire((u32)addr, (u32)addrB, stride, format & 0b111);
-            Renderer::SetTarget(TOP);
-            mustFlush = OSDImpl::Draw() | DrawSaveIcon;
+            mustFlush |= OSDImpl::Draw() | DrawSaveIcon;
 
             if (DrawSaveIcon)
                 Icon::DrawSave(10, 10);
@@ -166,23 +174,26 @@ namespace CTRPluginFramework
         {
             if (drawTouch)
             {
-                ScreenImpl::Bottom->Acquire((u32)addr, (u32)addrB, stride, format & 0b111);
-                Renderer::SetTarget(BOTTOM);
                 IntVector touchPos(Touch::GetPosition());
 
                 int posX = touchPos.x - 2;
                 int posY = touchPos.y - 1;
-                //Renderer::DrawSysString("\uE058", posX, posY, 320, Color::Brown);
                 Icon::DrawHandCursor(posX, posY);
                 mustFlush = true;
             }
         }
 
+        // Draw fps
+        if (drawFps)
+        {
+            std::string &&fps = Utils::Format("FPS: %.02f", g_second / g_fpsClock[isBottom].Restart().AsSeconds());
+            int posY = 10;
+            Renderer::DrawString(fps.c_str(), 10, posY, Color::Blank, Color::Black);
+        }
+
         // Call OSD Callbacks
         if (Callbacks.size())
         {
-            Renderer::SetTarget(isBottom ? BOTTOM : TOP);
-
             Screen screen = { 0 };
 
             screen.IsTop = !isBottom;
@@ -196,7 +207,6 @@ namespace CTRPluginFramework
             for (OSDCallback cb : Callbacks)
                 mustFlush |= cb(screen);
         }
-
 
         if (mustFlush)
         {

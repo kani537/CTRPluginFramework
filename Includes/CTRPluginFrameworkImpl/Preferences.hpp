@@ -21,7 +21,9 @@ namespace CTRPluginFramework
             AutoSaveFavorites = 1 << 1,
             AutoLoadCheats = 1 << 2,
             AutoLoadFavorites = 1 << 3,
-            DrawTouchCursor = 1 << 4
+            DrawTouchCursor = 1 << 4,
+            ShowTopFps = 1 << 5,
+            ShowBottomFps = 1 << 6
         };
 
         struct HeaderV1
@@ -92,6 +94,8 @@ namespace CTRPluginFramework
         static bool         AutoSaveFavorites;
         static bool         AutoLoadCheats;
         static bool         AutoLoadFavorites;
+        static bool         ShowTopFps;
+        static bool         ShowBottomFps;
 
         static int          OpenConfigFile(File &file, Header &header);
         static void         LoadSettings(void);

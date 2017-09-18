@@ -68,6 +68,12 @@ namespace CTRPluginFramework
 
         if (Preferences::DrawTouchCursor) _miscellaneousMenu[2]->AsMenuEntryTools().Enable();
         else _miscellaneousMenu[2]->AsMenuEntryTools().Disable();
+
+        if (Preferences::ShowTopFps) _miscellaneousMenu[3]->AsMenuEntryTools().Enable();
+        else _miscellaneousMenu[3]->AsMenuEntryTools().Disable();
+
+        if (Preferences::ShowBottomFps) _miscellaneousMenu[4]->AsMenuEntryTools().Enable();
+        else _miscellaneousMenu[4]->AsMenuEntryTools().Disable();
     }
 
     using   FsTryOpenFileType = u32(*)(u32, u16*, u32);
@@ -285,6 +291,8 @@ namespace CTRPluginFramework
         _miscellaneousMenu.Append(new MenuEntryTools("Display loaded files", _DisplayLoadedFiles, true));
         _miscellaneousMenu.Append(new MenuEntryTools("Write loaded files to file", _WriteLoadedFiles, true));
         _miscellaneousMenu.Append(new MenuEntryTools("Draw touch cursor", [] { Preferences::DrawTouchCursor = !Preferences::DrawTouchCursor; }, true, Preferences::DrawTouchCursor));
+        _miscellaneousMenu.Append(new MenuEntryTools("Display top screen's fps", [] {Preferences::ShowTopFps = !Preferences::ShowTopFps; }, true, Preferences::ShowTopFps));
+        _miscellaneousMenu.Append(new MenuEntryTools("Display bottom screen's fps", [] {Preferences::ShowBottomFps = !Preferences::ShowBottomFps; }, true, Preferences::ShowBottomFps));
 
         // Settings menu
         _settingsMenu.Append(new MenuEntryTools("Change menu hotkeys", MenuHotkeyModifier, Icon::DrawGameController));

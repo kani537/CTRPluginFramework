@@ -310,9 +310,9 @@ namespace CTRPluginFramework
         _u16CheckBox.Draw();
         _u32CheckBox.Draw(); */
         posY = 104;
-        Renderer::DrawString((char *)"8Bits", 77, posY, Color::Blank); posY = 104;
-        Renderer::DrawString((char *)"16Bits", 157, posY, Color::Blank); posY = 104;
-        Renderer::DrawString((char *)"32Bits", 237, posY, Color::Blank);
+        Renderer::DrawString("8Bits", 77, posY, Color::Blank); posY = 104;
+        Renderer::DrawString("16Bits", 157, posY, Color::Blank); posY = 104;
+        Renderer::DrawString("32Bits", 237, posY, Color::Blank);
 
         // Draw UIControls
         _uiContainer.Draw();

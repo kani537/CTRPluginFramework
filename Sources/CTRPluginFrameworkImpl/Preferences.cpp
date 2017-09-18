@@ -21,6 +21,8 @@ namespace CTRPluginFramework
     bool        Preferences::AutoLoadFavorites = false;
     bool        Preferences::_cheatsAlreadyLoaded = false;
     bool        Preferences::_favoritesAlreadyLoaded = false;
+    bool        Preferences::ShowBottomFps = false;
+    bool        Preferences::ShowTopFps = false;
 
     BMPImage *RegionFromCenter(BMPImage *img, int maxX, int maxY)
     {
@@ -133,6 +135,8 @@ namespace CTRPluginFramework
             AutoSaveCheats = (header.flags & (u64)SettingsFlags::AutoSaveCheats) != 0;
             AutoSaveFavorites = (header.flags & (u64)SettingsFlags::AutoSaveFavorites) != 0;
             DrawTouchCursor = (header.flags & (u64)SettingsFlags::DrawTouchCursor) != 0;
+            ShowBottomFps = (header.flags & (u64)SettingsFlags::ShowBottomFps) != 0;
+            ShowTopFps = (header.flags & (u64)SettingsFlags::ShowTopFps) != 0;
         }
 
         // Check that hotkeys aren't 0
@@ -217,6 +221,8 @@ namespace CTRPluginFramework
         if (AutoSaveFavorites) header.flags |= (u64)SettingsFlags::AutoSaveFavorites;
         if (AutoLoadFavorites) header.flags |= (u64)SettingsFlags::AutoLoadFavorites;
         if (DrawTouchCursor) header.flags |= (u64)SettingsFlags::DrawTouchCursor;
+        if (ShowBottomFps) header.flags |= (u64)SettingsFlags::ShowBottomFps;
+        if (ShowTopFps) header.flags |= (u64)SettingsFlags::ShowTopFps;
 
         header.hotkeys = MenuHotkeys;
 

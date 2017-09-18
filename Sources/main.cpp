@@ -551,12 +551,6 @@ namespace CTRPluginFramework
             }
         });
 
-        OSD::Run([](const Screen &screen)
-        {
-            screen.Draw(screen.IsTop ?  "Top: " : "Bottom: ", 10, 10);
-            return (true);
-        });
-
         OSD::Notify(Color::Red << "Notification" << Color::LimeGreen << "Colored");
 
         menu += new MenuEntry("Clean", nullptr, [](MenuEntry *entry) {ScreenImpl::Clean(); });
