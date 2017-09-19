@@ -51,7 +51,7 @@ FTP_PATH	:=	"plugin/0004000000033600/"
 #---------------------------------------------------------------------------------
 ARCH	:=	-march=armv6k -mlittle-endian -mtune=mpcore -mfloat-abi=hard 
 
-CFLAGS	:=	-g -O2 -mword-relocations \
+CFLAGS	:=	-g -Os -mword-relocations \
  			-fomit-frame-pointer -ffunction-sections -fno-strict-aliasing \
 			$(ARCH)
 

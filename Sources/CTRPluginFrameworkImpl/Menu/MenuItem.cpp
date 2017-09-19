@@ -91,10 +91,9 @@ namespace CTRPluginFramework
         if (_container != nullptr)
         {
             MenuFolderImpl *container = reinterpret_cast<MenuFolderImpl *>(_container);
-            std::vector<MenuItem *>::iterator iter = container->_items.begin();
+            std::vector<MenuItem *> &items = container->_items;
 
-            std::advance(iter, _index);
-            container->_items.erase(iter);
+            items.erase(std::remove(items.begin(), items.end(), this), items.end());
         }
     }
 
@@ -138,10 +137,18 @@ namespace CTRPluginFramework
         if (_container != nullptr)
         {
             MenuFolderImpl *container = reinterpret_cast<MenuFolderImpl *>(_container);
-            std::vector<MenuItem *>::iterator iter = container->_items.begin();
+            std::vector<MenuItem *> &items = container->_items;
+            std::vector<MenuItem *>::iterator iter = items.begin();
 
-            std::advance(iter, _index);
-            container->_items.insert(iter, this);
+            if (_index < items.size())
+            {
+                std::advance(iter, _index);
+                container->_items.insert(iter, this);
+            }
+            else
+            {
+                items.push_back(this);
+            }
         }
     }
 }
