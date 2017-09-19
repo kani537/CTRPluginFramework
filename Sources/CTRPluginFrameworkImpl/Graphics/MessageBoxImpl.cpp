@@ -2,6 +2,8 @@
 #include "CTRPluginFrameworkImpl/System/ProcessImpl.hpp"
 #include "CTRPluginFrameworkImpl/Graphics/Renderer.hpp"
 #include "CTRPluginFrameworkImpl/System/EventManager.hpp"
+#include "CTRPluginFramework/Menu/PluginMenu.hpp"
+#include "CTRPluginFrameworkImpl/System/Screen.hpp"
 
 namespace CTRPluginFramework
 {
@@ -64,6 +66,9 @@ namespace CTRPluginFramework
         }       
 
         // Release game if we paused it in this function
+        PluginMenu *menu = PluginMenu::GetRunningInstance();
+        if (menu && !menu->IsOpen())
+            ScreenImpl::Clean();
         if (mustReleaseGame)
             ProcessImpl::Play(false);
 

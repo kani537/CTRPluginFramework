@@ -70,6 +70,16 @@ namespace CTRPluginFramework
         return (ProcessImpl::_isPaused);
 	}
 
+    void    Process::Pause(void)
+    {
+        ProcessImpl::Pause(false);
+    }
+
+    void    Process::Play(void)
+	{
+        ProcessImpl::Play(false);
+	}
+
     bool 	Process::Patch(u32 	addr, void *patch, u32 length, void *original)
 	{
 		return (ProcessImpl::PatchProcess(addr, static_cast<u8 *>(patch), length, static_cast<u8 *>(original)));

@@ -116,6 +116,8 @@ namespace CTRPluginFramework
 
             if (header.version != SETTINGS_VERSION)
             {
+                ProcessImpl::Pause(false);
+
                 MessageBox msgBox(Color::Yellow << "Warning\n\n" << ResetColor()
                     << "CTRPFData.bin version mismatch.\n"
                     << "Do you want to save it as CTRPFData.bin.bak to retrieve some data ?", DialogType::DialogYesNo);
@@ -130,6 +132,8 @@ namespace CTRPluginFramework
                     else
                         MessageBox("Operation failed")();
                 }
+
+                ProcessImpl::Play(false);
                 return (-1);
             }
 

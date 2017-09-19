@@ -6,6 +6,7 @@
 #include <cmath>
 #include "ctrulib/util/utf.h"
 #include "CTRPluginFramework/Utils/Utils.hpp"
+#include "CTRPluginFrameworkImpl/Menu/PluginMenuImpl.hpp"
 
 namespace CTRPluginFramework
 {
@@ -341,6 +342,9 @@ namespace CTRPluginFramework
         }
 
     exit:
+        PluginMenu *menu = PluginMenu::GetRunningInstance();
+        if (menu && !menu->IsOpen())
+            ScreenImpl::Clean();
         if (_mustRelease)
             ProcessImpl::Play(false);
         return (ret);
