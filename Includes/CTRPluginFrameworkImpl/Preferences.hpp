@@ -12,8 +12,9 @@ namespace CTRPluginFramework
     {
         #define SETTINGS_VERSION1 SYSTEM_VERSION(1, 0, 0)
         #define SETTINGS_VERSION11 SYSTEM_VERSION(1, 1, 0)
+        #define SETTINGS_VERSION12 SYSTEM_VERSION(1, 2, 0)
 
-        #define SETTINGS_VERSION SETTINGS_VERSION11
+        #define SETTINGS_VERSION SETTINGS_VERSION1
     public:
         enum class SettingsFlags
         {
@@ -26,7 +27,7 @@ namespace CTRPluginFramework
             ShowBottomFps = 1 << 6
         };
 
-        struct HeaderV1
+     /*   struct HeaderV1
         {
             u32     version;
             u64     flags;
@@ -52,9 +53,27 @@ namespace CTRPluginFramework
             u64     favoritesOffset;
             u32     hotkeysCount;
             u64     hotkeysOffset;
+        } PACKED; */
+
+        struct HeaderV1
+        {
+            u8      sig[8];
+            u32     version;
+            u32     pluginVersion;
+            u64     size;
+            u64     flags;
+            u32     hotkeys;
+            u32     freeCheatsCount;
+            u64     freeCheatsOffset;
+            u32     enabledCheatsCount;
+            u64     enabledCheatsOffset;
+            u32     favoritesCount;
+            u64     favoritesOffset;
+            u32     hotkeysCount;
+            u64     hotkeysOffset;
         } PACKED;
 
-        using Header = HeaderV11;
+        using Header = HeaderV1;
 
         struct SavedCheats
         {

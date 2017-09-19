@@ -2,6 +2,7 @@
 #include "CTRPluginFrameworkImpl/Preferences.hpp"
 #include <math.h>
 #include "ctrulib/result.h"
+#include <cstring>
 #include "CTRPluginFrameworkImpl/Menu/PluginMenuImpl.hpp"
 #include "CTRPluginFrameworkImpl/Menu/PluginMenuFreeCheats.hpp"
 
@@ -23,6 +24,8 @@ namespace CTRPluginFramework
     bool        Preferences::_favoritesAlreadyLoaded = false;
     bool        Preferences::ShowBottomFps = false;
     bool        Preferences::ShowTopFps = false;
+
+    static const char *g_signature = "CTRPF\0\0";
 
     BMPImage *RegionFromCenter(BMPImage *img, int maxX, int maxY)
     {
@@ -103,18 +106,37 @@ namespace CTRPluginFramework
         if (File::Open(settings, "CTRPFData.bin") == 0 && settings.GetSize() > 0)
         {
              // Check version
-            u32     version = 0;
             int     res = 0;
 
-            if (settings.Read(&version, 4)) return (-2);
+            if (settings.Read(&header, sizeof(u32) * 6)) return (-2);
+
+            // Check file
+            if (header.size != settings.GetSize() || memcmp(g_signature, header.sig, 8))
+                return (-1);
+
+            if (header.version != SETTINGS_VERSION)
+            {
+                MessageBox msgBox(Color::Yellow << "Warning\n\n" << ResetColor()
+                    << "CTRPFData.bin version mismatch.\n"
+                    << "Do you want to save it as CTRPFData.bin.bak to retrieve some data ?", DialogType::DialogYesNo);
+
+                if (msgBox())
+                {
+                    settings.Close();
+                    if (File::Rename("CTRPFData.bin", "CTRPFData.bin.bak") == File::OPResult::SUCCESS)
+                    {
+                        MessageBox("Operation succeeded")();
+                    }
+                    else
+                        MessageBox("Operation failed")();
+                }
+                return (-1);
+            }
 
             // Rewind file
             settings.Rewind();
 
-            if (version == SETTINGS_VERSION)
-                res = settings.Read(&header, sizeof(Header));
-            if (version == SETTINGS_VERSION1)
-                res = settings.Read(&header, sizeof(HeaderV1));
+            res = settings.Read(&header, sizeof(Header));
 
             return (res);
         }
@@ -214,6 +236,7 @@ namespace CTRPluginFramework
         int     mode = File::READ | File::WRITE | File::CREATE | File::TRUNCATE | File::SYNC;
         Header  header = { 0 };
 
+        memcpy(header.sig, g_signature, 8);
         header.version = SETTINGS_VERSION;
         
         if (AutoSaveCheats) header.flags |= (u64)SettingsFlags::AutoSaveCheats;
@@ -234,6 +257,8 @@ namespace CTRPluginFramework
             if (AutoSaveCheats) PluginMenuExecuteLoop::WriteEnabledCheatsToFile(header, settings);///PluginMenuImpl::WriteEnabledCheatsToFile(header, settings);
             if (AutoSaveFavorites) PluginMenuImpl::WriteFavoritesToFile(header, settings);
             PluginMenuImpl::WriteHotkeysToFile(header, settings);
+
+            header.size = settings.Tell();
 
             settings.Rewind();
             settings.Write(&header, sizeof(Header));

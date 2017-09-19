@@ -23,7 +23,7 @@ def checkfolder(ftp):
             return
 
     for f in files:
-        if (".plg" in f or "CTRPFData.bin" in f):
+        if (".plg" in f):# or "CTRPFData.bin" in f):
             parts = f.split()
             name = parts[len(parts) - 1]
             printf("Deleting " + name)
