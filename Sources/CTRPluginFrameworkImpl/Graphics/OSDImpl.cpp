@@ -4,8 +4,6 @@
 
 #include <vector>
 #include <cstring>
-#include "NTR.hpp"
-#include "NTRImpl.hpp"
 #include "CTRPluginFramework/System/Sleep.hpp"
 #include "CTRPluginFramework/Utils/Utils.hpp"
 #include "CTRPluginFramework/Menu/MessageBox.hpp"
@@ -20,6 +18,7 @@
 namespace CTRPluginFramework
 {
     bool    OSDImpl::DrawSaveIcon = false;
+    bool    OSDImpl::MessColors = false;
     Hook    OSDImpl::OSDHook;
     RecursiveLock OSDImpl::RecLock;
     std::list<OSDImpl::OSDMessage*> OSDImpl::Notifications;
@@ -120,6 +119,7 @@ namespace CTRPluginFramework
     static const float  g_second = Seconds(1.f).AsSeconds();
     static Clock        g_fpsClock[2];
 
+    static void    MessColor(u32 startAddr, u32 stride, u32 format);
     int OSDImpl::MainCallback(u32 isBottom, int arg2, void* addr, void* addrB, int stride, int format, int arg7)
     {
         if (!addr)
@@ -137,7 +137,7 @@ namespace CTRPluginFramework
         bool drawTouch =  Preferences::DrawTouchCursor && Touch::IsDown() && isBottom;
         bool drawFps = (Preferences::ShowBottomFps && isBottom) || (Preferences::ShowTopFps && !isBottom);
 
-        if (!drawTouch && !drawFps && !DrawSaveIcon
+        if (!drawTouch && !drawFps && !DrawSaveIcon && !MessColors
             && Callbacks.empty() && Notifications.empty())
             return (((OSDReturn)OSDHook.returnCode)(isBottom, arg2, addr, addrB, stride, format, arg7));
 
@@ -160,6 +160,12 @@ namespace CTRPluginFramework
 
         if (!isBottom && addrB && addrB != addr)
             svcInvalidateProcessDataCache(handle, addrB, size);
+
+        if (MessColors)
+        {
+            mustFlush = true;
+            MessColor((u32)addr, stride, format);
+        }
 
         // Draw notifications & icon
         if (!isBottom)
@@ -191,6 +197,7 @@ namespace CTRPluginFramework
             Renderer::DrawString(fps.c_str(), 10, posY, Color::Blank, Color::Black);
         }
 
+        OSDImpl::Lock();
         // Call OSD Callbacks
         if (Callbacks.size())
         {
@@ -207,6 +214,7 @@ namespace CTRPluginFramework
             for (OSDCallback cb : Callbacks)
                 mustFlush |= cb(screen);
         }
+        OSDImpl::Unlock();
 
         if (mustFlush)
         {
@@ -323,5 +331,90 @@ namespace CTRPluginFramework
 
         OSDImpl::OSDHook.Initialize(result, (u32)OSDImpl::MainCallback);
         OSDImpl::OSDHook.Enable();
+    }
+
+    static void    MessColor(u32 startAddr, u32 stride, u32 format)
+    {
+        u32 endBuffer = startAddr + (stride * 400);
+        u32 bpp = GetBPP((GSPGPU_FramebufferFormats)format);
+
+        PrivColor::SetFormat((GSPGPU_FramebufferFormats)format);
+
+        if (bpp == 4)
+        {
+
+            for (int x = 0; x < 400; ++x)
+            {
+                u32 *fb = (u32 *)(startAddr + stride * x);
+                u32 fbend = (u32)fb + 240 * 4;
+
+                while (fb < (u32 *)fbend)
+                {
+                    u32 c = *fb;
+
+                    //color.a = 255;
+                    u8 b = (c >> 16); //Swap R
+                                      //u8 g = (c >> 8);
+                    u8 r = c; //Swap b
+
+                              //color.Fade(0.1f);
+
+                    c &= 0xFF00FF00;
+                    c |= r << 16;
+                    c |= b;
+
+                    *fb++ = c;
+                }
+            }
+        }
+
+        else if (bpp == 3)
+        {
+            for (int x = 0; x < 400; ++x)
+            {
+                u32 *fb = (u32 *)(startAddr + stride * x);
+                u32 fbend = (u32)fb + 240 * 3;
+
+                while (fb < (u32 *)fbend)
+                {
+                    u32 c = *fb;
+
+                    u8 b = (c >> 16); //Swap R
+                    u8 g = (c >> 8);
+                    u8 r = c; //Swap b
+
+                    c &= 0xFF000000;
+                    c |= r << 16;
+                    c |= g << 8;
+                    c |= b;
+
+                    *fb = c;
+                    fb = (u32 *)((u32)fb + 3);
+                }
+            }
+        }
+        else if (bpp == 2)
+        {
+            for (int x = 0; x < 400; ++x)
+            {
+                u16 *fb = (u16 *)(startAddr + stride * x);
+                u16 *fbEnd = fb + 240;
+
+                while (fb < fbEnd)
+                {
+                    u16 c = *fb;
+
+                    u8 b = (c >> 8) & 0xF8; //Swap R
+                    u8 g = (c >> 3) & 0xFC;
+                    u8 r = (c << 3) & 0xF8; //Swap b
+
+                    c = (r & 0xF8) << 8;
+                    c |= (g & 0xFC) << 3;
+                    c |= (b & 0xF8) >> 3;
+
+                    *fb++ = c;
+                }
+            }
+        }
     }
 }

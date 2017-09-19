@@ -68,12 +68,53 @@ namespace CTRPluginFramework
 
     void    OSD::Run(OSDCallback cb)
     {
+        OSDImpl::Lock();
         OSDImpl::Callbacks.push_back(cb);
+        OSDImpl::Unlock();
     }
 
-    void    OSD::Remove(OSDCallback cb)
+    static u32     GetAddress(std::function<bool(const Screen &)> f)
     {
-        OSDImpl::Callbacks.erase(std::remove(OSDImpl::Callbacks.begin(), OSDImpl::Callbacks.end(), cb), OSDImpl::Callbacks.end());
+        typedef bool(fnType)(const Screen &);
+
+        fnType ** fnPointer = f.target<fnType *>();
+        return fnPointer != nullptr ? (u32)*fnPointer : 0;
+    }
+
+    using OSDIter = std::vector<OSDCallback>::iterator;
+
+    static OSDIter Find(OSDIter begin, OSDIter end, OSDCallback value)
+    {
+        u32 goal = GetAddress(value);
+
+        for (; begin != end; ++begin)
+        {
+            if (GetAddress(*begin) == goal)
+                return (begin);
+        }
+        return (end);
+    }
+
+    static OSDIter Remove(OSDIter first, OSDIter last, OSDCallback value)
+    {
+        first = Find(first, last, value);
+
+        if (first != last)
+        {
+            u32 goal = GetAddress(value);
+
+            for (OSDIter i = first; ++i != last;)
+                if (!(GetAddress(*i) == goal))
+                    *first++ = std::move(*i);
+        }
+        return (first);
+    }
+
+    void    OSD::Stop(OSDCallback cb)
+    {
+        OSDImpl::Lock();
+        OSDImpl::Callbacks.erase(Remove(OSDImpl::Callbacks.begin(), OSDImpl::Callbacks.end(), cb), OSDImpl::Callbacks.end());
+        OSDImpl::Unlock();
     }
 
     void    OSD::Lock()

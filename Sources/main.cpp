@@ -10,7 +10,6 @@
 #include "CTRPluginFrameworkImpl/Preferences.hpp"
 #include "ctrulib/allocator/linear.h"
 #include "CTRPluginFrameworkImpl/Menu/MenuEntryTools.hpp"
-#include "NTR.hpp"
 #include "Hook.hpp"
 #include "CTRPluginFramework/Graphics/OSD.hpp"
 #include "CTRPluginFrameworkImpl/Menu/Menu.hpp"
@@ -21,8 +20,8 @@
 #include <locale>
 #include <cstring>
 #include "csvc.h"
-#include "NTRImpl.hpp"
 #include "ctrulib/gpu/gx.h"
+#include <memory>
 
 namespace CTRPluginFramework
 {
@@ -511,7 +510,7 @@ namespace CTRPluginFramework
 
         // When my cheat is disabled, I remove the callback
         if (!entry->IsActivated())
-            OSD::Remove(osd);
+            OSD::Stop(osd);
     }
 
 #define C_RESET "\x18"
@@ -521,6 +520,15 @@ namespace CTRPluginFramework
 #define C_ORANGE "\x1B\xFF\x45\x01"
 #define C_YELLOW "\x1B\xFF\xD7\x01"
 
+#define ONCE(expr) static bool __isAlreadyAdded = false;\
+    if (!__isAlreadyAdded) {\
+        (expr);\
+        __isAlreadyAdded = true;}
+
+#define RESET(expr) if (__isAlreadyAdded) {\
+    (expr);\
+    __isAlreadyAdded = false;}
+        
     extern "C" Handle gspGpuHandle;
 #define ARVERSION 0
     int    main(void)
@@ -541,14 +549,28 @@ namespace CTRPluginFramework
 
         menu += new MenuEntry("L for keyboard", [](MenuEntry *entry)
         {
+            static u32  i = 0;
+            auto osd = [&](const Screen &screen)
+            {
+                if (!screen.IsTop) return (false);
+
+                screen.Draw("i val: " << Color::Green << i, 10, 10);
+                return (true);
+            };
+
+            ONCE(OSD::Run(osd));
             if (Controller::IsKeyPressed(L))
             {
-                Keyboard kb;
+                Keyboard    kb;
 
-                u32 i;
-
-                kb.Open(i);
+                kb.Open(i);               
             }
+
+            if (!entry->IsActivated())
+            {
+                RESET(OSD::Stop(osd));
+            }
+                
         });
 
         OSD::Notify(Color::Red << "Notification" << Color::LimeGreen << "Colored");

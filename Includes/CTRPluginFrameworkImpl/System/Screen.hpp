@@ -2,7 +2,6 @@
 #define CTRPLUGINFRAMEWORK_SCREENIMPL_HPP
 
 #include "ctrulib/services/gspgpu.h"
-#include "NTR.hpp"
 
 namespace CTRPluginFramework
 {

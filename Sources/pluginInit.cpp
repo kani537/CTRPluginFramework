@@ -1,11 +1,8 @@
 #include "3DS.h"
-#include <stdlib.h>
-#include <cstdio>
 #include "CTRPluginFrameworkImpl/arm11kCommands.h"
 #include "CTRPluginFrameworkImpl.hpp"
 #include "CTRPluginFramework.hpp"
 #include "CTRPluginFrameworkImpl/Graphics/Font.hpp"
-#include "NTRImpl.hpp"
 #include "csvc.h"
 
 extern "C" void     abort(void);
@@ -163,11 +160,7 @@ namespace CTRPluginFramework
         }
         // Set current working directory
         {
-            u64     tid = Process::GetTitleID();
-            char    path[256] = { 0 };
-
-            sprintf(path, "/plugin/%016llX/", tid);
-            Directory::ChangeWorkingDirectory(path);
+            Directory::ChangeWorkingDirectory(Utils::Format("/plugin/%016llX/", Process::GetTitleID()));
         }
 
         // Protect VRAM
@@ -185,12 +178,7 @@ namespace CTRPluginFramework
     {
         CTRPluginFramework::Initialize();
 
-        // Reduce Priority
-        //ProcessImpl::Play(false);
-
         // Initialize Globals settings
-        Preferences::Initialize();    
-        Window::Initialize();
         InitializeRandomEngine();
 
         // Start plugin

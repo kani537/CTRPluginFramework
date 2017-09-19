@@ -57,7 +57,7 @@ CFLAGS	:=	-g -Os -mword-relocations \
 
 CFLAGS		+=	$(INCLUDE) -DARM11 -D_3DS 
 
-CXXFLAGS	:= $(CFLAGS) -fno-rtti -fno-exceptions -std=gnu++11
+CXXFLAGS	:= $(CFLAGS) -fno-exceptions -std=gnu++11
 
 ASFLAGS		:=	-g $(ARCH)
 LDFLAGS		:= -pie -T $(TOPDIR)/3ds.ld $(ARCH) -O2 -Wl,-Map,$(notdir $*.map),--gc-sections 

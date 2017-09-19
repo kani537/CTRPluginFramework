@@ -44,11 +44,12 @@ namespace CTRPluginFramework
         static bool    TryLock(void);
         static void    Unlock(void);
         
-        static  bool            DrawSaveIcon;
-        static  Hook            OSDHook;
-        static  RecursiveLock   RecLock;
-        static  std::list<OSDMessage*>      Notifications;
-        static  std::vector<OSDCallback>    Callbacks;
+        static bool             DrawSaveIcon;
+        static bool             MessColors;
+        static Hook             OSDHook;
+        static RecursiveLock    RecLock;
+        static std::list<OSDMessage*>      Notifications;
+        static std::vector<OSDCallback>    Callbacks;
 
         static  int MainCallback(u32 isBottom, int arg2, void *addr, void *addrB, int stride, int format, int arg7);
 

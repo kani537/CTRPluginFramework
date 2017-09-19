@@ -109,7 +109,7 @@ namespace CTRPluginFramework
         static bool         _cheatsAlreadyLoaded;
         static bool         _favoritesAlreadyLoaded;
 
-        friend void     ThreadInit(void *arg);
+        friend class PluginMenuImpl;
         
         static void     Initialize(void);
     };

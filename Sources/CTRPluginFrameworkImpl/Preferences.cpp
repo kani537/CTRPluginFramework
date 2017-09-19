@@ -246,10 +246,6 @@ namespace CTRPluginFramework
 
     void    Preferences::Initialize(void)
     {
-        // Framework globals
-        InjectBOnMenuClose = false;
-        DrawTouchCursor = false;
-
         // If EcoMemoryMode, don't load the backgrounds
         if (EcoMemoryMode)
         {
@@ -266,5 +262,8 @@ namespace CTRPluginFramework
             if (bottomBackgroundImage->IsLoaded())
                 bottomBackgroundImage = PostProcess(bottomBackgroundImage, 280, 200);
         }
+
+        // Update Window
+        Window::Initialize();
     }
 }

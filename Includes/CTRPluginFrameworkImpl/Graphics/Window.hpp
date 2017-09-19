@@ -31,7 +31,7 @@ namespace CTRPluginFramework
         IconButton<Window, void>    *_closeBtn;
         BMPImage    *_image;
 
-        friend void     ThreadInit(void *arg);
+        friend class Preferences;
         static void     Initialize(void);
     };
 }

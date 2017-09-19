@@ -12,7 +12,6 @@
 #include "CTRPluginFrameworkImpl/System.hpp"
 #include "CTRPluginFramework/System.hpp"
 #include "CTRPluginFrameworkImpl/Preferences.hpp"
-#include "NTRImpl.hpp"
 
 namespace CTRPluginFramework
 {
@@ -132,11 +131,14 @@ namespace CTRPluginFramework
         GuideReader             &guide = *_guide;
         PluginMenuExecuteLoop   &executer = *_executeLoop;
 
-        Time            delta;
-        std::vector<Event>     eventList;
+        Time                    delta;
+        std::vector<Event>      eventList;
 
         // Set _runningInstance to this menu
         _runningInstance = this;
+
+        // Load backgrounds
+        Preferences::Initialize();
 
         // Load settings
         Preferences::LoadSettings();
@@ -314,7 +316,7 @@ namespace CTRPluginFramework
                 static KeySequenceImpl konamicode({ DPadUp, DPadUp, DPadDown, DPadDown, DPadLeft, DPadRight, DPadLeft, DPadRight, B, A, B, A });
 
                 if (konamicode())
-                    NTRImpl::MessColors = !NTRImpl::MessColors;
+                    OSDImpl::MessColors = !OSDImpl::MessColors;
 
                 OSDImpl::Update();
 
