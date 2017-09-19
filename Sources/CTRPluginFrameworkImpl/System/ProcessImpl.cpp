@@ -20,7 +20,7 @@ namespace CTRPluginFramework
 	Handle 		ProcessImpl::_processHandle = 0;
 	Handle 		ProcessImpl::_mainThreadHandle = 0;
     Handle      ProcessImpl::FrameEvent = 0;
-    LightLock   ProcessImpl::FrameLock;
+    RecursiveLock   ProcessImpl::FrameLock;
 	bool 		ProcessImpl::_isPaused = false;
 	bool 		ProcessImpl::_isAcquiring = false;
 
@@ -69,7 +69,7 @@ namespace CTRPluginFramework
     void    ProcessImpl::UpdateThreadHandle(void)
     {
         _mainThreadHandle = threadGetCurrent()->handle;
-        LightLock_Init(&FrameLock);
+        RecursiveLock_Init(&FrameLock);
         svcCreateEvent(&FrameEvent, RESET_ONESHOT);
         svcSetThreadPriority(_mainThreadHandle, 0x3F);        
     }
@@ -96,7 +96,10 @@ namespace CTRPluginFramework
         _isPaused = true;
 
         // Lock at game's new frame
-        LightLock_Lock(&FrameLock);
+        RecursiveLock_Lock(&FrameLock);
+
+        if (FrameLock.counter != 1)
+            return;
 
         // Wait for the frame event
         svcWaitSynchronization(FrameEvent, U64_MAX);
@@ -125,8 +128,6 @@ namespace CTRPluginFramework
         	ScreenImpl::Top->Fade(fade);
         	ScreenImpl::Bottom->Fade(fade);
 
-            GPUCMD_Run();
-            GPUCMD_Finalize();
         	ScreenImpl::Top->SwapBuffer(true, true);
         	ScreenImpl::Bottom->SwapBuffer(true, true);
         	gspWaitForVBlank();
@@ -160,8 +161,7 @@ namespace CTRPluginFramework
 		}
         _isPaused = false;
 
-        if (LightLock_IsLocked(&ProcessImpl::FrameLock))
-            LightLock_Unlock(&ProcessImpl::FrameLock);
+        RecursiveLock_Unlock(&ProcessImpl::FrameLock);
 	}
 
     bool     ProcessImpl::PatchProcess(u32 addr, u8 *patch, u32 length, u8 *original)

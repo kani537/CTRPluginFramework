@@ -82,7 +82,7 @@ namespace CTRPluginFramework
             static bool         _isPaused;
             static bool         _isAcquiring;
             static Handle       FrameEvent;
-            static LightLock    FrameLock;
+            static RecursiveLock FrameLock;
         //static u32          _finishedStateDMA;
             //static u32          *_kProcessHandleTable;          
     };

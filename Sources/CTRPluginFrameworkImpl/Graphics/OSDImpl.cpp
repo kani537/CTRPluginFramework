@@ -129,9 +129,9 @@ namespace CTRPluginFramework
         {
             GSPGPU_SaveVramSysArea();
             svcSignalEvent(ProcessImpl::FrameEvent);
-            LightLock_Lock(&ProcessImpl::FrameLock);
+            RecursiveLock_Lock(&ProcessImpl::FrameLock);
             GSPGPU_RestoreVramSysArea();
-            LightLock_Unlock(&ProcessImpl::FrameLock);
+            RecursiveLock_Unlock(&ProcessImpl::FrameLock);
         }
 
         bool drawTouch =  Preferences::DrawTouchCursor && Touch::IsDown() && isBottom;

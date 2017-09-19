@@ -128,11 +128,16 @@ int RecursiveLock_TryLock(RecursiveLock* lock)
 
 void RecursiveLock_Unlock(RecursiveLock* lock)
 {
-	if (!--lock->counter)
-	{
-		lock->thread_tag = 0;
-		LightLock_Unlock(&lock->lock);
-	}
+    u32 tag = (u32)getThreadLocalStorage();
+
+    if (lock->thread_tag == tag && lock->counter)
+    {
+        if (!--lock->counter)
+        {
+            lock->thread_tag = 0;
+            LightLock_Unlock(&lock->lock);
+        }
+    }
 }
 
 static inline void LightEvent_SetState(LightEvent* event, int state)
