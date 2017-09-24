@@ -3,7 +3,6 @@
 
 #include "CTRPluginFramework/Graphics/Color.hpp"
 #include "ctrulib/services/gspgpu.h"
-#include <functional>
 #include <string>
 
 namespace CTRPluginFramework
@@ -28,7 +27,7 @@ namespace CTRPluginFramework
         void    ReadPixel(u32 posX, u32 posY, Color &pixel, bool fromRightFb = false) const;
     };
 
-    using OSDCallback = std::function<bool(const Screen &)>;//bool(*)(const Screen &);
+    using OSDCallback = bool(*)(const Screen &);
     class OSD
     {
     public:

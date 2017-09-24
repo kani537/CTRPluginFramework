@@ -73,47 +73,10 @@ namespace CTRPluginFramework
         OSDImpl::Unlock();
     }
 
-    static u32     GetAddress(std::function<bool(const Screen &)> f)
-    {
-        typedef bool(fnType)(const Screen &);
-
-        fnType ** fnPointer = f.target<fnType *>();
-        return fnPointer != nullptr ? (u32)*fnPointer : 0;
-    }
-
-    using OSDIter = std::vector<OSDCallback>::iterator;
-
-    static OSDIter Find(OSDIter begin, OSDIter end, OSDCallback value)
-    {
-        u32 goal = GetAddress(value);
-
-        for (; begin != end; ++begin)
-        {
-            if (GetAddress(*begin) == goal)
-                return (begin);
-        }
-        return (end);
-    }
-
-    static OSDIter Remove(OSDIter first, OSDIter last, OSDCallback value)
-    {
-        first = Find(first, last, value);
-
-        if (first != last)
-        {
-            u32 goal = GetAddress(value);
-
-            for (OSDIter i = first; ++i != last;)
-                if (!(GetAddress(*i) == goal))
-                    *first++ = std::move(*i);
-        }
-        return (first);
-    }
-
     void    OSD::Stop(OSDCallback cb)
     {
         OSDImpl::Lock();
-        OSDImpl::Callbacks.erase(Remove(OSDImpl::Callbacks.begin(), OSDImpl::Callbacks.end(), cb), OSDImpl::Callbacks.end());
+        OSDImpl::Callbacks.erase(std::remove(OSDImpl::Callbacks.begin(), OSDImpl::Callbacks.end(), cb), OSDImpl::Callbacks.end());
         OSDImpl::Unlock();
     }
 
@@ -124,7 +87,7 @@ namespace CTRPluginFramework
 
     bool    OSD::TryLock()
     {
-        return (OSDImpl::TryLock());
+        return (OSDImpl::TryLock());    
     }
 
     void OSD::Unlock()
