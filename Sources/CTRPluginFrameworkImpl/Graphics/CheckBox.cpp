@@ -14,7 +14,7 @@ namespace CTRPluginFramework
     {
     }
 
-    void CheckBox::Update(bool isTouchDown, IntVector touchPos)
+    void CheckBox::Update(const bool isTouchDown, const IntVector &touchPos)
     {
         if (!_enabled)
             return;

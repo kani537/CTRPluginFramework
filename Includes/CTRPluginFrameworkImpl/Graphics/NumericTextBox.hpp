@@ -36,7 +36,7 @@ namespace CTRPluginFramework
 
         void    Clear(void);
         void    Draw(void) override;
-        void    Update(bool isTouchDown, IntVector touchPos) override;
+        void    Update(const bool isTouchDown, const IntVector &touchPos) override;
         bool    operator()(void) override;
 
         bool    IsEnabled;

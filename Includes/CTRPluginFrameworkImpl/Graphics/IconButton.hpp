@@ -28,7 +28,7 @@ namespace CTRPluginFramework
         void    Draw(void) override;
 
         // Update
-        void    Update(bool touchIsDown, IntVector touchPos) override;
+        void    Update(const bool touchIsDown, const IntVector &touchPos) override;
 
         // Executer
         virtual bool    operator()(void) override;
@@ -74,7 +74,7 @@ namespace CTRPluginFramework
 
     // Update
     template <class C, class T, class ...Args>
-    void    TIconButton::Update(bool isTouchdown, IntVector touchPos)
+    void    TIconButton::Update(const bool isTouchdown, const IntVector &touchPos)
     {
         if (!_enabled)
             return;

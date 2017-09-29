@@ -280,7 +280,7 @@ namespace CTRPluginFramework
 
     }
 
-    void    TextBox::Update(bool isTouchDown, IntVector pos)
+    void    TextBox::Update(const bool isTouchDown, const IntVector &pos)
     {
     }
 

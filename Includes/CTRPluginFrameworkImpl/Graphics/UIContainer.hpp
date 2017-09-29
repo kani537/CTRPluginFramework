@@ -14,7 +14,7 @@ namespace CTRPluginFramework
 
         void    operator+=(Drawable *uiControl);
         void    Draw(void);
-        void    Update(bool isTouchDown, IntVector touchPos);
+        void    Update(const bool isTouchDown, const IntVector &touchPos);
         void    ExecuteAll(void);
         
     private:

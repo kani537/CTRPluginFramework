@@ -63,7 +63,7 @@ namespace CTRPluginFramework
             _closeBtn->Draw();
     }
 
-    void    Window::Update(bool isTouched, IntVector touchPos) const
+    void    Window::Update(const bool isTouched, const IntVector &touchPos) const
     {
         if (_closeBtn != nullptr)
             _closeBtn->Update(isTouched, touchPos);

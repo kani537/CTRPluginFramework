@@ -18,7 +18,7 @@ namespace CTRPluginFramework
 
         void    Draw(void) const;
         void    Draw(const std::string &title) const;
-        void    Update(bool isTouched, IntVector touchPos) const;
+        void    Update(const bool isTouched, const IntVector &touchPos) const;
         bool    MustClose(void) const;
         void    Close(void);
 

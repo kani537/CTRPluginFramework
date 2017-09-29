@@ -23,7 +23,7 @@ namespace CTRPluginFramework
         using EventCallback = T (C::*)(Args...);
         using IconCallback = int (*)(int, int);
 
-        Button(std::string content, C &caller, T(C::*callback)(Args...), IntRect rect, IconCallback icon = nullptr) :
+        Button(const std::string &content, C &caller, T(C::*callback)(Args...), IntRect rect, IconCallback icon = nullptr) :
         _caller(caller), 
         _callback(callback), 
         _content(content), 
@@ -63,7 +63,7 @@ namespace CTRPluginFramework
         }
 
         void    Draw(void) override;
-        void    Update(bool isTouchDown, IntVector touchPos) override;
+        void    Update(const bool isTouchDown, const IntVector &touchPos) override;
         void    UseSysFont(bool use);
         void    RoundedRatio(u32 ratio)
         {
@@ -209,7 +209,7 @@ namespace CTRPluginFramework
     ** Update
     ***********/
     template <class C, class T, class... Args>
-    void    Button<C,T, Args...>::Update(bool isTouchDown, IntVector touchPos)
+    void    Button<C,T, Args...>::Update(const bool isTouchDown, const IntVector &touchPos)
     {
         if (!IsEnabled || IsLocked)
             return;

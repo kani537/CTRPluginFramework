@@ -10,8 +10,8 @@ namespace CTRPluginFramework
         virtual ~Drawable(){}
 
         virtual void Draw(void) = 0;
-        virtual bool operator()(void){}
-        virtual void Update(bool isTouchDown, IntVector touchPos) = 0;
+        virtual bool operator()(void) { return (false); }
+        virtual void Update(const bool isTouchDown, const IntVector &touchPos) = 0;
     };
 }
 

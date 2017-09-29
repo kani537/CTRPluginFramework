@@ -15,7 +15,7 @@ namespace CTRPluginFramework
 
     }
 
-    void    ComboBox::Add(std::string item)
+    void    ComboBox::Add(const std::string &item)
     {
         _items.push_back(item);
 
@@ -55,7 +55,7 @@ namespace CTRPluginFramework
         Renderer::DrawString((char *)_items[SelectedItem].c_str(), posX, posY, black);
     }
 
-    void    ComboBox::Update(bool isTouchDown, IntVector touchPos)
+    void    ComboBox::Update(const bool isTouchDown, const IntVector &touchPos)
     {
         if (!_items.size() || !IsEnabled)
             return;

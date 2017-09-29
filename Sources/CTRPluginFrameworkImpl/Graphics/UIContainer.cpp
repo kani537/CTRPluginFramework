@@ -24,7 +24,7 @@ namespace CTRPluginFramework
             uiControl->Draw();
     }
 
-    void    UIContainer::Update(bool isTouchDown, IntVector touchPos)
+    void    UIContainer::Update(const bool isTouchDown, const IntVector &touchPos)
     {
         for (Drawable *uiControl : _uiControls)
             uiControl->Update(isTouchDown, touchPos);

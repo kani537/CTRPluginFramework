@@ -24,7 +24,7 @@ namespace CTRPluginFramework
         // Draw
         void    Draw(void) override;
         // Update
-        void    Update(bool isTouchDown, IntVector touchPos) override;
+        void    Update(const bool isTouchDown, const IntVector &touchPos) override;
         // Execute
         bool    operator()(void) override;
         // Return if the button is checked or not
@@ -198,7 +198,7 @@ namespace CTRPluginFramework
 
     // Update
     template <class C, class T, class ...Args>
-    void    TCheckedButton::Update(bool isTouchDown, IntVector touchPos)
+    void    TCheckedButton::Update(const bool isTouchDown, const IntVector &touchPos)
     {
         if (!isTouchDown && _isWaiting)
         {

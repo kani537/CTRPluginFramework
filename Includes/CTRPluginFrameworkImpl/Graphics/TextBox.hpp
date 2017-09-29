@@ -32,7 +32,7 @@ namespace CTRPluginFramework
         void    Update(const std::string &title, std::string &text);
         // Draw
         void    Draw(void) override;
-        void    Update(bool isTouchDown, IntVector pos) override;
+        void    Update(const bool isTouchDown, const IntVector &pos) override;
 
         Color   titleColor;
         Color   textColor;

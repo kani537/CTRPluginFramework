@@ -59,7 +59,7 @@ namespace CTRPluginFramework
         }
     }
 
-    void    TouchKeyString::Update(bool isTouchDown, IntVector touchPos)
+    void    TouchKeyString::Update(const bool isTouchDown, const IntVector &touchPos)
     {
         if (!_enabled)
             return;

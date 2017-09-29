@@ -12,7 +12,7 @@ namespace CTRPluginFramework
         CheckBox(int posX, int posY);
         ~CheckBox(void);
 
-        void    Update(bool isTouchDown, IntVector touchPos) override;
+        void    Update(const bool isTouchDown, const IntVector &touchPos) override;
         bool    IsChecked(void) const;
 
     protected:

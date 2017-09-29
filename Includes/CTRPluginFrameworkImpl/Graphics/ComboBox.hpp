@@ -14,10 +14,10 @@ namespace CTRPluginFramework
     public:
         ComboBox(int posX, int posY, int width, int height);
 
-        void    Add(std::string item);
+        void    Add(const std::string &item);
         void    Clear(void);
         void    Draw(void) override;
-        void    Update(bool isTouchDown, IntVector touchPos) override;
+        void    Update(const bool isTouchDown, const IntVector &touchPos) override;
         bool    operator()(void) override;
 
         bool    IsEnabled;

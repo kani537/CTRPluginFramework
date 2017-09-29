@@ -58,7 +58,7 @@ namespace CTRPluginFramework
         {
             OSDImpl::Unlock();
             return (-1);
-        }           
+        }
 
         OSDImpl::Notifications.push_back(new OSDImpl::OSDMessage(str, fg, bg));
         OSDImpl::Unlock();

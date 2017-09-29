@@ -136,7 +136,7 @@ namespace CTRPluginFramework
         Renderer::DrawString((char *)_text.c_str(), posX, posY, black);
     }
 
-    void    NumericTextBox::Update(bool isTouchDown, IntVector touchPos)
+    void    NumericTextBox::Update(const bool isTouchDown, const IntVector &touchPos)
     {
         if (!IsEnabled)
             return;

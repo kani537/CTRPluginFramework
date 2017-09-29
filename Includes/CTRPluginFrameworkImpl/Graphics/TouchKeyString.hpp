@@ -27,7 +27,7 @@ namespace CTRPluginFramework
         void    Draw(void);
 
         // Update
-        void    Update(bool touchIsDown, IntVector touchPos);
+        void    Update(const bool touchIsDown, const IntVector &touchPos);
 
         // Scrolls
         void    Scroll(float amount);
@@ -35,8 +35,6 @@ namespace CTRPluginFramework
         // Executer
         // Return -1 if not pressed, 1 otherwise
         int    operator()(void);
-
-
 
     private:
         std::string     _content;
