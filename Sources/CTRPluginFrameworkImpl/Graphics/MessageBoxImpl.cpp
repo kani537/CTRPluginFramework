@@ -27,7 +27,7 @@ namespace CTRPluginFramework
 
         int height = std::max((16 * lineCount + 59), 75);
         int posY = (240 - height) / 2;
-        int width = std::max((int)(maxLineWidth + 10), minWidth);
+        int width = std::max((int)(maxLineWidth + 11), minWidth);
         int posX = (400 - width) / 2;
 
         _box = IntRect(posX, posY, width, height);
@@ -83,6 +83,12 @@ namespace CTRPluginFramework
             {
                 case Key::A:
                 {
+                    _exit = true;
+                    break;
+                }
+                case Key::B:
+                {
+                    _cursor = 1;
                     _exit = true;
                     break;
                 }

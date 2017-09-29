@@ -69,7 +69,10 @@ namespace CTRPluginFramework
     void    OSD::Run(OSDCallback cb)
     {
         OSDImpl::Lock();
+        for (OSDCallback c : OSDImpl::Callbacks)
+            if (c == cb) goto exit;
         OSDImpl::Callbacks.push_back(cb);
+    exit:
         OSDImpl::Unlock();
     }
 

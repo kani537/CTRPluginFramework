@@ -36,6 +36,10 @@ namespace CTRPluginFramework
         this->_owner = owner;
     }
 
+    MenuEntryImpl::~MenuEntryImpl()
+    {
+    }
+
     void    MenuEntryImpl::Enable(void)
     {
         if (IsActivated())

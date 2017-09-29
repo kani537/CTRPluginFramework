@@ -104,7 +104,8 @@ namespace CTRPluginFramework
         // Process Event
         if (!_inSearch)
         {
-            _searchMenu.ProcessEvent(eventList, delta);
+            if (_searchMenu.ProcessEvent(eventList, delta))
+                Window::BottomWindow.Close();
             for (int i = 0; i < eventList.size(); i++)
             {
                 _ProcessEvent(eventList[i]);

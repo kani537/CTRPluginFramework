@@ -14,6 +14,7 @@ namespace CTRPluginFramework
 
         // Return true if finished
         bool operator()(void);
+        bool _SelectRegion();
     private:
 
         void    _OpenFile(void);

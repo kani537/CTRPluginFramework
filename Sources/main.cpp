@@ -22,6 +22,7 @@
 #include "csvc.h"
 #include "ctrulib/gpu/gx.h"
 #include <memory>
+#include "OSDManager.hpp"
 
 namespace CTRPluginFramework
 {
@@ -489,7 +490,6 @@ namespace CTRPluginFramework
         }
     }
 
-
     void    MyCheat(MenuEntry *entry)
     {
         // The osd callback
@@ -513,6 +513,28 @@ namespace CTRPluginFramework
             OSD::Stop(osd);
     }
 
+    void    f(MenuEntry *entry)
+    {
+        if (Controller::IsKeyPressed(Key::X))
+        {
+            // Pause the process
+            Process::Pause();
+
+            u32         val = 0;
+            Keyboard    kb(Color::Green << "That keyboard !\n\n" << ResetColor() << "Enter a value");
+            MessageBox  msgBox(Color::Yellow << "Warning\n\n" << ResetColor() << "You did something worthy of a warning");
+
+            // Open the keyboard
+            kb.Open(val); ///< Screen will be cleaned on exit
+
+            // Open the messagebox
+            msgBox(); ///< Screen will be cleaned on exit
+
+            // Resume the process
+            Process::Play();
+        }
+    }
+
 #define C_RESET "\x18"
 #define C_RED "\x1B\xFF\x01\x01"
 #define C_BLUE "\x1B\x01\x01\xFF"
@@ -530,7 +552,295 @@ namespace CTRPluginFramework
     __isAlreadyAdded = false;}
         
     extern "C" Handle gspGpuHandle;
-#define ARVERSION 0
+    Time    t_second = Seconds(1.f);
+    float g_second = Seconds(1.f).AsSeconds();
+    float g_frameTime = 0.f;
+    u32   g_eps = 0;
+
+
+    static Handle g_event = 0;
+
+    auto g_osdcb = [](const Screen &screen)
+    {
+        if (screen.IsTop)
+        {
+            std::string str = "FrameTime: " << Color::Green << Utils::Format("%.02f", g_frameTime);
+
+            screen.Draw(str, 10, 10);
+
+            str = "Executed: " << Color::Green << g_eps << "/s";
+            screen.Draw(str, 10, 20);
+            svcSignalEvent(g_event);
+            return (true);
+        }
+        return (false);
+    };
+
+    template <typename T>
+    T   *GetArg(MenuEntry *entry, T defaultValue)
+    {
+        T   *arg = reinterpret_cast<T *>(entry->GetArg());
+
+        if (arg == nullptr)
+        {
+            arg = new T(defaultValue);
+            entry->SetArg(arg);
+        }
+
+        return (arg);
+    }
+
+    enum
+    {
+        U8,
+        U16,
+        U32,
+        Float
+    };
+
+    u32         g_mode = U32;
+
+    void    UpdateEntries(void);
+
+    MenuFolder  *g_pointerFolder = new MenuFolder("Pointers testing", "",
+    {
+        new MenuEntry("Change mode", nullptr, [](MenuEntry *entry)
+        {
+            Keyboard kb(std::vector<std::string>({"u8 ", "u16", "u32", "Float"}));
+
+            kb.CanAbort(false);
+            g_mode = kb.Open();
+            UpdateEntries();
+        })
+    });
+
+    std::string FormatAddress(u32 addr, u32 off)
+    {
+        std::string address = Utils::Format("%08X", addr == 0 ? off : addr);
+        std::string offset = Utils::Format("%X", off);
+        
+        if (addr == 0)
+        {
+            return ("[" << Color::Yellow << address << ResetColor() << "] = ");
+        }
+
+        return ("[" << Color::Yellow << address << ResetColor() 
+            << " + " << Color::Orange << offset << ResetColor() << "] = ");
+    }
+
+    std::string FormatValue(u32 &address)
+    {
+        union
+        {
+
+            u32 U32;
+            float Float;
+            u8 U8;
+            u16 U16;
+        }val = { 0 };
+
+        std::string ret; 
+
+        if (!Process::Read32(address, address))
+            address = 0;
+
+        val.U32 = address;
+        
+        switch (g_mode)
+        {
+        case U8:
+            ret = Color::SkyBlue << Utils::Format("%08X", address) 
+            << ResetColor() << " => " 
+            << Color::Green << Utils::Format("%02X", val.U8);
+            break;
+        case U16:
+            ret = Color::SkyBlue << Utils::Format("%08X", address)
+                << ResetColor() << " => "
+                << Color::Green << Utils::Format("%04X", val.U16);
+            break;
+        case U32:
+            ret = Color::Green << Utils::Format("%08X", val.U32);
+            break;
+        case Float:
+            ret = Color::SkyBlue << Utils::Format("%08X", address)
+                << ResetColor() << " => "
+                << Color::Green << Utils::Format("%.02f", val.Float);
+            break;
+        }
+
+        return (ret);
+    }
+
+    void    UpdateEntries(void)
+    {
+        std::vector<MenuEntry *> &&list = g_pointerFolder->GetEntryList();
+
+        u32 address = 0;
+
+        for (int i = 1; i < 11; i++)
+        {
+            MenuEntry *entry = list[i];
+            std::string &name = entry->Name();
+
+            u32 val = *GetArg<u32>(entry, 0);
+
+            name = FormatAddress(address, val);
+
+            address += val;
+
+            name += FormatValue(address);
+        }
+    }
+
+    void    ChangeValue(MenuEntry *entry)
+    {
+        u32 *val = GetArg<u32>(entry, 0);
+
+        Keyboard kb;
+
+        kb.CanAbort(false);
+        kb.Open(*val);
+        UpdateEntries();
+    }
+
+    void    InitPointerChecker(PluginMenu &menu)
+    {
+        menu += g_pointerFolder;
+
+        for (int i = 0; i < 10; i++)
+            *g_pointerFolder += new MenuEntry("", nullptr, ChangeValue);
+
+        menu += []
+        {
+            static Clock timer;
+
+            if (timer.HasTimePassed(Seconds(1.f)))
+            {
+                UpdateEntries();
+                timer.Restart();
+            }
+        };
+
+        UpdateEntries();
+    }
+
+
+    class Pointer
+    {
+    public:
+        
+        static u32     Get(u32 base, u32 off1);
+        static u32     Get(u32 base, u32 off1, u32 off2);
+        static u32     Get(u32 base, u32 off1, u32 off2, u32 off3);
+        static u32     Get(u32 base, u32 off1, u32 off2, u32 off3, u32 off4);
+        static u32     Get(u32 base, u32 off1, u32 off2, u32 off3, u32 off4, u32 off5);
+    };
+
+    #define Read32(addr, out) if (!Process::Read32((addr), (out))) goto error;
+
+    u32     Pointer::Get(u32 base, u32 off1)
+    {
+        Read32(base, base);
+        return (base + off1);
+     error:
+        return (0);
+    }
+
+    u32     Pointer::Get(u32 base, u32 off1, u32 off2)
+    {
+        Read32(base, base);
+        Read32(base + off1, base);
+        return (base + off2);
+    error:
+        return (0);
+    }
+
+    u32     Pointer::Get(u32 base, u32 off1, u32 off2, u32 off3)
+    {
+        Read32(base, base);
+        Read32(base + off1, base);
+        Read32(base + off2, base);
+        return (base + off3);
+    error:
+        return (0);
+    }
+
+    u32     Pointer::Get(u32 base, u32 off1, u32 off2, u32 off3, u32 off4)
+    {
+        Read32(base, base);
+        Read32(base + off1, base);
+        Read32(base + off2, base);
+        Read32(base + off3, base);
+        return (base + off4);
+    error:
+        return (0);
+    }
+
+    u32     Pointer::Get(u32 base, u32 off1, u32 off2, u32 off3, u32 off4, u32 off5)
+    {
+        Read32(base, base);
+        Read32(base + off1, base);
+        Read32(base + off2, base);
+        Read32(base + off3, base);
+        Read32(base + off4, base);
+        return (base + off5);
+    error:
+        return (0);
+    }
+
+    void    f(void)
+    {
+        u32 val = Pointer::Get(0x12345678, 0x1, 0x2);
+        u32 val2 = Pointer::Get(0x12345678, 0x1, 0x2, 0x3);
+    }
+    
+    static bool     g_sync = false;
+    static u64 timeout = (Seconds(1.f) / 30.f).AsMicroseconds() * 1000;
+    Time    g_limit = Seconds(Seconds(1.f).AsSeconds() / 60.f);
+    vu32    g_counter = 0;
+    u32     g_iter = 0;
+    //float   g_second = Seconds(1.f).AsSeconds();
+    Clock   timer;
+    static u32 index = 0;
+    static const std::string keys[] =
+    { "1", "2", "3", "4", "5", "6", "7", "8", "9", "10"
+    };
+
+    void    func(MenuEntry *entry)
+    {
+        u32 value = 0x12345678;
+        
+        // Our debug string with: onTopScreen, str, posX, posY
+        OSDManager["fdebug"] = { true, Utils::Format("%08X", value), 10, 10 };
+
+        // Remove the debug string on disable
+        if (!entry->IsActivated())
+            OSDManager.Remove("fdebug");
+    }
+
+    void    func2(MenuEntry *entry)
+    {
+        // On first activation, I set my debug parameters
+        if (entry->WasJustActivated())
+        {
+            OSDManager["func2Debug"].SetScreen(true).SetPos(10, 10) = "Empty string... Or not";
+            // This is the same as:
+            // OSDManager["func2Debug"] = {true, "Empty string... Or not", 10, 10};
+            // Just more verbose
+        }
+
+        // When the entry is disabled, I remove the entry from the manager
+        if (!entry->WasJustActivated())
+        {
+            OSDManager.Remove("func2Debug");
+        }
+
+        u32 value = 10;
+        // Then I can display whatever I want
+        OSDManager["func2Debug"] = Color::Red << "Value: " << Color::Green << value;
+    }
+
+#define ARVERSION 1
     int    main(void)
     {
 #if ARVERSION
@@ -540,12 +850,94 @@ namespace CTRPluginFramework
         menu += new MenuEntry("Load cheats from file", nullptr, LineReadTest);
         menu += g_folder;
 
+        //OSD::Run(g_osdcb);
+
+        /*menu += []
+        {
+            static Clock timer;
+
+            Time d = timer.Restart();
+            float delta = d.AsSeconds();
+            
+            g_frameTime = delta;
+            g_eps = (u32)(g_second / delta);
+            Sleep(g_limit - d);
+        };
+        menu += new MenuEntry("Wait for frame", [](MenuEntry *entry)
+        {
+
+            if (entry->WasJustActivated())
+            {
+                if (g_event == 0)
+                    svcCreateEvent(&g_event, RESET_ONESHOT);
+                g_sync = true;
+                svcClearEvent(g_event);
+            }
+
+            if (!entry->IsActivated())
+            {
+                g_sync = false;
+            }
+            else
+            {
+                svcWaitSynchronization(g_event, timeout);
+                //svcClearEvent(g_event);
+            }
+        });*/
+
 #else        
         PluginMenu      *m = new PluginMenu(C_RED "Zelda" C_GREEN " Ocarina Of Time 3D", 3, 0, 1, about);
         PluginMenu      &menu = *m;
         std::string     note;
 
-        menu += new MenuEntry("OSD Callback", MyCheat);
+        InitPointerChecker(menu);
+
+        OSD::Run(g_osdcb);
+
+        
+        menu += []
+        {
+            static Clock timer;
+
+            float delta = timer.Restart().AsSeconds();
+
+            g_frameTime = delta;
+            g_eps = (u32)(g_second / delta);
+        };
+        menu += new MenuEntry("Wait for frame", [](MenuEntry *entry)
+        {
+            
+            auto osd = [](const Screen &screen)
+            {
+                
+                if (!screen.IsTop)
+                {
+                    svcSignalEvent(g_event);
+                    screen.Draw("OSD", 10, 20);
+                    return (true);
+                }
+                return (false);
+            };
+
+            if (entry->WasJustActivated())
+            {
+                if (g_event == 0)
+                    svcCreateEvent(&g_event, RESET_ONESHOT);
+                OSD::Run(osd);
+                //OSD::Run(g_osdcb);
+                svcClearEvent(g_event);
+            }
+
+            if (!entry->IsActivated())
+            {
+                OSD::Stop(osd);
+            }
+            else
+            {
+                svcWaitSynchronization(g_event, U64_MAX);
+                svcClearEvent(g_event);
+            }            
+        });
 
         menu += new MenuEntry("L for keyboard", [](MenuEntry *entry)
         {
@@ -717,7 +1109,7 @@ namespace CTRPluginFramework
         /*
         ** Misc codes
         *************/
-        menu += new MenuFolder("Misc.", std::vector<MenuEntry *>(
+        menu += new MenuFolder("Misc.", "Various cheats",
         {
             new MenuEntry("Giant Link", GiantLink),
             new MenuEntry("Normal Link", NormalLink),
@@ -729,11 +1121,12 @@ namespace CTRPluginFramework
             new MenuEntry("Collect Heart Piece Many Times", CollectHeartPiecesInOverworldAsMany),
             new MenuEntry("No Damage From Falling", NeverTakeDamageFromFalling),
             new MenuEntry("Giant knife won't break", GiantsKnifeNeverBreaks)
-        }));
+        });
 #endif
         menu += []
-        { 
-            Sleep(Milliseconds(5));
+        {
+            if (!g_sync)
+                Sleep(Milliseconds(5));
         };
 
         // Launch menu and mainloop

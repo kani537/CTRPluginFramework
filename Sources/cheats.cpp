@@ -3,7 +3,7 @@
 
 namespace CTRPluginFramework
 {
-	static u32	g_basePointer = 0x005A2E3C;
+	static u32	g_basePointer = 0x005A2E3C; //134 E9C
 
 	void	MaxHeart(MenuEntry *entry)
 	{

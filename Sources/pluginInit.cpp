@@ -197,6 +197,9 @@ namespace CTRPluginFramework
             // Release process in case it's currently paused
             ProcessImpl::Play(false);
 
+            // Remove the OSD Hook
+            OSDImpl::OSDHook.Disable();
+
             // Exit services
             gspExit();
 
@@ -236,5 +239,4 @@ namespace CTRPluginFramework
         svcWaitSynchronization(g_continueGameEvent, U64_MAX);
         return (0);
     }
-
 }

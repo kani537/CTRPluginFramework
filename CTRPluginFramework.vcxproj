@@ -263,8 +263,6 @@
     <ClInclude Include="Includes\libntrplg\sharedfunc.h" />
     <ClInclude Include="Includes\libntrplg\ui.h" />
     <ClInclude Include="Includes\libntrplg\xprintf.h" />
-    <ClInclude Include="Includes\NTR.hpp" />
-    <ClInclude Include="Includes\NTRImpl.hpp" />
     <ClInclude Include="Includes\types.h" />
     <ClInclude Include="Includes\Unicode.h" />
     <ClInclude Include="Sources\cheats.hpp" />
@@ -273,6 +271,7 @@
     <ClInclude Include="Sources\ctrulib\allocator\mem_pool.h" />
     <ClInclude Include="Sources\ctrulib\internal.h" />
     <ClInclude Include="Sources\ctrulib\util\rbtree\rbtree_internal.h" />
+    <ClInclude Include="Sources\OSDManager.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Sources\cheats.cpp" />
@@ -436,7 +435,7 @@
     <ClCompile Include="Sources\ctrulib\util\utf\utf8_to_utf32.c" />
     <ClCompile Include="Sources\Hook.cpp" />
     <ClCompile Include="Sources\main.cpp" />
-    <ClCompile Include="Sources\NTRImpl.cpp" />
+    <ClCompile Include="Sources\OSDManager.cpp" />
     <ClCompile Include="Sources\pluginInit.cpp" />
   </ItemGroup>
   <ItemGroup>

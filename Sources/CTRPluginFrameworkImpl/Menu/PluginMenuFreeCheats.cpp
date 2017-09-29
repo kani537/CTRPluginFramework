@@ -341,6 +341,8 @@ namespace CTRPluginFramework
                 _selectedFC = reinterpret_cast<MenuEntryFreeCheat*>(item);
                 _UpdateInfos();
             }
+            if (menuevent == MenuEvent::MenuClose)
+                Window::BottomWindow.Close();
         }
     }
 

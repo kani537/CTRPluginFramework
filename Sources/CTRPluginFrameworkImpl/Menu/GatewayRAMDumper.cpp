@@ -29,6 +29,11 @@ namespace CTRPluginFramework
         // Get regions list
         PluginMenuImpl::GetRegionsList(_regions);
 
+        // Select the regions wanted
+
+        if (_SelectRegion())
+            return (true);
+
         // Open the file
         _OpenFile();
 
@@ -103,6 +108,67 @@ namespace CTRPluginFramework
         std::string path("Dumps/" + _fileName);
         File::Remove(path);
         return (true);
+    }
+
+    static u32     HowManyAreSelected(MenuFolderImpl &folder)
+    {
+        u32 count = 0;
+
+        for (u32 i = 0; i < folder.ItemsCount(); i++)
+        {
+            if (folder[i]->AsMenuEntryImpl().IsActivated())
+                count++;
+        }
+        return (count);
+    }
+
+    bool    GatewayRAMDumper::_SelectRegion(void)
+    {
+        Menu            menu("Gateway RAM Dumper");
+        Event           event;
+        EventManager    manager;
+
+        // Construct our menu with the regions list
+        for (Region &region : _regions)
+        {
+            std::string name = Utils::Format("%08X - %08X", region.startAddress, region.endAddress);
+            menu.Append(new MenuEntryImpl(name));
+        }
+
+        bool exit = false;
+        again:
+        do
+        {
+            while (manager.PollEvent(event) && !exit)
+            {
+                exit = menu.ProcessEvent(event, nullptr) == MenuEvent::MenuClose;
+            }
+            Renderer::SetTarget(TOP);
+            menu.Draw();
+            Renderer::SetTarget(BOTTOM);
+
+            Window::BottomWindow.Draw();
+            Renderer::EndFrame();
+        } while (!exit);
+
+        if (HowManyAreSelected(*menu.GetFolder()) == 0)
+        {
+            exit = false;
+            if (!(MessageBox("Do you want to abort ?", DialogType::DialogYesNo)()))
+                goto again;
+            return (true);
+        }
+        // Remove every entry not checked from the regions list
+        MenuFolderImpl &folder = *menu.GetFolder();
+
+        for (int i = folder.ItemsCount() - 1; i >= 0; i--)
+        {
+            if (!folder[i]->AsMenuEntryImpl().IsActivated())
+            {
+                _regions.erase(_regions.begin() + i);
+            }
+        }
+        return (false);
     }
 
     void    GatewayRAMDumper::_OpenFile(void)

@@ -23,7 +23,7 @@ namespace CTRPluginFramework
     public:
         MenuEntryImpl(const std::string &name, const std::string &note = "", MenuEntry *owner = nullptr);
         MenuEntryImpl(const std::string &name, FuncPointer func, const std::string &note = "", MenuEntry *owner = nullptr);
-        ~MenuEntryImpl(){};
+        virtual ~MenuEntryImpl();
 
         // Enable the entry
         void    Enable(void);

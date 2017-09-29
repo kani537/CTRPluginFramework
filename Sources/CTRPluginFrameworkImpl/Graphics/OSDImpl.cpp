@@ -201,7 +201,7 @@ namespace CTRPluginFramework
         // Call OSD Callbacks
         if (Callbacks.size())
         {
-            Screen screen = { 0 };
+            Screen screen;
 
             screen.IsTop = !isBottom;
             screen.Is3DEnabled = isBottom ? false : ScreenImpl::Top->Is3DEnabled();

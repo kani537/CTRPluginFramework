@@ -77,6 +77,12 @@ namespace CTRPluginFramework
         return ((*_closeBtn)());
     }
 
+    void Window::Close()
+    {
+        if (_closeBtn)
+            _closeBtn->SetState(true);
+    }
+
     void    Window::Initialize(void)
     {
         BottomWindow._image = Preferences::bottomBackgroundImage;

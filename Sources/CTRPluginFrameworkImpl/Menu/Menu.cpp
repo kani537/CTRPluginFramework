@@ -41,7 +41,7 @@ namespace CTRPluginFramework
 
     Menu::~Menu(void)
     {
-        // TODO: Free every folder's object
+        delete _folder;
     }
 
     void    Menu::Append(MenuItem *item) const
@@ -141,7 +141,8 @@ namespace CTRPluginFramework
                 // MenuEntryImpl
                 if (item->_type == MenuType::Entry)
                 {
-                    Renderer::DrawSysString(item->name.c_str(), posX + 20, posY, XMAX, c);
+                    Renderer::DrawSysCheckBox(item->name.c_str(), posX, posY, XMAX, c, item->AsMenuEntryImpl().IsActivated());
+                    //Renderer::DrawSysString(item->name.c_str(), posX + 20, posY, XMAX, c);
                 }
                 // MenuEntryTools
                 else if (item->_type == MenuType::EntryTools)
@@ -243,6 +244,12 @@ namespace CTRPluginFramework
                     // MenuEntryImpl
                     if (item->_type == MenuType::Entry)
                     {
+                        MenuEntryImpl &e = item->AsMenuEntryImpl();
+
+                        if (e.IsActivated())
+                            e.Disable();
+                        else
+                            e.Enable();
                         return (MenuEvent::EntrySelected);
                     }
                     // MenuEntryTools
@@ -296,8 +303,8 @@ namespace CTRPluginFramework
                             *userchoice = reinterpret_cast<MenuItem *>(p);
                         return (MenuEvent::FolderChanged);
                     }
-                    else
-                        return (MenuEvent::MenuClose);
+                    
+                    return (MenuEvent::MenuClose);
                     
                 }
                 default: break;

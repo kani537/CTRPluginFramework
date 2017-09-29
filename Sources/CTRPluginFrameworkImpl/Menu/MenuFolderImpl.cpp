@@ -28,7 +28,9 @@ namespace CTRPluginFramework
 
     MenuFolderImpl::~MenuFolderImpl()
     {
-
+        for (MenuItem *item : _items)
+            delete item;
+        _items.clear();
     }
 
     void    MenuFolderImpl::Append(MenuItem *item, bool isStar)

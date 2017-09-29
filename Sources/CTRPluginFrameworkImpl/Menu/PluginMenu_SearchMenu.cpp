@@ -40,12 +40,26 @@ namespace CTRPluginFramework
         static Clock    _startFastScroll;
 
         if (_currentSearch != nullptr && _currentSearch->IsFirstUnknownSearch())
-            return (true);
+        {
+            for (int i = 0; i < eventList.size(); i++)
+            {
+                Event &event = eventList[i];
+                if (event.type == Event::EventType::KeyPressed
+                    && event.key.code == Key::B)
+                    return (true);
+            }
+            return (false);
+        }
+
+
 
         for (int i = 0; i < eventList.size(); i++)
         {
             Event &event = eventList[i];
 
+            if (!_isSubmenuOpen && event.type == Event::EventType::KeyPressed
+                && event.key.code == Key::B)
+                return (true);
             // Pressed
             if (event.type == Event::EventType::KeyPressed)
             {
@@ -152,6 +166,8 @@ namespace CTRPluginFramework
                         {
                             if (_isSubmenuOpen)
                                 _isSubmenuOpen = false;
+                            else
+                                return (true);
                             break;
                         }
                         default: break;
@@ -233,7 +249,7 @@ namespace CTRPluginFramework
                 } // end if
             }
         }
-        return (true);
+        return (false);
     }
 
     /*
