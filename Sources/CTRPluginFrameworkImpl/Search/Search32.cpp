@@ -123,6 +123,12 @@ namespace CTRPluginFramework
 
         u32 nbItem = 500;
 
+        if (index >= ResultsCount)
+            return;
+
+        if (nbItem + index >= ResultsCount)
+            nbItem = ResultsCount - index;
+
         // First Search
         if (IsFirstSearch(_flags))
         {

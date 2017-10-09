@@ -51,8 +51,6 @@ namespace CTRPluginFramework
             return (false);
         }
 
-
-
         for (int i = 0; i < eventList.size(); i++)
         {
             Event &event = eventList[i];
@@ -390,6 +388,7 @@ namespace CTRPluginFramework
         if (_currentSearch == nullptr)
         {
             _selector = 0;
+            _index = 0;
             return;
         }
 
@@ -400,6 +399,17 @@ namespace CTRPluginFramework
         }
 
         _currentSearch->ReadResults(_index, _resultsAddress, _resultsNewValue, _resultsOldValue);
+
+        if (_selector >= _resultsAddress.size())
+            _selector = 0;
+
+        // If the results are empty try again from the start of the results
+        if (_resultsAddress.empty() && _currentSearch->ResultsCount > 0)
+        {
+            _index = 0;
+            _selector = 0;
+            Update();
+        }
     }
 
     void    SearchMenu::_DrawSubMenu(void)
