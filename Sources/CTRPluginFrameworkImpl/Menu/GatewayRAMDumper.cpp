@@ -141,7 +141,30 @@ namespace CTRPluginFramework
         {
             while (manager.PollEvent(event) && !exit)
             {
-                exit = menu.ProcessEvent(event, nullptr) == MenuEvent::MenuClose;
+                if (event.type == Event::KeyPressed)
+                {
+                    if (event.key.code == Key::Start)
+                        exit = true;
+                    else if (event.key.code == Key::Select)
+                    {
+                        static bool select = false;
+                        MenuFolderImpl &folder = *menu.GetFolder();
+
+                        if (!select)
+                        {
+                            for (u32 i = 0; i < folder.ItemsCount(); i++)
+                                folder[i]->AsMenuEntryImpl().Enable();
+                        }
+                        else
+                        {
+                            for (u32 i = 0; i < folder.ItemsCount(); i++)
+                                folder[i]->AsMenuEntryImpl().Disable();
+                        }
+                        select = !select;
+                    }
+                }
+                
+                exit |= menu.ProcessEvent(event, nullptr) == MenuEvent::MenuClose;
             }
             Renderer::SetTarget(TOP);
             menu.Draw();
