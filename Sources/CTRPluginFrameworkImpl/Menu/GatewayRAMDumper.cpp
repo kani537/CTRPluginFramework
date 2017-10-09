@@ -1,5 +1,6 @@
 #include "CTRPluginFrameworkImpl/Menu/PluginMenuImpl.hpp"
 #include "CTRPluginFrameworkImpl/Menu/GatewayRAMDumper.hpp"
+#include "Unicode.h"
 #include <ctime>
 
 #include <algorithm>
@@ -124,10 +125,15 @@ namespace CTRPluginFramework
 
     bool    GatewayRAMDumper::_SelectRegion(void)
     {
-        Menu            menu("Gateway RAM Dumper");
+        Menu            menu("Gateway RAM Dumper", "Select the region(s) to dump.\n\n" \
+                                                    "Key:\n" \
+                                                    "    " FONT_A ": (De)Select the current region\n" \
+                                                    "    Select: (De)Select all regions\n" \
+                                                    "    Start: Start the dump");
         Event           event;
         EventManager    manager;
 
+        menu.drawFooter = true;
         // Construct our menu with the regions list
         for (Region &region : _regions)
         {
@@ -166,11 +172,7 @@ namespace CTRPluginFramework
                 
                 exit |= menu.ProcessEvent(event, nullptr) == MenuEvent::MenuClose;
             }
-            Renderer::SetTarget(TOP);
             menu.Draw();
-            Renderer::SetTarget(BOTTOM);
-
-            Window::BottomWindow.Draw();
             Renderer::EndFrame();
         } while (!exit);
 

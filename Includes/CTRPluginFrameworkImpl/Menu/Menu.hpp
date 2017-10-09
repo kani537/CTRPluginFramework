@@ -24,7 +24,7 @@ namespace CTRPluginFramework
         using IconCallback = int (*)(int, int);
     public:
 
-        Menu(const std::string &title, IconCallback iconCallback = nullptr);
+        Menu(const std::string &title, const std::string &footer = "", IconCallback iconCallback = nullptr);
         Menu(MenuFolderImpl *folder, IconCallback iconCallback = nullptr);
         ~Menu(void);
 
@@ -45,7 +45,7 @@ namespace CTRPluginFramework
         *******************************************/
         // This return a menuEvent value
         int     ProcessEvent(Event &event, MenuItem **userchoice);
-
+        bool    drawFooter;
     private:
         MenuFolderImpl  *_folder;
 

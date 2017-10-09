@@ -11,16 +11,18 @@
 
 namespace CTRPluginFramework
 {
-    Menu::Menu(const std::string &title, IconCallback iconCallback)
+    Menu::Menu(const std::string &title, const std::string &footer, IconCallback iconCallback)
     {
+        drawFooter = false;
         _selector = 0;
-        _folder = new MenuFolderImpl(title);
+        _folder = new MenuFolderImpl(title, footer);
         _iconCallback = iconCallback;
         _scrollOffset = 0.f;
     }
 
     Menu::Menu(MenuFolderImpl *folder, IconCallback iconCallback)
     {
+        drawFooter = false;
         _selector = 0;
         _folder = folder;
         _iconCallback = iconCallback;
@@ -86,6 +88,7 @@ namespace CTRPluginFramework
         int   posY = 25;
         int   posX = 40;
 
+        Renderer::SetTarget(TOP);
         Window::TopWindow.Draw();
 
         // Draw title
@@ -124,7 +127,7 @@ namespace CTRPluginFramework
                     Renderer::DrawSysFolder(item->name.c_str(), posX, posY, XMAX, c);
 
                 posY += 4;
-            }            
+            }     
         }
         else
         {
@@ -172,7 +175,18 @@ namespace CTRPluginFramework
                     Renderer::DrawSysFolder(item->name.c_str(), posX, posY, XMAX, c);
 
                 posY += 4;
-            }      
+            }
+        }
+        if (drawFooter)
+        {
+            Renderer::SetTarget(BOTTOM);
+            Window::BottomWindow.Draw();
+
+            if (!_folder->GetNote().empty())
+            {
+                int posY = 40;
+                Renderer::DrawSysStringReturn((u8 *)_folder->GetNote().c_str(), 35, posY, 295, Color::Blank, 190);
+            }
         }
     }
 
