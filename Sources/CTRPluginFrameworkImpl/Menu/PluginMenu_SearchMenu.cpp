@@ -509,7 +509,7 @@ namespace CTRPluginFramework
             {
                 u8 value = *(u8 *)(address);//strtoul(_resultsNewValue[_selector].c_str(), NULL, 16);
 
-                int res = keyboard.Open(value);
+                int res = keyboard.Open(value, value);
 
                 if (res != -1)
                 {
@@ -522,7 +522,7 @@ namespace CTRPluginFramework
             {
                 u16 value = *(u16 *)(address);//strtoul(_resultsNewValue[_selector].c_str(), NULL, 16);
 
-                int res = keyboard.Open(value);
+                int res = keyboard.Open(value, value);
 
                 if (res != -1)
                 {
@@ -535,7 +535,7 @@ namespace CTRPluginFramework
             {
                 u32 value = *(u32 *)(address);//strtoul(_resultsNewValue[_selector].c_str(), NULL, 16);
 
-                int res = keyboard.Open(value);
+                int res = keyboard.Open(value, value);
 
                 if (res != -1)
                 {
@@ -561,7 +561,7 @@ namespace CTRPluginFramework
             {
                 float value = *(float *)(address);//strtof(_resultsNewValue[_selector].c_str(), NULL);
 
-                int res = keyboard.Open(value);
+                int res = keyboard.Open(value, value);
 
                 if (res != -1)
                 {
