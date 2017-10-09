@@ -29,6 +29,7 @@ namespace CTRPluginFramework
         void    TriggerSearch(bool state);
         void    TriggerActionReplay(bool state);
         void    AddPluginVersion(u32 version);
+        void    Close(MenuFolderImpl *folder);
 
     private:
         friend class PluginMenuImpl;

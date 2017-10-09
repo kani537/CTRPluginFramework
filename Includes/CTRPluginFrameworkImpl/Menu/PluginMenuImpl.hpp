@@ -28,6 +28,7 @@ namespace CTRPluginFramework
         void    Callback(CallbackPointer callback);
         void    RemoveCallback(CallbackPointer callback);
         int     Run(void);
+        static void    Close(MenuFolderImpl *menuFolderImpl);
 
         static void LoadEnabledCheatsFromFile(const Preferences::Header &header, File &settings);
         static void LoadFavoritesFromFile(const Preferences::Header &header, File &settings);

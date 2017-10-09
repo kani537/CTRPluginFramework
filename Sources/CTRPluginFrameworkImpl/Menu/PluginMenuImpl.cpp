@@ -49,18 +49,19 @@ namespace CTRPluginFramework
 
     void    PluginMenuImpl::Callback(CallbackPointer callback)
     {
-        _callbacks.push_back(callback);
+        bool add = true;
+
+        for (CallbackPointer cb : _callbacks)
+            if (cb == callback)
+                add = false;
+
+        if (add)
+            _callbacks.push_back(callback);
     }
 
     void    PluginMenuImpl::RemoveCallback(CallbackPointer callback)
     {
-        for (int i = _callbacks.size() - 1; i >= 0; i--)
-        {
-            if (_callbacks[i] == callback)
-            {
-                _callbacks.erase(_callbacks.begin() + i);
-            }
-        }
+        _callbacks.erase(std::remove(_callbacks.begin(), _callbacks.end(), callback), _callbacks.end());
     }
 
     using KeyVector = std::vector<Key>;
@@ -328,6 +329,16 @@ namespace CTRPluginFramework
         // Remove Running Instance
         _runningInstance = nullptr;
         return (0);
+    }
+
+    void PluginMenuImpl::Close(MenuFolderImpl *folder)
+    {
+        if (_runningInstance == nullptr)
+            return;
+
+        PluginMenuHome &home = *_runningInstance->_home;
+
+        home.Close(folder);
     }
 
     void PluginMenuImpl::LoadEnabledCheatsFromFile(const Preferences::Header &header, File &settings)

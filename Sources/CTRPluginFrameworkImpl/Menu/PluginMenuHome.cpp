@@ -899,4 +899,15 @@ namespace CTRPluginFramework
         _versionPosX = 360 - (width + 1);
         _showVersion = true;
     }
+
+    void    PluginMenuHome::Close(MenuFolderImpl *folder)
+    {
+        if (folder != _root)
+        {
+            if(_folder == folder)
+                _folder = _folder->_Close(_selector, false);
+            if (_starred == folder)
+                _starred = _starred->_Close(_selector, true);
+        }
+    }
 }

@@ -43,7 +43,6 @@ namespace CTRPluginFramework
         return(_item->IsVisible());
     }
 
-
     void    MenuFolder::Append(MenuEntry *item) const
     {
         MenuEntryImpl *entry = item->_item.get();
@@ -68,9 +67,29 @@ namespace CTRPluginFramework
         return (_item->GetFolderList());
     }
 
+    std::string &MenuFolder::Name(void) const
+    {
+        return (_item->name);
+    }
+
+    std::string &MenuFolder::Note(void) const
+    {
+        return (_item->note);
+    }
+
     u32    MenuFolder::ItemsCount(void) const
     {
         return (_item->ItemsCount());
+    }
+
+    void    MenuFolder::Clear(void) const
+    {
+        _item->Clear();
+    }
+
+    void    MenuFolder::Remove(u32 startIndex, u32 count, bool destroy) const
+    {
+        _item->Remove(startIndex, count, destroy);
     }
 
     MenuFolder    *MenuFolder::operator += (const MenuEntry *item)
@@ -82,11 +101,23 @@ namespace CTRPluginFramework
         return (this);
     }
 
+    MenuFolder *MenuFolder::operator-=(const MenuEntry *entry)
+    {
+        _item->Remove(entry->_item.get());
+        return (this);
+    }
+
     MenuFolder  *MenuFolder::operator+=(const MenuFolder *folder)
     {
         MenuFolderImpl *f = folder->_item.get();
 
         _item->Append(f);
+        return (this);
+    }
+
+    MenuFolder *MenuFolder::operator-=(const MenuFolder *folder)
+    {
+        _item->Remove(folder->_item.get());
         return (this);
     }
 }

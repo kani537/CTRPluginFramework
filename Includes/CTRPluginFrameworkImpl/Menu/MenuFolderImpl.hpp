@@ -6,6 +6,7 @@
 #include "CTRPluginFrameworkImpl/Menu/MenuItem.hpp"
 #include <vector>
 #include <string>
+#include <memory>
 
 namespace CTRPluginFramework
 {
@@ -28,6 +29,9 @@ namespace CTRPluginFramework
         std::vector<MenuFolder *>   GetFolderList(void) const;
         MenuItem    *operator[](int index);
         bool        HasParent(void);
+        void        Remove(MenuItem *item);
+        void        Remove(u32 start, u32 count = 1, bool destroy = false);
+        void        Clear(void);
     private:
         friend class MenuItem;
         friend class PluginMenuImpl;

@@ -5,13 +5,13 @@
 namespace CTRPluginFramework
 {
     MenuFolderImpl::MenuFolderImpl(const std::string &name, const std::string &note) :
-    MenuItem(MenuType::Folder)
+        MenuItem(MenuType::Folder), _owner(nullptr)
     {
         this->name = name;
         this->note = note;
         this->_position[0] = -1;
         this->_position[1] = -1;
-        this->_parent[0] = nullptr;        
+        this->_parent[0] = nullptr;
         this->_parent[1] = nullptr;
     }
 
@@ -29,7 +29,19 @@ namespace CTRPluginFramework
     MenuFolderImpl::~MenuFolderImpl()
     {
         for (MenuItem *item : _items)
-            delete item;
+        {
+            // If item has an owner, call the owner's destructor
+            if (item->IsEntry() && item->AsMenuEntryImpl().AsMenuEntry())
+                delete item->AsMenuEntryImpl().AsMenuEntry();
+            else if (item->IsFolder() && item->AsMenuFolderImpl()._owner)
+                delete item->AsMenuFolderImpl()._owner;
+            else
+                delete item;
+        }
+
+        // Close this folder if it's the one opened in the menu
+        PluginMenuImpl::Close(this);
+
         _items.clear();
     }
 
@@ -122,9 +134,48 @@ namespace CTRPluginFramework
         return (_items[index]);
     }
 
-    bool MenuFolderImpl::HasParent()
+    bool    MenuFolderImpl::HasParent()
     {
         return (_parent[0] != nullptr || _parent[1] != nullptr);
+    }
+
+    void    MenuFolderImpl::Remove(MenuItem *item)
+    {
+        _items.erase(std::remove(_items.begin(), _items.end(), item), _items.end());
+    }
+
+    void    MenuFolderImpl::Remove(u32 start, u32 count, bool destroy)
+    {
+        if (start >= _items.size())
+            return;
+
+        if (start + count >= _items.size())
+            count = _items.size() - start;
+
+        auto begin = _items.begin() + start;
+        auto end = begin + count;
+
+        if (destroy)
+        {
+            for (auto b = begin, e = end; b != e; ++b)
+                delete *b;
+        }
+
+        _items.erase(begin, end);
+    }
+
+    void    MenuFolderImpl::Clear(void)
+    {
+        for (MenuItem *item : _items)
+        {
+            if (item->IsEntry() && item->AsMenuEntryImpl().AsMenuEntry())
+                delete item->AsMenuEntryImpl().AsMenuEntry();
+            else if (item->IsFolder() && item->AsMenuFolderImpl()._owner)
+                delete item->AsMenuFolderImpl()._owner;
+            else
+                delete item;
+        }
+        _items.clear();
     }
 
     //#######################################################################
