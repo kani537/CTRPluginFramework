@@ -10,6 +10,8 @@
 #include <ctime>
 #include <cstring>
 #include <cstdio>
+#include "ctrulib/srv.h"
+#include "../../Speedometer.hpp"
 
 namespace CTRPluginFramework
 {
@@ -94,7 +96,7 @@ namespace CTRPluginFramework
     int                 g_index = 0;
     LightLock           g_OpenFileLock;
 
-    static u32 FindNearestSTMFD(u32 addr)
+    static u32      FindNearestSTMFD(u32 addr)
     {
         for (u32 i = 0; i < 1024; i++)
         {
@@ -124,7 +126,7 @@ namespace CTRPluginFramework
         }
     }
 
-    static u32 FsTryOpenFileCallback(u32 a1, u16 *fileName, u32 mode)
+    static u32      FsTryOpenFileCallback(u32 a1, u16 *fileName, u32 mode)
     {
         if (g_HookMode & OSD)
         {
@@ -274,6 +276,31 @@ namespace CTRPluginFramework
             g_FsTryOpenFileHook.Disable();
     }
 
+    static bool     ConfirmBeforeProceed(const std::string &task)
+    {
+        std::string msg = Color::Yellow << "Warning\n\n" << ResetColor() << "Do you really want to " + task + " ?";
+        MessageBox  msgBox(msg, DialogType::DialogYesNo);
+
+        return (msgBox());
+    }
+    static void     Shutdown(void)
+    {
+        if (ConfirmBeforeProceed("shutdown"))
+        {
+            srvPublishToSubscriber(0x203, 0);
+            Sleep(Seconds(10));
+        }
+    }
+
+    static void     Reboot(void)
+    {
+        if (ConfirmBeforeProceed("reboot"))
+        {
+            svcKernelSetState(7);
+            Sleep(Seconds(10));
+        }
+    }
+
     void    PluginMenuTools::InitMenu(void)
     {
         // Main menu
@@ -286,6 +313,8 @@ namespace CTRPluginFramework
         _mainMenu.Append(new MenuEntryTools("Gateway RAM Dumper", [] { g_mode = GWRAMDUMP; }, Icon::DrawRAM));
         _mainMenu.Append(new MenuEntryTools("Miscellaneous", nullptr, Icon::DrawMore, new u32(MISCELLANEOUS)));
         _mainMenu.Append(new MenuEntryTools("Settings", nullptr, Icon::DrawSettings, this));
+        _mainMenu.Append(new MenuEntryTools("Shutdown the 3DS", Shutdown, nullptr));
+        _mainMenu.Append(new MenuEntryTools("Reboot the 3DS", Reboot, nullptr));
 
         // Miscellaneous menu
         _miscellaneousMenu.Append(new MenuEntryTools("Display loaded files", _DisplayLoadedFiles, true));
