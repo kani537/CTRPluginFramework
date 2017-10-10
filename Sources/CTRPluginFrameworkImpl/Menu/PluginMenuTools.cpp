@@ -313,8 +313,8 @@ namespace CTRPluginFramework
         _mainMenu.Append(new MenuEntryTools("Gateway RAM Dumper", [] { g_mode = GWRAMDUMP; }, Icon::DrawRAM));
         _mainMenu.Append(new MenuEntryTools("Miscellaneous", nullptr, Icon::DrawMore, new u32(MISCELLANEOUS)));
         _mainMenu.Append(new MenuEntryTools("Settings", nullptr, Icon::DrawSettings, this));
-        _mainMenu.Append(new MenuEntryTools("Shutdown the 3DS", Shutdown, nullptr));
-        _mainMenu.Append(new MenuEntryTools("Reboot the 3DS", Reboot, nullptr));
+        _mainMenu.Append(new MenuEntryTools("Shutdown the 3DS", Shutdown, Icon::DrawShutdown));
+        _mainMenu.Append(new MenuEntryTools("Reboot the 3DS", Reboot, Icon::DrawRestart));
 
         // Miscellaneous menu
         _miscellaneousMenu.Append(new MenuEntryTools("Display loaded files", _DisplayLoadedFiles, true));

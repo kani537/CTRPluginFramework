@@ -143,6 +143,12 @@ namespace CTRPluginFramework
         static int      DrawRAM(int posX, int posY);
         
         /*
+        ** Restart
+        ** 15px * 15 px
+        **************/
+        static int      DrawRestart(int posX, int posY);
+
+        /*
         ** Save
         ** 25px * 25px
         **************/
@@ -159,6 +165,12 @@ namespace CTRPluginFramework
         ** 15px * 15 px
         **************/
         static int      DrawSettings(int posX, int posY);
+
+        /*
+        ** Shutdown
+        ** 15px * 15 px
+        **************/
+        static int      DrawShutdown(int posX, int posY);
 
         /*
         ** Tools

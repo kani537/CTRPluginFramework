@@ -37,9 +37,11 @@ namespace CTRPluginFramework
     extern "C" unsigned char *Keyboard25;
     extern "C" unsigned char *KeyboardFilled25;
     extern "C" unsigned char *RAM15;
+    extern "C" unsigned char *Restart15;
     extern "C" unsigned char *Save25;
     extern "C" unsigned char *Search15;
     extern "C" unsigned char *Settings15;
+    extern "C" unsigned char *Shutdown15;
     extern "C" unsigned char *Star15;
     extern "C" unsigned char *UserManualFilled15;
 
@@ -378,6 +380,15 @@ namespace CTRPluginFramework
     }
 
     /*
+    ** Restart
+    ** 15px * 15 px
+    **************/
+    int     Icon::DrawRestart(int posX, int posY)
+    {
+        return (DrawImg(Restart15, posX, posY, 15, 15));
+    }
+
+    /*
     ** Save
     ** 25px * 25px
     **************/
@@ -404,6 +415,15 @@ namespace CTRPluginFramework
     int     Icon::DrawSettings(int posX, int posY)
     {
         return (DrawImg(Settings15, posX, posY, 15, 15));
+    }
+
+    /*
+    ** Shutdown
+    ** 15px * 15 px
+    **************/
+    int     Icon::DrawShutdown(int posX, int posY)
+    {
+        return (DrawImg(Shutdown15, posX, posY, 15, 15));
     }
 
     /*
