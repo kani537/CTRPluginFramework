@@ -1,9 +1,10 @@
 #include "CTRPluginFrameworkImpl/Menu/GuideReader.hpp"
 #include "CTRPluginFrameworkImpl/Preferences.hpp"
-#include <math.h>
+#include <cmath>
+
 namespace CTRPluginFramework
 {
-    MenuFolderImpl *CreateFolder(std::string path)
+    static MenuFolderImpl *CreateFolder(std::string path)
     {
         u32                         pos = path.rfind("/");
         std::string                 name = pos != std::string::npos ? path.substr(pos + 1) : path;
@@ -49,46 +50,15 @@ namespace CTRPluginFramework
     }
 
     #define ABS(x) x >= 0 ? 0 : -x
-
-    float GetRatio(int width, int height)
-    {
-        if (width >= height)
-            return ((float)width / 280.f);
-        return ((float)height / 200.f);
-    }
-
-    BMPImage *PostProcess(BMPImage *img)
-    {
-        int width = img->Width();
-        int height = img->Height();
-
-        /*if (width <= maxX && height <= maxY)
-            return (img);*/
-
-        float ratio = GetRatio(width, height);
-
-        int newWidth = (int)(ceilf((float)width / ratio));
-        int newHeight = (int)(ceilf((float)height / ratio));
-
-        BMPImage *temp = new BMPImage(newWidth, newHeight);
-
-        img->Resample(*temp, newWidth, newHeight);
-        delete img;
-
-        if (newWidth != 280 || newHeight != 240)
-        {
-            BMPImage *res = new BMPImage(*temp, 280, 240);
-            delete temp;
-            return res;
-        }        
-
-        return (temp);
-    }
+    // In Preferences.cpp
+    BMPImage *PostProcess(BMPImage *img, int maxX, int maxY);
 
     GuideReader::GuideReader(void):
-    _isOpen(false), _menu(CreateFolder("Guide"), Icon::DrawFile), _guideTB(nullptr), _text(""), _last(nullptr),
+    _isOpen(false), _menu(CreateFolder("Guide"), Icon::DrawFile), _guideTB("", "", Window::TopWindow.GetRect()), _text(""), _last(nullptr),
     _closeBtn(*this, nullptr, IntRect(275, 24, 20, 20), Icon::DrawClose)
     {
+        _guideTB.titleColor = Color::LimeGreen;
+        _guideTB.borderColor = Color::LimeGreen;
         _isOpen = false;
         _image = nullptr;
         if (Directory::Open(_currentDirectory, "Guide") == 0)
@@ -98,7 +68,7 @@ namespace CTRPluginFramework
             {
                 _currentBMP = 0;
                 _image = new BMPImage("Guide/" + _bmpList[0]);
-                _image = PostProcess(_image);
+                _image = PostProcess(_image, 280, 200);
             }
             else
                 _currentBMP = -1;
@@ -135,9 +105,9 @@ namespace CTRPluginFramework
         **************************************************/
         Renderer::SetTarget(TOP);
         // If a textbox exist
-        if (_guideTB != nullptr && _guideTB->IsOpen())
+        if (_guideTB.IsOpen())
         {
-            _guideTB->Draw();
+            _guideTB.Draw();
         }
         else
         {
@@ -156,11 +126,6 @@ namespace CTRPluginFramework
 
         if (_image != nullptr && _image->IsLoaded())
         {
-           /* if (_image->Height() < 200 || _image->Width() < 280)
-            {
-                Renderer::DrawRect2(background, black, dimGrey);
-                Renderer::DrawRect(22, 22, 276, 196, blank, false);                
-            }*/
             _image->Draw(background);
         }
         else
@@ -171,11 +136,19 @@ namespace CTRPluginFramework
 
         bool isTouchDown = Touch::IsDown();
         IntVector touchPos(Touch::GetPosition());
+
         _closeBtn.Update(isTouchDown, touchPos);
         _closeBtn.Draw();
 
         return (true);
+    }
 
+    void    GuideReader::_LoadBMP(void)
+    {
+        if (_image)
+            delete _image;
+        _image = new BMPImage(_currentDirectory.GetFullName() + "/" + _bmpList[_currentBMP]);
+        _image = PostProcess(_image, 280, 200);
     }
 
     bool    GuideReader::_ProcessEvent(Event &event)
@@ -184,9 +157,9 @@ namespace CTRPluginFramework
             return (false);
 
         // Process TextBox Event
-        if (_guideTB != nullptr && _guideTB->IsOpen())
+        if (_guideTB.IsOpen())
         {
-            _guideTB->ProcessEvent(event);
+            _guideTB.ProcessEvent(event);
         }
         else
         {
@@ -204,11 +177,13 @@ namespace CTRPluginFramework
             // If folder changed
             else if (ret == MenuEvent::FolderChanged)
             {
-                delete _image;
+                if (_image)
+                    delete _image;
                 _image = nullptr;
                 _currentBMP = -1;
                 _bmpList.clear();
                 _currentDirectory.Close();
+
                 if (item != nullptr && Directory::Open(_currentDirectory, item->note) == 0)
                 {
                     _currentDirectory.ListFiles(_bmpList, ".bmp");
@@ -216,7 +191,7 @@ namespace CTRPluginFramework
                     {
                         _currentBMP = 0;
                         _image = new BMPImage(item->note + "/" + _bmpList[0]);                        
-                        _image = PostProcess(_image);
+                        _image = PostProcess(_image, 280, 200);
                     }
                 }
             }
@@ -227,41 +202,36 @@ namespace CTRPluginFramework
                 if (entry != _last)
                 {
                     _last = entry;
-                    if (_guideTB != nullptr)
-                    {
-                        delete _guideTB;
-                        _guideTB = nullptr;
-                    }
 
-                    File file;
-                    if (File::Open(file, entry->note + "/" + entry->name + ".txt") != 0)
+                    char data[0x1001];
+                    File file(entry->note + "/" + entry->name + ".txt");
+                    s64  size = file.GetSize();
+
+                    if (!file.IsOpen())
                         return (false);
-
-                    u64 size = file.GetSize();
-                    _text.clear();
-
-                    char *data = new char[size + 2];
-                    memset(data, 0, size + 2);
-                    
 
                     file.Rewind();
-                    if (file.Read(data, size) != 0)
-                        return (false);
+                    _text.clear();
+                    if (_text.capacity() < size)
+                        _text.reserve(size);
 
-                    _text = data;
-                    _text[size] = '\0';
+                    while (size)
+                    {
+                        memset(data, 0, 0x1001);
+                        s64 sizeToRead = size > 0x1000 ? 0x1000 : size;
 
-                    delete[] data;
-                    IntRect tb = IntRect(30, 20, 340, 200);
+                        if (file.Read(data, sizeToRead) == File::OPResult::SUCCESS)
+                        {
+                            _text += data;
+                            size -= sizeToRead;
+                        }
+                    }
 
-                    _guideTB = new TextBox(entry->name, _text, tb);
-                    Color limegreen(50, 205, 50);
-                    _guideTB->titleColor = limegreen;
-                    _guideTB->borderColor = limegreen;
-                    _guideTB->Open();
+                    _guideTB.Update(entry->name, _text);
+                    _guideTB.Open();
                 }
                 else
-                    _guideTB->Open();
+                    _guideTB.Open();
             }
         }
 
@@ -273,16 +243,12 @@ namespace CTRPluginFramework
                 if (event.key.code == Key::L && _currentBMP > 0)
                 {
                     _currentBMP--;
-                    delete _image;
-                    _image = new BMPImage(_currentDirectory.GetName() + "/" + _bmpList[_currentBMP]);
-                    _image = PostProcess(_image);
+                    _LoadBMP();
                 }
                 else if (event.key.code == Key::R && _currentBMP < _bmpList.size() -1)
                 {
                     _currentBMP++;
-                    delete _image;
-                    _image = new BMPImage(_currentDirectory.GetName() + "/" + _bmpList[_currentBMP]);
-                    _image = PostProcess(_image);            
+                    _LoadBMP();
                 }
             }
             else if (event.type == Event::TouchSwipped)
@@ -290,20 +256,16 @@ namespace CTRPluginFramework
                 if (event.swip.direction == Event::SwipDirection::Left && _currentBMP > 0)
                 {
                     _currentBMP--;
-                    delete _image;
-                    _image = new BMPImage(_currentDirectory.GetName() + "/" + _bmpList[_currentBMP]);
-                    _image = PostProcess(_image);
+                    _LoadBMP();
                 }
                 else if (event.swip.direction == Event::SwipDirection::Right && _currentBMP < _bmpList.size() -1)
                 {
                     _currentBMP++;
-                    delete _image;
-                    _image = new BMPImage(_currentDirectory.GetName() + "/" + _bmpList[_currentBMP]);
-                    _image = PostProcess(_image);           
+                    _LoadBMP();
                 }  
             }
         }
-        
+
         return (true);
     }
 

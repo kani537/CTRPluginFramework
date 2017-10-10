@@ -139,7 +139,7 @@ namespace CTRPluginFramework
     {
         Process::CheckAddress(0x00100000, 7);
         Process::CheckAddress(0x00102000, 7);
-        svcInvalidateEntireInstructionCache();
+        //svcInvalidateEntireInstructionCache();
 
         // Init HID
         hidInit();

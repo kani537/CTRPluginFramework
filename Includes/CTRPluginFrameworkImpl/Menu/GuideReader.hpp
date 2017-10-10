@@ -24,7 +24,7 @@ namespace CTRPluginFramework
         ~GuideReader(void){};
 
         bool    Draw(void);
-        
+
 
         void    Open(void);
         void    Close(void);
@@ -35,11 +35,11 @@ namespace CTRPluginFramework
 
     private:
         bool    _ProcessEvent(Event &event);
-
+        void    _LoadBMP(void);
 
         bool            _isOpen;
         Menu            _menu;
-        TextBox         *_guideTB;
+        TextBox         _guideTB;
         std::string     _text;
         MenuEntryImpl   *_last;
         Directory       _currentDirectory;
