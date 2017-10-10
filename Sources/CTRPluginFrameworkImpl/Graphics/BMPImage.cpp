@@ -139,7 +139,7 @@ namespace CTRPluginFramework
         }
     }
 
-    void     BMPImage::Draw(IntRect &area, float fade)
+    void     BMPImage::Draw(const IntRect &area, float fade)
     {    
         ScreenImpl *scr = Renderer::_screen;
 

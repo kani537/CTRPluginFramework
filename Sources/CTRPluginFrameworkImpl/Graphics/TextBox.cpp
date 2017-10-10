@@ -11,13 +11,12 @@ namespace CTRPluginFramework
     /*
     ** Constructor
     ***************/
-    TextBox::TextBox(std::string title, std::string &text, IntRect box) :
-    _title(title), _text(&text), _box(box)
+    TextBox::TextBox(const std::string &title, const std::string &text, const IntRect &box) :
+    _title(title), _text(&text), _box(box), _border(IntRect(box.leftTop.x + 2, box.leftTop.y + 2, box.size.x - 4, box.size.y - 4))
     {
         _currentLine = 0;
         _isOpen = false;
-        _maxLines = ((box.size.y - 10) / 16) - 1;        
-        _border = IntRect(box.leftTop.x + 2, box.leftTop.y + 2, box.size.x - 4, box.size.y - 4);
+        _maxLines = ((box.size.y - 10) / 16) - 1;
         _GetTextInfos();
         if (_newline.size() <= _maxLines)
         {
@@ -179,6 +178,7 @@ namespace CTRPluginFramework
         _currentLine = 0;
         _title = title;
         _text = &text;
+        _maxLines = ((_box.size.y - 10) / 16) - 1;
         _GetTextInfos();
         if (_newline.size() <= _maxLines)
         {
@@ -276,8 +276,7 @@ namespace CTRPluginFramework
 
         Renderer::DrawLine(posX, posY + 1, 1, dimGrey, _scrollCursorSize - 2);
         Renderer::DrawLine(posX + 1, posY, 1, dimGrey, _scrollCursorSize);
-        Renderer::DrawLine(posX + 2, posY + 1, 1, dimGrey, _scrollCursorSize - 2);        
-
+        Renderer::DrawLine(posX + 2, posY + 1, 1, dimGrey, _scrollCursorSize - 2);
     }
 
     void    TextBox::Update(const bool isTouchDown, const IntVector &pos)

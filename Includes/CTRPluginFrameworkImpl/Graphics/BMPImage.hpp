@@ -94,7 +94,7 @@ namespace CTRPluginFramework
             return (_loaded);
         }
 
-        IntVector &GetDimensions(void)
+        const IntVector &GetDimensions(void)
         {
             return (_dimensions);
         }
@@ -158,7 +158,7 @@ namespace CTRPluginFramework
 
 
        void     Draw(int x, int y);
-       void     Draw(IntRect &area, float fade = 0.f);
+       void     Draw(const IntRect &area, float fade = 0.f);
 /*
        inline unsigned char RedChannel(const unsigned int x, const unsigned int y) const
        {

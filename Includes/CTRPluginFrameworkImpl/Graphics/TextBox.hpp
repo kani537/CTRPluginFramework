@@ -14,7 +14,7 @@ namespace CTRPluginFramework
     class TextBox : public Drawable
     {
     public:
-        TextBox(std::string title, std::string &text, IntRect box);
+        TextBox(const std::string &title, const std::string &text, const IntRect &box);
         ~TextBox(){}
 
         // Open the texbox
@@ -42,11 +42,11 @@ namespace CTRPluginFramework
         void    _GetTextInfos(void);
         u8      *_GetWordWidth(u8 *str, float& width);
 
-        std::vector<u8 *>      _newline;
+        std::vector<u8 *>       _newline;
         std::string             _title;
-        std::string             *_text;
-        IntRect                 _box;
-        IntRect                 _border;
+        const std::string       *_text;
+        const IntRect           _box;
+        const IntRect           _border;
         bool                    _isOpen;
         bool                    _displayScrollbar;
 
