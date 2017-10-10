@@ -83,6 +83,11 @@ namespace CTRPluginFramework
             _closeBtn->SetState(true);
     }
 
+    const IntRect &Window::GetRect(void) const
+    {
+        return (_rect);
+    }
+
     void    Window::Initialize(void)
     {
         BottomWindow._image = Preferences::bottomBackgroundImage;

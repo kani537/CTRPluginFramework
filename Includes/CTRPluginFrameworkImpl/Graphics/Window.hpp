@@ -21,6 +21,7 @@ namespace CTRPluginFramework
         void    Update(const bool isTouched, const IntVector &touchPos) const;
         bool    MustClose(void) const;
         void    Close(void);
+        const IntRect &GetRect(void) const;
 
         static Window   TopWindow;
         static Window   BottomWindow;
