@@ -110,9 +110,9 @@ namespace CTRPluginFramework
         half.b[1] = *src;
 
         color.a = 255;
-        color.b = (half.u >> 8) & 0xF8;
+        color.r = (half.u >> 8) & 0xF8;
         color.g = (half.u >> 3) & 0xF8;
-        color.r = (half.u << 2) & 0xF8;
+        color.b = (half.u << 2) & 0xF8;
         return (color);
     }
 
@@ -129,9 +129,9 @@ namespace CTRPluginFramework
         half.b[1] = *src;
 
         color.a = 255;
-        color.b = (half.u >> 8) & 0xF0;
+        color.r = (half.u >> 8) & 0xF0;
         color.g = (half.u >> 4) & 0xF0;
-        color.r = half.u & 0xF0;
+        color.b = half.u & 0xF0;
         return (color);
     }
 
@@ -177,9 +177,9 @@ namespace CTRPluginFramework
             char    b[2];
         }           half;
 
-        half.u  = (color.b & 0xF8) << 8;
+        half.u  = (color.r & 0xF8) << 8;
         half.u |= (color.g & 0xF8) << 3;
-        half.u |= (color.r & 0xF8) >> 2;
+        half.u |= (color.b & 0xF8) >> 2;
         half.u |= 1;
 
         *(dst++) = half.b[0];
@@ -195,9 +195,9 @@ namespace CTRPluginFramework
             char    b[2];
         }           half;
 
-        half.u  = (color.b & 0xF0) << 8;
+        half.u  = (color.r & 0xF0) << 8;
         half.u |= (color.g & 0xF0) << 4;
-        half.u |= (color.r & 0xF0);
+        half.u |= (color.b & 0xF0);
         half.u |= 0x0F;
 
         *(dst++) = half.b[0];
@@ -294,9 +294,9 @@ namespace CTRPluginFramework
             char    b[2];
         }           half;
 
-        half.u  = (color.b & 0xF8) << 8;
+        half.u  = (color.r & 0xF8) << 8;
         half.u |= (color.g & 0xF8) << 3;
-        half.u |= (color.r & 0xF8) >> 2;
+        half.u |= (color.b & 0xF8) >> 2;
         half.u |= 1;
 
         *(dst++) = half.b[0];
@@ -323,9 +323,9 @@ namespace CTRPluginFramework
             char    b[2];
         }           half;
 
-        half.u  = (color.b & 0xF0) << 8;
+        half.u  = (color.r & 0xF0) << 8;
         half.u |= (color.g & 0xF0) << 4;
-        half.u |= (color.r & 0xF0);
+        half.u |= (color.b & 0xF0);
         half.u |= 0x0F;
 
         *(dst++) = half.b[0];
