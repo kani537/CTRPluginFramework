@@ -149,6 +149,12 @@ namespace CTRPluginFramework
         static int      DrawRestart(int posX, int posY);
 
         /*
+        ** Rocket
+        ** 40px * 40px
+        **************/
+        static int      DrawRocket(int posX, int posY);
+
+        /*
         ** Save
         ** 25px * 25px
         **************/

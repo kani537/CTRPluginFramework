@@ -24,6 +24,7 @@ namespace CTRPluginFramework
     bool        Preferences::_favoritesAlreadyLoaded = false;
     bool        Preferences::ShowBottomFps = false;
     bool        Preferences::ShowTopFps = false;
+    bool        Preferences::UseFloatingBtn = false;
 
     static const char *g_signature = "CTRPF\0\0";
 
@@ -163,6 +164,7 @@ namespace CTRPluginFramework
             DrawTouchCursor = (header.flags & (u64)SettingsFlags::DrawTouchCursor) != 0;
             ShowBottomFps = (header.flags & (u64)SettingsFlags::ShowBottomFps) != 0;
             ShowTopFps = (header.flags & (u64)SettingsFlags::ShowTopFps) != 0;
+            UseFloatingBtn = (header.flags & (u64)SettingsFlags::UseFloatingButton) != 0;
         }
 
         // Check that hotkeys aren't 0
@@ -250,6 +252,7 @@ namespace CTRPluginFramework
         if (DrawTouchCursor) header.flags |= (u64)SettingsFlags::DrawTouchCursor;
         if (ShowBottomFps) header.flags |= (u64)SettingsFlags::ShowBottomFps;
         if (ShowTopFps) header.flags |= (u64)SettingsFlags::ShowTopFps;
+        if (UseFloatingBtn) header.flags |= (u64)SettingsFlags::UseFloatingButton;
 
         header.hotkeys = MenuHotkeys;
 

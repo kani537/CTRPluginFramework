@@ -21,7 +21,7 @@ namespace CTRPluginFramework
 
     class Menu
     {
-        using IconCallback = int (*)(int, int);
+        using IconCallback = int(*)(int, int);
     public:
 
         Menu(const std::string &title, const std::string &footer = "", IconCallback iconCallback = nullptr);

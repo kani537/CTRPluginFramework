@@ -17,14 +17,15 @@ namespace CTRPluginFramework
 {
     PluginMenuImpl  *PluginMenuImpl::_runningInstance = nullptr;
 
-    PluginMenuImpl::PluginMenuImpl(std::string &name, std::string &about) : 
-    _hexEditor(0x00100000),
-    _freeCheats(_hexEditor),
-    _home(new PluginMenuHome(name)),
-    _search(new PluginMenuSearch(_hexEditor, _freeCheats)),
-    _tools(new PluginMenuTools(about, _hexEditor, _freeCheats)),
-    _executeLoop(new PluginMenuExecuteLoop()),
-    _guide(new GuideReader())
+    PluginMenuImpl::PluginMenuImpl(std::string &name, std::string &about) :
+        _hexEditor(0x00100000),
+        _freeCheats(_hexEditor),
+        _home(new PluginMenuHome(name)),
+        _search(new PluginMenuSearch(_hexEditor, _freeCheats)),
+        _tools(new PluginMenuTools(about, _hexEditor, _freeCheats)),
+        _executeLoop(new PluginMenuExecuteLoop()),
+        _guide(new GuideReader()),
+        _forceOpen(false)
     {
         _isOpen = false;
         _wasOpened = false;
@@ -180,44 +181,50 @@ namespace CTRPluginFramework
             eventList.clear();
             while (manager.PollEvent(event))
             {
+                bool isHotkeysDown = false;
+
                 // If it's a KeyPressed event
                 if (event.type == Event::KeyPressed && inputClock.HasTimePassed(Milliseconds(500)))
                 {
-                    bool isHotkeysDown = false;
-
                     // Check that MenuHotkeys are pressed
                     for (int i = 0; i < 16; i++)
                     {
                         u32 key = Preferences::MenuHotkeys & (1u << i);
-                        
+
                         if (key && event.key.code == key)
                         {
                             if (Controller::IsKeysDown(Preferences::MenuHotkeys ^ key))
                                 isHotkeysDown = true;
                         }
                     }
+                }
 
-                    // If MenuHotkeys are pressed but not Luma's default hotkey
-                    if (isHotkeysDown && !(Preferences::MenuHotkeys == Key::Select && Controller::IsKeysDown(Key::L + Key::DPadDown)))
+                // If MenuHotkeys are pressed but not Luma's default hotkey
+                if (_forceOpen || isHotkeysDown && !(Preferences::MenuHotkeys == Key::Select && Controller::IsKeysDown(Key::L + Key::DPadDown)))
+                {
+                    if (_isOpen)
                     {
-                        if (_isOpen)
-                        {
-                            ProcessImpl::Play(true);
-                            _isOpen = false;
-                            if (Preferences::InjectBOnMenuClose)
-                                Controller::InjectKey(Key::B);
+                        ProcessImpl::Play(true);
+                        _isOpen = false;
+                        if (Preferences::InjectBOnMenuClose)
+                            Controller::InjectKey(Key::B);
 
-                            // Save settings
-                            Preferences::WriteSettings();
-                        }
-                        else
-                        {
-                            ProcessImpl::Pause(true);
-                            _isOpen = true;
-                            _wasOpened = true;
-                        }
-                        inputClock.Restart();
-                    }                       
+                        // Save settings
+                        Preferences::WriteSettings();
+                    }
+                    else
+                    {
+                        ProcessImpl::Pause(true);
+                        _isOpen = true;
+                        _wasOpened = true;
+                        // Clean the event list
+                        while (Touch::IsDown())
+                            Controller::Update();
+                        eventList.clear();
+                        _forceOpen = false;
+                    }
+                    inputClock.Restart();
+                    continue;
                 }
 
                 if (_isOpen)
@@ -569,6 +576,12 @@ namespace CTRPluginFramework
     {
         if (_runningInstance != nullptr)
             _runningInstance->_pluginRun = false;
+    }
+
+    void    PluginMenuImpl::ForceOpen(void)
+    {
+        if (_runningInstance != nullptr)
+            _runningInstance->_forceOpen = true;
     }
 
     void    PluginMenuImpl::UnStar(MenuItem* item)

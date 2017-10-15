@@ -37,6 +37,7 @@ namespace CTRPluginFramework
     extern "C" unsigned char *Keyboard25;
     extern "C" unsigned char *KeyboardFilled25;
     extern "C" unsigned char *RAM15;
+    extern "C" unsigned char *Rocket40;
     extern "C" unsigned char *Restart15;
     extern "C" unsigned char *Save25;
     extern "C" unsigned char *Search15;
@@ -386,6 +387,15 @@ namespace CTRPluginFramework
     int     Icon::DrawRestart(int posX, int posY)
     {
         return (DrawImg(Restart15, posX, posY, 15, 15));
+    }
+
+    /*
+    ** Rocket
+    ** 40px * 40px
+    **************/
+    int     Icon::DrawRocket(int posX, int posY)
+    {
+        return (DrawImg(Rocket40, posX, posY, 40, 40));
     }
 
     /*

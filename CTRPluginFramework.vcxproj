@@ -128,6 +128,7 @@
     <ClInclude Include="Includes\CTRPluginFrameworkImpl\Graphics\CheckedButton.hpp" />
     <ClInclude Include="Includes\CTRPluginFrameworkImpl\Graphics\ComboBox.hpp" />
     <ClInclude Include="Includes\CTRPluginFrameworkImpl\Graphics\Drawable.hpp" />
+    <ClInclude Include="Includes\CTRPluginFrameworkImpl\Graphics\FloatingButton.hpp" />
     <ClInclude Include="Includes\CTRPluginFrameworkImpl\Graphics\Font.hpp" />
     <ClInclude Include="Includes\CTRPluginFrameworkImpl\Graphics\Icon.hpp" />
     <ClInclude Include="Includes\CTRPluginFrameworkImpl\Graphics\IconButton.hpp" />
@@ -272,14 +273,17 @@
     <ClInclude Include="Sources\ctrulib\internal.h" />
     <ClInclude Include="Sources\ctrulib\util\rbtree\rbtree_internal.h" />
     <ClInclude Include="Sources\OSDManager.hpp" />
+    <ClInclude Include="Sources\Speedometer.hpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Sources\ActionReplayTest.cpp" />
     <ClCompile Include="Sources\cheats.cpp" />
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\ActionReplay\ARCode.cpp" />
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\ActionReplay\ARHandler.cpp" />
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\arm11kCommands.c" />
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\Graphics\BMPImage.cpp" />
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\Graphics\ComboBox.cpp" />
+    <ClCompile Include="Sources\CTRPluginFrameworkImpl\Graphics\FloatinButton.cpp" />
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\Graphics\FontImpl.cpp" />
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\Graphics\Icons\About15.c" />
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\Graphics\Icons\AddFavorite25.c" />
@@ -437,6 +441,8 @@
     <ClCompile Include="Sources\main.cpp" />
     <ClCompile Include="Sources\OSDManager.cpp" />
     <ClCompile Include="Sources\pluginInit.cpp" />
+    <ClCompile Include="Sources\PointerTesting.cpp" />
+    <ClCompile Include="Sources\Speedometer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Sources\csvc.s" />

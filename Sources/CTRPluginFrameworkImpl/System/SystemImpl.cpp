@@ -9,6 +9,7 @@ namespace CTRPluginFramework
     u32     SystemImpl::_IOBaseLCD = 0;
     u32     SystemImpl::_IOBasePAD = 0;
     u32     SystemImpl::_IOBasePDC = 0;
+    u32     SystemImpl::_CFWVersion = 0;
     u8      SystemImpl::_language = CFG_LANGUAGE_EN;
 
     extern "C" u32     g_KProcessPIDOffset;
@@ -35,6 +36,13 @@ namespace CTRPluginFramework
             _IOBasePAD = 0xFFFC6000;
             _IOBasePDC = 0xFFFC0000;
             g_KProcessPIDOffset = 0xB4;
+        }
+
+        s64 out = 0;
+
+        if (R_SUCCEEDED(svcGetSystemInfo(&out, 0x10000, 0)))
+        {
+            _CFWVersion = static_cast<u32>(out);
         }
 
         // Get System's language

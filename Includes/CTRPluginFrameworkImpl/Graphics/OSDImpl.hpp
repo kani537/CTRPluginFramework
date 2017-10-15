@@ -14,6 +14,7 @@
 #include "../../../Sources/ctrulib/internal.h"
 #include "CTRPluginFramework/Graphics/OSD.hpp"
 #include "Hook.hpp"
+#include "FloatingButton.hpp"
 
 namespace CTRPluginFramework
 {
@@ -48,6 +49,7 @@ namespace CTRPluginFramework
         static bool             MessColors;
         static Hook             OSDHook;
         static RecursiveLock    RecLock;
+        static FloatingButton   FloatingBtn;
         static std::list<OSDMessage*>      Notifications;
         static std::vector<OSDCallback>    Callbacks;
 

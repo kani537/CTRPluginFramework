@@ -28,6 +28,7 @@ namespace CTRPluginFramework
         void    Callback(CallbackPointer callback);
         void    RemoveCallback(CallbackPointer callback);
         int     Run(void);
+        
         static void    Close(MenuFolderImpl *menuFolderImpl);
 
         static void LoadEnabledCheatsFromFile(const Preferences::Header &header, File &settings);
@@ -41,6 +42,7 @@ namespace CTRPluginFramework
         static void GetRegionsList(std::vector<Region> &list);
         // Used to forcefully exit a menu
         static void ForceExit(void);
+        static void ForceOpen(void);
 
         static void UnStar(MenuItem *item);
         static void Refresh(void);
@@ -73,6 +75,7 @@ namespace CTRPluginFramework
         HexEditor                   _hexEditor;
         FreeCheats                  _freeCheats;
         std::vector<CallbackPointer>     _callbacks;
+        bool                        _forceOpen;
     };
 }
 

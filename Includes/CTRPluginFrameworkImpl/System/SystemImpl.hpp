@@ -19,6 +19,7 @@ namespace CTRPluginFramework
         static u32      _IOBaseLCD;
         static u32      _IOBasePAD;
         static u32      _IOBasePDC;
+        static u32      _CFWVersion;
         static u8       _language;
     };
 }

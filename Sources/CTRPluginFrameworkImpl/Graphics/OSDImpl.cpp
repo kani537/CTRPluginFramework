@@ -14,6 +14,7 @@
 #include "CTRPluginFrameworkImpl/Graphics/Icon.hpp"
 #include "CTRPluginFramework/System/Touch.hpp"
 #include "CTRPluginFrameworkImpl/Preferences.hpp"
+#include "CTRPluginFrameworkImpl/Menu/PluginMenuImpl.hpp"
 
 namespace CTRPluginFramework
 {
@@ -21,6 +22,7 @@ namespace CTRPluginFramework
     bool    OSDImpl::MessColors = false;
     Hook    OSDImpl::OSDHook;
     RecursiveLock OSDImpl::RecLock;
+    FloatingButton OSDImpl::FloatingBtn(IntRect(0, 0, 40, 40), Icon::DrawRocket);
     std::list<OSDImpl::OSDMessage*> OSDImpl::Notifications;
     std::vector<OSDCallback> OSDImpl::Callbacks;
 
@@ -29,7 +31,7 @@ namespace CTRPluginFramework
     void    OSDImpl::_Initialize(void)
     {
         InstallOSD();
-        RecursiveLock_Init(&RecLock);
+        RecursiveLock_Init(&RecLock);   
     }
 
 #define XEND    390
@@ -48,6 +50,10 @@ namespace CTRPluginFramework
     {
         if (TryLock())
             return;
+
+        FloatingBtn.Update(Touch::IsDown(), IntVector(Touch::GetPosition()));
+        if (FloatingBtn())
+            PluginMenuImpl::ForceOpen();
 
         while (Notifications.size() && Notifications.front()->drawn)
         {
@@ -120,6 +126,7 @@ namespace CTRPluginFramework
     static Clock        g_fpsClock[2];
 
     static void    MessColor(u32 startAddr, u32 stride, u32 format);
+    
     int OSDImpl::MainCallback(u32 isBottom, int arg2, void* addr, void* addrB, int stride, int format, int arg7)
     {
         if (!addr)
@@ -134,10 +141,11 @@ namespace CTRPluginFramework
             RecursiveLock_Unlock(&ProcessImpl::FrameLock);
         }
 
+        bool drawRocket = Preferences::UseFloatingBtn && isBottom;
         bool drawTouch =  Preferences::DrawTouchCursor && Touch::IsDown() && isBottom;
         bool drawFps = (Preferences::ShowBottomFps && isBottom) || (Preferences::ShowTopFps && !isBottom);
 
-        if (!drawTouch && !drawFps && !DrawSaveIcon && !MessColors
+        if (!drawRocket && !drawTouch && !drawFps && !DrawSaveIcon && !MessColors
             && Callbacks.empty() && Notifications.empty())
             return (((OSDReturn)OSDHook.returnCode)(isBottom, arg2, addr, addrB, stride, format, arg7));
 
@@ -178,6 +186,12 @@ namespace CTRPluginFramework
         // Draw touch cursor
         else
         {
+            if (drawRocket)
+            {
+                FloatingBtn.Draw();
+                mustFlush = true;
+            }
+
             if (drawTouch)
             {
                 IntVector touchPos(Touch::GetPosition());

@@ -56,17 +56,20 @@ namespace CTRPluginFramework
 
     void    PluginMenuTools::UpdateSettings(void)
     {
-        if (Preferences::AutoSaveCheats) _settingsMenu[1]->AsMenuEntryImpl().Enable();
+        if (Preferences::UseFloatingBtn) _settingsMenu[1]->AsMenuEntryImpl().Enable();
         else _settingsMenu[1]->AsMenuEntryImpl().Disable();
 
-        if (Preferences::AutoSaveFavorites) _settingsMenu[2]->AsMenuEntryImpl().Enable();
+        if (Preferences::AutoSaveCheats) _settingsMenu[2]->AsMenuEntryImpl().Enable();
         else _settingsMenu[2]->AsMenuEntryImpl().Disable();
 
-        if (Preferences::AutoLoadCheats) _settingsMenu[3]->AsMenuEntryImpl().Enable();
+        if (Preferences::AutoSaveFavorites) _settingsMenu[3]->AsMenuEntryImpl().Enable();
         else _settingsMenu[3]->AsMenuEntryImpl().Disable();
 
-        if (Preferences::AutoLoadFavorites) _settingsMenu[4]->AsMenuEntryImpl().Enable();
+        if (Preferences::AutoLoadCheats) _settingsMenu[4]->AsMenuEntryImpl().Enable();
         else _settingsMenu[4]->AsMenuEntryImpl().Disable();
+
+        if (Preferences::AutoLoadFavorites) _settingsMenu[5]->AsMenuEntryImpl().Enable();
+        else _settingsMenu[5]->AsMenuEntryImpl().Disable();
 
         if (Preferences::DrawTouchCursor) _miscellaneousMenu[2]->AsMenuEntryTools().Enable();
         else _miscellaneousMenu[2]->AsMenuEntryTools().Disable();
@@ -325,6 +328,7 @@ namespace CTRPluginFramework
 
         // Settings menu
         _settingsMenu.Append(new MenuEntryTools("Change menu hotkeys", MenuHotkeyModifier, Icon::DrawGameController));
+        _settingsMenu.Append(new MenuEntryTools("Use floating button", [] { Preferences::UseFloatingBtn = !Preferences::UseFloatingBtn; }, true, Preferences::UseFloatingBtn));
         _settingsMenu.Append(new MenuEntryTools("Auto save enabled cheats", [] { Preferences::AutoSaveCheats = !Preferences::AutoSaveCheats; }, true, Preferences::AutoSaveCheats));
         _settingsMenu.Append(new MenuEntryTools("Auto save favorites", [] { Preferences::AutoSaveFavorites = !Preferences::AutoSaveFavorites; }, true, Preferences::AutoSaveFavorites));
         _settingsMenu.Append(new MenuEntryTools("Auto load enabled cheats at starts", [] { Preferences::AutoLoadCheats = !Preferences::AutoLoadCheats; }, true, Preferences::AutoLoadCheats));
@@ -511,7 +515,7 @@ namespace CTRPluginFramework
 
         // Draw Framework version
         {
-            static const char *version = "CTRPluginFramework Alpha V.0.2.9";
+            static const char *version = "CTRPluginFramework Alpha V.0.2.10";
             static const u32 xpos = (320 - Renderer::LinuxFontSize(version)) / 2;
 
             int posY = 205;

@@ -25,4 +25,27 @@ namespace CTRPluginFramework
 
         return (out != 0 && *wifiLevel != 0);
     }
+
+    /// Retrieves the major version from a packed system version.
+#define GET_VERSION_MAJOR(version)    ((version) >>24)
+
+    /// Retrieves the minor version from a packed system version.
+#define GET_VERSION_MINOR(version)    (((version)>>16)&0xFF)
+
+    /// Retrieves the revision version from a packed system version.
+#define GET_VERSION_REVISION(version) (((version)>> 8)&0xFF)
+
+    bool    System::IsCfwLuma3DS(const u8 major, const u8 minor, const u8 revision)
+    {
+        if (SystemImpl::_CFWVersion == 0 || !major)
+            return (false);
+
+        u8  _major = GET_VERSION_MAJOR(SystemImpl::_CFWVersion);
+        u8  _minor = GET_VERSION_MINOR(SystemImpl::_CFWVersion);
+        u8  _revision = GET_VERSION_REVISION(SystemImpl::_CFWVersion);
+
+        if (_major < major) return (false);
+        if (_minor < minor) return (false);
+        return (_revision >= revision);
+    }
 }

@@ -99,7 +99,7 @@ GetKProcessState:
         STR         R2, [R4, #8]
 
 ReadCTXID:
-	CMP         R3, #7
+	CMP     R3, #7
 	BNE	    exit
 
 	MRC         p15, 0, R1,c13,c0, 1
@@ -118,7 +118,3 @@ executeKernelCmd:
         BL          dispatchArm11KernelCmd
         LDMFD       SP!, {R3-R11,PC}
 @ End of function executeKernelCmd
-
-FUNCTION plgRegisterCallback
-nop
-nop
