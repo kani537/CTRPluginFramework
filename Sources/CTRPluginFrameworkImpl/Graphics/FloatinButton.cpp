@@ -29,35 +29,39 @@ namespace CTRPluginFramework
         return (ret);
     }
 #define ABS(x) ((x) >= 0 ? (x) : (-x))
-#define IsDifferentByAtLeast(old, new, val) (old != new && (ABS(new - old) >= val))
+
+    static inline bool     IsDifferentByAtLeast(int old, int newv, int val)
+    {
+        int v = newv - old;
+        return (old != newv && ABS(v) >= val);
+    }
 
     void    FloatingButton::Update(const bool isTouchDown, const IntVector &touchPos)
     {
         IntVector &currentPos = _box.leftTop;
         const IntVector &size = _box.size;
 
-        // If the user is moving
-        if (isTouchDown && _moving)
-        {
-            // Adjust the position
-            currentPos.x = std::min(std::max(touchPos.x - size.x / 2, 0), 319 - size.x);
-            currentPos.y = std::min(std::max(touchPos.y - size.y / 2, 0), 239 - size.y);
-            return;
-        }
-
         if (isTouchDown)
         {
-            if (_box.Contains(touchPos))
+            // If the user is moving
+            if (_moving)
+            {
+                // Adjust the position
+                currentPos.x = std::min(std::max(touchPos.x - size.x / 2, 0), 319 - size.x);
+                currentPos.y = std::min(std::max(touchPos.y - size.y / 2, 0), 239 - size.y);
+            }
+            // Else if the position is within the button's area
+            else if (_box.Contains(touchPos))
             {
                 // If user just pressed the button, save the current state
                 if (!_pressed)
                 {
                     _lastTouch = touchPos;
                     _pressed = true;
-                    return;
                 }
 
-                if (!_moving)
+                // Else check if user initiate a movement to move the icon
+                else if (!_moving)
                 {
                     if (IsDifferentByAtLeast(_lastTouch.x, touchPos.x, 5)
                         || IsDifferentByAtLeast(_lastTouch.y, touchPos.y, 5))
@@ -66,20 +70,17 @@ namespace CTRPluginFramework
                     }
                 }
             }
+            // Touchpos is not in the area so reset the state
             else
             {
                 _pressed = false;
                 _moving = false;
             }
+            return;
         }
-        else
-        {
-            if (_pressed && !_moving)
-            {
-                _enabled = true;
-            }
-            _pressed = false;
-            _moving = false;
-        }
+
+        _enabled = _pressed && !_moving;
+        _pressed = false;
+        _moving = false;
     }
 }

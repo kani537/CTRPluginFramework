@@ -48,12 +48,15 @@ namespace CTRPluginFramework
 
     void    OSDImpl::Update(void)
     {
+        if (Preferences::UseFloatingBtn)
+        {
+            FloatingBtn.Update(Touch::IsDown(), IntVector(Touch::GetPosition()));
+            if (FloatingBtn())
+                PluginMenuImpl::ForceOpen();
+        }
+
         if (TryLock())
             return;
-
-        FloatingBtn.Update(Touch::IsDown(), IntVector(Touch::GetPosition()));
-        if (FloatingBtn())
-            PluginMenuImpl::ForceOpen();
 
         while (Notifications.size() && Notifications.front()->drawn)
         {

@@ -8,7 +8,7 @@ namespace CTRPluginFramework
 {
     bool        Touch::IsDown(void)
     {
-        return (Controller::IsKeyDown(Key::Touchpad));
+        return (Controller::GetKeysDown() & Key::Touchpad);
     }
 
     UIntVector  Touch::GetPosition(void)

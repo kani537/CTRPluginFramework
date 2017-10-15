@@ -179,7 +179,7 @@ namespace CTRPluginFramework
         {
             // Check Event
             eventList.clear();
-            while (manager.PollEvent(event))
+            while (manager.PollEvent(event) || _forceOpen)
             {
                 bool isHotkeysDown = false;
 
