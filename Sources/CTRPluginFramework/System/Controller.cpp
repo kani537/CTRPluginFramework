@@ -11,6 +11,11 @@ namespace CTRPluginFramework
 
     extern "C" vu32* hidSharedMem;
 
+    u32     Controller::GetKeysDown(void)
+    {
+        return (_keysDown | _keysHeld);
+    }
+
     bool    Controller::IsKeyDown(Key key)
     {
         return (_keysHeld & (u32)key);
@@ -33,7 +38,7 @@ namespace CTRPluginFramework
 
     bool    Controller::IsKeysPressed(u32 keys)
     {
-        if ((_keysDown & keys) == keys)
+        if ((_keysDown & keys) && ((_keysHeld | _keysDown) & keys) == keys)
             return (true);
         return (false);
     }

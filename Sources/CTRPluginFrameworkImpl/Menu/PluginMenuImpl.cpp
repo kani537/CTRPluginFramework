@@ -184,7 +184,8 @@ namespace CTRPluginFramework
                 bool isHotkeysDown = false;
 
                 // If it's a KeyPressed event
-                if (event.type == Event::KeyPressed && inputClock.HasTimePassed(Milliseconds(500)))
+                if (event.type == Event::KeyPressed && inputClock.HasTimePassed(Milliseconds(500))
+                    && Controller::GetKeysDown() != SystemImpl::RosalinaHotkey)
                 {
                     // Check that MenuHotkeys are pressed
                     for (int i = 0; i < 16; i++)
@@ -199,8 +200,8 @@ namespace CTRPluginFramework
                     }
                 }
 
-                // If MenuHotkeys are pressed but not Luma's default hotkey
-                if (_forceOpen || isHotkeysDown && !(Preferences::MenuHotkeys == Key::Select && Controller::IsKeysDown(Key::L + Key::DPadDown)))
+                // If MenuHotkeys are pressed
+                if (_forceOpen || isHotkeysDown)
                 {
                     if (_isOpen)
                     {

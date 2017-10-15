@@ -12,6 +12,8 @@ namespace CTRPluginFramework
         static u32     GetIOBasePAD(void);
         static u32     GetIOBasePDC(void);
 
+        static u32     RosalinaHotkey;
+
     private:
         friend class System;
         static bool     _isInit;
@@ -19,7 +21,7 @@ namespace CTRPluginFramework
         static u32      _IOBaseLCD;
         static u32      _IOBasePAD;
         static u32      _IOBasePDC;
-        static u32      _CFWVersion;
+        static u32      _CFWVersion;        
         static u8       _language;
     };
 }
