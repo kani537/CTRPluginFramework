@@ -146,23 +146,6 @@ namespace CTRPluginFramework
             }
         });
 
-        OSD::Run([](const Screen &screen)
-        {
-            if (!screen.IsTop)
-                return (false);
-
-            u8 *p = reinterpret_cast<u8 *>(0x12345678);
-
-            for (u32 i = 0; i < 5; i++)
-            {
-                u8 b = *p++;
-
-                // Do something with b
-            }
-
-            return (true);
-        });
-
 #else        
         PluginMenu      *m = new PluginMenu(C_RED "Zelda" C_GREEN " Ocarina Of Time 3D", 3, 0, 1, about);
         PluginMenu      &menu = *m;

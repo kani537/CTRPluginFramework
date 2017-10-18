@@ -322,7 +322,7 @@ namespace CTRPluginFramework
         // Miscellaneous menu
         _miscellaneousMenu.Append(new MenuEntryTools("Display loaded files", _DisplayLoadedFiles, true));
         _miscellaneousMenu.Append(new MenuEntryTools("Write loaded files to file", _WriteLoadedFiles, true));
-        _miscellaneousMenu.Append(new MenuEntryTools("Draw touch cursor", [] { Preferences::DrawTouchCursor = !Preferences::DrawTouchCursor; }, true, Preferences::DrawTouchCursor));
+        _miscellaneousMenu.Append(new MenuEntryTools("Display touch cursor", [] { Preferences::DrawTouchCursor = !Preferences::DrawTouchCursor; }, true, Preferences::DrawTouchCursor));
         _miscellaneousMenu.Append(new MenuEntryTools("Display top screen's fps", [] {Preferences::ShowTopFps = !Preferences::ShowTopFps; }, true, Preferences::ShowTopFps));
         _miscellaneousMenu.Append(new MenuEntryTools("Display bottom screen's fps", [] {Preferences::ShowBottomFps = !Preferences::ShowBottomFps; }, true, Preferences::ShowBottomFps));
 
