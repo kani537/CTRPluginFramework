@@ -37,12 +37,12 @@ namespace CTRPluginFramework
 
     bool    System::IsCfwLuma3DS(const u8 major, const u8 minor, const u8 revision)
     {
-        if (SystemImpl::_CFWVersion == 0 || !major)
+        if (SystemImpl::CFWVersion == 0 || !major)
             return (false);
 
-        u8  _major = GET_VERSION_MAJOR(SystemImpl::_CFWVersion);
-        u8  _minor = GET_VERSION_MINOR(SystemImpl::_CFWVersion);
-        u8  _revision = GET_VERSION_REVISION(SystemImpl::_CFWVersion);
+        u8  _major = GET_VERSION_MAJOR(SystemImpl::CFWVersion);
+        u8  _minor = GET_VERSION_MINOR(SystemImpl::CFWVersion);
+        u8  _revision = GET_VERSION_REVISION(SystemImpl::CFWVersion);
 
         if (_major < major) return (false);
         if (_minor < minor) return (false);

@@ -15,14 +15,14 @@ namespace CTRPluginFramework
 	u64         ProcessImpl::_titleID = 0;
 	char        ProcessImpl::_processName[8] = {0};
 	u32         ProcessImpl::_kProcess = 0;
-	u32			ProcessImpl::_kProcessState = 0;
+	u32         ProcessImpl::_kProcessState = 0;
 	KCodeSet    ProcessImpl::_kCodeSet = {0};
-	Handle 		ProcessImpl::_processHandle = 0;
-	Handle 		ProcessImpl::_mainThreadHandle = 0;
+	Handle      ProcessImpl::_processHandle = 0;
+	Handle      ProcessImpl::_mainThreadHandle = 0;
     Handle      ProcessImpl::FrameEvent = 0;
     RecursiveLock   ProcessImpl::FrameLock;
-	bool 		ProcessImpl::_isPaused = false;
-	bool 		ProcessImpl::_isAcquiring = false;
+	u32         ProcessImpl::_isPaused = 0;
+	bool        ProcessImpl::_isAcquiring = false;
 
     // pluginInit.cpp
     extern      Handle      g_keepEvent;
@@ -76,7 +76,7 @@ namespace CTRPluginFramework
 
 	bool 	ProcessImpl::IsPaused(void)
 	{
-		return (_isPaused);
+		return (_isPaused > 0);
 	}
 
 	bool 	ProcessImpl::IsAcquiring(void)
@@ -93,12 +93,12 @@ namespace CTRPluginFramework
 
 	void 	ProcessImpl::Pause(bool useFading)
 	{
-        _isPaused = true;
+        _isPaused++;
 
         // Lock at game's new frame
         RecursiveLock_Lock(&FrameLock);
 
-        if (FrameLock.counter != 1)
+        if (_isPaused > 1)
             return;
 
         // Wait for the frame event
@@ -138,6 +138,9 @@ namespace CTRPluginFramework
 
 	void 	ProcessImpl::Play(bool useFading)
 	{
+        if (!_isPaused)
+            return;
+
 		if (useFading)
 		{
             Time limit = Seconds(1) / 10.f;
@@ -145,23 +148,22 @@ namespace CTRPluginFramework
             float pitch = 0.10f;
             Clock t = Clock();
 	        float fade = -0.1f;
-	        while (fade >= -0.9f)
-	        {
-	        	delta = t.Restart();
-	        	ScreenImpl::Top->Fade(fade);
-	        	ScreenImpl::Bottom->Fade(fade);
-	        	fade -= 0.001f * delta.AsMilliseconds();
-	        	//Sleep(Milliseconds(10));
-	        	ScreenImpl::Top->SwapBuffer(true, true);
-	        	ScreenImpl::Bottom->SwapBuffer(true, true);
-	        	gspWaitForVBlank();
-	        	if (System::IsNew3DS())
-	        	  while (t.GetElapsedTime() < limit); //<- On New3DS frequencies, the alpha would be too dense
-	        }			
+            while (fade >= -0.9f)
+            {
+                delta = t.Restart();
+                ScreenImpl::Top->Fade(fade);
+                ScreenImpl::Bottom->Fade(fade);
+                fade -= 0.001f * delta.AsMilliseconds();
+                //Sleep(Milliseconds(10));
+                ScreenImpl::Top->SwapBuffer(true, true);
+                ScreenImpl::Bottom->SwapBuffer(true, true);
+                gspWaitForVBlank();
+                if (System::IsNew3DS())
+                    while (t.GetElapsedTime() < limit); //<- On New3DS frequencies, the alpha would be too dense
+            }
 		}
-        _isPaused = false;
-
         RecursiveLock_Unlock(&ProcessImpl::FrameLock);
+        _isPaused--;
 	}
 
     bool     ProcessImpl::PatchProcess(u32 addr, u8 *patch, u32 length, u8 *original)

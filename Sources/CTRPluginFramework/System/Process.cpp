@@ -67,7 +67,7 @@ namespace CTRPluginFramework
 
     bool    Process::IsPaused(void)
 	{
-        return (ProcessImpl::_isPaused);
+        return (ProcessImpl::_isPaused > 0);
 	}
 
     void    Process::Pause(void)
