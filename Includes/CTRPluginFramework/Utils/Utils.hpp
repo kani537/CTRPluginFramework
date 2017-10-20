@@ -67,7 +67,7 @@ namespace CTRPluginFramework
         static u32          RemoveLastChar(std::string &str);
 
         template <typename T>
-        u32     Search(const u32 start, const u32 size, const std::vector<T> &pattern)
+        static u32     Search(const u32 start, const u32 size, const std::vector<T> &pattern)
         {
             if (!start || !size || pattern.empty())
                 return (0);
@@ -93,7 +93,7 @@ namespace CTRPluginFramework
         }
 
         template <typename T>
-        u32     Rsearch(const u32 start, const u32 size, const std::vector<T> &pattern)
+        static u32     Rsearch(const u32 start, const u32 size, const std::vector<T> &pattern)
         {
             if (!start || !size || pattern.empty())
                 return (0);
