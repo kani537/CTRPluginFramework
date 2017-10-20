@@ -8,6 +8,7 @@ namespace CTRPluginFramework
     {
         OSDManager.Lock();
         std::get<1>(data) = str;
+        std::get<4>(data) = true;
         OSDManager.Unlock();
         return (*this);
     }
@@ -33,6 +34,22 @@ namespace CTRPluginFramework
     {
         OSDManager.Lock();
         std::get<0>(data) = topScreen;
+        OSDManager.Unlock();
+        return (*this);
+    }
+
+    OSDMI&  OSDMI::Enable(void)
+    {
+        OSDManager.Lock();
+        std::get<4>(data) = true;
+        OSDManager.Unlock();
+        return (*this);
+    }
+
+    OSDMI&  OSDMI::Disable(void)
+    {
+        OSDManager.Lock();
+        std::get<4>(data) = false;
         OSDManager.Unlock();
         return (*this);
     }
@@ -105,11 +122,16 @@ namespace CTRPluginFramework
         for (auto item : manager._items)
         {
             auto &t = item.second;
+            std::string &str = std::get<1>(t);
+
+            // If item is disabled or if the item is empty
+            if (!std::get<4>(t) || str.empty())
+                continue;
 
             // If wanted screen correspond to the screen received, draw the item
             if (std::get<0>(t) == screen.IsTop)
             {                
-                screen.Draw(std::get<1>(t), std::get<2>(t), std::get<3>(t));
+                screen.Draw(str, std::get<2>(t), std::get<3>(t));
                 fbEdited = true;
             }
         }

@@ -118,3 +118,9 @@ executeKernelCmd:
         BL          dispatchArm11KernelCmd
         LDMFD       SP!, {R3-R11,PC}
 @ End of function executeKernelCmd
+
+FUNCTION    resumeHook
+    bl  CResume
+    ldr lr, =g_resumeHookAddress
+    ldr lr, [lr]
+    mov pc, lr

@@ -12,13 +12,15 @@ namespace CTRPluginFramework
 {
     #define OSDManager (*_OSDManager::GetInstance())
 
-    using OSDMITuple = std::tuple<bool, std::string, u32, u32>;
+    using OSDMITuple = std::tuple<bool, std::string, u32, u32, bool>;
     struct OSDMI
     {
         OSDMI &operator=(const std::string &str);
         OSDMI &operator=(const OSDMITuple &tuple);
         OSDMI &SetPos(u32 posX, u32 posY);
         OSDMI &SetScreen(bool topScreen);
+        OSDMI &Enable(void);
+        OSDMI &Disable(void);
     private:
         friend class  _OSDManager;
         explicit OSDMI(OSDMITuple &tuple);
@@ -46,7 +48,7 @@ namespace CTRPluginFramework
         static _OSDManager *_singleton;
 
         LightLock   _lock;
-        std::map<std::string, std::tuple<bool, std::string, u32, u32>> _items;
+        std::map<std::string, std::tuple<bool, std::string, u32, u32, bool>> _items;
     };
 }
 

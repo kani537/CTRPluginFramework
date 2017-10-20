@@ -8,10 +8,19 @@
 extern "C" void     abort(void);
 extern "C" void     initSystem();
 extern "C" void     initLib();
+extern "C" void     resumeHook(void);
+extern "C" Result   __sync_init(void);
+extern "C" void     __system_initSyscalls(void);
+extern "C" void     CResume(void);
+extern "C" Thread   g_mainThread;
+
+u32     g_resumeHookAddress = 0; ///< Used in arm11k.s for resume hook
+Thread  g_mainThread = nullptr; ///< Used in syscalls.c for __ctru_get_reent
 
 namespace CTRPluginFramework
 {
-    void  ThreadExit(void) __attribute__((noreturn));
+    void    ThreadExit(void) __attribute__((noreturn));
+    static void    Resume(void);
 }
 
 void abort(void)
@@ -23,8 +32,11 @@ void abort(void)
     CTRPluginFramework::ThreadExit();
 }
 
-extern "C" Thread  g_mainThread;
-Thread      g_mainThread = nullptr;
+void CResume(void)
+{
+    CTRPluginFramework::Resume();
+}
+
 namespace CTRPluginFramework
 {
     // Threads stacks
@@ -32,28 +44,61 @@ namespace CTRPluginFramework
     static u32  keepThreadStack[0x1000] ALIGN(8);
 
     // Some globals
+    FS_Archive  _sdmcArchive;
     Handle      g_continueGameEvent = 0;
     Handle      g_keepThreadHandle;
     Handle      g_keepEvent = 0;
+    Handle      g_resumeEvent = 0;
     bool        g_keepRunning = true;
-
+    
+    static u32      g_backup[2] = {0}; ///< For the resume hook
+    extern u32      g_linearOp; ///< allocateHeaps.cpp
+    extern bool     g_heapError; ///< allocateHeaps.cpp
 
     void    ThreadInit(void *arg);
 
     // From main.cpp
     void    PatchProcess(void);
     int     main(void);
-    
-    // allocateHeaps.cpp
-    extern u32      g_linearOp;
-    extern bool     g_heapError;
 
-    extern "C" void __appInit(void);
+    static void    Resume(void)
+    {
+        svcSignalEvent(g_resumeEvent);
+        *(u32 *)g_resumeHookAddress = g_backup[0];
+        *(u32 *)(g_resumeHookAddress + 4) = g_backup[1];
+        svcWaitSynchronization(g_resumeEvent, U64_MAX);
+        svcCloseHandle(g_resumeEvent);
+        g_resumeEvent = 0;
+    }
 
-    extern "C" Result __sync_init(void);
-    extern "C" void __system_initSyscalls(void);
+    static u32      InstallResumeHook(void)
+    {
+        Hook    hook;
+        u32     pattern = 0xE59F0014;
+        u32     address = 0;
 
-    u32    MainOverlayCallback(u32 isBottom, u32 addr, u32 addrB, u32 stride, u32 format);
+        for (u32 addr = 0x100000; addr < 0x100050; addr += 4)
+        {
+            if (*(u32 *)addr == pattern)
+            {
+                address = addr;
+                break;
+            }
+        }
+
+        if (address == 0)
+            return (0);
+
+        address -= 0x14;
+        g_resumeHookAddress = address;
+
+        g_backup[0] = *(u32 *)address;
+        g_backup[1] = *(u32 *)(address + 4);
+
+        hook.Initialize(address, (u32)resumeHook);
+        hook.Enable();
+        return (address);
+    }
 
     void    KeepThreadMain(void *arg)
     {
@@ -79,26 +124,48 @@ namespace CTRPluginFramework
         // Init Screen
         ScreenImpl::Initialize();
 
+        // Protect code
+        Process::CheckAddress(0x00100000, 7);
+        Process::CheckAddress(0x00102000, 7); ///< NTR seems to protect the first 0x1000 bytes, which split the region in two
+        // Protect VRAM
+        Process::ProtectRegion(0x1F000000, 3);
+
         // Patch process before it starts
         PatchProcess();
 
-        // Continue game
-        svcSignalEvent(g_continueGameEvent);
+        // Install resume hook
+        svcCreateEvent(&g_resumeEvent, RESET_ONESHOT);
+        
+        if (InstallResumeHook())
+        {
+            // Continue game
+            svcSignalEvent(g_continueGameEvent);
+
+            // Wait until game signal our thread
+            svcWaitSynchronization(g_resumeEvent, U64_MAX);
+            svcClearEvent(g_resumeEvent);
+        }
+        else
+        {
+            // Clean event
+            svcCloseHandle(g_resumeEvent);
+            g_resumeEvent = 0;
+
+            // Continue game
+            svcSignalEvent(g_continueGameEvent);
+
+            // Hook failed, so let's wait 5 seconds for the game to starts
+            Sleep(Seconds(5));
+        }
 
         // Correction for some games like Kirby
-        u64 tid = Process::GetTitleID();
+        //u64 tid = Process::GetTitleID();
 
         // Pokemon Sun & Moon
-        if (tid == 0x0004000000175E00 || tid == 0x0004000000164800
+     /*   if (tid == 0x0004000000175E00 || tid == 0x0004000000164800
         // ACNL
-        ||  tid == 0x0004000000086300 || tid == 0x0004000000086400 || tid == 0x0004000000086200
-        // Mario Kart
-       // || tid == 0x0004000000030600  || tid == 0x0004000000030700 || tid == 0x0004000000030800)
-        )
-            g_linearOp = 0x10203u;
-
-        // Wait for the game to be fully launched
-        Sleep(Seconds(5));
+        ||  tid == 0x0004000000086300 || tid == 0x0004000000086400 || tid == 0x0004000000086200)
+            g_linearOp = 0x10203u; */
 
         // Init heap and newlib's syscalls
         initLib();
@@ -108,11 +175,8 @@ namespace CTRPluginFramework
             goto exit;
 
         // Create plugin's main thread
-        g_mainThread = threadCreate(ThreadInit, (void *)threadStack, 0x4000, 0x18, -2, false);
-
         svcCreateEvent(&g_keepEvent, RESET_ONESHOT);
-
-        Sleep(Seconds(1.f));
+        g_mainThread = threadCreate(ThreadInit, (void *)threadStack, 0x4000, 0x3F, -2, false);
 
         while (g_keepRunning)
         {
@@ -128,19 +192,13 @@ namespace CTRPluginFramework
 
         threadJoin(g_mainThread, U64_MAX);
     exit:
+        if (g_resumeEvent)
+            svcSignalEvent(g_resumeEvent);
         exit(1);
     }
 
-    extern "C" vu32* hidSharedMem;
-    FS_Archive  _sdmcArchive;
-
-    void    InitColors(void);
     void    Initialize(void)
     {
-        Process::CheckAddress(0x00100000, 7);
-        Process::CheckAddress(0x00102000, 7);
-        //svcInvalidateEntireInstructionCache();
-
         // Init HID
         hidInit();
 
@@ -163,12 +221,6 @@ namespace CTRPluginFramework
             Directory::ChangeWorkingDirectory(Utils::Format("/plugin/%016llX/", Process::GetTitleID()));
         }
 
-        // Protect VRAM
-        Process::ProtectRegion(0x1F000000, 3);
-
-        // Protect HID Shared Memory in case we want to push inputs
-        Process::ProtectMemory((u32)hidSharedMem, 0x1000);
-
         // Init Process info
         ProcessImpl::UpdateThreadHandle();
     }
@@ -177,6 +229,9 @@ namespace CTRPluginFramework
     void  ThreadInit(void *arg)
     {
         CTRPluginFramework::Initialize();
+
+        // Resume game
+        svcSignalEvent(g_resumeEvent);
 
         // Initialize Globals settings
         InitializeRandomEngine();
@@ -189,6 +244,9 @@ namespace CTRPluginFramework
 
     void  ThreadExit(void)
     {
+        if (g_resumeEvent)
+            svcSignalEvent(g_resumeEvent);
+
         // In which thread are we ?
         if (threadGetCurrent() != nullptr)
         {
