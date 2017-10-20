@@ -35,7 +35,7 @@ namespace CTRPluginFramework
     /// Retrieves the revision version from a packed system version.
 #define GET_VERSION_REVISION(version) (((version)>> 8)&0xFF)
 
-    bool    System::IsCfwLuma3DS(const u8 major, const u8 minor, const u8 revision)
+    bool    System::CfwIsLuma3DS(const u8 major, const u8 minor, const u8 revision)
     {
         if (SystemImpl::CFWVersion == 0 || !major)
             return (false);

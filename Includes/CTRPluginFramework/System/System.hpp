@@ -49,7 +49,7 @@ namespace CTRPluginFramework
          * \param revision An optional version
          * \return If the cfw is Luma3DS or not
          */
-        static bool         IsCfwLuma3DS(u8 major = 0, u8 minor = 0, u8 revision = 0);
+        static bool         CfwIsLuma3DS(u8 major = 0, u8 minor = 0, u8 revision = 0);
     };
 }
 
