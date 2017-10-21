@@ -495,7 +495,7 @@ namespace CTRPluginFramework
         _keyboard->DisplayTopScreen = DisplayTopScreen;
 
         std::string &input = _keyboard->GetInput();
-        input = Utils::Format("%f.4", start);
+        input = Utils::ToString(start, 4);
 
         int ret = _keyboard->Run();
 
@@ -533,7 +533,7 @@ namespace CTRPluginFramework
         _keyboard->DisplayTopScreen = DisplayTopScreen;
 
         std::string &input = _keyboard->GetInput();
-        input = Utils::Format("%lf.4", start);
+        input = Utils::Format("%.4lf", start);
 
         int ret = _keyboard->Run();
 
