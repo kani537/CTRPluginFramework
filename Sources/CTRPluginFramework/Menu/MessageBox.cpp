@@ -3,8 +3,13 @@
 
 namespace CTRPluginFramework
 {
-    MessageBox::MessageBox(std::string message, DialogType dialogType) :
-    _messageBox(new MessageBoxImpl(message, dialogType))
+    MessageBox::MessageBox(const std::string &title, const std::string &message, DialogType dialogType) :
+        _messageBox(new MessageBoxImpl(title, message, dialogType))
+    {
+    }
+
+    MessageBox::MessageBox(const std::string &message, DialogType dialogType) :
+        _messageBox(new MessageBoxImpl(message, dialogType))
     {
         
     }
@@ -14,11 +19,8 @@ namespace CTRPluginFramework
         
     }
 
-    bool MessageBox::operator()(void)
+    bool MessageBox::operator()(void) const
     {
         return ((*_messageBox)());
     }
-
-
-
 }

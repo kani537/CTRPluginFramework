@@ -78,8 +78,8 @@ namespace CTRPluginFramework
 
     void    f(void)
     {
-        u32 addr = Utils::Search<u32>(0x100000, 0x1000, { 0x12345678 });
-        u32 addr2 = Utils::Search<u8>(0x100000, 0x1000, { 0x12, 0x34, 0x56, 0x78 });
+        MessageBox(Color::Yellow << "Title", "Wow, awesome message !")();
+        MessageBox("Wow, awesome message !")();
     }
 
 #define ARVERSION 1
@@ -95,14 +95,7 @@ namespace CTRPluginFramework
 
         menu += g_f;
 
-        menu.OnFirstOpening = []
-        {
-            std::string welcome =
-                Color::Green << "Welcome !\n\n" << ResetColor()
-                << "This plugin was made by SpiderMan because there's no bad guys to catch and I'm bored !";
-                  
-            (MessageBox(welcome))();
-        };
+        menu.OnFirstOpening = f;
 
         menu += new MenuEntry("Test", nullptr, [](MenuEntry *entry)
         {
@@ -118,7 +111,7 @@ namespace CTRPluginFramework
                     break;
                 case 1:
                     if (g_f2 != nullptr)
-                        *g_f -= g_f2;
+                        *g_f -= g_f2;   
                     break;
                 case 2:
                     for (int i = 0; i < 10; i++)

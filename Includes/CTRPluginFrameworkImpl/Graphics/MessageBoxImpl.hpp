@@ -5,6 +5,7 @@
 #include "CTRPluginFramework/System/Rect.hpp"
 #include "CTRPluginFrameworkImpl/System/Events.hpp"
 #include "CTRPluginFramework/Menu/MessageBox.hpp"
+#include "CTRPluginFramework/Graphics/Color.hpp"
 
 namespace CTRPluginFramework
 {
@@ -12,7 +13,8 @@ namespace CTRPluginFramework
     class MessageBoxImpl
     {
     public:
-        MessageBoxImpl(std::string message, DialogType dtype = DialogType::DialogOk);
+        MessageBoxImpl(const std::string &title, const std::string &message, DialogType dtype = DialogType::DialogOk);
+        MessageBoxImpl(const std::string &message, DialogType dtype = DialogType::DialogOk);
         ~MessageBoxImpl() {};
 
         /*
@@ -25,6 +27,8 @@ namespace CTRPluginFramework
         void    _ProcessEvent(Event &event);
         void    _Draw(void);
 
+        Color           _titleColor;
+        std::string     _title;
         std::string     _message;
         DialogType      _dialogType;
         bool            _exit;

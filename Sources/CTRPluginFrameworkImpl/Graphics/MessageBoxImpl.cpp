@@ -7,15 +7,54 @@
 
 namespace CTRPluginFramework
 {
-    MessageBoxImpl::MessageBoxImpl(std::string message, DialogType dType) :
-        _message(message), _dialogType(dType), _cursor(0), _exit(false)
+    MessageBoxImpl::MessageBoxImpl(const std::string &title, const std::string &message, DialogType dType) :
+        _title(title), _message(message), _dialogType(dType), _exit(false), _cursor(0)
     {
         /*
-         * line = 16px
-         * buttons = 26px
-         *  30 + 16 = 46 + 20 = 66
-         */
+        * line = 16px
+        * buttons = 20px
+        * Top Border = 10px
+        * Text to buttons border = 13px
+        * Title = 16 + 8 = 24px
+        * Buttons to bottom broder = 5px
+        * Total after text border = 13 + 20 + 5 = 38px
+        * Total border = 10 + 38 = 48px
+        * Min height for 1 line: 48px + 16px = 64px
+        * Min height for title + 1 line: 48px + 16px + 24px = 88px
+        */
 
+        int     minWidth = dType == DialogType::DialogOk ? 100 : 200;
+        int     lineCount;
+        float   maxLineWidth;
+        float   maxTitleWidth;
+
+        // Check if a color is defined in the string of the title
+        if (title[0] == 0x1B)
+        {
+            _titleColor.r = title[1];
+            _titleColor.g = title[2];
+            _titleColor.b = title[3];
+        }
+        else
+            _titleColor = Color::Blank;
+
+        Renderer::GetTextInfos(title.c_str(), lineCount, maxTitleWidth, 290.f);
+        Renderer::GetTextInfos(message.c_str(), lineCount, maxLineWidth, 290.f);
+        maxLineWidth = std::max(maxLineWidth, maxTitleWidth);
+        
+        if (lineCount > 10)
+            lineCount = 10;
+
+        int height = 16 * lineCount + 72;
+        int posY = (240 - height) / 2;
+        int width = std::max((int)(maxLineWidth + 11.f), minWidth);
+        int posX = (400 - width) / 2;
+
+        _box = IntRect(posX, posY, width, height);
+    }
+    MessageBoxImpl::MessageBoxImpl(const std::string &message, const DialogType dType) :
+        _message(message), _dialogType(dType), _exit(false), _cursor(0)
+    {
         int     minWidth = dType == DialogType::DialogOk ? 100 : 200;
         int     lineCount;
         float   maxLineWidth;
@@ -25,7 +64,7 @@ namespace CTRPluginFramework
         if (lineCount > 10)
             lineCount = 10;
 
-        int height = std::max((16 * lineCount + 59), 75);
+        int height = 16 * lineCount + 48;
         int posY = (240 - height) / 2;
         int width = std::max((int)(maxLineWidth + 11), minWidth);
         int posX = (400 - width) / 2;
@@ -118,8 +157,18 @@ namespace CTRPluginFramework
         Renderer::DrawRect2(_box, Color::Black, Color::BlackGrey);
 
         // Draw Text
-        int posY = _box.leftTop.y + 20;
-        Renderer::DrawSysStringReturn((const u8 *)_message.c_str(), _box.leftTop.x + 5, posY, _box.leftTop.x + _box.size.x - 5, Color::Blank, _box.leftTop.y + _box.size.y - 30);
+        int posY = _box.leftTop.y + 10;
+        int posX = _box.leftTop.x + 5;
+        int maxW = _box.leftTop.x + _box.size.x - 5; ///< Should be -10, but that way a letter that is slighty to bix can still be drawn
+        int maxH = _box.leftTop.y + _box.size.y - 30;
+
+        if (!_title.empty())
+        {
+            int width = Renderer::DrawSysString(_title.c_str(), posX, posY, maxW, Color::Blank);
+            Renderer::DrawLine(posX, posY, width - posX + 30, _titleColor);
+            posY += 8;
+        }
+        Renderer::DrawSysStringReturn((const u8 *)_message.c_str(), posX, posY, maxW, Color::Blank, maxH);
        
         // Draw "Buttons"
         posY += 13;

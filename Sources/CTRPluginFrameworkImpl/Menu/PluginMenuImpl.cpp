@@ -274,8 +274,15 @@ namespace CTRPluginFramework
 
                 if (OnFirstOpening != nullptr)
                 {
-                    OnFirstOpening();
-                    OnFirstOpening = nullptr;
+                    static u32 count = 0;
+                    
+                    if (count > 0)
+                    {
+                        OnFirstOpening();
+                        OnFirstOpening = nullptr;
+                        count = 0;
+                    }
+                    count++;
                 }
 
                 delta = clock.Restart();
