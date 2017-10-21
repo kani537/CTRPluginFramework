@@ -24,7 +24,6 @@ int getMemUsed() { // returns the amount of used memory in bytes
 }
 
 int getMemFree() { // returns the amount of free memory in bytes 
-    return (0);
     struct mallinfo mi = mallinfo();
     return mi.fordblks + (getHeapLimit() - getHeapEnd());
 }

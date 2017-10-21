@@ -607,7 +607,7 @@ namespace CTRPluginFramework
         _action = true;
 
         u32 address = _GetCursorAddress();
-        if (_history.back() == address)
+        if (_history.size() && _history.back() == address)
             return;
         _history.push_back(address);
         _indexHistory = _history.size() - 1;
