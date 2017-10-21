@@ -734,7 +734,7 @@ namespace CTRPluginFramework
         MemInfo     meminfo;
         u32         save_addr;
         int         i;
-        Region      bakRegion = _regionsList.size() > _memoryRegions.SelectedItem ? _regionsList[_memoryRegions.SelectedItem] : (Region){0};
+        Region      bakRegion = _memoryRegions.SelectedItem && _regionsList.size() > _memoryRegions.SelectedItem ? _regionsList[_memoryRegions.SelectedItem] : (Region){0};
         Result      ret;
 
         _regionsList.clear();
