@@ -25,7 +25,8 @@ namespace CTRPluginFramework
         _tools(new PluginMenuTools(about, _hexEditor, _freeCheats)),
         _executeLoop(new PluginMenuExecuteLoop()),
         _guide(new GuideReader()),
-        _forceOpen(false)
+        _forceOpen(false),
+        OnFirstOpening(nullptr)
     {
         _isOpen = false;
         _wasOpened = false;
@@ -270,6 +271,13 @@ namespace CTRPluginFramework
 
                 // End frame
                 Renderer::EndFrame(shouldClose);
+
+                if (OnFirstOpening != nullptr)
+                {
+                    OnFirstOpening();
+                    OnFirstOpening = nullptr;
+                }
+
                 delta = clock.Restart();
 
                 // Close menu

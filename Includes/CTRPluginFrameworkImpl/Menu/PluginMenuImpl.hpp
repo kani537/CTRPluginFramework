@@ -18,6 +18,7 @@ namespace CTRPluginFramework
 {
     class PluginMenuImpl
     {
+        using FuncPointer = void(*)(void);
         using HotkeysVector = std::vector<Preferences::HotkeysInfos>;
     public:
 
@@ -58,6 +59,8 @@ namespace CTRPluginFramework
         bool    IsOpen(void) const;
         bool    WasOpened(void) const;
         void    AddPluginVersion(u32 version) const;
+
+        FuncPointer     OnFirstOpening;
     private: 
 
         static PluginMenuImpl       *_runningInstance;

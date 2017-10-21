@@ -95,6 +95,15 @@ namespace CTRPluginFramework
 
         menu += g_f;
 
+        menu.OnFirstOpening = []
+        {
+            std::string welcome =
+                Color::Green << "Welcome !\n\n" << ResetColor()
+                << "This plugin was made by SpiderMan because there's no bad guys to catch and I'm bored !";
+                  
+            (MessageBox(welcome))();
+        };
+
         menu += new MenuEntry("Test", nullptr, [](MenuEntry *entry)
         {
             Keyboard kb({ "Add entry", "Remove entry", "Add entries", "Clear", "Remove range" });

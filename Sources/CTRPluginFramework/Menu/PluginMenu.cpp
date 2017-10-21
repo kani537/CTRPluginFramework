@@ -90,6 +90,7 @@ namespace CTRPluginFramework
     {
         g_runningInstance = (PluginMenu *)this;
 
+        _menu->OnFirstOpening = OnFirstOpening;
         int ret = _menu->Run();
 
         g_runningInstance = nullptr;
