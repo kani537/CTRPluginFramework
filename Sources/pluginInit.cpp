@@ -61,6 +61,44 @@ namespace CTRPluginFramework
     void    PatchProcess(void);
     int     main(void);
 
+    static char      *ToString(char *buffer, u64 tid)
+    {
+        static const char c[] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'};
+
+        for (int i = 56; i >= 0; i -= 8)
+        {
+            u8 byte = (tid >> i) & 0xFF;
+            u8 left = byte >> 4;
+            u8 right = byte & 0xF;
+
+            *buffer++ = c[left];
+            *buffer++ = c[right];
+        }
+        *buffer = 0;
+        return (buffer);
+    }
+
+    static bool     IsFileExists(const char *filename)
+    {
+        Handle      file = 0;
+        bool        res = false;
+        char        path[0x100] = "/plugin/";
+        // Append tid
+        char        *p = ToString(path + 8, Process::GetTitleID());
+
+        *p++ = '/';
+        // Append filename
+        while (*filename)
+            *p++ = *filename++;
+        *p = 0;
+
+        FS_Path fspath = fsMakePath(PATH_ASCII, path);
+        res = R_SUCCEEDED(FSUSER_OpenFile(&file, _sdmcArchive, fspath, FS_OPEN_READ, 0));
+        if (res)
+            FSFILE_Close(file);
+        return (res);
+    }
+
     static void    Resume(void)
     {
         svcSignalEvent(g_resumeEvent);
@@ -71,8 +109,26 @@ namespace CTRPluginFramework
         g_resumeEvent = 0;
     }
 
+    static bool     Blacklist(void)
+    {
+        u32     lowTid = static_cast<u32>(Process::GetTitleID());
+
+        switch (lowTid)
+        {
+        case 0x00188100: ///< Alphadia
+        case 0x00188600: ///< Chronus Arc
+            return (true);
+        default:
+            break;
+        }
+        return (false);
+    }
+
     static u32      InstallResumeHook(void)
     {
+        if (Blacklist() || IsFileExists("NoHookButSleep"))
+            return (0);
+
         Hook    hook;
         u32     pattern = 0xE59F0014;
         u32     address = 0;
@@ -123,6 +179,12 @@ namespace CTRPluginFramework
 
         // Init Screen
         ScreenImpl::Initialize();
+
+        // Init sdmcArchive
+        {
+            FS_Path sdmcPath = { PATH_EMPTY, 1, (u8*)"" };
+            FSUSER_OpenArchive(&_sdmcArchive, ARCHIVE_SDMC, sdmcPath);
+        }
 
         // Protect code
         Process::CheckAddress(0x00100000, 7);
@@ -211,24 +273,19 @@ namespace CTRPluginFramework
         //Init OSD
         OSDImpl::_Initialize();
 
-        // Init sdmcArchive
-        {
-            FS_Path sdmcPath = { PATH_EMPTY, 1, (u8*)"" };
-            FSUSER_OpenArchive(&_sdmcArchive, ARCHIVE_SDMC, sdmcPath);
-        }
+        // Init Process info
+        ProcessImpl::UpdateThreadHandle();
+
         // Set current working directory
         {
             Directory::ChangeWorkingDirectory(Utils::Format("/plugin/%016llX/", Process::GetTitleID()));
         }
-
-        // Init Process info
-        ProcessImpl::UpdateThreadHandle();
     }
     void    InitializeRandomEngine(void);
     // Main thread's start
     void  ThreadInit(void *arg)
     {
-        CTRPluginFramework::Initialize();
+        Initialize();
 
         // Resume game
         svcSignalEvent(g_resumeEvent);
