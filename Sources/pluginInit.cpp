@@ -116,7 +116,8 @@ namespace CTRPluginFramework
         switch (lowTid)
         {
         case 0x00188100: ///< Alphadia
-        case 0x00188600: ///< Chronus Arc
+        case 0x00188600: ///< Chronus Arc EUR
+        case 0x00179000: ///< Chronus Arc NA
             return (true);
         default:
             break;
