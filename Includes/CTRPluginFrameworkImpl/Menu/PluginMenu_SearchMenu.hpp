@@ -17,6 +17,13 @@ namespace CTRPluginFramework
 {
     class SearchMenu
     {
+        struct SubMenuOption
+        {
+
+            const char *name;
+            void    (SearchMenu::*function)(void);
+        };
+
         using EventList = std::vector<Event>;
     public:
 
@@ -34,7 +41,7 @@ namespace CTRPluginFramework
         std::vector<std::string>    _resultsAddress;
         std::vector<std::string>    _resultsNewValue;
         std::vector<std::string>    _resultsOldValue;
-        std::vector<std::string>    _options;
+        std::vector<SubMenuOption>    _options;
 
         int                         _selector;
         int                         _submenuSelector;
@@ -54,6 +61,7 @@ namespace CTRPluginFramework
         void        _JumpInEditor(void);
         void        _Export(void);
         void        _ExportAll(void);
+        void        _ShowGame(void);
 
     };
 }

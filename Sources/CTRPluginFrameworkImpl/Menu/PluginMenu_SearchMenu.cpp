@@ -6,6 +6,9 @@
 #include <cstdlib>
 #include <ctime>
 #include "CTRPluginFramework/Menu/MessageBox.hpp"
+#include "CTRPluginFramework/Utils/StringExtensions.hpp"
+#include "Unicode.h"
+#include "CTRPluginFramework/System/System.hpp"
 
 namespace CTRPluginFramework
 {
@@ -20,11 +23,12 @@ namespace CTRPluginFramework
         _selector = 0;
         _submenuSelector = 0;
 
-        _options.push_back("Edit");
+        /*_options.push_back("Edit");
         _options.push_back("Jump in editor");
         _options.push_back("New cheat");
         _options.push_back("Export");
-        _options.push_back("Export all");
+        _options.push_back("Export all");*/
+        _options.push_back((SubMenuOption){ "Show game", &SearchMenu::_ShowGame });
 
         _isSubmenuOpen = false;
         _action = false;
@@ -39,7 +43,7 @@ namespace CTRPluginFramework
         static Clock    _fastScroll;
         static Clock    _startFastScroll;
 
-        if (_currentSearch != nullptr && _currentSearch->IsFirstUnknownSearch())
+       /* if (_currentSearch != nullptr && _currentSearch->IsFirstUnknownSearch())
         {
             for (int i = 0; i < eventList.size(); i++)
             {
@@ -49,7 +53,7 @@ namespace CTRPluginFramework
                     return (true);
             }
             return (false);
-        }
+        } */
 
         for (int i = 0; i < eventList.size(); i++)
         {
@@ -61,7 +65,7 @@ namespace CTRPluginFramework
             // Pressed
             if (event.type == Event::EventType::KeyPressed)
             {
-                if (_currentSearch != nullptr)
+                //if (_currentSearch != nullptr)
                 {
                     switch (event.key.code)
                     {
@@ -113,7 +117,7 @@ namespace CTRPluginFramework
                             }
                             else
                             {
-                                _submenuSelector = std::min((int)(_submenuSelector + 1), (int)4);
+                                _submenuSelector = std::min((int)(_submenuSelector + 1), (int)_options.size());
                             }
                             break;
                         }
@@ -148,15 +152,7 @@ namespace CTRPluginFramework
                         {
                             if (_isSubmenuOpen)
                             {
-                                switch (_submenuSelector)
-                                {
-                                    case 0: _Edit(); break;
-                                    case 1: _JumpInEditor(); break;
-                                    case 2: _Save(); break;
-                                    case 3: _Export(); break;
-                                    case 4: _ExportAll(); break;
-                                    default: break;
-                                }
+                                ((this)->*(_options[_submenuSelector].function))();
                             }
                             break;
                         }
@@ -312,8 +308,18 @@ namespace CTRPluginFramework
         /**/
         /**********************************************************************/
 
+        posY = 203;
+        Renderer::DrawString((char *)"Options:", 260, posY, blank);
+        posY -= 14;
+        Renderer::DrawSysString((char *)"\uE002", 320, posY, 380, blank);
+
         if (_currentSearch == nullptr || _resultsAddress.size() == 0 || _resultsNewValue.size() == 0)
+        {
+            if (_isSubmenuOpen)
+                _DrawSubMenu();
             return;
+        }
+            
 
         posY = 95;
         int posX1 = 47;
@@ -363,18 +369,11 @@ namespace CTRPluginFramework
         posY = 196;
         Renderer::DrawString((char *)str.c_str(), 37, posY, blank);
 
-        if (_currentSearch->IsFirstUnknownSearch())
-            return;
-
-        posY = 203;
-        Renderer::DrawString((char *)"Options:", 260, posY, blank);
-        posY -= 14;
-        Renderer::DrawSysString((char *)"\uE002", 320, posY, 380, blank);
-
+        /*if (_currentSearch->IsFirstUnknownSearch())
+            return;*/
         if (_isSubmenuOpen)
         {
             _DrawSubMenu();
-            return;
         }
     }
 
@@ -389,9 +388,22 @@ namespace CTRPluginFramework
         {
             _selector = 0;
             _index = 0;
+            _submenuSelector = 0;
+            _options.clear();
+            _options.push_back((SubMenuOption) { "Show game", &SearchMenu::_ShowGame });
             return;
         }
 
+        if (_options.size() == 1 && !_currentSearch->IsFirstUnknownSearch())
+        {
+            _options.clear();
+            _options.push_back((SubMenuOption) { "Edit", &SearchMenu::_Edit });
+            _options.push_back((SubMenuOption) { "Jump in editor", &SearchMenu::_JumpInEditor });
+            _options.push_back((SubMenuOption) { "New cheat", &SearchMenu::_Save });
+            _options.push_back((SubMenuOption) { "Export", &SearchMenu::_Export });
+            _options.push_back((SubMenuOption) { "Export all", &SearchMenu::_ExportAll });
+            _options.push_back((SubMenuOption) { "Show game", &SearchMenu::_ShowGame });
+        }
         if (_index + _selector >= _currentSearch->ResultsCount)
         {
             _index = 0;
@@ -437,7 +449,7 @@ namespace CTRPluginFramework
 
         for (int i = 0; i < _options.size(); i++)
         {
-            std::string &str = _options[i];
+            const char *str = _options[i].name;
 
             if (i == _submenuSelector)
             {
@@ -454,7 +466,7 @@ namespace CTRPluginFramework
                     // Draw selector
                     Renderer::DrawRect(selRect, darkgrey, false);
                     // Draw text
-                    Renderer::DrawString((char *)str.c_str(), 245, posY, black);
+                    Renderer::DrawString(str, 245, posY, black);
                 }
                 else
                 {
@@ -462,12 +474,12 @@ namespace CTRPluginFramework
                     Renderer::DrawRect(selRect, darkgrey, false);
 
                     // Draw text
-                    Renderer::DrawString((char *)str.c_str(), 245, posY, blank);
+                    Renderer::DrawString(str, 245, posY, blank);
                 }
             }
             else
             {
-                Renderer::DrawString((char *)str.c_str(), 245, posY, blank);
+                Renderer::DrawString(str, 245, posY, blank);
             }
             posY += 2;
         }
@@ -656,6 +668,41 @@ namespace CTRPluginFramework
                 break;
             std::string str = _resultsAddress[i] +" : " + _resultsNewValue[i];
             _export.WriteLine(str);
+        }
+    }
+
+    void    SearchMenu::_ShowGame(void)
+    {
+        MessageBox(Color::Green << "Info", "Press " FONT_B " to return to the menu when\nyou've done.")();
+
+        ScreenImpl::Clean();
+
+        while (1)
+        {
+            Controller::Update();
+            if (Controller::IsKeyPressed(Key::B))
+                break;
+        }
+
+        float fade = 0.03f;
+        Clock t = Clock();
+        Time limit = Seconds(1) / 10.f;
+        Time delta;
+        float pitch = 0.0006f;
+
+        while (fade <= 0.3f)
+        {
+            delta = t.Restart();
+            fade += pitch * delta.AsMilliseconds();
+
+            ScreenImpl::Top->Fade(fade);
+            ScreenImpl::Bottom->Fade(fade);
+
+            ScreenImpl::Top->SwapBuffer(true, true);
+            ScreenImpl::Bottom->SwapBuffer(true, true);
+            gspWaitForVBlank();
+            if (System::IsNew3DS())
+                while (t.GetElapsedTime() < limit);
         }
     }
 }
