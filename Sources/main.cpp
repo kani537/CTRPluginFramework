@@ -26,8 +26,23 @@
 
 namespace CTRPluginFramework
 {
+    u32 reslimit = 0;
+    u32 maxreslimit = 0;
     // This function is called on the plugin starts, before main
-    void    PatchProcess(void) {}
+    void    PatchProcess(void)
+    {
+        Handle out;
+        s64 vout = 0;
+        u32 limit = 1;
+
+        svcGetResourceLimit(&out, 0xFFFF8001);
+        svcGetResourceLimitCurrentValues(&vout, out, &limit, 1);
+        reslimit = vout;
+        svcGetResourceLimitLimitValues(&vout, out, &limit, 1);
+        maxreslimit = vout;
+        
+        svcCloseHandle(out);
+    }
 
     std::string about = u8"\n" \
         u8"Plugin for Zelda Ocarina Of Time, V3.0\n\n"
@@ -84,10 +99,65 @@ namespace CTRPluginFramework
         g_menu = new PluginMenu("Action Replay Test", 0, 0, 1);
         PluginMenu      &menu = *g_menu;
 
+        menu += new MenuEntry("Limit", nullptr, [](MenuEntry *entry)
+        {
+            Handle out;
+            s64 vout = 0;
+            u32 limit = 1;
+
+            svcGetResourceLimit(&out, 0xFFFF8001);
+            svcGetResourceLimitCurrentValues(&vout, out, &limit, 1);
+            svcGetResourceLimitCurrentValues(&vout, out, &limit, 1);
+
+            u32 slimit = vout;
+            svcCloseHandle(out);
+
+            std::string str = "APP: " << Utils::ToHex(*(u32 *)(0x1FF80040)) << "\n"
+                << "SYS: " << Utils::ToHex(*(u32 *)(0x1FF80044)) << "\n"
+                << "BASE: " << Utils::ToHex(*(u32 *)(0x1FF80048)) << "\n"
+                << "Max: " << Utils::ToHex(maxreslimit) << "\n"
+                << "Game: " << Utils::ToHex(reslimit) << "\n"
+                << "Now: " << Utils::ToHex(slimit);
+
+            (MessageBox(str))();
+        });
+
+        menu += new MenuEntry("Text check", nullptr, [](MenuEntry *entry)
+        {
+            static u8   *utf8 = (u8 *)"abcdefghijklmnop";
+
+            u32  utf32[0x100];
+            u32  utf16[0x100];            
+
+            std::string iutf8;
+            std::string iutf32 = "utf32";
+            std::string iutf16 = "utf16";
+
+            if (!Process::ReadString((u32)utf8, iutf8, 17, StringFormat::Utf8))
+                MessageBox("ReadUTF8 failed")();
+
+            if (!Process::WriteString((u32)utf32, iutf8, StringFormat::Utf32))
+                MessageBox("WriteUTF32 failed")();
+
+            if (!Process::WriteString((u32)utf16, iutf8, StringFormat::Utf16))
+                MessageBox("WriteUTF16 failed")();
+
+            iutf8.insert(0, "utf8");
+
+            if (!Process::ReadString((u32)utf16, iutf16, 17 * 2, StringFormat::Utf16))
+                MessageBox("ReadUTF16 failed")();
+
+            if (!Process::ReadString((u32)utf32, iutf32, 17 * 4, StringFormat::Utf32))
+                MessageBox("ReadUTF32 failed")();
+
+            std::string total = iutf8 + "\n" + iutf16 + "\n" + iutf32;
+
+            (MessageBox(total))();
+        });
         menu += new MenuEntry("Load cheats from file", nullptr, LineReadTest);
         menu += g_folder;
 
-        menu += g_f;
+        menu += g_f; 
 
         menu += new MenuEntry("Test", nullptr, [](MenuEntry *entry)
         {

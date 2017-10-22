@@ -7,6 +7,8 @@
 #include "csvc.h"
 #include <cstdio>
 #include <cstring>
+#include "CTRPluginFramework/Utils/Utils.hpp"
+#include "CTRPluginFramework/Menu/MessageBox.hpp"
 
 extern 		Handle gspThreadEventHandle;
 
@@ -395,5 +397,213 @@ namespace CTRPluginFramework
             return (true);
         }
         return (false);
+    }
+
+    static bool     ConvertString(void *output, const u8 *input, u32 size, StringFormat outfmt)
+    {
+        if (outfmt == StringFormat::Utf16)
+        {
+            u16     buffer[0x10];
+            u16     *out = reinterpret_cast<u16 *>(output);
+            u16     *buf;
+            u32     code;
+            int     units;
+
+            size >>= 1;
+            size <<= 1;
+            do
+            {
+                buf = buffer;
+                units = decode_utf8(&code, input);
+                if (units == -1)
+                    return (false);
+
+                input += units;
+                units = encode_utf16(buf, code);
+                size -= units;
+                if (!size)
+                    *out = 0;
+                else while (units--)
+                    *out++ = *buf++;
+            } while (size && code > 0);
+        }
+        else
+        {
+            u32     *out = reinterpret_cast<u32 *>(output);
+            u32     code;
+            int     units;
+
+            size >>= 2;
+            size <<= 2;
+            do
+            {
+                units = decode_utf8(&code, input);
+                if (units == -1)
+                    return (false);
+
+                input += units;
+                size -= 4;
+                if (!size)
+                    *out = 0;
+                else while (units--)
+                    *out++ = code;
+
+            } while (size && code > 0);
+        }
+
+        return (true);
+    }
+
+    bool    Process::ReadString(u32 address, std::string &output, u32 size, StringFormat format)
+    {
+        if (!CheckAddress(address, MEMPERM_READ))
+            return (false);
+
+        u8      buffer[0x10];
+
+        if (format == StringFormat::Utf8)
+        {
+            u32     code = 0;
+            u8      *p = reinterpret_cast<u8 *>(address);
+            int     unit = 0;
+
+            do
+            {
+                unit = decode_utf8(&code, p);
+
+                if (unit == -1)
+                    return (false);
+
+                size -= unit;
+
+                if (code > 0)
+                    while (unit--)
+                        output += *p++;
+            } while (code > 0 && size);
+        }
+        else if (format == StringFormat::Utf16)
+        {
+            u32     code = 0;
+            u16     *p = reinterpret_cast<u16 *>(address);
+            u8      *buf;
+            int     unit = 0;
+
+            size >>= 1;
+            size <<= 1;
+            do
+            {
+                buf = buffer;
+
+                unit = decode_utf16(&code, p);
+                if (unit == -1)
+                    return (false);
+
+                p += unit;
+                size -= unit * 2;
+                unit = encode_utf8(buf, code);
+                if (unit == -1)
+                    return (false);
+
+                if (code > 0)
+                    while (unit--)
+                        output += *buf++;
+            } while (code > 0 && size);
+        }
+        else
+        {
+            u32     code = 0;
+            u32     *p = reinterpret_cast<u32 *>(address);
+            u8      *buf;
+            int     unit = 0;
+
+            size >>= 2;
+            size <<= 2;
+            do
+            {
+                buf = buffer;
+                code = *p++;
+                size -= 4;
+
+                unit = encode_utf8(buf, code);
+                if (unit == -1)
+                    return (false);
+
+                if (code > 0)
+                    while (unit--)
+                        output += *buf++;
+            } while (code > 0 && size);
+        }
+
+        return (true);
+    }
+
+    bool    Process::WriteString(u32 address, const std::string &input, StringFormat outFmt)
+    {
+        if (!CheckAddress(address, MEMPERM_READ | MEMPERM_WRITE) || input.empty())
+            return (false);
+
+        if (outFmt == StringFormat::Utf8)
+        {
+            u8  *p = reinterpret_cast<u8 *>(address);
+
+            for (char c : input)
+            {
+                *p++ = c;
+            }
+            return (true);
+        }
+        else if (outFmt == StringFormat::Utf16)
+        {
+            u32         size = (input.size() + 1) * 2;
+            const u8    *in = reinterpret_cast<const u8 *>(input.c_str());
+            u16         *out = reinterpret_cast<u16 *>(address);
+
+            return (ConvertString(out, in, size, outFmt));
+        }
+
+        {
+            u32         size = (input.size() + 1) * 4;
+            const u8    *in = reinterpret_cast<const u8 *>(input.c_str());
+            u32         *out = reinterpret_cast<u32 *>(address);
+
+            return (ConvertString(out, in, size, outFmt));
+        }
+    }
+
+    bool    Process::WriteString(u32 address, const std::string &input, u32 size, StringFormat outFmt)
+    {
+        if (!CheckAddress(address, MEMPERM_READ | MEMPERM_WRITE) || input.empty())
+            return (false);
+
+        if (outFmt == StringFormat::Utf8)
+        {
+            u8  *p = reinterpret_cast<u8 *>(address);
+
+            for (char c : input)
+            {
+                size--;
+                if (!size)
+                {
+                    *p = 0;
+                    break;
+                }
+                *p++ = c;
+            }
+            return (true);
+        }
+        else if (outFmt == StringFormat::Utf16)
+        {
+            const u8    *in = reinterpret_cast<const u8 *>(input.c_str());
+            u16         *out = reinterpret_cast<u16 *>(address);
+
+            return (ConvertString(out, in, size, outFmt));
+        }
+
+        {
+            const u8    *in = reinterpret_cast<const u8 *>(input.c_str());
+            u32         *out = reinterpret_cast<u32 *>(address);
+
+            return (ConvertString(out, in, size, outFmt));
+        }
     }
 }
