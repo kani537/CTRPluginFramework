@@ -61,7 +61,7 @@ namespace CTRPluginFramework
     void    PatchProcess(void);
     int     main(void);
 
-    static char      *ToString(char *buffer, u64 tid)
+   /* static char      *ToString(char *buffer, u64 tid)
     {
         static const char c[] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'};
 
@@ -102,8 +102,10 @@ namespace CTRPluginFramework
     static void    Resume(void)
     {
         svcSignalEvent(g_resumeEvent);
+        //svcFlushProcessDataCache(0xFFFF8001, (void *)g_resumeHookAddress, 8);
         *(u32 *)g_resumeHookAddress = g_backup[0];
         *(u32 *)(g_resumeHookAddress + 4) = g_backup[1];
+        //svcInvalidateProcessDataCache(0xFFFF8001, (void *)g_resumeHookAddress, 8);
         svcWaitSynchronization(g_resumeEvent, U64_MAX);
         svcCloseHandle(g_resumeEvent);
         g_resumeEvent = 0;
@@ -127,6 +129,10 @@ namespace CTRPluginFramework
 
     static u32      InstallResumeHook(void)
     {
+        u32 lowtid = (u32)Process::GetTitleID();
+
+        if (lowtid != 0x00164800 && lowtid != 0x00175E00)
+            return (0);
         if (Blacklist() || IsFileExists("NoHookButSleep"))
             return (0);
 
@@ -155,8 +161,13 @@ namespace CTRPluginFramework
         hook.Initialize(address, (u32)resumeHook);
         hook.Enable();
         return (address);
-    }
+    }*/
+    static bool     IsPokemonSunOrMoon(void)
+    {
+        u32 lowtid = (u32)Process::GetTitleID();
 
+        return (lowtid == 0x00164800 || lowtid == 0x00175E00);
+    }
     void    KeepThreadMain(void *arg)
     {
         // Initialize the synchronization subsystem
@@ -197,7 +208,7 @@ namespace CTRPluginFramework
         PatchProcess();
 
         // Install resume hook
-        svcCreateEvent(&g_resumeEvent, RESET_ONESHOT);
+      /*  svcCreateEvent(&g_resumeEvent, RESET_ONESHOT);
         
         if (InstallResumeHook())
         {
@@ -208,27 +219,19 @@ namespace CTRPluginFramework
             svcWaitSynchronization(g_resumeEvent, U64_MAX);
             svcClearEvent(g_resumeEvent);
         }
-        else
+        else*/
         {
             // Clean event
-            svcCloseHandle(g_resumeEvent);
-            g_resumeEvent = 0;
+           /* svcCloseHandle(g_resumeEvent);
+            g_resumeEvent = 0;*/
 
             // Continue game
             svcSignalEvent(g_continueGameEvent);
 
-            // Hook failed, so let's wait 5 seconds for the game to starts
-            Sleep(Seconds(5));
+            // More time for Pokemon as it'll freeze if the plugin wake up while the video is played
+            Time time = IsPokemonSunOrMoon() ? Seconds(10.f) : Seconds(5.f);
+            Sleep(time);
         }
-
-        // Correction for some games like Kirby
-        //u64 tid = Process::GetTitleID();
-
-        // Pokemon Sun & Moon
-     /*   if (tid == 0x0004000000175E00 || tid == 0x0004000000164800
-        // ACNL
-        ||  tid == 0x0004000000086300 || tid == 0x0004000000086400 || tid == 0x0004000000086200)
-            g_linearOp = 0x10203u; */
 
         // Init heap and newlib's syscalls
         initLib();
@@ -239,12 +242,7 @@ namespace CTRPluginFramework
 
         // Create plugin's main thread
         svcCreateEvent(&g_keepEvent, RESET_ONESHOT);
-        g_mainThread = threadCreate(ThreadInit, (void *)threadStack, 0x4000, 0x3F, -2, false);
-
-        // Delay OSD initialization if we hooked on resume
-        if (g_resumeEvent)
-            Sleep(Seconds(5.f));
-        InstallOSD();
+        g_mainThread = threadCreate(ThreadInit, (void *)threadStack, 0x4000, 0x18, -2, false);
 
         while (g_keepRunning)
         {
@@ -259,9 +257,11 @@ namespace CTRPluginFramework
         }
 
         threadJoin(g_mainThread, U64_MAX);
+        
     exit:
-        if (g_resumeEvent)
-            svcSignalEvent(g_resumeEvent);
+        svcCloseHandle(g_keepEvent);
+       /* if (g_resumeEvent)
+            svcSignalEvent(g_resumeEvent);*/
         exit(1);
     }
 
@@ -279,13 +279,13 @@ namespace CTRPluginFramework
         //Init OSD
         OSDImpl::_Initialize();
 
-        // Init Process info
-        ProcessImpl::UpdateThreadHandle();
-
         // Set current working directory
         {
             Directory::ChangeWorkingDirectory(Utils::Format("/plugin/%016llX/", Process::GetTitleID()));
         }
+
+        // Init Process info
+        ProcessImpl::UpdateThreadHandle();
     }
     void    InitializeRandomEngine(void);
     // Main thread's start
@@ -294,7 +294,11 @@ namespace CTRPluginFramework
         Initialize();
 
         // Resume game
-        svcSignalEvent(g_resumeEvent);
+        /*if (g_resumeEvent)
+        {
+            svcSignalEvent(g_resumeEvent);
+            Sleep(Seconds(5.f));
+        }   */
 
         // Initialize Globals settings
         InitializeRandomEngine();
@@ -307,8 +311,8 @@ namespace CTRPluginFramework
 
     void  ThreadExit(void)
     {
-        if (g_resumeEvent)
-            svcSignalEvent(g_resumeEvent);
+     /*   if (g_resumeEvent)
+            svcSignalEvent(g_resumeEvent); */
 
         // In which thread are we ?
         if (threadGetCurrent() != nullptr)

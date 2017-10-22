@@ -65,6 +65,10 @@ namespace CTRPluginFramework
 
         std::memcpy(buffer, str.data(), size);
 
+        // Skip UTF8 sig
+        if (s[0] == 0xEF && s[1] == 0xBB && s[2] == 0xBF)
+            s += 3;
+
         size = 0;
         while (*s)
         {
@@ -89,6 +93,10 @@ namespace CTRPluginFramework
         if (!size) return (0);
 
         std::memcpy(buffer, str.data(), size);
+
+        // Skip UTF8 sig
+        if (s[0] == 0xEF && s[1] == 0xBB && s[2] == 0xBF)
+            s += 3;
 
         while (*s)
         {
