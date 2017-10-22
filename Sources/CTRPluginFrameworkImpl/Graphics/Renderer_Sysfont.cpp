@@ -50,6 +50,10 @@ namespace CTRPluginFramework
         float   w = 0.f;
         u8      *c = (u8 *)text;        
 
+        // Skip UTF8 sig
+        if (c[0] == 0xEF && c[1] == 0xBB && c[2] == 0xBF)
+            c += 3;
+
         while (*c == '\n') c++;
 
         do
@@ -90,6 +94,10 @@ namespace CTRPluginFramework
         int     lineCount = 1;
         float   w = 0.0f;
         u8      *c = (u8 *)text;
+
+        // Skip UTF8 sig
+        if (c[0] == 0xEF && c[1] == 0xBB && c[2] == 0xBF)
+            c += 3;
 
         while (*c)
         {
@@ -148,6 +156,10 @@ namespace CTRPluginFramework
         lineCount = 1;
         float   w = 0.0f;
         u8      *c = (u8 *)text;
+
+        // Skip UTF8 sig
+        if (c[0] == 0xEF && c[1] == 0xBB && c[2] == 0xBF)
+            c += 3;
 
         while (*c)
         {

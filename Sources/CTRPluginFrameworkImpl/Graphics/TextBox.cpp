@@ -354,6 +354,11 @@ namespace CTRPluginFramework
         const float maxWidth = static_cast<float>(_border.size.x) - 12.f;
 
         _newline.push_back(str);
+
+        // Skip UTF8 sig
+        if (str[0] == 0xEF && str[1] == 0xBB && str[2] == 0xBF)
+            str += 3;
+
         int advance = 0;
         while (*str == '\n')
         {
