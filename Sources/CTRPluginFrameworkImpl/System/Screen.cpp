@@ -228,6 +228,7 @@ namespace CTRPluginFramework
     void    ScreenImpl::Clean(void)
     {
         GSPGPU_RestoreVramSysArea();
+        GSPGPU_SaveVramSysArea();
         Top->Acquire();
         Bottom->Acquire();
     }
