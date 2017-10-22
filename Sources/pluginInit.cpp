@@ -56,7 +56,7 @@ namespace CTRPluginFramework
     extern bool     g_heapError; ///< allocateHeaps.cpp
 
     void    ThreadInit(void *arg);
-
+    void    InstallOSD(void); ///< OSDImpl
     // From main.cpp
     void    PatchProcess(void);
     int     main(void);
@@ -240,6 +240,11 @@ namespace CTRPluginFramework
         // Create plugin's main thread
         svcCreateEvent(&g_keepEvent, RESET_ONESHOT);
         g_mainThread = threadCreate(ThreadInit, (void *)threadStack, 0x4000, 0x3F, -2, false);
+
+        // Delay OSD initialization if we hooked on resume
+        if (g_resumeEvent)
+            Sleep(Seconds(5.f));
+        InstallOSD();
 
         while (g_keepRunning)
         {

@@ -30,8 +30,8 @@ namespace CTRPluginFramework
 
     void    OSDImpl::_Initialize(void)
     {
-        InstallOSD();
-        RecursiveLock_Init(&RecLock);   
+        RecursiveLock_Init(&RecLock);
+        //InstallOSD();
     }
 
 #define XEND    390

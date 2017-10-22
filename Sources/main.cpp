@@ -76,12 +76,6 @@ namespace CTRPluginFramework
     MenuFolder  *g_f = new MenuFolder("That folder !");
     MenuFolder  *g_f2 = nullptr;
 
-    void    f(void)
-    {
-        MessageBox(Color::Yellow << "Title", "Wow, awesome message !")();
-        MessageBox("Wow, awesome message !")();
-    }
-
 #define ARVERSION 1
     void    LineReadTest(MenuEntry *entry);
     int     main(void)
@@ -94,8 +88,6 @@ namespace CTRPluginFramework
         menu += g_folder;
 
         menu += g_f;
-
-        menu.OnFirstOpening = f;
 
         menu += new MenuEntry("Test", nullptr, [](MenuEntry *entry)
         {
