@@ -7,12 +7,13 @@ namespace CTRPluginFramework
     static PluginMenu   *g_runningInstance = nullptr;
 
     PluginMenu::PluginMenu(std::string name, std::string about) :
-        _menu(new PluginMenuImpl(name, about)) 
+        _menu(new PluginMenuImpl(name, about)), OnFirstOpening{ nullptr }
     {
 
     }
 
-    PluginMenu::PluginMenu(std::string name, void *about, DecipherPointer func)
+    PluginMenu::PluginMenu(std::string name, void *about, DecipherPointer func) :
+        OnFirstOpening{ nullptr }
     {
         std::string aboutStr = "";
         func(aboutStr, about);
@@ -21,7 +22,7 @@ namespace CTRPluginFramework
     }
 
     PluginMenu::PluginMenu(std::string name, u32 major, u32 minor, u32 revision, std::string about) :
-        _menu(new PluginMenuImpl(name, about))
+        _menu(new PluginMenuImpl(name, about)), OnFirstOpening{ nullptr }
     {
         u32 version = (major & 0xFF) | ((minor & 0xFF) << 8) | ((revision & 0xFF) << 16);
 
