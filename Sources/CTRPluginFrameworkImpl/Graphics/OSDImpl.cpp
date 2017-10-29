@@ -20,6 +20,7 @@ namespace CTRPluginFramework
 {
     bool    OSDImpl::DrawSaveIcon = false;
     bool    OSDImpl::MessColors = false;
+    u32     OSDImpl::FramesToPlay = 0;
     Hook    OSDImpl::OSDHook;
     RecursiveLock OSDImpl::RecLock;
     FloatingButton OSDImpl::FloatingBtn(IntRect(0, 0, 40, 40), Icon::DrawRocket);
@@ -135,7 +136,7 @@ namespace CTRPluginFramework
         if (!addr)
             return (((OSDReturn)OSDHook.returnCode)(isBottom, arg2, addr, addrB, stride, format, arg7));
 
-        if (ProcessImpl::_isPaused)
+        if (ProcessImpl::_isPaused && !FramesToPlay)
         {
             GSPGPU_SaveVramSysArea();
             svcSignalEvent(ProcessImpl::FrameEvent);
@@ -143,6 +144,9 @@ namespace CTRPluginFramework
             GSPGPU_RestoreVramSysArea();
             RecursiveLock_Unlock(&ProcessImpl::FrameLock);
         }
+
+        if (FramesToPlay && !isBottom)
+            FramesToPlay--;
 
         bool drawRocket = Preferences::UseFloatingBtn && isBottom;
         bool drawTouch =  Preferences::DrawTouchCursor && Touch::IsDown() && isBottom;

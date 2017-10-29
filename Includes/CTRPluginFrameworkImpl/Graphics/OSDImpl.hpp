@@ -47,6 +47,7 @@ namespace CTRPluginFramework
         
         static bool             DrawSaveIcon;
         static bool             MessColors;
+        static u32              FramesToPlay;
         static Hook             OSDHook;
         static RecursiveLock    RecLock;
         static FloatingButton   FloatingBtn;

@@ -74,8 +74,10 @@ namespace CTRPluginFramework
 
         /**
          * \brief Resume the process
+         * \param frames if a number is specified the process will play x frames
+         * before being paused again
          */
-        static void     Play(void);
+        static void     Play(const u32 frames = 0);
 
         /**
         * \brief Safely patch the current process (MemPerm check and Invalidate cache)

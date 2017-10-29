@@ -9,6 +9,7 @@
 #include <cstring>
 #include "CTRPluginFramework/Utils/Utils.hpp"
 #include "CTRPluginFramework/Menu/MessageBox.hpp"
+#include "CTRPluginFrameworkImpl/Graphics/OSDImpl.hpp"
 
 extern 		Handle gspThreadEventHandle;
 
@@ -77,9 +78,16 @@ namespace CTRPluginFramework
         ProcessImpl::Pause(false);
     }
 
-    void    Process::Play(void)
+    void    Process::Play(const u32 frames)
 	{
-        ProcessImpl::Play(false);
+            if (frames)
+            {
+                OSDImpl::FramesToPlay = frames;
+                RecursiveLock_Unlock(&ProcessImpl::FrameLock);
+                RecursiveLock_Lock(&ProcessImpl::FrameLock);
+            }
+            else
+                ProcessImpl::Play(false);
 	}
 
     bool 	Process::Patch(u32 	addr, void *patch, u32 length, void *original)
