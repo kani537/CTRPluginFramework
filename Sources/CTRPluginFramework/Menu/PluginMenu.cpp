@@ -149,4 +149,9 @@ namespace CTRPluginFramework
     {
         return (g_runningInstance);//(const_cast<PluginMenu &>(*g_runningInstance));
     }
+
+    void    PluginMenu::SyncronizeWithFrame(const bool useSync)
+    {
+        OSDImpl::SyncOnFrame = useSync;
+    }
 }

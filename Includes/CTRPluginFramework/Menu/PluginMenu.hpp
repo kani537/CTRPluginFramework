@@ -138,6 +138,12 @@ namespace CTRPluginFramework
         static PluginMenu   *GetRunningInstance(void);
 
         /**
+         * \brief If set to true, the plugin's loop will only be executed 1 per top screen's frame
+         * \param useSync Wheter to wait for the top screen's frame or not
+         */
+        static void         SyncronizeWithFrame(const bool useSync);
+
+        /**
          * \brief If a callback is set, the callback will be called
          * when the menu is opened for the first time
          */

@@ -305,6 +305,9 @@ namespace CTRPluginFramework
             }
             else
             {
+                if (OSDImpl::SyncOnFrame)
+                    svcWaitSynchronization(OSDImpl::OnNewFrameEvent, 1000000000); ///< Wait 1s max
+
                 // Execute activated cheats
                 executer();
 
