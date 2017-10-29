@@ -61,6 +61,7 @@ namespace CTRPluginFramework
         void    AddPluginVersion(u32 version) const;
 
         FuncPointer     OnFirstOpening;
+        FuncPointer     OnOpening;
     private: 
 
         static PluginMenuImpl       *_runningInstance;

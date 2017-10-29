@@ -57,9 +57,9 @@ CFLAGS	:=	-g -Os -mword-relocations \
 
 CFLAGS		+=	$(INCLUDE) -DARM11 -D_3DS 
 
-CXXFLAGS	:= $(CFLAGS) -fno-exceptions -std=gnu++11
+CXXFLAGS	:= $(CFLAGS) -fno-rtti -fno-exceptions -std=gnu++11
 
-ASFLAGS		:=	-g $(ARCH)
+ASFLAGS		:= -g $(ARCH)
 LDFLAGS		:= -pie -T $(TOPDIR)/3ds.ld $(ARCH) -O2 -Wl,-Map,$(notdir $*.map),--gc-sections 
 # ,-d,--emit-relocs,--use-blx,--print-gc-sections
 # --gc-sections -Map=$(TARGET).map 
@@ -125,10 +125,10 @@ else
 #---------------------------------------------------------------------------------
 
 DEPENDS	:=	$(OFILES:.o=.d)
-EXCLUDE := main.o cheats.o
+EXCLUDE := main.o cheats.o ActionReplayTest.o OSDManager.o PointerTesting.o Speedometer.o
 
 
-$(OUTPUT).a	:	$(filter-out $(EXCLUDE), $(OFILES))
+#$(OUTPUT).a	:	$(filter-out $(EXCLUDE), $(OFILES))
 $(OUTPUT).plg : $(OUTPUT).elf
 
 $(OUTPUT).elf : $(OFILES)

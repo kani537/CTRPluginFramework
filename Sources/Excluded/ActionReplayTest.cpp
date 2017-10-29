@@ -6,8 +6,7 @@
 
 namespace CTRPluginFramework
 {
-    extern PluginMenu  *g_menu;
-    extern MenuFolder  *g_folder;
+   MenuFolder  *g_folder = new MenuFolder("Action Replay");
 
     struct AREntry
     {
@@ -48,8 +47,11 @@ namespace CTRPluginFramework
 
         File        file;
         LineReader  reader(file);
+        std::string filename;
 
-        if (File::Open(file, "cheats.txt") == 0)
+        Process::GetTitleID(filename);
+        filename += ".txt";
+        if (File::Open(file, filename) == 0)
         {
             std::string line;
 

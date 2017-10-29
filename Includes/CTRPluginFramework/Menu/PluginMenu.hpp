@@ -143,6 +143,12 @@ namespace CTRPluginFramework
          */
         CallbackPointer     OnFirstOpening;
 
+        /**
+         * \brief If a callback is set, the callback will be called
+         * when the menu is opened. Ideal to put the code that refresh the UI. ;)
+         */
+        CallbackPointer     OnOpening;
+
     private:
         std::unique_ptr<PluginMenuImpl> _menu;
     };

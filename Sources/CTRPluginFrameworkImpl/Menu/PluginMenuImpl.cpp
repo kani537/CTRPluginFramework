@@ -26,7 +26,7 @@ namespace CTRPluginFramework
         _executeLoop(new PluginMenuExecuteLoop()),
         _guide(new GuideReader()),
         _forceOpen(false),
-        OnFirstOpening(nullptr)
+        OnFirstOpening(nullptr), OnOpening{ nullptr }
     {
         _isOpen = false;
         _wasOpened = false;
@@ -186,7 +186,7 @@ namespace CTRPluginFramework
 
                 // If it's a KeyPressed event
                 if (event.type == Event::KeyPressed && inputClock.HasTimePassed(Milliseconds(500))
-                    && Controller::GetKeysDown() != SystemImpl::RosalinaHotkey)
+                    && (!Preferences::UseFloatingBtn || _isOpen) && Controller::GetKeysDown() != SystemImpl::RosalinaHotkey)
                 {
                     // Check that MenuHotkeys are pressed
                     for (int i = 0; i < 16; i++)
@@ -284,6 +284,9 @@ namespace CTRPluginFramework
                     }
                     count++;
                 }
+
+                if (OnOpening != nullptr)
+                    OnOpening();
 
                 delta = clock.Restart();
 

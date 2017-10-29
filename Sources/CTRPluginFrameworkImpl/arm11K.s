@@ -124,3 +124,13 @@ FUNCTION    resumeHook
     ldr lr, =g_resumeHookAddress
     ldr lr, [lr]
     mov pc, lr
+
+FUNCTION    aptHookHome
+    ldr r0, =g_isHomeBtnPressed
+    mov r1, #1
+    str r1, [r0]
+    add lr, pc, #4
+    ldr r0, =0x00106774
+    mov pc, r0
+    ldr r0, =0x00103F38
+    mov pc, r0

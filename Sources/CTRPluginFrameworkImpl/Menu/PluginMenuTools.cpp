@@ -3,6 +3,7 @@
 #include "CTRPluginFrameworkImpl/Menu/MenuEntryTools.hpp"
 #include "CTRPluginFrameworkImpl/Preferences.hpp"
 #include "CTRPluginFramework/Menu/MessageBox.hpp"
+#include "CTRPluginFramework/Utils/StringExtensions.hpp"
 #include "Hook.hpp"
 #include "CTRPluginFramework/System/Sleep.hpp"
 #include "CTRPluginFramework/System/Process.hpp"
@@ -11,7 +12,6 @@
 #include <cstring>
 #include <cstdio>
 #include "ctrulib/srv.h"
-#include "../../Speedometer.hpp"
 
 namespace CTRPluginFramework
 {
