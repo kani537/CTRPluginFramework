@@ -59,7 +59,6 @@ namespace CTRPluginFramework
         MenuFolderImpl                  *_starredConst;
 
         int                         _mode;
-        int                         _note;
         bool                        _starMode;
         int                         _selector;
         int                         _selectedTextSize;
@@ -71,7 +70,7 @@ namespace CTRPluginFramework
         int                         _versionPosX;
         std::string                 _versionStr;
 
-        TextBox                     *_noteTB;
+        TextBox                     _noteTB;
 
         // Mode buttons
         CheckedButton<PluginMenuHome, void>   _showStarredBtn;        

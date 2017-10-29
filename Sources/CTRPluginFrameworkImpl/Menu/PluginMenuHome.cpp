@@ -62,7 +62,8 @@ namespace CTRPluginFramework
 
        // _closeBtn(*this, nullptr, IntRect(275, 24, 20, 20), Icon::DrawClose),
         _keyboardBtn(*this, &PluginMenuHome::_keyboardBtn_OnClick, IntRect(130, 30, 25, 25), Icon::DrawKeyboard, false),
-        _controllerBtn(*this, &PluginMenuHome::_controllerBtn_OnClick, IntRect(170, 30, 25, 25), Icon::DrawGameController, false)
+        _controllerBtn(*this, &PluginMenuHome::_controllerBtn_OnClick, IntRect(170, 30, 25, 25), Icon::DrawGameController, false),
+        _noteTB("", "", IntRect(40, 30, 320, 180))
     {
         _root = _folder = new MenuFolderImpl(name);
         _starredConst = _starred = new MenuFolderImpl("Favorites");
@@ -76,8 +77,6 @@ namespace CTRPluginFramework
         _showVersion = false;
         _versionPosX = 0;
 
-        _noteTB = nullptr;
-        _note = 0;
         _mode = 0;
 
         // Set rounding
@@ -124,14 +123,11 @@ namespace CTRPluginFramework
         _mode = mode;
 
         // Process events
-        if (_note && !_noteTB)
-            _note = 0;
-        else if (_note)
+        if (_noteTB.IsOpen())
         {
             for (int i = 0; i < eventList.size(); i++)
-                if (_noteTB->ProcessEvent(eventList[i]) == false)
+                if (_noteTB.ProcessEvent(eventList[i]) == false)
                 {
-                    _note = 0;
                     _InfoBtn.SetState(false);
                     break;
                 }
@@ -147,8 +143,8 @@ namespace CTRPluginFramework
 
         // Render top
         Renderer::SetTarget(TOP);
-        if (_note)
-            _noteTB->Draw();
+        if (_noteTB.IsOpen())
+            _noteTB.Draw();
         else
             _RenderTop();
 
@@ -407,16 +403,10 @@ namespace CTRPluginFramework
                     _keyboardBtn.Enable(false);
 
                 last = item;
-                if (_noteTB != nullptr)
-                {
-                    delete _noteTB;
-                    _noteTB = nullptr;
-                }
 
                 if (item->GetNote().size() > 0)
                 {
-                    static IntRect noteRect(40, 30, 320, 180);
-                    _noteTB = new TextBox(item->name, item->GetNote(), noteRect);
+                    _noteTB.Update(item->name, item->GetNote());
                     _InfoBtn.Enable(true);
                 }
                 else
@@ -627,9 +617,9 @@ namespace CTRPluginFramework
                 enable = e->_owner->Hotkeys.Count() > 0;
             _controllerBtn.Enable(enable);
 
-            if (e->HasNoteChanged() && _noteTB != nullptr)
+            if (e->HasNoteChanged())
             {
-                _noteTB->Update(e->name, e->GetNote());
+                _noteTB.Update(e->name, e->GetNote());
                 e->HandledNoteChanges();
             }
         }
@@ -802,14 +792,10 @@ namespace CTRPluginFramework
 
     void    PluginMenuHome::_InfoBtn_OnClick(void)
     {
-        _note = 1;
-        if (_noteTB != nullptr)
-        {
-            if (_noteTB->IsOpen())
-                _noteTB->Close();
-            else
-                _noteTB->Open();
-        }
+        if (_noteTB.IsOpen())
+            _noteTB.Close();
+        else
+            _noteTB.Open();
     }
 
     void PluginMenuHome::_StarItem(void)
