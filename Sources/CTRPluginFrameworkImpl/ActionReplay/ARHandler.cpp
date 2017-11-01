@@ -336,19 +336,22 @@ namespace CTRPluginFramework
             }
             case 0xD6: ///< Write 32bits Data[ActiveData]
             {
-                Write32(code.Right + Offset[ActiveOffset], Data[ActiveData]);
+                ExitCodeImmediately = !Write32(code.Right + Offset[ActiveOffset], Data[ActiveData]);
+                Offset[ActiveOffset] += 4;
                 break;
             }
             case 0xD7: ///< Write 16Bits Data[ActiveData]
             {
                 value16 = Data[ActiveData];
                 ExitCodeImmediately = !Write16(code.Right + Offset[ActiveOffset], value16);
+                Offset[ActiveOffset] += 2;
                 break;
             }
             case 0xD8: ///< Write 8Bits Data[ActiveData]
             {
                 u8 value8 = Data[ActiveData];
                 ExitCodeImmediately = !Write8(code.Right + Offset[ActiveOffset], value8);
+                Offset[ActiveOffset]++;
                 break;
             }
             case 0xD9: ///< Read 32bits to Data[ActiveData]
