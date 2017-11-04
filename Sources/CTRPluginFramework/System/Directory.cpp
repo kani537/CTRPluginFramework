@@ -440,6 +440,11 @@ namespace CTRPluginFramework
         return (_path);
     }
 
+    bool    Directory::IsOpen(void) const
+    {
+        return (_isOpen);
+    }
+
     Directory::Directory(void) :
     _handle(0), _isOpen(false)
     {
