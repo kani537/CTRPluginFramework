@@ -9,19 +9,19 @@ namespace CTRPluginFramework
 
     using   MenuIter = std::vector<MenuItem*>::iterator;
 
-    void MenuItem::NoteChanged()
+    void    MenuItem::NoteChanged(void)
     {
-        _hasNoteChanged = true;
+        Flags.noteChanged = true;
     }
 
-    bool MenuItem::HasNoteChanged() const
+    bool    MenuItem::HasNoteChanged(void) const
     {
-        return (_hasNoteChanged);
+        return (Flags.noteChanged);
     }
 
-    void MenuItem::HandledNoteChanges()
+    void    MenuItem::HandledNoteChanges(void)
     {
-        _hasNoteChanged = false;
+        Flags.noteChanged = false;
     }
 
     void    MenuItem::_DisableFolder(MenuFolderImpl *folder)
@@ -48,7 +48,7 @@ namespace CTRPluginFramework
                 MenuFolderImpl *f = reinterpret_cast<MenuFolderImpl*>(item);
 
                 // Set Hidden flag to the folder
-                f->_isVisible = false;
+                f->Flags.isVisible = false;
                 _DisableFolder(f);
             }               
 
@@ -60,13 +60,13 @@ namespace CTRPluginFramework
 
     void    MenuItem::Hide(void)
     {
-        if (_isVisible == false)
+        if (Flags.isVisible == false)
             return;
 
-        _isVisible = false;
+        Flags.isVisible = false;
 
         // If the item is starred
-        if (_isStarred)
+        if (Flags.isStarred)
             PluginMenuImpl::UnStar(this);
         
         // If it's an entry, disable it
@@ -113,7 +113,7 @@ namespace CTRPluginFramework
                 // Set visible flag
                 MenuFolderImpl  *f = reinterpret_cast<MenuFolderImpl *>(item);
 
-                f->_isVisible = true;
+                f->Flags.isVisible = true;
                 _EnableFolder(f);
             }
         }
@@ -121,10 +121,10 @@ namespace CTRPluginFramework
 
     void    MenuItem::Show(void)
     {
-        if (_isVisible == true)
+        if (Flags.isVisible == true)
             return;
 
-        _isVisible = true;
+        Flags.isVisible = true;
 
         // If it's a folder
         if (_type == MenuType::Folder)

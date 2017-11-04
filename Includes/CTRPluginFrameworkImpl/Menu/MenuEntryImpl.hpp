@@ -13,11 +13,11 @@ namespace CTRPluginFramework
     
     class MenuEntryImpl : public MenuItem
     {
-        struct Flags
+        struct EntryImplFlags
         {
-            bool  state : 1;
-            bool  justChanged : 1;
-            bool  isRadio : 1;
+            bool    state : 1;
+            bool    justChanged : 1;
+            bool    isRadio : 1;
         };
 
     public:
@@ -26,9 +26,9 @@ namespace CTRPluginFramework
         virtual ~MenuEntryImpl();
 
         // Enable the entry
-        void    Enable(void);
+        virtual void    Enable(void);
         // Disable the entry
-        void    Disable(void);
+        virtual void    Disable(void);
         // Set the entry as radio, an ID must be provided
         void    SetRadio(int id);        
         // Set an argument for the entry
@@ -51,6 +51,7 @@ namespace CTRPluginFramework
     protected:
         friend class PluginMenuHome;
         friend class PluginMenuExecuteLoop;
+        friend class MenuEntry;
         // Functions used by the menu
         bool    _TriggerState(void);
         bool    _MustBeRemoved(void) const;
@@ -58,7 +59,7 @@ namespace CTRPluginFramework
         int     _executeIndex;
         MenuEntry *_owner;
 
-        Flags       _flags;
+        EntryImplFlags       _flags;
         int         _radioId;
         void        *_arg;
     };

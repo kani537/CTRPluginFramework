@@ -13,7 +13,7 @@ namespace CTRPluginFramework
         return ((rowsize - 1 - posY + posX * rowsize) * bpp);
     }
 
-    void        Renderer::DrawLine(int posX, int posY, int width, Color color, int height)
+    void        Renderer::DrawLine(int posX, int posY, int width, const Color &color, int height)
     {  
         if (posY < 0)
         {
@@ -43,7 +43,7 @@ namespace CTRPluginFramework
         }
     }
 
-    void        Renderer::DrawLine(IntVector &start, IntVector &end, Color color)
+    void        Renderer::DrawLine(IntVector &start, IntVector &end, const Color &color)
     {  
         int posX = start.x;
         int posY = start.y;
@@ -67,6 +67,42 @@ namespace CTRPluginFramework
             {
                 dd = PrivColor::ToFramebuffer(dd, color);
             }
+            dst += stride;
+        }
+    }
+
+    void        Renderer::DrawStippledLine(int posX, int posY, int width, const Color &color, int height)
+    {
+        if (posY < 0)
+        {
+            if (posY + height < 0)
+                return;
+            height += posY;
+            posY = 0;
+        }
+        while (posY + height > 240)
+        {
+            if (height <= 0)
+                return;
+            height--;
+        }
+
+        u8  *dst = _screen->GetLeftFramebuffer(posX, posY + height - 1);
+        u32 stride = _screen->GetStride();
+        int pitch = 5;
+
+        while (width-- > 0)
+        {
+            u8 *dd = dst;
+            if (pitch > 0)
+            {
+                for (int y = 0; y < height; y++)
+                    dd = PrivColor::ToFramebuffer(dd, color);
+            }
+            --pitch;
+            if (pitch <= -5)
+                pitch = 5;
+
             dst += stride;
         }
     }
@@ -654,7 +690,7 @@ namespace CTRPluginFramework
 
     }
 
-    void        Renderer::DrawRect(int posX, int posY, int width, int height, Color color, bool fill, int thickness)
+    void        Renderer::DrawRect(int posX, int posY, int width, int height, const Color &color, bool fill, int thickness)
     {
         if (fill)
         {

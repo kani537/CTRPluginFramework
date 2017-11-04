@@ -8,14 +8,19 @@
 
 namespace CTRPluginFramework
 {
-    class MenuEntry;
-    
-    using FuncPointer = void (*)(MenuEntry*);
+#ifndef SEPARATOR_TYPE
+#define SEPARATOR_TYPE
+    enum class Separator
+    {
+        Filled,
+        Stippled
+    };
+#endif
 
     class MenuEntryImpl;
     class MenuEntry
     {
-
+        using FuncPointer = void(*)(MenuEntry*);
     public:
 
         explicit MenuEntry(const std::string &name, const std::string &note = "");
@@ -45,6 +50,20 @@ namespace CTRPluginFramework
         bool    IsActivated(void) const;
         // Return if the entry is visible in the menu
         bool    IsVisible(void) const;
+
+        /**
+        * \brief Set if this entry must display a separator on top of the entry
+        * \param useSeparator pass true if the separator must be displayed, false otherwise
+        * \param type Type of separator to display
+        */
+        void    UseTopSeparator(bool useSeparator, Separator type = Separator::Filled) const;
+
+        /**
+        * \brief Set if this entry must display a separator at the bottom of the entry
+        * \param useSeparator pass true if the separator must be displayed, false otherwise
+        * \param type Type of separator to display
+        */
+        void    UseBottomSeparator(bool useSeparator, Separator type = Separator::Filled) const;
 
         void    SetGameFunc(FuncPointer func) const;
         void    SetMenuFunc(FuncPointer func) const;

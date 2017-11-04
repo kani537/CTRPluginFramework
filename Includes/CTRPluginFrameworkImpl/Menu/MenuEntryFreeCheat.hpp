@@ -34,8 +34,8 @@ namespace CTRPluginFramework
         ~MenuEntryFreeCheat() {}
 
         bool    TriggerState(void);
-        void    Enable(void);
-        void    Disable(void);
+        void    Enable(void) override;
+        void    Disable(void) override;
         void    SetType(Type_e type);
         void    ToSavedSearch(Preferences::SavedCheats &savedCheats);
 

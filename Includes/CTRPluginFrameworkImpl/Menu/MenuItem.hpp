@@ -14,18 +14,36 @@ namespace CTRPluginFramework
         FreeCheat
     };
 
+    struct ItemFlags
+    {
+        bool    useSeparatorBefore : 1;
+        bool    useSeparatorAfter : 1;
+        bool    useStippledLineForBefore : 1;
+        bool    useStippledLineForAfter : 1;
+        bool    isVisible : 1;
+        bool    isStarred : 1;
+        bool    noteChanged : 1;
+    };
+
     class MenuEntryImpl;
     class MenuEntryTools;
     class MenuFolderImpl;
     class MenuItem
     {
     public:
+        virtual ~MenuItem() = default;
+
         MenuItem(MenuType type) :
-        _type(type), _isStarred(false),
-        _isVisible(true),
-        _hasNoteChanged(false),
-        _container(nullptr), _index(0), Uid(++_uidCounter)
+        Uid(++_uidCounter),
+        _type(type), _container(nullptr), _index(0)
         {
+            Flags.useSeparatorBefore = false;
+            Flags.useSeparatorAfter = false;
+            Flags.useStippledLineForBefore = false;
+            Flags.useStippledLineForAfter = false;
+            Flags.isVisible = false;
+            Flags.isStarred = false;
+            Flags.noteChanged = false;
         }
 
         std::string     name;
@@ -35,7 +53,7 @@ namespace CTRPluginFramework
         void    Show(void);
         bool    IsVisible(void) const
         {
-            return (_isVisible);
+            return (Flags.isVisible);
         }
 
         bool    IsEntry(void) const
@@ -83,6 +101,8 @@ namespace CTRPluginFramework
         void    HandledNoteChanges(void);
 
         const u32   Uid;
+
+        ItemFlags   Flags;
     protected:
         friend class MenuFolderImpl;
         friend class PluginMenuImpl;
@@ -94,19 +114,16 @@ namespace CTRPluginFramework
 
         bool        _IsStarred(void) const
         {
-            return (_isStarred);
+            return (Flags.isStarred);
         }
 
         bool        _TriggerStar(void)
         {
-            _isStarred = !_isStarred;
-            return (_isStarred);
+            Flags.isStarred = !Flags.isStarred;
+            return (Flags.isStarred);
         }
 
         MenuType    _type;
-        bool        _isStarred;
-        bool        _isVisible;
-        bool        _hasNoteChanged;
         MenuItem    *_container; /* MenuFolderImpl */
         int         _index;
         

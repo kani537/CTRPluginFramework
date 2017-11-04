@@ -337,7 +337,6 @@ namespace CTRPluginFramework
                                 g_index = 0;
                                 LightLock_Unlock(&g_OpenFileLock);
                             }
-
                             OSD::Unlock();
                         }
                     }
@@ -415,8 +414,8 @@ namespace CTRPluginFramework
 
                 if (item != nullptr && !item->_IsStarred())
                 {
-                    item->_TriggerStar();                   
-                    starred->Append(item, true);                    
+                    item->_TriggerStar();
+                    starred->Append(item, true);
                 }
             }
         }

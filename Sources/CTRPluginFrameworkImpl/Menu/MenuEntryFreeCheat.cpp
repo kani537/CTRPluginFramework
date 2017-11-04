@@ -83,7 +83,7 @@ namespace CTRPluginFramework
         Address(addr)
     {
         _type = MenuType::FreeCheat;
-        Type = Type_e::Float;
+        Type = Type_e::Bits32;
         Value.Float = value;
     }
 

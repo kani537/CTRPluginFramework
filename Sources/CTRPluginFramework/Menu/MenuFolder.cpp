@@ -43,6 +43,18 @@ namespace CTRPluginFramework
         return(_item->IsVisible());
     }
 
+    void    MenuFolder::UseTopSeparator(bool useSeparator, Separator type) const
+    {
+        _item->Flags.useSeparatorBefore = useSeparator;
+        _item->Flags.useStippledLineForBefore = type == Separator::Stippled;
+    }
+
+    void    MenuFolder::UseBottomSeparator(bool useSeparator, Separator type) const
+    {
+        _item->Flags.useSeparatorAfter = useSeparator;
+        _item->Flags.useStippledLineForBefore = type == Separator::Stippled;
+    }
+
     void    MenuFolder::Append(MenuEntry *item) const
     {
         MenuEntryImpl *entry = item->_item.get();

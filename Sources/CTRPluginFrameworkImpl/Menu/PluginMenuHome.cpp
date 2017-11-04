@@ -171,7 +171,7 @@ namespace CTRPluginFramework
         if (_folder->_container != nullptr)
         {
             // If current folder is hidden, close it
-            while (!_folder->_isVisible)
+            while (!_folder->Flags.isVisible)
             {
                 MenuFolderImpl *p = _folder->_Close(_selector);
 
@@ -195,7 +195,7 @@ namespace CTRPluginFramework
                 break;
 
             // If current folder is hidden, close it
-            while (!_starred->_isVisible)
+            while (!_starred->Flags.isVisible)
             {
                 MenuFolderImpl *p = _starred->_Close(_selector, true);
 
@@ -453,13 +453,23 @@ namespace CTRPluginFramework
         for (; i < max; i++)
         {
             MenuItem    *item = folder->_items[i];
+            ItemFlags   flags = item->Flags;
             const char  *name = item->name.c_str();
             Color       &fg = i == _selector ? blank : silver;
             float       offset = i == _selector ? _scrollOffset : 0.f;
 
+            // Draw separator if needed
+            if (flags.useSeparatorBefore)
+            {
+                if (flags.useStippledLineForBefore)
+                    Renderer::DrawStippledLine(posX, posY - 1, 320, silver, 1);
+                else
+                    Renderer::DrawLine(posX, posY - 1, 320, silver, 1);
+            }
+                
             // Draw cursor
             if (i == _selector)
-                Renderer::MenuSelector(posX - 5, posY - 3, 320, 20);
+                Renderer::MenuSelector(posX - 5, posY - 3, 330, 20);
 
             // Draw entry
             if (item->_type == MenuType::Entry)
@@ -481,6 +491,15 @@ namespace CTRPluginFramework
             else
             {
                 Renderer::DrawSysFolder(name, posX, posY, 350, fg, offset);
+            }
+
+            // Draw separator if needed
+            if (flags.useSeparatorAfter)
+            {
+                if (flags.useStippledLineForAfter)
+                    Renderer::DrawStippledLine(posX, posY - 1, 320, silver, 1);
+                else
+                    Renderer::DrawLine(posX, posY - 1, 320, silver, 1);
             }
             posY += 4;
         }
@@ -517,24 +536,6 @@ namespace CTRPluginFramework
 
         // Draw UIControls
         _uiContainer.Draw();
-
-        /*
-
-        // Draw buttons
-        _showStarredBtn.Draw();
-        _gameGuideBtn.Draw();
-        _arBtn.Draw();
-        _toolsBtn.Draw();
-        _hidMapperBtn.Draw();
-        _searchBtn.Draw();
-
-        _AddFavoriteBtn.Draw();
-        _InfoBtn.Draw();
-        _keyboardBtn.Draw();
-        _controllerBtn.Draw();
-
-        _closeBtn.Draw();
-        */
     }
 
     //###########################################
@@ -572,10 +573,9 @@ namespace CTRPluginFramework
 
         // Buttons visibility
 
-        // If current folder is empty
-
         MenuFolderImpl *folder = _starMode ? _starred : _folder;
-        
+
+        // If current folder is empty
         if (folder->ItemsCount() == 0)
         {
             _AddFavoriteBtn.Enable(false);
@@ -634,7 +634,6 @@ namespace CTRPluginFramework
         }
 
         // Buttons status
-
         bool isTouched = Touch::IsDown();
         IntVector touchPos(Touch::GetPosition());
 
@@ -642,21 +641,6 @@ namespace CTRPluginFramework
         _uiContainer.Update(isTouched, touchPos);
 
         Window::BottomWindow.Update(isTouched, touchPos);
-
-        /*
-        _showStarredBtn.Update(isTouched, touchPos);
-        _gameGuideBtn.Update(isTouched, touchPos);
-        _arBtn.Update(isTouched, touchPos);
-        _toolsBtn.Update(isTouched, touchPos);
-        _hidMapperBtn.Update(isTouched, touchPos);
-        _searchBtn.Update(isTouched, touchPos);
-
-        _InfoBtn.Update(isTouched, touchPos);
-        _AddFavoriteBtn.Update(isTouched, touchPos);
-        _keyboardBtn.Update(isTouched, touchPos);
-        _controllerBtn.Update(isTouched, touchPos);
-        _closeBtn.Update(isTouched, touchPos);
-        */
     }
 
     void PluginMenuHome::_TriggerEntry(void)
@@ -826,7 +810,7 @@ namespace CTRPluginFramework
 
         if (item != nullptr)
         {
-			item->_isStarred = false;
+			item->Flags.isStarred = false;
 
             int count = _starredConst->ItemsCount();
 

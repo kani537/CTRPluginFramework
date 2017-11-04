@@ -94,6 +94,18 @@ namespace CTRPluginFramework
         return (_item->IsVisible());
     }
 
+    void    MenuEntry::UseTopSeparator(bool useSeparator, Separator type) const
+    {
+        _item->Flags.useSeparatorBefore = useSeparator;
+        _item->Flags.useStippledLineForBefore = type == Separator::Stippled;
+    }
+
+    void    MenuEntry::UseBottomSeparator(bool useSeparator, Separator type) const
+    {
+        _item->Flags.useSeparatorAfter = useSeparator;
+        _item->Flags.useStippledLineForAfter = type == Separator::Stippled;
+    }
+
     void    MenuEntry::SetGameFunc(FuncPointer func) const
     {
         _item->GameFunc = func;

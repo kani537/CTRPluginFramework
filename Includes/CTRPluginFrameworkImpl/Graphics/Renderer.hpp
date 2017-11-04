@@ -43,9 +43,10 @@ namespace CTRPluginFramework
         // Forms
         //#############################################################################################
         static void     DrawPixel(int posX, int posY, const Color &color);
-        static void     DrawLine(int posX, int posY, int length, Color color, int width = 1);
-        static void     DrawLine(IntVector &start, IntVector &end, Color color);
-        static void     DrawRect(int posX, int posY, int width, int height, Color color, bool fill = true, int thickness = 1);
+        static void     DrawLine(int posX, int posY, int length, const Color &color, int width = 1);
+        static void     DrawLine(IntVector &start, IntVector &end, const Color &color);
+        static void     DrawStippledLine(int posX, int posY, int width, const Color &color, int height);
+        static void     DrawRect(int posX, int posY, int width, int height, const Color &color, bool fill = true, int thickness = 1);
         static void     DrawRect(const IntRect& rect, const Color& color, bool fill = true);
         static void     DrawRect2(const IntRect &rect, const Color &color1, const Color &color2);
 
