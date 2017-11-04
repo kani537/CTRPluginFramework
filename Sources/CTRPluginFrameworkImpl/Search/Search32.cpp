@@ -111,6 +111,11 @@ namespace CTRPluginFramework
         }
     }
 
+    Search32::Search32(Search *previous, const std::string &filename) :
+        Search(previous, filename)
+    {
+    }
+
     Search32::~Search32()
     {
     }
@@ -397,4 +402,3 @@ namespace CTRPluginFramework
         return (false);
     }
 }
-    

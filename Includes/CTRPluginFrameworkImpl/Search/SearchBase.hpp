@@ -51,6 +51,7 @@ namespace CTRPluginFramework
     protected:
 
         Search(Search *previous);
+        Search(Search *previous, const std::string &filename);
 
         // Write the header to the file
         void    WriteHeader(void);
@@ -75,7 +76,7 @@ namespace CTRPluginFramework
 
         void    CreateIndexTable(void);
         u32     GetRegionIndex(u32 index);
-        
+
         u32     _indexRegion;
         u32     _startRegion;
         u32     _endRegion;

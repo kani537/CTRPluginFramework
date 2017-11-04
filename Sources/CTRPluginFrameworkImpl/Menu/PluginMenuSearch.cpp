@@ -273,6 +273,51 @@ namespace CTRPluginFramework
             list.push_back(region);
     }
 
+    void    PluginMenuSearch::RestoreSearchState(void)
+    {
+        Directory                   dir("Search");
+        std::vector<std::string>    filenames;
+
+        if (dir.IsOpen() && dir.ListFiles(filenames, "Step"))
+        {
+            while (filenames.size() > 5)
+                filenames.erase(filenames.begin());
+
+            for (const std::string &fn : filenames)
+            {
+                if (_currentSearch != nullptr)
+                    _searchHistory.push_back(_currentSearch);
+
+                _currentSearch = new Search32(_currentSearch, fn);                
+            }
+
+            if (_currentSearch != nullptr)
+            {
+                _step = _currentSearch->Step + 1;
+                _searchMenu.Update();
+
+                _PopulateSearchType(false);
+
+                // Enable buttons
+                _resetBtn.IsEnabled = true;
+                if (_searchHistory.size())
+                    _undoBtn.IsEnabled = true;
+
+                // Lock memory region
+                _memoryRegions.IsEnabled = false;
+                _startRangeTextBox.IsEnabled = false;
+                _endRangeTextBox.IsEnabled = false;
+                // Lock search size
+                _searchSize.IsEnabled = false;
+
+                // Set search size
+                _searchSize.SelectedItem = __builtin_ffs(TypeFlags(_currentSearch->GetType())) - 1;
+                if (_searchSize.SelectedItem == 4)
+                    _searchSize.SelectedItem = 3;
+            }            
+        }
+    }
+
     /*
     ** Process Event
     *****************/

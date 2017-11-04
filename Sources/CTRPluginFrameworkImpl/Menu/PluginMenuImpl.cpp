@@ -172,6 +172,9 @@ namespace CTRPluginFramework
         // Update PluginMenuHome variables
         home.Init();
 
+        // Restore Search state
+        search.RestoreSearchState();
+
         if (_showMsg)
             OSD::Notify("Plugin ready !", Color(255, 255, 255), Color());
 

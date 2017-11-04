@@ -14,11 +14,11 @@ namespace CTRPluginFramework
     public:
 
         Search32(SearchParameters &parameters);
+        Search32(Search *previous, const std::string &filename);
         ~Search32();
 
         // Read results
         void    ReadResults(u32 index, StringVector &addr, StringVector &newVal, StringVector &oldVal) override;
-
 
     private:
 
@@ -56,9 +56,6 @@ namespace CTRPluginFramework
         void    SubsidiarySearchUnknownU16(Storage<Results32WithOld> &data, SearchFlags compare, Results32WithOld* result);
         void    SubsidiarySearchUnknownU32(Storage<Results32WithOld> &data, SearchFlags compare, Results32WithOld* result);
         void    SubsidiarySearchUnknownFloat(Storage<Results32WithOld> &data, SearchFlags compare, Results32WithOld* result);
-
-
-
     };
 }
 

@@ -44,22 +44,22 @@ namespace CTRPluginFramework
     }
 
     Search::Search(Search *previous) :
-    Error({ 0 }),
-    ResultsCount(0),
-    Progress(0.f),
-    Step(previous == nullptr ? 0 : previous->Step + 1),
-    _indexRegion(0),
-    _startRegion(0),
-    _endRegion(0),
-    _achievedRegionSize(0),
-    _totalRegionSize(0),
-    _currentAddress(0),
-    _maxResults(0),
-    _resultsInPool(0),
-    _resultSize(0),
-    _flags(0),
-    _header({0}),
-    _previous(previous)
+        Error({ 0 }),
+        ResultsCount(0),
+        Progress(0.f),
+        Step(previous == nullptr ? 0 : previous->Step + 1),
+        _indexRegion(0),
+        _startRegion(0),
+        _endRegion(0),
+        _achievedRegionSize(0),
+        _totalRegionSize(0),
+        _currentAddress(0),
+        _maxResults(0),
+        _resultsInPool(0),
+        _resultSize(0),
+        _flags(0),
+        _header({0}),
+        _previous(previous)
     {
         // Create files's path
         std::string path = "Search/";
@@ -81,9 +81,56 @@ namespace CTRPluginFramework
             }
         }
 
+        _header.step = Step;
         // Write Header to reserve space
         WriteHeader();
 
+        _pool = __pool;
+    }
+
+    Search::Search(Search *previous, const std::string &filename) :
+        Error({ 0 }),
+        ResultsCount(0),
+        Progress(0.f),
+        Step(previous == nullptr ? 0 : previous->Step + 1),
+        _indexRegion(0),
+        _startRegion(0),
+        _endRegion(0),
+        _achievedRegionSize(0),
+        _totalRegionSize(0),
+        _currentAddress(0),
+        _maxResults(0),
+        _resultsInPool(0),
+        _resultSize(0),
+        _flags(0),
+        _header({ 0 }),
+        _previous(previous)
+    {
+        // Create files's path
+        std::string path = "Search/" + filename;
+
+        // Open current directory
+        Directory dir;
+        if (Directory::Open(dir, "Search", true) == 0)
+        {
+            // Open file
+            int res = File::Open(_file, path, File::READ);
+
+            if (res != 0)
+            {
+                Error.file = true;
+                Error.fsError = res;
+            }
+            else
+            {
+                // Read header
+                _file.Read(&_header, sizeof(Header));
+                _flags = _header.flags;
+                Step = _header.step;
+                ResultsCount = _header.results;
+                CreateIndexTable();
+            }
+        }
         _pool = __pool;
     }
 
@@ -275,6 +322,8 @@ namespace CTRPluginFramework
 
         // Go to the beginning of the file
         _file.Seek(0, File::SET);
+
+        _header.results = ResultsCount;
         // Write the header structure
         _file.Write(&_header, sizeof(_header));
 

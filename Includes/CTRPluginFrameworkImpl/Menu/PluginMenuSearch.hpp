@@ -24,6 +24,7 @@ namespace CTRPluginFramework
         // Return true if the Close Button is pressed, else false
         bool    operator()(EventList &eventList, Time &delta);
         void    GetRegionsList(std::vector<Region> &list);
+        void    RestoreSearchState(void);
     private:
 
         void    _ProcessEvent(Event &event);
@@ -60,12 +61,12 @@ namespace CTRPluginFramework
         ComboBox                            _searchSize; // Variable type
         ComboBox                            _searchType; // Unknown / Exact
         ComboBox                            _compareType; // Compare
-    
+
         NumericTextBox                      _startRangeTextBox;
         NumericTextBox                      _endRangeTextBox;
         NumericTextBox                      _valueTextBox;
 
-        // Buttons        
+        // Buttons
         //IconButton<PluginMenuSearch, void>          _closeBtn;
 
         Button<PluginMenuSearch, void>              _searchBtn;

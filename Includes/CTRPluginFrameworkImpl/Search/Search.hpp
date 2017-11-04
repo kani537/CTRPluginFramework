@@ -166,8 +166,17 @@ namespace CTRPluginFramework
     struct Header
     {
         u32     flags;
+        u32     step;
+        u32     results;
         u32     nbRegions;
         RegionOnFile    regions[50];
+    };
+
+    struct Search32Serialized
+    {
+        u32     indexRegion;
+        u32     flags;
+        char    filename[100];
     };
 }
 

@@ -22,12 +22,6 @@ namespace CTRPluginFramework
         _index = 0;
         _selector = 0;
         _submenuSelector = 0;
-
-        /*_options.push_back("Edit");
-        _options.push_back("Jump in editor");
-        _options.push_back("New cheat");
-        _options.push_back("Export");
-        _options.push_back("Export all");*/
         _options.push_back((SubMenuOption){ "Show game", &SearchMenu::_ShowGame });
 
         _isSubmenuOpen = false;
@@ -42,18 +36,6 @@ namespace CTRPluginFramework
     {
         static Clock    _fastScroll;
         static Clock    _startFastScroll;
-
-       /* if (_currentSearch != nullptr && _currentSearch->IsFirstUnknownSearch())
-        {
-            for (int i = 0; i < eventList.size(); i++)
-            {
-                Event &event = eventList[i];
-                if (event.type == Event::EventType::KeyPressed
-                    && event.key.code == Key::B)
-                    return (true);
-            }
-            return (false);
-        } */
 
         for (int i = 0; i < eventList.size(); i++)
         {
@@ -662,13 +644,15 @@ namespace CTRPluginFramework
             _alreadyExported = true;
         }
 
+        std::string out;
+
         for (int i = _selector; i < _selector + 10; i++)
         {
             if (i >= _resultsAddress.size())
                 break;
-            std::string str = _resultsAddress[i] +" : " + _resultsNewValue[i];
-            _export.WriteLine(str);
+            out += _resultsAddress[i] +" : " + _resultsNewValue[i] + "\r\n";
         }
+        _export.Write(out.c_str(), out.size());
     }
 
     void    SearchMenu::_ShowGame(void)
@@ -677,7 +661,7 @@ namespace CTRPluginFramework
 
         ScreenImpl::Clean();
 
-        while (1)
+        while (true)
         {
             Controller::Update();
             if (Controller::IsKeyPressed(Key::B))
