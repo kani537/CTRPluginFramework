@@ -224,6 +224,10 @@ namespace CTRPluginFramework
                             Controller::Update();
                         eventList.clear();
                         _forceOpen = false;
+
+                        if (OnOpening != nullptr)
+                            OnOpening();
+
                     }
                     inputClock.Restart();
                     continue;
@@ -284,9 +288,6 @@ namespace CTRPluginFramework
                     }
                     count++;
                 }
-
-                if (OnOpening != nullptr)
-                    OnOpening();
 
                 delta = clock.Restart();
 
