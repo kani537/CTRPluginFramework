@@ -49,6 +49,7 @@ namespace CTRPluginFramework
         static bool             MessColors;
         static bool             SyncOnFrame;
         static u32              FramesToPlay;
+        static OSDReturn        HookReturn;
         static Handle           OnNewFrameEvent;
         static Hook             OSDHook;
         static RecursiveLock    RecLock;

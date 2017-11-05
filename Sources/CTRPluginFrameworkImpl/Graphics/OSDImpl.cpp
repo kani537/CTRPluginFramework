@@ -22,6 +22,7 @@ namespace CTRPluginFramework
     bool    OSDImpl::MessColors = false;
     bool    OSDImpl::SyncOnFrame = false;
     u32     OSDImpl::FramesToPlay = 0;
+    OSDReturn OSDImpl::HookReturn = nullptr;
     Handle  OSDImpl::OnNewFrameEvent = 0;
     Hook    OSDImpl::OSDHook;
     RecursiveLock OSDImpl::RecLock;
@@ -137,7 +138,7 @@ namespace CTRPluginFramework
     int OSDImpl::MainCallback(u32 isBottom, int arg2, void* addr, void* addrB, int stride, int format, int arg7)
     {
         if (!addr)
-            return (((OSDReturn)OSDHook.returnCode)(isBottom, arg2, addr, addrB, stride, format, arg7));
+            return ((HookReturn)(isBottom, arg2, addr, addrB, stride, format, arg7));
 
         if (!isBottom)
         {
@@ -162,7 +163,7 @@ namespace CTRPluginFramework
 
         if (!drawRocket && !drawTouch && !drawFps && !DrawSaveIcon && !MessColors
             && Callbacks.empty() && Notifications.empty())
-            return (((OSDReturn)OSDHook.returnCode)(isBottom, arg2, addr, addrB, stride, format, arg7));
+            return ((HookReturn)(isBottom, arg2, addr, addrB, stride, format, arg7));
 
         u32     size = isBottom ? stride * 320 : stride * 400;
         bool    mustFlush = drawFps;
@@ -253,7 +254,7 @@ namespace CTRPluginFramework
                 svcFlushProcessDataCache(handle, addrB, size);
         }
 
-        return (((OSDReturn)OSDHook.returnCode)(isBottom, arg2, addr, addrB, stride, format, arg7));
+        return ((HookReturn)(isBottom, arg2, addr, addrB, stride, format, arg7));
 
     }
 
@@ -319,6 +320,7 @@ namespace CTRPluginFramework
     {
         const u32   stmfd2 = 0xE92D47F0; // STMFD SP!, {R4-R10,LR}
         const u32   stmfd1 = 0xE92D5FF0; // STMFD SP!, {R4-R12, LR}
+        const u32   ntrhook = 0xE51FF004; // LDR PC, [PC, #-4]
         u32         found = SearchOSD();
         u32         result = 0;
         u32         *end = (u32 *)(found - 0x400);
@@ -329,37 +331,35 @@ namespace CTRPluginFramework
             return;
         }
 
-        // MessageBox(Utils::Format("OSD #1 Found: %08X", found))();
+         // MessageBox(Utils::Format("OSD #1 Found: %08X", found))();
 
         for (u32 *addr = (u32 *)found; addr > end; addr--)
         {
-            if (*addr == stmfd1)
+            u32 val = *addr;
+            if (val == stmfd1 || val == stmfd2)
             {
                 result = (u32)addr;
                 break;
+            }
+            if (val == ntrhook && (*(addr + 1) >> 24 == 0x06))
+            {
+                result = (u32)addr;
+                OSDImpl::OSDHook.Initialize(result, (u32)OSDImpl::MainCallback);
+                OSDImpl::OSDHook.Enable();
+                OSDImpl::HookReturn = (OSDReturn)*(addr + 1);
+                return;
             }
         }
 
         if (result == 0)
         {
-            for (u32 *addr = (u32 *)found; addr > end; addr--)
-            {
-                if (*addr == stmfd2)
-                {
-                    result = (u32)addr;
-                    break;
-                }
-            }
-
-            if (result == 0)
-            {
-                MessageBox("OSD couldn't be installed: #2 !")();
-                return;
-            }
+            MessageBox("OSD couldn't be installed: #2 !")();
+            return;
         }
 
         OSDImpl::OSDHook.Initialize(result, (u32)OSDImpl::MainCallback);
         OSDImpl::OSDHook.Enable();
+        OSDImpl::HookReturn = (OSDReturn)OSDImpl::OSDHook.returnCode;
     }
 
     static void    MessColor(u32 startAddr, u32 stride, u32 format)
