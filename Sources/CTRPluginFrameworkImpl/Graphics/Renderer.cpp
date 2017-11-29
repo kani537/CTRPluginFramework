@@ -1,7 +1,6 @@
 #include "types.h"
 #include "ctrulib/services/gspgpu.h"
 
-
 #include "CTRPluginFramework/Graphics.hpp"
 #include "CTRPluginFrameworkImpl/Graphics.hpp"
 #include "CTRPluginFramework/System/Touch.hpp"

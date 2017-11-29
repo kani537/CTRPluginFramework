@@ -771,6 +771,7 @@ namespace CTRPluginFramework
 
     extern "C" u32 __ctru_linear_heap;
     extern "C" u32 __ctru_linear_heap_size;
+#define HIDE_REGIONS 0
 
     void    PluginMenuSearch::_ListRegion(void)
     {
@@ -813,25 +814,21 @@ namespace CTRPluginFramework
             }
 
             save_addr = meminfo.base_addr + meminfo.size + 1;
+#if HIDE_REGIONS
             if (meminfo.base_addr == 0x06000000 || meminfo.base_addr == 0x07000000 || meminfo.base_addr == 0x07500000 || meminfo.base_addr == __ctru_linear_heap)
                 continue;
-
+#endif
             if (meminfo.state != 0x0 && meminfo.state != 0x2 && meminfo.state != 0x3 && meminfo.state != 0x6)
             {
                 if (meminfo.perm & MEMPERM_READ)
                 {
-                    if (meminfo.base_addr < __ctru_linear_heap && meminfo.base_addr + meminfo.size > __ctru_linear_heap)
-                    {
-                        meminfo.size = __ctru_linear_heap - meminfo.base_addr;
-                    }
-
-                    Region reg = (Region){meminfo.base_addr, meminfo.base_addr + meminfo.size};
+                    Region reg = (Region){ meminfo.base_addr, meminfo.base_addr + meminfo.size};
                     _regionsList.push_back(reg);
                     _memoryRegions.Add(Utils::Format("%08X-%08X", reg.startAddress, reg.endAddress));
                     i++;
                 }
             }
-            
+
             if (meminfo.base_addr >= 0x50000000)
                 break;
         }

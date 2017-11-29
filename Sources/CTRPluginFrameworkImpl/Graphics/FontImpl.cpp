@@ -30,8 +30,8 @@ namespace CTRPluginFramework
 
         defaultSysFont = new u32[7505];//static_cast<u32 *>(linearAlloc(sizeof(u32) * 7505));
         g_fontAllocated = sizeof(u32) * 7505;
-        tileData = (u8 *)linearAlloc(4096);
-        glyph = (u8 *)linearAlloc(1000);
+        tileData = (u8 *)new u8[4096];//linearAlloc(4096);
+        glyph = (u8 *)new u8[1000];//linearAlloc(1000);
         std::memset(defaultSysFont, 0, sizeof(u32) * 7505);
     }
 

@@ -111,7 +111,6 @@ namespace CTRPluginFramework
         KeyVector   _sequence;
         Clock       _timer;
         int         _indexInSequence;
-
     };
 
     /*

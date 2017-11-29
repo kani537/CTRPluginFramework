@@ -8,6 +8,7 @@
 
 #include "ctrulib/allocator/linear.h"
 #include "3DS.h"
+#include "CTRPluginFramework/Utils/Utils.hpp"
 
 namespace CTRPluginFramework
 {
@@ -15,7 +16,8 @@ namespace CTRPluginFramework
     {
         if (_data != nullptr)
         {
-            linearFree(_data);
+            //linearFree(_data);
+            delete[] _data;
             _data = nullptr;
         }
     }
@@ -25,13 +27,11 @@ namespace CTRPluginFramework
         File file;
         const Color &Red = Color::Red;
         const Color &Black = Color::Black;
-        char  buffer[200] = {0};
         int res = File::Open(file, fileName, 7);
 
         if (res != 0)
         {
-            sprintf(buffer, "BMP Error: couldn't open: %s, ec: %X", fileName.c_str(), res);
-            OSD::Notify(buffer, Red, Black);
+            OSD::Notify(Utils::Format("BMP Error: couldn't open: %s, ec: %X", fileName.c_str(), res), Red, Black);
             return;
         }
 
@@ -229,43 +229,33 @@ namespace CTRPluginFramework
     {
       _rowIncrement = _width * _bytesPerPixel;
       if (_data != nullptr)
-        linearFree(_data);
+        delete[] _data;
 
       _dataSize = _height * _rowIncrement;
-      _data = (unsigned char *)linearAlloc(_dataSize);
-      //_data.resize(_height * _rowIncrement);
+      _data = new u8[_dataSize];
 
-      //u32 cap = _data.capacity();
-      //if (cap != _height * _rowIncrement)
       if (_data == nullptr)
       {
         _dataSize = 0;
         return (-1);
       }
         
-    return (0);
+        return (0);
     }
 
     void     BMPImage::LoadBitmap(void)
     {
         File  file;
-        char  buffer[200] = {0};
         const Color &red = Color::Red;
         const Color &black = Color::Black;
 
         if (!File::Exists(_fileName))
-        {
-            // Disabled loading log
-            //sprintf(buffer, "%s not found !", _fileName.c_str());
-            //OSD::Notify(buffer, red, black);
             return;
-        }
 
         u32 res = File::Open(file, _fileName, File::READ);
         if (res != 0)
         {
-            sprintf(buffer, "Error opening: %s, code: %08X", _fileName.c_str(), res);
-            OSD::Notify(buffer, red, black);
+            OSD::Notify(Utils::Format("Error opening: %s, code: %08X", _fileName.c_str(), res), red, black);
             return;        
         }
 
@@ -300,8 +290,7 @@ namespace CTRPluginFramework
 
             file.Close();
 
-            sprintf(buffer, "BMP Error: Invalid type value: %d", bfh.type);
-            OSD::Notify(buffer, red, black);
+            OSD::Notify(Utils::Format("BMP Error: Invalid type value: %d", bfh.type), red, black);
             return;
         }
 
@@ -312,8 +301,7 @@ namespace CTRPluginFramework
 
             file.Close();
 
-            sprintf(buffer, "BMP Error: Invalid bit depth: %d", bih.bit_count);
-            OSD::Notify(buffer, red, black);
+            OSD::Notify(Utils::Format("BMP Error: Invalid bit depth: %d", bih.bit_count), red, black);
 
             return;
         }
@@ -396,7 +384,7 @@ namespace CTRPluginFramework
         int   totalwidth = rows * rowWidth;
         int   oddRows = rows * 5;
 
-        unsigned char *buf = (unsigned char *)linearAlloc(totalwidth);//new unsigned char[totalwidth];
+        unsigned char *buf = new u8[totalwidth];
         if (buf == nullptr)
             return;
         int i = 0;
@@ -410,7 +398,6 @@ namespace CTRPluginFramework
                 unsigned char *bufPtr = buf + j * rowWidth;
 
                 std::memcpy(dataPtr, bufPtr, _rowIncrement);
-
             }
         }
         int rest = _height % 5;
@@ -424,7 +411,7 @@ namespace CTRPluginFramework
             std::memcpy(dataPtr, bufPtr, _rowIncrement);
         }
 
-        linearFree(buf);//delete[] buf;
+        delete[] buf;
         file.Close();
         _loaded = true;
     }
