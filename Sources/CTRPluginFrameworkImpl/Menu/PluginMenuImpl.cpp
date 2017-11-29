@@ -175,7 +175,7 @@ namespace CTRPluginFramework
         search.RestoreSearchState();
 
         if (_showMsg)
-            OSD::Notify("Plugin ready !", Color(255, 255, 255), Color());
+            OSD::Notify("Plugin ready!", Color::Blank, Color());
 
         // Main loop
         while (_pluginRun)
