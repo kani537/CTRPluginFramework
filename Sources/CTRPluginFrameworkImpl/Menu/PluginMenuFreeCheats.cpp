@@ -281,6 +281,7 @@ namespace CTRPluginFramework
     {
         Renderer::SetTarget(BOTTOM);
         Window::BottomWindow.Draw();
+        const Color &textcolor = Preferences::Settings.MainTextColor;
 
         // If no cheat selected == No free cheat
         if (_selectedFC == nullptr)
@@ -288,17 +289,17 @@ namespace CTRPluginFramework
             static const u8 *errorstr = (u8 *)"You don't have any cheats here.\nGo in Search to start finding some !";
             int posY = 70;
 
-            Renderer::DrawSysString("\uE010\uE010  \uE00A  \uE010\uE010", 117, posY, 300, Color::Blank);
+            Renderer::DrawSysString("\uE010\uE010  \uE00A  \uE010\uE010", 117, posY, 300, textcolor);
             posY += 10;
-            Renderer::DrawSysStringReturn(errorstr, 35, posY, 300, Color::Blank);
+            Renderer::DrawSysStringReturn(errorstr, 35, posY, 300, textcolor);
             return;
         }
 
         int posY = 63;
 
-        Renderer::DrawString("Address: ", 35, posY, Color::Blank);
+        Renderer::DrawString("Address: ", 35, posY, textcolor);
         posY = 83;
-        Renderer::DrawString("Freeze val.: ", 35, posY, Color::Blank);
+        Renderer::DrawString("Freeze val.: ", 35, posY, textcolor);
 
         /*
         // Draw TextBox
@@ -310,9 +311,9 @@ namespace CTRPluginFramework
         _u16CheckBox.Draw();
         _u32CheckBox.Draw(); */
         posY = 104;
-        Renderer::DrawString("8Bits", 77, posY, Color::Blank); posY = 104;
-        Renderer::DrawString("16Bits", 157, posY, Color::Blank); posY = 104;
-        Renderer::DrawString("32Bits", 237, posY, Color::Blank);
+        Renderer::DrawString("8Bits", 77, posY, textcolor); posY = 104;
+        Renderer::DrawString("16Bits", 157, posY,textcolor); posY = 104;
+        Renderer::DrawString("32Bits", 237, posY, textcolor);
 
         // Draw UIControls
         _uiContainer.Draw();

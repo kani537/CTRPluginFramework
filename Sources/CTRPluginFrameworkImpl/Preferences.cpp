@@ -1,11 +1,10 @@
 #include "CTRPluginFramework/System/Controller.hpp"
 #include "CTRPluginFrameworkImpl/Preferences.hpp"
-#include <math.h>
+#include <cmath>
 #include "ctrulib/result.h"
 #include <cstring>
 #include "CTRPluginFrameworkImpl/Menu/PluginMenuImpl.hpp"
 #include "CTRPluginFrameworkImpl/Menu/PluginMenuFreeCheats.hpp"
-
 
 namespace CTRPluginFramework
 {
@@ -25,6 +24,7 @@ namespace CTRPluginFramework
     bool        Preferences::ShowBottomFps = false;
     bool        Preferences::ShowTopFps = false;
     bool        Preferences::UseFloatingBtn = false;
+    FwkSettings Preferences::Settings;
 
     static const char *g_signature = "CTRPF\0\0";
 
@@ -278,22 +278,35 @@ namespace CTRPluginFramework
 
     void    Preferences::Initialize(void)
     {
-        // If EcoMemoryMode, don't load the backgrounds
-        if (EcoMemoryMode)
-        {
-            topBackgroundImage = new BMPImage();
-            bottomBackgroundImage = new BMPImage();            
-        }
-        else // Load the backgrounds
+        // Try to load top background
+        if (!EcoMemoryMode && File::Exists("TopBackground.bmp")) // Load the backgrounds
         {
             topBackgroundImage = new BMPImage("TopBackground.bmp");
             if (topBackgroundImage->IsLoaded())
                 topBackgroundImage = PostProcess(topBackgroundImage, 340, 200);
+            else
+            {
+                delete topBackgroundImage;
+                topBackgroundImage = nullptr;
+            }
+        }
+        else
+            topBackgroundImage = nullptr;
 
+        // Try to load bottom background
+        if (!EcoMemoryMode && File::Exists("BottomBackground.bmp"))
+        {
             bottomBackgroundImage = new BMPImage("BottomBackground.bmp");
             if (bottomBackgroundImage->IsLoaded())
                 bottomBackgroundImage = PostProcess(bottomBackgroundImage, 280, 200);
+            else
+            {
+                delete bottomBackgroundImage;
+                bottomBackgroundImage = nullptr;
+            }
         }
+        else
+            bottomBackgroundImage = nullptr;
 
         // Update Window
         Window::Initialize();

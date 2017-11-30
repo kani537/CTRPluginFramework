@@ -78,6 +78,8 @@ namespace CTRPluginFramework
         GSPGPU_FramebufferFormats fmt;
         _screen->GetFramebufferInfos(rowstride, bpp, fmt);
 
+        float fade = Preferences::Settings.CursorFadeValue;
+
         // Draw Rectangle
         while (--w >= 0)
         {
@@ -88,7 +90,7 @@ namespace CTRPluginFramework
             {   
                 Color &&c = PrivColor::FromFramebuffer(dst);
 
-                c.Fade(0.2f);
+                c.Fade(fade);
                 PrivColor::ToFramebuffer(dst, c);
                 dst -= bpp;
             }

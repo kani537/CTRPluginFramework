@@ -29,12 +29,12 @@ namespace CTRPluginFramework
     void    Window::Draw(void) const
     {
         // Background
-        if (_image->IsLoaded())
+        if (_image != nullptr)
             _image->Draw(_rect.leftTop);
         else
         {
-            Renderer::DrawRect2(_rect, Color::Black, Color::BlackGrey);
-            Renderer::DrawRect(_border, Color::Blank, false);
+            Renderer::DrawRect2(_rect, Preferences::Settings.BackgroundMainColor, Preferences::Settings.BackgroundSecondaryColor);
+            Renderer::DrawRect(_border, Preferences::Settings.BackgroundBorderColor, false);
         }
 
         // Close button
@@ -45,18 +45,19 @@ namespace CTRPluginFramework
     void    Window::Draw(const std::string& title) const
     {
         // Background
-        if (_image->IsLoaded())
+        if (_image != nullptr)
             _image->Draw(_rect.leftTop);
         else
         {
-            Renderer::DrawRect2(_rect, Color::Black, Color::BlackGrey);
-            Renderer::DrawRect(_border, Color::Blank, false);
+            Renderer::DrawRect2(_rect, Preferences::Settings.BackgroundMainColor, Preferences::Settings.BackgroundSecondaryColor);
+            Renderer::DrawRect(_border, Preferences::Settings.BackgroundBorderColor, false);
         }
 
         // Title
+        Color &color = Preferences::Settings.WindowTitleColor;
         int posY = _rect.leftTop.y + 5;
-        int xx = Renderer::DrawSysString(title.c_str(), _rect.leftTop.x + 10, posY, 330, Color::Blank);
-        Renderer::DrawLine(40, posY, xx, Color::Blank);
+        int xx = Renderer::DrawSysString(title.c_str(), _rect.leftTop.x + 10, posY, 330, color);
+        Renderer::DrawLine(40, posY, xx, color);
 
         // Close button
         if (_closeBtn != nullptr)
@@ -77,13 +78,13 @@ namespace CTRPluginFramework
         return ((*_closeBtn)());
     }
 
-    void Window::Close()
+    void    Window::Close(void) const
     {
         if (_closeBtn)
             _closeBtn->SetState(true);
     }
 
-    const IntRect &Window::GetRect(void) const
+    const   IntRect &Window::GetRect(void) const
     {
         return (_rect);
     }

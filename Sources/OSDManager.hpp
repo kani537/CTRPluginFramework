@@ -11,6 +11,14 @@
 namespace CTRPluginFramework
 {
     #define OSDManager (*_OSDManager::GetInstance())
+#define DEBUG 0
+#if DEBUG
+#define TRACE  { OSDManager["trace"].SetScreen(true).SetPos(10,50) = std::string(__FUNCTION__) << ":" << __LINE__; Sleep(Seconds(0.04f)); }
+#define XTRACE(str, ...) { OSDManager["trace"].SetScreen(true).SetPos(0,30) = std::string(__FUNCTION__) << ":" << __LINE__ << Utils::Format(str, __VA_ARGS__); Sleep(Seconds(0.04f)); }
+#else
+#define TRACE
+#define XTRACE
+#endif
 
     using OSDMITuple = std::tuple<bool, std::string, u32, u32, bool>;
     struct OSDMI

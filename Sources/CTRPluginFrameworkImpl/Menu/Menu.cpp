@@ -82,8 +82,10 @@ namespace CTRPluginFramework
 
     void    Menu::Draw(void) const
     {
-        const Color &blank = Color::Blank;
-        const Color &silver = Color::DarkGrey;
+        const Color &title = Preferences::Settings.WindowTitleColor;
+        const Color &text = Preferences::Settings.MainTextColor;
+        const Color &selected = Preferences::Settings.MenuSelectedItemColor;
+        const Color &unselected = Preferences::Settings.MenuUnselectedItemColor;
 
         int   posY = 25;
         int   posX = 40;
@@ -92,8 +94,8 @@ namespace CTRPluginFramework
         Window::TopWindow.Draw();
 
         // Draw title
-        int width = Renderer::DrawSysString(_folder->name.c_str(), posX, posY, XMAX, blank);
-        Renderer::DrawLine(posX, posY, width, blank);   
+        int width = Renderer::DrawSysString(_folder->name.c_str(), posX, posY, XMAX, title);
+        Renderer::DrawLine(posX, posY, width, title);   
         posY += 7;
 
         // Draw entries
@@ -108,7 +110,7 @@ namespace CTRPluginFramework
         {
             for (; i < max; i++)
             {
-                const Color &c = i == _selector ? blank : silver;
+                const Color &c = i == _selector ? selected : unselected;
                 MenuItem *item = _folder->_items[i];
 
                 if (i == _selector)
@@ -133,7 +135,7 @@ namespace CTRPluginFramework
         {
             for (; i < max; i++)
             {
-                const Color &c = i == _selector ? blank : silver;
+                const Color &c = i == _selector ? selected : unselected;
                 MenuItem *item = _folder->_items[i];
 
                 if (i == _selector)

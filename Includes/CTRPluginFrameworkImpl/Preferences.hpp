@@ -3,6 +3,7 @@
 
 #include "types.h"
 #include "ctrulib/os.h"
+#include "CTRPluginFramework/System/FwkSettings.hpp"
 #include "CTRPluginFrameworkImpl/Graphics/BMPImage.hpp"
 #include <vector>
 
@@ -117,6 +118,7 @@ namespace CTRPluginFramework
         static bool         ShowTopFps;
         static bool         ShowBottomFps;
         static bool         UseFloatingBtn;
+        static FwkSettings  Settings;
 
         static int          OpenConfigFile(File &file, Header &header);
         static void         LoadSettings(void);

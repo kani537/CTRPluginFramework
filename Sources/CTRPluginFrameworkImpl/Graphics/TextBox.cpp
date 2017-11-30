@@ -4,7 +4,7 @@
 #include "CTRPluginFrameworkImpl/Preferences.hpp"
 #include "CTRPluginFrameworkImpl/Graphics/Textbox.hpp"
 #include "CTRPluginFramework/System/Clock.hpp"
-#include <math.h>
+#include <cmath>
 
 namespace CTRPluginFramework
 {
@@ -45,10 +45,10 @@ namespace CTRPluginFramework
             _scrollPosition = 0.f;
             _displayScrollbar = true;
         }
-        Color blank(255, 255, 255);
-        titleColor = blank;
-        textColor = blank;
-        borderColor = blank;
+        //Color blank(255, 255, 255);
+        titleColor = Preferences::Settings.WindowTitleColor;//blank;
+        textColor = Preferences::Settings.MainTextColor;//blank;
+        borderColor = Preferences::Settings.BackgroundBorderColor;//blank;
     }
 
     /*
@@ -223,20 +223,22 @@ namespace CTRPluginFramework
 
         int  max = std::min((u32)(_currentLine + _maxLines), (u32)(_newline.size()));
 
-        const Color  &black = Color::Black;
-        const Color  &blank = Color::Blank;
-        const Color  &grey = Color::BlackGrey;
+        const Color     &black = Color::Black;
+        const Color     &blank = Color::Blank;
+        const Color     &grey = Color::BlackGrey;
+        FwkSettings     &settings = Preferences::Settings;
 
         // Draw Background
-        if (Preferences::topBackgroundImage->IsLoaded() 
+        if (Preferences::topBackgroundImage != nullptr 
             && (Preferences::topBackgroundImage->GetDimensions() <= _box.size))
             Preferences::topBackgroundImage->Draw(_box, -0.3f);
         else
         {
-            Renderer::DrawRect2(_box, black, grey);
-            Renderer::DrawRect(_border, borderColor, false);            
+            Renderer::DrawRect2(_box, settings.BackgroundMainColor, settings.BackgroundSecondaryColor);
+            Renderer::DrawRect(_border, settings.BackgroundBorderColor, false);            
         }
 
+        //Window::TopWindow.Draw(_title);
 
         int posX = _box.leftTop.x + 5;
         int posY = _box.leftTop.y + 5;
@@ -294,8 +296,18 @@ namespace CTRPluginFramework
         if (!str || !(*str))
             return (nullptr);
         
-        while (*str != '\n' && *str != 0x18 && *str != 0x1B)
+        while (*str != '\n')
         {
+            if (*str == 0x18)
+            {
+                str++;
+                continue;
+            }
+            if (*str == 0x1B)
+            {
+                str += 4;
+                continue;
+            }
 
             bool isSpace = *str == ' ' ? true : false;
             Glyph *glyph = Font::GetGlyph(str);
@@ -318,8 +330,19 @@ namespace CTRPluginFramework
         if (!str || !(*str))
             return (nullptr);
 
-        while (*str != '\n' && *str != 0x18 && *str != 0x1B)
+        while (*str != '\n')
         {
+            if (*str == 0x18)
+            {
+                str++;
+                continue;
+            }
+            if (*str == 0x1B)
+            {
+                str += 4;
+                continue;
+            }
+
             bool isSpace = *str == ' ' ? true : false;
 
             u8      *strBak = str;
@@ -369,14 +392,14 @@ namespace CTRPluginFramework
         
         while (true)
         {
-            if (*str == '\n' || *str == 0x18)
+            if (*str == '\n')// || *str == 0x18)
             {
                 str++;
             }
-            if (*str == 0x1B)
+           /* if (*str == 0x1B)
             {
                 str += 4;
-            }
+            }*/
 
             u8 *s = str;            
             float line = 0.f;

@@ -421,8 +421,9 @@ namespace CTRPluginFramework
 
     void PluginMenuHome::_RenderTop(void)
     {
-        static Color blank(255, 255, 255);
-        static Color silver(160, 160, 160);
+        const Color &selected = Preferences::Settings.MenuSelectedItemColor;
+        const Color &unselected = Preferences::Settings.MenuUnselectedItemColor;
+        const Color &maintext = Preferences::Settings.MainTextColor;
 
         int posY = 25;
         int posX = 40;
@@ -436,12 +437,12 @@ namespace CTRPluginFramework
         // Draw Title
         int maxWidth = _showVersion ? _versionPosX - 10 : 360;
         int posYbak = posY;
-        int width = Renderer::DrawSysString(folder->name.c_str(), posX, posY, maxWidth, blank);
-        Renderer::DrawLine(posX, posY, width, blank);
+        int width = Renderer::DrawSysString(folder->name.c_str(), posX, posY, maxWidth, maintext);
+        Renderer::DrawLine(posX, posY, width, maintext);
         posY += 7;
 
         if (_showVersion && !_starMode && !folder->HasParent())
-            Renderer::DrawSysString(_versionStr.c_str(), _versionPosX, posYbak, 360, blank);
+            Renderer::DrawSysString(_versionStr.c_str(), _versionPosX, posYbak, 360, maintext);
 
         // Draw Entry
         int max = folder->ItemsCount();
@@ -455,16 +456,16 @@ namespace CTRPluginFramework
             MenuItem    *item = folder->_items[i];
             ItemFlags   flags = item->Flags;
             const char  *name = item->name.c_str();
-            Color       &fg = i == _selector ? blank : silver;
+            const Color       &fg = i == _selector ? selected : unselected;
             float       offset = i == _selector ? _scrollOffset : 0.f;
 
             // Draw separator if needed
             if (flags.useSeparatorBefore)
             {
                 if (flags.useStippledLineForBefore)
-                    Renderer::DrawStippledLine(posX, posY - 1, 320, silver, 1);
+                    Renderer::DrawStippledLine(posX, posY - 1, 320, unselected, 1);
                 else
-                    Renderer::DrawLine(posX, posY - 1, 320, silver, 1);
+                    Renderer::DrawLine(posX, posY - 1, 320, unselected, 1);
             }
                 
             // Draw cursor
@@ -497,9 +498,9 @@ namespace CTRPluginFramework
             if (flags.useSeparatorAfter)
             {
                 if (flags.useStippledLineForAfter)
-                    Renderer::DrawStippledLine(posX, posY - 1, 320, silver, 1);
+                    Renderer::DrawStippledLine(posX, posY - 1, 320, unselected, 1);
                 else
-                    Renderer::DrawLine(posX, posY - 1, 320, silver, 1);
+                    Renderer::DrawLine(posX, posY - 1, 320, unselected, 1);
             }
             posY += 4;
         }

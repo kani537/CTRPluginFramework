@@ -1,13 +1,15 @@
 #include "CTRPluginFramework.hpp"
 #include "Hook.hpp"
 #include "3DS.h"
+#include "CTRPluginFramework/System/FwkSettings.hpp"
+#include "CTRPluginFrameworkImpl/Graphics/TextBox.hpp"
 
 namespace CTRPluginFramework
 {
-    // 0x00103DC4 then return to 0x00103F38
     // This function is called on the plugin starts, before main
-    void    PatchProcess(void)
+    void    PatchProcess(FwkSettings &settings)
     {
+       // settings.WaitTimeToBoot = Seconds(10.f);
     }
 
     MenuEntry *AddArg(void *arg, MenuEntry *entry)
@@ -71,12 +73,30 @@ namespace CTRPluginFramework
         menu += new MenuEntry("Load cheats from file", nullptr, LineReadTest);
         menu += g_folder;
 
+        menu += new MenuEntry(Utils::Format("Heap free: %08X", getMemFree()), nullptr);
         MenuEntry *entry = new MenuEntry("Separator Before");
+
 
         entry->UseTopSeparator(true);
         menu += entry;
 
-        menu += new MenuEntry("Padding");
+        std::string note = "Use \uE077 while pressing the hotkey(s) to move very fast.\n"
+            << Color::Orange << "Be careful of the loading zone, it might put you out of bound.\n"
+            << ResetColor() << "You can change the hotkey by touching the controller icon on the bottom screen.";
+
+        auto e = [](MenuEntry *entry) {};
+        menu += new MenuFolder("Movement", "",
+        {
+            EntryWithHotkey(new MenuEntry("MoonJump", e, "Press the hotkey to be free of the gravity."), Hotkey(Key::A, "Moonjump")),
+            EntryWithHotkey(new MenuEntry("Fast Move \uE077 +", e, note), Hotkey(Key::L, "Run faster")),
+            new MenuEntry("Epona have max carrots", e),
+            new MenuEntry("Epona have max carrots", e),
+            EntryWithHotkey(new MenuEntry("Epona MoonJump", e, "Press the hotkey to be free of the gravity."), Hotkey(Key::L | Key::A, "Epona Moonjump"))
+        });
+
+        /*TextBox tb("Lol", "mdr", IntRect(10, 10, 10, 10));
+
+        menu += new MenuEntry(Utils::Format("TB: %08X", (u32)&tb));*/
 
         entry = new MenuEntry("Separator After");
         entry->UseBottomSeparator(true);

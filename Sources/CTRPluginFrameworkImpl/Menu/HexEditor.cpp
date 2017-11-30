@@ -302,19 +302,19 @@ namespace CTRPluginFramework
     {
         const Color     &black = Color::Black;
         const Color     &blank = Color::Blank;
-        const Color     &dimGrey = Color::BlackGrey;
         const Color     &darkgrey = Color::DarkGrey;
         const Color     &gainsboro = Color::Gainsboro;
         const Color     &skyblue = Color::SkyBlue;
+        const FwkSettings &settings = Preferences::Settings;
         static IntRect  background(240, 20, 130, 200);
 
         // DrawBackground
-        Renderer::DrawRect2(background, black, dimGrey);
+        Renderer::DrawRect2(background, settings.BackgroundMainColor, settings.BackgroundSecondaryColor);
 
         int posY = 25;
 
         // Draw title's menu
-        int xx = Renderer::DrawSysString("Options", 245, posY, 340, blank);
+        int xx = Renderer::DrawSysString("Options", 245, posY, 340, settings.WindowTitleColor);
         Renderer::DrawLine(245, posY, xx - 225, skyblue);
 
         posY = 46;
@@ -341,20 +341,16 @@ namespace CTRPluginFramework
                     Renderer::DrawRect(selRect, darkgrey, false);
                     // Draw text
                     Renderer::DrawString((char *)str.c_str(), 245, posY, black);
-                }
-                else
-                {
-                    // Draw selector
-                    Renderer::DrawRect(selRect, darkgrey, false);
 
-                    // Draw text
-                    Renderer::DrawString((char *)str.c_str(), 245, posY, blank);
+                    posY += 2;
+                    continue;
                 }
+
+                // Draw selector
+                Renderer::DrawRect(selRect, darkgrey, false);
             }
-            else
-            {
-                Renderer::DrawString((char *)str.c_str(), 245, posY, blank);
-            }
+
+            Renderer::DrawString((char *)str.c_str(), 245, posY, settings.MainTextColor);
             posY += 2;
         }
     }
@@ -366,7 +362,7 @@ namespace CTRPluginFramework
         const Color     &blank = Color::Blank;
         const Color     &skyblue = Color::SkyBlue;
         const Color     &deepskyblue = Color::DeepSkyBlue;
-        const Color     &dodgerblue = Color::DodgerBlue;
+        const Color     &maintextcolor = Preferences::Settings.MainTextColor;
         const Color     &red = Color::Red;
 
         u32     address = (u32)_memoryAddress;
@@ -374,17 +370,9 @@ namespace CTRPluginFramework
 
         char    buffer[0x100] = {0};
 
-        int   posY = 25;
-        int   posX = 40;
+        int   posY = 61;
 
-        Window::TopWindow.Draw();
-
-        // Title
-        int xx = Renderer::DrawSysString("HexEditor", posX, posY, 300, blank);
-        Renderer::DrawLine(posX, posY, xx, dodgerblue);
-
-        
-        posY += 20;
+        Window::TopWindow.Draw("HexEditor");
 
         // Column headers
 
@@ -512,21 +500,21 @@ namespace CTRPluginFramework
         if (_isModified)
         {
             posY += 5;
-            Renderer::DrawString("Apply changes: ", 44, posY, blank);
+            Renderer::DrawString("Apply changes: ", 44, posY, maintextcolor);
             posY -= 14;
-            Renderer::DrawSysString("\uE000", 149, posY, 330, blank);
+            Renderer::DrawSysString("\uE000", 149, posY, 330, maintextcolor);
 
             posY +=2;
-            Renderer::DrawString("Discard changes: ", 44, posY, blank);
+            Renderer::DrawString("Discard changes: ", 44, posY, maintextcolor);
             posY -= 14;
-            Renderer::DrawSysString("\uE001", 149, posY, 330, blank);
+            Renderer::DrawSysString("\uE001", 149, posY, 330, maintextcolor);
         }
         else
         {
             posY += 5;
-            Renderer::DrawString("Options: ", 44, posY, blank);
+            Renderer::DrawString("Options: ", 44, posY, maintextcolor);
             posY -= 14;
-            Renderer::DrawSysString("\uE002", 99, posY, 330, blank);  
+            Renderer::DrawSysString("\uE002", 99, posY, 330, maintextcolor);
         }
 
         if (_subMenuOpen)
@@ -734,8 +722,8 @@ namespace CTRPluginFramework
         _action = true;
         Keyboard    keyboard;
 
-        const Color     &black = Color::Black;
-        const Color     &dimGrey = Color::BlackGrey;
+        const Color     &bgMain = Preferences::Settings.BackgroundMainColor;
+        const Color     &bgSecondary = Preferences::Settings.BackgroundSecondaryColor;
         const Color     &skyblue = Color::SkyBlue;
         static IntRect  background(93, 95, 213, 50);
         
@@ -743,7 +731,7 @@ namespace CTRPluginFramework
         Renderer::SetTarget(TOP);
 
         // Draw "window" background
-        Renderer::DrawRect2(background, black, dimGrey);
+        Renderer::DrawRect2(background, bgMain, bgSecondary);
 
         int posY = 115;
         static const char *addrPrompt = "Enter the address to jump to:";
@@ -755,7 +743,7 @@ namespace CTRPluginFramework
         Renderer::SetTarget(TOP);
 
         // Draw "window" background
-        Renderer::DrawRect2(background, black, dimGrey);
+        Renderer::DrawRect2(background, bgMain, bgSecondary);
 
         posY = 115;
 

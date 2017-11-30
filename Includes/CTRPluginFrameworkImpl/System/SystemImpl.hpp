@@ -14,6 +14,7 @@ namespace CTRPluginFramework
 
         static u32     RosalinaHotkey;
         static u32     CFWVersion;
+        static bool    IsLoaderNTR;
     private:
         friend class System;
         static bool     _isInit;

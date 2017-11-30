@@ -11,7 +11,6 @@ extern "C" void     initLib();
 extern "C" void     resumeHook(void);
 extern "C" Result   __sync_init(void);
 extern "C" void     __system_initSyscalls(void);
-extern "C" void     CResume(void);
 extern "C" Thread   g_mainThread;
 
 u32     g_resumeHookAddress = 0; ///< Used in arm11k.s for resume hook
@@ -19,8 +18,7 @@ Thread  g_mainThread = nullptr; ///< Used in syscalls.c for __ctru_get_reent
 
 namespace CTRPluginFramework
 {
-    void    ThreadExit(void) __attribute__((noreturn));
-    static void    Resume(void);
+    void    ThreadExit(void);
 }
 
 void abort(void)
@@ -30,11 +28,7 @@ void abort(void)
     CTRPluginFramework::ScreenImpl::Bottom->Flash(c);
 
     CTRPluginFramework::ThreadExit();
-}
-
-void CResume(void)
-{
-    CTRPluginFramework::Resume();
+    while (true);
 }
 
 namespace CTRPluginFramework
@@ -51,117 +45,15 @@ namespace CTRPluginFramework
     Handle      g_resumeEvent = 0;
     bool        g_keepRunning = true;
     
-    static u32      g_backup[2] = {0}; ///< For the resume hook
-    extern u32      g_linearOp; ///< allocateHeaps.cpp
     extern bool     g_heapError; ///< allocateHeaps.cpp
 
     void    ThreadInit(void *arg);
     void    InstallOSD(void); ///< OSDImpl
+
     // From main.cpp
-    void    PatchProcess(void);
+    void    PatchProcess(FwkSettings &settings);
     int     main(void);
 
-   /* static char      *ToString(char *buffer, u64 tid)
-    {
-        static const char c[] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'};
-
-        for (int i = 56; i >= 0; i -= 8)
-        {
-            u8 byte = (tid >> i) & 0xFF;
-            u8 left = byte >> 4;
-            u8 right = byte & 0xF;
-
-            *buffer++ = c[left];
-            *buffer++ = c[right];
-        }
-        *buffer = 0;
-        return (buffer);
-    }
-
-    static bool     IsFileExists(const char *filename)
-    {
-        Handle      file = 0;
-        bool        res = false;
-        char        path[0x100] = "/plugin/";
-        // Append tid
-        char        *p = ToString(path + 8, Process::GetTitleID());
-
-        *p++ = '/';
-        // Append filename
-        while (*filename)
-            *p++ = *filename++;
-        *p = 0;
-
-        FS_Path fspath = fsMakePath(PATH_ASCII, path);
-        res = R_SUCCEEDED(FSUSER_OpenFile(&file, _sdmcArchive, fspath, FS_OPEN_READ, 0));
-        if (res)
-            FSFILE_Close(file);
-        return (res);
-    }
-
-    static void    Resume(void)
-    {
-        svcSignalEvent(g_resumeEvent);
-        //svcFlushProcessDataCache(0xFFFF8001, (void *)g_resumeHookAddress, 8);
-        *(u32 *)g_resumeHookAddress = g_backup[0];
-        *(u32 *)(g_resumeHookAddress + 4) = g_backup[1];
-        //svcInvalidateProcessDataCache(0xFFFF8001, (void *)g_resumeHookAddress, 8);
-        svcWaitSynchronization(g_resumeEvent, U64_MAX);
-        svcCloseHandle(g_resumeEvent);
-        g_resumeEvent = 0;
-    }
-
-    static bool     Blacklist(void)
-    {
-        u32     lowTid = static_cast<u32>(Process::GetTitleID());
-
-        switch (lowTid)
-        {
-        case 0x00188100: ///< Alphadia
-        case 0x00188600: ///< Chronus Arc EUR
-        case 0x00179000: ///< Chronus Arc NA
-            return (true);
-        default:
-            break;
-        }
-        return (false);
-    }
-
-    static u32      InstallResumeHook(void)
-    {
-        u32 lowtid = (u32)Process::GetTitleID();
-
-        if (lowtid != 0x00164800 && lowtid != 0x00175E00)
-            return (0);
-        if (Blacklist() || IsFileExists("NoHookButSleep"))
-            return (0);
-
-        Hook    hook;
-        u32     pattern = 0xE59F0014;
-        u32     address = 0;
-
-        for (u32 addr = 0x100000; addr < 0x100050; addr += 4)
-        {
-            if (*(u32 *)addr == pattern)
-            {
-                address = addr;
-                break;
-            }
-        }
-
-        if (address == 0)
-            return (0);
-
-        address -= 0x14;
-        g_resumeHookAddress = address;
-
-        g_backup[0] = *(u32 *)address;
-        g_backup[1] = *(u32 *)(address + 4);
-
-        hook.Initialize(address, (u32)resumeHook);
-        hook.Enable();
-        return (address);
-    }*/
     static bool     IsPokemonSunOrMoon(void)
     {
         u32 lowtid = (u32)Process::GetTitleID();
@@ -170,6 +62,8 @@ namespace CTRPluginFramework
     }
     void    KeepThreadMain(void *arg)
     {
+        FwkSettings settings;
+
         // Initialize the synchronization subsystem
         __sync_init();
 
@@ -204,37 +98,33 @@ namespace CTRPluginFramework
         // Protect VRAM
         Process::ProtectRegion(0x1F000000, 3);
 
-        // Patch process before it starts
-        PatchProcess();
+        // Check loader
+        SystemImpl::IsLoaderNTR = Process::CheckAddress(0x06000000, 3);
 
-        // Install resume hook
-      /*  svcCreateEvent(&g_resumeEvent, RESET_ONESHOT);
-        
-        if (InstallResumeHook())
-        {
-            // Continue game
-            svcSignalEvent(g_continueGameEvent);
+        // Init default settings
+        settings.HeapSize = SystemImpl::IsLoaderNTR ? 0x100000 : 0x200000;
+        settings.EcoMemoryMode = false;
+        settings.WaitTimeToBoot = Seconds(5.f);
+        settings.MenuSelectedItemColor = settings.BackgroundBorderColor = settings.WindowTitleColor = settings.MainTextColor = Color(255, 255, 255);
+        settings.MenuUnselectedItemColor = Color(160, 160, 160);
+        settings.BackgroundMainColor = Color();
+        settings.BackgroundSecondaryColor = Color(15, 15, 15);
+        settings.CursorFadeValue = 0.2f;
 
-            // Wait until game signal our thread
-            svcWaitSynchronization(g_resumeEvent, U64_MAX);
-            svcClearEvent(g_resumeEvent);
-        }
-        else*/
-        {
-            // Clean event
-           /* svcCloseHandle(g_resumeEvent);
-            g_resumeEvent = 0;*/
+        // Patch process before it starts & let the dev init some settings
+        PatchProcess(settings);
 
-            // Continue game
-            svcSignalEvent(g_continueGameEvent);
+        // Continue game
+        svcSignalEvent(g_continueGameEvent);
 
-            // More time for Pokemon as it'll freeze if the plugin wake up while the video is played
-            Time time = IsPokemonSunOrMoon() ? Seconds(10.f) : Seconds(5.f);
-            Sleep(time);
-        }
+        // Wait for the game to be fully launched
+        Sleep(settings.WaitTimeToBoot);
 
         // Init heap and newlib's syscalls
         initLib();
+
+        // Copy FwkSettings to the globals (solve initialization issues)
+        Preferences::Settings = settings;
 
         // If heap error, exit
         if (g_heapError)

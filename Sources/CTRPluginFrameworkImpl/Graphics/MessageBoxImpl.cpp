@@ -4,6 +4,8 @@
 #include "CTRPluginFrameworkImpl/System/EventManager.hpp"
 #include "CTRPluginFramework/Menu/PluginMenu.hpp"
 #include "CTRPluginFrameworkImpl/System/Screen.hpp"
+#include "CTRPluginFramework/System/FwkSettings.hpp"
+#include "CTRPluginFrameworkImpl/Preferences.hpp"
 
 namespace CTRPluginFramework
 {
@@ -36,7 +38,7 @@ namespace CTRPluginFramework
             _titleColor.b = title[3];
         }
         else
-            _titleColor = Color::Blank;
+            _titleColor = Preferences::Settings.WindowTitleColor;
 
         Renderer::GetTextInfos(title.c_str(), lineCount, maxTitleWidth, 290.f);
         Renderer::GetTextInfos(message.c_str(), lineCount, maxLineWidth, 290.f);
@@ -151,10 +153,12 @@ namespace CTRPluginFramework
 
     void    MessageBoxImpl::_Draw(void)
     {
+        FwkSettings &settings = Preferences::Settings;
+
         Renderer::SetTarget(TOP);
 
         // Draw Box backgrounds
-        Renderer::DrawRect2(_box, Color::Black, Color::BlackGrey);
+        Renderer::DrawRect2(_box, settings.BackgroundMainColor, settings.BackgroundSecondaryColor);
 
         // Draw Text
         int posY = _box.leftTop.y + 10;
@@ -164,11 +168,11 @@ namespace CTRPluginFramework
 
         if (!_title.empty())
         {
-            int width = Renderer::DrawSysString(_title.c_str(), posX, posY, maxW, Color::Blank);
+            int width = Renderer::DrawSysString(_title.c_str(), posX, posY, maxW, _titleColor);
             Renderer::DrawLine(posX, posY, width - posX + 30, _titleColor);
             posY += 8;
         }
-        Renderer::DrawSysStringReturn((const u8 *)_message.c_str(), posX, posY, maxW, Color::Blank, maxH);
+        Renderer::DrawSysStringReturn((const u8 *)_message.c_str(), posX, posY, maxW, settings.MainTextColor, maxH);
        
         // Draw "Buttons"
         posY += 13;

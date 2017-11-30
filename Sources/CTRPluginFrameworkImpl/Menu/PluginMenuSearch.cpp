@@ -354,7 +354,7 @@ namespace CTRPluginFramework
             return;
         }
 
-        Window::TopWindow.Draw();
+        Window::TopWindow.Draw("Search");
         _searchMenu.Draw();
     }
 
@@ -697,6 +697,7 @@ namespace CTRPluginFramework
         const Color    &dimGrey = Color::BlackGrey;
         const Color    &skyblue = Color::SkyBlue;
         const Color    &limegreen = Color::LimeGreen;
+        const Color    &textcolor = Preferences::Settings.MainTextColor;
         static IntRect  background(125, 80, 150, 70);
         static IntRect  background2(125, 80, 150, 85);
         static Clock    timer;
@@ -756,7 +757,7 @@ namespace CTRPluginFramework
             char buf[100] = { 0 };
 
             sprintf(buf, "Hit(s): %u", _currentSearch->ResultsCount);
-            Renderer::DrawString(buf, 131, posY, blank);
+            Renderer::DrawString(buf, 131, posY, textcolor);
         }
         if (!_inSearch)
         {

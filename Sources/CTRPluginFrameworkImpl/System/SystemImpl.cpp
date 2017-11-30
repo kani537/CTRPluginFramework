@@ -6,6 +6,7 @@ namespace CTRPluginFramework
 {
     bool    SystemImpl::_isInit = false;
     bool    SystemImpl::_isNew3DS = false;
+    bool    SystemImpl::IsLoaderNTR = false;
     u32     SystemImpl::_IOBaseLCD = 0;
     u32     SystemImpl::_IOBasePAD = 0;
     u32     SystemImpl::_IOBasePDC = 0;

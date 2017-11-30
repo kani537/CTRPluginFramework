@@ -237,8 +237,8 @@ namespace CTRPluginFramework
         const Color    &blank = Color::Blank;
         const Color    &darkgrey = Color::DarkGrey;
         const Color    &gainsboro = Color::Gainsboro;
-        const Color    &skyblue = Color::SkyBlue;
         const Color    &silver = Color::Silver;
+        const Color    &textcolor = Preferences::Settings.MainTextColor;
         //static IntRect  background(30, 20, 340, 200);
 
         /*330
@@ -247,18 +247,14 @@ namespace CTRPluginFramework
         NEW (16 * 6) = 96 + 10      = 106 + 20
                                     = 270 = 330*/
 
-        int posY = 25;
-        int xx = Renderer::DrawSysString("Search", 40, posY, 330, blank);
-        Renderer::DrawLine(40, posY, xx, skyblue);
-
-        posY += 10;
+        int posY = 51;
 
         if (_currentSearch != nullptr)
         {
             std::string str = "Step: " + std::to_string(_currentSearch->Step);
-            Renderer::DrawString((char *)str.c_str(), 37, posY, blank);
+            Renderer::DrawString((char *)str.c_str(), 37, posY, textcolor);
             str = "Hit(s): " + std::to_string(_currentSearch->ResultsCount);
-            Renderer::DrawString((char *)str.c_str(), 37, posY, blank);
+            Renderer::DrawString((char *)str.c_str(), 37, posY, textcolor);
         }
 
         posY = 80;
@@ -291,9 +287,9 @@ namespace CTRPluginFramework
         /**********************************************************************/
 
         posY = 203;
-        Renderer::DrawString((char *)"Options:", 260, posY, blank);
+        Renderer::DrawString((char *)"Options:", 260, posY, textcolor);
         posY -= 14;
-        Renderer::DrawSysString((char *)"\uE002", 320, posY, 380, blank);
+        Renderer::DrawSysString((char *)"\uE002", 320, posY, 380, textcolor);
 
         if (_currentSearch == nullptr || _resultsAddress.size() == 0 || _resultsNewValue.size() == 0)
         {
@@ -349,7 +345,7 @@ namespace CTRPluginFramework
         std::string str = std::to_string(start) + "-" + std::to_string(std::min((u32)(start + 10), (u32)_currentSearch->ResultsCount))
                     + " / " + std::to_string(_currentSearch->ResultsCount);
         posY = 196;
-        Renderer::DrawString((char *)str.c_str(), 37, posY, blank);
+        Renderer::DrawString((char *)str.c_str(), 37, posY, textcolor);
 
         /*if (_currentSearch->IsFirstUnknownSearch())
             return;*/
@@ -409,21 +405,19 @@ namespace CTRPluginFramework
     void    SearchMenu::_DrawSubMenu(void)
     {
         const Color    &black = Color::Black;
-        const Color    &blank = Color::Blank;
-        const Color    &dimGrey = Color::BlackGrey;
         const Color    &darkgrey = Color::DarkGrey;
         const Color    &gainsboro = Color::Gainsboro;
-        const Color    &skyblue = Color::SkyBlue;
+        const Color    &textcolor = Preferences::Settings.MainTextColor;
         static IntRect  background(240, 20, 130, 200);
 
         // DrawBackground
-        Renderer::DrawRect2(background, black, dimGrey);
+        Renderer::DrawRect2(background, Preferences::Settings.BackgroundMainColor, Preferences::Settings.BackgroundSecondaryColor);
 
         int posY = 25;
 
         // Draw title's menu
-        int xx = Renderer::DrawSysString("Options", 245, posY, 340, blank);
-        Renderer::DrawLine(245, posY, xx - 225, skyblue);
+        int xx = Renderer::DrawSysString("Options", 245, posY, 340, textcolor);
+        Renderer::DrawLine(245, posY, xx - 225, textcolor);
 
         posY = 46;
 
@@ -449,20 +443,16 @@ namespace CTRPluginFramework
                     Renderer::DrawRect(selRect, darkgrey, false);
                     // Draw text
                     Renderer::DrawString(str, 245, posY, black);
+                    posY += 2;
+                    continue;
                 }
                 else
                 {
                     // Draw selector
                     Renderer::DrawRect(selRect, darkgrey, false);
-
-                    // Draw text
-                    Renderer::DrawString(str, 245, posY, blank);
                 }
             }
-            else
-            {
-                Renderer::DrawString(str, 245, posY, blank);
-            }
+            Renderer::DrawString(str, 245, posY, textcolor);
             posY += 2;
         }
     }

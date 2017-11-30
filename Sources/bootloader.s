@@ -40,13 +40,12 @@ ldr     r1, = __c_bss_end
 sub     r1, r1, r0
 bl      ClearMem
 
-mov     r0, #0
 bl      LaunchMainThread
-mov     r0, sp
 
 ldmfd	sp!, {r0}
 msr		cpsr, r0
 ldmfd	sp!, {r0-r12, pc}
+bx      lr
 
 @---------------------------------------------------------------------------------
 @ Clear memory to 0x00 if length != 0

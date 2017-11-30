@@ -26,7 +26,6 @@ namespace CTRPluginFramework
     std::vector<TouchKey>    KeyboardImpl::_HexaDecimalKeys;
     std::vector<TouchKey>    KeyboardImpl::_QwertyKeys;
 
-
     KeyboardImpl::KeyboardImpl(const std::string &text)
     {
         _owner = nullptr;
@@ -357,10 +356,7 @@ namespace CTRPluginFramework
 
     void    KeyboardImpl::_RenderTop(void)
     {
-        const Color     &black = Color::Black;
         const Color     &red = Color::Red;
-        const Color     &blank = Color::Blank;
-        const Color     &dimGrey = Color::BlackGrey;
         static IntRect  background1(30, 20, 340, 200);
         static IntRect  background2(50, 30, 300, 180);
 
@@ -372,17 +368,9 @@ namespace CTRPluginFramework
         int   posX =  background.leftTop.x + 5;
 
         Renderer::SetTarget(TOP);
+        Window::TopWindow.Draw();
 
-        // Draw background
-        if (Preferences::topBackgroundImage->IsLoaded())
-            Preferences::topBackgroundImage->Draw(background);
-        else
-        {
-            Renderer::DrawRect2(background, black, dimGrey);
-            //Renderer::DrawRect(32, 22, 336, 196, blank, false);            
-        }
-
-        Renderer::DrawSysStringReturn(reinterpret_cast<const u8 *>(_text.c_str()), posX, posY, maxX, blank, maxY);
+        Renderer::DrawSysStringReturn(reinterpret_cast<const u8 *>(_text.c_str()), posX, posY, maxX, Preferences::Settings.MainTextColor, maxY);
 
         // IF error
         if (_errorMessage && _error.size() > 0)

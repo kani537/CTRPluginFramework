@@ -4,6 +4,7 @@
 #include "CTRPluginFramework/System/Controller.hpp"
 #include "Unicode.h"
 #include "CTRPluginFramework/System/System.hpp"
+#include "CTRPluginFrameworkImpl/Preferences.hpp"
 
 namespace CTRPluginFramework
 {
@@ -46,6 +47,7 @@ namespace CTRPluginFramework
 
         if (!System::IsNew3DS())
         {
+            // Disable ZL & ZR on O3DS
             _checkboxs[0].Enable(false);
             _checkboxs[7].Enable(false);
         }        
@@ -78,14 +80,10 @@ namespace CTRPluginFramework
     void    HotkeysModifier::_DrawTop(void) const
     {
         Renderer::SetTarget(TOP);
-        Window::TopWindow.Draw();
+        Window::TopWindow.Draw("Hotkey Modifier");
 
-        int posY = 25;
-        int xx = Renderer::DrawSysString("Hotkey Modifier", 40, posY, 330, Color::Blank);
-        Renderer::DrawLine(40, posY, xx, Color::Blank);
-
-        posY += 20;
-        Renderer::DrawSysStringReturn((const u8*)_message.c_str(), 40, posY, 300, Color::Blank);
+        int posY = 61;
+        Renderer::DrawSysStringReturn((const u8*)_message.c_str(), 40, posY, 300, Preferences::Settings.MainTextColor);
     }
 
     void    HotkeysModifier::_DrawBottom(void)
@@ -101,9 +99,9 @@ namespace CTRPluginFramework
 
         // Draw labels
         for (int i = 0 + skip, posY = 32 + (skip * 25); i < 7; ++i, posY += 9)
-            Renderer::DrawSysString(stable[i], 50, posY, 290, Color::Blank);
+            Renderer::DrawSysString(stable[i], 50, posY, 290, Preferences::Settings.MainTextColor);
         for (int i = 7 + skip, posY = 32 + (skip * 25); i < 14; ++i, posY += 9)
-            Renderer::DrawSysString(stable[i], 220, posY, 290, Color::Blank);
+            Renderer::DrawSysString(stable[i], 220, posY, 290, Preferences::Settings.MainTextColor);
     }
 
     void    HotkeysModifier::_Update(void)

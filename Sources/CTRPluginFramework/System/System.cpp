@@ -48,4 +48,11 @@ namespace CTRPluginFramework
         if (_minor < minor) return (false);
         return (_revision >= revision);
     }
+
+    bool    System::IsLoaderNTR(void)
+    {
+        return (SystemImpl::IsLoaderNTR);
+    }
+
+
 }

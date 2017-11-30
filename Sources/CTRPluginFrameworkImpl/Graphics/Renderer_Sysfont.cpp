@@ -2,7 +2,7 @@
 
 #include "CTRPluginFrameworkImpl/Graphics.hpp"
 #include "CTRPluginFrameworkImpl/Graphics/Font.hpp"
-
+#include "CTRPluginFrameworkImpl/Preferences.hpp"
 #include <algorithm>
 
 namespace CTRPluginFramework
@@ -296,7 +296,6 @@ namespace CTRPluginFramework
         // Check for a valid pointer
         if (!(stri && *stri))
             return (posX);
-        Color           bakColor(color);
         int             lineCount = 1;
         u8              *str = const_cast<u8 *>(stri);
         int             x = posX;
@@ -324,7 +323,7 @@ namespace CTRPluginFramework
 
             if (c == 0x18)
             {
-                color = bakColor;
+                color = Preferences::Settings.MainTextColor;
                 str++;
                 continue;
             }
@@ -368,7 +367,6 @@ namespace CTRPluginFramework
     
     int Renderer::DrawSysString(const char *stri, int posX, int &posY, int xLimits, Color color, float offset, const char *end)
     {
-        Color   bakColor(color);
         Glyph   *glyph;
         int      x = posX;
         //u8      *str = (u8 *)stri.c_str();
@@ -400,7 +398,7 @@ namespace CTRPluginFramework
 
             if (c == 0x18)
             {
-                RendererPriv::g_customColor = color = bakColor;
+                RendererPriv::g_customColor = color = Preferences::Settings.MainTextColor;
                 str++;
                 continue;
             }
