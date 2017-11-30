@@ -32,6 +32,7 @@ namespace CTRPluginFramework
         void        Remove(MenuItem *item);
         void        Remove(u32 start, u32 count = 1, bool destroy = false);
         void        Clear(void);
+
     private:
         friend class MenuItem;
         friend class PluginMenuImpl;

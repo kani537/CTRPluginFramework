@@ -5,20 +5,20 @@
 namespace CTRPluginFramework
 {
     MenuFolder::MenuFolder(const std::string &name, const std::string &note) :
-        _item(new MenuFolderImpl(this, name, note))
+        OnOpening{ nullptr }, _item(new MenuFolderImpl(this, name, note))
     {
 
     }
 
     MenuFolder::MenuFolder(const std::string& name, const std::vector<MenuEntry*>& entries) :
-        _item(new MenuFolderImpl(this, name))
+        OnOpening{ nullptr }, _item(new MenuFolderImpl(this, name))
     {
         for (MenuEntry *entry : entries)
             Append(entry);
     }
 
     MenuFolder::MenuFolder(const std::string& name, const std::string& note, const std::vector<MenuEntry*>& entries) :
-        _item(new MenuFolderImpl(this, name, note))
+        OnOpening{ nullptr }, _item(new MenuFolderImpl(this, name, note))
     {
         for (MenuEntry *entry : entries)
             Append(entry);

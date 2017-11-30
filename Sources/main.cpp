@@ -71,7 +71,22 @@ namespace CTRPluginFramework
         PluginMenu  &menu = *m;
 
         menu += new MenuEntry("Load cheats from file", nullptr, LineReadTest);
+
+        // Add global folder Action Replay
         menu += g_folder;
+
+        g_folder->OnOpening = [](MenuFolder &folder)
+        {
+            // If folder is empty
+            if (g_folder->ItemsCount() == 0)
+            {
+                MessageBox("Info", "No cheats loaded, use Load cheats from file first")();
+                // Don't open the folder
+                return (false);
+            }
+            // Can be opened
+            return (true);
+        };
 
         menu += new MenuEntry(Utils::Format("Heap free: %08X", getMemFree()), nullptr);
         MenuEntry *entry = new MenuEntry("Separator Before");

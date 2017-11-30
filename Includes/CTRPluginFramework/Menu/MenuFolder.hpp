@@ -146,6 +146,20 @@ namespace CTRPluginFramework
          */
         MenuFolder    *operator -= (const MenuFolder *folder);
 
+        /**
+        * \brief Callback type, receive the object that called the callback
+        * must returns true or false:
+        *  true: if the folder can be opened
+        *  false: if the folder mus close
+        */
+        using MenuFolder_OnOpeningFunc = bool(*)(MenuFolder &);
+
+
+        /**
+         * \brief This callback is called when the folder will be opened
+         */
+        MenuFolder_OnOpeningFunc    OnOpening;
+
     private:
         friend class PluginMenu;
         std::unique_ptr<MenuFolderImpl> _item;

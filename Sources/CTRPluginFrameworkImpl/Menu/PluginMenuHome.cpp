@@ -2,6 +2,7 @@
 #include "CTRPluginFrameworkImpl/Graphics/Icon.hpp"
 #include "CTRPluginFrameworkImpl/Preferences.hpp"
 #include "CTRPluginFrameworkImpl/Menu/PluginMenuExecuteLoop.hpp"
+#include "CTRPluginFramework/Menu/MenuFolder.hpp"
 
 namespace CTRPluginFramework
 {
@@ -745,6 +746,14 @@ namespace CTRPluginFramework
         else
         {
             MenuFolderImpl* p = reinterpret_cast<MenuFolderImpl *>(item);
+
+            // If a MenuFolder exists and has a callback
+            if (p->_owner != nullptr && p->_owner->OnOpening != nullptr)
+            {
+                // If the callabck tells us to not open the folder
+                if (!(p->_owner->OnOpening(*p->_owner)))
+                    return;
+            }
             p->_Open(folder, _selector, _starMode);
             if (_starMode)
                 _starred = p;
