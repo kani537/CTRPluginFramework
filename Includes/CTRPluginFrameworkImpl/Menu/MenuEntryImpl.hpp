@@ -18,6 +18,7 @@ namespace CTRPluginFramework
             bool    state : 1;
             bool    justChanged : 1;
             bool    isRadio : 1;
+            bool    isUnselectable: 1;
         };
 
     public:
@@ -48,6 +49,8 @@ namespace CTRPluginFramework
         virtual std::string &GetNote(void) override;
 
         std::string     Note2;
+
+        EntryImplFlags       _flags;
     protected:
         friend class PluginMenuHome;
         friend class PluginMenuExecuteLoop;
@@ -59,7 +62,7 @@ namespace CTRPluginFramework
         int     _executeIndex;
         MenuEntry *_owner;
 
-        EntryImplFlags       _flags;
+        
         int         _radioId;
         void        *_arg;
     };

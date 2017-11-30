@@ -64,6 +64,13 @@ namespace CTRPluginFramework
         * \param type Type of separator to display
         */
         void    UseBottomSeparator(bool useSeparator, Separator type = Separator::Filled) const;
+        
+        /**
+         * \brief Set if the entry can be selected in the menu or not.\n
+         * If the entry is Activated and the state is set to unselectable, the entry will be disabled
+         * \param canBeSelected 
+         */
+        void    CanBeSelected(bool canBeSelected) const;
 
         void    SetGameFunc(FuncPointer func) const;
         void    SetMenuFunc(FuncPointer func) const;

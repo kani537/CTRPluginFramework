@@ -78,6 +78,7 @@ namespace CTRPluginFramework
 
 
         entry->UseTopSeparator(true);
+        entry->CanBeSelected(false);
         menu += entry;
 
         std::string note = "Use \uE077 while pressing the hotkey(s) to move very fast.\n"

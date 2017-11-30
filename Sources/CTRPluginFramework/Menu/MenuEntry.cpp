@@ -106,6 +106,13 @@ namespace CTRPluginFramework
         _item->Flags.useStippledLineForAfter = type == Separator::Stippled;
     }
 
+    void    MenuEntry::CanBeSelected(bool canBeSelected) const
+    {
+        _item->_flags.isUnselectable = !canBeSelected;
+        if (!canBeSelected && _item->IsActivated())
+            _item->Disable();
+    }
+
     void    MenuEntry::SetGameFunc(FuncPointer func) const
     {
         _item->GameFunc = func;

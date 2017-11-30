@@ -18,6 +18,7 @@ namespace CTRPluginFramework
         this->_flags.state = false;
         this->_flags.justChanged = false;
         this->_flags.isRadio = false;
+        this->_flags.isUnselectable = false;
         this->_radioId = -1;
         this->_owner = owner;
     }
@@ -33,6 +34,7 @@ namespace CTRPluginFramework
         this->_flags.state = false;
         this->_flags.justChanged = false;
         this->_flags.isRadio = false;
+        this->_flags.isUnselectable = false;
         this->_radioId = -1;
         this->_owner = owner;
     }

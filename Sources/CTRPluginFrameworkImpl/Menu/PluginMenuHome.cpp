@@ -218,6 +218,79 @@ namespace CTRPluginFramework
 
     }
 
+#define IsUnselectableEntry(item) (item->IsEntry() && item->AsMenuEntryImpl()._flags.isUnselectable)
+    static u32  SelectableEntryCount(MenuFolderImpl &folder)
+    {
+        u32 count = 0;
+
+        for (u32 i = 0; i < folder.ItemsCount(); i++)
+        {
+            MenuItem *item = folder[i];
+
+            if (item->IsEntry() && item->AsMenuEntryImpl()._flags.isUnselectable)
+                continue;
+            else
+                count++;
+        }
+        return (count);
+    }
+
+    static void ScrollUp(int &selector, MenuFolderImpl &folder, int step)
+    {
+        // If there's no selectable entry in the folder, return
+        if (!SelectableEntryCount(folder))
+            return;
+
+        // We're already at the begining
+        if (selector == 0)
+        {
+            // Else select last item
+            selector = folder.ItemsCount() - 1;
+            // If entry is unselectable scroll again
+            if (IsUnselectableEntry(folder[selector]))
+                ScrollUp(selector, folder, step);
+            return;
+        }
+        // Else go up
+        selector -= step;
+        if (selector < 0)
+            selector = 0;
+        // If entry is unselectable, scroll again
+        if (IsUnselectableEntry(folder[selector]))
+        {
+            step = step > 1 ? step - 1 : 1;
+            ScrollUp(selector, folder, step);
+        }            
+    }
+
+    static void ScrollDown(int &selector, MenuFolderImpl &folder, int step)
+    {
+        // If there's no selectable entry in the folder, return
+        if (!SelectableEntryCount(folder))
+            return;
+
+        // We're already at the end
+        if (selector == folder.ItemsCount() - 1)
+        {
+            // Else select first item
+            selector = 0;
+            // If entry is unselectable scroll again
+            if (IsUnselectableEntry(folder[selector]))
+                ScrollDown(selector, folder, step);
+            return;
+        }
+        // Else go down
+        selector += step;
+        if (selector >= folder.ItemsCount())
+            selector = folder.ItemsCount() - 1;
+        // If entry is unselectable, scroll again
+        if (IsUnselectableEntry(folder[selector]))
+        {
+            step = step > 1 ? step - 1 : 1;
+            ScrollDown(selector, folder, step);
+        }
+    }
+
     //###########################################
     // Process Event
     //###########################################
@@ -244,33 +317,25 @@ namespace CTRPluginFramework
                         case Key::CPadUp:
                         case Key::DPadUp:
                         {
-                            if (_selector > 0)
-                                _selector--;
-                            else
-                                _selector = std::max((int)folder->ItemsCount() - 1, 0);
+                            ScrollUp(_selector, *folder, 1);
                             break;
                         }
                         case Key::CPadDown:
                         case Key::DPadDown:
                         {
-                            if (_selector < folder->ItemsCount() - 1)
-                                _selector++;
-                            else
-                                _selector = 0;
+                            ScrollDown(_selector, *folder, 1);
                             break;
                         }
                         case Key::CPadLeft:
                         case Key::DPadLeft:
                         {
-                            if (_selector > 0)
-                                _selector = std::max(0, (int)(_selector - 4));
+                            ScrollUp(_selector, *folder, 4);
                             break;
                         }
                         case Key::CPadRight:
                         case Key::DPadRight:
                         {
-                            if (_selector < folder->ItemsCount() - 1)
-                                _selector = std::min((int)(folder->ItemsCount() - 1), (int)(_selector + 4));
+                            ScrollDown(_selector, *folder, 4);
                             break;
                         }
                         default: break;
@@ -289,36 +354,28 @@ namespace CTRPluginFramework
                     case Key::CPadUp:
                     case Key::DPadUp:
                     {
-                        if (_selector > 0)
-                            _selector--;
-                        else
-                            _selector = std::max((int)folder->ItemsCount() - 1, 0);
+                        ScrollUp(_selector, *folder, 1);
                         fastScroll.Restart();
                         break;
                     }
                     case Key::CPadDown:
                     case Key::DPadDown:
                     {
-                        if (_selector < folder->ItemsCount() - 1)
-                            _selector++;
-                        else
-                            _selector = 0;
+                        ScrollDown(_selector, *folder, 1);
                         fastScroll.Restart();
                         break;
                     }
                     case Key::CPadLeft:
                     case Key::DPadLeft:
                     {
-                        if (_selector > 0)
-                            _selector = std::max(0, (int)(_selector - 4));
+                        ScrollUp(_selector, *folder, 4);
                         fastScroll.Restart();
                         break;
                     }
                     case Key::CPadRight:
                     case Key::DPadRight:
                     {
-                        if (_selector < folder->ItemsCount() - 1)
-                            _selector = std::min((int)(folder->ItemsCount() - 1), (int)(_selector + 4));
+                        ScrollDown(_selector, *folder, 4);
                         fastScroll.Restart();
                         break;
                     }
@@ -336,17 +393,13 @@ namespace CTRPluginFramework
                         ********************/
                     case Key::B:
                     {
-                        MenuFolderImpl* p = folder->_Close(_selector, _starMode);
-                        if (p != nullptr)
+                        MenuFolderImpl *newFolder = folder->_Close(_selector, _starMode);
+                        if (newFolder != nullptr)
                         {
                             if (_starMode)
-                            {
-                                _starred = p;
-                            }
+                                _starred = newFolder;
                             else
-                            {
-                                _folder = p;
-                            }
+                                _folder = newFolder;
                         }
                         break;
                     }
@@ -445,6 +498,7 @@ namespace CTRPluginFramework
             Renderer::DrawSysString(_versionStr.c_str(), _versionPosX, posYbak, 360, maintext);
 
         // Draw Entry
+        u32  drawSelector = SelectableEntryCount(*folder);
         int max = folder->ItemsCount();
         if (max == 0)
             return;
@@ -456,7 +510,7 @@ namespace CTRPluginFramework
             MenuItem    *item = folder->_items[i];
             ItemFlags   flags = item->Flags;
             const char  *name = item->name.c_str();
-            const Color       &fg = i == _selector ? selected : unselected;
+            const Color  &fg = i == _selector ? selected : unselected;
             float       offset = i == _selector ? _scrollOffset : 0.f;
 
             // Draw separator if needed
@@ -469,7 +523,7 @@ namespace CTRPluginFramework
             }
                 
             // Draw cursor
-            if (i == _selector)
+            if (drawSelector && i == _selector)
                 Renderer::MenuSelector(posX - 5, posY - 3, 330, 20);
 
             // Draw entry
@@ -481,7 +535,7 @@ namespace CTRPluginFramework
                     Renderer::DrawSysCheckBox(name, posX, posY, 350, fg, entry->IsActivated(), offset);
                 else
                 {
-                    if (entry->MenuFunc != nullptr)
+                    if (entry->MenuFunc != nullptr && !entry->_flags.isUnselectable)
                         Icon::DrawSettings(posX, posY);
 
                     Renderer::DrawSysString(name, posX + 20, posY, 350, fg, offset);
@@ -661,6 +715,8 @@ namespace CTRPluginFramework
         {
             MenuEntryImpl* entry = reinterpret_cast<MenuEntryImpl *>(item);
 
+            if (entry->_flags.isUnselectable)
+                return;
             // If the entry has a valid funcpointer
             if (entry->GameFunc != nullptr)
             {
