@@ -12,33 +12,9 @@ namespace CTRPluginFramework
     class Storage
     {
     public:
-
-        /* Disabled so dev is forced to set the capacity
-        Storage() :
-            _itemCount(0)
-        {
-            _pool = new T[10];
-            if (_pool != nullptr)
-                _capacity = 10;
-            else
-                _capacity = 0;
-        }*/
-
         Storage(u32 capacity) :
             _itemCount(0)
         {
-            if (capacity * sizeof(T) < linearSpaceFree())
-            {
-                _pool = (T *)linearAlloc(capacity * sizeof(T));
-
-                if (_pool != nullptr)
-                {
-                    _linear = true;
-                    _capacity = capacity;
-                    return;
-                }
-            }
-
             _pool = new T[capacity];
             if (_pool != nullptr)
                 _capacity = capacity;
@@ -50,10 +26,7 @@ namespace CTRPluginFramework
         {
             if (_pool != nullptr)
             {
-                if (_linear)
-                    linearFree(_pool);
-                else
-                    delete[] _pool;
+                delete[] _pool;
             }
         }
 
@@ -131,7 +104,6 @@ namespace CTRPluginFramework
         }
 
     private:
-        bool    _linear;
         T       *_pool;
         u32     _capacity;
         u32     _itemCount;

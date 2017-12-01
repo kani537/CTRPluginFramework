@@ -470,6 +470,20 @@ namespace CTRPluginFramework
 		_hexBtn.Update(isTouched, touchPos);
         */
     }
+    static void ClearSearchFolder(void)
+    {
+        // Delete every file in Search
+        // Open current directory
+        Directory dir("Search");
+        std::vector<std::string> files;
+
+        // List files
+        if (dir.ListFiles(files) > 0)
+        {
+            for (std::string &name : files)
+                File::Remove("Search/" + name);
+        }
+    }
 
     /*
     ** Search button On_Click
@@ -479,6 +493,8 @@ namespace CTRPluginFramework
         // If it's not the first search, add it to the history
         if (_currentSearch != nullptr)
             _searchHistory.push_back(_currentSearch);
+        else
+            ClearSearchFolder();
 
         if (_searchHistory.size() > 5)
         {
@@ -653,17 +669,7 @@ namespace CTRPluginFramework
             _valueTextBox.IsEnabled = false;
         }
 
-        // Delete every file in Search
-        // Open current directory
-        Directory dir("Search");
-        std::vector<std::string> files;
-
-        // List files
-        if (dir.ListFiles(files) > 0)
-        {
-            for (std::string &name : files)
-                File::Remove("Search/" + name);
-        }
+        ClearSearchFolder();
     }
 
     void    PluginMenuSearch::_undoBtn_OnClick(void)
@@ -772,7 +778,7 @@ namespace CTRPluginFramework
 
     extern "C" u32 __ctru_linear_heap;
     extern "C" u32 __ctru_linear_heap_size;
-#define HIDE_REGIONS 0
+#define HIDE_REGIONS 1
 
     void    PluginMenuSearch::_ListRegion(void)
     {

@@ -2,7 +2,6 @@
 #define CTRPLUGINFRAMEWORKIMPL_SEARCH32_HPP
 
 #include "CTRPluginFrameworkImpl/Search/SearchBase.hpp"
-#include "CTRPluginFrameworkImpl/System/Storage.hpp"
 
 namespace CTRPluginFramework
 {
@@ -10,6 +9,7 @@ namespace CTRPluginFramework
     {
         using StringVector = std::vector<std::string>;
         using u32Vector = std::vector<u32>;
+#define Storage std::vector
 
     public:
 
