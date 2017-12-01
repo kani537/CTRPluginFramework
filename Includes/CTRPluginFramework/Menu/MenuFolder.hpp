@@ -154,7 +154,6 @@ namespace CTRPluginFramework
         */
         using MenuFolder_OnOpeningFunc = bool(*)(MenuFolder &);
 
-
         /**
          * \brief This callback is called when the folder will be opened
          */

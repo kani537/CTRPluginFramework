@@ -179,15 +179,30 @@ namespace CTRPluginFramework
 
     int      TouchKey::operator()(std::string &str)
     {
-        if (_enabled && _execute)
+        // Hacky code for BACKSPACE key holding
+        if (_enabled && _character == 0x8)
         {
-            _execute = false;
-            if (_content != nullptr && _character == 0x12345678)
+            if (_isPressed)
+                return (_character);
+            if (_execute)
             {
-                str += _content->text;
+                _execute = false;
+                return (~_character);
             }
-            return (_character);
         }
+        else
+        {
+            if (_enabled && _execute)
+            {
+                _execute = false;
+                if (_content != nullptr && _character == 0x12345678)
+                {
+                    str += _content->text;
+                }
+                return (_character);
+            }
+        }
+
         return (-1);
     }
 }

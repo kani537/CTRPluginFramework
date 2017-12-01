@@ -30,7 +30,7 @@ namespace CTRPluginFramework
         ~TouchKey();
 
         // Clear
-        void    Clear(void); // TODO replace all instance with new in Keyboard
+        void    Clear(void);
 
         // Enabler
         void    Enable(bool enable = true);

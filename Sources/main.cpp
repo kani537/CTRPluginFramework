@@ -3,6 +3,7 @@
 #include "3DS.h"
 #include "CTRPluginFramework/System/FwkSettings.hpp"
 #include "CTRPluginFrameworkImpl/Graphics/TextBox.hpp"
+#include "CTRPluginFrameworkImpl/Menu/MenuEntryImpl.hpp"
 
 namespace CTRPluginFramework
 {
@@ -10,6 +11,13 @@ namespace CTRPluginFramework
     void    PatchProcess(FwkSettings &settings)
     {
        // settings.WaitTimeToBoot = Seconds(10.f);
+    }
+
+    bool    IsHomebrew(void)
+    {
+        Handle *fsUser = fsGetSessionHandle();
+
+        return (fsUser == nullptr);
     }
 
     MenuEntry *AddArg(void *arg, MenuEntry *entry)
@@ -75,23 +83,17 @@ namespace CTRPluginFramework
         // Add global folder Action Replay
         menu += g_folder;
 
-        g_folder->OnOpening = [](MenuFolder &folder)
+        menu += new MenuEntry("Clear button test", nullptr,
+        [](MenuEntry *entry)
         {
-            // If folder is empty
-            if (g_folder->ItemsCount() == 0)
-            {
-                MessageBox("Info", "No cheats loaded, use Load cheats from file first")();
-                // Don't open the folder
-                return (false);
-            }
-            // Can be opened
-            return (true);
-        };
+            std::string check;
 
-        menu += new MenuEntry(Utils::Format("Heap free: %08X", getMemFree()), nullptr);
+            Keyboard kb;
+
+            kb.Open(check);
+        });
         MenuEntry *entry = new MenuEntry("Separator Before");
-
-
+        
         entry->UseTopSeparator(true);
         entry->CanBeSelected(false);
         menu += entry;

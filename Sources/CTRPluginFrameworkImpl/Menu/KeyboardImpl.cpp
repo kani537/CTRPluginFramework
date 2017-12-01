@@ -1260,9 +1260,18 @@ namespace CTRPluginFramework
         } */
     }
 
+    enum
+    {
+        CLEAR_NOT_PRESSED = 0,
+        CLEAR_JUST_PRESSED,
+        CLEAR_QUICK_MODE
+    };
     bool    KeyboardImpl::_CheckKeys(void)
     {
-        int ret = -1;
+        static Clock    backspacetimer;
+        static u32      backspaceFastMode = CLEAR_NOT_PRESSED;
+        static Time     FastModeWaitTime = Seconds(0.5f);
+        static Time     FastClearingFrame = Seconds(0.1f);
 
         int start = 0;
         int end = _keys->size();
@@ -1318,11 +1327,41 @@ namespace CTRPluginFramework
         {
             std::string  temp;
 
-            ret = (*_keys)[i](temp);
-
+            int ret = (*_keys)[i](temp);
 
             if (ret != -1)
             {
+                if (ret == ~KEY_BACKSPACE)
+                {
+                    backspaceFastMode = CLEAR_NOT_PRESSED;
+                    goto _backspacePressed;
+                }
+                if (ret == KEY_BACKSPACE)
+                {
+                    if (backspaceFastMode == CLEAR_NOT_PRESSED)
+                    {
+                        backspaceFastMode = CLEAR_JUST_PRESSED;
+                        backspacetimer.Restart();
+                        return (false);
+                    }
+                    if (backspaceFastMode == CLEAR_JUST_PRESSED)
+                    {
+                        if (!backspacetimer.HasTimePassed(FastModeWaitTime))
+                            return (false);
+                        backspaceFastMode = CLEAR_QUICK_MODE;                        
+                    }
+                    if (backspaceFastMode == CLEAR_QUICK_MODE)
+                    {
+                        if (!backspacetimer.HasTimePassed(FastClearingFrame))
+                            return (false);
+                    }
+                    backspacetimer.Restart();
+                    goto _backspacePressed;
+                }
+
+                // Reset backspace state if any other key is pressed
+                backspaceFastMode = CLEAR_NOT_PRESSED;
+
                 if (ret == 0x12345678)
                 {
                     if ((_layout == DECIMAL && _userInput.size() >= 18)
@@ -1332,7 +1371,7 @@ namespace CTRPluginFramework
                     _inputChangeEvent.type = InputChangeEvent::CharacterAdded;
                     decode_utf8(&_inputChangeEvent.codepoint, (const u8 *)temp.c_str());
 
-                    if (_inputChangeEvent.codepoint == 0x00B1)
+                    if (_inputChangeEvent.codepoint == 0x00B1) // ± key 
                     {
                         if (_userInput[0] == '-')
                             _userInput.erase(0, 1);
@@ -1347,16 +1386,6 @@ namespace CTRPluginFramework
                 if (ret == KEY_ENTER)
                 {
                     _askForExit = true;
-                    return (false);
-                }
-                else if (ret == KEY_BACKSPACE)
-                {
-                    _inputChangeEvent.codepoint = Utils::RemoveLastChar(_userInput);
-                    if (_inputChangeEvent.codepoint != 0)
-                    {
-                        _inputChangeEvent.type = InputChangeEvent::CharacterRemoved;
-                        return (true);
-                    }                        
                     return (false);
                 }
                 else if (ret == KEY_SPACE && (!_max || Utils::GetSize(_userInput) < _max))
@@ -1411,6 +1440,17 @@ namespace CTRPluginFramework
                     return (true); 
                 }
             }
+        }
+
+        backspaceFastMode = CLEAR_NOT_PRESSED;
+        return (false);
+
+    _backspacePressed:
+        _inputChangeEvent.codepoint = Utils::RemoveLastChar(_userInput);
+        if (_inputChangeEvent.codepoint != 0)
+        {
+            _inputChangeEvent.type = InputChangeEvent::CharacterRemoved;
+            return (true);
         }
         return (false);
     }
