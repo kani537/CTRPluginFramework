@@ -56,7 +56,8 @@ namespace CTRPluginFramework
         void                        Fade(float fade, bool copy = false);
         void                        Flush(void);
 		void						Invalidate(void);
-        void                        Copy(void);	    
+        void                        Copy(void);
+        void                        Debug(void);
 
     private:
         friend class Renderer;
@@ -69,6 +70,7 @@ namespace CTRPluginFramework
         u32                         _leftFramebuffers[2];
         u32                         _rightFramebuffers[2];
         u32                         _currentBuffer;
+        u32                         _originalBuffer;
         u32                         *_currentBufferReg;
         u16                         _width;
         u16                         _height;

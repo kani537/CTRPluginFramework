@@ -44,7 +44,8 @@ SOURCES 	:= 	Sources \
 IP			:=  5
 FTP_HOST 	:=	192.168.1.
 FTP_PORT	:=	"5000"
-FTP_PATH	:=	"0004000000033600/"
+FTP_PATH	:=	"0004000000033600/" #Zelda OOT
+
 
 #---------------------------------------------------------------------------------
 # options for code generation
@@ -116,6 +117,11 @@ re:
 send:
 	@echo "Sending the plugin over FTP"
 	@$(TOPDIR)/sendfile.py $(TARGET).plg $(FTP_PATH) "$(FTP_HOST)$(IP)" $(FTP_PORT)
+
+ACNL:
+	make send FTP_PATH="0004000000086400/"
+FL:
+	make send FTP_PATH="0004000000113100/"
 #---------------------------------------------------------------------------------
 
 else

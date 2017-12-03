@@ -91,7 +91,7 @@ namespace CTRPluginFramework
         u32     leftFB1 = FromPhysicalToVirtual(REG(_LCDSetup + FramebufferA1));
         u32     leftFB2 = FromPhysicalToVirtual(REG(_LCDSetup + FramebufferA2));
 
-        _currentBuffer = *_currentBufferReg & 1u;
+        _originalBuffer = _currentBuffer = *_currentBufferReg & 1u;
         // Get format
         _format = (GSPGPU_FramebufferFormats)(REG(_LCDSetup + LCDSetup::Format) & 0b111);
 
@@ -189,12 +189,36 @@ namespace CTRPluginFramework
 	void    ScreenImpl::Copy(void)
     {
         u32 size = GetFramebufferSize();
+        
+        // Flush currentBuffer
+        if (R_FAILED(GSPGPU_FlushDataCache((void *)_leftFramebuffers[_currentBuffer], size)))
+            svcFlushProcessDataCache(Process::GetHandle(), (void *)_leftFramebuffers[_currentBuffer], size);
 
-        Flush();
-        Invalidate();
+        // Invalidate alt buffer
+        if (R_FAILED(GSPGPU_InvalidateDataCache((void *)_leftFramebuffers[!_currentBuffer], size)))
+            svcInvalidateProcessDataCache(Process::GetHandle(), (void *)_leftFramebuffers[!_currentBuffer], size);
 
-        // Copy current buffer in the other one
+        // Copy current buffer in the alternative buffer
         memcpy((void *)_leftFramebuffers[!_currentBuffer], (void *)_leftFramebuffers[_currentBuffer], size);
+    }
+
+    void    ScreenImpl::Debug(void)
+    {
+        int posY = 10;
+        if (_isTopScreen)
+        {
+            Renderer::SetTarget(TOP);
+            Renderer::DrawString(Utils::Format("FB0: %08X", _leftFramebuffers[0]).c_str(), 10, posY, Color::Blank, Color::Black);
+            Renderer::DrawString(Utils::Format("FB1: %08X", _leftFramebuffers[1]).c_str(), 10, posY, Color::Blank, Color::Black);
+            Renderer::DrawString(Utils::Format("Sel: %d", _originalBuffer).c_str(), 10, posY, Color::Blank, Color::Black);
+        }
+        else
+        {
+            Renderer::SetTarget(BOTTOM);
+            Renderer::DrawString(Utils::Format("FB0: %08X", _leftFramebuffers[0]).c_str(), 10, posY, Color::Blank, Color::Black);
+            Renderer::DrawString(Utils::Format("FB1: %08X", _leftFramebuffers[1]).c_str(), 10, posY, Color::Blank, Color::Black);
+            Renderer::DrawString(Utils::Format("Sel: %d", _originalBuffer).c_str(), 10, posY, Color::Blank, Color::Black);
+        }
     }
 
     bool    ScreenImpl::IsTopScreen(void)
@@ -225,12 +249,24 @@ namespace CTRPluginFramework
         REG(_FillColor) = 0;
     }
 
+    extern u32     topFB;
+    extern u32     botFB;
+
     void    ScreenImpl::Clean(void)
     {
-        GSPGPU_RestoreVramSysArea();
-        GSPGPU_SaveVramSysArea();
-        Top->Acquire();
-        Bottom->Acquire();
+        // Invalidate and restore vram
+        GSPGPU_InvalidateDataCache((void *)0x1F000000, 0x00600000);
+        Top->Invalidate();
+        Bottom->Invalidate();
+        while (R_FAILED(GSPGPU_RestoreVramSysArea()));
+        gspWaitForVBlank();
+
+        // Flush and save vram
+        Top->Flush();
+        Bottom->Flush();
+        GSPGPU_FlushDataCache((void *)0x1F000000, 0x00600000);
+        while (R_FAILED(GSPGPU_SaveVramSysArea()));
+        gspWaitForVBlank();
     }
 
     /*

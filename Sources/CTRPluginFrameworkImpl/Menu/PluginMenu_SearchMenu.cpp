@@ -12,12 +12,13 @@
 
 namespace CTRPluginFramework
 {
-	SearchMenu::SearchMenu(Search* &curSearch, HexEditor &hexEditor, bool &inEditor, bool &useHexInput, FreeCheats &freeCheats) :
-	_currentSearch(curSearch),
-	_hexEditor(hexEditor),
-    _freeCheats(freeCheats),
-	_inEditor(inEditor),
-	_useHexInput(useHexInput)
+    SearchMenu::SearchMenu(Search* &curSearch, HexEditor &hexEditor, bool &inEditor, bool &useHexInput, FreeCheats &freeCheats, bool &inFreecheats) :
+        _currentSearch(curSearch),
+        _hexEditor(hexEditor),
+        _freeCheats(freeCheats),
+        _inEditor(inEditor),
+        _inFreecheats(inFreecheats),
+	    _useHexInput(useHexInput)
     {
         _index = 0;
         _selector = 0;
@@ -484,6 +485,9 @@ namespace CTRPluginFramework
       //  if (type == SearchFlags::U64) _freeCheats.Create(address, *(u64 *)address);
         if (type == SearchFlags::Float) _freeCheats.Create(address, *(float *)address);
       //  if (type == SearchFlags::Double) _freeCheats.Create(address, *(double *)address);
+
+        // Open FreeCheats window
+        _inFreecheats = true;
     }
 
     void    SearchMenu::_Edit(void)
@@ -650,12 +654,19 @@ namespace CTRPluginFramework
         MessageBox(Color::Green << "Info", "Press " FONT_B " to return to the menu when\nyou've done.")();
 
         ScreenImpl::Clean();
-
         while (true)
         {
             Controller::Update();
             if (Controller::IsKeyPressed(Key::B))
                 break;
+            if (Controller::IsKeyPressed(Key::X))
+            {
+                ScreenImpl::Top->SwapBuffer();
+            }
+            if (Controller::IsKeyPressed(Key::Y))
+            {
+                ScreenImpl::Bottom->SwapBuffer();
+            }
         }
 
         float fade = 0.03f;

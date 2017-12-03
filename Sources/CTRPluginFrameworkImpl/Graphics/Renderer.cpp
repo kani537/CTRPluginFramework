@@ -51,6 +51,8 @@ namespace CTRPluginFramework
                 DrawSysString("\uE058", posX, posY, 320, Color::Blank);
         }
 
+   //     ScreenImpl::Top->Debug();
+   //     ScreenImpl::Bottom->Debug();
         // Draw fps counter
         /*char buffer[20] = {0};
 

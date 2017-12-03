@@ -95,6 +95,10 @@ namespace CTRPluginFramework
 	{
         _isPaused++;
 
+        if (_isPaused == 1)
+            // Wake up gsp event thread
+            svcSignalEvent(gspEvent);
+
         // Lock at game's new frame
         RecursiveLock_Lock(&FrameLock);
 
@@ -106,7 +110,7 @@ namespace CTRPluginFramework
         svcClearEvent(FrameEvent);
 
         // Wake up gsp event thread
-        svcSignalEvent(gspEvent);
+       // svcSignalEvent(gspEvent);
 
 		ScreenImpl::Top->Acquire();
         ScreenImpl::Bottom->Acquire();

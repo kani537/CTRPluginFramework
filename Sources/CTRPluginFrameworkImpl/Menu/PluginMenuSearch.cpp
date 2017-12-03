@@ -10,27 +10,29 @@
 namespace CTRPluginFramework
 {
     PluginMenuSearch::PluginMenuSearch(HexEditor &hexEditor, FreeCheats &freeCheats) :
-    _hexEditor(hexEditor),
-    _searchMenu(_currentSearch, hexEditor, _inEditor, _hexInput, freeCheats),
-   // _closeBtn(*this, nullptr, IntRect(275, 24, 20, 20), Icon::DrawClose),
-    _memoryRegions(150, 45, 130, 15),
-    _startRangeTextBox(85, 65, 66, 15),
-    _endRangeTextBox(214, 65, 66, 15),
-    _searchSize(150, 85, 130, 15),
-    _searchType(150, 105, 130, 15),
-    _compareType(150, 125, 130, 15),
-    _valueTextBox(150, 145, 130, 15),
-    _searchBtn("Search", *this, &PluginMenuSearch::_searchBtn_OnClick, IntRect(35, 195, 80, 15)),
-    _undoBtn("Undo", *this, &PluginMenuSearch::_undoBtn_OnClick, IntRect(120, 195, 80, 15)),
-    _cancelBtn("Cancel", *this, &PluginMenuSearch::_cancelBtn_OnClick, IntRect(120, 195, 80, 15)),
-    _resetBtn("Reset", *this, &PluginMenuSearch::_resetBtn_OnClick, IntRect(205, 195, 80, 15)),
-    _inSearch(false),
-    _firstRegionInit(false),
-    _step(0),
-    _waitForUser(false),
-	_hexInput(false),
-    _inEditor(false),
-    _hexBtn("Hex", *this, nullptr, IntRect(110, 145, 38, 15), nullptr)
+        _hexEditor(hexEditor),
+        _freeCheats(freeCheats),
+        _searchMenu(_currentSearch, hexEditor, _inEditor, _hexInput, freeCheats, _inFreecheats),
+        // _closeBtn(*this, nullptr, IntRect(275, 24, 20, 20), Icon::DrawClose),
+        _memoryRegions(150, 45, 130, 15),
+        _startRangeTextBox(85, 65, 66, 15),
+        _endRangeTextBox(214, 65, 66, 15),
+        _searchSize(150, 85, 130, 15),
+        _searchType(150, 105, 130, 15),
+        _compareType(150, 125, 130, 15),
+        _valueTextBox(150, 145, 130, 15),
+        _searchBtn("Search", *this, &PluginMenuSearch::_searchBtn_OnClick, IntRect(35, 195, 80, 15)),
+        _undoBtn("Undo", *this, &PluginMenuSearch::_undoBtn_OnClick, IntRect(120, 195, 80, 15)),
+        _cancelBtn("Cancel", *this, &PluginMenuSearch::_cancelBtn_OnClick, IntRect(120, 195, 80, 15)),
+        _resetBtn("Reset", *this, &PluginMenuSearch::_resetBtn_OnClick, IntRect(205, 195, 80, 15)),
+        _inSearch(false),
+        _firstRegionInit(false),
+        _step(0),
+        _waitForUser(false),
+        _hexInput(false),
+        _inEditor(false),
+        _inFreecheats(false),
+        _hexBtn("Hex", *this, nullptr, IntRect(110, 145, 38, 15), nullptr)
     {
         _currentSearch = nullptr;
 
@@ -90,6 +92,13 @@ namespace CTRPluginFramework
         {
             if (_hexEditor(eventList))
                 _inEditor = false;
+            return (false);
+        }
+
+        if (_inFreecheats)
+        {
+            if (_freeCheats(eventList))
+                _inFreecheats = false;
             return (false);
         }
 

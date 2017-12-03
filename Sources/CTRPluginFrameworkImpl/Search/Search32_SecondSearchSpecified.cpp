@@ -13,7 +13,7 @@ namespace CTRPluginFramework
             {
             case SearchFlags::Equal:
             {
-                for (Results32 res : data)
+                for (Results32 &res : data)
                 {
                     if (_resultsInPool > _maxResults)
                         break;
@@ -33,7 +33,7 @@ namespace CTRPluginFramework
             }
             case SearchFlags::NotEqual:
             {
-                for (Results32 res : data)
+                for (Results32 &res : data)
                 {
                     if (_resultsInPool > _maxResults)
                         break;
@@ -53,7 +53,7 @@ namespace CTRPluginFramework
             }
             case SearchFlags::GreaterThan:
             {
-                for (Results32 res : data)
+                for (Results32 &res : data)
                 {
                     if (_resultsInPool > _maxResults)
                         break;
@@ -73,7 +73,7 @@ namespace CTRPluginFramework
             }
             case SearchFlags::GreaterOrEqual:
             {
-                for (Results32 res : data)
+                for (Results32 &res : data)
                 {
                     if (_resultsInPool > _maxResults)
                         break;
@@ -93,7 +93,7 @@ namespace CTRPluginFramework
             }
             case SearchFlags::LesserThan:
             {
-                for (Results32 res : data)
+                for (Results32 &res : data)
                 {
                     if (_resultsInPool > _maxResults)
                         break;
@@ -113,7 +113,7 @@ namespace CTRPluginFramework
             }
             case SearchFlags::LesserOrEqual:
             {
-                for (Results32 res : data)
+                for (Results32 &res : data)
                 {
                     if (_resultsInPool > _maxResults)
                         break;
@@ -133,7 +133,7 @@ namespace CTRPluginFramework
             }
             case SearchFlags::DifferentBy:
             {
-                for (Results32 res : data)
+                for (Results32 &res : data)
                 {
                     if (_resultsInPool > _maxResults)
                         break;
@@ -153,7 +153,7 @@ namespace CTRPluginFramework
             }
             case SearchFlags::DifferentByLess:
             {
-                for (Results32 res : data)
+                for (Results32 &res : data)
                 {
                     if (_resultsInPool > _maxResults)
                         break;
@@ -173,7 +173,7 @@ namespace CTRPluginFramework
             }
             case SearchFlags::DifferentByMore:
             {
-                for (Results32 res : data)
+                for (Results32 &res : data)
                 {
                     if (_resultsInPool > _maxResults)
                         break;
@@ -200,7 +200,7 @@ namespace CTRPluginFramework
             {
             case SearchFlags::Equal:
             {
-                for (Results32 res : data)
+                for (Results32 &res : data)
                 {
                     u8 newValue = *(u8 *)res.address;
                     u8 oldValue = res.value.U8;
@@ -217,7 +217,7 @@ namespace CTRPluginFramework
             }
             case SearchFlags::NotEqual:
             {
-                for (Results32 res : data)
+                for (Results32 &res : data)
                 {
                     u8 newValue = *(u8 *)res.address;
                     u8 oldValue = res.value.U8;
@@ -234,7 +234,7 @@ namespace CTRPluginFramework
             }
             case SearchFlags::GreaterThan:
             {
-                for (Results32 res : data)
+                for (Results32 &res : data)
                 {
                     u8 newValue = *(u8 *)res.address;
                     u8 oldValue = res.value.U8;
@@ -251,7 +251,7 @@ namespace CTRPluginFramework
             }
             case SearchFlags::GreaterOrEqual:
             {
-                for (Results32 res : data)
+                for (Results32 &res : data)
                 {
                     u8 newValue = *(u8 *)res.address;
                     u8 oldValue = res.value.U8;
@@ -268,7 +268,7 @@ namespace CTRPluginFramework
             }
             case SearchFlags::LesserThan:
             {
-                for (Results32 res : data)
+                for (Results32 &res : data)
                 {
                     u8 newValue = *(u8 *)res.address;
                     u8 oldValue = res.value.U8;
@@ -285,7 +285,7 @@ namespace CTRPluginFramework
             }
             case SearchFlags::LesserOrEqual:
             {
-                for (Results32 res : data)
+                for (Results32 &res : data)
                 {
                     u8 newValue = *(u8 *)res.address;
                     u8 oldValue = res.value.U8;
@@ -302,7 +302,7 @@ namespace CTRPluginFramework
             }
             case SearchFlags::DifferentBy:
             {
-                for (Results32 res : data)
+                for (Results32 &res : data)
                 {
                     u8 newValue = *(u8 *)res.address;
                     u8 oldValue = res.value.U8;
@@ -319,7 +319,7 @@ namespace CTRPluginFramework
             }
             case SearchFlags::DifferentByLess:
             {
-                for (Results32 res : data)
+                for (Results32 &res : data)
                 {
                     u8 newValue = *(u8 *)res.address;
                     u8 oldValue = res.value.U8;
@@ -336,7 +336,7 @@ namespace CTRPluginFramework
             }
             case SearchFlags::DifferentByMore:
             {
-                for (Results32 res : data)
+                for (Results32 &res : data)
                 {
                     u8 newValue = *(u8 *)res.address;
                     u8 oldValue = res.value.U8;
@@ -367,7 +367,7 @@ namespace CTRPluginFramework
             {
             case SearchFlags::Equal:
             {
-                for (Results32 res : data)
+                for (Results32 &res : data)
                 {
                     if (_resultsInPool > _maxResults)
                         break;
@@ -387,7 +387,7 @@ namespace CTRPluginFramework
             }
             case SearchFlags::NotEqual:
             {
-                for (Results32 res : data)
+                for (Results32 &res : data)
                 {
                     if (_resultsInPool > _maxResults)
                         break;
@@ -407,7 +407,7 @@ namespace CTRPluginFramework
             }
             case SearchFlags::GreaterThan:
             {
-                for (Results32 res : data)
+                for (Results32 &res : data)
                 {
                     if (_resultsInPool > _maxResults)
                         break;
@@ -427,7 +427,7 @@ namespace CTRPluginFramework
             }
             case SearchFlags::GreaterOrEqual:
             {
-                for (Results32 res : data)
+                for (Results32 &res : data)
                 {
                     if (_resultsInPool > _maxResults)
                         break;
@@ -447,7 +447,7 @@ namespace CTRPluginFramework
             }
             case SearchFlags::LesserThan:
             {
-                for (Results32 res : data)
+                for (Results32 &res : data)
                 {
                     if (_resultsInPool > _maxResults)
                         break;
@@ -467,7 +467,7 @@ namespace CTRPluginFramework
             }
             case SearchFlags::LesserOrEqual:
             {
-                for (Results32 res : data)
+                for (Results32 &res : data)
                 {
                     if (_resultsInPool > _maxResults)
                         break;
@@ -487,7 +487,7 @@ namespace CTRPluginFramework
             }
             case SearchFlags::DifferentBy:
             {
-                for (Results32 res : data)
+                for (Results32 &res : data)
                 {
                     if (_resultsInPool > _maxResults)
                         break;
@@ -507,7 +507,7 @@ namespace CTRPluginFramework
             }
             case SearchFlags::DifferentByLess:
             {
-                for (Results32 res : data)
+                for (Results32 &res : data)
                 {
                     if (_resultsInPool > _maxResults)
                         break;
@@ -527,7 +527,7 @@ namespace CTRPluginFramework
             }
             case SearchFlags::DifferentByMore:
             {
-                for (Results32 res : data)
+                for (Results32 &res : data)
                 {
                     if (_resultsInPool > _maxResults)
                         break;
@@ -555,7 +555,7 @@ namespace CTRPluginFramework
             {
             case SearchFlags::Equal:
             {
-                for (Results32 res : data)
+                for (Results32 &res : data)
                 {
                     if (_resultsInPool > _maxResults)
                         break;
@@ -575,7 +575,7 @@ namespace CTRPluginFramework
             }
             case SearchFlags::NotEqual:
             {
-                for (Results32 res : data)
+                for (Results32 &res : data)
                 {
                     if (_resultsInPool > _maxResults)
                         break;
@@ -595,7 +595,7 @@ namespace CTRPluginFramework
             }
             case SearchFlags::GreaterThan:
             {
-                for (Results32 res : data)
+                for (Results32 &res : data)
                 {
                     if (_resultsInPool > _maxResults)
                         break;
@@ -615,7 +615,7 @@ namespace CTRPluginFramework
             }
             case SearchFlags::GreaterOrEqual:
             {
-                for (Results32 res : data)
+                for (Results32 &res : data)
                 {
                     if (_resultsInPool > _maxResults)
                         break;
@@ -635,7 +635,7 @@ namespace CTRPluginFramework
             }
             case SearchFlags::LesserThan:
             {
-                for (Results32 res : data)
+                for (Results32 &res : data)
                 {
                     if (_resultsInPool > _maxResults)
                         break;
@@ -655,7 +655,7 @@ namespace CTRPluginFramework
             }
             case SearchFlags::LesserOrEqual:
             {
-                for (Results32 res : data)
+                for (Results32 &res : data)
                 {
                     if (_resultsInPool > _maxResults)
                         break;
@@ -675,7 +675,7 @@ namespace CTRPluginFramework
             }
             case SearchFlags::DifferentBy:
             {
-                for (Results32 res : data)
+                for (Results32 &res : data)
                 {
                     if (_resultsInPool > _maxResults)
                         break;
@@ -695,7 +695,7 @@ namespace CTRPluginFramework
             }
             case SearchFlags::DifferentByLess:
             {
-                for (Results32 res : data)
+                for (Results32 &res : data)
                 {
                     if (_resultsInPool > _maxResults)
                         break;
@@ -715,7 +715,7 @@ namespace CTRPluginFramework
             }
             case SearchFlags::DifferentByMore:
             {
-                for (Results32 res : data)
+                for (Results32 &res : data)
                 {
                     if (_resultsInPool > _maxResults)
                         break;
@@ -748,7 +748,7 @@ namespace CTRPluginFramework
             {
             case SearchFlags::Equal:
             {
-                for (Results32 res : data)
+                for (Results32 &res : data)
                 {
                     if (_resultsInPool > _maxResults)
                         break;
@@ -768,7 +768,7 @@ namespace CTRPluginFramework
             }
             case SearchFlags::NotEqual:
             {
-                for (Results32 res : data)
+                for (Results32 &res : data)
                 {
                     if (_resultsInPool > _maxResults)
                         break;
@@ -788,7 +788,7 @@ namespace CTRPluginFramework
             }
             case SearchFlags::GreaterThan:
             {
-                for (Results32 res : data)
+                for (Results32 &res : data)
                 {
                     if (_resultsInPool > _maxResults)
                         break;
@@ -808,7 +808,7 @@ namespace CTRPluginFramework
             }
             case SearchFlags::GreaterOrEqual:
             {
-                for (Results32 res : data)
+                for (Results32 &res : data)
                 {
                     if (_resultsInPool > _maxResults)
                         break;
@@ -828,7 +828,7 @@ namespace CTRPluginFramework
             }
             case SearchFlags::LesserThan:
             {
-                for (Results32 res : data)
+                for (Results32 &res : data)
                 {
                     if (_resultsInPool > _maxResults)
                         break;
@@ -848,7 +848,7 @@ namespace CTRPluginFramework
             }
             case SearchFlags::LesserOrEqual:
             {
-                for (Results32 res : data)
+                for (Results32 &res : data)
                 {
                     if (_resultsInPool > _maxResults)
                         break;
@@ -868,7 +868,7 @@ namespace CTRPluginFramework
             }
             case SearchFlags::DifferentBy:
             {
-                for (Results32 res : data)
+                for (Results32 &res : data)
                 {
                     if (_resultsInPool > _maxResults)
                         break;
@@ -888,7 +888,7 @@ namespace CTRPluginFramework
             }
             case SearchFlags::DifferentByLess:
             {
-                for (Results32 res : data)
+                for (Results32 &res : data)
                 {
                     u32 newValue = *(u32 *)res.address;
                     u32 oldValue = res.value.U32;
@@ -905,7 +905,7 @@ namespace CTRPluginFramework
             }
             case SearchFlags::DifferentByMore:
             {
-                for (Results32 res : data)
+                for (Results32 &res : data)
                 {
                     if (_resultsInPool > _maxResults)
                         break;
@@ -933,7 +933,7 @@ namespace CTRPluginFramework
             {
             case SearchFlags::Equal:
             {
-                for (Results32 res : data)
+                for (Results32 &res : data)
                 {
                     if (_resultsInPool > _maxResults)
                         break;
@@ -954,7 +954,7 @@ namespace CTRPluginFramework
             }
             case SearchFlags::NotEqual:
             {
-                for (Results32 res : data)
+                for (Results32 &res : data)
                 {
                     if (_resultsInPool > _maxResults)
                         break;
@@ -974,7 +974,7 @@ namespace CTRPluginFramework
             }
             case SearchFlags::GreaterThan:
             {
-                for (Results32 res : data)
+                for (Results32 &res : data)
                 {
                     if (_resultsInPool > _maxResults)
                         break;
@@ -994,7 +994,7 @@ namespace CTRPluginFramework
             }
             case SearchFlags::GreaterOrEqual:
             {
-                for (Results32 res : data)
+                for (Results32 &res : data)
                 {
                     if (_resultsInPool > _maxResults)
                         break;
@@ -1014,7 +1014,7 @@ namespace CTRPluginFramework
             }
             case SearchFlags::LesserThan:
             {
-                for (Results32 res : data)
+                for (Results32 &res : data)
                 {
                     if (_resultsInPool > _maxResults)
                         break;
@@ -1034,7 +1034,7 @@ namespace CTRPluginFramework
             }
             case SearchFlags::LesserOrEqual:
             {
-                for (Results32 res : data)
+                for (Results32 &res : data)
                 {
                     if (_resultsInPool > _maxResults)
                         break;
@@ -1054,7 +1054,7 @@ namespace CTRPluginFramework
             }
             case SearchFlags::DifferentBy:
             {
-                for (Results32 res : data)
+                for (Results32 &res : data)
                 {
                     if (_resultsInPool > _maxResults)
                         break;
@@ -1074,7 +1074,7 @@ namespace CTRPluginFramework
             }
             case SearchFlags::DifferentByLess:
             {
-                for (Results32 res : data)
+                for (Results32 &res : data)
                 {
                     if (_resultsInPool > _maxResults)
                         break;
@@ -1094,7 +1094,7 @@ namespace CTRPluginFramework
             }
             case SearchFlags::DifferentByMore:
             {
-                for (Results32 res : data)
+                for (Results32 &res : data)
                 {
                     if (_resultsInPool > _maxResults)
                         break;
@@ -1127,7 +1127,7 @@ namespace CTRPluginFramework
             {
             case SearchFlags::Equal:
             {
-                for (Results32 res : data)
+                for (Results32 &res : data)
                 {
                     if (_resultsInPool > _maxResults)
                         break;
@@ -1149,7 +1149,7 @@ namespace CTRPluginFramework
             }
             case SearchFlags::NotEqual:
             {
-                for (Results32 res : data)
+                for (Results32 &res : data)
                 {
                     if (_resultsInPool > _maxResults)
                         break;
@@ -1171,7 +1171,7 @@ namespace CTRPluginFramework
             }
             case SearchFlags::GreaterThan:
             {
-                for (Results32 res : data)
+                for (Results32 &res : data)
                 {
                     if (_resultsInPool > _maxResults)
                         break;
@@ -1193,7 +1193,7 @@ namespace CTRPluginFramework
             }
             case SearchFlags::GreaterOrEqual:
             {
-                for (Results32 res : data)
+                for (Results32 &res : data)
                 {
                     if (_resultsInPool > _maxResults)
                         break;
@@ -1215,7 +1215,7 @@ namespace CTRPluginFramework
             }
             case SearchFlags::LesserThan:
             {
-                for (Results32 res : data)
+                for (Results32 &res : data)
                 {
                     if (_resultsInPool > _maxResults)
                         break;
@@ -1237,7 +1237,7 @@ namespace CTRPluginFramework
             }
             case SearchFlags::LesserOrEqual:
             {
-                for (Results32 res : data)
+                for (Results32 &res : data)
                 {
                     if (_resultsInPool > _maxResults)
                         break;
@@ -1259,7 +1259,7 @@ namespace CTRPluginFramework
             }
             case SearchFlags::DifferentBy:
             {
-                for (Results32 res : data)
+                for (Results32 &res : data)
                 {
                     if (_resultsInPool > _maxResults)
                         break;
@@ -1281,7 +1281,7 @@ namespace CTRPluginFramework
             }
             case SearchFlags::DifferentByLess:
             {
-                for (Results32 res : data)
+                for (Results32 &res : data)
                 {
                     if (_resultsInPool > _maxResults)
                         break;
@@ -1303,7 +1303,7 @@ namespace CTRPluginFramework
             }
             case SearchFlags::DifferentByMore:
             {
-                for (Results32 res : data)
+                for (Results32 &res : data)
                 {
                     if (_resultsInPool > _maxResults)
                         break;
@@ -1333,7 +1333,7 @@ namespace CTRPluginFramework
             {
             case SearchFlags::Equal:
             {
-                for (Results32 res : data)
+                for (Results32 &res : data)
                 {
                     if (_resultsInPool > _maxResults)
                         break;
@@ -1355,7 +1355,7 @@ namespace CTRPluginFramework
             }
             case SearchFlags::NotEqual:
             {
-                for (Results32 res : data)
+                for (Results32 &res : data)
                 {
                     if (_resultsInPool > _maxResults)
                         break;
@@ -1377,7 +1377,7 @@ namespace CTRPluginFramework
             }
             case SearchFlags::GreaterThan:
             {
-                for (Results32 res : data)
+                for (Results32 &res : data)
                 {
                     if (_resultsInPool > _maxResults)
                         break;
@@ -1399,7 +1399,7 @@ namespace CTRPluginFramework
             }
             case SearchFlags::GreaterOrEqual:
             {
-                for (Results32 res : data)
+                for (Results32 &res : data)
                 {
                     if (_resultsInPool > _maxResults)
                         break;
@@ -1421,7 +1421,7 @@ namespace CTRPluginFramework
             }
             case SearchFlags::LesserThan:
             {
-                for (Results32 res : data)
+                for (Results32 &res : data)
                 {
                     if (_resultsInPool > _maxResults)
                         break;
@@ -1443,7 +1443,7 @@ namespace CTRPluginFramework
             }
             case SearchFlags::LesserOrEqual:
             {
-                for (Results32 res : data)
+                for (Results32 &res : data)
                 {
                     if (_resultsInPool > _maxResults)
                         break;
@@ -1465,7 +1465,7 @@ namespace CTRPluginFramework
             }
             case SearchFlags::DifferentBy:
             {
-                for (Results32 res : data)
+                for (Results32 &res : data)
                 {
                     if (_resultsInPool > _maxResults)
                         break;
@@ -1487,7 +1487,7 @@ namespace CTRPluginFramework
             }
             case SearchFlags::DifferentByLess:
             {
-                for (Results32 res : data)
+                for (Results32 &res : data)
                 {
                     if (_resultsInPool > _maxResults)
                         break;
@@ -1509,7 +1509,7 @@ namespace CTRPluginFramework
             }
             case SearchFlags::DifferentByMore:
             {
-                for (Results32 res : data)
+                for (Results32 &res : data)
                 {
                     if (_resultsInPool > _maxResults)
                         break;

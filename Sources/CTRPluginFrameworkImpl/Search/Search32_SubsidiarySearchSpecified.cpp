@@ -2,7 +2,7 @@
 
 namespace CTRPluginFramework
 {
-    void    Search32::SubsidiarySearchSpecifiedU8(Storage<Results32WithOld>& data, SearchFlags compare, Results32WithOld* result)
+    void    Search32::SubsidiarySearchSpecifiedU8(Storage<Results32WithOld> &data, SearchFlags compare, Results32WithOld *result)
     {
         u8 checkValue = _checkValue.U8;
 
@@ -10,7 +10,7 @@ namespace CTRPluginFramework
         {
             case SearchFlags::Equal:
             {
-                for (const Results32WithOld& res : data)
+                for (const Results32WithOld &res : data)
                 {
                     if (_resultsInPool > _maxResults)
                         break;

@@ -95,9 +95,9 @@ Result gspInitEventHandler(Handle _gspEvent, vu8* _gspSharedMem, u8 gspThreadId)
 {
 	// Initialize events
 	int i;
-	//for (i = 0; i < GSPGPU_EVENT_MAX; i ++)
-		LightEvent_Init(&gspEvents[2], RESET_STICKY);
-        LightEvent_Init(&gspEvents[3], RESET_STICKY);
+	for (i = 0; i < GSPGPU_EVENT_MAX; i ++)
+		LightEvent_Init(&gspEvents[i], RESET_STICKY);
+       // LightEvent_Init(&gspEvents[3], RESET_STICKY);
 
 	// Start event thread
 	gspEvent = _gspEvent;
@@ -206,7 +206,7 @@ void gspEventThreadMain(u32 arg)
 			if (curEvt == -1)
 				break;
 
-			if (curEvt == 2 || curEvt == 3 )// < GSPGPU_EVENT_MAX)
+			if (curEvt < GSPGPU_EVENT_MAX) //== 2 || curEvt == 3 )//
 			{
 				LightEvent_Signal(&gspEvents[curEvt]);
 				gspEventCounts[curEvt]++;

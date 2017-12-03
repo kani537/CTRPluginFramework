@@ -27,7 +27,7 @@ namespace CTRPluginFramework
         using EventList = std::vector<Event>;
     public:
 
-        SearchMenu(Search* &curSearch, HexEditor &hexEditor, bool &inEditor, bool &useHexInput, FreeCheats &freeCheats);
+        SearchMenu(Search* &curSearch, HexEditor &hexEditor, bool &inEditor, bool &useHexInput, FreeCheats &freeCheats, bool &inFreecheat);
         ~SearchMenu(){};
 
         bool    ProcessEvent(EventList &eventList, Time &delta);
@@ -50,6 +50,7 @@ namespace CTRPluginFramework
         bool                        _action;
         bool                        _alreadyExported;
         bool                        &_inEditor;
+        bool                        &_inFreecheats;
 		bool						&_useHexInput;
         Clock                       _buttonFade;
         File                        _export;

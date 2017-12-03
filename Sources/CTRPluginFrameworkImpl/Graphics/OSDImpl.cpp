@@ -150,10 +150,14 @@ namespace CTRPluginFramework
 
         if (ProcessImpl::_isPaused && !FramesToPlay)
         {
-            GSPGPU_SaveVramSysArea();
+            GSPGPU_FlushDataCache((void *)0x1F000000, 0x00600000);
+            while (R_FAILED(GSPGPU_SaveVramSysArea()));
+            gspWaitForVBlank();
             svcSignalEvent(ProcessImpl::FrameEvent);
             RecursiveLock_Lock(&ProcessImpl::FrameLock);
+            GSPGPU_InvalidateDataCache((void *)0x1F000000, 0x00600000);
             GSPGPU_RestoreVramSysArea();
+            GSPGPU_FlushDataCache((void *)0x1F000000, 0x00600000);
             RecursiveLock_Unlock(&ProcessImpl::FrameLock);
         }
 

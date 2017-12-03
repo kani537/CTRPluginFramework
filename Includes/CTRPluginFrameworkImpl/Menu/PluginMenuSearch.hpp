@@ -47,9 +47,11 @@ namespace CTRPluginFramework
         std::list<Search *>                 _searchHistory;
         Search                              *_currentSearch;
         HexEditor                           &_hexEditor;
+        FreeCheats                          &_freeCheats;
 
         bool                                _inSearch;
         bool                                _inEditor;
+        bool                                _inFreecheats;
         bool                                _firstRegionInit;
         bool                                _waitForUser;
 		bool								_hexInput;
