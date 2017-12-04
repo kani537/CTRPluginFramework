@@ -32,10 +32,10 @@ namespace CTRPluginFramework
 
     void        Renderer::EndFrame(bool copy)
     {
-        static IntRect                  background(20, 20, 280, 200);
+        static const IntRect    &background = Window::BottomWindow.GetRect(); // 20, 20, 280, 200);
         //static Color                    black;
-        static Clock                    fpsCounter;
-        static float                    second = Seconds(1.f).AsSeconds();
+        //static Clock                    fpsCounter;
+        //static float                    second = Seconds(1.f).AsSeconds();
         
         bool isTouchDown = Touch::IsDown();
         IntVector touchPos(Touch::GetPosition());

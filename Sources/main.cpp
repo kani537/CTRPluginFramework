@@ -73,7 +73,8 @@ namespace CTRPluginFramework
     void    LineReadTest(MenuEntry *entry);
     int     main(void)
     {
-        Directory::ChangeWorkingDirectory("/plugin/game/");
+        if (!System::IsLoaderNTR())
+            Directory::ChangeWorkingDirectory(Utils::Format("/luma/plugins/%016llX/", Process::GetTitleID()));
         //Sleep(Seconds(5.f));
         PluginMenu  *m = new PluginMenu("Action Replay Test", 0, 0, 1);
         PluginMenu  &menu = *m;

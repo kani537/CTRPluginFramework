@@ -41,11 +41,21 @@ SOURCES 	:= 	Sources \
 				Sources\ctrulib\util\utf \
 				Sources\ctrulib\util\rbtree \
 				Sources\NTR
+
+TEMPLATE 		:= 	\c\Users\Nanquitas\Desktop\github\CTRPluginFramework_BlankTemplate\CTRPluginFramework
+TEMPLATE_DIR 	:= Includes\CTRPluginFramework
+TEMPLATE_FILES 	:= 	libCTRPluginFramework.a \
+					CTRPluginFramework.hpp \
+					3DS.h \
+					csvc.h \
+					Hook.hpp \
+					types.h \
+					Unicode.h
+
 IP			:=  5
 FTP_HOST 	:=	192.168.1.
 FTP_PORT	:=	"5000"
 FTP_PATH	:=	"0004000000033600/" #Zelda OOT
-
 
 #---------------------------------------------------------------------------------
 # options for code generation
@@ -75,6 +85,7 @@ ifneq ($(BUILD),$(notdir $(CURDIR)))
 #---------------------------------------------------------------------------------
 
 export OUTPUT	:=	$(CURDIR)/$(TARGET)
+export LIBOUT	:=  $(CURDIR)/lib$(TARGET).a
 export TOPDIR	:=	$(CURDIR)
 
 export VPATH	:=	$(foreach dir,$(SOURCES),$(CURDIR)/$(dir)) \
@@ -122,6 +133,7 @@ ACNL:
 	make send FTP_PATH="0004000000086400/"
 FL:
 	make send FTP_PATH="0004000000113100/"
+
 #---------------------------------------------------------------------------------
 
 else
@@ -134,10 +146,8 @@ DEPENDS	:=	$(OFILES:.o=.d)
 EXCLUDE := main.o cheats.o ActionReplayTest.o OSDManager.o PointerTesting.o Speedometer.o
 
 
-#$(OUTPUT).a	:	$(filter-out $(EXCLUDE), $(OFILES))
-$(OUTPUT).plg : $(OUTPUT).elf
-
-$(OUTPUT).elf : $(OFILES)
+$(OUTPUT).plg : $(OFILES) $(LIBOUT)
+$(LIBOUT):	$(filter-out $(EXCLUDE), $(OFILES))
 
 #---------------------------------------------------------------------------------
 # you need a rule like this for each extension you use as binary data

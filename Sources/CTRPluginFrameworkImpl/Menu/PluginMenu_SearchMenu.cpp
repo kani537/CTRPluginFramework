@@ -627,14 +627,14 @@ namespace CTRPluginFramework
                 _OpenExportFile();
 
             _export.WriteLine("");
-            time_t t = time(NULL);
+           /* time_t t = time(NULL);
             char *ct = ctime(&t);
 
             ct[strlen(ct)] = '\0';
             std::string text = ct;
 
             text += " :\r\n";
-            _export.WriteLine(text);
+            _export.WriteLine(text);*/
             _alreadyExported = true;
         }
 
@@ -659,14 +659,6 @@ namespace CTRPluginFramework
             Controller::Update();
             if (Controller::IsKeyPressed(Key::B))
                 break;
-            if (Controller::IsKeyPressed(Key::X))
-            {
-                ScreenImpl::Top->SwapBuffer();
-            }
-            if (Controller::IsKeyPressed(Key::Y))
-            {
-                ScreenImpl::Bottom->SwapBuffer();
-            }
         }
 
         float fade = 0.03f;

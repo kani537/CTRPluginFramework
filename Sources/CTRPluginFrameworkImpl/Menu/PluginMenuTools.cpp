@@ -181,7 +181,7 @@ namespace CTRPluginFramework
             }
 
             // If hook is not initialized
-            if (!g_FsTryOpenFileHook.isInitialized)
+            if (!g_FsTryOpenFileHook.flags.isInitialized)
             {
                 // Hook on OpenFile
                 u32 FsTryOpenFileAddress = 0;
@@ -233,7 +233,7 @@ namespace CTRPluginFramework
                 g_buffer2 = new char[256];
 
             // If hook is not initialized
-            if (!g_FsTryOpenFileHook.isInitialized)
+            if (!g_FsTryOpenFileHook.flags.isInitialized)
             {
                 // Hook on OpenFile
                 u32 FsTryOpenFileAddress = 0;
@@ -515,7 +515,7 @@ namespace CTRPluginFramework
 
         // Draw Framework version
         {
-            static const char *version = "CTRPluginFramework Beta V.0.3.0";
+            static const char *version = "CTRPluginFramework Beta V.0.3.1";
             static const u32 xpos = (320 - Renderer::LinuxFontSize(version)) / 2;
 
             int posY = 205;
