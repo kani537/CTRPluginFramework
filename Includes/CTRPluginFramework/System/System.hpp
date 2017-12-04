@@ -3,7 +3,7 @@
 
 namespace CTRPluginFramework
 {    
-    enum class Language
+    enum class LanguageId
     {
         Japanese = 0,
         English,
@@ -33,7 +33,7 @@ namespace CTRPluginFramework
          * \brief Get the system's language (user defined)
          * \return The language of the system
          */
-        static Language     GetSystemLanguage(void);
+        static LanguageId   GetSystemLanguage(void);
 
         /**
          * \brief Get if the 3DS is connected to Internet
@@ -50,7 +50,7 @@ namespace CTRPluginFramework
          * \return If the cfw is Luma3DS or not
          */
         static bool         CfwIsLuma3DS(u8 major = 0, u8 minor = 0, u8 revision = 0);
-        
+
         /**
          * \brief Check if the plugin was loaded with NTR or another loader
          * \return True if the loader is NTR

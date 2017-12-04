@@ -113,8 +113,6 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="Includes\3DS.h" />
-    <ClInclude Include="Includes\colors.h" />
-    <ClInclude Include="Includes\common.h" />
     <ClInclude Include="Includes\csvc.h" />
     <ClInclude Include="Includes\CTRPluginFramework.hpp" />
     <ClInclude Include="Includes\CTRPluginFrameworkImpl.hpp" />

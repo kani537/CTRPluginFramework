@@ -363,12 +363,6 @@
     <ClInclude Include="Includes\3DS.h">
       <Filter>Fichiers d%27en-tête</Filter>
     </ClInclude>
-    <ClInclude Include="Includes\colors.h">
-      <Filter>Fichiers d%27en-tête</Filter>
-    </ClInclude>
-    <ClInclude Include="Includes\common.h">
-      <Filter>Fichiers d%27en-tête</Filter>
-    </ClInclude>
     <ClInclude Include="Includes\CTRPluginFramework.hpp">
       <Filter>Fichiers d%27en-tête</Filter>
     </ClInclude>
