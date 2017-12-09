@@ -41,7 +41,7 @@ namespace CTRPluginFramework
             Flags.useSeparatorAfter = false;
             Flags.useStippledLineForBefore = false;
             Flags.useStippledLineForAfter = false;
-            Flags.isVisible = false;
+            Flags.isVisible = true;
             Flags.isStarred = false;
             Flags.noteChanged = false;
         }
