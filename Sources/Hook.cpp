@@ -25,7 +25,6 @@ Hook::Hook(void)
     memset(targetCode, 0, 12);
     memset(jumpCode, 0, 12);
     memset(returnCode, 0, 20);
-
 }
 
 void    Hook::Initialize(u32 addr, u32 callbackAddr, bool savePc)

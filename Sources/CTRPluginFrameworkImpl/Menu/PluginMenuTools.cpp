@@ -252,7 +252,6 @@ namespace CTRPluginFramework
                 {
                     OSD::Notify("Error: couldn't find OpenFile function");
                     return;
-
                 }
             }
 
@@ -263,7 +262,6 @@ namespace CTRPluginFramework
                 OSD::Notify("Error: couldn't open LoadedFiles.txt", Color::Red, Color::Blank);
                 return;
             }
-                
 
             // Enable the hook
             g_FsTryOpenFileHook.Enable();
@@ -286,6 +284,7 @@ namespace CTRPluginFramework
 
         return (msgBox());
     }
+
     static void     Shutdown(void)
     {
         if (ConfirmBeforeProceed("shutdown"))

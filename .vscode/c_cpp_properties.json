@@ -1,0 +1,74 @@
+{
+    "configurations": [
+        {
+            "name": "Mac",
+            "includePath": [
+                "/usr/include",
+                "/usr/local/include",
+                "${workspaceRoot}"
+            ],
+            "defines": [],
+            "intelliSenseMode": "clang-x64",
+            "browse": {
+                "path": [
+                    "/usr/include",
+                    "/usr/local/include",
+                    "${workspaceRoot}"
+                ],
+                "limitSymbolsToIncludedHeaders": true,
+                "databaseFilename": ""
+            },
+            "macFrameworkPath": [
+                "/System/Library/Frameworks",
+                "/Library/Frameworks"
+            ]
+        },
+        {
+            "name": "Linux",
+            "includePath": [
+                "/usr/include",
+                "/usr/local/include",
+                "${workspaceRoot}"
+            ],
+            "defines": [],
+            "intelliSenseMode": "clang-x64",
+            "browse": {
+                "path": [
+                    "/usr/include",
+                    "/usr/local/include",
+                    "${workspaceRoot}"
+                ],
+                "limitSymbolsToIncludedHeaders": true,
+                "databaseFilename": ""
+            }
+        },
+        {
+            "name": "Win32",
+            "includePath": [
+                "${workspaceRoot}",
+                "C:/devkitPro/devkitARM/arm-none-eabi/include",
+                "C:/devkitPro/devkitARM/arm-none-eabi/include/c++/7.1.0",
+                "C:/devkitPro/devkitARM/arm-none-eabi/include/c++/7.1.0/arm-none-eabi",
+                "C:/devkitPro/devkitARM/lib/gcc/arm-none-eabi/7.1.0/include",                
+                "${workspaceRoot}/Includes"
+            ],
+            "defines": [
+                "_DEBUG",
+                "UNICODE"
+            ],
+            "intelliSenseMode": "msvc-x64",
+            "browse": {
+                "path": [
+                    "${workspaceRoot}",
+                    "C:\\devkitPro\\devkitARM\\lib\\gcc\\arm-none-eabi\\7.1.0\\include",
+                    "C:\\devkitPro\\devkitARM\\arm-none-eabi\\include",
+                    "C:\\devkitPro\\devkitARM\\arm-none-eabi\\include\\c++\\7.1.0",
+                    "C:\\devkitPro\\libctru\\include"
+                ],
+                "limitSymbolsToIncludedHeaders": true,
+                "databaseFilename": ""
+            }
+        }
+    ],
+    "version": 3
+}

@@ -1,13 +1,14 @@
+#---------------------------------------------------------------------------------
 .SUFFIXES:
+#---------------------------------------------------------------------------------
 
 ifeq ($(strip $(DEVKITARM)),)
 $(error "Please set DEVKITARM in your environment. export DEVKITARM=<path to>devkitARM")
 endif
 
 TOPDIR ?= $(CURDIR)
-include $(TOPDIR)/3ds_rules
+include $(DEVKITARM)/3ds_rules
 
-LIB 		:=  CTRPluginFramework.a
 TARGET		:= 	$(notdir $(CURDIR))
 BUILD		:= 	Build
 INCLUDES	:= 	Includes \
@@ -15,11 +16,7 @@ INCLUDES	:= 	Includes \
 				Includes\ctrulib\allocator \
 				Includes\ctrulib\gpu \
 				Includes\ctrulib\services \
-				Includes\ctrulib\util \
-				Includes\libntrplg \
-				Includes\libntrplg\ns \
-				C:\devkitPro\devkitARM\arm-none-eabi\include\c++\5.3.0
-LIBDIRS		:= 	$(TOPDIR)\Lib
+				Includes\ctrulib\util
 SOURCES 	:= 	Sources \
 				Sources\CTRPluginFramework \
 				Sources\CTRPluginFramework\Graphics \
@@ -39,18 +36,7 @@ SOURCES 	:= 	Sources \
 				Sources\ctrulib\services \
 				Sources\ctrulib\system \
 				Sources\ctrulib\util\utf \
-				Sources\ctrulib\util\rbtree \
-				Sources\NTR
-
-TEMPLATE 		:= 	\c\Users\Nanquitas\Desktop\github\CTRPluginFramework_BlankTemplate\CTRPluginFramework
-TEMPLATE_DIR 	:= Includes\CTRPluginFramework
-TEMPLATE_FILES 	:= 	libCTRPluginFramework.a \
-					CTRPluginFramework.hpp \
-					3DS.h \
-					csvc.h \
-					Hook.hpp \
-					types.h \
-					Unicode.h
+				Sources\ctrulib\util\rbtree
 
 IP			:=  5
 FTP_HOST 	:=	192.168.1.
@@ -71,11 +57,10 @@ CFLAGS		+=	$(INCLUDE) -DARM11 -D_3DS
 CXXFLAGS	:= $(CFLAGS) -fno-rtti -fno-exceptions -std=gnu++11
 
 ASFLAGS		:= -g $(ARCH)
-LDFLAGS		:= -pie -T $(TOPDIR)/3ds.ld $(ARCH) -O2 -Wl,-Map,$(notdir $*.map),--gc-sections 
-# ,-d,--emit-relocs,--use-blx,--print-gc-sections
-# --gc-sections -Map=$(TARGET).map 
+LDFLAGS		:= -pie -T $(TOPDIR)/3ds.ld $(ARCH) -Os -Wl,-Map,$(notdir $*.map),--gc-sections,--strip-discarded,--strip-debug
 
-#LIBS	:= -lntr -lctr -lg -lsysbase  -lc -lm -lgcc -lgcov
+LIBS 		:= 	-lctru -lm
+LIBDIRS		:= 	$(CTRULIB)
 
 #---------------------------------------------------------------------------------
 # no real need to edit anything past this point unless you need to add additional
@@ -96,18 +81,17 @@ export DEPSDIR	:=	$(CURDIR)/$(BUILD)
 CFILES			:=	$(foreach dir,$(SOURCES),$(notdir $(wildcard $(dir)/*.c)))
 CPPFILES		:=	$(foreach dir,$(SOURCES),$(notdir $(wildcard $(dir)/*.cpp)))
 SFILES			:=	$(foreach dir,$(SOURCES),$(notdir $(wildcard $(dir)/*.s)))
-#	BINFILES	:=	$(foreach dir,$(DATA),$(notdir $(wildcard $(dir)/*.*)))
 
-export LD 		:= $(CXX)
+export LD 		:= 	$(CXX)
 export OFILES	:=	$(CPPFILES:.cpp=.o) $(CFILES:.c=.o) $(SFILES:.s=.o)
 
 export INCLUDE	:=	$(foreach dir,$(INCLUDES),-I$(CURDIR)/$(dir)) \
 					$(foreach dir,$(LIBDIRS),-I$(dir)/include) \
 					-I$(CURDIR)/$(BUILD)
 
-export LIBPATHS	:=	$(foreach dir,$(LIBDIRS),-L $(dir)/lib) -L $(LIBDIRS)
+export LIBPATHS	:=	$(foreach dir,$(LIBDIRS),-L $(dir)/lib)
 
-.PHONY: $(BUILD) clean all
+.PHONY: $(BUILD) clean re all
 
 #---------------------------------------------------------------------------------
 all: $(BUILD)
@@ -121,9 +105,7 @@ clean:
 	@echo clean ... 
 	@rm -fr $(BUILD) $(TARGET).3dsx $(OUTPUT).smdh $(TARGET).elf
 
-re:
-	@rm $(OUTPUT).plg $(OUTPUT).elf
-	make
+re: clean all
 	
 send:
 	@echo "Sending the plugin over FTP"
@@ -156,6 +138,14 @@ $(LIBOUT):	$(filter-out $(EXCLUDE), $(OFILES))
 #---------------------------------------------------------------------------------
 	@echo $(notdir $<)
 	@$(bin2o)
+
+#---------------------------------------------------------------------------------
+%.plg: %.elf
+#---------------------------------------------------------------------------------
+	@echo creating $(notdir $@)
+	@$(OBJCOPY) -O binary $(OUTPUT).elf $(TOPDIR)/$(notdir $@) -S
+	@echo Done !
+
 
 -include $(DEPENDS)
 
