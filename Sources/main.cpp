@@ -1,9 +1,32 @@
-#include "CTRPluginFramework.hpp"
+#if __INTELLISENSE__
+typedef unsigned int __SIZE_TYPE__;
+typedef unsigned long __PTRDIFF_TYPE__;
+//#undef __cplusplus
+//#define __cplusplus 201103L
+#undef __cpp_exceptions
+#define __cpp_exceptions 0
+#define __attribute__(q)
+#define __extension__
+#define __asm__(expr)
+#define __builtin_labs(a) 0
+#define __builtin_llabs(a) 0
+#define __builtin_fabs(a) 0
+#define __builtin_fabsf(a) 0
+#define __builtin_fabsl(a) 0
+#define __builtin_strcmp(a,b) 0
+#define __builtin_strlen(a) 0
+#define __builtin_memcpy(a,b) 0
+#define __builtin_va_list void*
+#define __builtin_va_start(a,b)
+#endif
+
 #include "Hook.hpp"
 #include "3DS.h"
+#include "CTRPluginFramework.hpp"
 #include "CTRPluginFramework/System/FwkSettings.hpp"
 #include "CTRPluginFrameworkImpl/Graphics/TextBox.hpp"
 #include "CTRPluginFrameworkImpl/Menu/MenuEntryImpl.hpp"
+#include <string>
 
 namespace CTRPluginFramework
 {
@@ -40,7 +63,7 @@ namespace CTRPluginFramework
 
                 entry->Name() = *name + " " + entry->Hotkeys[0].ToString();
             });
-        }            
+        }
 
         return (entry);
     }
@@ -62,7 +85,7 @@ namespace CTRPluginFramework
     int     main(void)
     {
         //Directory::ChangeWorkingDirectory("/3ds/ntr/plugin/" + Utils::Format("%016llX/", Process::GetTitleID()));
-        
+
         static const char *about = "This is a blank plugin to let you use ctrpf on multiple games without being annoyed by builtin cheats.";
         PluginMenu  *m = new PluginMenu("Blank plugin", 0, 3, 0, about);
         PluginMenu  &menu = *m;
@@ -94,7 +117,7 @@ namespace CTRPluginFramework
             kb.Open(check);
         });
         MenuEntry *entry = new MenuEntry("Separator Before");
-        
+
         entry->UseTopSeparator(true);
         entry->CanBeSelected(false);
         menu += entry;

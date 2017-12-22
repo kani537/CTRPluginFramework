@@ -3,6 +3,7 @@
 #include "CTRPluginFrameworkImpl/ActionReplay/ARHandler.hpp"
 #include <algorithm>
 #include <locale>
+#include <string>
 
 namespace CTRPluginFramework
 {
