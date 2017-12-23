@@ -1,8 +1,10 @@
 #include "CTRPluginFrameworkImpl/Menu/PluginMenuExecuteLoop.hpp"
+#include "CTRPluginFrameworkImpl/Menu/MenuEntryFreeCheat.hpp"
+#include "CTRPluginFrameworkImpl/ActionReplay/MenuEntryActionReplay.hpp"
 
 #include <queue>
-#include "CTRPluginFrameworkImpl/Menu/MenuEntryFreeCheat.hpp"
 
+extern CTRPluginFramework::PluginMenuExecuteLoop *g_executerInstance;
 namespace CTRPluginFramework
 {
     using ExecuteIterator = std::vector<MenuEntryImpl *>::iterator;
@@ -12,6 +14,7 @@ namespace CTRPluginFramework
     PluginMenuExecuteLoop::PluginMenuExecuteLoop(void)
     {
         _firstInstance = this;
+        g_executerInstance = this;
     }
 
     void PluginMenuExecuteLoop::WriteEnabledCheatsToFile(Preferences::Header& header, File& file)
@@ -41,11 +44,10 @@ namespace CTRPluginFramework
 
             if (file.Write(uids.data(), sizeof(u32) * uids.size()) != 0)
                 goto error;
-            
+
             written += uids.size();
             count -= nb;
-        }   
-        
+        }
         header.enabledCheatsCount = written;
         header.enabledCheatsOffset = offset;
 
@@ -66,7 +68,7 @@ namespace CTRPluginFramework
 
         // If it's a radio entry
         if (entry->_flags.isRadio && id != -1 && !vector.empty())
-        { 
+        {
             for (int i = 0; i < vector.size(); i++)
             {
                 MenuEntryImpl *e = vector[i];
@@ -112,7 +114,7 @@ namespace CTRPluginFramework
         if (queue.empty())
         {
             entry->_executeIndex = vector.size();
-            vector.push_back(entry);            
+            vector.push_back(entry);
         }
         else
         {
@@ -134,7 +136,7 @@ namespace CTRPluginFramework
             return;
 
 
-        std::vector<MenuEntryImpl *>    &vector = _firstInstance->_executeLoop;        
+        std::vector<MenuEntryImpl *>    &vector = _firstInstance->_executeLoop;
         std::queue<int>                 &queue = _firstInstance->_availableIndex;
 
         int id = entry->_executeIndex;
@@ -150,11 +152,20 @@ namespace CTRPluginFramework
         queue.push(id);
     }
 
+    void    ActionReplay_FetchList(void);
     bool    PluginMenuExecuteLoop::operator()(void)
     {
-        if (_executeLoop.empty())
-            return (false);
+        static bool isBusy = false;
 
+        if (isBusy)
+            return false;
+
+        if (_executeLoop.empty())
+            return false;
+
+        isBusy = true;
+
+      //  ActionReplay_FetchList();
         for (int i = 0; i < _executeLoop.size(); i++)
         {
             MenuEntryImpl *entry = _executeLoop[i];
@@ -164,7 +175,7 @@ namespace CTRPluginFramework
                 // Execute MenuEntryImpl
                 if (entry->IsEntry() && entry->_Execute())
                 {
-                    Remove(entry);                 
+                    Remove(entry);
                 }
                 // Execute FreeCheat
                 else if (entry->IsFreeCheat())
@@ -174,10 +185,17 @@ namespace CTRPluginFramework
                     if (fc->Func != nullptr)
                         fc->Func(fc);
                 }
+                else if (entry->_type == ActionReplay)
+                {
+                    MenuEntryActionReplay *ar = reinterpret_cast<MenuEntryActionReplay *>(entry);
+
+                    if (ar->GameFunc != nullptr)
+                        ar->GameFunc((MenuEntry *)ar); ///< cast only to silence a warning
+                }
             }
         }
 
+        isBusy = false;
         return (false);
     }
 }
-

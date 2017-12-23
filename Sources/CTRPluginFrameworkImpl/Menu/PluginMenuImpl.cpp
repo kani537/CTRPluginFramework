@@ -20,6 +20,7 @@ namespace CTRPluginFramework
     PluginMenuImpl::PluginMenuImpl(std::string &name, std::string &about) :
         _hexEditor(0x00100000),
         _freeCheats(_hexEditor),
+        _actionReplay{ new PluginMenuActionReplay() },
         _home(new PluginMenuHome(name)),
         _search(new PluginMenuSearch(_hexEditor, _freeCheats)),
         _tools(new PluginMenuTools(about, _hexEditor, _freeCheats)),
@@ -42,7 +43,7 @@ namespace CTRPluginFramework
         delete _tools;
         delete _executeLoop;
         delete _guide;
-    }  
+    }
 
     void    PluginMenuImpl::Append(MenuItem *item) const
     {
@@ -127,6 +128,7 @@ namespace CTRPluginFramework
         bool                    shouldClose = false;
 
         // Component
+        PluginMenuActionReplay  &ar = *_actionReplay;
         PluginMenuHome          &home = *_home;
         PluginMenuTools         &tools = *_tools;
         PluginMenuSearch        &search = *_search;
@@ -153,7 +155,7 @@ namespace CTRPluginFramework
             Preferences::AutoLoadCheats = false;
 
         _tools->UpdateSettings();
-        
+
         // Load favorites
         if (Preferences::AutoLoadFavorites)
             Preferences::LoadSavedFavorites();
@@ -173,6 +175,9 @@ namespace CTRPluginFramework
 
         // Restore Search state
         search.RestoreSearchState();
+
+        // Load AR Cheats
+        ar.Initialize();
 
         if (_showMsg)
             OSD::Notify("Plugin ready!", Color::Blank, Color());
@@ -240,7 +245,7 @@ namespace CTRPluginFramework
                     eventList.push_back(event);
                 }
             }
-            
+
             if (_isOpen)
             {
                 if (mode == 0)
@@ -250,7 +255,7 @@ namespace CTRPluginFramework
                 /*
                 else if (mode == 1)
                 { /* Mapper *
-    
+
                 }
                 */
                 else if (mode == 2)
@@ -262,13 +267,12 @@ namespace CTRPluginFramework
                 { /* Search */
                     if (search(eventList, delta))
                         mode = 0;
-                }                
-                /*
-                else if (mode == 4)
-                { /* ActionReplay  *
-    
                 }
-                */
+                else if (mode == 4)
+                { /* ActionReplay  */
+                    if (ar(eventList))
+                        mode = 0;
+                }
                 else if (mode == 5)
                 { /* Tools  */
                     if (tools(eventList, delta))
@@ -281,7 +285,7 @@ namespace CTRPluginFramework
                 if (OnFirstOpening != nullptr)
                 {
                     static u32 count = 0;
-                    
+
                     if (count > 0)
                     {
                         OnFirstOpening();
@@ -344,7 +348,7 @@ namespace CTRPluginFramework
                         }
                     }
                 }
-                
+
                 static KeySequenceImpl konamicode({ DPadUp, DPadUp, DPadDown, DPadDown, DPadLeft, DPadRight, DPadLeft, DPadRight, B, A, B, A });
 
                 if (konamicode())
@@ -480,7 +484,7 @@ namespace CTRPluginFramework
         }
 
         if (uids.size())
-        {                
+        {
             u64 offset = settings.Tell();
 
             if (settings.Write(uids.data(), sizeof(u32) * uids.size()) == 0)
@@ -530,7 +534,7 @@ namespace CTRPluginFramework
             {
                 ExtractHotkeys(hotkeys, reinterpret_cast<MenuFolderImpl*>(item), size);
                 continue;
-            }                
+            }
 
             MenuEntry *entry = item->AsMenuEntryImpl().AsMenuEntry();
 
@@ -564,7 +568,7 @@ namespace CTRPluginFramework
             u32             *buffer;
 
             ExtractHotkeys(hotkeys, root, size);
-            
+
             if (size)
             {
                 buffer = new u32[size];

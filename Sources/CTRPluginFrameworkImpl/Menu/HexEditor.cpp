@@ -9,9 +9,9 @@
 #include "CTRPluginFramework/Utils/Utils.hpp"
 
 namespace CTRPluginFramework
-{   
+{
     #define POS(x, y) (x | y << 16)
-    
+
     // Start pos = (115, 82)
     //
     static const int    _cursorPositions[] =
@@ -122,7 +122,7 @@ namespace CTRPluginFramework
 
                 if (_cursor < 159)
                     _cursor++;
-            }            
+            }
         }
 
         // Render TopScreen
@@ -185,7 +185,7 @@ namespace CTRPluginFramework
                             if ((u32)_memoryAddress > _startRegion)
                                 Goto((u32)_memoryAddress - 8);
                         }
-                    }                        
+                    }
                     break;
                 }
 
@@ -292,7 +292,7 @@ namespace CTRPluginFramework
                     break;
                 }
                 default: break;
-            }  
+            }
         }
     }
 
@@ -383,7 +383,7 @@ namespace CTRPluginFramework
         // Margin between column: 10 px: 330px
         // Margin left / right: 5px : 340px
 
-        // Selector address header 
+        // Selector address header
         Renderer::DrawRect(44, posY, 66, 20, skyblue);
         posY += 5;
         sprintf(buffer, "%08X", cursorAddress);
@@ -426,7 +426,7 @@ namespace CTRPluginFramework
         // Draw array
 
         if (_invalid)
-        {   
+        {
             for (int i = 0; i < 10; i++)
             {
                 int posy = posY;
@@ -493,10 +493,10 @@ namespace CTRPluginFramework
 
                 xPos += 21;
                 if (i % 8 == 3)
-                    xPos += 7;                
-            } 
+                    xPos += 7;
+            }
         }
-        
+
         if (_isModified)
         {
             posY += 5;
@@ -604,7 +604,7 @@ namespace CTRPluginFramework
     void    HexEditor::_BrowseHistory(void)
     {
         _action = true;
-        
+
         if (_history.empty())
         {
             MessageBox("Error\n\nHistory is empty")();
@@ -656,7 +656,7 @@ namespace CTRPluginFramework
             if (updateCursor)
                 _cursor = (addrBak - address) * 2;
 
-            _memoryAddress = (u8 *)address;            
+            _memoryAddress = (u8 *)address;
 
             _invalid = !Process::CopyMemory(_memory, (void *)address, 80);
 
@@ -680,7 +680,7 @@ namespace CTRPluginFramework
         }
         else
             goto invalid;
-        
+
     copy:
         if (!Process::CopyMemory(_memory, (void *)address, 80))
             goto invalid;
@@ -726,7 +726,7 @@ namespace CTRPluginFramework
         const Color     &bgSecondary = Preferences::Settings.BackgroundSecondaryColor;
         const Color     &skyblue = Color::SkyBlue;
         static IntRect  background(93, 95, 213, 50);
-        
+
 
         Renderer::SetTarget(TOP);
 

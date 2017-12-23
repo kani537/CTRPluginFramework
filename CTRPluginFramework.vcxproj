@@ -72,6 +72,10 @@
     <IncludePath>$(SolutionDir)Includes;$(IncludePath)</IncludePath>
     <SourcePath>$(SolutionDir)Sources;$(SourcePath)</SourcePath>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);$(SolutionDir)Includes</IncludePath>
+    <ExcludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);$(MSBuild_ExecutablePath);$(VC_LibraryPath_x86);$(SolutionDir)Sources</ExcludePath>
+  </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
@@ -144,6 +148,7 @@
     <ClInclude Include="Includes\CTRPluginFrameworkImpl\Menu\HotkeysModifier.hpp" />
     <ClInclude Include="Includes\CTRPluginFrameworkImpl\Menu\MenuEntryFreeCheat.hpp" />
     <ClInclude Include="Includes\CTRPluginFrameworkImpl\Menu\MenuEntryTools.hpp" />
+    <ClInclude Include="Includes\CTRPluginFrameworkImpl\Menu\PluginMenuActionReplay.hpp" />
     <ClInclude Include="Includes\CTRPluginFrameworkImpl\Menu\PluginMenuFreeCheats.hpp" />
     <ClInclude Include="Includes\CTRPluginFrameworkImpl\Search\Search.hpp" />
     <ClInclude Include="Includes\CTRPluginFrameworkImpl\Search\Search32.hpp" />
@@ -281,6 +286,7 @@
     <ClCompile Include="Sources\ActionReplayTest.cpp" />
     <ClCompile Include="Sources\cheats.cpp" />
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\ActionReplay\ARCode.cpp" />
+    <ClCompile Include="Sources\CTRPluginFrameworkImpl\ActionReplay\ARCodeLoader.cpp" />
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\ActionReplay\ARHandler.cpp" />
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\arm11kCommands.c" />
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\Graphics\BMPImage.cpp" />
@@ -348,6 +354,7 @@
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\Menu\MenuEntryTools.cpp" />
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\Menu\MenuFolderImpl.cpp" />
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\Menu\MenuItem.cpp" />
+    <ClCompile Include="Sources\CTRPluginFrameworkImpl\Menu\PluginMenuActionReplay.cpp" />
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\Menu\PluginMenuExecuteLoop.cpp" />
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\Menu\PluginMenuFreeCheats.cpp" />
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\Menu\PluginMenuHome.cpp" />

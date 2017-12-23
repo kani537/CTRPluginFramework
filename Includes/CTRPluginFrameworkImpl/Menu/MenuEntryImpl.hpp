@@ -8,9 +8,9 @@
 namespace CTRPluginFramework
 {
     class MenuEntryImpl;
-    
+
     using FuncPointer = void (*)(MenuEntry*);
-    
+
     class MenuEntryImpl : public MenuItem
     {
         struct EntryImplFlags
@@ -31,7 +31,7 @@ namespace CTRPluginFramework
         // Disable the entry
         virtual void    Disable(void);
         // Set the entry as radio, an ID must be provided
-        void    SetRadio(int id);        
+        void    SetRadio(int id);
         // Set an argument for the entry
         void    SetArg(void *arg);
         // Get the argument
@@ -62,7 +62,7 @@ namespace CTRPluginFramework
         int     _executeIndex;
         MenuEntry *_owner;
 
-        
+
         int         _radioId;
         void        *_arg;
     };

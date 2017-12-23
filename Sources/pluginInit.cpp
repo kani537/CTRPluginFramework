@@ -12,6 +12,9 @@ extern "C" void     resumeHook(void);
 extern "C" Result   __sync_init(void);
 extern "C" void     __system_initSyscalls(void);
 extern "C" Thread   g_mainThread;
+extern "C" void     loadCROHooked(void);
+extern "C" u32      croReturn;
+u32 croReturn = 0;
 
 u32     g_resumeHookAddress = 0; ///< Used in arm11k.s for resume hook
 Thread  g_mainThread = nullptr; ///< Used in syscalls.c for __ctru_get_reent
@@ -29,6 +32,42 @@ void abort(void)
 
     CTRPluginFramework::ThreadExit();
     while (true);
+
+}
+
+Hook    g_loadCroHook;
+Hook    g_unloadCroHook;
+CTRPluginFramework::PluginMenuExecuteLoop *g_executerInstance = nullptr;
+
+void    ExecuteLoopOnEvent(void)
+{
+    if (g_executerInstance == nullptr)
+        return;
+    CTRPluginFramework::PluginMenuExecuteLoop &executer = *g_executerInstance;
+
+    executer();
+}
+
+using LoadCROReturn = u32 (*)(u32, u32, u32, u32, u32, u32, u32);
+using UnloadCROReturn = u32(*)(u32, u32, u32, u32, u32, u32, u32);
+static LightLock onLoadCroLock;
+static LightLock onUnloadCroLock;
+
+extern "C" void onLoadCro(void);
+void onLoadCro(void)
+{
+    LightLock_Lock(&onLoadCroLock);
+    ExecuteLoopOnEvent();
+    LightLock_Unlock(&onLoadCroLock);
+    //return ((LoadCROReturn)g_loadCroHook.returnCode)(r0, r1, r2, r3, r4, r5, r6);
+}
+
+u32 UnloadCROHooked(u32 r0, u32 r1, u32 r2, u32 r3, u32 r4, u32 r5, u32 r6)
+{
+    LightLock_Lock(&onUnloadCroLock);
+    ExecuteLoopOnEvent();
+    LightLock_Unlock(&onUnloadCroLock);
+    return ((UnloadCROReturn)g_loadCroHook.returnCode)(r0, r1, r2, r3, r4, r5, r6);
 }
 
 namespace CTRPluginFramework
@@ -44,7 +83,7 @@ namespace CTRPluginFramework
     Handle      g_keepEvent = 0;
     Handle      g_resumeEvent = 0;
     bool        g_keepRunning = true;
-    
+
     extern bool     g_heapError; ///< allocateHeaps.cpp
 
     void    ThreadInit(void *arg);
@@ -69,7 +108,7 @@ namespace CTRPluginFramework
 
         // Initialize newlib's syscalls
         __system_initSyscalls();
-        
+
         // Initialize services
         srvInit();
         acInit();
@@ -133,10 +172,41 @@ namespace CTRPluginFramework
         // Create plugin's main thread
         svcCreateEvent(&g_keepEvent, RESET_ONESHOT);
         g_mainThread = threadCreate(ThreadInit, (void *)threadStack, 0x4000, 0x18, -2, false);
+        {
+            static const std::vector<u32> LoadCroPattern =
+            {
+                0xE92D5FFF, 0xE28D4038, 0xE89407E0, 0xE28D4054,
+                0xE8944800, 0xEE1D4F70, 0xE59FC058, 0xE3A00000,
+                0xE5A4C080, 0xE284C028, 0xE584500C, 0xE584A020
+            };
 
+            static const std::vector<u32> UnloadCroPattern =
+            {
+                0xE92D4070, 0xEE1D4F70, 0xE59F502C, 0xE3A0C000,
+                0xE5A45080, 0xE2846004, 0xE5840014, 0xE59F001C,
+                0xE886100E, 0xE5900000, 0xEF000032, 0xE2001102
+            };
+
+            u32     loadCroAddress = Utils::Search<u32>(0x00100000, Process::GetTextSize(), LoadCroPattern);
+           // u32     unloadCroAddress = Utils::Search<u32>(0x00100000, Process::GetTextSize(), UnloadCroPattern);
+
+            if (loadCroAddress)
+            {
+                LightLock_Init(&onLoadCroLock);
+                g_loadCroHook.Initialize(loadCroAddress, (u32)loadCROHooked);
+                croReturn = loadCroAddress + 8;
+                g_loadCroHook.Enable();
+            }
+            /*if (unloadCroAddress)
+            {
+                LightLock_Init(&onUnloadCroLock);
+                g_unloadCroHook.Initialize(unloadCroAddress, (u32)UnloadCROHooked);
+                g_unloadCroHook.Enable();
+            }*/
+        }
         while (g_keepRunning)
         {
-            svcWaitSynchronization(g_keepEvent, U64_MAX); 
+            svcWaitSynchronization(g_keepEvent, U64_MAX);
             svcClearEvent(g_keepEvent);
 
             while (ProcessImpl::IsPaused())
@@ -147,7 +217,7 @@ namespace CTRPluginFramework
         }
 
         threadJoin(g_mainThread, U64_MAX);
-        
+
     exit:
         svcCloseHandle(g_keepEvent);
        /* if (g_resumeEvent)
@@ -240,7 +310,7 @@ namespace CTRPluginFramework
             acExit();
             amExit();
             fsExit();
-            cfguExit();            
+            cfguExit();
 
             exit(-1);
         }

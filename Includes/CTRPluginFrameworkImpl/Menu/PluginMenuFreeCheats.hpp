@@ -31,7 +31,6 @@ namespace CTRPluginFramework
         bool operator()(EventList &eventList);
 
         static FreeCheats   *GetInstance(void);
-        
 
         static void     DisableAll(void);
         static void     LoadFromFile(Preferences::Header &header, File &file);
@@ -58,7 +57,7 @@ namespace CTRPluginFramework
         CheckBox                            _u32CheckBox;
 
         UIContainer                         _uiContainer;
-        
+
         MenuEntryFreeCheat                  *_selectedFC;
 
         static FreeCheats                   *_instance;

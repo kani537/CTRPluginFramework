@@ -13,6 +13,7 @@
 #include "CTRPluginFrameworkImpl/Preferences.hpp"
 
 #include <vector>
+#include "PluginMenuActionReplay.hpp"
 
 namespace CTRPluginFramework
 {
@@ -29,7 +30,7 @@ namespace CTRPluginFramework
         void    Callback(CallbackPointer callback);
         void    RemoveCallback(CallbackPointer callback);
         int     Run(void);
-        
+
         static void    Close(MenuFolderImpl *menuFolderImpl);
 
         static void LoadEnabledCheatsFromFile(const Preferences::Header &header, File &settings);
@@ -62,7 +63,7 @@ namespace CTRPluginFramework
 
         FuncPointer     OnFirstOpening;
         FuncPointer     OnOpening;
-    private: 
+    private:
 
         static PluginMenuImpl       *_runningInstance;
 
@@ -70,7 +71,8 @@ namespace CTRPluginFramework
         bool                        _wasOpened;
         bool                        _pluginRun;
         bool                        _showMsg;
-        
+
+        PluginMenuActionReplay      *_actionReplay;
         PluginMenuHome              *_home;
         PluginMenuSearch            *_search;
         PluginMenuTools             *_tools;

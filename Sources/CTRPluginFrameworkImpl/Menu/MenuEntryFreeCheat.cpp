@@ -117,7 +117,7 @@ namespace CTRPluginFramework
 
         if (savedCheats.flags >> 8 && Preferences::AutoLoadCheats)
             Enable();
-        
+
         Func = nullptr;
 
         if (Type == Type_e::Bits8) Func = Write8;
@@ -165,10 +165,10 @@ namespace CTRPluginFramework
     void    MenuEntryFreeCheat::ToSavedSearch(Preferences::SavedCheats &savedCheats)
     {
         savedCheats.flags = ((u8)Type) | (IsActivated() << 8);
-        savedCheats.address = Address; 
+        savedCheats.address = Address;
         savedCheats.value = Value.Bits32;
 
         std::memset(savedCheats.name, 0, 50);
-        std::strncpy(savedCheats.name, name.c_str(), 49);      
+        std::strncpy(savedCheats.name, name.c_str(), 49);
     }
 }

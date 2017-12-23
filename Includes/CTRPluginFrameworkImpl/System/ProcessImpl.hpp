@@ -63,7 +63,7 @@ namespace CTRPluginFramework
             static void     Pause(bool useFading);
             // Unpause the current process
             static void     Play(bool useFading);
-            
+
             static bool     IsPaused(void);
             static bool     IsAcquiring(void);
             static void     Initialize(void);
@@ -76,6 +76,8 @@ namespace CTRPluginFramework
             static char         _processName[8];
             static u32          _kProcess;
             static u32          _kProcessState;
+            static u32          mmuTable;
+            static u32          mmuTableSize;
             static KCodeSet     _kCodeSet;
             static Handle       _processHandle;
             static Handle       _mainThreadHandle;
@@ -84,7 +86,7 @@ namespace CTRPluginFramework
             static Handle       FrameEvent;
             static RecursiveLock FrameLock;
         //static u32          _finishedStateDMA;
-            //static u32          *_kProcessHandleTable;          
+            //static u32          *_kProcessHandleTable;
     };
 }
 

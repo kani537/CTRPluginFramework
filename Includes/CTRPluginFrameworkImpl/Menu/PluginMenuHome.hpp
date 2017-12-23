@@ -47,6 +47,7 @@ namespace CTRPluginFramework
         void    _controllerBtn_OnClick(void);
         void    _keyboardBtn_OnClick(void);
 
+        void    _actionReplayBtn_OnClick(void); // 4
         void    _gameGuideBtn_OnClick(void); // 2
         void    _searchBtn_OnClick(void); // 3
         void    _toolsBtn_OnClick(void);  // 5
@@ -55,7 +56,7 @@ namespace CTRPluginFramework
         // Members
         MenuFolderImpl                  *_root;
         MenuFolderImpl                  *_folder;
-        MenuFolderImpl                  *_starred;        
+        MenuFolderImpl                  *_starred;
         MenuFolderImpl                  *_starredConst;
 
         int                         _mode;
@@ -73,13 +74,13 @@ namespace CTRPluginFramework
         TextBox                     _noteTB;
 
         // Mode buttons
-        CheckedButton<PluginMenuHome, void>   _showStarredBtn;        
+        CheckedButton<PluginMenuHome, void>   _showStarredBtn;
         Button<PluginMenuHome, void>          _hidMapperBtn;
-        Button<PluginMenuHome, void>          _gameGuideBtn;        
+        Button<PluginMenuHome, void>          _gameGuideBtn;
         Button<PluginMenuHome, void>          _searchBtn;
-        Button<PluginMenuHome, void>          _arBtn;       
+        Button<PluginMenuHome, void>          _arBtn;
         Button<PluginMenuHome, void>          _toolsBtn;
-        
+
        // IconButton<PluginMenuHome, void>     _closeBtn;
         IconButton<PluginMenuHome, void>     _keyboardBtn;
         IconButton<PluginMenuHome, void>     _controllerBtn;

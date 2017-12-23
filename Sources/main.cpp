@@ -91,90 +91,20 @@ namespace CTRPluginFramework
         PluginMenu  &menu = *m;
 
 #else
-    extern MenuFolder  *g_folder;
-
-    void    LineReadTest(MenuEntry *entry);
     int     main(void)
     {
         if (!System::IsLoaderNTR())
             Directory::ChangeWorkingDirectory(Utils::Format("/luma/plugins/%016llX/", Process::GetTitleID()));
         //Sleep(Seconds(5.f));
-        PluginMenu  *m = new PluginMenu("Action Replay Test", 0, 0, 1);
+        PluginMenu  *m = new PluginMenu("Action Replay Test", 0, 0, 5);
         PluginMenu  &menu = *m;
 
-        menu += new MenuEntry("Load cheats from file", nullptr, LineReadTest);
-
-        // Add global folder Action Replay
-        menu += g_folder;
-
-        menu += new MenuEntry("Clear button test", nullptr,
-        [](MenuEntry *entry)
-        {
-            std::string check;
-
-            Keyboard kb;
-
-            kb.Open(check);
-        });
-        MenuEntry *entry = new MenuEntry("Separator Before");
-
-        entry->UseTopSeparator(true);
-        entry->CanBeSelected(false);
-        menu += entry;
-
-        std::string note = "Use \uE077 while pressing the hotkey(s) to move very fast.\n"
-            << Color::Orange << "Be careful of the loading zone, it might put you out of bound.\n"
-            << ResetColor() << "You can change the hotkey by touching the controller icon on the bottom screen.";
-
-        auto e = [](MenuEntry *entry) {};
-        menu += new MenuFolder("Movement", "",
-        {
-            EntryWithHotkey(new MenuEntry("MoonJump", e, "Press the hotkey to be free of the gravity."), Hotkey(Key::A, "Moonjump")),
-            EntryWithHotkey(new MenuEntry("Fast Move \uE077 +", e, note), Hotkey(Key::L, "Run faster")),
-            new MenuEntry("Epona have max carrots", e),
-            new MenuEntry("Epona have max carrots", e),
-            EntryWithHotkey(new MenuEntry("Epona MoonJump", e, "Press the hotkey to be free of the gravity."), Hotkey(Key::L | Key::A, "Epona Moonjump"))
-        });
-
-        /*TextBox tb("Lol", "mdr", IntRect(10, 10, 10, 10));
-
-        menu += new MenuEntry(Utils::Format("TB: %08X", (u32)&tb));*/
-
-        entry = new MenuEntry("Separator After");
-        entry->UseBottomSeparator(true);
-        menu += entry;
-
-        menu += new MenuEntry("Padding");
-
-        entry = new MenuEntry("Separator Before & After");
-        entry->UseTopSeparator(true);
-        entry->UseBottomSeparator(true);
-        menu += entry;
-
-        menu += new MenuEntry("Padding");
-
-        MenuFolder *f = new MenuFolder("Separator Before & After");
-        f->UseTopSeparator(true);
-        f->UseBottomSeparator(true);
-        menu += f;
-
-        menu += new MenuEntry("Padding");
-
-        entry = new MenuEntry("Separator After");
-        entry->UseBottomSeparator(true);
-        menu += entry;
-
-        entry = new MenuEntry("Separator Before");
-
-        entry->UseTopSeparator(true);
-        menu += entry;
-
 #endif
-        menu += []
+       /* menu += []
         {
-            Sleep(Milliseconds(5));
-        };
-
+            Sleep(Milliseconds(5.f));
+        }; */
+        menu.SyncronizeWithFrame(true);
         // Launch menu and mainloop
         menu.Run();
 

@@ -55,7 +55,7 @@ namespace CTRPluginFramework
         _hidMapperBtn("Mapper", *this, nullptr, IntRect(165, 70, 120, 30), Icon::DrawController),
         _gameGuideBtn("Game Guide", *this, &PluginMenuHome::_gameGuideBtn_OnClick, IntRect(30, 105, 120, 30), Icon::DrawGuide),
         _searchBtn("Search", *this, &PluginMenuHome::_searchBtn_OnClick, IntRect(165, 105, 120, 30), Icon::DrawSearch),
-        _arBtn("ActionReplay", *this, nullptr, IntRect(30, 140, 120, 30)),
+        _arBtn("ActionReplay", *this, &PluginMenuHome::_actionReplayBtn_OnClick, IntRect(30, 140, 120, 30)),
         _toolsBtn("Tools", *this, &PluginMenuHome::_toolsBtn_OnClick, IntRect(165, 140, 120, 30), Icon::DrawTools),
 
         _AddFavoriteBtn(*this, &PluginMenuHome::_StarItem, IntRect(50, 30, 25, 25), Icon::DrawAddFavorite),
@@ -90,7 +90,7 @@ namespace CTRPluginFramework
 
         // Temporary disable unused buttons
         _hidMapperBtn.IsLocked = true;
-        _arBtn.IsLocked = true;
+        //_arBtn.IsLocked = true;
 
         // Decode strings
         g_ctrpfString = new char[19];
@@ -261,7 +261,7 @@ namespace CTRPluginFramework
         {
             step = step > 1 ? step - 1 : 1;
             ScrollUp(selector, folder, step);
-        }            
+        }
     }
 
     static void ScrollDown(int &selector, MenuFolderImpl &folder, int step)
@@ -407,7 +407,7 @@ namespace CTRPluginFramework
                     default: break;
                 }
                 break;
-            } // End Key::Pressed event       
+            } // End Key::Pressed event
             default: break;
         } // End switch
 
@@ -522,7 +522,7 @@ namespace CTRPluginFramework
                 else
                     Renderer::DrawLine(posX, posY - 1, 320, unselected, 1);
             }
-                
+
             // Draw cursor
             if (drawSelector && i == _selector)
                 Renderer::MenuSelector(posX - 5, posY - 3, 330, 20);
@@ -820,9 +820,14 @@ namespace CTRPluginFramework
     {
         MenuFolderImpl *f = _starMode ? _starred : _folder;
         MenuEntryImpl *e = reinterpret_cast<MenuEntryImpl *>((*f)[_selector]);
-        
+
         if (e->MenuFunc != nullptr)
             e->MenuFunc(e->_owner);
+    }
+
+    void PluginMenuHome::_actionReplayBtn_OnClick()
+    {
+        _mode = 4;
     }
 
     void    PluginMenuHome::_gameGuideBtn_OnClick(void)

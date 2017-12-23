@@ -1,11 +1,39 @@
 #include "CTRPluginFrameworkImpl/ActionReplay/ARCode.hpp"
 #include "CTRPluginFramework/Utils/Utils.hpp"
-
 #include <string>
-
 
 namespace CTRPluginFramework
 {
+    namespace ActionReplayPriv
+    {
+        u32     Str2U32(const std::string &str, bool &error)
+        {
+            u32 val = 0;
+            const u8 *hex = (const u8 *)str.c_str();
+
+            error = false;
+            if (str.empty())
+                return (val);
+
+            while (*hex)
+            {
+                u8 byte = (u8)*hex++;
+
+                if (byte >= '0' && byte <= '9') byte = byte - '0';
+                else if (byte >= 'a' && byte <= 'f') byte = byte - 'a' + 10;
+                else if (byte >= 'A' && byte <= 'F') byte = byte - 'A' + 10;
+                else ///< Incorrect char
+                {
+                    error = true;
+                    return (0);
+                }
+
+                val = (val << 4) | (byte & 0xF);
+            }
+            return (val);
+        }
+    }
+
     ARCode::ARCode(const std::string &line, bool &error)
     {
         if (line.size() < 17)
@@ -18,8 +46,12 @@ namespace CTRPluginFramework
         std::string rStr = line.substr(9, 8);
 
 
-        Left = static_cast<u32>(std::stoul(lStr, nullptr, 16));
-        Right = static_cast<u32>(std::stoul(rStr, nullptr, 16));
+        Left = ActionReplayPriv::Str2U32(lStr, error);
+        Right = ActionReplayPriv::Str2U32(rStr, error);
+
+        if (error)
+            return;
+
         Type = Left >> 24;
 
         u8 type = Type >> 4;
@@ -75,5 +107,13 @@ namespace CTRPluginFramework
             return (ret);
         }
         return (Utils::Format("%08X %08X", Type << 24 | Left, Right));
+    }
+
+    void    ARCodeContext::Clear(void)
+    {
+        hasError = false;
+        data.clear();
+        storage[0] = storage[1] = 0;
+        codes.clear();
     }
 }

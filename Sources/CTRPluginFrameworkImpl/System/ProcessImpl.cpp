@@ -16,6 +16,8 @@ namespace CTRPluginFramework
 	char        ProcessImpl::_processName[8] = {0};
 	u32         ProcessImpl::_kProcess = 0;
 	u32         ProcessImpl::_kProcessState = 0;
+    u32         ProcessImpl::mmuTable = 0;
+    u32         ProcessImpl::mmuTableSize = 0;
 	KCodeSet    ProcessImpl::_kCodeSet = {0};
 	Handle      ProcessImpl::_processHandle = 0;
 	Handle      ProcessImpl::_mainThreadHandle = 0;
@@ -34,26 +36,34 @@ namespace CTRPluginFramework
 
 		// Get current KProcess
 		_kProcess = (u32)arm11kGetCurrentKProcess();
-		
+
 		// Copy KProcess data
 		arm11kMemcpy((u32)&kproc, _kProcess, 0x100);
 		if (isNew3DS)
 		{
 			// Copy KCodeSet
-			arm11kMemcpy((u32)&_kCodeSet, *(u32 *)(kproc + 0xB8), sizeof(KCodeSet));          
+			arm11kMemcpy((u32)&_kCodeSet, *(u32 *)(kproc + 0xB8), sizeof(KCodeSet));
 
 			// Copy process id
 			_processID = *(u32 *)(kproc + 0xBC);
 			_kProcessState = _kProcess + 0x88;
+
+            // Get mmutable
+            mmuTableSize = *(u32 *)(kproc + 0x1C + 0x44);
+            mmuTable = *(u32 *)(kproc + 0x1C + 0x48);
 		}
 		else
 		{
 			// Copy KCodeSet
-			arm11kMemcpy((u32)&_kCodeSet, *(u32 *)(kproc + 0xB0), sizeof(KCodeSet));          
+			arm11kMemcpy((u32)&_kCodeSet, *(u32 *)(kproc + 0xB0), sizeof(KCodeSet));
 
 			// Copy process id
 			_processID = *(u32 *)(kproc + 0xB4);
 			_kProcessState = _kProcess + 0x80;
+
+            // Get mmutable
+            mmuTableSize = *(u32 *)(kproc + 0x1C + 0x3C);
+            mmuTable = *(u32 *)(kproc + 0x1C + 0x40);
 		}
 
 		// Copy process name
@@ -71,7 +81,7 @@ namespace CTRPluginFramework
         _mainThreadHandle = threadGetCurrent()->handle;
         RecursiveLock_Init(&FrameLock);
         svcCreateEvent(&FrameEvent, RESET_ONESHOT);
-        while (R_FAILED(svcSetThreadPriority(_mainThreadHandle, 0x3F)));        
+        while (R_FAILED(svcSetThreadPriority(_mainThreadHandle, 0x3F)));
     }
 
 	bool 	ProcessImpl::IsPaused(void)
@@ -126,7 +136,7 @@ namespace CTRPluginFramework
 
         while (fade <= 0.3f)
         {
-        	delta = t.Restart();        	
+        	delta = t.Restart();
         	fade += pitch * delta.AsMilliseconds();
 
         	ScreenImpl::Top->Fade(fade);
@@ -136,7 +146,7 @@ namespace CTRPluginFramework
         	ScreenImpl::Bottom->SwapBuffer(true, true);
         	gspWaitForVBlank();
         	if (System::IsNew3DS())
-        		while (t.GetElapsedTime() < limit);       	
+        		while (t.GetElapsedTime() < limit);
         }
 	}
 

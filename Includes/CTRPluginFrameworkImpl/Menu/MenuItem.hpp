@@ -11,6 +11,7 @@ namespace CTRPluginFramework
         Folder,
         Entry,
         EntryTools,
+        ActionReplay,
         FreeCheat
     };
 
@@ -126,7 +127,7 @@ namespace CTRPluginFramework
         MenuType    _type;
         MenuItem    *_container; /* MenuFolderImpl */
         int         _index;
-        
+
 
         static u32  _uidCounter;
     };

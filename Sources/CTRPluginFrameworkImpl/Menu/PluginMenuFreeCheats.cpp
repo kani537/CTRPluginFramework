@@ -162,7 +162,7 @@ namespace CTRPluginFramework
             _saveBtn.IsLocked = false;
             _cancelBtn.IsLocked = false;
         }
-        
+
         _saveBtn();
         _cancelBtn();
         _deleteBtn();
@@ -228,9 +228,9 @@ namespace CTRPluginFramework
         while (count > 0)
         {
             u32 nb = count > 100 ? 100 : count;
-            
+
             freecheats.resize(nb);
-            
+
             if (file.Read(freecheats.data(), nb * sizeof(SavedCheat)) != 0)
                 break;
 
@@ -274,7 +274,7 @@ namespace CTRPluginFramework
             header.freeCheatsOffset = offset;
             error:
                 return;
-        }        
+        }
     }
 
     void    FreeCheats::_DrawBottom(void)
@@ -396,7 +396,7 @@ namespace CTRPluginFramework
         {
             _selectedFC = reinterpret_cast<MenuEntryFreeCheat *>(_menu.GetSelectedItem());
             _UpdateInfos();
-        }            
+        }
 
         Window::BottomWindow.Update(isTouchDown, touchPos);
 
@@ -418,7 +418,7 @@ namespace CTRPluginFramework
             _u16CheckBox.Update(isTouchDown, touchPos);
             _u32CheckBox.Update(isTouchDown, touchPos);
             */
-        }        
+        }
     }
 
     void    FreeCheats::_OpenInEditorBtn_OnClick(void)
@@ -435,7 +435,7 @@ namespace CTRPluginFramework
         std::string input;
 
         keyboard.DisplayTopScreen = false;
-        
+
         if (keyboard.Open(input) != -1)
         {
             _selectedFC->name = input;
@@ -461,7 +461,7 @@ namespace CTRPluginFramework
     {
         if (_nameChanged)
             _selectedFC->name = _savedName;
-        _mustSave = false;       
+        _mustSave = false;
         _nameChanged = false;
         _saveBtn.IsLocked = true;
         _cancelBtn.IsLocked = true;

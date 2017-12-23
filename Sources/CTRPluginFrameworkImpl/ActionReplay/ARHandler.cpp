@@ -8,6 +8,16 @@
 #include "csvc.h"
 #include "CTRPluginFramework/Graphics/OSD.hpp"
 #include "CTRPluginFrameworkImpl/System/Screen.hpp"
+#include "ctrulib/result.h"
+#include "CTRPluginFrameworkImpl/System/ProcessImpl.hpp"
+
+#define debug 1
+
+#if debug
+#define Notify(str, ...) OSD::Notify(Utils::Format(str, ##__VA_ARGS__))
+#else
+#define Notify(str, ...)
+#endif
 
 namespace CTRPluginFramework
 {
@@ -18,7 +28,118 @@ namespace CTRPluginFramework
     u32     ARHandler::ActiveData = 0;
     bool    ARHandler::ExitCodeImmediately = false;
 
-    void ARHandler::Execute(const ARCodeVector& arcodes, u32(&storage)[2])
+    struct MemoryRegion
+    {
+        u32     start;
+        u32     end;
+        u32     size;
+        u32     perm;
+    };
+
+    static std::vector<MemoryRegion> g_regions;
+
+    void    ActionReplay_FetchList(void)
+    {
+        g_regions.clear();
+
+        const Handle    target = Process::GetHandle();
+        PageInfo        page_info;
+        MemInfo         meminfo;
+        u32             save_addr;
+        int             i;
+        Result          res;
+
+        svcQueryProcessMemory(&meminfo, &page_info, target, 0x00100000);
+
+        g_regions.push_back(MemoryRegion{ meminfo.base_addr, meminfo.base_addr + meminfo.size, meminfo.size, meminfo.perm });
+
+        save_addr = meminfo.base_addr + meminfo.size + 1;
+        i = 1;
+        while (save_addr < 0x50000000)
+        {
+            if (i >= 99)
+                break;
+
+            res = svcQueryProcessMemory(&meminfo, &page_info, target, save_addr);
+            if (R_FAILED(res))
+            {
+                if (meminfo.base_addr >= 0x50000000)
+                    break;
+                if (save_addr >= meminfo.base_addr + meminfo.size + 1)
+                    save_addr += 0x1000;
+                else
+                    save_addr = meminfo.base_addr + meminfo.size + 1;
+                continue;
+            }
+
+            save_addr = meminfo.base_addr + meminfo.size + 1;
+#if HIDE_REGIONS
+            if (meminfo.base_addr == 0x06000000 || meminfo.base_addr == 0x07000000 || meminfo.base_addr == 0x07500000 || meminfo.base_addr == __ctru_linear_heap)
+                continue;
+#endif
+            if (meminfo.state != 0x0 && meminfo.state != 0x2 && meminfo.state != 0x3 && meminfo.state != 0x6)
+            {
+                if (meminfo.state == 11)
+                    Notify("Mem: %08X - %08X, %d, %d", meminfo.base_addr, meminfo.base_addr + meminfo.size, meminfo.state, meminfo.perm);
+
+                if (meminfo.state == 11 && (meminfo.perm & 3) != 3)
+                {
+                    if (!Process::ProtectMemory(meminfo.base_addr, meminfo.size, 7))
+                        Notify("Protect failed: %08X - %08X, %d, %d", meminfo.base_addr, meminfo.base_addr + meminfo.size, meminfo.state, meminfo.perm);
+                    else
+                        meminfo.perm = 7;
+                }
+                //if (meminfo.perm & MEMPERM_READ)
+                {
+                    g_regions.push_back(MemoryRegion{ meminfo.base_addr, meminfo.base_addr + meminfo.size, meminfo.size, meminfo.perm });
+                    i++;
+                }
+            }
+        }
+       /* Notify("mmuSize: %08X", ProcessImpl::mmuTableSize);
+        Notify("mmuTable: %08X", ProcessImpl::mmuTable);
+        Notify("mmuTable pa: %08X", svcConvertVAToPA((void *)ProcessImpl::mmuTable, false));*/
+    }
+
+    bool    ActionReplay_IsValidAddress(u32 address, bool write)
+    {
+       /* for (MemoryRegion &region : g_regions)
+        {
+            if (address < region.end && address >= region.start)
+            {
+                if (write && !(region.perm & MEMPERM_WRITE))
+                {
+                    if (!Process::ProtectMemory(region.start, region.size, 7))
+                    {
+                        Notify("AR ReadOnly: %08X", address);
+                        return false;
+                    }
+                    region.perm = 7;
+                }
+                else if (!(region.perm & MEMPERM_READ))
+                {
+                    if (!Process::ProtectMemory(region.start, region.size, 7))
+                    {
+                        Notify("AR can't read: %08X, perm: %08X", address, region.perm);
+                        return false;
+                    }
+                    region.perm = 7;
+                }
+
+                return true;
+            }
+        }*/
+        if (!Process::CheckAddress(address, (int)write + 1))
+        {
+            Notify("Unreachable: %08X", address);
+            return false;
+        }
+        return true;
+    }
+
+#define CheckAddress(addr, write) ActionReplay_IsValidAddress(addr, write)
+
+    void    ARHandler::Execute(const ARCodeVector& arcodes, u32(&storage)[2])
     {
         Offset[0] = 0;
         Offset[1] = 0;
@@ -36,80 +157,109 @@ namespace CTRPluginFramework
 
     bool    Write32(u32 address, u32 value)
     {
-        u32 pa = svcConvertVAToPA((void *)address, false);
+        /*u32 pa = svcConvertVAToPA((void *)address, false);
 
         if (pa == 0 || pa > 0x30000000)
+        {
+            Notify("AR Write32 Failure: va: %08X, pa: %08X", address, pa);
             return (false);
-        *(vu32 *)(pa | (1 << 31)) = value; //arm11kWrite32(pa, value);
+        }
+        *(vu32 *)(pa | (1 << 31)) = value; //arm11kWrite32(pa, value);*/
+        if (CheckAddress(address, true))
+            *(vu32 *)address = value;
         return (true);
     }
 
     bool    Write16(u32 address, u16 value)
     {
-        u32 pa = svcConvertVAToPA((void *)address, false);
+       /* u32 pa = svcConvertVAToPA((void *)address, false);
 
         if (pa == 0 || pa > 0x30000000)
+        {
+            Notify("AR Write16 Failure: va: %08X, pa: %08X", address, pa);
             return (false);
-
-        *(vu16 *)(pa | (1 << 31)) = value; //arm11kWrite32(pa, value);
+        }
+        *(vu16 *)(pa | (1 << 31)) = value; //arm11kWrite32(pa, value); */
+        if (CheckAddress(address, true))
+            *(vu16 *)address = value;
         return (true);
     }
 
     bool    Write8(u32 address, u8 value)
     {
-        u32 pa = svcConvertVAToPA((void *)address, false);
+       /* u32 pa = svcConvertVAToPA((void *)address, false);
 
         if (pa == 0 || pa > 0x30000000)
+        {
+            Notify("AR Write8 Failure: va: %08X, pa: %08X", address, pa);
             return (false);
+        }
 
-        *(vu8 *)(pa | (1 << 31)) = value; //arm11kWrite32(pa, value);
+        *(vu8 *)(pa | (1 << 31)) = value; //arm11kWrite32(pa, value); */
+        if (CheckAddress(address, true))
+            *(vu8 *)address = value;
         return (true);
     }
 
     bool    Read32(u32 address, u32 &value)
     {
-        u32 pa = svcConvertVAToPA((void *)address, false);
+       /* u32 pa = svcConvertVAToPA((void *)address, false);
 
         if (pa == 0 || pa > 0x30000000)
+        {
+            Notify("AR Read32 Failure: va: %08X, pa: %08X", address, pa);
             return (false);
+        }
 
-        value = *(vu32 *)(pa | (1 << 31));//arm11kRead32(pa);
+        value = *(vu32 *)(pa | (1 << 31));//arm11kRead32(pa);*/
+        if (CheckAddress(address, false))
+            value = *(vu32 *)address;
         return (true);
     }
 
     bool    Read16(u32 address, u16 &value)
     {
-        u32 pa = svcConvertVAToPA((void *)address, false);
+        /*u32 pa = svcConvertVAToPA((void *)address, false);
 
         if (pa == 0 || pa > 0x30000000)
+        {
+            Notify("AR Read16 Failure: va: %08X, pa: %08X", address, pa);
             return (false);
+        }
 
-        value = *(vu16 *)(pa | (1 << 31));//arm11kRead32(pa);
+        value = *(vu16 *)(pa | (1 << 31));//arm11kRead32(pa);*/
+        if (CheckAddress(address, false))
+            value = *(vu16 *)address;
         return (true);
     }
 
     bool    Read8(u32 address, u8 &value)
     {
-        u32 pa = svcConvertVAToPA((void *)address, false);
+        /*u32 pa = svcConvertVAToPA((void *)address, false);
 
         if (pa == 0 || pa > 0x30000000)
+        {
+            Notify("AR Read8 Failure: va: %08X, pa: %08X", address, pa);
             return (false);
+        }
 
-        value = *(vu8 *)(pa | (1 << 31));//arm11kRead32(pa);
+        value = *(vu8 *)(pa | (1 << 31));//arm11kRead32(pa);*/
+        if (CheckAddress(address, false))
+            value = *(vu8 *)address;
         return (true);
     }
 
     static bool    Memcpy(u32 address, u8 *pattern, u32 size)
     {
-        u32 pa = svcConvertVAToPA((void *)address, false);
+        /*u32 pa = svcConvertVAToPA((void *)address, false);
 
         if (pa == 0 || pa > 0x30000000)
             return (false);
 
-        pa |= (1 << 31);
-
-        while (size--)
-            *(vu8 *)pa++ = *pattern++;
+        pa |= (1 << 31);*/
+        if (CheckAddress((u32)pattern, false) && CheckAddress(address, true))
+            while (size--)
+                *(vu8 *)address++ = *pattern++;
 
         return (true);
     }
@@ -233,7 +383,7 @@ namespace CTRPluginFramework
                 mask = code.Right >> 16;
 
                 ExitCodeImmediately = !Read16(code.Left + Offset[ActiveOffset], value16);
-                if (!ExitCodeImmediately && (conditionalMode ? Data[ActiveData] & 0xFFFF : code.Right & 0xFFFF) > ~mask & value16)
+                if (!ExitCodeImmediately && ((conditionalMode ? Data[ActiveData] : code.Right) & 0xFFFF) > (~mask & value16))
                     continue;
                 conditionCount++;
                 waitForExitCode = true;
@@ -244,7 +394,7 @@ namespace CTRPluginFramework
                 mask = code.Right >> 16;
 
                 ExitCodeImmediately = !Read16(code.Left + Offset[ActiveOffset], value16);
-                if (!ExitCodeImmediately && (conditionalMode ? Data[ActiveData] & 0xFFFF : code.Right & 0xFFFF) < ~mask & value16)
+                if (!ExitCodeImmediately && ((conditionalMode ? Data[ActiveData] : code.Right) & 0xFFFF) < (~mask & value16))
                     continue;
                 conditionCount++;
                 waitForExitCode = true;
@@ -255,7 +405,7 @@ namespace CTRPluginFramework
                 mask = code.Right >> 16;
 
                 ExitCodeImmediately = !Read16(code.Left + Offset[ActiveOffset], value16);
-                if (!ExitCodeImmediately && (conditionalMode ? Data[ActiveData] & 0xFFFF : code.Right & 0xFFFF) == ~mask & value16)
+                if (!ExitCodeImmediately && ((conditionalMode ? Data[ActiveData] : code.Right) & 0xFFFF) == (~mask & value16))
                     continue;
                 conditionCount++;
                 waitForExitCode = true;
@@ -266,7 +416,7 @@ namespace CTRPluginFramework
                 mask = code.Right >> 16;
 
                 ExitCodeImmediately = !Read16(code.Left + Offset[ActiveOffset], value16);
-                if (!ExitCodeImmediately && (conditionalMode ? Data[ActiveData] & 0xFFFF : code.Right & 0xFFFF) != ~mask & value16)
+                if (!ExitCodeImmediately && ((conditionalMode ? Data[ActiveData] : code.Right) & 0xFFFF) != (~mask & value16))
                     continue;
                 conditionCount++;
                 waitForExitCode = true;

@@ -14,7 +14,7 @@
 .global  dispatchArm11KernelCmd
 .type    dispatchArm11KernelCmd, %function
 
-dispatchArm11KernelCmd:  
+dispatchArm11KernelCmd:
         STMFD       SP!, {R4,LR}
         LDR         R4, =g_kernelParams
         LDR         R3, [R4]
@@ -37,7 +37,7 @@ _memcpy:
 @ ---------------------------------------------------------------------------
 
 loc_108230:
-        CMP         R3, #2 
+        CMP         R3, #2
         BNE         loc_10825C
 
 GetKprocessFromHandle:
@@ -134,3 +134,12 @@ FUNCTION    aptHookHome
     mov pc, r0
     ldr r0, =0x00103F38
     mov pc, r0
+
+FUNCTION	loadCROHooked
+	stmfd	sp!, {r0-r12, lr}
+	bl		onLoadCro
+	ldmfd	sp!, {r0-r12, lr}
+	stmfd	sp!, {r0-r12, lr}
+	add		r4, sp, #0x38
+	ldr		r12, =croReturn
+	ldr		pc, [r12]

@@ -8,6 +8,7 @@
 #include <algorithm>
 #include "CTRPluginFrameworkImpl/Menu/MenuEntryTools.hpp"
 #include "CTRPluginFrameworkImpl/Menu/MenuEntryFreeCheat.hpp"
+#include "CTRPluginFrameworkImpl/ActionReplay/MenuEntryActionReplay.hpp"
 
 namespace CTRPluginFramework
 {
@@ -95,7 +96,7 @@ namespace CTRPluginFramework
 
         // Draw title
         int width = Renderer::DrawSysString(_folder->name.c_str(), posX, posY, XMAX, title);
-        Renderer::DrawLine(posX, posY, width, title);   
+        Renderer::DrawLine(posX, posY, width, title);
         posY += 7;
 
         // Draw entries
@@ -129,7 +130,7 @@ namespace CTRPluginFramework
                     Renderer::DrawSysFolder(item->name.c_str(), posX, posY, XMAX, c);
 
                 posY += 4;
-            }     
+            }
         }
         else
         {
@@ -171,6 +172,11 @@ namespace CTRPluginFramework
                     MenuEntryImpl *e = reinterpret_cast<MenuEntryImpl *>(item);
 
                     Renderer::DrawSysCheckBox(item->name.c_str(), posX, posY, XMAX, c, e->IsActivated());
+                }
+                // MenuEntryActionReplay
+                else if (item->_type == MenuType::ActionReplay)
+                {
+                    Renderer::DrawSysCheckBox(item->name.c_str(), posX, posY, XMAX, c, item->AsMenuEntryImpl().IsActivated());
                 }
                 // MenuFolderImpl
                 else
@@ -244,7 +250,7 @@ namespace CTRPluginFramework
                     return (MenuEvent::SelectorChanged);
                 }
                 default: break;
-            }            
+            }
         }
         // Other event
         else if (event.type == Event::KeyPressed)
@@ -281,10 +287,10 @@ namespace CTRPluginFramework
                             if (e->FuncArg != nullptr)
                                 e->FuncArg(e);
                         }
-                            
+
                         else if (e->Func != nullptr)
                             e->Func();
-                        
+
                         return (MenuEvent::EntrySelected);
                     }
                     // MenuEntryFreeCheat
@@ -293,7 +299,21 @@ namespace CTRPluginFramework
                         MenuEntryFreeCheat *e = reinterpret_cast<MenuEntryFreeCheat *>(item);
 
                         bool state = e->TriggerState();
-                        
+
+                        if (state)
+                            PluginMenuExecuteLoop::Add(e);
+                        else
+                            PluginMenuExecuteLoop::Remove(e);
+
+                        return (MenuEvent::EntrySelected);
+                    }
+                    // MenuEntryActionReplay
+                    else if (item->_type == MenuType::ActionReplay)
+                    {
+                        MenuEntryActionReplay *e = reinterpret_cast<MenuEntryActionReplay *>(item);
+
+                        bool state = e->_TriggerState();
+
                         if (state)
                             PluginMenuExecuteLoop::Add(e);
                         else
@@ -319,9 +339,9 @@ namespace CTRPluginFramework
                             *userchoice = reinterpret_cast<MenuItem *>(p);
                         return (MenuEvent::FolderChanged);
                     }
-                    
+
                     return (MenuEvent::MenuClose);
-                    
+
                 }
                 default: break;
             }

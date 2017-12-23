@@ -106,7 +106,7 @@ namespace CTRPluginFramework
         {
             addr  &= ~0xFFF;
             size  += 0x1000;
-            size &= ~0xFFF;            
+            size &= ~0xFFF;
         }
     	if (R_FAILED(svcControlProcessMemory(ProcessImpl::_processHandle, addr, addr, size, 6, perm)))
         	return (false);
@@ -139,7 +139,7 @@ namespace CTRPluginFramework
                 if (minfo.state != MEMSTATE_FREE)
                 {
                     if (startAddress >= minfo.base_addr && startAddress <= minfo.base_addr + minfo.size)
-                    {   
+                    {
                         if (ProtectMemory(minfo.base_addr, minfo.size, perm))
                         {
                             startAddress += minfo.size;

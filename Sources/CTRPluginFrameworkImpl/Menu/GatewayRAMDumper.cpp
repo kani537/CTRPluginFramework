@@ -13,7 +13,7 @@ namespace CTRPluginFramework
     _regionIndex(0),
     _achievedSize(0),
     _totalSize(0)
-    {   
+    {
     }
 
     bool    GatewayRAMDumper::operator()(void)
@@ -48,7 +48,7 @@ namespace CTRPluginFramework
         _WriteHeader();
 
         // Process every region
-        
+
         for (Region &region : _regions)
         {
             // Set variables
@@ -82,7 +82,7 @@ namespace CTRPluginFramework
                 _achievedSize += size;
 
                 // Write pool to file
-                _file.Write(_pool, size);                  
+                _file.Write(_pool, size);
 
                 // Update UI
                 _DrawProgress();
@@ -169,7 +169,7 @@ namespace CTRPluginFramework
                         select = !select;
                     }
                 }
-                
+
                 exit |= menu.ProcessEvent(event, nullptr) == MenuEvent::MenuClose;
             }
             menu.Draw();
@@ -241,7 +241,7 @@ namespace CTRPluginFramework
         path += "/";
         path += _fileName;
 
-        // Open file        
+        // Open file
         if (File::Open(_file, path, File::READ | File::WRITE | File::CREATE))
             MessageBox("Error\n\nCouldn't create: \n" + path)();
     }
@@ -259,7 +259,7 @@ namespace CTRPluginFramework
 
         // Padding ?
         *buffer++ = 0;
-        
+
         // Wrtie region's infos
         for (Region &region : _regions)
         {
@@ -277,7 +277,7 @@ namespace CTRPluginFramework
             // Flush region
             svcFlushProcessDataCache(ProcessImpl::_processHandle, (void *)region.startAddress, regionSize);
         }
-        
+
         // Buffer to file
         _file.Write(p_buffer, (u32)buffer - (u32)p_buffer);
     }

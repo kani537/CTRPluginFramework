@@ -7,6 +7,11 @@
 
 namespace CTRPluginFramework
 {
+    namespace ActionReplayPriv
+    {
+        u32     Str2U32(const std::string &str, bool &error);
+    }
+
     class ARCode
     {
     public:
@@ -26,6 +31,19 @@ namespace CTRPluginFramework
     };
 
     using ARCodeVector = std::vector<ARCode>;
+
+    struct ARCodeContext
+    {
+        bool            hasError;   ///< True if any of the codes has an unrecognized char
+        std::string     data;       ///< Original data in case of error
+        u32             storage[2]; ///< Storage for this code
+        ARCodeVector    codes;      ///< List of all codes
+
+        void            Clear(void);
+    };
+
+    class MenuFolderImpl;
+    void    ActionReplay_LoadCodes(MenuFolderImpl *dst);
 }
 
 #endif
