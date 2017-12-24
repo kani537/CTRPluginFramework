@@ -59,6 +59,9 @@ namespace CTRPluginFramework
         u32             _reverseFlow;
         float           _scrollOffset;
         float           _maxScrollOffset;
+
+        void            _ScrollUp(int step);
+        void            _ScrollDown(int step);
     };
 }
 

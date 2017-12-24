@@ -232,25 +232,25 @@ namespace CTRPluginFramework
                 case CPadUp:
                 case DPadUp:
                 {
-                    if (!_input.HasTimePassed(Milliseconds(200)))
-                        break;
-                    if (_selector > 0)
-                        _selector--;
-                    else
-                        _selector = std::max(0, static_cast<int>(_folder->ItemsCount() - 1));
-                    _input.Restart();
+                    _ScrollUp(1);
                     return (MenuEvent::SelectorChanged);
                 }
                 case CPadDown:
                 case DPadDown:
                 {
-                    if (!_input.HasTimePassed(Milliseconds(200)))
-                        break;
-                    if (_selector < _folder->ItemsCount() - 1)
-                        _selector++;
-                    else
-                        _selector = 0;
-                    _input.Restart();
+                    _ScrollDown(1);
+                    return (MenuEvent::SelectorChanged);
+                }
+                case CPadLeft:
+                case DPadLeft:
+                {
+                    _ScrollUp(4);
+                    return (MenuEvent::SelectorChanged);
+                }
+                case CPadRight:
+                case DPadRight:
+                {
+                    _ScrollDown(4);
                     return (MenuEvent::SelectorChanged);
                 }
                 default: break;
@@ -351,6 +351,28 @@ namespace CTRPluginFramework
             }
         }
         return (MenuEvent::Nothing);
+    }
+
+    void    Menu::_ScrollUp(int step)
+    {
+        if (!_input.HasTimePassed(Milliseconds(200)))
+            return;
+        while (step-- > 0 && _selector > 0)
+                _selector--;
+        if (step > 0)
+            _selector = std::max(0, static_cast<int>(_folder->ItemsCount() - 1));
+        _input.Restart();
+    }
+
+    void    Menu::_ScrollDown(int step)
+    {
+        if (!_input.HasTimePassed(Milliseconds(200)))
+            return;
+        while (step-- > 0 && _selector < static_cast<int>(_folder->ItemsCount() - 1))
+            _selector++;
+        if (step > 0)
+            _selector = 0;
+        _input.Restart();
     }
 
     void    Menu::Update(const Time &delta)
