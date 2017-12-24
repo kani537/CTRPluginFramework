@@ -15,21 +15,23 @@ namespace CTRPluginFramework
     Menu::Menu(const std::string &title, const std::string &footer, IconCallback iconCallback)
     {
         drawFooter = false;
-        _selector = 0;
         _folder = new MenuFolderImpl(title, footer);
         _iconCallback = iconCallback;
-        _scrollOffset = 0.f;
+        _lastSelectedItem = nullptr;
+        _selector = 0;
+        _reverseFlow = _selectedNameSize = 0;
+        _maxScrollOffset = _scrollOffset = 0.f;
     }
 
     Menu::Menu(MenuFolderImpl *folder, IconCallback iconCallback)
     {
         drawFooter = false;
-        _selector = 0;
-        _folder = folder;
+        _folder = folder == nullptr ? new MenuFolderImpl("Menu") : folder;
         _iconCallback = iconCallback;
-        if (_folder == nullptr)
-            _folder = new MenuFolderImpl("Menu");
-        _scrollOffset = 0.f;
+        _lastSelectedItem = nullptr;
+        _selector = 0;
+        _reverseFlow = _selectedNameSize = 0;
+        _maxScrollOffset = _scrollOffset = 0.f;
     }
 
     MenuFolderImpl    *Menu::Open(MenuFolderImpl *folder, int selector)
@@ -116,7 +118,7 @@ namespace CTRPluginFramework
 
                 if (i == _selector)
                 {
-                    Renderer::MenuSelector(posX - 5, posY - 3, 320, 20);
+                    Renderer::MenuSelector(posX - 5, posY - 3, 330, 20);
                 }
 
                 // Draw Entry / EntryTools / FreeCheat
@@ -138,10 +140,12 @@ namespace CTRPluginFramework
             {
                 const Color &c = i == _selector ? selected : unselected;
                 MenuItem *item = _folder->_items[i];
+                float offset = 0.f;
 
                 if (i == _selector)
                 {
-                    Renderer::MenuSelector(posX - 5, posY - 3, 320, 20);
+                    offset = _scrollOffset;
+                    Renderer::MenuSelector(posX - 5, posY - 3, 330, 20);
                 }
 
                 // MenuEntryImpl
@@ -176,7 +180,7 @@ namespace CTRPluginFramework
                 // MenuEntryActionReplay
                 else if (item->_type == MenuType::ActionReplay)
                 {
-                    Renderer::DrawSysCheckBox(item->name.c_str(), posX, posY, XMAX, c, item->AsMenuEntryImpl().IsActivated());
+                    Renderer::DrawSysCheckBox(item->name.c_str(), posX, posY, XMAX, c, item->AsMenuEntryImpl().IsActivated(), offset);
                 }
                 // MenuFolderImpl
                 else
@@ -347,5 +351,61 @@ namespace CTRPluginFramework
             }
         }
         return (MenuEvent::Nothing);
+    }
+
+    void    Menu::Update(const Time &delta)
+    {
+        // If selected item has changed, update scrolling vars
+        MenuItem *item = GetSelectedItem();
+        if (_lastSelectedItem != item)
+        {
+            _lastSelectedItem = item;
+            _scrollOffset = 0.f;
+            _reverseFlow = false;
+            if (item == nullptr)
+            {
+                _selectedNameSize = 0;
+                return;
+            }
+
+            float namesize = Renderer::GetTextSize(item->name.c_str());
+
+            // If name can fit totally in the screen, no need to scroll
+            if (namesize < 300.f)
+                _selectedNameSize = 0;
+
+            _selectedNameSize = static_cast<u32>(namesize);
+            _maxScrollOffset = namesize - 300.f;
+            _scrollClock.Restart();
+            return;
+        }
+
+        // If we have nothing to scroll, just exit
+        if (!_selectedNameSize || (!_reverseFlow && !_scrollClock.HasTimePassed(Seconds(2)))
+            || (_reverseFlow && !_scrollClock.HasTimePassed(Seconds(1))))
+            return;
+
+        float deltaAsSeconds = delta.AsSeconds();
+
+        if (!_reverseFlow)
+        {
+            if (_scrollOffset < _maxScrollOffset)
+                _scrollOffset += 29.f * delta.AsSeconds();
+            else
+            {
+                _reverseFlow = true;
+                _scrollClock.Restart();
+            }
+        }
+        else
+        {
+            _scrollOffset -= 55.f * delta.AsSeconds();
+            if (_scrollOffset <= 0.f)
+            {
+                _reverseFlow = false;
+                _scrollOffset = 0.f;
+                _scrollClock.Restart();
+            }
+        }
     }
 }

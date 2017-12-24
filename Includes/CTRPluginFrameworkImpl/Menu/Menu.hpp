@@ -35,10 +35,10 @@ namespace CTRPluginFramework
 
         void    Draw(void) const;
         MenuFolderImpl    *Open(MenuFolderImpl *folder, int selector = 0);
-        //void    Update(Time delta);
+        void    Update(const Time &delta);
 
         /*
-        ** Return value: 
+        ** Return value:
         ** -1 : error or menu is empty
         ** -2 : user pressed B to exit the menu
         ** >= 0 : user choice (irrelevant on menu using folders, so prefer using an overload returning the object)
@@ -48,14 +48,17 @@ namespace CTRPluginFramework
         bool    drawFooter;
     private:
         MenuFolderImpl  *_folder;
+        MenuItem        *_lastSelectedItem;
 
         Clock           _input;
         Clock           _scrollClock;
 
         IconCallback    _iconCallback;
-
         int             _selector;
+        u32             _selectedNameSize;
+        u32             _reverseFlow;
         float           _scrollOffset;
+        float           _maxScrollOffset;
     };
 }
 
