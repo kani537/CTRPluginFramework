@@ -4,6 +4,7 @@
 #include <cstring>
 #include <random>
 #include "ctrulib/util/utf.h"
+#include "ctrulib/svc.h"
 
 namespace CTRPluginFramework
 {
@@ -38,7 +39,7 @@ namespace CTRPluginFramework
     void    InitializeRandomEngine(void)
     {
         // Init the engine with a random seed
-        g_rng.seed(std::random_device()());
+        g_rng.seed(svcGetSystemTick());
     }
 
     u32     Utils::Random(void)
