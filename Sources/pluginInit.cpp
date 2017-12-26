@@ -3,7 +3,6 @@
 #include "CTRPluginFrameworkImpl.hpp"
 #include "CTRPluginFramework.hpp"
 #include "CTRPluginFrameworkImpl/Graphics/Font.hpp"
-#include "csvc.h"
 
 extern "C" void     abort(void);
 extern "C" void     initSystem();
@@ -86,6 +85,13 @@ namespace CTRPluginFramework
 
         return (lowtid == 0x00164800 || lowtid == 0x00175E00);
     }
+
+    namespace Heap
+    {
+        extern u32 __ctrpf_heap;
+        extern u32 __ctrpf_heap_size;
+    }
+
     void    KeepThreadMain(void *arg)
     {
         FwkSettings settings;
@@ -156,6 +162,9 @@ namespace CTRPluginFramework
         if (g_heapError)
             goto exit;
 
+        // Init System::Heap
+        Heap::__ctrpf_heap_size = 0xD0000;
+        Heap::__ctrpf_heap = reinterpret_cast<u32>(new u8[Heap::__ctrpf_heap_size]);
         // Create plugin's main thread
         svcCreateEvent(&g_keepEvent, RESET_ONESHOT);
         g_mainThread = threadCreate(ThreadInit, (void *)threadStack, 0x4000, 0x18, -2, false);

@@ -91,6 +91,7 @@ namespace CTRPluginFramework
         PluginMenu  &menu = *m;
 
 #else
+    MenuEntry *entry;
     int     main(void)
     {
         if (!System::IsLoaderNTR())
@@ -99,11 +100,15 @@ namespace CTRPluginFramework
         PluginMenu  *m = new PluginMenu("Action Replay Test", 0, 1, 0);
         PluginMenu  &menu = *m;
 
+        entry = new MenuEntry(Utils::Format("MemFree: %08X", getMemFree()));
+        entry->CanBeSelected(false);
+        menu += entry;
+
 #endif
-       /* menu += []
+        menu.OnOpening = []
         {
-            Sleep(Milliseconds(5.f));
-        }; */
+            entry->Name() = Utils::Format("MemFree: %08X", getMemFree());
+        };
         menu.SyncronizeWithFrame(true);
         // Launch menu and mainloop
         menu.Run();

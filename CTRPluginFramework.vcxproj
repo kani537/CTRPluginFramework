@@ -153,6 +153,7 @@
     <ClInclude Include="Includes\CTRPluginFrameworkImpl\Search\Search.hpp" />
     <ClInclude Include="Includes\CTRPluginFrameworkImpl\Search\Search32.hpp" />
     <ClInclude Include="Includes\CTRPluginFrameworkImpl\Search\SearchBase.hpp" />
+    <ClInclude Include="Includes\CTRPluginFrameworkImpl\System\Heap.hpp" />
     <ClInclude Include="Includes\CTRPluginFrameworkImpl\System\Storage.hpp" />
     <ClInclude Include="Includes\CTRPluginFramework\Menu\MenuEntryHotkeys.hpp" />
     <ClInclude Include="Includes\CTRPluginFramework\System\FwkSettings.hpp" />
