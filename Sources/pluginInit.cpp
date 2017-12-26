@@ -163,7 +163,7 @@ namespace CTRPluginFramework
             goto exit;
 
         // Init System::Heap
-        Heap::__ctrpf_heap_size = 0xD0000;
+        Heap::__ctrpf_heap_size = 0xC0000;
         Heap::__ctrpf_heap = reinterpret_cast<u32>(new u8[Heap::__ctrpf_heap_size]);
         // Create plugin's main thread
         svcCreateEvent(&g_keepEvent, RESET_ONESHOT);
