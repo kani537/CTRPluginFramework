@@ -47,7 +47,10 @@ namespace CTRPluginFramework
         // Select the regions wanted
 
         if (_SelectRegion())
+        {
+            Heap::Free(buffer);
             return (true);
+        }
 
         // Open the file
         _OpenFile();
