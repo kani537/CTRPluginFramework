@@ -7,7 +7,6 @@
 #include "CTRPluginFramework/System/Vector.hpp"
 #include "CTRPluginFramework/System/Rect.hpp"
 
-
 #include <cstring>
 
 namespace CTRPluginFramework
@@ -16,13 +15,13 @@ namespace CTRPluginFramework
     {
     public:
 
-        enum ChannelMode 
+        enum ChannelMode
         {
             RGB_Mode = 0,
             BGR_Mode = 1
         };
 
-        enum ColorPlane 
+        enum ColorPlane
         {
             BluePlane  = 0,
             GreenPlane = 1,
@@ -60,7 +59,7 @@ namespace CTRPluginFramework
             RGBtoBGR();
         }
 
-        BMPImage(const u32 width, const u32 height) : 
+        BMPImage(const u32 width, const u32 height) :
         _data(nullptr),
         _dataSize(0),
         _fileName(""),
@@ -99,48 +98,9 @@ namespace CTRPluginFramework
             return (_dimensions);
         }
 
-        /*bitmap_image(const & image) : 
-        _fileName_(image.fileName),
-         width_(image.width_),
-         height_(image.height_),
-         row_increment_(0),
-         bytes_per_pixel_(3),
-         channel_mode_(bgr_mode)
-        {
-          create_bitmap();
-          data_ = image.data_;
-        }
-
-       bitmap_image& operator=(const bitmap_image& image)
-       {
-          if (this != &image)
-          {
-             file_name_       = image.file_name_;
-             bytes_per_pixel_ = image.bytes_per_pixel_;
-             width_           = image.width_;
-             height_          = image.height_;
-             row_increment_   = 0;
-             channel_mode_    = image.channel_mode_;
-             create_bitmap();
-             data_ = image.data_;
-          }
-
-          return *this;
-       }*/
-
-        /*
-       inline bool operator!()
-       {
-          return (data_.size()   == 0) ||
-                 (width_         == 0) ||
-                 (height_        == 0) ||
-                 (row_increment_ == 0);
-       }*/
-
        inline void Clear(const unsigned char v = 0x00)
        {
           DataClear();
-          //std::fill(_data.begin(), _data.end(), v);
        }
 
        void     Draw(IntVector point)
@@ -155,41 +115,9 @@ namespace CTRPluginFramework
           u8 r;
        };
 
-
-
        void     Draw(int x, int y);
        void     Draw(const IntRect &area, float fade = 0.f);
-/*
-       inline unsigned char RedChannel(const unsigned int x, const unsigned int y) const
-       {
-          return _data[(y * _rowIncrement) + (x * _bytesPerPixel + 2)];
-       }
 
-       inline unsigned char GreenChannel(const unsigned int x, const unsigned int y) const
-       {
-          return _data[(y * _rowIncrement) + (x * _bytesPerPixel + 1)];
-       }
-
-       inline unsigned char BlueChannel(const unsigned int x, const unsigned int y) const
-       {
-          return _data[(y * _rowIncrement) + (x * _bytesPerPixel + 0)];
-       }
-
-       inline void RedChannel(const unsigned int x, const unsigned int y, const unsigned char value)
-       {
-            _data[(y * _rowIncrement) + (x * _bytesPerPixel + 2)] = value;
-       }
-
-       inline void GreenChannel(const unsigned int x, const unsigned int y, const unsigned char value)
-       {
-          _data[(y * _rowIncrement) + (x * _bytesPerPixel + 1)] = value;
-       }
-
-       inline void BlueChannel(const unsigned int x, const unsigned int y, const unsigned char value)
-       {
-          _data[(y * _rowIncrement) + (x * _bytesPerPixel + 0)] = value;
-       }
-*/
        inline unsigned char *Row(unsigned int rowIndex) const
        {
           return const_cast<unsigned char*>(&_data[(rowIndex * _rowIncrement)]);
@@ -234,73 +162,6 @@ namespace CTRPluginFramework
           SetPixel(x, y, colour.red, colour.green, colour.blue);
        }
 
-       /*inline bool copy_from(const bitmap_image& image)
-       {
-          if (
-               (image.height_ != height_) ||
-               (image.width_  != width_ )
-             )
-          {
-             return false;
-          }
-
-          data_ = image.data_;
-
-          return true;
-       }*/
-
-      /* inline bool copy_from(const bitmap_image& source_image,
-                             const unsigned int& x_offset,
-                             const unsigned int& y_offset)
-       {
-          if ((x_offset + source_image.width_ ) > width_ ) { return false; }
-          if ((y_offset + source_image.height_) > height_) { return false; }
-
-          for (unsigned int y = 0; y < source_image.height_; ++y)
-          {
-             unsigned char* itr1           = row(y + y_offset) + x_offset * bytes_per_pixel_;
-             const unsigned char* itr2     = source_image.row(y);
-             const unsigned char* itr2_end = itr2 + source_image.width_ * bytes_per_pixel_;
-
-             std::copy(itr2,itr2_end,itr1);
-          }
-
-          return true;
-       }*/
-    /*
-       void reflective_image(bitmap_image& image, const bool include_diagnols = false)
-       {
-          image.setwidth_height(3 * width_, 3 * height_,true);
-
-          image.copy_from(*this, width_, height_);
-
-          vertical_flip();
-
-          image.copy_from(*this, width_, 0);
-          image.copy_from(*this, width_, 2 * height_);
-
-          vertical_flip();
-          horizontal_flip();
-
-          image.copy_from(*this, 0, height_);
-          image.copy_from(*this, 2 * width_, height_);
-
-          horizontal_flip();
-
-          if (include_diagnols)
-          {
-             bitmap_image tile = *this;
-
-             tile.vertical_flip();
-             tile.horizontal_flip();
-
-             image.copy_from(tile, 0 , 0);
-             image.copy_from(tile, 2 * width_, 0);
-             image.copy_from(tile, 2 * width_, 2 * height_);
-             image.copy_from(tile, 0, 2 * height_);
-          }
-       }*/
-    
        inline unsigned int Width(void) const
        {
           return _width;
@@ -326,10 +187,14 @@ namespace CTRPluginFramework
                                    const bool clear = false)
        {
           DataClear();
-          _width  = width;
-          _height = height;
 
-          CreateBitmap();
+           if (width != _width || _height != height)
+           {
+               _width = width;
+               _height = height;
+
+               CreateBitmap();
+           }
 
           if (clear)
           {
@@ -346,31 +211,6 @@ namespace CTRPluginFramework
         void    SaveImage(const std::string &fileName) const;
 
         void FillWithImg(const BMPImage &src);
-
-     /*  
-       inline void convert_to_grayscale()
-       {
-          double r_scaler = 0.299;
-          double g_scaler = 0.587;
-          double b_scaler = 0.114;
-
-          if (rgb_mode == channel_mode_)
-          {
-             std::swap(r_scaler,b_scaler);
-          }
-
-          for (unsigned char* itr = data(); itr < end(); )
-          {
-             unsigned char gray_value = static_cast<unsigned char>(
-                                                                    (r_scaler * (*(itr + 2))) +
-                                                                    (g_scaler * (*(itr + 1))) +
-                                                                    (b_scaler * (*(itr + 0)))
-                                                                  );
-             *(itr++) = gray_value;
-             *(itr++) = gray_value;
-             *(itr++) = gray_value;
-          }
-       }*/
 
         inline const unsigned char   *data() const
         {
@@ -400,62 +240,6 @@ namespace CTRPluginFramework
             }
         }
 
-    /*   inline void reverse()
-       {
-          unsigned char* itr1 = data();
-          unsigned char* itr2 = end() - bytes_per_pixel_;
-
-          while (itr1 < itr2)
-          {
-             for (std::size_t i = 0; i < bytes_per_pixel_; ++i)
-             {
-                unsigned char* citr1 = itr1 + i;
-                unsigned char* citr2 = itr2 + i;
-
-                std::swap(*citr1,*citr2);
-             }
-
-             itr1 += bytes_per_pixel_;
-             itr2 -= bytes_per_pixel_;
-          }
-       }*/
-
-       /* inline void     HorizontalFlip(void)
-        {
-            for (unsigned int y = 0; y < _height; ++y)
-            {
-                unsigned char* itr1 = Row(y);
-                unsigned char* itr2 = itr1 + _rowIncrement - _bytesPerPixel;
-
-                while (itr1 < itr2)
-                {
-                    for (unsigned int i = 0; i < _bytesPerPixel; ++i)
-                    {
-                        unsigned char* p1 = (itr1 + i);
-                        unsigned char* p2 = (itr2 + i);
-
-                        std::swap(*p1, *p2);
-                    }
-
-                    itr1 += _bytesPerPixel;
-                    itr2 -= _bytesPerPixel;
-                }
-            }
-        }
-
-        inline void     VerticalFlip(void)
-        {
-            for (unsigned int y = 0; y < (_height / 2); ++y)
-            {
-                unsigned char* itr1 = Row(y);
-                unsigned char* itr2 = Row(_height - y - 1);
-
-                for (std::size_t x = 0; x < _rowIncrement; ++x)
-                {
-                    std::swap(*(itr1 + x),*(itr2 + x));
-                }
-            }
-        }*/
         // Perform a basic 'pixel' enlarging resample.
         inline bool Resample(BMPImage &dest, int newWidth, int newHeight)
         {
@@ -464,9 +248,10 @@ namespace CTRPluginFramework
             // Get a new buuffer to interpolate into
           if (!_loaded)
                 return (false);
-            dest._loaded = true;
 
           dest.SetWidthHeight(newWidth, newHeight);
+          if (!dest._loaded)
+              return (false);
           dest.Clear();
 
             unsigned char *newData = dest.data();//new unsigned char [newWidth * newHeight * 3];
@@ -480,7 +265,7 @@ namespace CTRPluginFramework
                 {
                     int pixel = (cy * (newWidth *3)) + (cx*3);
                     int nearestMatch =  (((int)(cy / scaleHeight) * (_width *3)) + ((int)(cx / scaleWidth) *3) );
-                    
+
                     newData[pixel    ] =  _data[nearestMatch    ];
                     newData[pixel + 1] =  _data[nearestMatch + 1];
                     newData[pixel + 2] =  _data[nearestMatch + 2];
@@ -491,12 +276,12 @@ namespace CTRPluginFramework
             //delete[] _data;
             //_data = newData;
             //_width = newWidth;
-            //_height = newHeight; 
+            //_height = newHeight;
 
             return true;
         }
 
-    
+
        inline void SubSample(BMPImage& dest)
        {
           /*
@@ -627,13 +412,13 @@ namespace CTRPluginFramework
              }
           }
        }
-    
+
        inline void UpSample(BMPImage &dest)
        {
           /*
              2x up-sample of original image.
           */
-    
+
           dest.SetWidthHeight(2 * _width , 2 * _height);
           dest.Clear();
 

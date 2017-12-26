@@ -9,6 +9,7 @@
 #include "ctrulib/allocator/linear.h"
 #include "3DS.h"
 #include "CTRPluginFramework/Utils/Utils.hpp"
+#include "CTRPluginFrameworkImpl/System/Heap.hpp"
 
 namespace CTRPluginFramework
 {
@@ -17,7 +18,7 @@ namespace CTRPluginFramework
         if (_data != nullptr)
         {
             //linearFree(_data);
-            delete[] _data;
+            Heap::Free(_data);
             _data = nullptr;
         }
     }
@@ -81,7 +82,7 @@ namespace CTRPluginFramework
         _loaded = true;
 
         std::memset(_data, 0, _dataSize);
-        
+
         int   startY = 0;
         int   offsetX = 0;
 
@@ -113,7 +114,7 @@ namespace CTRPluginFramework
         int posX = scr->IsTopScreen() ? x + (340 - _width) / 2 : x + (280 - _width) / 2;
         int posY = y + (200 - _height) / 2;
 
-        
+
         u8      *img = (u8 *)data();
         u8      *left = scr->GetLeftFramebuffer(posX, posY);
         int     bpp = scr->GetBytesPerPixel();
@@ -140,7 +141,7 @@ namespace CTRPluginFramework
     }
 
     void     BMPImage::Draw(const IntRect &area, float fade)
-    {    
+    {
         ScreenImpl *scr = Renderer::_screen;
 
         int posX = area.leftTop.x;
@@ -167,10 +168,10 @@ namespace CTRPluginFramework
         else if (_height > height)
           startY = (_height - height) / 2;
 
-      
+
         if (xOffset < 0)
           xOffset = 0;
-        
+
         Color   imgc;
         u32     bpp = scr->GetBytesPerPixel();
         u32     stride = scr->GetStride();
@@ -180,7 +181,7 @@ namespace CTRPluginFramework
             u8 *left = scr->GetLeftFramebuffer(posX, posY);
 
             while (height--)
-            {                
+            {
                 u8 *img = Row(startY++) + xOffset;
                 u8 *framebuf = left;
                 for (int x = 0; x < width; x++)
@@ -221,7 +222,7 @@ namespace CTRPluginFramework
                     img += 3;
                 }
                 left -= bpp;
-            }               
+            }
         }
     }
 
@@ -229,18 +230,18 @@ namespace CTRPluginFramework
     {
       _rowIncrement = _width * _bytesPerPixel;
       if (_data != nullptr)
-        delete[] _data;
+        Heap::Free(_data);
 
       _dataSize = _height * _rowIncrement;
-      _data = new u8[_dataSize];
+      _data = static_cast<u8 *>(Heap::Alloc(_dataSize));
 
       if (_data == nullptr)
       {
         _dataSize = 0;
+        _loaded = false;
         return (-1);
       }
-        
-        return (0);
+      return (0);
     }
 
     void     BMPImage::LoadBitmap(void)
@@ -256,14 +257,14 @@ namespace CTRPluginFramework
         if (res != 0)
         {
             OSD::Notify(Utils::Format("Error opening: %s, code: %08X", _fileName.c_str(), res), red, black);
-            return;        
+            return;
         }
 
         _width  = 0;
         _height = 0;
 
-        BitmapFileHeader        bfh;
-        BitmapInformationHeader bih;
+        BitmapFileHeader        bfh = { 0 };
+        BitmapInformationHeader bih = { 0 };
 
         bfh.Clear();
         bih.Clear();
@@ -273,14 +274,14 @@ namespace CTRPluginFramework
             file.Close();
 
             OSD::Notify("BMP Error: Error while reading BFH", red, black);
-            return;                
+            return;
         }
         if (ReadBIH(file, bih))
         {
             file.Close();
 
             OSD::Notify("BMP Error: Error while reading BIH", red, black);
-            return;                    
+            return;
         }
 
         if (bfh.type != 19778)
@@ -321,16 +322,16 @@ namespace CTRPluginFramework
         _width  = bih.width;
         _height = bih.height;
 
-       /* if (_width > 340 || _height > 200)
+        if (_width > 340 || _height > 200)
         {
             bfh.Clear();
             bih.Clear();
 
-            file.Close();   
+            file.Close();
 
             OSD::Notify("BMP Error: file should not be higher than 340px * 200px", red, black);
-            return;             
-        }*/
+            return;
+        }
         _dimensions = IntVector(_width, _height);
         _bytesPerPixel = bih.bit_count >> 3;
         file.Seek(bfh.off_bits, File::SET);
@@ -349,7 +350,7 @@ namespace CTRPluginFramework
 
             OSD::Notify("BMP Error: The file is too big.", red, black);
 
-            return;                
+            return;
         }
 
        /* std::size_t bitmapLogicalSize = (_height * _width * _bytesPerPixel) + (_height * padding) + bih.StructSize() + bfh.StructSize();
@@ -373,20 +374,23 @@ namespace CTRPluginFramework
 
             file.Close();
 
-            OSD::Notify("BMP Error: Error while allocating requiered space.", red, black);
+            OSD::Notify("BMP Error: Error while allocating required space.", red, black);
             //_data.resize(0);
-            return;                
+            return;
         }
 
         int   rows = _height / 5;
-        
+
         int   rowWidth = _rowIncrement + padding;
         int   totalwidth = rows * rowWidth;
         int   oddRows = rows * 5;
 
-        unsigned char *buf = new u8[totalwidth];
+        unsigned char *buf = (u8 *)Heap::Alloc(totalwidth);
         if (buf == nullptr)
+        {
+            OSD::Notify("BMP Error: temp buffer allocation failed");
             return;
+        }
         int i = 0;
         for (i = 0; i < oddRows; )
         {
@@ -411,7 +415,7 @@ namespace CTRPluginFramework
             std::memcpy(dataPtr, bufPtr, _rowIncrement);
         }
 
-        delete[] buf;
+        Heap::Free(buf);
         file.Close();
         _loaded = true;
     }
