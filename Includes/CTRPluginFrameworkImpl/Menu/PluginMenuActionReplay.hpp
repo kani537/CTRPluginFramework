@@ -23,10 +23,12 @@ namespace CTRPluginFramework
     private:
         Menu    _topMenu;
         ToggleButton<PluginMenuActionReplay, void>      _noteBtn;
+        IconButton<PluginMenuActionReplay, void>        _editorBtn;
 
         void    _DrawBottom(void);
         void    _ProcessEvent(EventList &eventList);
         void    _Update(const Time &delta);
+        void    _EditorBtn_OnClick(void);
     };
 }
 

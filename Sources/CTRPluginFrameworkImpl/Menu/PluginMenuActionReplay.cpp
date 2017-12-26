@@ -2,12 +2,14 @@
 #include "CTRPluginFrameworkImpl/ActionReplay/ARCode.hpp"
 #include "CTRPluginFrameworkImpl/ActionReplay/MenuEntryActionReplay.hpp"
 #include "CTRPluginFramework/Utils/Utils.hpp"
+#include "CTRPluginFramework/Menu/Keyboard.hpp"
 
 namespace CTRPluginFramework
 {
     PluginMenuActionReplay::PluginMenuActionReplay() :
         _topMenu{ "ActionReplay" },
-        _noteBtn(*this, nullptr, IntRect(90, 30, 25, 25), Icon::DrawInfo, false)
+        _noteBtn(*this, nullptr, IntRect(90, 30, 25, 25), Icon::DrawInfo, false),
+        _editorBtn(*this, &PluginMenuActionReplay::_EditorBtn_OnClick, IntRect(130, 30, 25, 25), Icon::DrawEdit, false)
     {
     }
 
@@ -28,6 +30,7 @@ namespace CTRPluginFramework
         // Update components
         _Update(delta);
 
+        // Check if note state must be changed
         if (_noteBtn())
         {
             if (!_topMenu.IsNoteOpen())
@@ -38,6 +41,9 @@ namespace CTRPluginFramework
             else
                 _topMenu.CloseNote();
         }
+
+        // Check editor btn
+        _editorBtn();
 
         // Draw menu on top screen
         _topMenu.Draw();
@@ -55,7 +61,7 @@ namespace CTRPluginFramework
         Window::BottomWindow.Draw();
 
         _noteBtn.Draw();
-
+        _editorBtn.Draw();
     }
 
     void    PluginMenuActionReplay::_ProcessEvent(EventList &eventList)
@@ -84,5 +90,35 @@ namespace CTRPluginFramework
         _noteBtn.Enable(item && !item->note.empty());
         _noteBtn.SetState(_topMenu.IsNoteOpen());
         _noteBtn.Update(touchIsDown, touchPos);
+
+        _editorBtn.Enable(item != nullptr);
+        _editorBtn.Update(touchIsDown, touchPos);
+    }
+
+    void    PluginMenuActionReplay::_EditorBtn_OnClick(void)
+    {
+        MenuItem    *item = _topMenu.GetSelectedItem();
+        Keyboard    option{ "", {"name", "note", "code"} };
+        Keyboard    strKbd;
+
+        if (!item)
+            return;
+
+        int choice = option.Open();
+        if (choice >= 0)
+        {
+            // Name edition
+            if (choice == 0)
+                strKbd.Open(item->name, item->name);
+            // Note edition
+            else if (choice == 1)
+                strKbd.Open(item->note, item->note);
+            // Code edition
+            else if (choice == 2)
+            {
+                // edit code
+            }
+
+        }
     }
 }
