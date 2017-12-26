@@ -1,5 +1,6 @@
 #include "CTRPluginFrameworkImpl/Menu/PluginMenuImpl.hpp"
 #include "CTRPluginFrameworkImpl/Menu/GatewayRAMDumper.hpp"
+#include "CTRPluginFrameworkImpl/System/Heap.hpp"
 #include "Unicode.h"
 #include <ctime>
 
@@ -26,6 +27,19 @@ namespace CTRPluginFramework
         _regionIndex = 0;
         _achievedSize = 0;
         _totalSize = 0;
+
+        // Allocate buffer
+        u32     size = std::min((u32)((u32)Heap::SpaceFree() & ~0xFFF), (u32)0x60000);
+        void    *buffer = nullptr;
+
+        if (size)
+            buffer = Heap::Alloc(size);
+
+        if (!buffer)
+        {
+            (MessageBox("Error", "An error occured (buffer alloc failed)"))();
+            return (true);
+        }
 
         // Get regions list
         PluginMenuImpl::GetRegionsList(_regions);
@@ -55,7 +69,7 @@ namespace CTRPluginFramework
             _currentAddress = region.startAddress;
             _endAddress = region.endAddress;
 
-            u8      *_pool = static_cast<u8 *>(GetPool());
+            u8      *_pool = static_cast<u8 *>(buffer);
 
             // Dump region in chunk
             while (_currentAddress < _endAddress)
@@ -99,15 +113,21 @@ namespace CTRPluginFramework
 
         _file.Flush();
         _file.Close();
+
+        Heap::Free(buffer);
         return (true);
 
     abort:
         // Close file
         _file.Close();
 
+        Heap::Free(buffer);
+
         // Remove file
         std::string path("Dumps/" + _fileName);
         File::Remove(path);
+
+        Heap::Free(buffer);
         return (true);
     }
 
@@ -249,7 +269,7 @@ namespace CTRPluginFramework
 #define REGION_INFOS_LENGTH (sizeof(u32) * 3)
     void    GatewayRAMDumper::_WriteHeader(void)
     {
-        u32     *p_buffer = static_cast<u32 *>(GetPool());
+        u32     p_buffer[0x100];
         u32     *buffer = p_buffer;
 
         u32     fileOffset = sizeof(u32) * 2 + REGION_INFOS_LENGTH * _regions.size();
