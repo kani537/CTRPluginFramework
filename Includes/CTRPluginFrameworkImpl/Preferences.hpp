@@ -126,14 +126,17 @@ namespace CTRPluginFramework
         static void         LoadSavedEnabledCheats(void);
         static void         LoadSavedFavorites(void);
         static void         LoadHotkeysFromFile(void);
+        static void         LoadBackgrounds(void);
+        static void         UnloadBackgrounds(void);
         static void         WriteSettings(void);
 
     private:
         static bool         _cheatsAlreadyLoaded;
         static bool         _favoritesAlreadyLoaded;
+        static bool         _bmpCanBeLoaded;
 
         friend class PluginMenuImpl;
-        
+
         static void     Initialize(void);
     };
 }

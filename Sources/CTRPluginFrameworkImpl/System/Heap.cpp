@@ -8,17 +8,16 @@ extern "C"
 #include "../../ctrulib/allocator/addrmap.h"
 #include "CTRPluginFrameworkImpl/System/Heap.hpp"
 
+#include <cstring>
+
 void abort(void);
 
-namespace std
-{
-    void memcpy(void *dst, void *src, size_t size);
-}
+
 namespace CTRPluginFramework
 {
     namespace Heap
     {
-        u32     __ctrpf_heap = 0;
+        u8*     __ctrpf_heap = nullptr;
         u32     __ctrpf_heap_size = 0;
 
         static MemPool  g_heapPool;
@@ -28,7 +27,7 @@ namespace CTRPluginFramework
             if (!__ctrpf_heap || !__ctrpf_heap_size)
                 abort();
 
-            MemBlock    *blk = MemBlock::Create(reinterpret_cast<u8 *>(__ctrpf_heap), __ctrpf_heap_size);
+            MemBlock    *blk = MemBlock::Create(__ctrpf_heap, __ctrpf_heap_size);
 
             if (blk)
             {
@@ -76,7 +75,7 @@ namespace CTRPluginFramework
 
         void    *Alloc(const size_t size)
         {
-            return (MemAlign(size, 16));
+            return (MemAlign(size, 0x80));
         }
 
         void    *Realloc(void *ptr, const size_t size)

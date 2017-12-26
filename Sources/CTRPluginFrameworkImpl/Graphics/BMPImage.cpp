@@ -23,6 +23,17 @@ namespace CTRPluginFramework
         }
     }
 
+    void    BMPImage::Unload(void)
+    {
+        if (!_loaded)
+            return;
+        if (_data)
+            Heap::Free(_data);
+        _data = nullptr;
+        _dataSize = 0;
+        _loaded = false;
+    }
+
     void    BMPImage::SaveImage(const std::string &fileName) const
     {
         File file;

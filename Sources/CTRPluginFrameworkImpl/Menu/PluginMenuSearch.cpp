@@ -69,9 +69,6 @@ namespace CTRPluginFramework
 	    _valueTextBox.UseHexadecimal(false);
         _valueTextBox.SetValue((u32)0);
 
-        // Allocate search's pool
-        AllocatePool();
-
         _uiContainer += &_memoryRegions;
         _uiContainer += &_searchSize;
         _uiContainer += &_searchType;
@@ -119,7 +116,7 @@ namespace CTRPluginFramework
             {
                 _ProcessEvent(eventList[i]);
             }
-        }       
+        }
 
         // Update
         _Update(delta);
@@ -167,7 +164,7 @@ namespace CTRPluginFramework
 		{
 			_hexInput = !_hexInput;
 			_valueTextBox.UseHexadecimal(_hexInput);
-		}			
+		}
 
         // Check ComboBox
 
@@ -297,7 +294,7 @@ namespace CTRPluginFramework
                 if (_currentSearch != nullptr)
                     _searchHistory.push_back(_currentSearch);
 
-                _currentSearch = new Search32(_currentSearch, fn);                
+                _currentSearch = new Search32(_currentSearch, fn);
             }
 
             if (_currentSearch != nullptr)
@@ -323,7 +320,7 @@ namespace CTRPluginFramework
                 _searchSize.SelectedItem = __builtin_ffs(TypeFlags(_currentSearch->GetType())) - 1;
                 if (_searchSize.SelectedItem == 4)
                     _searchSize.SelectedItem = 3;
-            }            
+            }
         }
     }
 
@@ -533,7 +530,7 @@ namespace CTRPluginFramework
             parameters.flags = (u32)SearchFlags::Second;
             parameters.previous = _searchHistory.front();
         }
-            
+
 
         // Size flags
         switch (_searchSize.SelectedItem)
@@ -591,8 +588,8 @@ namespace CTRPluginFramework
                 _searchHistory.pop_back();
                 _currentSearch = search;
             }
-            
-            MessageBox("Error\n\nAn error occurred: pool alloc.")();
+
+            (MessageBox("Error", "An error occurred: pool alloc."))();
             return;
         }
 
@@ -636,7 +633,7 @@ namespace CTRPluginFramework
         {
             for (auto it = _searchHistory.begin(); it != _searchHistory.end(); ++it)
                 delete *it;
-            _searchHistory.clear();         
+            _searchHistory.clear();
         }
 
         if (_currentSearch != nullptr)
@@ -718,7 +715,7 @@ namespace CTRPluginFramework
         static Clock    timer;
         static int      phase = 0;
 
-        std::string     waitLogo[] = 
+        std::string     waitLogo[] =
         {
             "\uE020", "\uE021", "\uE022", "\uE023", "\uE024", "\uE025", "\uE026", "\uE027"
         };
@@ -747,7 +744,7 @@ namespace CTRPluginFramework
             phase++;
             timer.Restart();
         }
-        
+
         if (phase > 7) phase = 0;
 
         posY += 10;
@@ -758,7 +755,7 @@ namespace CTRPluginFramework
         Renderer::DrawRect(progBarBorder, gainsboro, false);
 
         float percent = 138.f / 100.f;
-        float prog = _inSearch ? _currentSearch->Progress * percent : 138.f;      
+        float prog = _inSearch ? _currentSearch->Progress * percent : 138.f;
 
         // Draw progress fill
         IntRect progBarFill = IntRect(131, posY + 1, std::min((u32)prog, (u32)138), 13);
@@ -768,7 +765,7 @@ namespace CTRPluginFramework
         if (_inSearch)
         {
             // Draw Result count
-            //std::string res = "Hit(s): " + std::to_string(_currentSearch->ResultsCount);        
+            //std::string res = "Hit(s): " + std::to_string(_currentSearch->ResultsCount);
             char buf[100] = { 0 };
 
             sprintf(buf, "Hit(s): %u", _currentSearch->ResultsCount);
@@ -777,7 +774,7 @@ namespace CTRPluginFramework
         if (!_inSearch)
         {
             std::string res = std::to_string(_currentSearch->ResultsCount) + " hit(s)";
-            std::string res2 =  "in " + std::to_string(_currentSearch->SearchTime.AsSeconds()) + "s";            
+            std::string res2 =  "in " + std::to_string(_currentSearch->SearchTime.AsSeconds()) + "s";
             Renderer::DrawString((char *)res.c_str(), 131, posY, blank);
             Renderer::DrawString((char *)res2.c_str(), 131, posY, blank);
             posY -= 10;
@@ -865,7 +862,7 @@ namespace CTRPluginFramework
                         _endRangeTextBox.SetValue(reg.endAddress);
                 }
                 index++;
-            }                      
+            }
         }
     }
 

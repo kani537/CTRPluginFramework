@@ -88,7 +88,7 @@ namespace CTRPluginFramework
 
     namespace Heap
     {
-        extern u32 __ctrpf_heap;
+        extern u8* __ctrpf_heap;
         extern u32 __ctrpf_heap_size;
     }
 
@@ -147,24 +147,29 @@ namespace CTRPluginFramework
         PatchProcess(settings);
 
         // Continue game
-        svcSignalEvent(g_continueGameEvent);
+
 
         // Wait for the game to be fully launched
-        Sleep(settings.WaitTimeToBoot);
+        //Sleep(settings.WaitTimeToBoot);
 
         // Init heap and newlib's syscalls
         initLib();
-
+        svcSignalEvent(g_continueGameEvent);
         // Copy FwkSettings to the globals (solve initialization issues)
         Preferences::Settings = settings;
-
+        void *tst;
         // If heap error, exit
         if (g_heapError)
             goto exit;
 
         // Init System::Heap
-        Heap::__ctrpf_heap_size = 0xC0000;
-        Heap::__ctrpf_heap = reinterpret_cast<u32>(new u8[Heap::__ctrpf_heap_size]);
+        if (System::IsLoaderNTR())
+            Heap::__ctrpf_heap_size = 0xC0000;
+        else
+            Heap::__ctrpf_heap_size = 0x180000;
+        Heap::__ctrpf_heap = static_cast<u8*>(::operator new(Heap::__ctrpf_heap_size));
+        tst = Heap::Alloc(0x100);
+        Heap::Free(tst);
         // Create plugin's main thread
         svcCreateEvent(&g_keepEvent, RESET_ONESHOT);
         g_mainThread = threadCreate(ThreadInit, (void *)threadStack, 0x4000, 0x18, -2, false);

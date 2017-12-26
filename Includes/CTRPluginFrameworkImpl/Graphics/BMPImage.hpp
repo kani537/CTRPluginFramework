@@ -93,6 +93,8 @@ namespace CTRPluginFramework
             return (_loaded);
         }
 
+        void Unload(void);
+
         const IntVector &GetDimensions(void)
         {
             return (_dimensions);

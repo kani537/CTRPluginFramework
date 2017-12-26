@@ -26,6 +26,7 @@ typedef unsigned long __PTRDIFF_TYPE__;
 #include "CTRPluginFramework/System/FwkSettings.hpp"
 #include "CTRPluginFrameworkImpl/Graphics/TextBox.hpp"
 #include "CTRPluginFrameworkImpl/Menu/MenuEntryImpl.hpp"
+#include "CTRPluginFrameworkImpl/System/Heap.hpp"
 #include <string>
 
 namespace CTRPluginFramework
@@ -92,22 +93,33 @@ namespace CTRPluginFramework
 
 #else
     MenuEntry *entry;
+    MenuEntry *ctrpfHeap;
     int     main(void)
     {
         if (!System::IsLoaderNTR())
-            Directory::ChangeWorkingDirectory(Utils::Format("/luma/plugins/%016llX/", Process::GetTitleID()));
+        {
+            if (*(vu32 *)0x070000FC)
+                Directory::ChangeWorkingDirectory("/luma/plugins/ActionReplay/");
+            else
+                Directory::ChangeWorkingDirectory(Utils::Format("/luma/plugins/%016llX/", Process::GetTitleID()));
+        }
         //Sleep(Seconds(5.f));
-        PluginMenu  *m = new PluginMenu("Action Replay Test", 0, 1, 0);
+        PluginMenu  *m = new PluginMenu("Action Replay Test", 0, 1, 1);
         PluginMenu  &menu = *m;
 
-        entry = new MenuEntry(Utils::Format("MemFree: %08X", getMemFree()));
+        entry = new MenuEntry(Utils::Format("Newlib MemFree: %08X", getMemFree()));
         entry->CanBeSelected(false);
         menu += entry;
+
+        ctrpfHeap = new MenuEntry(Utils::Format("Ctrpf MemFree: %08X", Heap::SpaceFree()));
+        ctrpfHeap->CanBeSelected(false);
+        menu += ctrpfHeap;
 
 #endif
         menu.OnOpening = []
         {
             entry->Name() = Utils::Format("MemFree: %08X", getMemFree());
+            ctrpfHeap->Name() = Utils::Format("Ctrpf MemFree: %08X", Heap::SpaceFree());
         };
         menu.SyncronizeWithFrame(true);
         // Launch menu and mainloop

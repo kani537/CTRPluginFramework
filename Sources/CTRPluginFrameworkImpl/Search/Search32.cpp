@@ -8,27 +8,31 @@
 #include <algorithm>
 #include "3DS.h"
 #include "CTRPluginFramework/Utils/Utils.hpp"
+#include "CTRPluginFrameworkImpl/Preferences.hpp"
 
 namespace CTRPluginFramework
 {
     extern void    *_pool;
-    
+
     Search32::Search32(SearchParameters& parameters) :
     Search(parameters.previous)
     {
-        extern u32     _poolSize;
-        u32 poolSize = _poolSize;
+        u32 poolSize = 0x60000;
 
-        // If poolSize is 0 an error occured
-        if (poolSize == 0 || _pool == nullptr)
+        // Check that System::Heap has enough space available
+        if (Heap::SpaceFree() < 0xB0000) /// 0x60000 (for pool) + 0x50000 (for Storage)
         {
-            Error.pool = true;
-            if (_pool != nullptr)
-                ReleasePool();
-                //delete[](u8 *)_pool;
-            return;
+            // Unload bmp
+            Preferences::UnloadBackgrounds();
+            // Recheck
+            if (Heap::SpaceFree() < 0xB0000)
+            {
+                Error.pool = true;
+                return;
+            }
         }
 
+        _pool = Heap::Alloc(0x60000);
         // Init parent's variables
         _checkValue.U32 = parameters.value32.U32;
         _flags = parameters.flags;
@@ -81,14 +85,14 @@ namespace CTRPluginFramework
                         _totalRegionSize += size;
                     }
                     else
-                    {   
+                    {
                         // Region is okay, add it to header
                         _header.regions[_header.nbRegions] = { region.startAddress, region.endAddress, 0, 0 };
                         _header.nbRegions++;
 
                         // Increment total size
                         _totalRegionSize += regionSize;
-                    }                    
+                    }
                 }
             }
 
@@ -118,6 +122,11 @@ namespace CTRPluginFramework
 
     Search32::~Search32()
     {
+        if (_pool)
+        {
+            Heap::Free(_pool);
+            _pool = nullptr;
+        }
     }
 
     void Search32::ReadResults(u32 index, StringVector& addr, StringVector& newVal, StringVector& oldVal)
@@ -166,7 +175,7 @@ namespace CTRPluginFramework
                         addr.push_back(Utils::ToHex(result.address));
                         newVal.push_back(Utils::ToHex(result.value.U32));
                     }
-                }                
+                }
                 return;
             }
             // Unknown Search
@@ -206,7 +215,7 @@ namespace CTRPluginFramework
                     newVal.push_back(Utils::ToHex(result.newValue.U32));
                     oldVal.push_back(Utils::ToHex(result.oldValue.U32));
                 }
-            }            
+            }
         }
     }
 
@@ -248,7 +257,7 @@ namespace CTRPluginFramework
         else return (true); ///< An error occured, skip region
 
         u32     *pool = (u32 *)_pool;
-        
+
         pool += _resultsInPool;
 
         while (_currentAddress < _endRegion && _resultsInPool < _maxResults)
@@ -275,11 +284,11 @@ namespace CTRPluginFramework
         u32     nbItem = std::min((u32)25000, _endRegion - _currentAddress);
 
         Storage<Results32>      previousHits(nbItem);
-        Results32WithOld        *result = reinterpret_cast<Results32WithOld *>((u32)_pool + (sizeof(Results32WithOld) * _resultsInPool));  
+        Results32WithOld        *result = reinterpret_cast<Results32WithOld *>((u32)_pool + (sizeof(Results32WithOld) * _resultsInPool));
 
         // Extract previous hits
         _previous->ExtractPreviousHits(previousHits.data(), _currentAddress, sizeof(Results32), nbItem);
-        
+
         // Resize container to real size
         previousHits.resize(nbItem);
 

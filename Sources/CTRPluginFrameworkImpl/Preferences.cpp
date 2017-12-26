@@ -21,6 +21,7 @@ namespace CTRPluginFramework
     bool        Preferences::AutoLoadFavorites = false;
     bool        Preferences::_cheatsAlreadyLoaded = false;
     bool        Preferences::_favoritesAlreadyLoaded = false;
+    bool        Preferences::_bmpCanBeLoaded = true;
     bool        Preferences::ShowBottomFps = false;
     bool        Preferences::ShowTopFps = false;
     bool        Preferences::UseFloatingBtn = false;
@@ -66,7 +67,7 @@ namespace CTRPluginFramework
 
         delete temp;
 
-        return (res);        
+        return (res);
     }*/
 
     float GetRatio(int width, int height, int maxX, int maxY)
@@ -80,6 +81,9 @@ namespace CTRPluginFramework
     {
         int width = img->Width();
         int height = img->Height();
+
+        if (width == maxX && height == maxY)
+            return img;
 
         float ratio = GetRatio(width, height, maxX, maxY);
 
@@ -96,7 +100,7 @@ namespace CTRPluginFramework
             BMPImage *res = new BMPImage(*temp, maxX, maxY);
             delete temp;
             return res;
-        }        
+        }
 
         return (temp);
     }
@@ -234,6 +238,68 @@ namespace CTRPluginFramework
         }
     }
 
+    void    Preferences::LoadBackgrounds(void)
+    {
+        if (!_bmpCanBeLoaded)
+            return;
+
+        // Try to load top background
+        if (!EcoMemoryMode && File::Exists("TopBackground.bmp")) // Load the backgrounds
+        {
+            topBackgroundImage = new BMPImage("TopBackground.bmp");
+            if (topBackgroundImage->IsLoaded())
+                topBackgroundImage = PostProcess(topBackgroundImage, 340, 200);
+            else
+            {
+                delete topBackgroundImage;
+                topBackgroundImage = nullptr;
+            }
+        }
+        else
+            topBackgroundImage = nullptr;
+
+        // Try to load bottom background
+        if (!EcoMemoryMode && File::Exists("BottomBackground.bmp"))
+        {
+            bottomBackgroundImage = new BMPImage("BottomBackground.bmp");
+            if (bottomBackgroundImage->IsLoaded())
+                bottomBackgroundImage = PostProcess(bottomBackgroundImage, 280, 200);
+            else
+            {
+                delete bottomBackgroundImage;
+                bottomBackgroundImage = nullptr;
+            }
+        }
+        else
+            bottomBackgroundImage = nullptr;
+
+        _bmpCanBeLoaded = false;
+
+        // Update Window
+        Window::Initialize();
+    }
+
+    void    Preferences::UnloadBackgrounds(void)
+    {
+        if (bottomBackgroundImage || topBackgroundImage)
+            _bmpCanBeLoaded = true;
+
+        if (bottomBackgroundImage)
+        {
+            delete bottomBackgroundImage;
+            bottomBackgroundImage = nullptr;
+        }
+
+        if (topBackgroundImage)
+        {
+            delete topBackgroundImage;
+            topBackgroundImage = nullptr;
+        }
+
+        // Update Window
+        Window::Initialize();
+    }
+
     void    Preferences::WriteSettings(void)
     {
         OSDImpl::DrawSaveIcon = true;
@@ -244,7 +310,7 @@ namespace CTRPluginFramework
 
         memcpy(header.sig, g_signature, 8);
         header.version = SETTINGS_VERSION;
-        
+
         if (AutoSaveCheats) header.flags |= (u64)SettingsFlags::AutoSaveCheats;
         if (AutoLoadCheats) header.flags |= (u64)SettingsFlags::AutoLoadCheats;
         if (AutoSaveFavorites) header.flags |= (u64)SettingsFlags::AutoSaveFavorites;
@@ -278,37 +344,6 @@ namespace CTRPluginFramework
 
     void    Preferences::Initialize(void)
     {
-        // Try to load top background
-        if (!EcoMemoryMode && File::Exists("TopBackground.bmp")) // Load the backgrounds
-        {
-            topBackgroundImage = new BMPImage("TopBackground.bmp");
-            if (topBackgroundImage->IsLoaded())
-                topBackgroundImage = PostProcess(topBackgroundImage, 340, 200);
-            else
-            {
-                delete topBackgroundImage;
-                topBackgroundImage = nullptr;
-            }
-        }
-        else
-            topBackgroundImage = nullptr;
-
-        // Try to load bottom background
-        if (!EcoMemoryMode && File::Exists("BottomBackground.bmp"))
-        {
-            bottomBackgroundImage = new BMPImage("BottomBackground.bmp");
-            if (bottomBackgroundImage->IsLoaded())
-                bottomBackgroundImage = PostProcess(bottomBackgroundImage, 280, 200);
-            else
-            {
-                delete bottomBackgroundImage;
-                bottomBackgroundImage = nullptr;
-            }
-        }
-        else
-            bottomBackgroundImage = nullptr;
-
-        // Update Window
-        Window::Initialize();
+        LoadBackgrounds();
     }
 }

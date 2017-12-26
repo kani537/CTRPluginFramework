@@ -8,40 +8,12 @@
 #include <cstdarg>
 #include <cstdio>
 #include "CTRPluginFramework/Utils/Utils.hpp"
+#include "CTRPluginFrameworkImpl/System/Heap.hpp"
+#include "CTRPluginFrameworkImpl/Preferences.hpp"
 
 namespace CTRPluginFramework
 {
-    static  void *__pool = nullptr;
-    void    *_pool = nullptr; ///< Initialized in child class
-    u32     _poolSize = 0;
-
-    void     AllocatePool(void)
-    {
-        u32 size = 0x70000;
-
-        if (__pool != nullptr)
-            return;
-        do
-        {
-            size -= 0x10000;
-            __pool = new u8[size];
-        } while (__pool == nullptr && size > 0x10000);
-
-        if (__pool != nullptr)
-            _poolSize = size;
-    }
-
-    void    ReleasePool(void)
-    {
-        delete[] static_cast<u8 *>(__pool);
-
-        __pool = _pool = nullptr;
-    }
-
-    void    *GetPool(void)
-    {
-        return (__pool);
-    }
+    void    *_pool = nullptr;
 
     Search::Search(Search *previous) :
         Error({ 0 }),
@@ -84,8 +56,6 @@ namespace CTRPluginFramework
         _header.step = Step;
         // Write Header to reserve space
         WriteHeader();
-
-        _pool = __pool;
     }
 
     Search::Search(Search *previous, const std::string &filename) :
@@ -131,7 +101,6 @@ namespace CTRPluginFramework
                 CreateIndexTable();
             }
         }
-        _pool = __pool;
     }
 
     void    Search::Cancel(void)
@@ -142,12 +111,16 @@ namespace CTRPluginFramework
         // Correct header
         _header.regions[_indexRegion].endAddress = _currentAddress;
         _header.nbRegions = _indexRegion + 1;
-        
+
         // Update Header
         WriteHeader();
 
         // Set search time
         SearchTime = clock.Restart();
+
+        // Release pool
+        Heap::Free(_pool);
+        _pool = nullptr;
 
         // Set index to 0 so it's available to read results
         _indexRegion = 0;
@@ -156,6 +129,9 @@ namespace CTRPluginFramework
 
         // Construct index table
         CreateIndexTable();
+
+        // Reload bmps if needed
+        Preferences::LoadBackgrounds();
     }
 
     bool    Search::ExecuteSearch(void)
@@ -193,7 +169,7 @@ namespace CTRPluginFramework
         // Update progress
         UpdateProgress();
 
-        // If we finished to search the current region, 
+        // If we finished to search the current region,
         if (isRegionFinished)
         {
             // Write all results in pool to file
@@ -208,7 +184,9 @@ namespace CTRPluginFramework
                 // Update Header
                 WriteHeader();
 
-                //delete[] static_cast<u8 *>(_pool);
+                // Release pool
+                Heap::Free(_pool);
+                _pool = nullptr;
 
                 // Set index to 0 so it's available to read results
                 _indexRegion = 0;
@@ -217,6 +195,9 @@ namespace CTRPluginFramework
 
                 // Construct index table
                 CreateIndexTable();
+
+                // Reload bmps if needed
+                Preferences::LoadBackgrounds();
 
                 return (true);
             }
@@ -303,7 +284,7 @@ namespace CTRPluginFramework
                 MessageBox("Error\n\n" + Utils::Format("Couldn't read previous results !\nError: %08X\nreadSize: 0x%X\nOffset: 0x%llX\nSize: 0x%llX",
                     error, structSize * nbItem, offset, _file.GetSize()))();
             }
-        }        
+        }
     }
 
     SearchFlags     Search::GetType(void) const
@@ -340,8 +321,8 @@ namespace CTRPluginFramework
         u32 size = _resultSize * _resultsInPool;
 
         // Write results to file
-        _file.Write(_pool, size);  
-        
+        _file.Write(_pool, size);
+
         // Update header
         _header.regions[_indexRegion].nbResults += _resultsInPool;
 
@@ -355,7 +336,7 @@ namespace CTRPluginFramework
 
         if (IsFirstSearch(_flags))
         {
-             excedent = _currentAddress - _startRegion;         
+             excedent = _currentAddress - _startRegion;
         }
         else
         {
@@ -363,7 +344,7 @@ namespace CTRPluginFramework
             excedent = _currentAddress;
         }
 
-        Progress = 100.0f * (float)(_achievedRegionSize + excedent) / (float)_totalRegionSize;        
+        Progress = 100.0f * (float)(_achievedRegionSize + excedent) / (float)_totalRegionSize;
     }
 
     bool    Search::CheckNextRegion(void)
@@ -380,7 +361,7 @@ namespace CTRPluginFramework
 
             // Increment achieved size for progress calculation
             _achievedRegionSize += _endRegion - _startRegion;
-            
+
             // Set Region's range
             _startRegion = _header.regions[_indexRegion].startAddress;
             _endRegion = _header.regions[_indexRegion].endAddress - 1;
@@ -397,7 +378,7 @@ namespace CTRPluginFramework
         {
             // If we've done the last region, return true
             if (_indexRegion >= _header.nbRegions)
-                return (true);                
+                return (true);
 
             // Increment index
             _indexRegion++;

@@ -65,8 +65,9 @@ namespace CTRPluginFramework
             }
 
             // Fix heap perms
-            if (!Process::ProtectRegion(__ctru_heap, 7))
-                goto fatal;
+            Process::CheckRegion(__ctru_heap, __ctru_heap_size, 7);
+            /*if (!Process::ProtectRegion(__ctru_heap, 7))
+                goto fatal;*/
         }
 
         // Set up newlib heap

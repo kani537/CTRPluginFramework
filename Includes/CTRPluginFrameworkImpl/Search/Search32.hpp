@@ -2,6 +2,7 @@
 #define CTRPLUGINFRAMEWORKIMPL_SEARCH32_HPP
 
 #include "CTRPluginFrameworkImpl/Search/SearchBase.hpp"
+#include "CTRPluginFrameworkImpl/System/IAllocator.hpp"
 
 namespace CTRPluginFramework
 {
@@ -9,7 +10,9 @@ namespace CTRPluginFramework
     {
         using StringVector = std::vector<std::string>;
         using u32Vector = std::vector<u32>;
-#define Storage std::vector
+//#define Storage std::vector<
+template <typename T>
+using Storage = std::vector<T, IAllocator<T>>;
 
     public:
 
