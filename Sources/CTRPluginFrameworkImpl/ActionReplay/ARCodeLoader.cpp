@@ -11,6 +11,7 @@
 #include <locale>
 #include <cctype>
 #include <cstring>
+#include "CTRPluginFramework/Menu/MessageBox.hpp"
 
 namespace CTRPluginFramework
 {
@@ -73,6 +74,9 @@ namespace CTRPluginFramework
 
     static void     Process(std::string &str)
     {
+        if (str.empty())
+            return;
+
         // Process our string
         for (u32 i = 0; i < str.size() - 2; i++)
         {
@@ -96,6 +100,73 @@ namespace CTRPluginFramework
 
                     str.erase(i, 6);
                     str.insert(i, utf8);
+                }
+            }
+            // Check if we found a color pattern
+            else if (c == '~')
+            {
+                char strColor[5] = { 0 };
+                const char *cstr = str.c_str() + i + 1;
+
+                // Check if it's a hex color
+                if (*cstr == '#')
+                {
+                    std::string hexpattern = str.substr(i + 2, 6);
+
+                    // If it's a valid hex pattern
+                    if (!IsNotCode(hexpattern))
+                    {
+                        bool error = false;
+                        u32 hex = ActionReplayPriv::Str2U32(hexpattern, error);
+
+                        if (!error)
+                        {
+                            Color color(hex << 8); ///< Ctor expect 0xRGBA we have 0x0RGB
+
+                            str.erase(i, 9); /// ~#RRGGBB~ => 9 chars
+                            strColor[0] = 0x1B;
+                            strColor[1] = std::max((u8)1, color.r);
+                            strColor[2] = std::max((u8)1, color.g);
+                            strColor[3] = std::max((u8)1, color.b);
+                            str.insert(i, strColor);
+                            i += 3;
+                        }
+                    }
+                    continue;
+                }
+
+                // Check if it's a predefined color
+                struct PColor
+                {
+                    PColor(const char *n, const Color &col) :
+                        name(n), color(col)
+                    {
+                    }
+                    const char *name;
+                    const Color &color;
+                };
+
+                static const std::vector<PColor> colors =
+                {
+                    PColor("white", Color::Blank), PColor("black", Color::Black),
+                    PColor("red", Color::Red), PColor("green", Color::Green), PColor("blue", Color::Blue),
+                    PColor("cyan", Color::Cyan), PColor("magenta", Color::Magenta), PColor("yellow", Color::Yellow), PColor("gray", Color::Grey)
+                };
+
+                for (const PColor &color : colors)
+                {
+                    u32 colorsize = std::strlen(color.name);
+                    if (!std::strncmp(cstr, color.name, colorsize) && *(cstr + colorsize) == '~')
+                    {
+                        str.erase(i, colorsize + 2);
+                        strColor[0] = 0x1B;
+                        strColor[1] = std::max((u8)1, color.color.r);
+                        strColor[2] = std::max((u8)1, color.color.g);
+                        strColor[3] = std::max((u8)1, color.color.b);
+                        str.insert(i, strColor);
+                        i += 3;
+                        break;
+                    }
                 }
             }
         }
@@ -123,7 +194,6 @@ namespace CTRPluginFramework
     }
 
     using FolderStack = std::stack<MenuFolderImpl*>;
-
     void    ActionReplay_LoadCodes(MenuFolderImpl *dst)
     {
         File            file("cheats.txt");
@@ -157,7 +227,7 @@ namespace CTRPluginFramework
             if (line.empty())
             {
                 if (entry)
-                    folders.top()->Append(entry);
+                    folders.top()->Append(entry->Update());
                 entry = nullptr;
                 name.clear();
                 error = ecode = false;
@@ -171,7 +241,7 @@ namespace CTRPluginFramework
                 if (line[0] == '[')
                 {
                     if (entry)
-                        folders.top()->Append(entry);
+                        folders.top()->Append(entry->Update());
                     entry = nullptr;
 
                     Rtrim(line);
@@ -278,6 +348,6 @@ namespace CTRPluginFramework
 
         // Add the last code
         if (entry)
-            folders.top()->Append(entry);
+            folders.top()->Append(entry->Update());
     }
 }

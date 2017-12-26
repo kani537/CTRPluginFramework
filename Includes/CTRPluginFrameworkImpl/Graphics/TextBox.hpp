@@ -18,12 +18,10 @@ namespace CTRPluginFramework
         ~TextBox(){}
 
         // Open the texbox
-        void    Open(void);
+        void    Open(void) const;
         // Close the textbox
-        void    Close(void);
-
-        
-        bool    IsOpen(void);
+        void    Close(void) const;
+        bool    IsOpen(void) const;
 
         // Process Event
         // return false if the tb is closed
@@ -32,6 +30,7 @@ namespace CTRPluginFramework
         void    Update(const std::string &title, std::string &text);
         // Draw
         void    Draw(void) override;
+        void    DrawConst(void) const;
         void    Update(const bool isTouchDown, const IntVector &pos) override;
 
         Color   titleColor;
@@ -47,7 +46,7 @@ namespace CTRPluginFramework
         const std::string       *_text;
         const IntRect           _box;
         const IntRect           _border;
-        bool                    _isOpen;
+        mutable bool            _isOpen;
         bool                    _displayScrollbar;
 
         u32                     _currentLine;

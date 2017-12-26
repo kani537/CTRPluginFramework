@@ -12,23 +12,25 @@
 
 namespace CTRPluginFramework
 {
-    Menu::Menu(const std::string &title, const std::string &footer, IconCallback iconCallback)
+    Menu::Menu(const std::string &title, const std::string &footer, IconCallback iconCallback) :
+        _noteTB("", "", IntRect(40, 30, 320, 180))
     {
         drawFooter = false;
         _folder = new MenuFolderImpl(title, footer);
         _iconCallback = iconCallback;
-        _lastSelectedItem = nullptr;
+        _lastNoteItem = _lastSelectedItem = nullptr;
         _selector = 0;
         _reverseFlow = _selectedNameSize = 0;
         _maxScrollOffset = _scrollOffset = 0.f;
     }
 
-    Menu::Menu(MenuFolderImpl *folder, IconCallback iconCallback)
+    Menu::Menu(MenuFolderImpl *folder, IconCallback iconCallback) :
+        _noteTB("", "", IntRect(40, 30, 320, 180))
     {
         drawFooter = false;
         _folder = folder == nullptr ? new MenuFolderImpl("Menu") : folder;
         _iconCallback = iconCallback;
-        _lastSelectedItem = nullptr;
+        _lastNoteItem = _lastSelectedItem = nullptr;
         _selector = 0;
         _reverseFlow = _selectedNameSize = 0;
         _maxScrollOffset = _scrollOffset = 0.f;
@@ -189,6 +191,12 @@ namespace CTRPluginFramework
                 posY += 4;
             }
         }
+
+        if (_noteTB.IsOpen())
+        {
+            _noteTB.DrawConst();
+        }
+
         if (drawFooter)
         {
             Renderer::SetTarget(BOTTOM);
@@ -205,6 +213,12 @@ namespace CTRPluginFramework
     // Return a MenuEvent value
     int     Menu::ProcessEvent(Event &event, MenuItem **userchoice)
     {
+        if (_noteTB.IsOpen())
+        {
+            _noteTB.ProcessEvent(event);
+            return Nothing;
+        }
+
         // If the current folder is empty
         if (_folder->ItemsCount() == 0)
         {
@@ -357,7 +371,7 @@ namespace CTRPluginFramework
     {
         if (!_input.HasTimePassed(Milliseconds(200)))
             return;
-        while (step-- > 0 && _selector > 0)
+        while (_selector > 0 && step-- > 0)
                 _selector--;
         if (step > 0)
             _selector = std::max(0, static_cast<int>(_folder->ItemsCount() - 1));
@@ -368,7 +382,7 @@ namespace CTRPluginFramework
     {
         if (!_input.HasTimePassed(Milliseconds(200)))
             return;
-        while (step-- > 0 && _selector < static_cast<int>(_folder->ItemsCount() - 1))
+        while (_selector < static_cast<int>(_folder->ItemsCount() - 1) && step-- > 0)
             _selector++;
         if (step > 0)
             _selector = 0;
@@ -429,5 +443,42 @@ namespace CTRPluginFramework
                 _scrollClock.Restart();
             }
         }
+    }
+
+    bool    Menu::ShowNote(void)
+    {
+        MenuItem *item = GetSelectedItem();
+
+        if (_lastNoteItem != item)
+        {
+            _lastNoteItem = item;
+
+            if (item == nullptr)
+                return false;
+
+            if (item->note.empty())
+            {
+                _lastNoteItem = nullptr;
+                return false;
+            }
+
+            _noteTB.Update(item->name, item->note);
+        }
+
+        if (item == nullptr)
+            return false;
+
+        _noteTB.Open();
+        return true;
+    }
+
+    void    Menu::CloseNote(void)
+    {
+        _noteTB.Close();
+    }
+
+    bool    Menu::IsNoteOpen(void)
+    {
+        return (_noteTB.IsOpen());
     }
 }

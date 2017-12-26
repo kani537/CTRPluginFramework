@@ -152,7 +152,6 @@ namespace CTRPluginFramework
         queue.push(id);
     }
 
-    void    ActionReplay_FetchList(void);
     bool    PluginMenuExecuteLoop::operator()(void)
     {
         static bool isBusy = false;
@@ -165,7 +164,6 @@ namespace CTRPluginFramework
 
         isBusy = true;
 
-      //  ActionReplay_FetchList();
         for (int i = 0; i < _executeLoop.size(); i++)
         {
             MenuEntryImpl *entry = _executeLoop[i];

@@ -41,8 +41,8 @@ namespace CTRPluginFramework
     public:
         ~_OSDManager(void);
 
-        static _OSDManager  *GetInstance(void);      
-        
+        static _OSDManager  *GetInstance(void);
+
         OSDMI   operator[](const std::string &key);
         void    Remove(const std::string &key);
         void    Lock(void);

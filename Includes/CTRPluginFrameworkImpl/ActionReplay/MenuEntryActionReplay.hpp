@@ -13,7 +13,7 @@ namespace CTRPluginFramework
         MenuEntryActionReplay(const std::string &name, const std::string &note = "");
         ~MenuEntryActionReplay();
 
-        void    Update(void);
+        MenuEntryActionReplay*    Update(void);
 
         ARCodeContext   context;
     };

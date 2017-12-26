@@ -270,7 +270,7 @@ namespace CTRPluginFramework
                 }
                 else if (mode == 4)
                 { /* ActionReplay  */
-                    if (ar(eventList))
+                    if (ar(eventList, delta))
                         mode = 0;
                 }
                 else if (mode == 5)

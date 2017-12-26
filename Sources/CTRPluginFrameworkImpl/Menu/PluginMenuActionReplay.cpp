@@ -6,7 +6,8 @@
 namespace CTRPluginFramework
 {
     PluginMenuActionReplay::PluginMenuActionReplay() :
-        _topMenu{ "ActionReplay" }
+        _topMenu{ "ActionReplay" },
+        _noteBtn(*this, nullptr, IntRect(90, 30, 25, 25), Icon::DrawInfo, false)
     {
     }
 
@@ -19,13 +20,24 @@ namespace CTRPluginFramework
         ActionReplay_LoadCodes(_topMenu.GetFolder());
     }
 
-    bool    PluginMenuActionReplay::operator()(EventList &eventList)
+    bool    PluginMenuActionReplay::operator()(EventList &eventList, const Time &delta)
     {
         // Process events
         _ProcessEvent(eventList);
 
         // Update components
-        _Update();
+        _Update(delta);
+
+        if (_noteBtn())
+        {
+            if (!_topMenu.IsNoteOpen())
+            {
+                if (!_topMenu.ShowNote())
+                    _noteBtn.Enable(false);
+            }
+            else
+                _topMenu.CloseNote();
+        }
 
         // Draw menu on top screen
         _topMenu.Draw();
@@ -42,37 +54,8 @@ namespace CTRPluginFramework
         Renderer::SetTarget(BOTTOM);
         Window::BottomWindow.Draw();
 
-        MenuItem *item = _topMenu.GetSelectedItem();
+        _noteBtn.Draw();
 
-        if (!item || item->IsFolder())
-            return;
-
-        MenuEntryActionReplay *ar = reinterpret_cast<MenuEntryActionReplay *>(item);
-
-        int posY = 30;
-
-        if (!ar)
-        {
-            Renderer::DrawString("nullptr", 30, posY, Color::Blank);
-            return;
-        }
-
-        if (!ar->note.empty())
-            Renderer::DrawSysStringReturn((u8 *)ar->note.c_str(), 30, posY, 230, Color::Blank);
-
-        if (ar->context.hasError)
-        {
-            Renderer::DrawString(Utils::Format("error, %d", ar->context.codes.size()).c_str(), 30, posY, Color::Blank);
-            Renderer::DrawSysStringReturn((u8 *)ar->context.data.c_str(), 30, posY, 0, Color::Blank);
-        }
-
-        if (ar->context.codes.empty())
-            Renderer::DrawString("empty", 30, posY, Color::Blank);
-
-        ARCodeVector &codes = ar->context.codes;
-        int max = std::min(15, (int)codes.size());
-        for (int i = 0; i < max; ++i)
-            Renderer::DrawString(codes[i].ToString().c_str(), 30, posY, Color::Blank);
     }
 
     void    PluginMenuActionReplay::_ProcessEvent(EventList &eventList)
@@ -89,8 +72,17 @@ namespace CTRPluginFramework
         }
     }
 
-    void    PluginMenuActionReplay::_Update(void)
+    void    PluginMenuActionReplay::_Update(const Time &delta)
     {
+        _topMenu.Update(delta);
         Window::BottomWindow.Update(Touch::IsDown(), IntVector(Touch::GetPosition()));
+
+        bool        touchIsDown = Touch::IsDown();
+        IntVector   touchPos(Touch::GetPosition());
+        MenuItem    *item = _topMenu.GetSelectedItem();
+
+        _noteBtn.Enable(item && !item->note.empty());
+        _noteBtn.SetState(_topMenu.IsNoteOpen());
+        _noteBtn.Update(touchIsDown, touchPos);
     }
 }

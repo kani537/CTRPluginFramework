@@ -33,9 +33,12 @@ namespace CTRPluginFramework
         MenuFolderImpl  *GetFolder(void) const;
         MenuItem        *GetSelectedItem(void) const;
 
-        void    Draw(void) const;
+        void    Draw(void) const; ///< Stupid I know
         MenuFolderImpl    *Open(MenuFolderImpl *folder, int selector = 0);
         void    Update(const Time &delta);
+        bool    ShowNote(void);
+        void    CloseNote(void);
+        bool    IsNoteOpen(void);
 
         /*
         ** Return value:
@@ -49,10 +52,12 @@ namespace CTRPluginFramework
     private:
         MenuFolderImpl  *_folder;
         MenuItem        *_lastSelectedItem;
+        MenuItem        *_lastNoteItem;
 
         Clock           _input;
         Clock           _scrollClock;
 
+        TextBox         _noteTB;
         IconCallback    _iconCallback;
         int             _selector;
         u32             _selectedNameSize;

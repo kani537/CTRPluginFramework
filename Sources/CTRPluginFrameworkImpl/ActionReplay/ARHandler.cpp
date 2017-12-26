@@ -11,7 +11,7 @@
 #include "ctrulib/result.h"
 #include "CTRPluginFrameworkImpl/System/ProcessImpl.hpp"
 
-#define debug 1
+#define debug 0
 
 #if debug
 #define Notify(str, ...) OSD::Notify(Utils::Format(str, ##__VA_ARGS__))
@@ -21,114 +21,17 @@
 
 namespace CTRPluginFramework
 {
+    using Register = ARHandler::Register;
+
     u32     ARHandler::Offset[2] = { 0 };
-    u32     ARHandler::Data[2] = { 0 };
+    Register    ARHandler::Data[2];
     u32     ARHandler::Storage[2] = { 0 };
     u32     ARHandler::ActiveOffset = 0;
     u32     ARHandler::ActiveData = 0;
     bool    ARHandler::ExitCodeImmediately = false;
 
-    struct MemoryRegion
-    {
-        u32     start;
-        u32     end;
-        u32     size;
-        u32     perm;
-    };
-
-    static std::vector<MemoryRegion> g_regions;
-
-    void    ActionReplay_FetchList(void)
-    {
-        g_regions.clear();
-
-        const Handle    target = Process::GetHandle();
-        PageInfo        page_info;
-        MemInfo         meminfo;
-        u32             save_addr;
-        int             i;
-        Result          res;
-
-        svcQueryProcessMemory(&meminfo, &page_info, target, 0x00100000);
-
-        g_regions.push_back(MemoryRegion{ meminfo.base_addr, meminfo.base_addr + meminfo.size, meminfo.size, meminfo.perm });
-
-        save_addr = meminfo.base_addr + meminfo.size + 1;
-        i = 1;
-        while (save_addr < 0x50000000)
-        {
-            if (i >= 99)
-                break;
-
-            res = svcQueryProcessMemory(&meminfo, &page_info, target, save_addr);
-            if (R_FAILED(res))
-            {
-                if (meminfo.base_addr >= 0x50000000)
-                    break;
-                if (save_addr >= meminfo.base_addr + meminfo.size + 1)
-                    save_addr += 0x1000;
-                else
-                    save_addr = meminfo.base_addr + meminfo.size + 1;
-                continue;
-            }
-
-            save_addr = meminfo.base_addr + meminfo.size + 1;
-#if HIDE_REGIONS
-            if (meminfo.base_addr == 0x06000000 || meminfo.base_addr == 0x07000000 || meminfo.base_addr == 0x07500000 || meminfo.base_addr == __ctru_linear_heap)
-                continue;
-#endif
-            if (meminfo.state != 0x0 && meminfo.state != 0x2 && meminfo.state != 0x3 && meminfo.state != 0x6)
-            {
-                if (meminfo.state == 11)
-                    Notify("Mem: %08X - %08X, %d, %d", meminfo.base_addr, meminfo.base_addr + meminfo.size, meminfo.state, meminfo.perm);
-
-                if (meminfo.state == 11 && (meminfo.perm & 3) != 3)
-                {
-                    if (!Process::ProtectMemory(meminfo.base_addr, meminfo.size, 7))
-                        Notify("Protect failed: %08X - %08X, %d, %d", meminfo.base_addr, meminfo.base_addr + meminfo.size, meminfo.state, meminfo.perm);
-                    else
-                        meminfo.perm = 7;
-                }
-                //if (meminfo.perm & MEMPERM_READ)
-                {
-                    g_regions.push_back(MemoryRegion{ meminfo.base_addr, meminfo.base_addr + meminfo.size, meminfo.size, meminfo.perm });
-                    i++;
-                }
-            }
-        }
-       /* Notify("mmuSize: %08X", ProcessImpl::mmuTableSize);
-        Notify("mmuTable: %08X", ProcessImpl::mmuTable);
-        Notify("mmuTable pa: %08X", svcConvertVAToPA((void *)ProcessImpl::mmuTable, false));*/
-    }
-
     bool    ActionReplay_IsValidAddress(u32 address, bool write)
     {
-       /* for (MemoryRegion &region : g_regions)
-        {
-            if (address < region.end && address >= region.start)
-            {
-                if (write && !(region.perm & MEMPERM_WRITE))
-                {
-                    if (!Process::ProtectMemory(region.start, region.size, 7))
-                    {
-                        Notify("AR ReadOnly: %08X", address);
-                        return false;
-                    }
-                    region.perm = 7;
-                }
-                else if (!(region.perm & MEMPERM_READ))
-                {
-                    if (!Process::ProtectMemory(region.start, region.size, 7))
-                    {
-                        Notify("AR can't read: %08X, perm: %08X", address, region.perm);
-                        return false;
-                    }
-                    region.perm = 7;
-                }
-
-                return true;
-            }
-        }*/
         if (!Process::CheckAddress(address, (int)write + 1))
         {
             Notify("Unreachable: %08X", address);
@@ -143,8 +46,8 @@ namespace CTRPluginFramework
     {
         Offset[0] = 0;
         Offset[1] = 0;
-        Data[0] = 0;
-        Data[1] = 0;
+        Data[0].Clear();
+        Data[1].Clear();
         Storage[0] = storage[0];
         Storage[1] = storage[1];
         ActiveOffset = 0;
@@ -266,7 +169,11 @@ namespace CTRPluginFramework
 
     void    ARHandler::_Execute(const ARCodeVector &codes)
     {
-        u32             value = 0;
+        union
+        {
+            u32         value = 0;
+            float       vfpval;
+        };
         u16             value16 = 0;
         u16             mask;
         bool            copyMode = false;
@@ -280,20 +187,40 @@ namespace CTRPluginFramework
 
         for (const ARCode code : codes)
         {
+            Register &currentData = Data[ActiveData];
+
             // If we must exit
             if (ExitCodeImmediately)
                 return;
 
+            // If we have a full terminator
+            if (code.Type == 0xD2)
+            {
+                // If we have blocks waiting to be ended
+                if (waitForExitCode)
+                {
+                    conditionCount = 0;
+                    waitForExitCode = false;
+                }
+                // If we have loops waiting to be launched
+                if (waitForEndLoop)
+                {
+                    loopCount = 0;
+                    waitForEndLoop = false;
+
+                    // Execute loops
+                    while (loopIteration--)
+                        _Execute(loopCodes);
+                }
+                // Clear registers and continue
+                Offset[ActiveOffset] = 0;
+                currentData.Clear();
+                continue;
+            }
+
             // If we're waiting for the end of a block
             if (waitForExitCode)
             {
-                if (code.Type == 0xD2) ///< Full Terminator
-                {
-                    conditionCount = 0;
-                    Offset[ActiveOffset] = 0;
-                    Data[ActiveData] = 0;
-                    waitForExitCode = false;
-                }
                 if (code.Type == 0xD0) ///< Terminator code
                 {
                     conditionCount--;
@@ -342,28 +269,68 @@ namespace CTRPluginFramework
             }
             case 0x30: ///< GreaterThan 32Bits
             {
-                ExitCodeImmediately = !Read32(code.Left + Offset[ActiveOffset], value);
-                if (!ExitCodeImmediately && (conditionalMode ? Data[ActiveData] : code.Right) > value)
-                    continue;
+                if (!((ExitCodeImmediately = !Read32(code.Left + Offset[ActiveOffset], value))))
+                {
+                    // If we must compare with data register
+                    if (conditionalMode)
+                    {
+                        // If current data is in vfp mode
+                        if (currentData.isVFP)
+                        {
+                            if (currentData.vfp > vfpval)
+                                continue;
+                        }
+                        else if (currentData.value > value)
+                            continue;
+                    }
+                    else if (code.Right > value)
+                        continue;
+                }
                 conditionCount++;
                 waitForExitCode = true;
                 break;
             }
             case 0x40: ///< LesserThan 32Bits
             {
-                ExitCodeImmediately = !Read32(code.Left + Offset[ActiveOffset], value);
-                if (!ExitCodeImmediately && (conditionalMode ? Data[ActiveData] : code.Right) < value)
-                    continue;
+                if (!((ExitCodeImmediately = !Read32(code.Left + Offset[ActiveOffset], value))))
+                {
+                    // If we must compare with data register
+                    if (conditionalMode)
+                    {
+                        // If current data is in vfp mode
+                        if (currentData.isVFP)
+                        {
+                            if (currentData.vfp < vfpval)
+                                continue;
+                        }
+                        else if (currentData.value < value)
+                            continue;
+                    }
+                    else if (code.Right < value)
+                        continue;
+                }
                 conditionCount++;
                 waitForExitCode = true;
                 break;
             }
             case 0x50: ///< EqualTo 32Bits
             {
-                ExitCodeImmediately = !Read32(code.Left + Offset[ActiveOffset], value);
-                if (!ExitCodeImmediately && (conditionalMode ? Data[ActiveData] : code.Right) == value)
+                if (!((ExitCodeImmediately = !Read32(code.Left + Offset[ActiveOffset], value))))
                 {
-                    continue;
+                    // If we must compare with data register
+                    if (conditionalMode)
+                    {
+                        // If current data is in vfp mode
+                        if (currentData.isVFP)
+                        {
+                            if (currentData.vfp == vfpval)
+                                continue;
+                        }
+                        else if (currentData.value == value)
+                            continue;
+                    }
+                    else if (code.Right == value)
+                        continue;
                 }
                 conditionCount++;
                 waitForExitCode = true;
@@ -371,9 +338,23 @@ namespace CTRPluginFramework
             }
             case 0x60: ///< NotEqualTo 32Bits
             {
-                ExitCodeImmediately = !Read32(code.Left + Offset[ActiveOffset], value);
-                if (!ExitCodeImmediately && (conditionalMode ? Data[ActiveData] : code.Right) != value)
-                    continue;
+                if (!((ExitCodeImmediately = !Read32(code.Left + Offset[ActiveOffset], value))))
+                {
+                    // If we must compare with data register
+                    if (conditionalMode)
+                    {
+                        // If current data is in vfp mode
+                        if (currentData.isVFP)
+                        {
+                            if (currentData.vfp != vfpval)
+                                continue;
+                        }
+                        else if (currentData.value != value)
+                            continue;
+                    }
+                    else if (code.Right != value)
+                        continue;
+                }
                 conditionCount++;
                 waitForExitCode = true;
                 break;
@@ -382,9 +363,18 @@ namespace CTRPluginFramework
             {
                 mask = code.Right >> 16;
 
-                ExitCodeImmediately = !Read16(code.Left + Offset[ActiveOffset], value16);
-                if (!ExitCodeImmediately && ((conditionalMode ? Data[ActiveData] : code.Right) & 0xFFFF) > (~mask & value16))
-                    continue;
+                if (!((ExitCodeImmediately = !Read16(code.Left + Offset[ActiveOffset], value16))))
+                {
+                    value16 &= ~mask;
+                    // If we must compare with data register
+                    if (conditionalMode)
+                    {
+                        if ((currentData.value & 0xFFFF) > value16)
+                            continue;
+                    }
+                    else if ((code.Right & 0xFFFF) > value16)
+                        continue;
+                }
                 conditionCount++;
                 waitForExitCode = true;
                 break;
@@ -393,9 +383,18 @@ namespace CTRPluginFramework
             {
                 mask = code.Right >> 16;
 
-                ExitCodeImmediately = !Read16(code.Left + Offset[ActiveOffset], value16);
-                if (!ExitCodeImmediately && ((conditionalMode ? Data[ActiveData] : code.Right) & 0xFFFF) < (~mask & value16))
-                    continue;
+                if (!((ExitCodeImmediately = !Read16(code.Left + Offset[ActiveOffset], value16))))
+                {
+                    value16 &= ~mask;
+                    // If we must compare with data register
+                    if (conditionalMode)
+                    {
+                        if ((currentData.value & 0xFFFF) < value16)
+                            continue;
+                    }
+                    else if ((code.Right & 0xFFFF) < value16)
+                        continue;
+                }
                 conditionCount++;
                 waitForExitCode = true;
                 break;
@@ -404,9 +403,18 @@ namespace CTRPluginFramework
             {
                 mask = code.Right >> 16;
 
-                ExitCodeImmediately = !Read16(code.Left + Offset[ActiveOffset], value16);
-                if (!ExitCodeImmediately && ((conditionalMode ? Data[ActiveData] : code.Right) & 0xFFFF) == (~mask & value16))
-                    continue;
+                if (!((ExitCodeImmediately = !Read16(code.Left + Offset[ActiveOffset], value16))))
+                {
+                    value16 &= ~mask;
+                    // If we must compare with data register
+                    if (conditionalMode)
+                    {
+                        if ((currentData.value & 0xFFFF) == value16)
+                            continue;
+                    }
+                    else if ((code.Right & 0xFFFF) == value16)
+                        continue;
+                }
                 conditionCount++;
                 waitForExitCode = true;
                 break;
@@ -415,9 +423,18 @@ namespace CTRPluginFramework
             {
                 mask = code.Right >> 16;
 
-                ExitCodeImmediately = !Read16(code.Left + Offset[ActiveOffset], value16);
-                if (!ExitCodeImmediately && ((conditionalMode ? Data[ActiveData] : code.Right) & 0xFFFF) != (~mask & value16))
-                    continue;
+                if (!((ExitCodeImmediately = !Read16(code.Left + Offset[ActiveOffset], value16))))
+                {
+                    value16 &= ~mask;
+                    // If we must compare with data register
+                    if (conditionalMode)
+                    {
+                        if ((currentData.value & 0xFFFF) != value16)
+                            continue;
+                    }
+                    else if ((code.Right & 0xFFFF) != value16)
+                        continue;
+                }
                 conditionCount++;
                 waitForExitCode = true;
                 break;
@@ -446,14 +463,14 @@ namespace CTRPluginFramework
             }
             case 0xC1: ///< Loop code data#1
             {
-                loopIteration = Data[0];
+                loopIteration = Data[0].value;
                 loopCount++;
                 waitForEndLoop = true;
                 break;
             }
             case 0xC2: ///< Loop code data#2
             {
-                loopIteration = Data[1];
+                loopIteration = Data[1].value;
                 loopCount++;
                 waitForEndLoop = true;
                 break;
@@ -471,55 +488,59 @@ namespace CTRPluginFramework
                 }
 
                 Offset[ActiveOffset] = 0;
-                Data[ActiveData] = 0;
+                currentData.Clear();
                 break;
             }
             case 0xD4: ///< Add to Data[ActiveData]
             {
-                Data[ActiveData] += code.Right;
+                value = code.Right;
+                if (currentData.isVFP)
+                    currentData.vfp += vfpval;
+                else
+                    currentData.value += value;
                 break;
             }
             case 0xD5: ///< Set Data[ActiveData]
             {
-                Data[code.Left] = code.Right;
+                currentData.value = code.Right;
                 break;
             }
             case 0xD6: ///< Write 32bits Data[ActiveData]
             {
-                ExitCodeImmediately = !Write32(code.Right + Offset[ActiveOffset], Data[ActiveData]);
+                ExitCodeImmediately = !Write32(code.Right + Offset[ActiveOffset], currentData.value);
                 Offset[ActiveOffset] += 4;
                 break;
             }
             case 0xD7: ///< Write 16Bits Data[ActiveData]
             {
-                value16 = Data[ActiveData];
+                value16 = currentData.value;
                 ExitCodeImmediately = !Write16(code.Right + Offset[ActiveOffset], value16);
                 Offset[ActiveOffset] += 2;
                 break;
             }
             case 0xD8: ///< Write 8Bits Data[ActiveData]
             {
-                u8 value8 = Data[ActiveData];
+                u8 value8 = currentData.value;
                 ExitCodeImmediately = !Write8(code.Right + Offset[ActiveOffset], value8);
                 Offset[ActiveOffset]++;
                 break;
             }
             case 0xD9: ///< Read 32bits to Data[ActiveData]
             {
-                ExitCodeImmediately = !Read32(code.Right + Offset[ActiveOffset], Data[ActiveData]);
+                ExitCodeImmediately = !Read32(code.Right + Offset[ActiveOffset], currentData.value);
                 break;
             }
             case 0xDA: ///< Read 16Bits to Data[ActiveData]
             {
                 ExitCodeImmediately = !Read16(code.Right + Offset[ActiveOffset], value16);
-                Data[ActiveData] = value16;
+                currentData.value = value16;
                 break;
             }
             case 0xDB: ///< Read 8Bits to Data[ActiveData]
             {
                 u8 value8 = 0;
                 ExitCodeImmediately = !Read8(code.Right + Offset[ActiveOffset], value8);
-                Data[ActiveData] = value8;
+                currentData.value = value8;
                 break;
             }
             case 0xDD: ///< Keypad code
@@ -553,6 +574,24 @@ namespace CTRPluginFramework
                 u16     operation = code.Right >> 16;
                 u16     parameter = code.Right & 0xFFFF;
 
+                if (code.Left == 0x00FFFFFE) ///< Set current data register as vfp
+                {
+                    currentData.isVFP = code.Right & 1;
+                    if (code.Right & 0x10)
+                    {
+                        if (currentData.isVFP)
+                        {
+                            const float fvalue = static_cast<float>(currentData.value);
+                            currentData.vfp = fvalue;
+                        }
+                        else
+                        {
+                            const u32 ivalue = static_cast<u32>(currentData.vfp);
+                            currentData.value = ivalue;
+                        }
+                    }
+                    break;
+                }
                 if (code.Left == 0x00FFFFFF) ///< Conditional mode switch
                 {
                     conditionalMode = static_cast<bool>(parameter);
@@ -574,19 +613,19 @@ namespace CTRPluginFramework
                     if (code.Left == 0) ///< Offset
                         Offset[!parameter] = Offset[parameter];
                     else if (code.Left == 1) ///< Data
-                        Data[!parameter] = Data[parameter];
+                        Data[!parameter].value = Data[parameter].value;
                     else if (code.Left == 2) ///< Storage
-                        Data[parameter] = Storage[parameter];
+                        Data[parameter].value = Storage[parameter];
                     break;
                 }
                 case 0x2:
                 {
                     if (code.Left == 0) ///< Offset
-                        Data[parameter] = Offset[parameter];
+                        Data[parameter].value = Offset[parameter];
                     else if (code.Left == 1) ///< Data
-                        Offset[parameter] = Data[parameter];
+                        Offset[parameter] = Data[parameter].value;
                     else if (code.Left == 2) ///< Storage
-                        Storage[parameter] = Data[parameter];
+                        Storage[parameter] = Data[parameter].value;
                     break;
                 }
                 default:
@@ -622,43 +661,53 @@ namespace CTRPluginFramework
             }
             case 0xF4: ///< MUL code on Data[ActiveData]
             {
-                Data[ActiveData] *= code.Right;
+                value = code.Right;
+                if (currentData.isVFP)
+                    currentData.vfp *= vfpval;
+                else
+                    currentData.value *= value;
                 break;
             }
             case 0xF5: ///< DIV code on Data[ActiveData]
             {
+                value = code.Right;
                 if (code.Right != 0)
-                    Data[ActiveData] /= code.Right;
+                {
+                    if (currentData.isVFP)
+                        currentData.vfp /= vfpval;
+                    else
+                        currentData.value /= value;
+                }
                 break;
             }
             case 0xF6: ///< AND code
             {
-                Data[ActiveData] &= code.Right;
+                currentData.value &= code.Right;
                 break;
             }
             case 0xF7: ///< OR code
             {
-                Data[ActiveData] |= code.Right;
+                currentData.value |= code.Right;
                 break;
             }
             case 0xF8: ///< XOR code
             {
-                Data[ActiveData] ^= code.Right;
+                currentData.value ^= code.Right;
                 break;
             }
             case 0xF9: ///< NOT code
             {
-                Data[ActiveData] = ~Data[ActiveData];
+                currentData.value = ~currentData.value;
                 break;
             }
             case 0xFA: ///< Left shift
             {
-                Data[ActiveData] <<= code.Right;
+                currentData.value <<= code.Right;
                 break;
             }
             case 0xFB: ///< Right shift
             {
-                Data[ActiveData] >>= code.Right;
+                currentData.value >>= code.Right;
                 break;
             }
             case 0xFC: ///< Memcpy code
@@ -671,7 +720,7 @@ namespace CTRPluginFramework
             }
             case 0xFF: ///< Random number
             {
-                Data[ActiveData] = Utils::Random(Data[0], Data[1]);
+                currentData.value = Utils::Random(Data[0].value, Data[0].value);
                 break;
             }
             default:

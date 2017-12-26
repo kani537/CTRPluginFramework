@@ -161,7 +161,7 @@ namespace CTRPluginFramework
             *u8Name++ = '\n';
             *u8Name = 0;
 
-            g_hookExportFile.Write(g_buffer2, strlen(g_buffer2));            
+            g_hookExportFile.Write(g_buffer2, strlen(g_buffer2));
         }
 
         return (((FsTryOpenFileType)g_FsTryOpenFileHook.returnCode)(a1, fileName, mode));
@@ -371,7 +371,7 @@ namespace CTRPluginFramework
 
         // Process Event
         for (int i = 0; i < eventList.size(); i++)
-            _ProcessEvent(eventList[i]); 
+            _ProcessEvent(eventList[i]);
 
         // Update
         _Update(delta);
@@ -455,7 +455,7 @@ namespace CTRPluginFramework
                 _menu.Open(&_mainMenu, selector);
             }
             else if (mode == MISCELLANEOUS)
-            {         
+            {
                 mode = 0;
                 _menu.Open(&_mainMenu, 4);
             }
@@ -468,7 +468,7 @@ namespace CTRPluginFramework
 
     void PluginMenuTools::_RenderTopMenu(void)
     {
-        
+
     }
 
     /*
@@ -514,7 +514,7 @@ namespace CTRPluginFramework
 
         // Draw Framework version
         {
-            static const char *version = "CTRPluginFramework Beta V.0.3.1";
+            static const char *version = "CTRPluginFramework Beta V.0.3.5";
             static const u32 xpos = (320 - Renderer::LinuxFontSize(version)) / 2;
 
             int posY = 205;

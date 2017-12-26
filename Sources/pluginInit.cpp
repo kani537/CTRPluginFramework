@@ -35,8 +35,7 @@ void abort(void)
 
 }
 
-Hook    g_loadCroHook;
-Hook    g_unloadCroHook;
+static Hook    g_loadCroHook;
 CTRPluginFramework::PluginMenuExecuteLoop *g_executerInstance = nullptr;
 
 void    ExecuteLoopOnEvent(void)
@@ -49,9 +48,7 @@ void    ExecuteLoopOnEvent(void)
 }
 
 using LoadCROReturn = u32 (*)(u32, u32, u32, u32, u32, u32, u32);
-using UnloadCROReturn = u32(*)(u32, u32, u32, u32, u32, u32, u32);
 static LightLock onLoadCroLock;
-static LightLock onUnloadCroLock;
 
 extern "C" void onLoadCro(void);
 void onLoadCro(void)
@@ -59,15 +56,6 @@ void onLoadCro(void)
     LightLock_Lock(&onLoadCroLock);
     ExecuteLoopOnEvent();
     LightLock_Unlock(&onLoadCroLock);
-    //return ((LoadCROReturn)g_loadCroHook.returnCode)(r0, r1, r2, r3, r4, r5, r6);
-}
-
-u32 UnloadCROHooked(u32 r0, u32 r1, u32 r2, u32 r3, u32 r4, u32 r5, u32 r6)
-{
-    LightLock_Lock(&onUnloadCroLock);
-    ExecuteLoopOnEvent();
-    LightLock_Unlock(&onUnloadCroLock);
-    return ((UnloadCROReturn)g_loadCroHook.returnCode)(r0, r1, r2, r3, r4, r5, r6);
 }
 
 namespace CTRPluginFramework
@@ -173,22 +161,21 @@ namespace CTRPluginFramework
         svcCreateEvent(&g_keepEvent, RESET_ONESHOT);
         g_mainThread = threadCreate(ThreadInit, (void *)threadStack, 0x4000, 0x18, -2, false);
         {
-            static const std::vector<u32> LoadCroPattern =
+            const std::vector<u32> LoadCroPattern =
             {
                 0xE92D5FFF, 0xE28D4038, 0xE89407E0, 0xE28D4054,
                 0xE8944800, 0xEE1D4F70, 0xE59FC058, 0xE3A00000,
                 0xE5A4C080, 0xE284C028, 0xE584500C, 0xE584A020
             };
 
-            static const std::vector<u32> UnloadCroPattern =
+            /*const std::vector<u32> UnloadCroPattern =
             {
                 0xE92D4070, 0xEE1D4F70, 0xE59F502C, 0xE3A0C000,
                 0xE5A45080, 0xE2846004, 0xE5840014, 0xE59F001C,
                 0xE886100E, 0xE5900000, 0xEF000032, 0xE2001102
-            };
+            };*/
 
             u32     loadCroAddress = Utils::Search<u32>(0x00100000, Process::GetTextSize(), LoadCroPattern);
-           // u32     unloadCroAddress = Utils::Search<u32>(0x00100000, Process::GetTextSize(), UnloadCroPattern);
 
             if (loadCroAddress)
             {
@@ -197,12 +184,6 @@ namespace CTRPluginFramework
                 croReturn = loadCroAddress + 8;
                 g_loadCroHook.Enable();
             }
-            /*if (unloadCroAddress)
-            {
-                LightLock_Init(&onUnloadCroLock);
-                g_unloadCroHook.Initialize(unloadCroAddress, (u32)UnloadCROHooked);
-                g_unloadCroHook.Enable();
-            }*/
         }
         while (g_keepRunning)
         {

@@ -18,14 +18,15 @@ namespace CTRPluginFramework
 
         // Display menu
         // Return true if menu must close
-        bool    operator()(EventList &eventList);
+        bool    operator()(EventList &eventList, const Time &delta);
 
     private:
         Menu    _topMenu;
+        ToggleButton<PluginMenuActionReplay, void>      _noteBtn;
 
         void    _DrawBottom(void);
         void    _ProcessEvent(EventList &eventList);
-        void    _Update(void);
+        void    _Update(const Time &delta);
     };
 }
 

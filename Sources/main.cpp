@@ -96,7 +96,7 @@ namespace CTRPluginFramework
         if (!System::IsLoaderNTR())
             Directory::ChangeWorkingDirectory(Utils::Format("/luma/plugins/%016llX/", Process::GetTitleID()));
         //Sleep(Seconds(5.f));
-        PluginMenu  *m = new PluginMenu("Action Replay Test", 0, 0, 5);
+        PluginMenu  *m = new PluginMenu("Action Replay Test", 0, 1, 0);
         PluginMenu  &menu = *m;
 
 #endif

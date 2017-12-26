@@ -20,7 +20,7 @@ namespace CTRPluginFramework
     {
         return (xOffset + xAdvance);
     }
-    
+
     void    Font::Initialize(void)
     {
         fontEnsureMapped();
@@ -42,7 +42,7 @@ namespace CTRPluginFramework
         ssize_t units;
 
         units = decode_utf8(&code, c);
-        if (units == -1) 
+        if (units == -1)
             return (nullptr);
 
         c += units;
@@ -189,19 +189,19 @@ namespace CTRPluginFramework
                 if(xfrag2 == 0.f && dx != 1.0f)
                     xfrag2 = 1.f;
                 float alpha = xfrag * yfrag * src[(yi * GLYPH_WIDTH + xi)];
-          
+
                 for(i=0; xi + i + 1 < xt+dx-1; i++)
                     alpha += yfrag * src[(yi * GLYPH_WIDTH + xi + i + 1)];
-                
+
                 alpha += xfrag2 * yfrag * src[(yi*GLYPH_WIDTH +xi+i+1)];
-            
+
                 for(i = 0; yi + i + 1 < yt + dy - 1 && yi + i + 1 < GLYPH_HEIGHT; i++)
                 {
                     alpha += xfrag * src[((yi + i + 1) * GLYPH_WIDTH + xi)];
-            
+
                     for (ii = 0; xi + ii + 1 < xt + dx - 1 && xi + ii + 1 < GLYPH_WIDTH; ii++)
                         alpha += src[((yi + i + 1) * GLYPH_WIDTH + xi + ii + 1)];
-              
+
                     if (yi + i + 1 < GLYPH_WIDTH && xi + ii + 1 < GLYPH_WIDTH)
                         alpha += xfrag2 * src[((yi + i + 1) * GLYPH_WIDTH + xi + ii + 1)];
                 }
@@ -213,10 +213,10 @@ namespace CTRPluginFramework
                     for (ii = 0; xi + ii + 1 < xt + dx - 1 && xi + ii + 1 < GLYPH_WIDTH; ii++)
                         alpha += yfrag2 * src[((yi + i + 1) * GLYPH_WIDTH + xi + ii + 1)];
                 }
-          
+
                 if (yi + i + 1 < GLYPH_HEIGHT && xi + ii + 1 < GLYPH_WIDTH)
                     alpha += xfrag2 * yfrag2 * src[((yi + i + 1) * GLYPH_WIDTH + xi + ii + 1)];
-            
+
                 alpha /= dx * dy;
                 alpha = alpha <= 0.f ? 0.f : (alpha >= 255.f ? 255.f : alpha);
                 dest[(static_cast<u32>(y) * outWidth + static_cast<u32>(x))] = static_cast<u8>(alpha);

@@ -274,6 +274,7 @@
     <ClInclude Include="Includes\types.h" />
     <ClInclude Include="Includes\Unicode.h" />
     <ClInclude Include="Sources\cheats.hpp" />
+    <ClInclude Include="Includes\CTRPluginFrameworkImpl\ActionReplay\MenuEntryActionReplay.hpp" />
     <ClInclude Include="Sources\CTRPluginFrameworkImpl\Graphics\CheckBox.cpp" />
     <ClInclude Include="Sources\ctrulib\allocator\addrmap.h" />
     <ClInclude Include="Sources\ctrulib\allocator\mem_pool.h" />
@@ -283,11 +284,11 @@
     <ClInclude Include="Sources\Speedometer.hpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Sources\ActionReplayTest.cpp" />
     <ClCompile Include="Sources\cheats.cpp" />
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\ActionReplay\ARCode.cpp" />
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\ActionReplay\ARCodeLoader.cpp" />
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\ActionReplay\ARHandler.cpp" />
+    <ClCompile Include="Sources\CTRPluginFrameworkImpl\ActionReplay\MenuEntryActionReplay.cpp" />
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\arm11kCommands.c" />
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\Graphics\BMPImage.cpp" />
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\Graphics\ComboBox.cpp" />

@@ -28,23 +28,30 @@ namespace CTRPluginFramework
         if (isLoaderNTR)
         {
             // Heap params
-            __ctru_heap = 0x06000100; ///< Leave enough space to relocate (nop ?) NTR's shared functions
+            // Allocate the main heap
+            __ctru_heap = 0x07500000;
+            __ctru_heap_size = 0x100000;
+
+            /*
+            __ctru_heap = 0x07500000; //__ctru_heap = 0x06000100; ///< Leave enough space to relocate (nop ?) NTR's shared functions
             __ctru_heap_size = 0x100000; // O3DS: reduce heap size for Mode 3 ?
 
-            u32 temp = 0x06000000 + NTRSize;
-            u32 *heap = (u32 *)0x06000000;
-
+            //u32 temp = __ctru_heap;//u32 temp = 0x06000000 + NTRSize;
+           // u32 *heap = (u32 *)0x07500000;
+           */
             // TODO: check for Mode3 or O3DS special games to avoid allocating too much memory
-            if (R_SUCCEEDED(arm11kSvcControlMemory(&temp, temp, __ctru_heap_size, 0x203, 3)))
+        again:
+            if (R_SUCCEEDED(arm11kSvcControlMemory(&__ctru_heap, __ctru_heap, __ctru_heap_size, 0x203, 3)))
             {
                 // Fix heap perms
-                Process::ProtectRegion(temp, 7);
-                Process::CheckRegion(0x06000000, __ctru_heap_size, 7);
+                Process::CheckRegion(__ctru_heap, __ctru_heap_size, 7);
 
                 // Clear memory
-                for (u32 i = 0; i < __ctru_heap_size / 4; i++)
-                    *heap++ = 0;
+               // for (u32 i = 0; i < __ctru_heap_size / 4; i++)
+               //     *heap++ = 0;
             }
+            else
+                goto fatal;
         }
         else
         {
@@ -90,7 +97,7 @@ namespace CTRPluginFramework
                         g_heapError = true;
                     }
                 }
-            }           
+            }
         }*/
     }
 }

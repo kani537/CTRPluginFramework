@@ -11,7 +11,13 @@ namespace CTRPluginFramework
 
         MenuEntryActionReplay *ar = reinterpret_cast<MenuEntryActionReplay *>(entry);
 
-        if (!ar || ar->context.hasError || ar->context.codes.empty()) return;
+        if (!ar) return;
+
+        if (ar->context.hasError || ar->context.codes.empty())
+        {
+            entry->Disable();
+            return;
+        }
 
         ARHandler::Execute(ar->context.codes, ar->context.storage);
     }
@@ -28,14 +34,19 @@ namespace CTRPluginFramework
     {
     }
 
-    void    MenuEntryActionReplay::Update()
+    MenuEntryActionReplay*    MenuEntryActionReplay::Update(void)
     {
         if (!name.empty())
         {
-            if (name[0] == 0x1B)
-                name = name.substr(4);
             if (context.hasError)
+            {
+                if (name[0] == 0x1B)
+                    name = name.substr(4);
                 name = Color::Red << name;
+            }
         }
+        if (!context.data.empty() && !context.hasError)
+            context.data.clear();
+        return this;
     }
 }

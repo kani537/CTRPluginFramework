@@ -507,6 +507,9 @@
     <ClInclude Include="Includes\CTRPluginFrameworkImpl\Menu\PluginMenuActionReplay.hpp">
       <Filter>Fichiers d%27en-tête</Filter>
     </ClInclude>
+    <ClInclude Include="Includes\CTRPluginFrameworkImpl\ActionReplay\MenuEntryActionReplay.hpp">
+      <Filter>Fichiers d%27en-tête</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Sources\CTRPluginFramework\Graphics\Color.cpp">
@@ -1001,9 +1004,6 @@
     <ClCompile Include="Sources\Speedometer.cpp">
       <Filter>Fichiers sources</Filter>
     </ClCompile>
-    <ClCompile Include="Sources\ActionReplayTest.cpp">
-      <Filter>Fichiers sources</Filter>
-    </ClCompile>
     <ClCompile Include="Sources\PointerTesting.cpp">
       <Filter>Fichiers sources</Filter>
     </ClCompile>
@@ -1014,6 +1014,9 @@
       <Filter>Fichiers sources</Filter>
     </ClCompile>
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\ActionReplay\ARCodeLoader.cpp">
+      <Filter>Fichiers sources</Filter>
+    </ClCompile>
+    <ClCompile Include="Sources\CTRPluginFrameworkImpl\ActionReplay\MenuEntryActionReplay.cpp">
       <Filter>Fichiers sources</Filter>
     </ClCompile>
   </ItemGroup>

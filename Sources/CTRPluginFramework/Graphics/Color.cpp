@@ -8,6 +8,7 @@ namespace CTRPluginFramework
     const Color     Color::Blue = Color(0, 0, 255);
     const Color     Color::BlackGrey = Color(15, 15, 15);
     const Color     Color::Brown = Color(150, 75, 0);
+    const Color     Color::Cyan = Color(0, 255, 255);
     const Color     Color::DarkGrey = Color(169, 169, 169);
     const Color     Color::DeepSkyBlue = Color(0, 191, 255);
     const Color     Color::DimGrey = Color(105, 105, 105);
@@ -24,7 +25,7 @@ namespace CTRPluginFramework
     const Color     Color::Turquoise = Color(64, 224, 208);
     const Color     Color::Yellow = Color(255, 255, 0);
 
-    Color::Color(u8 red, u8 green, u8 blue, u8 alpha) 
+    Color::Color(u8 red, u8 green, u8 blue, u8 alpha)
     : r(red), g(green), b(blue), a(alpha)
     {
 
@@ -209,4 +210,3 @@ namespace CTRPluginFramework
         return (*this);
     }
  }
- 

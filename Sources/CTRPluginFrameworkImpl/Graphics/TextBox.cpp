@@ -5,6 +5,7 @@
 #include "CTRPluginFrameworkImpl/Graphics/Textbox.hpp"
 #include "CTRPluginFramework/System/Clock.hpp"
 #include <cmath>
+#include "../../OSDManager.hpp"
 
 namespace CTRPluginFramework
 {
@@ -54,7 +55,7 @@ namespace CTRPluginFramework
     /*
     ** Open
     ************/
-    void    TextBox::Open(void)
+    void    TextBox::Open(void) const
     {
         _isOpen = true;
     }
@@ -62,7 +63,7 @@ namespace CTRPluginFramework
     /*
     ** Close
     ***********/
-    void    TextBox::Close(void)
+    void    TextBox::Close(void) const
     {
         _isOpen = false;
     }
@@ -70,7 +71,7 @@ namespace CTRPluginFramework
     /*
     ** IsOpen
     ***********/
-    bool    TextBox::IsOpen(void)
+    bool    TextBox::IsOpen(void) const
     {
         return (_isOpen);
     }
@@ -82,7 +83,7 @@ namespace CTRPluginFramework
     {
         if (!_isOpen)
             return (false);
-        
+
         if (event.type == Event::KeyDown)
         {
             switch (event.key.code)
@@ -107,7 +108,7 @@ namespace CTRPluginFramework
                 case Key::CPadDown:
                 {
                     if (_inputClock.HasTimePassed(Milliseconds(100)))
-                    {   
+                    {
                         if (_currentLine < _newline.size() - _maxLines)
                         {
                             _currentLine++;
@@ -149,7 +150,7 @@ namespace CTRPluginFramework
                 case Key::CStickDown:
                 {
                     if (_inputClock.HasTimePassed(Milliseconds(100)))
-                    {   
+                    {
                         if (_currentLine < _newline.size() - _maxLines)
                         {
                             _currentLine += 2;
@@ -229,25 +230,28 @@ namespace CTRPluginFramework
         FwkSettings     &settings = Preferences::Settings;
 
         // Draw Background
-        if (Preferences::topBackgroundImage != nullptr 
+        if (Preferences::topBackgroundImage != nullptr
             && (Preferences::topBackgroundImage->GetDimensions() <= _box.size))
             Preferences::topBackgroundImage->Draw(_box, -0.3f);
         else
         {
             Renderer::DrawRect2(_box, settings.BackgroundMainColor, settings.BackgroundSecondaryColor);
-            Renderer::DrawRect(_border, settings.BackgroundBorderColor, false);            
+            Renderer::DrawRect(_border, settings.BackgroundBorderColor, false);
         }
 
         //Window::TopWindow.Draw(_title);
 
         int posX = _box.leftTop.x + 5;
         int posY = _box.leftTop.y + 5;
-        int xLimit = posX + _box.size.x - 5;
+        int xLimit = posX + _box.size.x - 10;
 
         // Draw Title
         int width;
         width = Renderer::DrawSysString((const char *)_title.c_str(), posX, posY, xLimit, titleColor);
-        Renderer::DrawLine(posX, posY, width - posX + 30, blank);
+        u32 length = width - posX + 30;
+        if (posX + length > xLimit)
+            length = xLimit - posX;
+        Renderer::DrawLine(posX, posY, length, blank);
         posY += 7;
 
         // Draw Text
@@ -281,6 +285,12 @@ namespace CTRPluginFramework
         Renderer::DrawLine(posX + 2, posY + 1, 1, dimGrey, _scrollCursorSize - 2);
     }
 
+    void    TextBox::DrawConst(void) const
+    {
+        TextBox *nonconst = const_cast<TextBox *>(this);
+        nonconst->Draw();
+    }
+
     void    TextBox::Update(const bool isTouchDown, const IntVector &pos)
     {
     }
@@ -291,13 +301,15 @@ namespace CTRPluginFramework
 
     u8   *TextBox::_GetWordWidth(u8 *str, float &width)
     {
+        TRACE;
         width = 0;
 
         if (!str || !(*str))
             return (nullptr);
-        
+
         while (*str != '\n')
         {
+            TRACE;
             if (*str == 0x18)
             {
                 str++;
@@ -313,18 +325,24 @@ namespace CTRPluginFramework
             Glyph *glyph = Font::GetGlyph(str);
 
             if (glyph == nullptr)
+            {
+                TRACE;
                 return (nullptr);
+            }
+
 
             width += glyph->Width();
 
             if (isSpace)
                 break;
         }
+        TRACE;
         return (str);
     }
 
     u8   *CutWordWidth(u8 *str, float &width, float maxWidth)
     {
+        TRACE;
         width = 0;
 
         if (!str || !(*str))
@@ -332,6 +350,8 @@ namespace CTRPluginFramework
 
         while (*str != '\n')
         {
+            TRACE;
+            XTRACE("%s", str);
             if (*str == 0x18)
             {
                 str++;
@@ -349,7 +369,10 @@ namespace CTRPluginFramework
             Glyph   *glyph = Font::GetGlyph(str);
 
             if (glyph == nullptr)
+            {
+                TRACE;
                 return (nullptr);
+            }
 
             width += glyph->Width();
 
@@ -362,6 +385,7 @@ namespace CTRPluginFramework
                 break;
             }
         }
+        TRACE;
         return (str);
     }
 
@@ -370,6 +394,7 @@ namespace CTRPluginFramework
     ******************/
     void     TextBox::_GetTextInfos(void)
     {
+        TRACE;
         _newline.clear();
 
         u8      *str = const_cast<u8 *>(reinterpret_cast<const u8*>(_text->c_str()));
@@ -389,9 +414,10 @@ namespace CTRPluginFramework
             str++;
             advance++;
         }
-        
+
         while (true)
         {
+            XTRACE("%s", str);
             if (*str == '\n')// || *str == 0x18)
             {
                 str++;
@@ -401,7 +427,7 @@ namespace CTRPluginFramework
                 str += 4;
             }*/
 
-            u8 *s = str;            
+            u8 *s = str;
             float line = 0.f;
 
             while (line < maxWidth && s != nullptr)
@@ -409,8 +435,8 @@ namespace CTRPluginFramework
                 str = s;
                 float wordWidth;
 
-                s = _GetWordWidth(s, wordWidth);  
-                
+                s = _GetWordWidth(s, wordWidth);
+                TRACE;
                 // If word's width is greater than line's width
                 if (wordWidth > maxWidth)
                 {
@@ -439,16 +465,19 @@ namespace CTRPluginFramework
                     break;
                 }
 
-                // If the espace char is out of border, skip it and go to a new line
+                // If the space char is out of border, skip it and go to a new line
                 if (line >= maxWidth)
                 {
-                    break;                                
+                    break;
                 }
+                XTRACE("End: %d", s);
+                TRACE;
             }
             _newline.push_back(str);
 
         }
     exit:
         _newline.push_back(nullptr);
+        TRACE;
     }
 }
