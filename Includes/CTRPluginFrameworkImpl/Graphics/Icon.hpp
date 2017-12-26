@@ -18,7 +18,7 @@ namespace CTRPluginFramework
         ** 15px * 15px
         ************/
         static int      DrawCapsLockOn(int posX, int posY, bool filled);
-        
+
         /*
         ** CentreOfGravity
         ** 15px * 15px
@@ -26,7 +26,7 @@ namespace CTRPluginFramework
         static int      DrawCentreOfGravity(int posX, int posY);
 
         /*
-        ** CheckBox 
+        ** CheckBox
         ** 15px * 15px
         ************/
         static int      DrawCheckBox(IntVector &pos, bool isChecked);
@@ -50,6 +50,12 @@ namespace CTRPluginFramework
         ** 15px * 15px
         *************/
         static int      DrawController(int posX, int posY);
+
+        /*
+        ** Edit
+        ** 25px * 25px
+        *************/
+        static int      DrawEdit(int posX, int posY, bool filled);
 
         /*
         ** Enter Key
@@ -97,7 +103,7 @@ namespace CTRPluginFramework
         ************/
         static int      DrawGrid(int posX, int posY);
 
-        
+
         /*
         ** Info
         ** 25px * 25px
@@ -141,7 +147,7 @@ namespace CTRPluginFramework
         ** 15px * 15 px
         **************/
         static int      DrawRAM(int posX, int posY);
-        
+
         /*
         ** Restart
         ** 15px * 15 px

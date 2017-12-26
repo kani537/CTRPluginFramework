@@ -19,6 +19,8 @@ namespace CTRPluginFramework
     extern "C" unsigned char *CloseWindow20;
     extern "C" unsigned char *CloseWindowFilled20;
     extern "C" unsigned char *Controller15;
+    extern "C" unsigned char *Edit25;
+    extern "C" unsigned char *EditFilled25;
     extern "C" unsigned char *EnterKey15;
     extern "C" unsigned char *EnterKeyFilled15;
     extern "C" unsigned char *FolderFilled;
@@ -80,7 +82,7 @@ namespace CTRPluginFramework
             {
                 framebuf = ScreenImpl::Bottom->GetLeftFramebuffer(posX, posY);
                 ScreenImpl::Bottom->GetFramebufferInfos(rowstride, bpp, fmt);
-                break;                
+                break;
             }
             default:
                 return (posX);
@@ -212,6 +214,16 @@ namespace CTRPluginFramework
     }
 
     /*
+    ** Edit
+    ** 25px * 25px
+    *************/
+    int     Icon::DrawEdit(int posX, int posY, bool filled)
+    {
+        u8 *img = filled ? EditFilled25 : Edit25;
+        return (DrawImg(img, posX, posY, 25, 25));
+    }
+
+    /*
     ** Enter Key
     ** 15px * 15px
     **************/
@@ -252,7 +264,7 @@ namespace CTRPluginFramework
     {
         u8 *img = filled ? AddFavoriteFilled25 : AddFavorite25;
         return (DrawImg(img, posX, posY, 25, 25));
-    } 
+    }
 
     int     Icon::DrawFavorite(IntVector &pos)
     {
@@ -262,7 +274,7 @@ namespace CTRPluginFramework
     int     Icon::DrawFavorite(int posX, int posY)
     {
         return (DrawImg(Star15, posX, posY, 15, 15));
-    } 
+    }
 
     /*
     ** File
@@ -312,7 +324,7 @@ namespace CTRPluginFramework
     {
         u8 *img = filled ? InfoFilled25 : Info25;
         return (DrawImg(img, posX, posY, 25, 25));
-    } 
+    }
 
     /*
     ** Guide
