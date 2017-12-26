@@ -32,7 +32,6 @@ void abort(void)
 
     CTRPluginFramework::ThreadExit();
     while (true);
-
 }
 
 static Hook    g_loadCroHook;
@@ -250,21 +249,21 @@ namespace CTRPluginFramework
         ThreadExit();
     }
 
+    u32   __hasAborted = 0;
     void  ThreadExit(void)
     {
      /*   if (g_resumeEvent)
             svcSignalEvent(g_resumeEvent); */
-
+        __hasAborted = 1;
         // In which thread are we ?
         if (threadGetCurrent() != nullptr)
         {
             // MainThread
 
-            // Release process in case it's currently paused
-            ProcessImpl::Play(false);
-
             // Remove the OSD Hook
             OSDImpl::OSDHook.Disable();
+            // Release process in case it's currently paused
+            ProcessImpl::Play(false);
 
             // Exit services
             gspExit();

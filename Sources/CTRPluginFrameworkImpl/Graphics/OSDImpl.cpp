@@ -134,7 +134,7 @@ namespace CTRPluginFramework
     static Clock        g_fpsClock[2];
 
     static void    MessColor(u32 startAddr, u32 stride, u32 format);
-    
+
     int OSDImpl::MainCallback(u32 isBottom, int arg2, void* addr, void* addrB, int stride, int format, int arg7)
     {
         if (!addr)
@@ -148,6 +148,7 @@ namespace CTRPluginFramework
                 svcSignalEvent(OnNewFrameEvent);
         }
 
+        extern u32 __hasAborted;
         if (ProcessImpl::_isPaused && !FramesToPlay)
         {
             GSPGPU_FlushDataCache((void *)0x1F000000, 0x00600000);
@@ -159,6 +160,8 @@ namespace CTRPluginFramework
             GSPGPU_RestoreVramSysArea();
             GSPGPU_FlushDataCache((void *)0x1F000000, 0x00600000);
             RecursiveLock_Unlock(&ProcessImpl::FrameLock);
+            if (__hasAborted)
+                return ((HookReturn)(isBottom, arg2, addr, addrB, stride, format, arg7));
         }
 
         bool drawRocket = Preferences::UseFloatingBtn && isBottom;
