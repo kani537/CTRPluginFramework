@@ -36,7 +36,7 @@ namespace CTRPluginFramework
         //static Color                    black;
         //static Clock                    fpsCounter;
         //static float                    second = Seconds(1.f).AsSeconds();
-        
+
         bool isTouchDown = Touch::IsDown();
         IntVector touchPos(Touch::GetPosition());
 
@@ -51,8 +51,8 @@ namespace CTRPluginFramework
                 DrawSysString("\uE058", posX, posY, 320, Color::Blank);
         }
 
-   //     ScreenImpl::Top->Debug();
-   //     ScreenImpl::Bottom->Debug();
+     //   ScreenImpl::Top->Debug();
+     //   ScreenImpl::Bottom->Debug();
         // Draw fps counter
         /*char buffer[20] = {0};
 
@@ -61,8 +61,8 @@ namespace CTRPluginFramework
         DrawString(buffer, 200, posY, Color::Blank, Color::Black);*/
 
         ScreenImpl::Bottom->SwapBuffer(true, copy);
-        ScreenImpl::Top->SwapBuffer(true, copy); 
-        
+        ScreenImpl::Top->SwapBuffer(true, copy);
+
         gspWaitForVBlank();
     }
 
@@ -89,7 +89,7 @@ namespace CTRPluginFramework
             //x = posX + w;
             u8 *dst = left + rowstride * w;
             while (--h >= 0)
-            {   
+            {
                 Color &&c = PrivColor::FromFramebuffer(dst);
 
                 c.Fade(fade);

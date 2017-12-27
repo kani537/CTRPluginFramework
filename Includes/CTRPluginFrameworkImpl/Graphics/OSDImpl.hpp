@@ -40,11 +40,11 @@ namespace CTRPluginFramework
 
         static void    Update(void);
         static bool    Draw(void);
-        
+
         static void    Lock(void);
         static bool    TryLock(void);
         static void    Unlock(void);
-        
+
         static bool             DrawSaveIcon;
         static bool             MessColors;
         static bool             SyncOnFrame;
@@ -57,7 +57,9 @@ namespace CTRPluginFramework
         static std::list<OSDMessage*>      Notifications;
         static std::vector<OSDCallback>    Callbacks;
 
-        static  int MainCallback(u32 isBottom, int arg2, void *addr, void *addrB, int stride, int format, int arg7);
+        static  int     MainCallback(u32 isBottom, int arg2, void *addr, void *addrB, int stride, int format, int arg7);
+        static  int     MainCallback2(u32 r0, u32 *params, u32 isBottom, u32 arg);
+        static  void    CallbackGlobal(u32 isBottom, void *addr, void *addrB, int stride, int format);
 
     private:
         friend class PluginMenu;

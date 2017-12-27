@@ -115,6 +115,13 @@ namespace CTRPluginFramework
         ctrpfHeap->CanBeSelected(false);
         menu += ctrpfHeap;
 
+        /*menu += new MenuEntry("Notification R", []
+        (MenuEntry *entry)
+        {
+            if (Controller::IsKeyDown(R))
+                OSD::Notify("Woooow");
+        });*/
+
 #endif
         menu.OnOpening = []
         {

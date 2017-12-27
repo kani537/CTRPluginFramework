@@ -135,10 +135,40 @@ namespace CTRPluginFramework
 
     static void    MessColor(u32 startAddr, u32 stride, u32 format);
 
-    int OSDImpl::MainCallback(u32 isBottom, int arg2, void* addr, void* addrB, int stride, int format, int arg7)
+    int     OSDImpl::MainCallback(u32 isBottom, int arg2, void *addr, void *addrB, int stride, int format, int arg7)
+    {
+        if (addr)
+        {
+            CallbackGlobal(isBottom, addr, addrB, stride, format);
+        }
+        return (HookReturn(isBottom, arg2, addr, addrB, stride, format, arg7));
+    }
+
+    int     OSDImpl::MainCallback2(u32 r0, u32 *params, u32 isBottom, u32 arg)
+    {
+        using OSDReturn = int(*)(u32, u32 *, u32, u32);
+
+        u32 addr, addrB, stride, format;
+
+        if (!params)
+            goto exit;
+       // isBottom = params[0];
+        addr = params[1];
+        addrB = 0;
+        //addrB = params[2];
+        stride = params[3];
+        format = params[4] & 0xF;
+
+        CallbackGlobal(isBottom, (void *)addr, (void *)addrB, stride, format);
+
+    exit:
+        return ((OSDReturn)(OSDImpl::HookReturn))(r0, params, isBottom, arg);
+    }
+
+    void     OSDImpl::CallbackGlobal(u32 isBottom, void* addr, void* addrB, int stride, int format)
     {
         if (!addr)
-            return ((HookReturn)(isBottom, arg2, addr, addrB, stride, format, arg7));
+            return;
 
         if (!isBottom)
         {
@@ -161,7 +191,7 @@ namespace CTRPluginFramework
             GSPGPU_FlushDataCache((void *)0x1F000000, 0x00600000);
             RecursiveLock_Unlock(&ProcessImpl::FrameLock);
             if (__hasAborted)
-                return ((HookReturn)(isBottom, arg2, addr, addrB, stride, format, arg7));
+                return;
         }
 
         bool drawRocket = Preferences::UseFloatingBtn && isBottom;
@@ -170,7 +200,7 @@ namespace CTRPluginFramework
 
         if (!drawRocket && !drawTouch && !drawFps && !DrawSaveIcon && !MessColors
             && Callbacks.empty() && Notifications.empty())
-            return ((HookReturn)(isBottom, arg2, addr, addrB, stride, format, arg7));
+            return;
 
         u32     size = isBottom ? stride * 320 : stride * 400;
         bool    mustFlush = drawFps;
@@ -261,27 +291,38 @@ namespace CTRPluginFramework
                 svcFlushProcessDataCache(handle, addrB, size);
         }
 
-        return ((HookReturn)(isBottom, arg2, addr, addrB, stride, format, arg7));
+        return;
 
     }
 
     static const u32    g_OSDPattern[] =
     {
-        0xE1833000, // ORR R3, R3, R0  ///< Here 0x14
+        0xE1833000, // ORR R3, R3, R0
         0xE2044CFF, // AND R4, R4, #0xFF00
         0xE3C33CFF, // BIC R3, R3, #0xFF00
         0xE1833004, // ORR R3, R3, R4
-        0xE1824F93, // STREX R4, R3, [R2]
-        0xE8830E60, // STMIA R3, {R5, R6, R9 - R11} ///< Here 0x10
+        0xE1824F93, // STREX R4, R3, [R2] // 0x14
+
+        0xE8830E60, // STMIA R3, {R5, R6, R9 - R11}
         0xEE078F9A, // MCR p15, 0, R8, c7, c10, 4 // Data Synchronization Barrier
         0xE3A03001, // MOV R3, #1
-        0xE7902104, // LDR R2, [R0, R4, LSL#2]
-        0xEE076F9A, // MCR p15, 0, R6, c7, c10, 4 // Data Synchronization Barrier ///< Here 0x14
+        0xE7902104, // LDR R2, [R0, R4, LSL#2] // 0x10
+
+        0xEE076F9A, // MCR p15, 0, R6, c7, c10, 4 // Data Synchronization Barrier
         0xE3A02001, // MOV R2, #1
         0xE7901104, // LDR R1, [R0, R4, LSL#2]
         0xE1911F9F, // LDREX R1, [R1]
-        0xE3C110FF, // BIC R1, R1, #0xFF
-        0x06200000  // STREQT R0, [R0], -R0
+        0xE3C110FF, // BIC R1, R1, #0xFF // 0x14
+
+        0xE3A00000, // MOV R0, #0
+        0xEE070F9A, // MCR P15, 0, R0, c7, c10, 4
+        0xE3A00001, // MOV R0, #1
+        0xE7951104, // LDR R1, [R5, R4, LSL#2] // 0x10
+
+        0xE3A00000, // MOV R0, #0
+        0xEE070F9A, // MCR P15, 0, R0, c7, c10, 4
+        0xE2850001, // ADD R0, R5, #1
+        0xEA000004, // B #16 // 0x10
     };
 
     static u8       *memsearch(u8 *startPos, const void *pattern, u32 size, u32 patternSize)
@@ -308,65 +349,110 @@ namespace CTRPluginFramework
         return nullptr;
     }
 
-    static u32     SearchOSD(void)
+    static u32     SearchStmfd(u32 start, u32 size, u32 stmfd, bool &jump)
     {
-        u8  *address = memsearch((u8 *)0x100000, g_OSDPattern, Process::GetTextSize(), 0x14);
+        if (!start || !size || !stmfd)
+            return (0);
 
-        if (address == nullptr)
+        const u32   ntrhook = 0xE51FF004; // LDR PC, [PC, #-4]
+        u32     result = 0;
+        u32     *end = (u32 *)(start - size);
+
+        for (u32 *addr = (u32 *)start; addr > end; addr--)
         {
-            address = memsearch((u8 *)0x100000, &g_OSDPattern[5], Process::GetTextSize(), 0x10);
+            u32 val = *addr;
+            if (val == stmfd)
+            {
+                result = (u32)addr;
+                break;
+            }
+
+            if (val == ntrhook && (*(addr + 1) >> 24 == 0x06))
+            {
+                result = (u32)addr;
+                jump = true;
+                break;
+            }
+        }
+        return (result);
+    }
+
+    static u32     SearchOSD(int pattern)
+    {
+        u8  *address = nullptr;
+
+        if (pattern == 0)
+        {
+            address = memsearch((u8 *)0x100000, g_OSDPattern, Process::GetTextSize(), 0x14);
 
             if (address == nullptr)
-                address = memsearch((u8 *)0x100000, &g_OSDPattern[9], Process::GetTextSize(), 0x14);
+            {
+                address = memsearch((u8 *)0x100000, &g_OSDPattern[5], Process::GetTextSize(), 0x10);
+            }
+        }
+        else if (pattern == 3)
+        {
+            address = memsearch((u8 *)0x100000, &g_OSDPattern[9], Process::GetTextSize(), 0x14);
+        }
+        else if (pattern == 4)
+        {
+            address = memsearch((u8 *)0x100000, &g_OSDPattern[14], Process::GetTextSize(), 0x10);
+        }
+        else if (pattern == 5)
+        {
+            address = memsearch((u8 *)0x100000, &g_OSDPattern[18], Process::GetTextSize(), 0x10);
         }
 
         return ((u32)address);
     }
 
+    Hook    OSDHook2;
     void    InstallOSD(void)
     {
         const u32   stmfd2 = 0xE92D47F0; // STMFD SP!, {R4-R10,LR}
         const u32   stmfd1 = 0xE92D5FF0; // STMFD SP!, {R4-R12, LR}
-        const u32   ntrhook = 0xE51FF004; // LDR PC, [PC, #-4]
-        u32         found = SearchOSD();
-        u32         result = 0;
-        u32         *end = (u32 *)(found - 0x400);
+        const u32   stmfd3 = 0xE92D4070; // STMFD SP!, {R4-R6, LR}
 
+        bool        isHook = false;
+        u32         found = SearchOSD(0);
+        u32         found2 = 0;
+
+        found = SearchStmfd(found, 0x400, stmfd1, isHook);
         if (!found)
         {
-            MessageBox("OSD couldn't be installed: #1 !")();
-            return;
-        }
-
-         // MessageBox(Utils::Format("OSD #1 Found: %08X", found))();
-
-        for (u32 *addr = (u32 *)found; addr > end; addr--)
-        {
-            u32 val = *addr;
-            if (val == stmfd1 || val == stmfd2)
+            found = SearchOSD(3);
+            found = SearchStmfd(found, 0x400, stmfd2, isHook);
+            if (!found)
             {
-                result = (u32)addr;
-                break;
-            }
-            if (val == ntrhook && (*(addr + 1) >> 24 == 0x06))
-            {
-                result = (u32)addr;
-                OSDImpl::OSDHook.Initialize(result, (u32)OSDImpl::MainCallback);
-                OSDImpl::OSDHook.Enable();
-                OSDImpl::HookReturn = (OSDReturn)*(addr + 1);
-                return;
+                found2 = SearchOSD(4);
+                found2 = SearchStmfd(found2, 0x400, stmfd3, isHook);
+                if (!found2)
+                {
+                    MessageBox("OSD couldn't be installed: #1 !")();
+                    return;
+                }
+                //found2 = SearchOSD(5);
+                //found2 = SearchStmfd(found, 0x400, stmfd3, isHook);
             }
         }
 
-        if (result == 0)
+        if (found2)
         {
-            MessageBox("OSD couldn't be installed: #2 !")();
+            OSDImpl::OSDHook.Initialize(found2, (u32)OSDImpl::MainCallback2);
+            OSDImpl::OSDHook.Enable();
+            if (!isHook)
+                OSDImpl::HookReturn = (OSDReturn)OSDImpl::OSDHook.returnCode;
+            else
+                OSDImpl::HookReturn = (OSDReturn)*((u32 *)found2 + 1);
             return;
         }
 
-        OSDImpl::OSDHook.Initialize(result, (u32)OSDImpl::MainCallback);
+        OSDImpl::OSDHook.Initialize(found, (u32)OSDImpl::MainCallback);
         OSDImpl::OSDHook.Enable();
-        OSDImpl::HookReturn = (OSDReturn)OSDImpl::OSDHook.returnCode;
+        if (!isHook)
+            OSDImpl::HookReturn = (OSDReturn)OSDImpl::OSDHook.returnCode;
+        else
+            OSDImpl::HookReturn = (OSDReturn)*((u32 *)found + 1);
     }
 
     static void    MessColor(u32 startAddr, u32 stride, u32 format)

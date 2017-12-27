@@ -42,7 +42,7 @@ namespace CTRPluginFramework
 
     u32 GetBPP(GSPGPU_FramebufferFormats format)
     {
-        switch(format) 
+        switch(format)
         {
             case GSP_RGBA8_OES:
                 return 4;
@@ -159,7 +159,7 @@ namespace CTRPluginFramework
 
             // Flush second buffer
             if (R_FAILED(GSPGPU_FlushDataCache((void *)_rightFramebuffers[!_currentBuffer], size)))
-                svcFlushProcessDataCache(Process::GetHandle(), (void *)_rightFramebuffers[!_currentBuffer], size);      
+                svcFlushProcessDataCache(Process::GetHandle(), (void *)_rightFramebuffers[!_currentBuffer], size);
         }
     }
 
@@ -189,7 +189,7 @@ namespace CTRPluginFramework
 	void    ScreenImpl::Copy(void)
     {
         u32 size = GetFramebufferSize();
-        
+
         // Flush currentBuffer
         if (R_FAILED(GSPGPU_FlushDataCache((void *)_leftFramebuffers[_currentBuffer], size)))
             svcFlushProcessDataCache(Process::GetHandle(), (void *)_leftFramebuffers[_currentBuffer], size);
@@ -274,10 +274,10 @@ namespace CTRPluginFramework
     *****************/
 
     void    ScreenImpl::SwapBuffer(bool flush, bool copy)
-    {   
+    {
         if (flush)
             Flush();
-        
+
         // Change buffer
         _currentBuffer = !_currentBuffer;
 
@@ -349,7 +349,7 @@ namespace CTRPluginFramework
     *************/
     u8      *ScreenImpl::GetLeftFramebuffer(bool current)
     {
-        return ((u8 *)_leftFramebuffers[ current ? _currentBuffer : !_currentBuffer ]);            
+        return ((u8 *)_leftFramebuffers[ current ? _currentBuffer : !_currentBuffer ]);
     }
 
     u8      *ScreenImpl::GetLeftFramebuffer(int posX, int posY)
@@ -365,7 +365,7 @@ namespace CTRPluginFramework
 
         u32 offset = (_rowSize - 1 - posY + posX * _rowSize) * _bytesPerPixel;
 
-        return ((u8 *)_leftFramebuffers[!_currentBuffer] + offset);            
+        return ((u8 *)_leftFramebuffers[!_currentBuffer] + offset);
     }
 
     /*
@@ -377,7 +377,7 @@ namespace CTRPluginFramework
         if (!_isTopScreen)
             return (nullptr);
 
-        return ((u8 *)_rightFramebuffers[ current ? _currentBuffer : !_currentBuffer ]);            
+        return ((u8 *)_rightFramebuffers[ current ? _currentBuffer : !_currentBuffer ]);
     }
 
     u8      *ScreenImpl::GetRightFramebuffer(int posX, int posY)
@@ -389,12 +389,12 @@ namespace CTRPluginFramework
         posX = std::min(posX, (_isTopScreen ? 400 : 320));
         posY = std::max(posY, 0);
         posY = std::min(posY, 240);
-        
+
         // Correct posY
         posY += _rowSize - 240;
         u32 offset = (_rowSize - 1 - posY + posX * _rowSize) * _bytesPerPixel;
 
-        return ((u8 *)_rightFramebuffers[!_currentBuffer] + offset);            
+        return ((u8 *)_rightFramebuffers[!_currentBuffer] + offset);
     }
 
     void    ScreenImpl::GetPosFromAddress(u32 addr, int &posX, int &posY)
