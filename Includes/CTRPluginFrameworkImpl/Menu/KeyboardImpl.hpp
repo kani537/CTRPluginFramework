@@ -51,11 +51,12 @@ namespace CTRPluginFramework
 
         int         Run(void);
         void        Close(void);
-        bool        operator()(int &out);     
+        bool        operator()(int &out);
 
         bool        DisplayTopScreen;
     private:
         friend class HexEditor;
+        friend class ARCodeEditor;
 
         void    _RenderTop(void);
         void    _RenderBottom(void);
@@ -94,6 +95,7 @@ namespace CTRPluginFramework
         bool                    _useCaps;
         bool                    _useSymbols;
         bool                    _useNintendo;
+        float                   _offset;
         int                     _max;
         u8                      _symbolsPage;
         u8                      _nintendoPage;
@@ -112,7 +114,7 @@ namespace CTRPluginFramework
         // Custom keyboard stuff
         bool                    _customKeyboard;
         bool                    _displayScrollbar;
-        int                     _currentPosition;      
+        int                     _currentPosition;
         u32                     _scrollbarSize;
         u32                     _scrollCursorSize;
         float                   _scrollSize;

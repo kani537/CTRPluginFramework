@@ -44,6 +44,7 @@ namespace CTRPluginFramework
         _errorMessage = false;
         _askForExit = false;
         _isHex = false;
+        _offset = 0.f;
         _max = 0;
         _layout = HEXADECIMAL;
         _keys = nullptr;
@@ -88,6 +89,7 @@ namespace CTRPluginFramework
         _errorMessage = false;
         _askForExit = false;
         _isHex = false;
+        _offset = 0.f;
         _max = 0;
         _layout = HEXADECIMAL;
 
@@ -177,7 +179,7 @@ namespace CTRPluginFramework
     {
         _convert = callback;
     }
-    
+
     void    KeyboardImpl::SetCompareCallback(CompareCallback callback)
     {
         _compare = callback;
@@ -208,7 +210,7 @@ namespace CTRPluginFramework
         {
             int height = 190;
 
-            
+
             float lsize = 36.f * (float)count + 1;
 
             float padding = (float)height / lsize;
@@ -263,7 +265,7 @@ namespace CTRPluginFramework
         {
             if (_layout == QWERTY) _Qwerty();
             else if (_layout == DECIMAL) _Decimal();
-            else if (_layout == HEXADECIMAL) _Hexadecimal();            
+            else if (_layout == HEXADECIMAL) _Hexadecimal();
         }
 
 		// Check start input
@@ -279,7 +281,7 @@ namespace CTRPluginFramework
                 {
                     ret = USER_ABORT;
                     goto exit;
-                }           
+                }
             }
 
             // Update current keys
@@ -324,8 +326,8 @@ namespace CTRPluginFramework
                             _isOpen = false;
                             ret = 0;
                         }
-                    }                    
-                }         
+                    }
+                }
             }
             else
             {
@@ -397,8 +399,8 @@ namespace CTRPluginFramework
             Preferences::bottomBackgroundImage->Draw(background.leftTop);
         else
         {*/
-            
-           // Renderer::DrawRect(22, 22, 276, 196, blank, false);            
+
+           // Renderer::DrawRect(22, 22, 276, 196, blank, false);
         //}
 
         // Draw current input
@@ -409,7 +411,7 @@ namespace CTRPluginFramework
             int   posX = 25;
 
             Renderer::DrawRect(background, black);
-            Renderer::DrawSysString(_userInput.c_str(), posX, posY, 300, blank);    
+            Renderer::DrawSysString(_userInput.c_str(), posX, posY, 300, blank, _offset);
 
             // Digit layout
             if (_layout != Layout::QWERTY)
@@ -489,7 +491,7 @@ namespace CTRPluginFramework
                         }
                     }
                 }
-            }          
+            }
         }
         else
         {
@@ -498,7 +500,7 @@ namespace CTRPluginFramework
 
             int max = _strKeys.size();
             max = std::min(max, _currentPosition + 6);
-            
+
             PrivColor::UseClamp(true, background3);
 
             for (int i = _currentPosition; i < max && i < _strKeys.size(); i++)
@@ -526,7 +528,7 @@ namespace CTRPluginFramework
 
             Renderer::DrawLine(posX, posY + 1, 1, dimGrey, _scrollCursorSize - 2);
             Renderer::DrawLine(posX + 1, posY, 1, dimGrey, _scrollCursorSize);
-            Renderer::DrawLine(posX + 2, posY + 1, 1, dimGrey, _scrollCursorSize - 2); 
+            Renderer::DrawLine(posX + 2, posY + 1, 1, dimGrey, _scrollCursorSize - 2);
         }
     }
 
@@ -572,14 +574,14 @@ namespace CTRPluginFramework
             {
                 _inertialVelocity = 0;
                 _lastTouch = IntVector(event.touch.x, event.touch.y);
-                _touchTimer.Restart();                
+                _touchTimer.Restart();
             }
         }
 
         if (event.type == Event::TouchMoved)
         {
             if (!buttons.Contains(event.touch.x, event.touch.y))
-            {  
+            {
                 Time delta = _touchTimer.Restart();
 
                 float moveDistance = (float)(_lastTouch.y - event.touch.y);
@@ -662,9 +664,16 @@ namespace CTRPluginFramework
             for (int i = start; i < end; i++)
             {
                 (*_keys)[i].Update(isTouchDown, touchPos);
-            }            
+            }
+
+            // Compute offset
+            float textsize = Renderer::GetTextSize(_userInput.c_str());
+
+            // If textsize is bigger than available place onscreen
+            if (textsize > 260.f)
+                _offset = textsize - 200.f;
         }
-        else
+        else ///< Custom Keyboard
         {
             if (_displayScrollbar)
             {
@@ -684,7 +693,7 @@ namespace CTRPluginFramework
                     _scrollPosition = _scrollEnd;
                     _inertialVelocity = 0.f;
                 }
-                    
+
 
                 _inertialVelocity += (0.98f ) * delta;
 
@@ -724,7 +733,7 @@ namespace CTRPluginFramework
     ** [8] = 'O'
     ** [9] = 'P'
     ** [10] = 'KEY_BACKSPACE'
-    
+
     ** First Line : 11 keys **
 
     ** [11] = 'A'
@@ -738,9 +747,9 @@ namespace CTRPluginFramework
     ** [19] = 'L'
     ** [20] = '''
     ** [21] = 'KEY_ENTER'
-    
+
     ** Second Line : 11 keys **
- 
+
      ** [22] = 'CAPS'
      ** [23] = 'Z'
      ** [24] = 'X'
@@ -1121,7 +1130,7 @@ namespace CTRPluginFramework
         _QwertyLowCase();
         /*36 - 71*/
         _QwertyUpCase();
-        /* 72 - 108 Page 1*/ 
+        /* 72 - 108 Page 1*/
         /* 109 - 146 Page 2*/
         _QwertySymbols();
         /* 147 - 181 Page 1*/
@@ -1212,7 +1221,7 @@ namespace CTRPluginFramework
         pos.leftTop.y = 174;
         pos.leftTop.x = 112;
         pos.size.x = 138;
-        keys.push_back(TouchKey('0', pos));    
+        keys.push_back(TouchKey('0', pos));
     }
 
     void    KeyboardImpl::_Decimal(void)
@@ -1348,7 +1357,7 @@ namespace CTRPluginFramework
                     {
                         if (!backspacetimer.HasTimePassed(FastModeWaitTime))
                             return (false);
-                        backspaceFastMode = CLEAR_QUICK_MODE;                        
+                        backspaceFastMode = CLEAR_QUICK_MODE;
                     }
                     if (backspaceFastMode == CLEAR_QUICK_MODE)
                     {
@@ -1371,7 +1380,7 @@ namespace CTRPluginFramework
                     _inputChangeEvent.type = InputChangeEvent::CharacterAdded;
                     decode_utf8(&_inputChangeEvent.codepoint, (const u8 *)temp.c_str());
 
-                    if (_inputChangeEvent.codepoint == 0x00B1) // ± key 
+                    if (_inputChangeEvent.codepoint == 0x00B1) // ± key
                     {
                         if (_userInput[0] == '-')
                             _userInput.erase(0, 1);
@@ -1436,8 +1445,8 @@ namespace CTRPluginFramework
                         _inputChangeEvent.type = InputChangeEvent::CharacterAdded;
                         _inputChangeEvent.codepoint = ret;
                     }
-                        
-                    return (true); 
+
+                    return (true);
                 }
             }
         }
