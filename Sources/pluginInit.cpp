@@ -147,14 +147,14 @@ namespace CTRPluginFramework
         PatchProcess(settings);
 
         // Continue game
-
+        svcSignalEvent(g_continueGameEvent);
 
         // Wait for the game to be fully launched
-        //Sleep(settings.WaitTimeToBoot);
+        Sleep(settings.WaitTimeToBoot);
 
         // Init heap and newlib's syscalls
         initLib();
-        svcSignalEvent(g_continueGameEvent);
+
         // Copy FwkSettings to the globals (solve initialization issues)
         Preferences::Settings = settings;
         void *tst;
