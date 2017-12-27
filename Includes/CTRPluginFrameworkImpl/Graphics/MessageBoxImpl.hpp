@@ -6,6 +6,7 @@
 #include "CTRPluginFrameworkImpl/System/Events.hpp"
 #include "CTRPluginFramework/Menu/MessageBox.hpp"
 #include "CTRPluginFramework/Graphics/Color.hpp"
+#include "TextBox.hpp"
 
 namespace CTRPluginFramework
 {
@@ -31,6 +32,7 @@ namespace CTRPluginFramework
         std::string     _title;
         std::string     _message;
         DialogType      _dialogType;
+        TextBox         _textbox;
         bool            _exit;
         int             _cursor;
         IntRect         _box;

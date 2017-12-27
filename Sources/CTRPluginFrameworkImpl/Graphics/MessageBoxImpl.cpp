@@ -10,7 +10,7 @@
 namespace CTRPluginFramework
 {
     MessageBoxImpl::MessageBoxImpl(const std::string &title, const std::string &message, DialogType dType) :
-        _title(title), _message(message), _dialogType(dType), _exit(false), _cursor(0)
+        _title(title), _message(message), _dialogType(dType), _textbox{ title, message, _box }, _exit(false), _cursor(0)
     {
         /*
         * line = 16px
@@ -40,10 +40,10 @@ namespace CTRPluginFramework
         else
             _titleColor = Preferences::Settings.WindowTitleColor;
 
-        Renderer::GetTextInfos(title.c_str(), lineCount, maxTitleWidth, 290.f);
-        Renderer::GetTextInfos(message.c_str(), lineCount, maxLineWidth, 290.f);
-        maxLineWidth = std::max(maxLineWidth, maxTitleWidth);
-        
+        Renderer::GetTextInfos(title.c_str(), lineCount, maxTitleWidth, 320.f);
+        Renderer::GetTextInfos(message.c_str(), lineCount, maxLineWidth, 320.f);
+        maxLineWidth = std::max(maxLineWidth, maxTitleWidth) + 10.f; /// Size + potential scrollbar
+
         if (lineCount > 10)
             lineCount = 10;
 
@@ -52,7 +52,15 @@ namespace CTRPluginFramework
         int width = std::max((int)(maxLineWidth + 11.f), minWidth);
         int posX = (400 - width) / 2;
 
-        _box = IntRect(posX, posY, width, height);
+        _box = IntRect(posX, posY, width, height - 25);
+
+        _textbox._box = _box;
+        _textbox._border = IntRect(_box.leftTop.x + 2, _box.leftTop.y + 2, _box.size.x - 4, _box.size.y - 4);
+        _box.size.y = height;
+        _textbox.Update(_title, _message);
+        _textbox.Open();
+        _textbox.titleColor = _titleColor;
+        _textbox._fastscroll = _textbox._drawBox = false;
     }
     MessageBoxImpl::MessageBoxImpl(const std::string &message, const DialogType dType) :
         _message(message), _dialogType(dType), _exit(false), _cursor(0)
@@ -60,9 +68,10 @@ namespace CTRPluginFramework
         int     minWidth = dType == DialogType::DialogOk ? 100 : 200;
         int     lineCount;
         float   maxLineWidth;
-        
+
         Renderer::GetTextInfos(message.c_str(), lineCount, maxLineWidth, 290.f);
 
+        maxLineWidth += 10.f; ///< Add potential scrollbar size
         if (lineCount > 10)
             lineCount = 10;
 
@@ -71,7 +80,14 @@ namespace CTRPluginFramework
         int width = std::max((int)(maxLineWidth + 11), minWidth);
         int posX = (400 - width) / 2;
 
-        _box = IntRect(posX, posY, width, height);
+        _box = IntRect(posX, posY, width, height - 25);
+        _textbox._box = _box;
+        _textbox._border = IntRect(_box.leftTop.x + 2, _box.leftTop.y + 2, _box.size.x - 4, _box.size.y - 4);
+        _box.size.y = height;
+        _textbox.Update(_title, _message);
+        _textbox.Open();
+        _textbox.titleColor = _titleColor;
+        _textbox._fastscroll = _textbox._drawBox = false;
     }
 
     bool    MessageBoxImpl::operator()(void)
@@ -95,6 +111,7 @@ namespace CTRPluginFramework
             while (manager.PollEvent(event))
             {
                 _ProcessEvent(event);
+                _textbox.ProcessEvent(event);
             }
 
             if (_exit)
@@ -104,7 +121,7 @@ namespace CTRPluginFramework
             _Draw();
             Renderer::SetTarget(BOTTOM);
             Renderer::EndFrame();
-        }       
+        }
 
         // Release game if we paused it in this function
         PluginMenu *menu = PluginMenu::GetRunningInstance();
@@ -115,7 +132,7 @@ namespace CTRPluginFramework
 
         return (_cursor ? false : true);
     }
-    
+
     void    MessageBoxImpl::_ProcessEvent(Event &event)
     {
         if (event.type == Event::KeyPressed)
@@ -161,21 +178,22 @@ namespace CTRPluginFramework
         Renderer::DrawRect2(_box, settings.BackgroundMainColor, settings.BackgroundSecondaryColor);
 
         // Draw Text
-        int posY = _box.leftTop.y + 10;
+        int posY = _box.leftTop.y + _textbox._box.size.y;
         int posX = _box.leftTop.x + 5;
-        int maxW = _box.leftTop.x + _box.size.x - 5; ///< Should be -10, but that way a letter that is slighty to bix can still be drawn
+        int maxW = _box.leftTop.x + _box.size.x - 5; ///< Should be -10, but that way a letter that is slighty too big can still be drawn
         int maxH = _box.leftTop.y + _box.size.y - 30;
 
-        if (!_title.empty())
+        /*if (!_title.empty())
         {
             int width = Renderer::DrawSysString(_title.c_str(), posX, posY, maxW, _titleColor);
             Renderer::DrawLine(posX, posY, width - posX + 30, _titleColor);
             posY += 8;
         }
         Renderer::DrawSysStringReturn((const u8 *)_message.c_str(), posX, posY, maxW, settings.MainTextColor, maxH);
-       
+        */
+        _textbox.Draw();
         // Draw "Buttons"
-        posY += 13;
+        //posY += 13;
 
         // Single button case
         if (_dialogType == DialogType::DialogOk)
@@ -194,7 +212,7 @@ namespace CTRPluginFramework
             Renderer::DrawSysString("Ok", posX, posY, 380, Color::Blank);
         }
         else
-        {   
+        {
             int posYBak = posY;
 
             // Ok Button

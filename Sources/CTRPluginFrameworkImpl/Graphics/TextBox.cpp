@@ -3,12 +3,24 @@
 #include "ctrulib/font.h"
 #include "CTRPluginFrameworkImpl/Preferences.hpp"
 #include "CTRPluginFrameworkImpl/Graphics/Textbox.hpp"
+#include "CTRPluginFrameworkImpl/Graphics/Renderer.hpp"
 #include "CTRPluginFramework/System/Clock.hpp"
 #include <cmath>
 #include "../../OSDManager.hpp"
 
 namespace CTRPluginFramework
 {
+    TextBox::TextBox() :
+        _text{ nullptr }, _isOpen{ false }, _displayScrollbar{ false }, _fastscroll{ false }, _currentLine{ 0 },
+        _maxLines{ 0 }, _scrollbarSize{ 0 }, _scrollCursorSize{ 0 }, _maxScrollCursorPosY{ 0 }, _scrollPadding{ 0 },
+        _scrollPosition{ 0 }
+    {
+        titleColor = Preferences::Settings.WindowTitleColor;
+        textColor = Preferences::Settings.MainTextColor;
+        borderColor = Preferences::Settings.BackgroundBorderColor;
+        _drawBox = true;
+    }
+
     /*
     ** Constructor
     ***************/
@@ -50,6 +62,7 @@ namespace CTRPluginFramework
         titleColor = Preferences::Settings.WindowTitleColor;//blank;
         textColor = Preferences::Settings.MainTextColor;//blank;
         borderColor = Preferences::Settings.BackgroundBorderColor;//blank;
+        _fastscroll = _drawBox = true;
     }
 
     /*
@@ -122,14 +135,20 @@ namespace CTRPluginFramework
                 }
                 case Key::DPadLeft:
                 {
-                    _scrollPosition = 0.f;
-                    _currentLine = 0;
+                    if (_fastscroll)
+                    {
+                        _scrollPosition = 0.f;
+                        _currentLine = 0;
+                    }
                     break;
                 }
                 case Key::DPadRight:
                 {
-                    _scrollPosition = (_newline.size() - _maxLines) * _scrollPadding;
-                    _currentLine = std::max((int)(_newline.size() - _maxLines), 0);
+                    if (_fastscroll)
+                    {
+                        _scrollPosition = (_newline.size() - _maxLines) * _scrollPadding;
+                        _currentLine = std::max((int)(_newline.size() - _maxLines), 0);
+                    }
                     break;
                 }
                 case Key::CStickUp:
@@ -179,9 +198,11 @@ namespace CTRPluginFramework
         _currentLine = 0;
         _title = title;
         _text = &text;
-        _maxLines = ((_box.size.y - 10) / 16) - 1;
+        _maxLines = ((_box.size.y - 10) / 16);
+        if (!title.empty())
+            _maxLines -= 1;
         _GetTextInfos();
-        if (_newline.size() <= _maxLines)
+        if (_newline.size() - 1 <= _maxLines)
         {
             _maxLines = _newline.size();
             _displayScrollbar = false;
@@ -192,7 +213,7 @@ namespace CTRPluginFramework
 
             height -= 10;
 
-            int lines = _newline.size() + 1;
+            int lines = _newline.size() - 1;
             int lsize = 16 * lines;
 
             float padding = (float)height / (float)lsize;
@@ -217,6 +238,7 @@ namespace CTRPluginFramework
     {
         extern Color g_customColor;
     }
+
     void    TextBox::Draw(void)
     {
         if (_currentLine >= _newline.size())
@@ -229,14 +251,17 @@ namespace CTRPluginFramework
         const Color     &grey = Color::BlackGrey;
         FwkSettings     &settings = Preferences::Settings;
 
-        // Draw Background
-        if (Preferences::topBackgroundImage != nullptr
-            && (Preferences::topBackgroundImage->GetDimensions() <= _box.size))
-            Preferences::topBackgroundImage->Draw(_box, -0.3f);
-        else
+        if (_drawBox)
         {
-            Renderer::DrawRect2(_box, settings.BackgroundMainColor, settings.BackgroundSecondaryColor);
-            Renderer::DrawRect(_border, settings.BackgroundBorderColor, false);
+            // Draw Background
+            if (Preferences::topBackgroundImage != nullptr
+                && (Preferences::topBackgroundImage->GetDimensions() <= _box.size))
+                Preferences::topBackgroundImage->Draw(_box, -0.3f);
+            else
+            {
+                Renderer::DrawRect2(_box, settings.BackgroundMainColor, settings.BackgroundSecondaryColor);
+                Renderer::DrawRect(_border, settings.BackgroundBorderColor, false);
+            }
         }
 
         //Window::TopWindow.Draw(_title);
@@ -246,13 +271,18 @@ namespace CTRPluginFramework
         int xLimit = posX + _box.size.x - 10;
 
         // Draw Title
-        int width;
-        width = Renderer::DrawSysString((const char *)_title.c_str(), posX, posY, xLimit, titleColor);
-        u32 length = width - posX + 30;
-        if (posX + length > xLimit)
-            length = xLimit - posX;
-        Renderer::DrawLine(posX, posY, length, blank);
-        posY += 7;
+        if (!_title.empty())
+        {
+            int width;
+            width = Renderer::DrawSysString((const char *)_title.c_str(), posX, posY, xLimit, titleColor);
+            u32 length = width - posX + 30;
+            if (posX + length > xLimit)
+                length = xLimit - posX;
+            Renderer::DrawLine(posX, posY, length, blank);
+            posY += 7;
+        }
+        else
+            posY += 5;
 
         // Draw Text
         RendererPriv::g_customColor = textColor;
@@ -415,7 +445,7 @@ namespace CTRPluginFramework
             advance++;
         }
 
-        while (true)
+        while (str && *str)
         {
             XTRACE("%s", str);
             if (*str == '\n')// || *str == 0x18)
@@ -474,10 +504,10 @@ namespace CTRPluginFramework
                 TRACE;
             }
             _newline.push_back(str);
-
         }
     exit:
-        _newline.push_back(nullptr);
+        if (_newline.back() != nullptr)
+            _newline.push_back(nullptr);
         TRACE;
     }
 }

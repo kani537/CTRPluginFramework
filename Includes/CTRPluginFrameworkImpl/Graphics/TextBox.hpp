@@ -14,6 +14,7 @@ namespace CTRPluginFramework
     class TextBox : public Drawable
     {
     public:
+        TextBox();
         TextBox(const std::string &title, const std::string &text, const IntRect &box);
         ~TextBox(){}
 
@@ -38,16 +39,19 @@ namespace CTRPluginFramework
         Color   borderColor;
 
     private:
+        friend class MessageBoxImpl;
         void    _GetTextInfos(void);
         u8      *_GetWordWidth(u8 *str, float& width);
 
         std::vector<u8 *>       _newline;
         std::string             _title;
         const std::string       *_text;
-        const IntRect           _box;
-        const IntRect           _border;
+        IntRect           _box;
+        IntRect           _border;
         mutable bool            _isOpen;
         bool                    _displayScrollbar;
+        bool                    _drawBox;
+        bool                    _fastscroll;
 
         u32                     _currentLine;
         u32                     _maxLines;
