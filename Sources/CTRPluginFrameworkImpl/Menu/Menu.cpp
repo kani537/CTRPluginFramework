@@ -423,10 +423,13 @@ namespace CTRPluginFramework
 
         float deltaAsSeconds = delta.AsSeconds();
 
+        if (deltaAsSeconds > 0.5f)
+            return;
+
         if (!_reverseFlow)
         {
             if (_scrollOffset < _maxScrollOffset)
-                _scrollOffset += 29.f * delta.AsSeconds();
+                _scrollOffset += 29.f * deltaAsSeconds;
             else
             {
                 _reverseFlow = true;
@@ -435,7 +438,7 @@ namespace CTRPluginFramework
         }
         else
         {
-            _scrollOffset -= 55.f * delta.AsSeconds();
+            _scrollOffset -= 55.f * deltaAsSeconds;
             if (_scrollOffset <= 0.f)
             {
                 _reverseFlow = false;
