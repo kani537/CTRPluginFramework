@@ -55,6 +55,7 @@ namespace CTRPluginFramework
         static const Color  DimGrey;
         static const Color  DodgerBlue;
         static const Color  Gainsboro;
+        static const Color  ForestGreen;
         static const Color  Green;
         static const Color  Grey;
         static const Color  LimeGreen;

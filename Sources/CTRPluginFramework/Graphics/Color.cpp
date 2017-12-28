@@ -7,13 +7,14 @@ namespace CTRPluginFramework
     const Color     Color::Blank = Color(255, 255, 255);
     const Color     Color::Blue = Color(0, 0, 255);
     const Color     Color::BlackGrey = Color(15, 15, 15);
-    const Color     Color::Brown = Color(150, 75, 0);
+    const Color     Color::Brown = Color(165, 42, 42);
     const Color     Color::Cyan = Color(0, 255, 255);
     const Color     Color::DarkGrey = Color(169, 169, 169);
     const Color     Color::DeepSkyBlue = Color(0, 191, 255);
     const Color     Color::DimGrey = Color(105, 105, 105);
     const Color     Color::DodgerBlue = Color(30, 144, 255);
     const Color     Color::Gainsboro = Color(220, 220, 220);
+    const Color     Color::ForestGreen = Color(34, 139, 34);
     const Color     Color::Green = Color(0, 128, 0);
     const Color     Color::Grey = Color(128, 128, 128);
     const Color     Color::LimeGreen = Color(50, 205, 50);
