@@ -635,10 +635,12 @@ namespace CTRPluginFramework
             }
             case 0xE0: ///< Patch code
             {
-                if (code.Data == nullptr || !code.Right)
+                u8 *data = (u8 *)code.Data.data();
+
+                if (data == nullptr || code.Data.size() == 0 || !code.Right || code.Right > code.Data.size() * 4)
                     continue; ///< An error occured
 
-                ExitCodeImmediately = !Memcpy(code.Left + Offset[ActiveOffset], code.Data, code.Right);
+                ExitCodeImmediately = !Memcpy(code.Left + Offset[ActiveOffset], data, code.Right);
                 break;
             }
             case 0xF1: ///< ADD code

@@ -42,17 +42,23 @@ IP			:=  5
 FTP_HOST 	:=	192.168.1.
 FTP_PORT	:=	"5000"
 FTP_PATH	:=	"0004000000033600/" #Zelda OOT
+ACTIONREPLAY := ActionReplay.plg
+ifneq ("$(wildcard $(ACTIONREPLAY))","")
+FILE_EXISTS = 1
+else
+FILE_EXISTS = 0
+endif
 
 #---------------------------------------------------------------------------------
 # options for code generation
 #---------------------------------------------------------------------------------
-ARCH	:=	-march=armv6k -mlittle-endian -mtune=mpcore -mfloat-abi=hard 
+ARCH	:=	-march=armv6k -mlittle-endian -mtune=mpcore -mfloat-abi=hard
 
 CFLAGS	:=	-g -Os -mword-relocations \
  			-fomit-frame-pointer -ffunction-sections -fno-strict-aliasing \
 			$(ARCH)
 
-CFLAGS		+=	$(INCLUDE) -DARM11 -D_3DS 
+CFLAGS		+=	$(INCLUDE) -DARM11 -D_3DS
 
 CXXFLAGS	:= $(CFLAGS) -fno-rtti -fno-exceptions -std=gnu++11
 
@@ -102,11 +108,11 @@ $(BUILD):
 
 #---------------------------------------------------------------------------------
 clean:
-	@echo clean ... 
+	@echo clean ...
 	@rm -fr $(BUILD) $(TARGET).3dsx $(OUTPUT).smdh $(TARGET).elf
 
 re: clean all
-	
+
 send:
 	@echo "Sending the plugin over FTP"
 	@$(TOPDIR)/sendfile.py $(TARGET).plg $(FTP_PATH) "$(FTP_HOST)$(IP)" $(FTP_PORT)
@@ -115,6 +121,10 @@ ACNL:
 	make send FTP_PATH="0004000000086400/"
 FL:
 	make send FTP_PATH="0004000000113100/"
+AR:
+	rm $(ACTIONREPLAY)
+	mv $(OUTPUT).plg $(ACTIONREPLAY)
+	@$(TOPDIR)/sendfile.py $(ACTIONREPLAY) "ActionReplay/" "$(FTP_HOST)$(IP)" $(FTP_PORT)
 
 #---------------------------------------------------------------------------------
 

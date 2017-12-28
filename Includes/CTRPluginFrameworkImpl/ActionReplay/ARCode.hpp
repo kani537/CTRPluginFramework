@@ -12,22 +12,25 @@ namespace CTRPluginFramework
         u32     Str2U32(const std::string &str, bool &error);
     }
 
+    class MenuFolderImpl;
+
     class ARCode
     {
     public:
-
-        virtual ~ARCode(void) {}
-
+        bool    HasError;
         u8      Type;
         u32     Left;
-        u32     Right;
-        u8      *Data; ///< Pointer to data for E code
+        u32     Right; ///< Also size for E code
+        std::vector<u32> Data; ///< Data for E code
+        std::string Text; ///< Original data when there's an error detected
 
+        ARCode(u8 type, u32 left, u32 right);
+        ARCode(const std::string &line, bool &error);
+        virtual ~ARCode(void) = default;
         virtual std::string ToString(void) const;
 
-        ARCode(u8 type, u32 left, u32 right) :
-            Type(type), Left(left), Right(right), Data(nullptr) {}
-        ARCode(const std::string &line, bool &error);
+        bool    Update(const std::string &line);
+        bool    Update(void);
     };
 
     using ARCodeVector = std::vector<ARCode>;
@@ -35,14 +38,33 @@ namespace CTRPluginFramework
     struct ARCodeContext
     {
         bool            hasError;   ///< True if any of the codes has an unrecognized char
-        std::string     data;       ///< Original data in case of error
+        //std::string     data;       ///< Original data in case of error
         u32             storage[2]; ///< Storage for this code
         ARCodeVector    codes;      ///< List of all codes
 
+        bool            Update(void);
         void            Clear(void);
     };
 
-    class MenuFolderImpl;
+    extern const std::vector<u8> g_codeTypes;
+    /**
+     * \brief Check if the code type is supported by this handler
+     * \param left Left code value
+     * \return true if the code type is valid
+     */
+    bool    ActionReplay_CheckCodeTypeValidity(u32 left);
+    /**
+     * \brief Check if the line has a valid code pattern (hex) 00000000 00000000
+     * \param line The line to check
+     * \return true if the line has correct hex values
+     */
+    bool    ActionReplay_IsHexCode(const std::string &line);
+    /**
+    * \brief Check if the line passed is a valid code
+    * \param line The string to check
+    * \return true if the line is a valid code
+    */
+    bool    ActionReplay_IsValidCode(const std::string &line);
     void    ActionReplay_LoadCodes(MenuFolderImpl *dst);
 }
 

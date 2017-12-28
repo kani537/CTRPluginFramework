@@ -124,6 +124,7 @@
     <ClInclude Include="Includes\CTRPluginFramework.hpp" />
     <ClInclude Include="Includes\CTRPluginFrameworkImpl.hpp" />
     <ClInclude Include="Includes\CTRPluginFrameworkImpl\ActionReplay\ARCode.hpp" />
+    <ClInclude Include="Includes\CTRPluginFrameworkImpl\ActionReplay\ARCodeEditor.hpp" />
     <ClInclude Include="Includes\CTRPluginFrameworkImpl\ActionReplay\ARHandler.hpp" />
     <ClInclude Include="Includes\CTRPluginFrameworkImpl\arm11kCommands.h" />
     <ClInclude Include="Includes\CTRPluginFrameworkImpl\Graphics.hpp" />
@@ -154,6 +155,7 @@
     <ClInclude Include="Includes\CTRPluginFrameworkImpl\Search\Search32.hpp" />
     <ClInclude Include="Includes\CTRPluginFrameworkImpl\Search\SearchBase.hpp" />
     <ClInclude Include="Includes\CTRPluginFrameworkImpl\System\Heap.hpp" />
+    <ClInclude Include="Includes\CTRPluginFrameworkImpl\System\IAllocator.hpp" />
     <ClInclude Include="Includes\CTRPluginFrameworkImpl\System\Storage.hpp" />
     <ClInclude Include="Includes\CTRPluginFramework\Menu\MenuEntryHotkeys.hpp" />
     <ClInclude Include="Includes\CTRPluginFramework\System\FwkSettings.hpp" />
@@ -287,6 +289,7 @@
   <ItemGroup>
     <ClCompile Include="Sources\cheats.cpp" />
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\ActionReplay\ARCode.cpp" />
+    <ClCompile Include="Sources\CTRPluginFrameworkImpl\ActionReplay\ARCodeEditor.cpp" />
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\ActionReplay\ARCodeLoader.cpp" />
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\ActionReplay\ARHandler.cpp" />
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\ActionReplay\MenuEntryActionReplay.cpp" />
@@ -374,6 +377,7 @@
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\Search\Search32_SubsidiarySearchUnknown.cpp" />
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\Search\SearchBase.cpp" />
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\System\EventManager.cpp" />
+    <ClCompile Include="Sources\CTRPluginFrameworkImpl\System\Heap.cpp" />
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\System\ProcessImpl.cpp" />
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\System\Screen.cpp" />
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\System\SystemImpl.cpp" />

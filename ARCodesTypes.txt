@@ -83,6 +83,13 @@ Registers operations:
 -----------------------
 DFFFFFFF 00000000 - Conditional codes are compared to YYYY (immediate value)
 DFFFFFFF 00000001 - Conditional codes are compared to active data register
+DFFFFFFE 000000YX - Set the active data register vfp state
+Y:
+   - 0: no conversion
+   - 1: convert from integer to float if X == 1, from float to integer if X == 0
+X:
+  - 0: Disable the vfp state
+  - 1: Enable the vfp state
 
 DF00XXXX YYYYZZZZ - Operations:
 -------------------------------

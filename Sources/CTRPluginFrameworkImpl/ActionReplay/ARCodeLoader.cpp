@@ -12,21 +12,74 @@
 #include <cctype>
 #include <cstring>
 #include "CTRPluginFramework/Menu/MessageBox.hpp"
+#include "../../OSDManager.hpp"
+
+#undef DEBUG
+#undef TRACE
+#undef XTRACE
+
+#define DEBUG 1
+
+#if DEBUG
+#define TRACE  { OSDManager["trace"].SetScreen(true).SetPos(10,50) = std::string(__FUNCTION__) << ":" << __LINE__; Sleep(Seconds(0.04f)); }
+#define XTRACE(str, ...) { OSDManager["trace1"].SetScreen(true).SetPos(0,30) = std::string(__FUNCTION__) << ":" << __LINE__ << Utils::Format(" " str, ##__VA_ARGS__); Sleep(Seconds(0.10f)); }
+#define XTRACE2(str, ...) { OSDManager["trace2"].SetScreen(true).SetPos(0,40) = std::string(__FUNCTION__) << ":" << __LINE__ << Utils::Format(" " str, ##__VA_ARGS__); Sleep(Seconds(0.10f)); }
+#define XTRACE3(str, ...) { OSDManager["trace3"].SetScreen(true).SetPos(0,50) = std::string(__FUNCTION__) << ":" << __LINE__ << Utils::Format(" " str, ##__VA_ARGS__); Sleep(Seconds(0.10f)); }
+#define XTRACE4(str, ...) { OSDManager["trace4"].SetScreen(true).SetPos(0,60) = std::string(__FUNCTION__) << ":" << __LINE__ << Utils::Format(" " str, ##__VA_ARGS__); Sleep(Seconds(0.10f)); }
+
+#else
+#define TRACE
+#define XTRACE(str, ...)
+#define XTRACE2(str, ...)
+#define XTRACE3(str, ...)
+#endif
 
 namespace CTRPluginFramework
 {
-    static bool   IsNotCode(const std::string &line)
+    bool    ActionReplay_CheckCodeTypeValidity(u32 left)
+    {
+        u8 ct = left >> 24;
+        for (const u8 code : g_codeTypes)
+        {
+            if ((code & 0xF) == 0)
+            {
+                if ((code >> 4) == (ct >> 4))
+                    return true;
+            }
+            else
+                if (code == ct)
+                    return true;
+        }
+
+        return false;
+    }
+
+    bool    ActionReplay_IsHexCode(const std::string &line)
     {
         u32 index = 0;
         for (const char c : line)
         {
             if (index != 8 && !std::isxdigit(c))
-                return (true);
+                return (false);
             ++index;
             if (index >= 16)
                 break;
         }
-        return (false);
+
+        return (true);
+    }
+
+    bool    ActionReplay_IsValidCode(const std::string &line)
+    {
+        // Check that the line has a valid hex pattern
+        if (!ActionReplay_IsHexCode(line))
+            return false;
+
+        // If so check that the code type is valid
+        bool error = false;
+        u32 left = ActionReplayPriv::Str2U32(line, error);
+
+        return !(error || !ActionReplay_CheckCodeTypeValidity(left)); ///< The code is valid
     }
 
     static bool     LineEndWith(const char c, std::string &line)
@@ -74,7 +127,7 @@ namespace CTRPluginFramework
 
     static void     Process(std::string &str)
     {
-        if (str.empty())
+        if (str.empty() || str.size() == 1)
             return;
 
         // Process our string
@@ -114,7 +167,7 @@ namespace CTRPluginFramework
                     std::string hexpattern = str.substr(i + 2, 6);
 
                     // If it's a valid hex pattern
-                    if (!IsNotCode(hexpattern))
+                    if (!ActionReplay_IsHexCode(hexpattern))
                     {
                         bool error = false;
                         u32 hex = ActionReplayPriv::Str2U32(hexpattern, error);
@@ -178,15 +231,14 @@ namespace CTRPluginFramework
             return (false);
 
         bool            error = false;
-        u32             *data = reinterpret_cast<u32 *>(&codectx->codes.back().Data[index]);
+        u32             *data = reinterpret_cast<u32 *>(codectx->codes.back().Data.data());
         std::string     &&leftstr = line.substr(0, 8);
         std::string     &&rightstr = line.substr(9, 8);
 
-        *data++ = ActionReplayPriv::Str2U32(leftstr, error);
+        data[index++] = ActionReplayPriv::Str2U32(leftstr, error);
         if (error) goto exit;
-        *data = ActionReplayPriv::Str2U32(rightstr, error);
+        data[index++] = ActionReplayPriv::Str2U32(rightstr, error);
         if (error) goto exit;
-        index += 8;
 
     exit:
         codectx->hasError = error;
@@ -220,6 +272,7 @@ namespace CTRPluginFramework
         // While there's lines in the file
         while (reader(line))
         {
+            XTRACE("New line, free space: %08X", getMemFree());
             // Remove spaces in the left
             Ltrim(line);
 
@@ -233,10 +286,12 @@ namespace CTRPluginFramework
                 error = ecode = false;
                 continue;
             }
+            XTRACE2("%s", line.c_str());
 
             // If line is not a code
-            if (IsNotCode(line) || error)
+            if (!ActionReplay_IsHexCode(line) || error)
             {
+                XTRACE3("Not a code");
                 // If we found a pattern
                 if (line[0] == '[')
                 {
@@ -279,11 +334,13 @@ namespace CTRPluginFramework
                 // If we found a note pattern
                 if (entry && line[0] == ('{'))
                 {
+                    XTRACE("Note");
                     Rtrim(line);
                     note = line.substr(1);
 
                     while (!LineEndWith('}', line))
                     {
+                        XTRACE3("Wait for end: %s", line.c_str());
                         if (!reader(line))
                             break;
                         note += Rtrim(line);
@@ -292,13 +349,22 @@ namespace CTRPluginFramework
                     Trim(note);
                     Process(note);
                     entry->note = note;
+                    note.clear();
                     continue;
                 }
 
                 // Else consider the line as error
+                //if (entry)
+                //    entry->context.data += line + "\r\n";
+                //error = true;
+
+                // Else skip the line, if we're in the middle of a code,
+                // End it
                 if (entry)
-                    entry->context.data += line + "\r\n";
-                error = true;
+                    folders.top()->Append(entry->Update());
+                entry = nullptr;
+                name.clear();
+                error = ecode = false;
                 continue;
             }
 
@@ -307,7 +373,7 @@ namespace CTRPluginFramework
                 continue;
 
             // Add current line to ctx in case of error later
-            entry->context.data += line + "\r\n";
+            //entry->context.data += line + "\r\n";
 
             // If we're in E mode
             if (ecode)
@@ -324,21 +390,15 @@ namespace CTRPluginFramework
 
             // Get ARCode object from line
             ARCode code(line, error);
-
-            // If the code deciphering encountered an error
             if (error)
-            {
-                entry->context.hasError = error;
-                continue;
-            }
-
+                XTRACE4("Error: %s", line.c_str());
             // If the code is a E code (data)
-            ecode = code.Type == 0xE0;
+            ecode = !error && code.Type == 0xE0;
             if (ecode)
             {
                 count = code.Right / 8 + (code.Right % 8 > 0 ? 1 : 0);
-                code.Data = new u8[count * 8];
-                std::memset(code.Data, 0, count * 8);
+                code.Data.resize(count * 2);// = new u8[count * 8];
+                //std::memset(code.Data, 0, count * 8);
                 index = 0;
             }
 

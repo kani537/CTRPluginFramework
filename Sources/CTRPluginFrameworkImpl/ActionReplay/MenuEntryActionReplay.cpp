@@ -36,6 +36,7 @@ namespace CTRPluginFramework
 
     MenuEntryActionReplay*    MenuEntryActionReplay::Update(void)
     {
+        context.Update();
         if (!name.empty())
         {
             if (context.hasError)
@@ -45,8 +46,6 @@ namespace CTRPluginFramework
                 name = Color::Red << name;
             }
         }
-        if (!context.data.empty() && !context.hasError)
-            context.data.clear();
         return this;
     }
 }

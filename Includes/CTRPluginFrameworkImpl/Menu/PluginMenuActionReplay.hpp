@@ -3,6 +3,7 @@
 
 #include "types.h"
 #include "CTRPluginFrameworkImpl/Menu/Menu.hpp"
+#include "CTRPluginFrameworkImpl/ActionReplay/ARCodeEditor.hpp"
 
 namespace CTRPluginFramework
 {
@@ -21,7 +22,8 @@ namespace CTRPluginFramework
         bool    operator()(EventList &eventList, const Time &delta);
 
     private:
-        Menu    _topMenu;
+        ARCodeEditor    _editor;
+        Menu            _topMenu;
         ToggleButton<PluginMenuActionReplay, void>      _noteBtn;
         IconButton<PluginMenuActionReplay, void>        _editorBtn;
 

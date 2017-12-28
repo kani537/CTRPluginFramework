@@ -3,6 +3,7 @@
 #include "CTRPluginFrameworkImpl/ActionReplay/MenuEntryActionReplay.hpp"
 #include "CTRPluginFramework/Utils/Utils.hpp"
 #include "CTRPluginFramework/Menu/Keyboard.hpp"
+#include "CTRPluginFrameworkImpl/ActionReplay/ARCodeEditor.hpp"
 
 namespace CTRPluginFramework
 {
@@ -116,9 +117,10 @@ namespace CTRPluginFramework
             // Code edition
             else if (choice == 2)
             {
+                MenuEntryActionReplay *e = reinterpret_cast<MenuEntryActionReplay *>(item);
                 // edit code
+                ARCodeEditor::Edit(e->context);
             }
-
         }
     }
 }

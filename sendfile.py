@@ -87,7 +87,10 @@ if __name__ == '__main__':
 	except IOError as e:
 		printf("/!\ An error occured. /!\ ");
 
-	sendPlugin(ftp, ntrpath, filename, file)
+	if filename != "ActionReplay.plg":
+		sendPlugin(ftp, ntrpath, filename, file)
+	else:
+		lumaname = filename
 	sendPlugin(ftp, lumapath, lumaname, file)
 		
 	file.close();
