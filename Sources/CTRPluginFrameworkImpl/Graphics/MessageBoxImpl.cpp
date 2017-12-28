@@ -10,7 +10,7 @@
 namespace CTRPluginFramework
 {
     MessageBoxImpl::MessageBoxImpl(const std::string &title, const std::string &message, DialogType dType) :
-        _title(title), _message(message), _dialogType(dType), _textbox{ title, message, _box }, _exit(false), _cursor(0)
+        _title(title), _message(message), _dialogType(dType), _exit(false), _cursor(0)
     {
         /*
         * line = 16px

@@ -244,7 +244,7 @@ namespace CTRPluginFramework
         if (_currentLine >= _newline.size())
             _currentLine = 0;
 
-        int  max = std::min((u32)(_currentLine + _maxLines), (u32)(_newline.size()));
+        int  max = std::min((int)(_currentLine + _maxLines), (int)(_newline.size() - 1));
 
         const Color     &black = Color::Black;
         const Color     &blank = Color::Blank;
@@ -506,7 +506,7 @@ namespace CTRPluginFramework
             _newline.push_back(str);
         }
     exit:
-        if (_newline.back() != nullptr)
+        if (!_newline.empty() && _newline.back() != nullptr)
             _newline.push_back(nullptr);
         TRACE;
     }
