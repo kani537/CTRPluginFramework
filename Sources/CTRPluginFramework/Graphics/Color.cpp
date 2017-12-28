@@ -14,7 +14,7 @@ namespace CTRPluginFramework
     const Color     Color::DimGrey = Color(105, 105, 105);
     const Color     Color::DodgerBlue = Color(30, 144, 255);
     const Color     Color::Gainsboro = Color(220, 220, 220);
-    const Color     Color::Green = Color(0, 255, 0);
+    const Color     Color::Green = Color(0, 128, 0);
     const Color     Color::Grey = Color(128, 128, 128);
     const Color     Color::LimeGreen = Color(50, 205, 50);
     const Color     Color::Magenta = Color(255, 0, 255);
