@@ -18,7 +18,7 @@
 #undef TRACE
 #undef XTRACE
 
-#define DEBUG 1
+#define DEBUG 0
 
 #if DEBUG
 #define TRACE  { OSDManager["trace"].SetScreen(true).SetPos(10,50) = std::string(__FUNCTION__) << ":" << __LINE__; Sleep(Seconds(0.04f)); }
@@ -32,6 +32,7 @@
 #define XTRACE(str, ...)
 #define XTRACE2(str, ...)
 #define XTRACE3(str, ...)
+#define XTRACE4(str, ...)
 #endif
 
 namespace CTRPluginFramework
@@ -231,7 +232,7 @@ namespace CTRPluginFramework
             return (false);
 
         bool            error = false;
-        u32             *data = reinterpret_cast<u32 *>(codectx->codes.back().Data.data());
+        std::vector<u32> &data = codectx->codes.back().Data;
         std::string     &&leftstr = line.substr(0, 8);
         std::string     &&rightstr = line.substr(9, 8);
 
@@ -384,7 +385,9 @@ namespace CTRPluginFramework
                     ecode = count > 0;
                 }
                 else
-                    error = true;
+                {
+                    entry->context.codes.back().HasError = error = true;
+                }
                 continue;
             }
 

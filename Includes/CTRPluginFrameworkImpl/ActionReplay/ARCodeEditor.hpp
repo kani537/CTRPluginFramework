@@ -23,12 +23,16 @@ namespace CTRPluginFramework
             };
 
             explicit CodeLine(ARCode &code);
+            CodeLine(const CodeLine &right);
+            CodeLine(CodeLine &&right);
 
             ARCode&         base;
             ARCode*         parent;
-            u32             flags;
+            u16             flags;
+            u16             index;
             std::string     display;
 
+            CodeLine& operator=(CodeLine &&right);
             void    Edit(u32 index, u32 value);
             void    Update(void);
         };
@@ -47,9 +51,14 @@ namespace CTRPluginFramework
         void    _RenderTop(void);
         void    _RenderBottom(void);
         void    _Update(void);
-
+        void    _ReloadCodeLines(void);
         bool                        _exit;
         int                         _line;
+        int                         _index;
+        u16                         _cursorPosX;
+        u16                         _cursorPosY;
+        Clock                       _inputClock;
+        ARCode                      *_clipboard;
         ARCodeContext               *_context;
         KeyboardImpl                _keyboard;
         std::vector<CodeLine>       _codes;

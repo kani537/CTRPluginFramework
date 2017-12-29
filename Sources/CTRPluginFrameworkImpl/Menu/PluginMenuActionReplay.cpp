@@ -117,6 +117,8 @@ namespace CTRPluginFramework
             // Code edition
             else if (choice == 2)
             {
+                if (item->IsFolder())
+                    return;
                 MenuEntryActionReplay *e = reinterpret_cast<MenuEntryActionReplay *>(item);
                 // edit code
                 ARCodeEditor::Edit(e->context);

@@ -24,6 +24,7 @@ namespace CTRPluginFramework
         std::vector<u32> Data; ///< Data for E code
         std::string Text; ///< Original data when there's an error detected
 
+        ARCode(const ARCode &code);
         ARCode(u8 type, u32 left, u32 right);
         ARCode(const std::string &line, bool &error);
         virtual ~ARCode(void) = default;

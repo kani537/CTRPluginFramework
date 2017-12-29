@@ -120,6 +120,8 @@ namespace CTRPluginFramework
 
     bool    ARCode::Update(void)
     {
+        if (Type == 0xE0)
+            return HasError;
         if (HasError && !Text.empty())
             Update(Text);
 
@@ -170,6 +172,12 @@ namespace CTRPluginFramework
             return (ret);
         }*/
         return (Utils::Format("%08X %08X", Type << 24 | Left, Right));
+    }
+
+    ARCode::ARCode(const ARCode &code) :
+        HasError(code.HasError), Type(code.Type), Left(code.Left), Right(code.Right),
+        Data(code.Data), Text(code.Text)
+    {
     }
 
     ARCode::ARCode(u8 type, u32 left, u32 right) :
