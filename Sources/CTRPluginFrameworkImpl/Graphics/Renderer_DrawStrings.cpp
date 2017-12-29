@@ -91,7 +91,7 @@ namespace CTRPluginFramework
 
         while (*str)
         {
-            char c = *str++;
+            u8 c = *str++;
 
             if (c == 0x18)
             {
@@ -105,7 +105,10 @@ namespace CTRPluginFramework
                 fg.b = *str++;
                 continue;
             }
-
+            if (c == 0xFF) ///< Lazy fix for 0x18 arrow symbol
+                c = 0x18;
+            if (c == 0xFE) ///< Lazy fix for 0x1B arrow symbol
+                c = 0x1B;
             DrawCharacter(c, posX, posY, fg);
             posX += 6;
         }
@@ -144,7 +147,7 @@ namespace CTRPluginFramework
         posX += 2;
         while (*str)
         {
-            char c = *str++;
+            u8 c = *str++;
 
             if (c == 0x18)
             {
@@ -158,6 +161,10 @@ namespace CTRPluginFramework
                 fg.b = *str++;
                 continue;
             }
+            if (c == 0xFF) ///< Lazy fix for 0x18 arrow symbol
+                c = 0x18;
+            if (c == 0xFE) ///< Lazy fix for 0x1B arrow symbol
+                c = 0x1B;
             DrawCharacter(c, posX, posY, fg, bg);
             posX += 6;
         }

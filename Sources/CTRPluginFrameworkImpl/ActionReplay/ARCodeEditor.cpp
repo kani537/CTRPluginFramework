@@ -35,6 +35,40 @@ namespace CTRPluginFramework
         return (strColor);
     }
 
+#define ARROW_UP "\xFF"
+#define ARROW_DOWN "\x19"
+#define ARROW_LEFT "\xFE"
+#define ARROW_RIGHT "\x1A"
+
+    static std::string  KeysToString(u32 keys)
+    {
+        static const char * keysText[] =
+        {
+            "A", "B", "Select", "Start", ARROW_RIGHT, ARROW_LEFT, ARROW_UP, ARROW_DOWN,
+            "R", "L", "X", "Y", "", "", "ZL", "ZR", "", "", "", "", "Touch", "", "", "",
+            "SR", "SL", "SU", "SD", "CR", "CL", "CU", "CD"
+        };
+
+        std::string ret;
+        bool plus = false;
+
+        for (u32 i = 0; i < 32; ++i)
+        {
+            if (keys & (1u << i))
+            {
+                std::string key = keysText[i];
+                if (key.empty())
+                    continue;
+                if (plus)
+                    ret += '+';
+                ret += key;
+                plus = true;
+            }
+        }
+
+        return ret;
+    }
+
     static std::string      ColorCodeLine(const ARCode &code)
     {
         std::string ret = code.Text;
@@ -170,6 +204,285 @@ namespace CTRPluginFramework
         return (ret);
     }
 
+    static std::string      CommentCodeLine(const ARCode &code)
+    {
+        u32         mask;
+        u32         value;
+        const char  *reg;
+        std::string ret;
+
+        switch (code.Type)
+        {
+        case 0x00: ///< Write32
+            ret = Utils::Format("[%08X + offs] = %08X", code.Left, code.Right);
+            break;
+        case 0x10: ///< Write16
+            ret = Utils::Format("[%08X + offs] = %04X", code.Left, (code.Right & 0xFFFF));
+            break;
+        case 0x20: ///< Write8
+            ret = Utils::Format("[%08X + offs] = %02X", code.Left, (code.Right & 0xFF));
+            break;
+
+        case 0x30: ///< GT 32Bits
+            ret = Utils::Format("if %08X > [%08X+offs]:", code.Right, code.Left);
+            break;
+        case 0x40: ///< LT 32Bits
+            ret = Utils::Format("if %08X < [%08X+offs]:", code.Right, code.Left);
+            break;
+        case 0x50: ///< EQ 32Bits
+            ret = Utils::Format("if %08X == [%08X+off]:", code.Right, code.Left);
+            break;
+        case 0x60: ///< NE 32Bits
+            ret = Utils::Format("if %08X != [%08X+off]:", code.Right, code.Left);
+            break;
+
+        case 0x70: ///< GT 16Bits
+            mask = code.Right >> 16;
+            value = code.Right & 0xFFFF;
+            if (mask)
+                ret = Utils::Format("if %04X>[%08X+off] & %04X:", value, code.Left, (~mask & 0xFFFF));
+            else
+                ret = Utils::Format("if %04X > [%08X+offs]:", value, code.Left);
+            break;
+        case 0x80: ///< LT 16Bits
+            mask = code.Right >> 16;
+            value = code.Right & 0xFFFF;
+            if (mask)
+                ret = Utils::Format("if %04X<[%08X+off] & %04X:", value, code.Left, (~mask & 0xFFFF));
+            else
+                ret = Utils::Format("if %04X < [%08X+offs]:", value, code.Left);
+            break;
+        case 0x90: ///< EQ 16Bits
+            mask = code.Right >> 16;
+            value = code.Right & 0xFFFF;
+            if (mask)
+                ret = Utils::Format("if %04X==[%08X+of] & %04X:", value, code.Left, (~mask & 0xFFFF));
+            else
+                ret = Utils::Format("if %04X == [%08X+offs]:", value, code.Left);
+            break;
+        case 0xA0: ///< NE 16Bits
+            mask = code.Right >> 16;
+            value = code.Right & 0xFFFF;
+            if (mask)
+                ret = Utils::Format("if %04X!=[%08X+of] & %04X:", value, code.Left, (~mask & 0xFFFF));
+            else
+                ret = Utils::Format("if %04X != [%08X + offset]:", value, code.Left);
+            break;
+
+        case 0xB0: ///< Read and Set Offset
+            ret = Utils::Format("offset = [%08X + offset]", code.Left);
+            break;
+        case 0xD3: ///< Set offset to immediate
+            ret = Utils::Format("offset = %08X", code.Right);
+            break;
+        case 0xDC: ///< Add to offset
+            ret = Utils::Format("offset += %08X", code.Right);
+            break;
+        case 0xC0: ///< Loop
+            ret = Utils::Format("Loop %X times:", code.Right);
+            break;
+        case 0xC1: ///< Loop
+            ret = "loop [data#1] times";
+            break;
+        case 0xC2: ///< Loop
+            ret = "loop [data#2] times";
+            break;
+
+        case 0xD2: ///< Full terminator
+            if (code.Right & 1)
+                ret = "exit code immediately";
+            else
+                ret = "end all if,start loop,clr reg";
+            break;
+
+        case 0xD1: ///< Loop execute
+            ret = "start loop";
+            break;
+        case 0xD0: ///< Terminator
+            ret = "end if";
+            break;
+
+        case 0xD4: ///< Add to register
+            ret = Utils::Format("data += %08X", code.Right);
+            break;
+        case 0xD5: ///< Set register
+            reg = code.Left & 1 ? "Data#2" : "Data#1";
+            ret = Utils::Format("%s = %08X", reg, code.Right);
+            break;
+        case 0xD6: ///< Write32
+            ret = Utils::Format("[%08X+off] = data, off+=4", code.Right);
+            break;
+        case 0xD7: ///< Write16
+            ret = Utils::Format("[%08X+off] = data, off+=2", code.Right);
+            break;
+        case 0xD8: ///< Write8
+            ret = Utils::Format("[%08X+off] = data, off+=1", code.Right);
+            break;
+
+        case 0xD9: ///< Set data 32
+            ret = Utils::Format("data = [%08X+offs]", code.Right);
+            break;
+        case 0xDA: ///< Set data 16
+            ret = Utils::Format("data = [%08X+offs] & FFFF", code.Right);
+            break;
+        case 0xDB: ///< Set data 8
+            ret = Utils::Format("data = [%08X+offs] & FF", code.Right);
+            break;
+
+        case 0xE0: ///< E code
+            ret = Utils::Format("[%08X+offs] = patch data", code.Left);
+            break;
+
+        case 0xDD: ///< Check input
+            ret = "if ";
+            ret += KeysToString(code.Right);
+            ret += ":";
+            break;
+
+        case 0xDE: ///< Check touch:
+        {
+            u32 minX = code.Right >> 24;
+            u32 maxX = (code.Right << 8) >> 16;
+            u32 minY = (code.Right >> 8) & 0xFF;
+            u32 maxY = code.Right & 0xFF;
+
+            ret = Utils::Format("if %02X<=X<=%02X and %02X<=Y<=%02X:", minX, maxX, minY, maxY);
+            break;
+        }
+        case 0xDF: ///< Registers:
+        {
+            // VFP Toggle
+            if (code.Left == 0xFFFFFFE)
+            {
+                bool conversion = code.Right & 0x10 > 0;
+                reg = code.Right & 1 > 0 ? "enabled" : "disabled";
+                ret = Utils::Format("data vfp state %s", reg);
+                if (conversion)
+                    ret += ", cvt";
+                break;
+            }
+            // Condition toggle
+            if (code.Left == 0xFFFFFF)
+            {
+                ret = code.Right > 0 ? "cond. compared to immediate" : "cond. compared to data";
+                break;
+            }
+
+            u32 operation = code.Right >> 16;
+            u32 control = code.Right & 0xFFFF;
+
+            static const char *offsets[2] = {"offset#1", "offset#2"};
+            static const char *data[2] = {"data#1", "data#2"};
+            static const char *storage[2] = {"storage#1", "storage#2"};
+
+            const char *from = nullptr;
+            const char *to = nullptr;
+            switch (operation)
+            {
+            case 0: ///< Toggle active register
+            {
+                if (code.Left == 0) ///< change active offset
+                    reg =  offsets[control > 0];
+                else if (code.Left == 1) ///> change active data
+                    reg =  data[control > 0];
+                else break;
+                ret = Utils::Format("Set %s as active", reg);
+                break;
+            }
+            case 1: ///< Copy to other index
+            {
+                if (code.Left == 0)
+                {
+                    from = offsets[control > 0];
+                    to = offsets[control == 0];
+                }
+                else if (code.Left == 1)
+                {
+                    from = data[control > 0];
+                    to = data[control == 0];
+                }
+                else if (code.Left == 2)
+                {
+                    from = storage[control > 0];
+                    to = data[control > 0];
+                }
+
+                break;
+            }
+            case 2: ///< Copy to other register
+            {
+                if (code.Left == 0)
+                {
+                    from = offsets[control > 0];
+                    to = data[control > 0];
+                }
+                else if (code.Left == 1)
+                {
+                    from = data[control > 0];
+                    to = offsets[control > 0];
+                }
+                else if (code.Left == 2)
+                {
+                    from = data[control > 0];
+                    to = storage[control > 0];
+                }
+
+                break;
+            }
+            default:
+                break;
+            }
+            if (to && from)
+                ret = Utils::Format("%s = %s", to, from);
+            break;
+        }
+
+        case 0xF1: ///< Add to addr
+            ret = Utils::Format("[%08X+offs] += %08X", code.Left, code.Right);
+            break;
+        case 0xF2: ///< Mul to addr
+            ret = Utils::Format("[%08X+offs] *= %08X", code.Left, code.Right);
+            break;
+        case 0xF3: ///< Div to addr
+            ret = Utils::Format("[%08X+offs] /= %08X", code.Left, code.Right);
+            break;
+        case 0xF4: /// Mul data
+            ret = Utils::Format("data *= %08X", code.Right);
+            break;
+        case 0xF5: ///< Div data
+            ret = Utils::Format("data /= %08X", code.Right);
+            break;
+        case 0xF6: ///< AND data
+            ret = Utils::Format("data &= %08X", code.Right);
+            break;
+        case 0xF7: ///< OR data
+            ret = Utils::Format("data |= %08X", code.Right);
+            break;
+        case 0xF8: ///< XOR data
+            ret = Utils::Format("data ^= %08X", code.Right);
+            break;
+        case 0xF9: ///< NOT data
+            ret = "data = ~data";
+            break;
+        case 0xFA: ///< LSL data
+            ret = Utils::Format("data <<= %08X", code.Right);
+            break;
+        case 0xFB: ///< LSR data
+            ret = Utils::Format("data >>= %08X", code.Right);
+            break;
+        case 0xFC: ///< Copy
+            ret = Utils::Format("Copy %08X, off#2 => off#1", code.Right);
+            break;
+        default:
+            ret = "!! Error !!";
+            break;
+        }
+
+        if (ret.size() > 29)
+            ret.erase(30);
+        return (ret);
+    }
+
     ARCodeEditor::CodeLine::CodeLine(ARCode &code) :
         base(code), parent(nullptr), flags(0), index(0)
     {
@@ -296,6 +609,7 @@ namespace CTRPluginFramework
             }
             */
             display = ColorToString(PATCH_COLOR) + Utils::Format("%08X %08X", parent->Data[index], parent->Data[index + 1]);
+            comment = "patch data";
             Clear(Modified);
             return;
         }
@@ -305,9 +619,15 @@ namespace CTRPluginFramework
             bool error = base.Update(base.Text);
 
             if (error)
+            {
                 display = Color::Red << base.Text;
+                comment = "!! Error !!";
+            }
             else
+            {
                 display = ColorCodeLine(base);
+                comment = CommentCodeLine(base);
+            }
 
             Clear(Modified);
         }
@@ -447,6 +767,7 @@ namespace CTRPluginFramework
                 }
 
                 int line = _line + 1;
+
                 // If we're in the middle of E's data, don't insert anything
                 if (_codes[line].flags & CodeLine::PatchData)
                     break;
@@ -543,28 +864,28 @@ namespace CTRPluginFramework
 
         // First column: 31px : 3*7 + 10 => Line
         // Second column: 112px : (17* 6) + 10 => Code
-        // Last column: 167px : 157 + 10 => Comment
-        // Total: 312px :  31 + 1 + 112 + 1 + 167
-        // Margin left / right: 14px
+        // Last column: 185px : 175 + 10 => Comment
+        // Total: 312px :  31 + 1 + 112 + 1 + 185
+        // Margin left / right: 5px
 
         int   posY = 61;
         // Line header
-        Renderer::DrawRect(44, posY, 31, 20, Color::SkyBlue);
+        Renderer::DrawRect(35, posY, 31, 20, Color::SkyBlue);
 
         // Code header
-        Renderer::DrawRect(76, posY, 112, 20, Color::DeepSkyBlue);
+        Renderer::DrawRect(67, posY, 112, 20, Color::DeepSkyBlue);
 
         // Comment header
-        Renderer::DrawRect(189, posY, 167, 20, Color::DeepSkyBlue);
+        Renderer::DrawRect(180, posY, 185, 20, Color::DeepSkyBlue);
 
         posY += 21;
 
         // Line body
-        Renderer::DrawRect(44, posY, 31, 112, Color::DeepSkyBlue);
+        Renderer::DrawRect(35, posY, 31, 112, Color::DeepSkyBlue);
         // Code body
-        Renderer::DrawRect(76, posY, 112, 112, Color::Blank);
+        Renderer::DrawRect(67, posY, 112, 112, Color::Blank);
         // Comment body
-        Renderer::DrawRect(189, posY, 167, 112, Color::SkyBlue);
+        Renderer::DrawRect(180, posY, 185, 112, Color::SkyBlue);
 
         // If there's no code, exit here
         if (_codes.empty())
@@ -574,10 +895,12 @@ namespace CTRPluginFramework
         Renderer::DrawRect(_cursorPosX, _cursorPosY, 7, 10, Color::SkyBlue);
 
         // Draw codes
-        int posX = 81;
-        int posXline = 49;
+        int posX = 72;
+        int posXline = 40;
+        int posXComment = 185;
         posY += 2;
         int posYline = posY;
+        int posYComment = posY;
         {
             int i = std::max(0, _line - 10);
             int max = std::min(i + 11, (int)_codes.size());
@@ -588,6 +911,8 @@ namespace CTRPluginFramework
                 Renderer::DrawString(Utils::Format("%3d", i + 1).c_str(), posXline, posYline, Color::Black);
                 // Draw code
                 Renderer::DrawString(_codes[i].display.c_str(), posX, posY, Color::Black);
+                // Draw comment
+                Renderer::DrawString(_codes[i].comment.c_str(), posXComment, posYComment, Color::DimGrey);
             }
         }
 
@@ -603,7 +928,7 @@ namespace CTRPluginFramework
     void    ARCodeEditor::_Update(void)
     {
         // Update cursor pos
-        _cursorPosX = 80 + _index * 6;
+        _cursorPosX = 71 + _index * 6;
         int start = std::max(_line - 10, 0);
         _cursorPosY = 83 + (_line - start) * 10;
 

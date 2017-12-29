@@ -31,6 +31,7 @@ namespace CTRPluginFramework
             u16             flags;
             u16             index;
             std::string     display;
+            std::string     comment;
 
             CodeLine& operator=(CodeLine &&right);
             void    Edit(u32 index, u32 value);
