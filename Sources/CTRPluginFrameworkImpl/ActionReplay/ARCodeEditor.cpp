@@ -621,7 +621,7 @@ namespace CTRPluginFramework
             if (error)
             {
                 display = Color::Red << base.Text;
-                comment = "!! Error !!";
+                comment = "!! error !!";
             }
             else
             {

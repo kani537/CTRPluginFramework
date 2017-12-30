@@ -126,20 +126,27 @@ namespace CTRPluginFramework
         return (buffer);
     }
 
-    static void     Process(std::string &str)
+    void    ActionReplay_ProcessString(std::string &str, bool canNewLine)
     {
-        if (str.empty() || str.size() == 1)
+        const u32 strSize = str.size();
+
+        if (strSize <= 1)
             return;
 
         // Process our string
-        for (u32 i = 0; i < str.size() - 2; i++)
+        for (u32 i = 0; i < strSize - 2; i++)
         {
             const char c = str[i];
 
+            if (c == '\n' && !canNewLine)
+            {
+                str[i] = ' ';
+                continue;
+            }
             if (c == '\\')
             {
                 // Check the symbol \n
-                if (str[i + 1] == 'n')
+                if (str[i + 1] == 'n' && canNewLine)
                 {
                     str[i] = '\n';
                     str = str.erase(i + 1, 1);
@@ -159,11 +166,13 @@ namespace CTRPluginFramework
             // Check if we found a color pattern
             else if (c == '~')
             {
-                char strColor[5] = { 0 };
-                const char *cstr = str.c_str() + i + 1;
+                char        strColor[5] = { 0 };
+                const char  *cstr = str.c_str() + i + 1;
+                const int   leftSize = strSize - i -1; ///< size left of the current string from the '~' + 1 character
+
 
                 // Check if it's a hex color
-                if (*cstr == '#')
+                if (*cstr == '#' && (leftSize > 7) && *(cstr + 7) == '~')
                 {
                     bool        error = false;
                     std::string &&hexpattern = str.substr(i + 2, 6);
@@ -302,7 +311,7 @@ namespace CTRPluginFramework
                     {
                         name = line.substr(3, line.size() - 6);
                         Trim(name);
-                        Process(name);
+                        ActionReplay_ProcessString(name, false);
                         folders.push(new MenuFolderImpl(name));
                         continue;
                     }
@@ -323,7 +332,7 @@ namespace CTRPluginFramework
                     // Else it's a new code pattern
                     name = line.substr(1, line.size() - 2);
                     Trim(name);
-                    Process(name);
+                    ActionReplay_ProcessString(name, false);
                     entry = new MenuEntryActionReplay(name);
                     error = false;
                     continue;
@@ -344,7 +353,7 @@ namespace CTRPluginFramework
                     }
                     note.pop_back();
                     Trim(note);
-                    Process(note);
+                    ActionReplay_ProcessString(note);
                     entry->note = note;
                     note.clear();
                     continue;

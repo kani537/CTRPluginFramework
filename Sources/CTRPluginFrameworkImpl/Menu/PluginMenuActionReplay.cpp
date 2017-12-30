@@ -99,21 +99,45 @@ namespace CTRPluginFramework
     void    PluginMenuActionReplay::_EditorBtn_OnClick(void)
     {
         MenuItem    *item = _topMenu.GetSelectedItem();
-        Keyboard    option{ "", {"name", "note", "code"} };
-        Keyboard    strKbd;
+        Keyboard   keyboard;
+        Keyboard   optKbd;
+        std::vector<std::string>    options = { "Name", "Note" };
 
         if (!item)
             return;
+        if (!item->IsFolder())
+            options.push_back("Code");
 
-        int choice = option.Open();
+        optKbd.Populate(options);
+        int choice = optKbd.Open();
         if (choice >= 0)
         {
             // Name edition
             if (choice == 0)
-                strKbd.Open(item->name, item->name);
+            {
+                keyboard.SetCompareCallback([](const void *in, std::string &error)
+                {
+                    std::string &input = *(std::string *)(in);
+                    if (input.empty())
+                        return false;
+                    ActionReplay_ProcessString(input, false);
+                   return true;
+                });
+                keyboard.Open(item->name, item->name);
+            }
             // Note edition
             else if (choice == 1)
-                strKbd.Open(item->note, item->note);
+            {
+                keyboard.SetCompareCallback([](const void *in, std::string &error)
+                {
+                    std::string &input = *(std::string *)(in);
+                    if (!input.empty())
+                        ActionReplay_ProcessString(input, false);
+                   return true;
+                });
+                keyboard.Open(item->note, item->note);
+                ActionReplay_ProcessString(item->note);
+            }
             // Code edition
             else if (choice == 2)
             {

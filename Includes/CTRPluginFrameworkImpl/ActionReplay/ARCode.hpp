@@ -66,6 +66,7 @@ namespace CTRPluginFramework
     * \return true if the line is a valid code
     */
     bool    ActionReplay_IsValidCode(const std::string &line);
+    void    ActionReplay_ProcessString(std::string &str, bool canNewLine = true);
     void    ActionReplay_LoadCodes(MenuFolderImpl *dst);
 }
 
