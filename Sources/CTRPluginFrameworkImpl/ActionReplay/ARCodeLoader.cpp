@@ -165,26 +165,22 @@ namespace CTRPluginFramework
                 // Check if it's a hex color
                 if (*cstr == '#')
                 {
-                    std::string hexpattern = str.substr(i + 2, 6);
+                    bool        error = false;
+                    std::string &&hexpattern = str.substr(i + 2, 6);
+                    u32         hex = ActionReplayPriv::Str2U32(hexpattern, error);
 
                     // If it's a valid hex pattern
-                    if (!ActionReplay_IsHexCode(hexpattern))
+                    if (!error)
                     {
-                        bool error = false;
-                        u32 hex = ActionReplayPriv::Str2U32(hexpattern, error);
+                        Color color(hex << 8); ///< Ctor expect 0xRGBA we have 0x0RGB
 
-                        if (!error)
-                        {
-                            Color color(hex << 8); ///< Ctor expect 0xRGBA we have 0x0RGB
-
-                            str.erase(i, 9); /// ~#RRGGBB~ => 9 chars
-                            strColor[0] = 0x1B;
-                            strColor[1] = std::max((u8)1, color.r);
-                            strColor[2] = std::max((u8)1, color.g);
-                            strColor[3] = std::max((u8)1, color.b);
-                            str.insert(i, strColor);
-                            i += 3;
-                        }
+                        str.erase(i, 9); /// ~#RRGGBB~ => 9 chars
+                        strColor[0] = 0x1B;
+                        strColor[1] = std::max((u8)1, color.r);
+                        strColor[2] = std::max((u8)1, color.g);
+                        strColor[3] = std::max((u8)1, color.b);
+                        str.insert(i, strColor);
+                        i += 3;
                     }
                     continue;
                 }
