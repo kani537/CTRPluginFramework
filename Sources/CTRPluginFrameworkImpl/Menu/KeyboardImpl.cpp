@@ -671,7 +671,8 @@ namespace CTRPluginFramework
 
             // If textsize is bigger than available place onscreen
             if (textsize > 260.f)
-                _offset = textsize - 200.f;
+                _offset = textsize - 260.f;
+            else _offset = 0.f;
         }
         else ///< Custom Keyboard
         {
