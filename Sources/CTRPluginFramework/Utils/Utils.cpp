@@ -99,10 +99,57 @@ namespace CTRPluginFramework
         if (s[0] == 0xEF && s[1] == 0xBB && s[2] == 0xBF)
             s += 3;
 
+        u32 code = 0;
+        int units = 0;
+
         while (*s)
         {
-            u32 code;
-            int units = decode_utf8(&code, s);
+            // End color pattern
+            if (*s == 0x18)
+            {
+                // if it's the last char, remove it along with previous char
+                if (!*(s + 1))
+                {
+                    if (units)
+                    {
+                        // go back to previous char
+                        s -= units;
+                    }
+
+                    *s = 0;
+                    str = reinterpret_cast<char *>(buffer);
+                    return (code);
+                }
+                // Else just skip it
+                s++;
+                units++;
+                continue;
+            }
+
+            // Start color pattern
+            if(*s == 0x1B)
+            {
+                // If it's the last char
+                if (*(s + 1) && *(s + 2) && *(s + 3) && !*(s + 4))
+                {
+                    // remove it along with previous char
+                    if (units)
+                    {
+                        // go back to previous char
+                        s -= units;
+                    }
+
+                    *s = 0;
+                    str = reinterpret_cast<char *>(buffer);
+                    return (code);
+                }
+                // Else skip it
+                s += 4;
+                units += 4;
+                continue;
+            }
+
+            units = decode_utf8(&code, s);
 
             if (units == -1)
                 break;
