@@ -642,6 +642,7 @@ namespace CTRPluginFramework
         _index =  _line = 0;
         _keyboard.SetLayout(Layout::HEXADECIMAL);
         _keyboard._Hexadecimal();
+        _keyboard._showCursor = false;
         __arCodeEditor = this;
         _clipboard = nullptr;
         _context = nullptr;

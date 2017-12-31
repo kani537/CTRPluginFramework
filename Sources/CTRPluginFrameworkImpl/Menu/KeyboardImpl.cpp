@@ -427,7 +427,7 @@ namespace CTRPluginFramework
             Renderer::DrawSysString(_userInput.c_str(), posX, posY, 300, blank, _offset);
 
             // Draw cursor
-            if (_showCursor && _cursorPositionOnScreen >= 0)
+            if (_showCursor && _blinkingClock.GetElapsedTime() < Seconds(0.5f))
                 Renderer::DrawLine(_cursorPositionOnScreen + posX, 21, 1, Color::Blank, 16);
 
             // Digit layout
@@ -697,16 +697,10 @@ namespace CTRPluginFramework
                 (*_keys)[i].Update(isTouchDown, touchPos);
             }
 
-            if (_showCursor && _blinkingClock.HasTimePassed(Seconds(0.5f)))
-            {
-                if (_cursorPositionOnScreen == 0)
-                    _cursorPositionOnScreen = -1;
-                else if (_cursorPositionOnScreen == -1)
-                    _cursorPositionOnScreen = 0;
-                else
-                    _cursorPositionOnScreen = -_cursorPositionOnScreen;
+            if (_showCursor && _blinkingClock.HasTimePassed(Seconds(1.f)))
                 _blinkingClock.Restart();
-            }
+
+            _UpdateScrollInfos();
         }
         else ///< Custom Keyboard
         {
@@ -1346,30 +1340,6 @@ namespace CTRPluginFramework
         return units;
     }
 
-    /*
-    static int     GetPreviousCharUnits(const char *cstr, u32 position)
-    {
-        int unitss = 0;
-
-        cstr--;
-        while (*cstr)
-        {
-
-            if (*cstr == 0x18)
-            {
-                ++unitss;
-                cstr--;
-                continue;
-            }
-            if (position >= 3 *(cstr - 3) == 0x1B)
-            u32 code;
-
-            int units = decode_utf8()
-
-            cstr--;
-        }
-        return unitss;
-    } */
     int     UnitsToNextChar(const char *cstr, int left)
     {
         int units = 0;
@@ -1433,9 +1403,6 @@ namespace CTRPluginFramework
             u32 code;
             int u = decode_utf8(&code, (u8 *)cstr);
 
-          /*  if (code == 0)
-                break;*/
-
             if (u == -1 && !cursor)
                 return u;
 
@@ -1451,9 +1418,8 @@ namespace CTRPluginFramework
 
     void    KeyboardImpl::_ScrollUp(void)
     {
-        const u32 strLength = _userInput.size();
-        const char *cstr = _userInput.c_str();
-        const float strWidth = Renderer::GetTextSize(cstr);
+        const u32   strLength = _userInput.size();
+        const char  *cstr = _userInput.c_str();
 
         // If input is empty
         if (strLength == 0)
@@ -1476,8 +1442,7 @@ namespace CTRPluginFramework
         if (_cursorPositionInString > strLength)
             _cursorPositionInString = strLength;
 
-        // Update graphics infos
-        _UpdateScrollInfos(cstr, strWidth);
+        _blinkingClock.Restart();
         return;
 
     error:
@@ -1491,16 +1456,19 @@ namespace CTRPluginFramework
 
     void    KeyboardImpl::_ScrollDown(void)
     {
-        const u32 strLength = _userInput.size();
-        const char *cstr = _userInput.c_str();
-        const float strWidth = Renderer::GetTextSize(cstr);
+        const u32   strLength = _userInput.size();
+        const char  *cstr = _userInput.c_str();
 
         // If input is empty
         if (strLength == 0)
             goto empty;
 
+        // If cursor is beyond the string, fix it (can happen when deleting a unicode)
+        if (_cursorPositionInString > strLength)
+            _cursorPositionInString = strLength;
+
         {
-            // Get units to advance to go to the next char
+            // Get units to advance to go to the previous char
             const int units = UnitsToPreviousChar(cstr + _cursorPositionInString, _cursorPositionInString);
 
             if (units < 0)
@@ -1517,8 +1485,7 @@ namespace CTRPluginFramework
         if (_cursorPositionInString < 0)
             _cursorPositionInString = 0;
 
-        // Update graphics infos
-        _UpdateScrollInfos(cstr, strWidth);
+        _blinkingClock.Restart();
         return;
 
     error:
@@ -1529,10 +1496,10 @@ namespace CTRPluginFramework
         return;
     }
 
-    void    KeyboardImpl::_UpdateScrollInfos(const char *cstr, float strWidth)
+    void    KeyboardImpl::_UpdateScrollInfos(void)
     {
-        _blinkingClock.Restart();
-
+        const char *cstr = _userInput.c_str();
+        const float strWidth = Renderer::GetTextSize(cstr);
         // Get units untils current cursor position
         const int unitsToCursor = UnitsToAdvance(cstr, _cursorPositionInString);
 
@@ -1684,8 +1651,8 @@ namespace CTRPluginFramework
                     {
                         if (_userInput[0] == '-')
                         {
-                            _userInput.erase(0, 1);
                             _ScrollDown();
+                            _userInput.erase(0, 1);
                         }
                         else
                         {
@@ -1748,7 +1715,7 @@ namespace CTRPluginFramework
 
                     if (_layout != Layout::QWERTY &&_cursorPositionInString == 0 && ret == '.')
                     {
-                        _userInput += "0.";
+                        _userInput.insert(0, "0.");
                         _ScrollUp();
                         _ScrollUp(); ///< Yeah I know, I'm f*cking lazy
                     }
@@ -1772,12 +1739,13 @@ namespace CTRPluginFramework
     _backspacePressed:
         std::string &&right = _userInput.substr(_cursorPositionInString);
         _userInput.erase(_cursorPositionInString);
+        _ScrollDown(); ///< Scroll down before removing the char
         _inputChangeEvent.codepoint = Utils::RemoveLastChar(_userInput);
         _userInput += right;
+
         if (_inputChangeEvent.codepoint != 0)
         {
             _inputChangeEvent.type = InputChangeEvent::CharacterRemoved;
-            _ScrollDown();
             return (true);
         }
         return (false);

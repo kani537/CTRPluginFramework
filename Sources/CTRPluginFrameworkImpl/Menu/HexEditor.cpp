@@ -67,6 +67,7 @@ namespace CTRPluginFramework
         // Construct keyboard
         _keyboard.SetLayout(Layout::HEXADECIMAL);
         _keyboard._Hexadecimal();
+        _keyboard._showCursor = false;
 
         // Create options
         _options.push_back("New FreeCheat");
@@ -758,6 +759,8 @@ namespace CTRPluginFramework
         _keyboard._keys->at(15).Enable(true);
         // Enable enter key
         _keyboard._keys->at(16).Enable(true);
+        // Enable cursor
+        _keyboard._showCursor = true;
         if (keyboard.Open(address, address) != -1)
         {
             Goto(address, true);
@@ -768,6 +771,8 @@ namespace CTRPluginFramework
         _keyboard._keys->at(15).Enable(false);
         // Disable enter key
         _keyboard._keys->at(16).Enable(false);
+        // Disable cursor
+        _keyboard._showCursor = false;
     }
 
     void    HexEditor::_GotoPreviousRegion(void)
