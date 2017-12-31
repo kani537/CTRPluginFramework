@@ -16,9 +16,15 @@ namespace CTRPluginFramework
     extern "C" unsigned char *CentreofGravity15;
     extern "C" unsigned char *ClearSymbol15;
     extern "C" unsigned char *ClearSymbolFilled15;
+    extern "C" unsigned char *Clipboard25;
+    extern "C" unsigned char *ClipboardFilled25;
     extern "C" unsigned char *CloseWindow20;
     extern "C" unsigned char *CloseWindowFilled20;
     extern "C" unsigned char *Controller15;
+    extern "C" unsigned char *Cut25;
+    extern "C" unsigned char *CutFilled25;
+    extern "C" unsigned char *Duplicate25;
+    extern "C" unsigned char *DuplicateFilled25;
     extern "C" unsigned char *Edit25;
     extern "C" unsigned char *EditFilled25;
     extern "C" unsigned char *EnterKey15;
@@ -38,6 +44,8 @@ namespace CTRPluginFramework
     extern "C" unsigned char *More15;
     extern "C" unsigned char *Keyboard25;
     extern "C" unsigned char *KeyboardFilled25;
+    extern "C" unsigned char *Plus25;
+    extern "C" unsigned char *Plus25Filled;
     extern "C" unsigned char *RAM15;
     extern "C" unsigned char *Rocket40;
     extern "C" unsigned char *Restart15;
@@ -183,6 +191,17 @@ namespace CTRPluginFramework
     }
 
     /*
+    ** Clipboard
+    ** 25px * 25px
+    *************/
+    int     Icon::DrawClipboard(int posX, int posY, bool filled)
+    {
+        u8 *img = filled ? ClipboardFilled25 : Clipboard25;
+
+        return (DrawImg(img, posX, posY, 25, 25));
+    }
+
+    /*
     ** Close
     ** 20px * 20px
     **********/
@@ -211,6 +230,28 @@ namespace CTRPluginFramework
     int     Icon::DrawController(int posX, int posY)
     {
         return (DrawImg(Controller15, posX, posY, 15, 15));
+    }
+
+    /*
+    ** Cut
+    ** 25px * 25px
+    *************/
+    int     Icon::DrawCut(int posX, int posY, bool filled)
+    {
+        u8 *img = filled ? CutFilled25 : Cut25;
+
+        return (DrawImg(img, posX, posY, 25, 25));
+    }
+
+    /*
+    ** Cut
+    ** 25px * 25px
+    *************/
+    int     Icon::DrawDuplicate(int posX, int posY, bool filled)
+    {
+        u8 *img = filled ? DuplicateFilled25 : Duplicate25;
+
+        return (DrawImg(img, posX, posY, 25, 25));
     }
 
     /*

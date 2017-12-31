@@ -39,6 +39,12 @@ namespace CTRPluginFramework
         static int      DrawClearSymbol(int posX, int posY, bool filled);
 
         /*
+        ** Clipboard
+        ** 25px * 25px
+        *************/
+        static int      DrawClipboard(int posX, int posY, bool filled);
+
+        /*
         ** Close
         ** 20px * 20px
         ************/
@@ -50,6 +56,18 @@ namespace CTRPluginFramework
         ** 15px * 15px
         *************/
         static int      DrawController(int posX, int posY);
+
+        /*
+        ** Cut
+        ** 25px * 25px
+        *************/
+        static int      DrawCut(int posX, int posY, bool filled);
+
+        /*
+        ** Duplicate
+        ** 25px * 25px
+        *************/
+        static int      DrawDuplicate(int posX, int posY, bool filled);
 
         /*
         ** Edit
@@ -192,7 +210,6 @@ namespace CTRPluginFramework
 
     private:
         static int      DrawImg(u8 *img, int posX, int posY, int sizeX, int sizeY);
-        static int      DrawImgNTR(u8 *img, int posX, int posY, int sizeX, int sizeY);
     };
 }
 
