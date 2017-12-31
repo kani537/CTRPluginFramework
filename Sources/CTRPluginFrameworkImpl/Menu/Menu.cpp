@@ -484,4 +484,28 @@ namespace CTRPluginFramework
     {
         return (_noteTB.IsOpen());
     }
+
+    void    Menu::Insert(MenuItem *item)
+    {
+        if (!item || !_folder)
+            return;
+
+        if (_selector >= _folder->_items.size())
+            _folder->Append(item);
+        else
+        {
+            _folder->_items.insert(_folder->_items.begin() +_selector, item);
+        }
+    }
+
+    MenuItem    *Menu::Pop(void)
+    {
+        if (!_folder->ItemsCount())
+            return nullptr;
+
+        MenuItem *ret = _folder->_items[_selector];
+
+        _folder->_items.erase(_folder->_items.begin() + _selector);
+        return ret;
+    }
 }

@@ -10,12 +10,20 @@ namespace CTRPluginFramework
     PluginMenuActionReplay::PluginMenuActionReplay() :
         _topMenu{ "ActionReplay" },
         _noteBtn(*this, nullptr, IntRect(90, 30, 25, 25), Icon::DrawInfo, false),
-        _editorBtn(*this, &PluginMenuActionReplay::_EditorBtn_OnClick, IntRect(130, 30, 25, 25), Icon::DrawEdit, false)
+        _editorBtn(*this, &PluginMenuActionReplay::_EditorBtn_OnClick, IntRect(130, 30, 25, 25), Icon::DrawEdit, false),
+        _newBtn(*this, &PluginMenuActionReplay::_NewBtn_OnClick, IntRect(170, 30, 25, 25), Icon::DrawPlus, false),
+        _cutBtn(*this, &PluginMenuActionReplay::_CutBtn_OnClick, IntRect(210, 30, 25, 25), Icon::DrawCut, false),
+        _pasteBtn(*this, &PluginMenuActionReplay::_PasteBtn_OnClick, IntRect(210, 30, 25, 25), Icon::DrawClipboard, false),
+        _duplicateBtn(*this, &PluginMenuActionReplay::_DuplicateBtn_OnClick, IntRect(250, 30, 25, 25), Icon::DrawDuplicate, false),
+        _clipboard{ nullptr }
     {
+        _newBtn.Enable(true);
     }
 
     PluginMenuActionReplay::~PluginMenuActionReplay()
     {
+        if (_clipboard)
+            delete _clipboard;
     }
 
     void    PluginMenuActionReplay::Initialize(void)
@@ -45,6 +53,10 @@ namespace CTRPluginFramework
 
         // Check editor btn
         _editorBtn();
+        _newBtn();
+        _cutBtn();
+        _pasteBtn();
+        _duplicateBtn();
 
         // Draw menu on top screen
         _topMenu.Draw();
@@ -63,6 +75,10 @@ namespace CTRPluginFramework
 
         _noteBtn.Draw();
         _editorBtn.Draw();
+        _newBtn.Draw();
+        _cutBtn.Draw();
+        _pasteBtn.Draw();
+        _duplicateBtn.Draw();
     }
 
     void    PluginMenuActionReplay::_ProcessEvent(EventList &eventList)
@@ -94,12 +110,36 @@ namespace CTRPluginFramework
 
         _editorBtn.Enable(item != nullptr);
         _editorBtn.Update(touchIsDown, touchPos);
+
+        _cutBtn.Enable(item != nullptr && _clipboard == nullptr);
+        _pasteBtn.Enable(item != nullptr && _clipboard != nullptr);
+        _duplicateBtn.Enable(item != nullptr);
+
+        _newBtn.Update(touchIsDown, touchPos);
+        _cutBtn.Update(touchIsDown, touchPos);
+        _pasteBtn.Update(touchIsDown, touchPos);
+        _duplicateBtn.Update(touchIsDown, touchPos);
+    }
+
+    static bool ActionReplay_GetInput(std::string &ret)
+    {
+        Keyboard    keyboard;
+
+        keyboard.SetCompareCallback([](const void *in, std::string &error)
+        {
+            std::string &input = *(std::string *)(in);
+            if (input.empty())
+                return false;
+            ActionReplay_ProcessString(input, false);
+            return true;
+        });
+
+        return keyboard.Open(ret, ret) != -1;
     }
 
     void    PluginMenuActionReplay::_EditorBtn_OnClick(void)
     {
         MenuItem    *item = _topMenu.GetSelectedItem();
-        Keyboard   keyboard;
         Keyboard   optKbd;
         std::vector<std::string>    options = { "Name", "Note" };
 
@@ -115,38 +155,81 @@ namespace CTRPluginFramework
             // Name edition
             if (choice == 0)
             {
-                keyboard.SetCompareCallback([](const void *in, std::string &error)
-                {
-                    std::string &input = *(std::string *)(in);
-                    if (input.empty())
-                        return false;
-                    ActionReplay_ProcessString(input, false);
-                   return true;
-                });
-                keyboard.Open(item->name, item->name);
+                ActionReplay_GetInput(item->name);
             }
             // Note edition
             else if (choice == 1)
             {
-                keyboard.SetCompareCallback([](const void *in, std::string &error)
-                {
-                    std::string &input = *(std::string *)(in);
-                    if (!input.empty())
-                        ActionReplay_ProcessString(input, false);
-                   return true;
-                });
-                keyboard.Open(item->note, item->note);
+                ActionReplay_GetInput(item->note);
                 ActionReplay_ProcessString(item->note);
             }
             // Code edition
             else if (choice == 2)
             {
-                if (item->IsFolder())
-                    return;
                 MenuEntryActionReplay *e = reinterpret_cast<MenuEntryActionReplay *>(item);
-                // edit code
+
+                // Edit code
                 ARCodeEditor::Edit(e->context);
             }
         }
+    }
+
+    void    PluginMenuActionReplay::_NewBtn_OnClick(void)
+    {
+        Keyboard    kbd("", {"Code", "Folder"});
+
+        int choice = kbd.Open();
+
+        if (choice == -1)
+            return;
+
+        std::string name;
+
+        if (!ActionReplay_GetInput(name))
+            return;
+
+        // Create a new code
+        if (choice == 0)
+        {
+            MenuEntryActionReplay *entry = new MenuEntryActionReplay(name);
+            _topMenu.Insert(entry);
+        }
+
+        // Create a new folder
+        if (choice == 1)
+        {
+            MenuFolderImpl *folder = new MenuFolderImpl(name);
+            _topMenu.Insert(folder);
+        }
+    }
+
+    void    PluginMenuActionReplay::_CutBtn_OnClick(void)
+    {
+        // If clipboard already exists, abort
+        if (_clipboard)
+            return;
+        _clipboard = _topMenu.Pop();
+    }
+
+    void    PluginMenuActionReplay::_PasteBtn_OnClick(void)
+    {
+        if (!_clipboard)
+            return;
+        _topMenu.Insert(_clipboard);
+        _clipboard = nullptr;
+    }
+
+    void    PluginMenuActionReplay::_DuplicateBtn_OnClick(void)
+    {
+        MenuItem *current = _topMenu.GetSelectedItem();
+
+        if (!current || current->IsFolder())
+            return;
+
+        MenuEntryActionReplay *old = reinterpret_cast<MenuEntryActionReplay *>(current);
+        MenuEntryActionReplay *dup = new MenuEntryActionReplay(current->name, current->note);
+
+        dup->context = old->context;
+        _topMenu.Insert(dup);
     }
 }

@@ -39,6 +39,10 @@ namespace CTRPluginFramework
         bool    ShowNote(void);
         void    CloseNote(void);
         bool    IsNoteOpen(void);
+        // Insert item at current index
+        void    Insert(MenuItem *item);
+        // Remove selected item from folder, and return it
+        MenuItem *Pop(void);
 
         /*
         ** Return value:
@@ -48,6 +52,7 @@ namespace CTRPluginFramework
         *******************************************/
         // This return a menuEvent value
         int     ProcessEvent(Event &event, MenuItem **userchoice);
+
         bool    drawFooter;
     private:
         MenuFolderImpl  *_folder;

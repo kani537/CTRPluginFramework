@@ -24,13 +24,26 @@ namespace CTRPluginFramework
     private:
         ARCodeEditor    _editor;
         Menu            _topMenu;
-        ToggleButton<PluginMenuActionReplay, void>      _noteBtn;
-        IconButton<PluginMenuActionReplay, void>        _editorBtn;
+        using ToggleBtn = ToggleButton<PluginMenuActionReplay, void>;
+        using IconBtn = IconButton<PluginMenuActionReplay, void>;
+
+        ToggleBtn       _noteBtn;
+        IconBtn         _editorBtn;
+        IconBtn         _newBtn;
+        IconBtn         _cutBtn;
+        IconBtn         _pasteBtn;
+        IconBtn         _duplicateBtn;
+
+        MenuItem        *_clipboard;
 
         void    _DrawBottom(void);
         void    _ProcessEvent(EventList &eventList);
         void    _Update(const Time &delta);
         void    _EditorBtn_OnClick(void);
+        void    _NewBtn_OnClick(void);
+        void    _CutBtn_OnClick(void);
+        void    _PasteBtn_OnClick(void);
+        void    _DuplicateBtn_OnClick(void);
     };
 }
 
