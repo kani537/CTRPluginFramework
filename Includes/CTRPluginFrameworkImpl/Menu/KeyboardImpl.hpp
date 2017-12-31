@@ -73,6 +73,9 @@ namespace CTRPluginFramework
         void    _Decimal(void);
         void    _Hexadecimal(void);
 
+        void    _ScrollUp(void);
+        void    _ScrollDown(void);
+        void    _UpdateScrollInfos(const char *cstr, float strWidth);
         bool    _CheckKeys(void); //<- Return if input have changed
         bool    _CheckInput(void); //<- Call compare callback, return true if the input is valid
 
@@ -100,6 +103,10 @@ namespace CTRPluginFramework
         u8                      _symbolsPage;
         u8                      _nintendoPage;
         Layout                  _layout;
+        Clock                   _blinkingClock;
+        int                     _cursorPositionInString;
+        int                     _cursorPositionOnScreen;
+        bool                    _showCursor;
 
         CompareCallback         _compare;
         ConvertCallback         _convert;

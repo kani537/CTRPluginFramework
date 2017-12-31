@@ -47,6 +47,9 @@ namespace CTRPluginFramework
         _offset = 0.f;
         _max = 0;
         _layout = HEXADECIMAL;
+        _cursorPositionInString = 0;
+        _cursorPositionOnScreen = 0;
+        _showCursor = true;
         _keys = nullptr;
         _convert = nullptr;
         _compare = nullptr;
@@ -92,6 +95,9 @@ namespace CTRPluginFramework
         _offset = 0.f;
         _max = 0;
         _layout = HEXADECIMAL;
+        _cursorPositionInString = 0;
+        _cursorPositionOnScreen = 0;
+        _showCursor = true;
 
         _convert = nullptr;
         _compare = nullptr;
@@ -271,6 +277,13 @@ namespace CTRPluginFramework
 		// Check start input
 		_errorMessage = !_CheckInput();
 
+        // Set cursor
+        if (_showCursor)
+        {
+            _cursorPositionInString = _userInput.size();
+            _ScrollUp();
+        }
+
         // Loop until exit
         while (_isOpen)
         {
@@ -413,6 +426,10 @@ namespace CTRPluginFramework
             Renderer::DrawRect(background, black);
             Renderer::DrawSysString(_userInput.c_str(), posX, posY, 300, blank, _offset);
 
+            // Draw cursor
+            if (_showCursor && _cursorPositionOnScreen >= 0)
+                Renderer::DrawLine(_cursorPositionOnScreen + posX, 21, 1, Color::Blank, 16);
+
             // Digit layout
             if (_layout != Layout::QWERTY)
             {
@@ -542,7 +559,7 @@ namespace CTRPluginFramework
                     _userAbort = true;
                 return;
             }
-            if (!_customKeyboard && event.key.code == Y && _userInput.size())
+            if (!_customKeyboard && event.key.code == Y && !_userInput.empty())
             {
                 _userInput.clear();
                 _inputChangeEvent.type = InputChangeEvent::EventType::InputWasCleared;
@@ -560,6 +577,20 @@ namespace CTRPluginFramework
                 if (_onInputChange != nullptr && _owner != nullptr)
                     _onInputChange(*_owner, _inputChangeEvent);
                 SetLayout(_layout == DECIMAL ? HEXADECIMAL : DECIMAL);
+            }
+        }
+
+        if (event.type == Event::KeyDown)
+        {
+            static Clock inputClock;
+
+            if (_showCursor && inputClock.HasTimePassed(Milliseconds(200)))
+            {
+                if (event.key.code == Key::DPadLeft)
+                    _ScrollDown();
+                else if (event.key.code == Key::DPadRight)
+                    _ScrollUp();
+                inputClock.Restart();
             }
         }
 
@@ -666,13 +697,16 @@ namespace CTRPluginFramework
                 (*_keys)[i].Update(isTouchDown, touchPos);
             }
 
-            // Compute offset
-            float textsize = Renderer::GetTextSize(_userInput.c_str());
-
-            // If textsize is bigger than available place onscreen
-            if (textsize > 260.f)
-                _offset = textsize - 260.f;
-            else _offset = 0.f;
+            if (_showCursor && _blinkingClock.HasTimePassed(Seconds(0.5f)))
+            {
+                if (_cursorPositionOnScreen == 0)
+                    _cursorPositionOnScreen = -1;
+                else if (_cursorPositionOnScreen == -1)
+                    _cursorPositionOnScreen = 0;
+                else
+                    _cursorPositionOnScreen = -_cursorPositionOnScreen;
+                _blinkingClock.Restart();
+            }
         }
         else ///< Custom Keyboard
         {
@@ -1270,6 +1304,267 @@ namespace CTRPluginFramework
         } */
     }
 
+    static int UnitsToAdvance(const char *str, u32 target)
+    {
+        const u8 *s = reinterpret_cast<const u8 *>(str);
+        int units = 0;
+
+        // Skip UTF8 sig
+        if (s[0] == 0xEF && s[1] == 0xBB && s[2] == 0xBF)
+            s += 3;
+
+        while (*s && target > 0)
+        {
+            if (*s == 0x18)
+            {
+                ++s;
+                ++units;
+                --target;
+                continue;
+            }
+
+            if (*s == 0x1B)
+            {
+                s += 4;
+                units += 4;
+                target -= 4;
+                continue;
+            }
+
+            u32 code;
+            int unit = decode_utf8(&code, s);
+
+            if (code == 0)
+                break;
+            if (unit == -1)
+                return -1;
+
+            s += unit;
+            units += unit;
+            target -= unit;
+        }
+        return units;
+    }
+
+    /*
+    static int     GetPreviousCharUnits(const char *cstr, u32 position)
+    {
+        int unitss = 0;
+
+        cstr--;
+        while (*cstr)
+        {
+
+            if (*cstr == 0x18)
+            {
+                ++unitss;
+                cstr--;
+                continue;
+            }
+            if (position >= 3 *(cstr - 3) == 0x1B)
+            u32 code;
+
+            int units = decode_utf8()
+
+            cstr--;
+        }
+        return unitss;
+    } */
+    int     UnitsToNextChar(const char *cstr, int left)
+    {
+        int units = 0;
+
+        while (*cstr && left > 0)
+        {
+            if (*cstr == 0x1B)
+            {
+                units += 4;
+                left -= 4;
+                cstr += 4;
+                continue;
+            }
+
+            if (*cstr == 0x18)
+            {
+                ++units;
+                --left;
+                ++cstr;
+                continue;
+            }
+
+            u32 code;
+            int u = decode_utf8(&code, (u8 *)cstr);
+
+           /* if (code == 0)
+                break;*/
+            if (u == -1)
+                return u;
+
+            units += u;
+            break;
+        }
+        return units;
+    }
+
+    int     UnitsToPreviousChar(const char *cstr, int cursor)
+    {
+        int units = 0;
+
+        --cstr;
+        while (*cstr && cursor > 0)
+        {
+            --cursor;
+            if (cursor > 4 && *(cstr - 3) == 0x1B)
+            {
+                units += 4;
+                cursor -= 4;
+                cstr -= 3;
+                continue;
+            }
+
+            if (*cstr == 0x18)
+            {
+                ++units;
+                --cursor;
+                --cstr;
+                continue;
+            }
+
+            u32 code;
+            int u = decode_utf8(&code, (u8 *)cstr);
+
+          /*  if (code == 0)
+                break;*/
+
+            if (u == -1 && !cursor)
+                return u;
+
+            if (u != -1)
+            {
+                units += u;
+                break;
+            }
+            --cstr;
+        }
+        return units;
+    }
+
+    void    KeyboardImpl::_ScrollUp(void)
+    {
+        const u32 strLength = _userInput.size();
+        const char *cstr = _userInput.c_str();
+        const float strWidth = Renderer::GetTextSize(cstr);
+
+        // If input is empty
+        if (strLength == 0)
+            goto empty;
+
+        {
+            // Get units to advance to go to the next char
+            const int units = UnitsToNextChar(cstr + _cursorPositionInString, strLength - _cursorPositionInString);
+
+            if (units < 0)
+            {
+                ///< Weird char being found, better clear the input than abort/crash later
+                goto error;
+            }
+
+            // Increase cursor position
+            _cursorPositionInString += units;
+        }
+        // cursor must be at most, after the last char of input
+        if (_cursorPositionInString > strLength)
+            _cursorPositionInString = strLength;
+
+        // Update graphics infos
+        _UpdateScrollInfos(cstr, strWidth);
+        return;
+
+    error:
+        _userInput.clear();
+    empty:
+        _offset = 0.f;
+        _cursorPositionInString = _cursorPositionOnScreen = 0;
+        return;
+
+    }
+
+    void    KeyboardImpl::_ScrollDown(void)
+    {
+        const u32 strLength = _userInput.size();
+        const char *cstr = _userInput.c_str();
+        const float strWidth = Renderer::GetTextSize(cstr);
+
+        // If input is empty
+        if (strLength == 0)
+            goto empty;
+
+        {
+            // Get units to advance to go to the next char
+            const int units = UnitsToPreviousChar(cstr + _cursorPositionInString, _cursorPositionInString);
+
+            if (units < 0)
+            {
+                ///< Weird char being found, better clear the input than abort/crash later
+                goto error;
+            }
+
+            // Increase cursor position
+            _cursorPositionInString -= units;
+        }
+
+        // cursor must be at most, at the begining of the string
+        if (_cursorPositionInString < 0)
+            _cursorPositionInString = 0;
+
+        // Update graphics infos
+        _UpdateScrollInfos(cstr, strWidth);
+        return;
+
+    error:
+        _userInput.clear();
+    empty:
+        _offset = 0.f;
+        _cursorPositionInString = _cursorPositionOnScreen = 0;
+        return;
+    }
+
+    void    KeyboardImpl::_UpdateScrollInfos(const char *cstr, float strWidth)
+    {
+        _blinkingClock.Restart();
+
+        // Get units untils current cursor position
+        const int unitsToCursor = UnitsToAdvance(cstr, _cursorPositionInString);
+
+        // Weird character, might as well purge the string
+        if (unitsToCursor < 0)
+        {
+            _offset = 0.f;
+            _cursorPositionInString = _cursorPositionOnScreen = 0;
+            _userInput.clear();
+            return;
+        }
+
+        // Get width of both before and after cursor
+        const float after = Renderer::GetTextSize(cstr + unitsToCursor);
+        const float before = strWidth - after;
+
+        // Compute offsets
+        if (strWidth > 260.f)
+        {
+            if (before > 140.f)
+                _offset = before + std::min(after, 140.f) - 260.f;
+            else
+                _offset = 0.f;
+            _cursorPositionOnScreen = before - _offset;
+        }
+        else
+        {
+            _offset = 0;
+            _cursorPositionOnScreen = before;
+        }
+    }
+
     enum
     {
         CLEAR_NOT_PRESSED = 0,
@@ -1333,6 +1628,10 @@ namespace CTRPluginFramework
             }
         }
 
+        // Check cursor position, just in case
+        if (_cursorPositionInString > _userInput.size())
+            _ScrollUp();
+
         for (int i = start; i < end; i++)
         {
             std::string  temp;
@@ -1384,13 +1683,21 @@ namespace CTRPluginFramework
                     if (_inputChangeEvent.codepoint == 0x00B1) // ± key
                     {
                         if (_userInput[0] == '-')
+                        {
                             _userInput.erase(0, 1);
+                            _ScrollDown();
+                        }
                         else
+                        {
                             _userInput.insert(0, 1, '-');
+                            _ScrollUp();
+                        }
                     }
                     else
-                        _userInput += temp;
-
+                    {
+                        _userInput.insert(_cursorPositionInString, temp);
+                        _ScrollUp();
+                    }
                     return (true);
                 }
                 if (ret == KEY_ENTER)
@@ -1400,7 +1707,8 @@ namespace CTRPluginFramework
                 }
                 else if (ret == KEY_SPACE && (!_max || Utils::GetSize(_userInput) < _max))
                 {
-                    _userInput += ' ';
+                    _userInput.insert(_cursorPositionInString, " ");
+                    _ScrollUp();
                     return (true);
                 }
                 else if (ret == KEY_CAPS)
@@ -1438,15 +1746,21 @@ namespace CTRPluginFramework
                     if (_layout == DECIMAL && _userInput.length() >= 18)
                         return (false);
 
-                    if (_layout != Layout::QWERTY &&_userInput.length() == 0 && ret == '.')
+                    if (_layout != Layout::QWERTY &&_cursorPositionInString == 0 && ret == '.')
+                    {
                         _userInput += "0.";
+                        _ScrollUp();
+                        _ScrollUp(); ///< Yeah I know, I'm f*cking lazy
+                    }
                     else if (_max == 0 || Utils::GetSize(_userInput) < _max)
                     {
-                        _userInput += ret;
+                        temp.clear();
+                        temp += ret;
+                        _userInput.insert(_cursorPositionInString, temp);
                         _inputChangeEvent.type = InputChangeEvent::CharacterAdded;
                         _inputChangeEvent.codepoint = ret;
+                        _ScrollUp();
                     }
-
                     return (true);
                 }
             }
@@ -1456,10 +1770,14 @@ namespace CTRPluginFramework
         return (false);
 
     _backspacePressed:
+        std::string &&right = _userInput.substr(_cursorPositionInString);
+        _userInput.erase(_cursorPositionInString);
         _inputChangeEvent.codepoint = Utils::RemoveLastChar(_userInput);
+        _userInput += right;
         if (_inputChangeEvent.codepoint != 0)
         {
             _inputChangeEvent.type = InputChangeEvent::CharacterRemoved;
+            _ScrollDown();
             return (true);
         }
         return (false);
