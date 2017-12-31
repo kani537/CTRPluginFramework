@@ -34,7 +34,7 @@ namespace CTRPluginFramework
     // This function is called on the plugin starts, before main
     void    PatchProcess(FwkSettings &settings)
     {
-       // settings.WaitTimeToBoot = Seconds(10.f);
+        //settings.WaitTimeToBoot = Seconds(10.f);
     }
 
     bool    IsHomebrew(void)

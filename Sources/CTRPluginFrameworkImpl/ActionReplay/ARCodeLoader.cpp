@@ -140,7 +140,8 @@ namespace CTRPluginFramework
 
             if (c == '\n' && !canNewLine)
             {
-                str[i] = ' ';
+                str.erase(i, 1);
+                str.insert(i, "\\n");
                 continue;
             }
             if (c == '\\')
