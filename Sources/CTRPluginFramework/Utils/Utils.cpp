@@ -73,6 +73,18 @@ namespace CTRPluginFramework
         size = 0;
         while (*s)
         {
+            if (*s == 0x18)
+            {
+                s++;
+                continue;
+            }
+
+            if (*s == 0x1B)
+            {
+                s += 4;
+                continue;
+            }
+
             u32 code;
             int units = decode_utf8(&code, s);
 
