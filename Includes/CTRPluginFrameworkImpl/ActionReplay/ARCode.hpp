@@ -2,6 +2,10 @@
 #define CTRPLUGINFRAMEWORKIMPL_ACTIONREPLAY_ARCODE_HPP
 
 #include "types.h"
+
+
+#include "CTRPluginFramework/System/File.hpp"
+
 #include <string>
 #include <vector>
 
@@ -12,7 +16,10 @@ namespace CTRPluginFramework
         u32     Str2U32(const std::string &str, bool &error);
     }
 
+    class File;
+    class MenuItem;
     class MenuFolderImpl;
+    class LineWriter;
 
     class ARCode
     {
@@ -48,6 +55,8 @@ namespace CTRPluginFramework
     };
 
     extern const std::vector<u8> g_codeTypes;
+
+    void    ActionReplay_OpenCheatsFile(File &output, bool create);
     /**
      * \brief Check if the code type is supported by this handler
      * \param left Left code value
@@ -68,6 +77,7 @@ namespace CTRPluginFramework
     bool    ActionReplay_IsValidCode(const std::string &line);
     void    ActionReplay_ProcessString(std::string &str, bool canNewLine = true);
     void    ActionReplay_LoadCodes(MenuFolderImpl *dst);
+    bool    ActionReplay_WriteToFile(LineWriter &file, MenuItem *item);
 }
 
 #endif

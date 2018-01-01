@@ -338,6 +338,8 @@ namespace CTRPluginFramework
         }
 
     error:
+
+        PluginMenuActionReplay::SaveCodes();
         OSDImpl::DrawSaveIcon = false;
         return;
     }

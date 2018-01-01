@@ -37,6 +37,22 @@
 
 namespace CTRPluginFramework
 {
+    void    ActionReplay_OpenCheatsFile(File &output, bool create)
+    {
+        u32 flags = File::RW | File::SYNC;
+        if (create)
+            flags |= File::TRUNCATE;
+
+        if (File::Open(output, "cheats.txt", flags) == File::OPResult::SUCCESS)
+            return;
+
+        if (create) flags |= File::CREATE;
+
+        std::string path = Utils::Format("/cheats/%016llX.txt", Process::GetTitleID());
+
+        File::Open(output, path, flags);
+    }
+
     bool    ActionReplay_CheckCodeTypeValidity(u32 left)
     {
         u8 ct = left >> 24;
@@ -255,7 +271,7 @@ namespace CTRPluginFramework
     using FolderStack = std::stack<MenuFolderImpl*>;
     void    ActionReplay_LoadCodes(MenuFolderImpl *dst)
     {
-        File            file("cheats.txt");
+        File            file;
         LineReader      reader(file);
         MenuEntryActionReplay   *entry = nullptr;
         FolderStack     folders;
@@ -267,12 +283,9 @@ namespace CTRPluginFramework
         int             count = 0;
         int             index = 0;
 
+        ActionReplay_OpenCheatsFile(file, false);
         if (!file.IsOpen())
-        {
-            File::Open(file, Utils::Format("/cheats/%016llX.txt", Process::GetTitleID()));
-            if (!file.IsOpen())
-                return;
-        }
+            return;
 
         folders.push(dst);
 

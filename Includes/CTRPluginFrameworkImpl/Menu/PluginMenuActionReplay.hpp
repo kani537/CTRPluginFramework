@@ -21,6 +21,7 @@ namespace CTRPluginFramework
         // Return true if menu must close
         bool    operator()(EventList &eventList, const Time &delta);
 
+        static void     SaveCodes(void);
     private:
         ARCodeEditor    _editor;
         Menu            _topMenu;

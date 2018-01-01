@@ -8,6 +8,7 @@
 
 namespace CTRPluginFramework
 {
+    static PluginMenuActionReplay *__pmARinstance = nullptr;
     PluginMenuActionReplay::PluginMenuActionReplay() :
         _topMenu{ "ActionReplay" },
         _noteBtn(*this, nullptr, IntRect(90, 30, 25, 25), Icon::DrawInfo, false),
@@ -20,6 +21,7 @@ namespace CTRPluginFramework
         _clipboard{ nullptr }
     {
         _newBtn.Enable(true);
+        __pmARinstance = this;
     }
 
     PluginMenuActionReplay::~PluginMenuActionReplay()
@@ -252,5 +254,29 @@ namespace CTRPluginFramework
         item = _topMenu.Pop();
 
         delete item;
+    }
+
+    void    PluginMenuActionReplay::SaveCodes(void)
+    {
+        if (!__pmARinstance)
+            return;
+
+        File        file;
+        LineWriter  writer(file);
+
+        ActionReplay_OpenCheatsFile(file, true);
+
+        if (!file.IsOpen())
+            return;
+
+        MenuFolderImpl *folder = __pmARinstance->_topMenu.GetRootFolder();
+
+        if (!folder) return;
+
+        MenuFolderImpl &f = *folder;
+        for (u32 i = 0; i < f.ItemsCount(); i++)
+            ActionReplay_WriteToFile(writer, f[i]);
+
+        writer.Close();
     }
 }
