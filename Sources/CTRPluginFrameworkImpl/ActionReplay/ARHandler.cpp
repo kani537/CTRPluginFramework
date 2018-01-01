@@ -554,15 +554,14 @@ namespace CTRPluginFramework
             }
             case 0xDE: ///< Touchpad code
             {
+#define IsInRange(val, min, max) (min <= val && val <= max)
                 UIntVector  touchPos = Touch::GetPosition();
-                u32         minX = code.Right >> 24;
-                u32         maxX = (code.Right >> 16) & 0xFF;
-                u32         minY = (code.Right >> 8) & 0xFF;
-                u32         maxY = code.Right & 0xFF;
+                u32         min = code.Right >> 16;
+                u32         max = code.Right & 0xFFFF;
 
-                if (!Touch::IsDown()
-                    || touchPos.x < minX || touchPos.x > maxX
-                    || touchPos.y < minY || touchPos.y > maxY)
+                bool        isInRange = code.Left == 0 ? IsInRange(touchPos.x, min, max) : IsInRange(touchPos.y, min, max);
+
+                if (!Touch::IsDown() || !isInRange)
                 {
                     waitForExitCode = true;
                     conditionCount++;

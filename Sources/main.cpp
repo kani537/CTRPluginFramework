@@ -92,8 +92,8 @@ namespace CTRPluginFramework
         PluginMenu  &menu = *m;
 
 #else
-    MenuEntry *entry;
-    MenuEntry *ctrpfHeap;
+    //MenuEntry *entry;
+    //MenuEntry *ctrpfHeap;
     int     main(void)
     {
         if (!System::IsLoaderNTR())
@@ -104,10 +104,10 @@ namespace CTRPluginFramework
                 Directory::ChangeWorkingDirectory(Utils::Format("/luma/plugins/%016llX/", Process::GetTitleID()));
         }
         //Sleep(Seconds(5.f));
-        PluginMenu  *m = new PluginMenu("Action Replay Test", 0, 1, 5);
+        PluginMenu  *m = new PluginMenu("Action Replay Test", 0, 1, 6);
         PluginMenu  &menu = *m;
 
-        entry = new MenuEntry(Utils::Format("Newlib MemFree: %08X", getMemFree()));
+      /*  entry = new MenuEntry(Utils::Format("Newlib MemFree: %08X", getMemFree()));
         entry->CanBeSelected(false);
         menu += entry;
 
@@ -138,11 +138,7 @@ namespace CTRPluginFramework
         });*/
 
 #endif
-        menu.OnOpening = []
-        {
-            entry->Name() = Utils::Format("MemFree: %08X", getMemFree());
-            ctrpfHeap->Name() = Utils::Format("Ctrpf MemFree: %08X", Heap::SpaceFree());
-        };
+
         menu.SyncronizeWithFrame(true);
         // Launch menu and mainloop
         menu.Run();

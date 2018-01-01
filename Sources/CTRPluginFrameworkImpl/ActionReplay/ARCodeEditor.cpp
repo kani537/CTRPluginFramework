@@ -176,10 +176,9 @@ namespace CTRPluginFramework
         case 0xDE: ///< Check touchpad:
             ret.insert(0, ColorToString(TYPE_COLOR));
             ret.insert(6 /* 2 + Color */, ColorToString(UNUSED_COLOR));
-            ret.insert(17 /* 9 + Color * 2 */, ColorToString(IMMEDIATE_COLOR));
-            ret.insert(23 /* 11 + Color * 3 */, ColorToString(Color::Red));
-            ret.insert(29 /* 13 + Color * 4 */, ColorToString(Color::Blue));
-            ret.insert(35 /* 15 + Color * 5 */, ColorToString(Color::Green));
+            ret.insert(15 /* 7 + Color * 2 */, ColorToString(Color::Red));
+            ret.insert(21 /* 9 + Color * 3 */, ColorToString(IMMEDIATE_COLOR));
+            ret.insert(29 /* 13 + Color * 4 */, ColorToString(Color::Green));
             break;
 
         case 0xDF: ///< Register
@@ -341,12 +340,18 @@ namespace CTRPluginFramework
 
         case 0xDE: ///< Check touch:
         {
-            u32 minX = code.Right >> 24;
-            u32 maxX = (code.Right << 8) >> 16;
-            u32 minY = (code.Right >> 8) & 0xFF;
-            u32 maxY = code.Right & 0xFF;
-
-            ret = Utils::Format("if %02X<=X<=%02X and %02X<=Y<=%02X:", minX, maxX, minY, maxY);
+            if (code.Left == 0)
+            {
+                u32 minX = code.Right >> 16;
+                u32 maxX = (code.Right << 16) >> 16;
+                ret = Utils::Format("if %04X <= touch.X <= %04X:", minX, maxX);
+            }
+            else
+            {
+                u32 minY = code.Right >> 16;
+                u32 maxY = (code.Right << 16) >> 16;
+                ret = Utils::Format("if %04X <= touch.Y <= %04X:", minY, maxY);
+            }
             break;
         }
         case 0xDF: ///< Registers:
