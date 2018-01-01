@@ -151,6 +151,7 @@
     <ClInclude Include="Includes\CTRPluginFrameworkImpl\Menu\MenuEntryTools.hpp" />
     <ClInclude Include="Includes\CTRPluginFrameworkImpl\Menu\PluginMenuActionReplay.hpp" />
     <ClInclude Include="Includes\CTRPluginFrameworkImpl\Menu\PluginMenuFreeCheats.hpp" />
+    <ClInclude Include="Includes\CTRPluginFrameworkImpl\Menu\SubMenu.hpp" />
     <ClInclude Include="Includes\CTRPluginFrameworkImpl\Search\Search.hpp" />
     <ClInclude Include="Includes\CTRPluginFrameworkImpl\Search\Search32.hpp" />
     <ClInclude Include="Includes\CTRPluginFrameworkImpl\Search\SearchBase.hpp" />
@@ -209,6 +210,7 @@
     <ClInclude Include="Includes\CTRPluginFramework\System\Touch.hpp" />
     <ClInclude Include="Includes\CTRPluginFramework\Utils.hpp" />
     <ClInclude Include="Includes\CTRPluginFramework\Utils\LineReader.hpp" />
+    <ClInclude Include="Includes\CTRPluginFramework\Utils\LineWriter.hpp" />
     <ClInclude Include="Includes\CTRPluginFramework\Utils\StringExtensions.hpp" />
     <ClInclude Include="Includes\CTRPluginFramework\Utils\Utils.hpp" />
     <ClInclude Include="Includes\ctrulib\allocator\linear.h" />
@@ -291,6 +293,7 @@
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\ActionReplay\ARCode.cpp" />
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\ActionReplay\ARCodeEditor.cpp" />
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\ActionReplay\ARCodeLoader.cpp" />
+    <ClCompile Include="Sources\CTRPluginFrameworkImpl\ActionReplay\ARCodeWrite.cpp" />
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\ActionReplay\ARHandler.cpp" />
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\ActionReplay\MenuEntryActionReplay.cpp" />
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\arm11kCommands.c" />
@@ -307,9 +310,17 @@
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\Graphics\Icons\CheckedCheckbox.c" />
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\Graphics\Icons\ClearSymbol15.c" />
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\Graphics\Icons\ClearSymbolFilled15.c" />
+    <ClCompile Include="Sources\CTRPluginFrameworkImpl\Graphics\Icons\Clipboard25.c" />
+    <ClCompile Include="Sources\CTRPluginFrameworkImpl\Graphics\Icons\ClipboardFilled25.c" />
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\Graphics\Icons\CloseWindow20.c" />
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\Graphics\Icons\CloseWindowFilled20.c" />
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\Graphics\Icons\Controller15.c" />
+    <ClCompile Include="Sources\CTRPluginFrameworkImpl\Graphics\Icons\Cut25.c" />
+    <ClCompile Include="Sources\CTRPluginFrameworkImpl\Graphics\Icons\CutFilled25.c" />
+    <ClCompile Include="Sources\CTRPluginFrameworkImpl\Graphics\Icons\Duplicate25.c" />
+    <ClCompile Include="Sources\CTRPluginFrameworkImpl\Graphics\Icons\DuplicateFilled25.c" />
+    <ClCompile Include="Sources\CTRPluginFrameworkImpl\Graphics\Icons\Edit25.c" />
+    <ClCompile Include="Sources\CTRPluginFrameworkImpl\Graphics\Icons\EditFilled25.c" />
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\Graphics\Icons\EnterKey15.c" />
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\Graphics\Icons\EnterKeyFilled15.c" />
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\Graphics\Icons\File15.c" />
@@ -328,10 +339,15 @@
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\Graphics\Icons\KeyboardFilled25.c" />
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\Graphics\Icons\Maintenance15.c" />
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\Graphics\Icons\More15.c" />
+    <ClCompile Include="Sources\CTRPluginFrameworkImpl\Graphics\Icons\Plus25.c" />
+    <ClCompile Include="Sources\CTRPluginFrameworkImpl\Graphics\Icons\PlusFilled25.c" />
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\Graphics\Icons\RAM15.c" />
+    <ClCompile Include="Sources\CTRPluginFrameworkImpl\Graphics\Icons\Restart15.c" />
+    <ClCompile Include="Sources\CTRPluginFrameworkImpl\Graphics\Icons\Rocket40.c" />
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\Graphics\Icons\Save25.c" />
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\Graphics\Icons\Search15.c" />
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\Graphics\Icons\Settings15.c" />
+    <ClCompile Include="Sources\CTRPluginFrameworkImpl\Graphics\Icons\Shutdown15.c" />
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\Graphics\Icons\Star15.c" />
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\Graphics\Icons\UnCheckedCheckbox.c" />
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\Graphics\Icons\UserManualFilled15.c" />
@@ -368,6 +384,7 @@
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\Menu\PluginMenuSearch.cpp" />
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\Menu\PluginMenuTools.cpp" />
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\Menu\PluginMenu_SearchMenu.cpp" />
+    <ClCompile Include="Sources\CTRPluginFrameworkImpl\Menu\SubMenu.cpp" />
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\Preferences.cpp" />
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\Search\Search32.cpp" />
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\Search\Search32_FirstSearchSpecified.cpp" />
@@ -399,6 +416,7 @@
     <ClCompile Include="Sources\CTRPluginFramework\System\Time.cpp" />
     <ClCompile Include="Sources\CTRPluginFramework\System\Touch.cpp" />
     <ClCompile Include="Sources\CTRPluginFramework\Utils\LineReader.cpp" />
+    <ClCompile Include="Sources\CTRPluginFramework\Utils\LineWriter.cpp" />
     <ClCompile Include="Sources\CTRPluginFramework\Utils\StringExtensions.cpp" />
     <ClCompile Include="Sources\CTRPluginFramework\Utils\Utils.cpp" />
     <ClCompile Include="Sources\ctrulib\allocator\linear.cpp" />

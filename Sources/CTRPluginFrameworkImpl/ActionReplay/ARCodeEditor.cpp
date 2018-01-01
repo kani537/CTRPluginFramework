@@ -2,6 +2,9 @@
 #include "CTRPluginFrameworkImpl/ActionReplay/ARCodeEditor.hpp"
 #include "CTRPluginFramework/Utils.hpp"
 #include "CTRPluginFramework/Menu/MessageBox.hpp"
+#include "CTRPluginFramework/System/System.hpp"
+#include "Unicode.h"
+#include "CTRPluginFramework/System/Process.hpp"
 
 #define PATCH_COLOR Color::Grey
 #define TYPE_COLOR Color::Brown
@@ -667,10 +670,27 @@ namespace CTRPluginFramework
         }
     }
 
+    static void ShowHelp(void)
+    {
+        std::string body = "Controls:\n" \
+            "    - " FONT_B ": Exit editor (changes are applied directly)\n" \
+            "    - " FONT_Y ": Delete current code\n" \
+            "    - " FONT_L ": Insert a new code before current code\n" \
+            "    - " FONT_R ": Insert a new code after current code\n";
+        if (System::IsNew3DS())
+            body += "    - " FONT_ZL ": Copy current code to clipboard\n" \
+            "    - " FONT_ZR ": Clear clipboard\n";
+        body += "    - \uE006: Navigate in the code";
+
+        MessageBox(Color::LimeGreen << "Action Replay Code Editor Help",  body)();
+        //ScreenImpl::Top->Clean();
+    }
+
     /*
      * Editor
      */
-    ARCodeEditor::ARCodeEditor(void)
+    ARCodeEditor::ARCodeEditor(void) :
+        _submenu{ { "Copy to clipboard", "Clear clipboard", "Delete all codes", "Help" } }
     {
         _exit = false;
         _index =  _line = 0;
@@ -686,10 +706,57 @@ namespace CTRPluginFramework
     {
         // Process event
         for (Event &event : eventList)
-            _ProcessEvent(event);
-        int out;
+        {
+            _submenu.ProcessEvent(event);
+            if (!_submenu.IsOpen())
+                _ProcessEvent(event);
+        }
 
-        if (_keyboard(out) && !_codes.empty())
+        int out; ///< Used for keyboard's input
+
+        if (_submenu.IsOpen())
+        {
+            switch (_submenu())
+            {
+            case 0: ///< Copy to clipboard
+            {
+                if (_codes.empty() || !_context)
+                    break;
+
+                if (_clipboard)
+                    delete _clipboard;
+                _clipboard = new ARCode(_context->codes[_line]);
+                break;
+            }
+            case 1: ///< Clear clipboard
+            {
+                if (_clipboard)
+                {
+                    delete _clipboard;
+                    _clipboard = nullptr;
+                }
+                break;
+            }
+            case 2: ///< Clear all codes
+            {
+                if (!(MessageBox(Color::Orange << "Warning", "Do you really want to delete all codes ?", DialogType::DialogYesNo)()))
+                    break;
+
+                if (_context)
+                    _context->codes.clear();
+
+                _ReloadCodeLines();
+
+                break;
+            }
+            case 3: ///< Show help
+                ShowHelp();
+                break;
+            default:
+                break;
+            }
+        }
+        else if (_keyboard(out) && !_codes.empty())
         {
             _codes[_line].Edit(_index, out);
             if (_index < 16)
@@ -886,10 +953,6 @@ namespace CTRPluginFramework
         }///< End if Event::KeyHold
     }
 
-    void    ARCodeEditor::_DrawSubMenu(void)
-    {
-    }
-
     void    ARCodeEditor::_RenderTop(void)
     {
         Renderer::SetTarget(TOP);
@@ -924,7 +987,10 @@ namespace CTRPluginFramework
 
         // If there's no code, exit here
         if (_codes.empty())
+        {
+            _submenu.Draw();
             return;
+        }
 
         // Draw cursor
         Renderer::DrawRect(_cursorPosX, _cursorPosY, 7, 10, Color::SkyBlue);
@@ -950,8 +1016,7 @@ namespace CTRPluginFramework
                 Renderer::DrawString(_codes[i].comment.c_str(), posXComment, posYComment, Color::DimGrey);
             }
         }
-
-        // Draw comments ?
+        _submenu.Draw();
     }
 
     void    ARCodeEditor::_RenderBottom(void)
@@ -962,6 +1027,9 @@ namespace CTRPluginFramework
 
     void    ARCodeEditor::_Update(void)
     {
+        if (_submenu.IsOpen())
+            return;
+
         // Update cursor pos
         _cursorPosX = 71 + _index * 6;
         int start = std::max(_line - 10, 0);
