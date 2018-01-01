@@ -31,6 +31,7 @@ namespace CTRPluginFramework
         void            Append(MenuItem *item) const;
         void            Remove(MenuItem *item);
         MenuFolderImpl  *GetFolder(void) const;
+        MenuFolderImpl  *GetRootFolder(void) const;
         MenuItem        *GetSelectedItem(void) const;
 
         void    Draw(void) const; ///< Stupid I know
@@ -55,6 +56,7 @@ namespace CTRPluginFramework
 
         bool    drawFooter;
     private:
+        MenuFolderImpl  *_root;
         MenuFolderImpl  *_folder;
         MenuItem        *_lastSelectedItem;
         MenuItem        *_lastNoteItem;

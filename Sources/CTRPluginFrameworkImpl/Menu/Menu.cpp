@@ -16,7 +16,7 @@ namespace CTRPluginFramework
         _noteTB("", "", IntRect(40, 30, 320, 180))
     {
         drawFooter = false;
-        _folder = new MenuFolderImpl(title, footer);
+        _root = _folder = new MenuFolderImpl(title, footer);
         _iconCallback = iconCallback;
         _lastNoteItem = _lastSelectedItem = nullptr;
         _selector = 0;
@@ -28,7 +28,7 @@ namespace CTRPluginFramework
         _noteTB("", "", IntRect(40, 30, 320, 180))
     {
         drawFooter = false;
-        _folder = folder == nullptr ? new MenuFolderImpl("Menu") : folder;
+        _root = _folder = folder == nullptr ? new MenuFolderImpl("Menu") : folder;
         _iconCallback = iconCallback;
         _lastNoteItem = _lastSelectedItem = nullptr;
         _selector = 0;
@@ -74,6 +74,11 @@ namespace CTRPluginFramework
     MenuFolderImpl  *Menu::GetFolder(void) const
     {
         return (_folder);
+    }
+
+    MenuFolderImpl * Menu::GetRootFolder() const
+    {
+        return (_root);
     }
 
     MenuItem    *Menu::GetSelectedItem() const
