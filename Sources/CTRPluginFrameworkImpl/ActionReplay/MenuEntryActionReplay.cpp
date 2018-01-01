@@ -7,7 +7,7 @@ namespace CTRPluginFramework
 {
     static void    ActionReplay_ExecuteCode(MenuEntryImpl *entry)
     {
-        if (!entry) return;
+        if (!entry || !entry->IsActivated()) return;
 
         MenuEntryActionReplay *ar = reinterpret_cast<MenuEntryActionReplay *>(entry);
 

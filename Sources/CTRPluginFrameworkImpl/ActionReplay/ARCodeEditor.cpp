@@ -329,7 +329,10 @@ namespace CTRPluginFramework
             break;
 
         case 0xE0: ///< E code
-            ret = Utils::Format("[%08X+offs] = patch data", code.Left);
+            if (code.Right)
+                ret = Utils::Format("[%08X+offs] = patch data", code.Left);
+            else
+                ret = "!! error !!";
             break;
 
         case 0xDD: ///< Check input
@@ -479,7 +482,7 @@ namespace CTRPluginFramework
             ret = Utils::Format("Copy %08X, off#2 => off#1", code.Right);
             break;
         default:
-            ret = "!! Error !!";
+            ret = "!! error !!";
             break;
         }
 
@@ -564,10 +567,36 @@ namespace CTRPluginFramework
             // If what changes is the size to patch for E code
             else if (cursor >= 8 && base.Text[0] == 'E')
             {
+                bool            error;
+                int             currentLines = base.Right / 8 + (base.Right % 8 > 0 ? 1 : 0);
+                int             newLines = 0;
+                int             diff = 0;
+                std::string     right = base.Text.substr(9, 8);
+
+                right[(cursor > 8 ? cursor - 9 : cursor)] = value;
+
+                newLines = ActionReplayPriv::Str2U32(right, error);
+                if (!error)
+                    newLines = newLines / 8 + (newLines % 8 > 0 ? 1 : 0);
+                else
+                    newLines = 0;
+
+                diff = currentLines - newLines;
+
+                if (diff > 0)
+                {
+                    std::string body = Utils::Format("You're about to delete %d line(s) of data, continue ?", diff);
+                    if (!MessageBox(Color::Orange << "Warning", body, DialogType::DialogYesNo)())
+                        return;
+                }
+
                 base.Text[cursor] = value;
                 if (!base.Update(base.Text))
                 {
-                    base.Data.resize(base.Right / 4 + ((base.Right % 8) > 0 ? 2: 0));
+                    if (base.Right > 0)
+                        base.Data.resize((base.Right / 8 + ((base.Right % 8) > 0 ? 1 : 0)) * 2);
+                    else
+                        base.Data.clear();
                     __arCodeEditor->_ReloadCodeLines();
                     return;
                 }
@@ -958,7 +987,7 @@ namespace CTRPluginFramework
         {
             _codes.push_back(CodeLine(code));
             // If the code is E type, add all its data
-            if (code.Type == 0xE0)
+            if (code.Type == 0xE0 && !code.Data.empty())
             {
                 for (int i = 0; i < code.Data.size() - 1; i += 2)
                 {
