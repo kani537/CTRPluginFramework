@@ -214,6 +214,12 @@ namespace CTRPluginFramework
         *************/
         static int      DrawTools(int posX, int posY);
 
+        /*
+        ** Trash
+        ** 25px * 25 px
+        **************/
+        static int      DrawTrash(int posX, int posY, bool filled);
+
     private:
         static int      DrawImg(u8 *img, int posX, int posY, int sizeX, int sizeY);
     };
