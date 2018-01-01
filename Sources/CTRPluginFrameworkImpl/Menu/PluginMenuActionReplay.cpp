@@ -1,9 +1,10 @@
 #include "CTRPluginFrameworkImpl/Menu/PluginMenuActionReplay.hpp"
 #include "CTRPluginFrameworkImpl/ActionReplay/ARCode.hpp"
 #include "CTRPluginFrameworkImpl/ActionReplay/MenuEntryActionReplay.hpp"
-#include "CTRPluginFramework/Utils/Utils.hpp"
+#include "CTRPluginFramework/Utils.hpp"
 #include "CTRPluginFramework/Menu/Keyboard.hpp"
 #include "CTRPluginFrameworkImpl/ActionReplay/ARCodeEditor.hpp"
+#include "CTRPluginFramework/Menu/MessageBox.hpp"
 
 namespace CTRPluginFramework
 {
@@ -15,6 +16,7 @@ namespace CTRPluginFramework
         _cutBtn(*this, &PluginMenuActionReplay::_CutBtn_OnClick, IntRect(210, 30, 25, 25), Icon::DrawCut, false),
         _pasteBtn(*this, &PluginMenuActionReplay::_PasteBtn_OnClick, IntRect(210, 30, 25, 25), Icon::DrawClipboard, false),
         _duplicateBtn(*this, &PluginMenuActionReplay::_DuplicateBtn_OnClick, IntRect(250, 30, 25, 25), Icon::DrawDuplicate, false),
+        _trashBtn(*this, &PluginMenuActionReplay::_TrashBtn_OnClick, IntRect(50, 30, 25, 25), Icon::DrawTrash, false),
         _clipboard{ nullptr }
     {
         _newBtn.Enable(true);
@@ -57,6 +59,7 @@ namespace CTRPluginFramework
         _cutBtn();
         _pasteBtn();
         _duplicateBtn();
+        _trashBtn();
 
         // Draw menu on top screen
         _topMenu.Draw();
@@ -79,6 +82,7 @@ namespace CTRPluginFramework
         _cutBtn.Draw();
         _pasteBtn.Draw();
         _duplicateBtn.Draw();
+        _trashBtn.Draw();
     }
 
     void    PluginMenuActionReplay::_ProcessEvent(EventList &eventList)
@@ -112,13 +116,15 @@ namespace CTRPluginFramework
         _editorBtn.Update(touchIsDown, touchPos);
 
         _cutBtn.Enable(item != nullptr && _clipboard == nullptr);
-        _pasteBtn.Enable(item != nullptr && _clipboard != nullptr);
-        _duplicateBtn.Enable(item != nullptr);
+        _pasteBtn.Enable(_clipboard != nullptr);
+        _duplicateBtn.Enable(item != nullptr && !item->IsFolder());
+        _trashBtn.Enable(item != nullptr);
 
         _newBtn.Update(touchIsDown, touchPos);
         _cutBtn.Update(touchIsDown, touchPos);
         _pasteBtn.Update(touchIsDown, touchPos);
         _duplicateBtn.Update(touchIsDown, touchPos);
+        _trashBtn.Update(touchIsDown, touchPos);
     }
 
     static bool ActionReplay_GetInput(std::string &ret)
@@ -231,5 +237,20 @@ namespace CTRPluginFramework
 
         dup->context = old->context;
         _topMenu.Insert(dup);
+    }
+
+    void    PluginMenuActionReplay::_TrashBtn_OnClick(void)
+    {
+        MenuItem *item = _topMenu.GetSelectedItem();
+
+        if (item == nullptr)
+            return;
+
+        if (!(MessageBox(Color::Orange << "Warning", "Do you really want to delete: " << item->name, DialogType::DialogYesNo )()))
+            return;
+
+        item = _topMenu.Pop();
+
+        delete item;
     }
 }

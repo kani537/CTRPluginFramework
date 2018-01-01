@@ -655,7 +655,7 @@ namespace CTRPluginFramework
             _ProcessEvent(event);
         int out;
 
-        if (_keyboard(out))
+        if (_keyboard(out) && !_codes.empty())
         {
             _codes[_line].Edit(_index, out);
             if (_index < 16)

@@ -33,6 +33,7 @@ namespace CTRPluginFramework
         IconBtn         _cutBtn;
         IconBtn         _pasteBtn;
         IconBtn         _duplicateBtn;
+        IconBtn         _trashBtn;
 
         MenuItem        *_clipboard;
 
@@ -44,6 +45,7 @@ namespace CTRPluginFramework
         void    _CutBtn_OnClick(void);
         void    _PasteBtn_OnClick(void);
         void    _DuplicateBtn_OnClick(void);
+        void    _TrashBtn_OnClick(void);
     };
 }
 
