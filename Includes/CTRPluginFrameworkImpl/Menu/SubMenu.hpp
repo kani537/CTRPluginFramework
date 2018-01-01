@@ -22,6 +22,7 @@ namespace CTRPluginFramework
         void    ProcessEvent(const Event &event);
         bool    IsOpen(void);
         void    ChangeOptions(const StringVector &options);
+        u32     OptionsCount(void);
 
     private:
         StringVector    _options;

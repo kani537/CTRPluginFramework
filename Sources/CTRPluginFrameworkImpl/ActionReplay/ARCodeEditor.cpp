@@ -705,10 +705,11 @@ namespace CTRPluginFramework
     bool    ARCodeEditor::operator()(EventList &eventList)
     {
         // Process event
+        bool isSubMenuOpen = _submenu.IsOpen();
         for (Event &event : eventList)
         {
             _submenu.ProcessEvent(event);
-            if (!_submenu.IsOpen())
+            if (!isSubMenuOpen)
                 _ProcessEvent(event);
         }
 

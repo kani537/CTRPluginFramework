@@ -4,6 +4,7 @@
 #include "CTRPluginFrameworkImpl/Graphics.hpp"
 #include "CTRPluginFrameworkImpl/System.hpp"
 #include "CTRPluginFrameworkImpl/Menu/KeyboardImpl.hpp"
+#include "CTRPluginFrameworkImpl/Menu/SubMenu.hpp"
 
 #include <vector>
 #include <string>
@@ -23,10 +24,7 @@ namespace CTRPluginFramework
 
     private:
 
-
-
         void    _ProcessEvent(Event &event);
-        void    _DrawSubMenu();
         void    _RenderTop(void);
         void    _RenderBottom(void);
         void    _Update(void);
@@ -47,17 +45,14 @@ namespace CTRPluginFramework
 
         void    _GetChar(u8 *buffer, int offset);
 
+        SubMenu                             _submenu;
         bool                                _invalid;
         bool                                _isModified;
-        bool                                _subMenuOpen;
-        bool                                _action;
         u8                                  *_memoryAddress;
         u32                                 _startRegion;
         u32                                 _endRegion;
         int                                 _cursor;
-        int                                 _subCursor;
         int                                 _indexHistory;
-        Clock                               _buttonFade;
 
         // Buffer for memory
         u8                                  _memory[256];
@@ -68,7 +63,6 @@ namespace CTRPluginFramework
         // Buttons
         IconButton<HexEditor, void>         _closeBtn;
 
-        std::vector<std::string>            _options;
         std::vector<u32>                    _history;
     };
 }

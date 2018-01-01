@@ -14,6 +14,7 @@ namespace CTRPluginFramework
 {
     SearchMenu::SearchMenu(Search* &curSearch, HexEditor &hexEditor, bool &inEditor, bool &useHexInput, FreeCheats &freeCheats, bool &inFreecheats) :
         _currentSearch(curSearch),
+        _submenu{ { "Show game" }},
         _hexEditor(hexEditor),
         _freeCheats(freeCheats),
         _inEditor(inEditor),
@@ -22,11 +23,6 @@ namespace CTRPluginFramework
     {
         _index = 0;
         _selector = 0;
-        _submenuSelector = 0;
-        _options.push_back((SubMenuOption){ "Show game", &SearchMenu::_ShowGame });
-
-        _isSubmenuOpen = false;
-        _action = false;
         _alreadyExported = false;
     }
 
@@ -38,11 +34,17 @@ namespace CTRPluginFramework
         static Clock    _fastScroll;
         static Clock    _startFastScroll;
 
+        bool isSubMenuOpen = _submenu.IsOpen();
         for (int i = 0; i < eventList.size(); i++)
         {
             Event &event = eventList[i];
 
-            if (!_isSubmenuOpen && event.type == Event::EventType::KeyPressed
+            _submenu.ProcessEvent(event);
+
+            if (isSubMenuOpen)
+                continue;
+
+            if (event.type == Event::EventType::KeyPressed
                 && event.key.code == Key::B)
                 return (true);
             // Pressed
@@ -54,98 +56,47 @@ namespace CTRPluginFramework
                     {
                         case Key::DPadUp:
                         {
-                            if (!_isSubmenuOpen)
-                            {
-                                _selector = std::max((int)(_selector - 1),(int)(0));
-                                _startFastScroll.Restart();
-                            }
-                            else
-                            {
-                                _submenuSelector = std::max((int)(_submenuSelector - 1), (int)0);
-                            }
+                            _selector = std::max((int)(_selector - 1),(int)(0));
+                            _startFastScroll.Restart();
                             break;
                         }
                         case Key::CPadDown:
                         {
-                            if (!_isSubmenuOpen)
-                            {
-                                _selector = std::min((int)(_selector + 5), (int)(_resultsAddress.size() - 1));
-                                _startFastScroll.Restart();
-                            }     
-                            else
-                            {
-                                _submenuSelector = std::min((int)(_submenuSelector + 1), (int)4);
-                            }       
+                            _selector = std::min((int)(_selector + 5), (int)(_resultsAddress.size() - 1));
+                            _startFastScroll.Restart();
                             break;
                         }
                         case Key::CPadUp:
                         {
-                            if (!_isSubmenuOpen)
-                            {
-                                _selector = std::max((int)(_selector - 5), (int)(0));
-                                _startFastScroll.Restart();
-                            }
-                            else
-                            {
-                                _submenuSelector = std::max((int)(_submenuSelector - 1), (int)0);
-                            }
+                            _selector = std::max((int)(_selector - 5), (int)(0));
+                            _startFastScroll.Restart();
                             break;
                         }
                         case Key::DPadDown:
                         {
-                            if (!_isSubmenuOpen)
-                            {
-                                _selector = std::min((int)(_selector + 1), (int)(_resultsAddress.size() - 1));
-                                _startFastScroll.Restart();
-                            }
-                            else
-                            {
-                                _submenuSelector = std::min((int)(_submenuSelector + 1), (int)_options.size());
-                            }
+                            _selector = std::min((int)(_selector + 1), (int)(_resultsAddress.size() - 1));
+                            _startFastScroll.Restart();
                             break;
                         }
                         case Key::DPadLeft:
                         {
-                            if (!_isSubmenuOpen)
-                            {                                
-                                _index = std::max((int)(_index + _selector - 500), (int)(0));
-                                _selector = 0;
-                                _startFastScroll.Restart();
-                                Update();
-                            }
+                            _index = std::max((int)(_index + _selector - 500), (int)(0));
+                            _selector = 0;
+                            _startFastScroll.Restart();
+                            Update();
                             break;
                         }
                         case Key::DPadRight:
                         {
-                            if (!_submenuSelector)
-                            {                                
-                                _index = std::min((int)(_index + _selector + 500),(int)(_currentSearch->ResultsCount / 500 * 500));
-                                _selector = 0;
-                                _startFastScroll.Restart();
-                                Update();
-                            }
-                            break;
-                        }
-                        case Key::X:
-                        {
-                            _isSubmenuOpen = !_isSubmenuOpen;
-                            break;
-                        }
-                        case Key::A:
-                        {
-                            if (_isSubmenuOpen)
-                            {
-                                ((this)->*(_options[_submenuSelector].function))();
-                            }
+                            _index = std::min((int)(_index + _selector + 500),(int)(_currentSearch->ResultsCount / 500 * 500));
+                            _selector = 0;
+                            _startFastScroll.Restart();
+                            Update();
                             break;
                         }
                         case Key::B:
                         {
-                            if (_isSubmenuOpen)
-                                _isSubmenuOpen = false;
-                            else
-                                return (true);
-                            break;
+                            return (true);
                         }
                         default: break;
                     } // end switch
@@ -154,7 +105,7 @@ namespace CTRPluginFramework
             // Hold
             else if (event.type == Event::EventType::KeyDown)
             {
-                if (_currentSearch != nullptr && !_isSubmenuOpen && _startFastScroll.HasTimePassed(Seconds(0.5f)) && _fastScroll.HasTimePassed(Seconds(0.1f)))
+                if (_currentSearch != nullptr && _startFastScroll.HasTimePassed(Seconds(0.5f)) && _fastScroll.HasTimePassed(Seconds(0.1f)))
                 {
                     switch (event.key.code)
                     {
@@ -171,9 +122,9 @@ namespace CTRPluginFramework
                                 _selector -= _index - bakIndex;
                                 Update();
                             }
-                            
+
                             _fastScroll.Restart();
-                            
+
                             break;
                         }
                         case Key::CPadUp:
@@ -202,7 +153,7 @@ namespace CTRPluginFramework
                         case Key::DPadDown:
                         {
                             _selector = std::min((int)(_selector + 1),(int)(_resultsAddress.size() - 1));
-                            _fastScroll.Restart();              
+                            _fastScroll.Restart();
                             break;
                         }
                         case Key::DPadLeft:
@@ -224,6 +175,36 @@ namespace CTRPluginFramework
                         default: break;
                     } // end switch
                 } // end if
+            }
+        }
+
+        if (_submenu.IsOpen())
+        {
+            switch (_submenu())
+            {
+            case 0:
+                if (_submenu.OptionsCount() == 1)
+                    _ShowGame();
+                else
+                    _Edit();
+                break;
+            case 1:
+                _JumpInEditor();
+                break;
+            case 2:
+                _NewCheat();
+                break;
+            case 3:
+                _Export();
+                break;
+            case 4:
+                _ExportAll();
+                break;
+            case 5:
+                _ShowGame();
+                break;
+            default:
+                break;
             }
         }
         return (false);
@@ -294,11 +275,10 @@ namespace CTRPluginFramework
 
         if (_currentSearch == nullptr || _resultsAddress.size() == 0 || _resultsNewValue.size() == 0)
         {
-            if (_isSubmenuOpen)
-                _DrawSubMenu();
+            _submenu.Draw();
             return;
         }
-            
+
 
         posY = 95;
         int posX1 = 47;
@@ -348,12 +328,7 @@ namespace CTRPluginFramework
         posY = 196;
         Renderer::DrawString((char *)str.c_str(), 37, posY, textcolor);
 
-        /*if (_currentSearch->IsFirstUnknownSearch())
-            return;*/
-        if (_isSubmenuOpen)
-        {
-            _DrawSubMenu();
-        }
+        _submenu.Draw();
     }
 
     void    SearchMenu::Update(void)
@@ -361,27 +336,19 @@ namespace CTRPluginFramework
         _resultsAddress.clear();
         _resultsNewValue.clear();
         _resultsOldValue.clear();
-        _isSubmenuOpen = false;
 
         if (_currentSearch == nullptr)
         {
             _selector = 0;
             _index = 0;
-            _submenuSelector = 0;
-            _options.clear();
-            _options.push_back((SubMenuOption) { "Show game", &SearchMenu::_ShowGame });
+            if (_submenu.OptionsCount() > 1)
+                _submenu.ChangeOptions({ "Show game" });
             return;
         }
 
-        if (_options.size() == 1 && !_currentSearch->IsFirstUnknownSearch())
+        if (_submenu.OptionsCount() == 1 && !_currentSearch->IsFirstUnknownSearch())
         {
-            _options.clear();
-            _options.push_back((SubMenuOption) { "Edit", &SearchMenu::_Edit });
-            _options.push_back((SubMenuOption) { "Jump in editor", &SearchMenu::_JumpInEditor });
-            _options.push_back((SubMenuOption) { "New cheat", &SearchMenu::_Save });
-            _options.push_back((SubMenuOption) { "Export", &SearchMenu::_Export });
-            _options.push_back((SubMenuOption) { "Export all", &SearchMenu::_ExportAll });
-            _options.push_back((SubMenuOption) { "Show game", &SearchMenu::_ShowGame });
+            _submenu.ChangeOptions({ "Edit", "Jump in editor", "New cheat", "Export", "Export all", "Show Game" });
         }
         if (_index + _selector >= _currentSearch->ResultsCount)
         {
@@ -403,61 +370,6 @@ namespace CTRPluginFramework
         }
     }
 
-    void    SearchMenu::_DrawSubMenu(void)
-    {
-        const Color    &black = Color::Black;
-        const Color    &darkgrey = Color::DarkGrey;
-        const Color    &gainsboro = Color::Gainsboro;
-        const Color    &textcolor = Preferences::Settings.MainTextColor;
-        static IntRect  background(240, 20, 130, 200);
-
-        // DrawBackground
-        Renderer::DrawRect2(background, Preferences::Settings.BackgroundMainColor, Preferences::Settings.BackgroundSecondaryColor);
-
-        int posY = 25;
-
-        // Draw title's menu
-        int xx = Renderer::DrawSysString("Options", 245, posY, 340, textcolor);
-        Renderer::DrawLine(245, posY, xx - 225, textcolor);
-
-        posY = 46;
-
-        IntRect selRect = IntRect(241, 45 + _submenuSelector * 12, 110, 12);
-
-        for (int i = 0; i < _options.size(); i++)
-        {
-            const char *str = _options[i].name;
-
-            if (i == _submenuSelector)
-            {
-                if (_action || !_buttonFade.HasTimePassed(Seconds(0.2f)))
-                {
-                    if (_action)
-                    {
-                        _action = false;
-                        _buttonFade.Restart();
-                    }                    
-
-                    // Draw action rectangle
-                    Renderer::DrawRect(selRect, gainsboro);
-                    // Draw selector
-                    Renderer::DrawRect(selRect, darkgrey, false);
-                    // Draw text
-                    Renderer::DrawString(str, 245, posY, black);
-                    posY += 2;
-                    continue;
-                }
-                else
-                {
-                    // Draw selector
-                    Renderer::DrawRect(selRect, darkgrey, false);
-                }
-            }
-            Renderer::DrawString(str, 245, posY, textcolor);
-            posY += 2;
-        }
-    }
-
     void    SearchMenu::_OpenExportFile(void)
     {
         if (_export.IsOpen())
@@ -469,10 +381,8 @@ namespace CTRPluginFramework
         }
     }
 
-    void    SearchMenu::_Save(void)
+    void    SearchMenu::_NewCheat(void)
     {
-        _action = true;
-
         u32 address = strtoul(_resultsAddress[_selector].c_str(), NULL, 16);
 
         MessageBox("Enter the name of the new cheat")();
@@ -492,8 +402,6 @@ namespace CTRPluginFramework
 
     void    SearchMenu::_Edit(void)
     {
-        _action = true;
-
         Keyboard keyboard;
 
         keyboard.DisplayTopScreen = false;
@@ -588,8 +496,6 @@ namespace CTRPluginFramework
 
     void    SearchMenu::_JumpInEditor(void)
     {
-        _action = true;
-
         u32 address = strtoul(_resultsAddress[_selector].c_str(), NULL, 16);
 
         _hexEditor.Goto(address, true);
@@ -598,7 +504,6 @@ namespace CTRPluginFramework
 
     void    SearchMenu::_Export(void)
     {
-        _action = true;
         if (!_alreadyExported)
         {
             if (!_export.IsOpen())
@@ -620,7 +525,6 @@ namespace CTRPluginFramework
 
     void    SearchMenu::_ExportAll(void)
     {
-        _action = true;
         if (!_alreadyExported)
         {
             if (!_export.IsOpen())

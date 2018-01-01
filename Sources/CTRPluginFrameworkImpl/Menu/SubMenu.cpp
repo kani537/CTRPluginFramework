@@ -123,4 +123,9 @@ namespace CTRPluginFramework
         _options.clear();
         _options = options;
     }
+
+    u32     SubMenu::OptionsCount(void)
+    {
+        return _options.size();
+    }
 }

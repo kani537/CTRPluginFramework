@@ -12,18 +12,12 @@
 #include <string>
 #include <vector>
 #include "PluginMenuFreeCheats.hpp"
+#include "SubMenu.hpp"
 
 namespace CTRPluginFramework
 {
     class SearchMenu
     {
-        struct SubMenuOption
-        {
-
-            const char *name;
-            void    (SearchMenu::*function)(void);
-        };
-
         using EventList = std::vector<Event>;
     public:
 
@@ -38,26 +32,21 @@ namespace CTRPluginFramework
         HexEditor                   &_hexEditor;
         FreeCheats                  &_freeCheats;
         Search*                     &_currentSearch;
+        SubMenu                     _submenu;
         std::vector<std::string>    _resultsAddress;
         std::vector<std::string>    _resultsNewValue;
         std::vector<std::string>    _resultsOldValue;
-        std::vector<SubMenuOption>    _options;
 
         int                         _selector;
-        int                         _submenuSelector;
         u32                         _index;
-        bool                        _isSubmenuOpen;
-        bool                        _action;
         bool                        _alreadyExported;
         bool                        &_inEditor;
         bool                        &_inFreecheats;
 		bool						&_useHexInput;
-        Clock                       _buttonFade;
         File                        _export;
 
-        void        _DrawSubMenu(void);
         void        _OpenExportFile(void);
-        void        _Save(void);
+        void        _NewCheat(void);
         void        _Edit(void);
         void        _JumpInEditor(void);
         void        _Export(void);
