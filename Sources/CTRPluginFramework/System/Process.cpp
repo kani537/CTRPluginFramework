@@ -42,7 +42,11 @@ namespace CTRPluginFramework
     void    Process::GetName(std::string &output)
 	{
 	    for (int i = 0; i < 8; i++)
-		    output += ProcessImpl::_processName[i];
+        {
+            char c = ProcessImpl::_processName[i];
+            if (c)
+		        output += c;
+        }
 	}
 
     u16     Process::GetVersion(void)

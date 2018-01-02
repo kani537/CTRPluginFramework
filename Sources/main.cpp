@@ -92,8 +92,7 @@ namespace CTRPluginFramework
         PluginMenu  &menu = *m;
 
 #else
-    //MenuEntry *entry;
-    //MenuEntry *ctrpfHeap;
+
     int     main(void)
     {
         if (!System::IsLoaderNTR())
@@ -103,8 +102,29 @@ namespace CTRPluginFramework
             else
                 Directory::ChangeWorkingDirectory(Utils::Format("/luma/plugins/%016llX/", Process::GetTitleID()));
         }
+        else
+        {
+            std::string dirpath = "/plugin/%016llX";
+
+            // Check if game's folder exists
+            if (!Directory::IsExists(dirpath))
+            {
+                // If doesn't exist, so create a temporary folder
+                dirpath = "/plugin/game/ctrpf";
+                if (!Directory::IsExists(dirpath))
+                    Directory::Create(dirpath);
+                dirpath += "/";
+                Process::GetName(dirpath);
+
+                if (!Directory::IsExists(dirpath))
+                    Directory::Create(dirpath);
+
+                dirpath += "/";
+                Directory::ChangeWorkingDirectory(dirpath);
+            }
+        }
         //Sleep(Seconds(5.f));
-        PluginMenu  *m = new PluginMenu("Action Replay", 0, 1, 8);
+        PluginMenu  *m = new PluginMenu("Action Replay", 0, 1, 9);
         PluginMenu  &menu = *m;
 
       /*  entry = new MenuEntry(Utils::Format("Newlib MemFree: %08X", getMemFree()));

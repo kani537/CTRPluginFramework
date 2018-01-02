@@ -3,7 +3,7 @@
 #include "ctrulib/result.h"
 #include <limits.h>
 #include <cstring>
-#include <algorithm>    
+#include <algorithm>
 
 namespace CTRPluginFramework
 {
@@ -135,7 +135,7 @@ namespace CTRPluginFramework
         }
 
         return (INVALID_PATH);
-        
+
     }
 
     /*
@@ -184,7 +184,7 @@ namespace CTRPluginFramework
     {
         uint16_t    oldpath[PATH_MAX + 1] = {0};
 
-        FS_Path     fsOldPath; 
+        FS_Path     fsOldPath;
         FS_Path     fsNewPath;
 
         fsOldPath = _Path::SdmcUtf16Path(oldPath);
@@ -205,7 +205,7 @@ namespace CTRPluginFramework
             return (SUCCESS);
 
         return (res);
-    }   
+    }
 
     /*
     ** IsExists
@@ -259,12 +259,12 @@ namespace CTRPluginFramework
                     return (res);
                 res = FSUSER_OpenDirectory(&handle, _sdmcArchive, fsPath);
                 if (R_FAILED(res))
-                    return (res);             
+                    return (res);
             }
             else
                 return (res);
         }
-        
+
         output._path = path;
         _Path::SdmcFixPath(output._path);
         output._handle = handle;
@@ -310,7 +310,7 @@ namespace CTRPluginFramework
         fsPath = _Path::SdmcUtf16Path(fullPath);
         if (fsPath.data == nullptr)
             return (INVALID_PATH);
-        
+
         return (File::Open(output, fullPath, mode));
     }
 
@@ -324,12 +324,12 @@ namespace CTRPluginFramework
             if (entriesNb == 0)
                 break;
 
-            _list.push_back(entry);           
+            _list.push_back(entry);
         }
 
         if (_list.empty())
             return (-1);
-        
+
         std::sort(_list.begin(), _list.end(), [](const FS_DirectoryEntry &lhs, const FS_DirectoryEntry &rhs )
         {
             u8      *left = (u8 *)lhs.name;
@@ -337,7 +337,7 @@ namespace CTRPluginFramework
             u32     leftCode;
             u32     rightCode;
 
-            do 
+            do
             {
                 ssize_t  leftUnits = decode_utf8(&leftCode, left);
                 ssize_t  rightUnits = decode_utf8(&rightCode, right);
@@ -345,7 +345,7 @@ namespace CTRPluginFramework
                 if (leftUnits == -1 || rightUnits == -1)
                     break;
                 left += leftUnits;
-                right += rightUnits;         
+                right += rightUnits;
             } while (leftCode == rightCode && leftCode != 0 && rightCode != 0);
 
             return (leftCode < rightCode);
@@ -385,7 +385,7 @@ namespace CTRPluginFramework
             if (patternCheck && fn.find(pattern) == std::string::npos)
                 continue;
 
-            files.push_back(fn);           
+            files.push_back(fn);
         }
         return (files.size() - count);
     }
@@ -420,7 +420,7 @@ namespace CTRPluginFramework
             std::string fn = (char *)filename;
             if (patternCheck && fn.find(pattern) == std::string::npos)
                 continue;
-            folders.push_back(fn);  
+            folders.push_back(fn);
         }
         return (folders.size() - count);
     }
