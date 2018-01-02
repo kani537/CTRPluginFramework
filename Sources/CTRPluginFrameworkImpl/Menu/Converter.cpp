@@ -6,6 +6,8 @@
 
 namespace CTRPluginFramework
 {
+    static Converter *__converter = nullptr;
+
     Converter::Converter():
         _decimalTB(30, 100, 125, 15),
         _hexadecimalTB(30, 140, 125, 15),
@@ -20,6 +22,8 @@ namespace CTRPluginFramework
         _floatTB.SetValue(0.f);
         _hexfloatTB.UseHexadecimal(true);
         _hexfloatTB.SetValue(val);
+
+        __converter = this;
     }
 
     Converter::~Converter()
@@ -89,6 +93,11 @@ namespace CTRPluginFramework
             _Draw();
 
         } while (!Window::BottomWindow.MustClose());
+    }
+
+    Converter * Converter::Instance(void)
+    {
+        return __converter;
     }
 
     void    Converter::_Draw()

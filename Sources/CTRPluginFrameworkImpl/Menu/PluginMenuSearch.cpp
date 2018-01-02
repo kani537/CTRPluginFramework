@@ -320,6 +320,18 @@ namespace CTRPluginFramework
                 _searchSize.SelectedItem = __builtin_ffs(TypeFlags(_currentSearch->GetType())) - 1;
                 if (_searchSize.SelectedItem == 4)
                     _searchSize.SelectedItem = 3;
+
+                switch (_searchSize.SelectedItem)
+                {
+                    case 0: _valueTextBox.ValueType = NumericTextBox::Type::Bits8; break;
+                    case 1: _valueTextBox.ValueType = NumericTextBox::Type::Bits16; break;
+                    case 2: _valueTextBox.ValueType = NumericTextBox::Type::Bits32; break;
+                   // case 3: _valueTextBox.ValueType = NumericTextBox::Type::Bits64; break;
+                    case 3: _valueTextBox.ValueType = NumericTextBox::Type::Float; break;
+                  //  case 5: _valueTextBox.ValueType = NumericTextBox::Type::Double; break;
+                    default: break;
+                }
+                _valueTextBox.Clear();
             }
         }
     }

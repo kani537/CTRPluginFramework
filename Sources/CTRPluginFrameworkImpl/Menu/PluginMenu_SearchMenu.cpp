@@ -202,6 +202,14 @@ namespace CTRPluginFramework
                 _ExportAll();
                 break;
             case 5:
+            {
+                Converter *inst = Converter::Instance();
+
+                if (inst)
+                    (*inst)();
+                break;
+            }
+            case 6:
                 _ShowGame();
                 break;
             default:
@@ -349,8 +357,9 @@ namespace CTRPluginFramework
 
         if (_submenu.OptionsCount() == 1 && !_currentSearch->IsFirstUnknownSearch())
         {
-            _submenu.ChangeOptions({ "Edit", "Jump in editor", "New cheat", "Export", "Export all", "Show Game" });
+            _submenu.ChangeOptions({ "Edit", "Jump in editor", "New cheat", "Export", "Export all", "Converter", "Show Game" });
         }
+
         if (_index + _selector >= _currentSearch->ResultsCount)
         {
             _index = 0;

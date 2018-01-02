@@ -15,6 +15,8 @@ namespace CTRPluginFramework
         // Blocking call
         void operator()(void);
 
+        static Converter *Instance(void);
+
     private:
         NumericTextBox  _decimalTB;
         NumericTextBox  _hexadecimalTB;
