@@ -43,6 +43,11 @@ namespace CTRPluginFramework
         if (create)
             flags |= File::TRUNCATE;
 
+        // If /cheats/ doesn't exists, create it
+        const char *dirpath = "/cheats";
+        if (!Directory::IsExists(dirpath))
+            Directory::Create(dirpath);
+
         if (File::Open(output, "cheats.txt", flags) == File::OPResult::SUCCESS)
             return;
 
