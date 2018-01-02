@@ -9,6 +9,7 @@
 #include "CTRPluginFramework/Utils/StringExtensions.hpp"
 #include "Unicode.h"
 #include "CTRPluginFramework/System/System.hpp"
+#include "CTRPluginFrameworkImpl/Menu/PluginMenuActionReplay.hpp"
 
 namespace CTRPluginFramework
 {
@@ -385,10 +386,20 @@ namespace CTRPluginFramework
     {
         u32 address = strtoul(_resultsAddress[_selector].c_str(), NULL, 16);
 
-        MessageBox("Enter the name of the new cheat")();
+        //MessageBox("Enter the name of the new cheat")();
 
         SearchFlags type = _currentSearch->GetType();
 
+        u8 codetype;
+
+        if (type == SearchFlags::U8) codetype = 0x20;
+        if (type == SearchFlags::U16) codetype = 0x10;
+        if (type == SearchFlags::U32) codetype = 0;
+        if (type == SearchFlags::Float) codetype = 0;
+
+        PluginMenuActionReplay::NewARCode(address, codetype);
+
+        /*
         if (type == SearchFlags::U8) _freeCheats.Create(address, *(u8 *)address);
         if (type == SearchFlags::U16) _freeCheats.Create(address, *(u16 *)address);
         if (type == SearchFlags::U32) _freeCheats.Create(address, *(u32 *)address);
@@ -397,7 +408,7 @@ namespace CTRPluginFramework
       //  if (type == SearchFlags::Double) _freeCheats.Create(address, *(double *)address);
 
         // Open FreeCheats window
-        _inFreecheats = true;
+        /*_inFreecheats = true;*/
     }
 
     void    SearchMenu::_Edit(void)

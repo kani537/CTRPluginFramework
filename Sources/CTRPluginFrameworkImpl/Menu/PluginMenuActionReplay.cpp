@@ -179,6 +179,7 @@ namespace CTRPluginFramework
                 e->Disable();
                 // Edit code
                 ARCodeEditor::Edit(e->context);
+                e->context.Update();
             }
         }
     }
@@ -279,5 +280,29 @@ namespace CTRPluginFramework
             ActionReplay_WriteToFile(writer, f[i]);
 
         writer.Close();
+    }
+
+    void    PluginMenuActionReplay::NewARCode(u32 address, u8 type)
+    {
+        if (!__pmARinstance)
+            return;
+
+        std::string name;
+
+        if (!ActionReplay_GetInput(name))
+            return;
+
+        MenuEntryActionReplay *ar = new MenuEntryActionReplay(name);
+
+        u32 offset = address & 0xFF000000;
+        address &= 0xFFFFFF;
+        ar->context.codes.push_back(ARCode(0xD3, 0, offset));
+        ar->context.codes.push_back(ARCode(type, address, 0));
+        ar->context.codes.push_back(ARCode(0xD2, 0, 0));
+
+        ar->context.Update();
+        __pmARinstance->_topMenu.Insert(ar);
+        ARCodeEditor::Edit(ar->context);
+        ar->context.Update();
     }
 }

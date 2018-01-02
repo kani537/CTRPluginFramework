@@ -683,7 +683,29 @@ namespace CTRPluginFramework
         body += "    - \uE006: Navigate in the code";
 
         MessageBox(Color::LimeGreen << "Action Replay Code Editor Help",  body)();
-        //ScreenImpl::Top->Clean();
+
+        ScreenImpl::Clean();
+
+        float fade = 0.03f;
+        Clock t = Clock();
+        Time limit = Seconds(1) / 10.f;
+        Time delta;
+        float pitch = 0.0006f;
+
+        while (fade <= 0.3f)
+        {
+            delta = t.Restart();
+            fade += pitch * delta.AsMilliseconds();
+
+            ScreenImpl::Top->Fade(fade);
+            ScreenImpl::Bottom->Fade(fade);
+
+            ScreenImpl::Top->SwapBuffer(true, true);
+            ScreenImpl::Bottom->SwapBuffer(true, true);
+            gspWaitForVBlank();
+            if (System::IsNew3DS())
+                while (t.GetElapsedTime() < limit);
+        }
     }
 
     /*
