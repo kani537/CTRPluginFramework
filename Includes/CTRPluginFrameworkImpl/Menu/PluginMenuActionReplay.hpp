@@ -22,7 +22,7 @@ namespace CTRPluginFramework
         bool    operator()(EventList &eventList, const Time &delta);
 
         static void     SaveCodes(void);
-        static void     NewARCode(u32 address, u8 type);
+        static void     NewARCode(u8 type, u32 address, u32 value);
     private:
         ARCodeEditor    _editor;
         Menu            _topMenu;

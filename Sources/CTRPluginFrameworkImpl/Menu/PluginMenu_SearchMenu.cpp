@@ -384,31 +384,30 @@ namespace CTRPluginFramework
 
     void    SearchMenu::_NewCheat(void)
     {
-        u32 address = strtoul(_resultsAddress[_selector].c_str(), NULL, 16);
-
-        //MessageBox("Enter the name of the new cheat")();
-
+        u32         address = strtoul(_resultsAddress[_selector].c_str(), NULL, 16);
+        u32         value = 0;
+        u8          codetype = 0;
         SearchFlags type = _currentSearch->GetType();
 
-        u8 codetype;
+        if (type == SearchFlags::U8)
+        {
+            codetype = 0x20;
+            u8 val8 = 0;
+            Process::Read8(address, val8);
+            value = val8;
+        }
+        else if (type == SearchFlags::U16)
+        {
+            codetype = 0x10;
+            u16 val16 = 0;
+            Process::Read16(address, val16);
+            value = val16;
+        }
+        else
+            Process::Read32(address, value);
 
-        if (type == SearchFlags::U8) codetype = 0x20;
-        if (type == SearchFlags::U16) codetype = 0x10;
-        if (type == SearchFlags::U32) codetype = 0;
-        if (type == SearchFlags::Float) codetype = 0;
+        PluginMenuActionReplay::NewARCode(codetype, address, value);
 
-        PluginMenuActionReplay::NewARCode(address, codetype);
-
-        /*
-        if (type == SearchFlags::U8) _freeCheats.Create(address, *(u8 *)address);
-        if (type == SearchFlags::U16) _freeCheats.Create(address, *(u16 *)address);
-        if (type == SearchFlags::U32) _freeCheats.Create(address, *(u32 *)address);
-      //  if (type == SearchFlags::U64) _freeCheats.Create(address, *(u64 *)address);
-        if (type == SearchFlags::Float) _freeCheats.Create(address, *(float *)address);
-      //  if (type == SearchFlags::Double) _freeCheats.Create(address, *(double *)address);
-
-        // Open FreeCheats window
-        /*_inFreecheats = true;*/
     }
 
     void    SearchMenu::_Edit(void)

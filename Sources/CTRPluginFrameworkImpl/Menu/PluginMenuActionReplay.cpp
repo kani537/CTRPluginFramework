@@ -282,7 +282,7 @@ namespace CTRPluginFramework
         writer.Close();
     }
 
-    void    PluginMenuActionReplay::NewARCode(u32 address, u8 type)
+    void    PluginMenuActionReplay::NewARCode(u8 type, u32 address, u32 value)
     {
         if (!__pmARinstance)
             return;
@@ -297,7 +297,7 @@ namespace CTRPluginFramework
         u32 offset = address & 0xFF000000;
         address &= 0xFFFFFF;
         ar->context.codes.push_back(ARCode(0xD3, 0, offset));
-        ar->context.codes.push_back(ARCode(type, address, 0));
+        ar->context.codes.push_back(ARCode(type, address, value));
         ar->context.codes.push_back(ARCode(0xD2, 0, 0));
 
         ar->context.Update();
