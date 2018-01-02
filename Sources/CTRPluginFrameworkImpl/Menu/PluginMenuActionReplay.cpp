@@ -301,7 +301,10 @@ namespace CTRPluginFramework
         ar->context.codes.push_back(ARCode(0xD2, 0, 0));
 
         ar->context.Update();
-        __pmARinstance->_topMenu.Insert(ar);
+        MenuFolderImpl *f = __pmARinstance->_topMenu.GetRootFolder();
+
+        if (f)
+            f->Append(ar);
         ARCodeEditor::Edit(ar->context);
         ar->context.Update();
     }
