@@ -260,6 +260,7 @@ namespace CTRPluginFramework
 
         pool += _resultsInPool;
 
+
         while (_currentAddress < _endRegion && _resultsInPool < _maxResults)
         {
             *pool++ = *(u32 *)_currentAddress;
@@ -267,6 +268,7 @@ namespace CTRPluginFramework
             _currentAddress += 4;
             ResultsCount += 4 / typeSize;
         }
+
 
         // Check if region is finished
         if (_currentAddress >= _endRegion)

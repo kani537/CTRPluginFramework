@@ -311,6 +311,19 @@ namespace CTRPluginFramework
         }
     }
 
+    // From https://randomascii.wordpress.com/2012/02/25/comparing-floating-point-numbers-2012-edition/
+    bool AlmostEqualRelative(float A, float B, float maxRelDiff)
+    {
+        // Calculate the difference.
+        float diff = std::fabs(A - B);
+        A = std::fabs(A);
+        B = std::fabs(B);
+        // Find the largest
+        float largest = (B > A) ? B : A;
+
+        return diff <= maxRelDiff * largest;
+    }
+
     void    Search32::FirstSearchSpecifiedFloat(u32 endAddress, SearchFlags compare, Results32* result)
     {
         switch (compare)
@@ -321,7 +334,7 @@ namespace CTRPluginFramework
                 {
                     float value = *(float *)_currentAddress;
 
-                    if (EQ(value, _checkValue.Float))
+                    if (FP_EQ(value, _checkValue.Float))
                     {
                         result->address = _currentAddress;
                         result++->value.Float = value;
@@ -338,7 +351,7 @@ namespace CTRPluginFramework
                 {
                     float value = *(float *)_currentAddress;
 
-                    if (NE(value, _checkValue.Float))
+                    if (FP_NE(value, _checkValue.Float))
                     {
                         result->address = _currentAddress;
                         result++->value.Float = value;
@@ -355,7 +368,7 @@ namespace CTRPluginFramework
                 {
                     float value = *(float *)_currentAddress;
 
-                    if (GT(value, _checkValue.Float))
+                    if (FP_GT(value, _checkValue.Float))
                     {
                         result->address = _currentAddress;
                         result++->value.Float = value;
@@ -372,7 +385,7 @@ namespace CTRPluginFramework
                 {
                     float value = *(float *)_currentAddress;
 
-                    if (GE(value, _checkValue.Float))
+                    if (FP_GE(value, _checkValue.Float))
                     {
                         result->address = _currentAddress;
                         result++->value.Float = value;
@@ -389,7 +402,7 @@ namespace CTRPluginFramework
                 {
                     float value = *(float *)_currentAddress;
 
-                    if (LT(value, _checkValue.Float))
+                    if (FP_LT(value, _checkValue.Float))
                     {
                         result->address = _currentAddress;
                         result++->value.Float = value;
@@ -406,7 +419,7 @@ namespace CTRPluginFramework
                 {
                     float value = *(float *)_currentAddress;
 
-                    if (LE(value, _checkValue.Float))
+                    if (FP_LE(value, _checkValue.Float))
                     {
                         result->address = _currentAddress;
                         result++->value.Float = value;

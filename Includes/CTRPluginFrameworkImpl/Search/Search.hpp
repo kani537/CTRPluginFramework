@@ -7,6 +7,8 @@
 
 #include <vector>
 #include <string>
+#include <cmath>
+#include <cfloat>
 
 namespace CTRPluginFramework
 {
@@ -81,6 +83,23 @@ namespace CTRPluginFramework
 #define DB(new, old, check) (new != old && (new == (old + check) || new == (old - check)))
 #define DBL(new, old, check) (new != old && ABS((int)(new - old)) <= check)
 #define DBM(new, old, check) (new != old && ABS((int)(new - old)) >= check)
+
+bool AlmostEqualRelative(float A, float B, float maxRelDiff = FLT_EPSILON);
+#define IsValid(val) (!std::isnan(val) && !std::isinf(val))
+
+#define FP_EQ(x, y) (IsValid(x) && AlmostEqualRelative(x, y))
+#define FP_NE(x, y) (!FP_EQ(x, y))
+#define FP_GT(x, y) (std::isgreater(x, y))
+#define FP_GE(x, y) (std::isgreaterequal(x, y))
+#define FP_LT(x, y) (std::isless(x, y))
+#define FP_LE(x, y) (std::islessequal(x, y))
+
+#define FP_DB(new, old, check) (FP_NE(new, old) && (FP_EQ(new, (old + check)) || FP_EQ(new, (old - check))))
+#define FP_DBL(new, old, check) (FP_NE(new, old) && FP_LE(std::fabs((int)(new - old)), check))
+#define FP_DBM(new, old, check) (FP_NE(new, old) && FP_GE(std::fabs((int)(new - old)), check))
+
+
+
 
 #define U8_First (u32)(SearchFlags::U8 | SearchFlags::First)
 #define U16_First (u32)(SearchFlags::U8 | SearchFlags::First)

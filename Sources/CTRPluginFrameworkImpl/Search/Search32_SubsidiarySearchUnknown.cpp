@@ -1233,7 +1233,7 @@ namespace CTRPluginFramework
                     float oldValue = res.newValue.Float;
                     float newValue = *(float *)res.address;
 
-                    if (EQ(newValue, checkValue))
+                    if (FP_EQ(newValue, checkValue))
                     {
                         result->address = res.address;
                         result->newValue.Float = newValue;
@@ -1256,7 +1256,7 @@ namespace CTRPluginFramework
                     float oldValue = res.newValue.Float;
                     float newValue = *(float *)res.address;
 
-                    if (NE(newValue, checkValue))
+                    if (FP_NE(newValue, checkValue))
                     {
                         result->address = res.address;
                         result->newValue.Float = newValue;
@@ -1279,7 +1279,7 @@ namespace CTRPluginFramework
                     float oldValue = res.newValue.Float;
                     float newValue = *(float *)res.address;
 
-                    if (GT(newValue, checkValue))
+                    if (FP_GT(newValue, checkValue))
                     {
                         result->address = res.address;
                         result->newValue.Float = newValue;
@@ -1302,7 +1302,7 @@ namespace CTRPluginFramework
                     float oldValue = res.newValue.Float;
                     float newValue = *(float *)res.address;
 
-                    if (GE(newValue, checkValue))
+                    if (FP_GE(newValue, checkValue))
                     {
                         result->address = res.address;
                         result->newValue.Float = newValue;
@@ -1325,7 +1325,7 @@ namespace CTRPluginFramework
                     float oldValue = res.newValue.Float;
                     float newValue = *(float *)res.address;
 
-                    if (LT(newValue, checkValue))
+                    if (FP_LT(newValue, checkValue))
                     {
                         result->address = res.address;
                         result->newValue.Float = newValue;
@@ -1348,7 +1348,7 @@ namespace CTRPluginFramework
                     float oldValue = res.newValue.Float;
                     float newValue = *(float *)res.address;
 
-                    if (LE(newValue, checkValue))
+                    if (FP_LE(newValue, checkValue))
                     {
                         result->address = res.address;
                         result->newValue.Float = newValue;
@@ -1372,7 +1372,7 @@ namespace CTRPluginFramework
                     float oldValue = res.newValue.Float;
                     float newValue = *(float *)res.address;
 
-                    if (DB(newValue, oldValue, checkValue))
+                    if (FP_DB(newValue, oldValue, checkValue))
                     {
                         result->address = res.address;
                         result->newValue.Float = newValue;
@@ -1396,7 +1396,7 @@ namespace CTRPluginFramework
                     float oldValue = res.newValue.Float;
                     float newValue = *(float *)res.address;
 
-                    if (DBL(newValue, oldValue, checkValue))
+                    if (FP_DBL(newValue, oldValue, checkValue))
                     {
                         result->address = res.address;
                         result->newValue.Float = newValue;
@@ -1420,7 +1420,7 @@ namespace CTRPluginFramework
                     float oldValue = res.newValue.Float;
                     float newValue = *(float *)res.address;
 
-                    if (DBM(newValue, oldValue, checkValue))
+                    if (FP_DBM(newValue, oldValue, checkValue))
                     {
                         result->address = res.address;
                         result->newValue.Float = newValue;
@@ -1450,7 +1450,7 @@ namespace CTRPluginFramework
                     float oldValue = res.newValue.Float;
                     float newValue = *(float *)res.address;
 
-                    if (EQ(newValue, oldValue))
+                    if (FP_EQ(newValue, oldValue))
                     {
                         result->address = res.address;
                         result->newValue.Float = newValue;
@@ -1473,7 +1473,7 @@ namespace CTRPluginFramework
                     float oldValue = res.newValue.Float;
                     float newValue = *(float *)res.address;
 
-                    if (NE(newValue, oldValue))
+                    if (FP_NE(newValue, oldValue))
                     {
                         result->address = res.address;
                         result->newValue.Float = newValue;
@@ -1496,7 +1496,7 @@ namespace CTRPluginFramework
                     float oldValue = res.newValue.Float;
                     float newValue = *(float *)res.address;
 
-                    if (GT(newValue, oldValue))
+                    if (FP_GT(newValue, oldValue))
                     {
                         result->address = res.address;
                         result->newValue.Float = newValue;
@@ -1519,7 +1519,7 @@ namespace CTRPluginFramework
                     float oldValue = res.newValue.Float;
                     float newValue = *(float *)res.address;
 
-                    if (GE(newValue, oldValue))
+                    if (FP_GE(newValue, oldValue))
                     {
                         result->address = res.address;
                         result->newValue.Float = newValue;
@@ -1542,7 +1542,7 @@ namespace CTRPluginFramework
                     float oldValue = res.newValue.Float;
                     float newValue = *(float *)res.address;
 
-                    if (LT(newValue, oldValue))
+                    if (FP_LT(newValue, oldValue))
                     {
                         result->address = res.address;
                         result->newValue.Float = newValue;
@@ -1565,7 +1565,7 @@ namespace CTRPluginFramework
                     float oldValue = res.newValue.Float;
                     float newValue = *(float *)res.address;
 
-                    if (LE(newValue, oldValue))
+                    if (FP_LE(newValue, oldValue))
                     {
                         result->address = res.address;
                         result->newValue.Float = newValue;
@@ -1588,7 +1588,7 @@ namespace CTRPluginFramework
                     float oldValue = res.newValue.Float;
                     float newValue = *(float *)res.address;
 
-                    if (DB(newValue, oldValue, checkValue))
+                    if (FP_DB(newValue, oldValue, checkValue))
                     {
                         result->address = res.address;
                         result->newValue.Float = newValue;
@@ -1611,7 +1611,7 @@ namespace CTRPluginFramework
                     float oldValue = res.newValue.Float;
                     float newValue = *(float *)res.address;
 
-                    if (DBL(newValue, oldValue, checkValue))
+                    if (FP_DBL(newValue, oldValue, checkValue))
                     {
                         result->address = res.address;
                         result->newValue.Float = newValue;
@@ -1634,7 +1634,7 @@ namespace CTRPluginFramework
                     float oldValue = res.newValue.Float;
                     float newValue = *(float *)res.address;
 
-                    if (DBM(newValue, oldValue, checkValue))
+                    if (FP_DBM(newValue, oldValue, checkValue))
                     {
                         result->address = res.address;
                         result->newValue.Float = newValue;
