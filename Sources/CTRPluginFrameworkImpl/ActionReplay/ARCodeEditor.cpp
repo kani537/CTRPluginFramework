@@ -5,6 +5,7 @@
 #include "CTRPluginFramework/System/System.hpp"
 #include "Unicode.h"
 #include "CTRPluginFramework/System/Process.hpp"
+#include "CTRPluginFrameworkImpl/Preferences.hpp"
 
 #define PATCH_COLOR Color::Grey
 #define TYPE_COLOR Color::Brown
@@ -712,7 +713,7 @@ namespace CTRPluginFramework
      * Editor
      */
     ARCodeEditor::ARCodeEditor(void) :
-        _submenu{ { "Copy to clipboard", "Clear clipboard", "Delete all codes", "Help" } }
+        _submenu{ { "Copy to clipboard", "Clear clipboard", "Delete all codes", "Converter", "Help" } }
     {
         _exit = false;
         _index =  _line = 0;
@@ -772,7 +773,10 @@ namespace CTRPluginFramework
 
                 break;
             }
-            case 3: ///< Show help
+            case 3: ///< Converter
+                _converter();
+                break;
+            case 4: ///< Show help
                 ShowHelp();
                 break;
             default:
@@ -1039,6 +1043,12 @@ namespace CTRPluginFramework
                 Renderer::DrawString(_codes[i].comment.c_str(), posXComment, posYComment, Color::DimGrey);
             }
         }
+
+        const Color    &textcolor = Preferences::Settings.MainTextColor;
+        posY = 203;
+        Renderer::DrawString((char *)"Options:", 260, posY, textcolor);
+        posY -= 14;
+        Renderer::DrawSysString((char *)"\uE002", 320, posY, 380, textcolor);
         _submenu.Draw();
     }
 

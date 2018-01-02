@@ -4,6 +4,7 @@
 #include "types.h"
 #include "CTRPluginFramework/System/Clock.hpp"
 #include "CTRPluginFrameworkImpl/Menu/KeyboardImpl.hpp"
+#include "CTRPluginFrameworkImpl/Menu/Converter.hpp"
 #include "CTRPluginFrameworkImpl/Menu/SubMenu.hpp"
 #include "ARCode.hpp"
 
@@ -61,6 +62,7 @@ namespace CTRPluginFramework
         Clock                       _inputClock;
         ARCode                      *_clipboard;
         ARCodeContext               *_context;
+        Converter                   _converter;
         SubMenu                     _submenu;
         KeyboardImpl                _keyboard;
         std::vector<CodeLine>       _codes;

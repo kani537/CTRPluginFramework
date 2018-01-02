@@ -145,6 +145,7 @@
     <ClInclude Include="Includes\CTRPluginFrameworkImpl\Graphics\PrivColor.hpp" />
     <ClInclude Include="Includes\CTRPluginFrameworkImpl\Graphics\UIContainer.hpp" />
     <ClInclude Include="Includes\CTRPluginFrameworkImpl\Graphics\Window.hpp" />
+    <ClInclude Include="Includes\CTRPluginFrameworkImpl\Menu\Converter.hpp" />
     <ClInclude Include="Includes\CTRPluginFrameworkImpl\Menu\GatewayRAMDumper.hpp" />
     <ClInclude Include="Includes\CTRPluginFrameworkImpl\Menu\HotkeysModifier.hpp" />
     <ClInclude Include="Includes\CTRPluginFrameworkImpl\Menu\MenuEntryFreeCheat.hpp" />
