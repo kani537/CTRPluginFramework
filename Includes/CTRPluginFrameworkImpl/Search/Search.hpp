@@ -77,9 +77,10 @@ namespace CTRPluginFramework
 #define GE(x, y) (x >= y)
 #define LT(x, y) (x < y)
 #define LE(x, y) (x <= y)
-#define DB(x, y, z) (x == (y + z) || x == (y - z))
-#define DBL(x, y, z) ((x - z) < y || y < (x + z))
-#define DBM(x, y, z) (y < (x - z) || y > (x + z))
+#define ABS(x) (x > 0 ? x : -x)
+#define DB(new, old, check) (new != old && (new == (old + check) || new == (old - check)))
+#define DBL(new, old, check) (new != old && ABS((int)(new - old)) <= check)
+#define DBM(new, old, check) (new != old && ABS((int)(new - old)) >= check)
 
 #define U8_First (u32)(SearchFlags::U8 | SearchFlags::First)
 #define U16_First (u32)(SearchFlags::U8 | SearchFlags::First)
