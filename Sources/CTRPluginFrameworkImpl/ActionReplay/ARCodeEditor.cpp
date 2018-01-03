@@ -20,6 +20,9 @@ namespace CTRPluginFramework
     static const char       *__emptyCode = "00000000 00000000";
     static ARCodeEditor     *__arCodeEditor = nullptr;
 
+    static bool g_condAgainstData = false;
+    static bool g_newCondDataToggle = false;
+
 #define IsEmpty (flags & ARCodeEditor::CodeLine::Empty)
 #define IsError (flags & ARCodeEditor::CodeLine::Empty)
 #define IsModified (flags & ARCodeEditor::CodeLine::Modified)
@@ -186,6 +189,23 @@ namespace CTRPluginFramework
             break;
 
         case 0xDF: ///< Register
+            if (code.Left == 0xFFFFFF) ///< Cond mod toggle
+            {
+                ret.insert(0, ColorToString(TYPE_COLOR));
+                ret.insert(6 /* 2 + Color */, ColorToString(MASK_COLOR));
+                ret.insert(17 /* 9 + Color * 2 */, ColorToString(UNUSED_COLOR));
+                ret.insert(28 /* 16 + Color * 3 */, ColorToString(IMMEDIATE_COLOR));
+                break;
+            }
+            if (code.Left == 0xFFFFFE) ///< VFP state
+            {
+                ret.insert(0, ColorToString(TYPE_COLOR));
+                ret.insert(6 /* 2 + Color */, ColorToString(MASK_COLOR));
+                ret.insert(17 /* 9 + Color * 2 */, ColorToString(UNUSED_COLOR));
+                ret.insert(27 /* 15 + Color * 3 */, ColorToString(Color::Red));
+                ret.insert(32 /* 16 + Color * 4 */, ColorToString(IMMEDIATE_COLOR));
+                break;
+            }
             ret.insert(0, ColorToString(TYPE_COLOR));
             ret.insert(6 /* 2 + Color */, ColorToString(Color::Grey));
             ret.insert(17 /* 9 + Color * 2 */, ColorToString(MASK_COLOR));
@@ -227,50 +247,99 @@ namespace CTRPluginFramework
             break;
 
         case 0x30: ///< GT 32Bits
-            ret = Utils::Format("if %08X > [%08X+offs]:", code.Right, code.Left);
+            if (!g_condAgainstData)
+                ret = Utils::Format("if %08X > [%08X+offs]:", code.Right, code.Left);
+            else
+                ret = Utils::Format("if data > [%08X+offs]:", code.Left);
             break;
         case 0x40: ///< LT 32Bits
-            ret = Utils::Format("if %08X < [%08X+offs]:", code.Right, code.Left);
+            if (!g_condAgainstData)
+                ret = Utils::Format("if %08X < [%08X+offs]:", code.Right, code.Left);
+            else
+                ret = Utils::Format("if data < [%08X+offs]:", code.Left);
             break;
         case 0x50: ///< EQ 32Bits
-            ret = Utils::Format("if %08X == [%08X+off]:", code.Right, code.Left);
+            if (!g_condAgainstData)
+                ret = Utils::Format("if %08X == [%08X+off]:", code.Right, code.Left);
+            else
+                ret = Utils::Format("if data == [%08X+offs]:", code.Left);
             break;
         case 0x60: ///< NE 32Bits
-            ret = Utils::Format("if %08X != [%08X+off]:", code.Right, code.Left);
+            if (!g_condAgainstData)
+                ret = Utils::Format("if %08X != [%08X+off]:", code.Right, code.Left);
+            else
+                ret = Utils::Format("if data != [%08X+offs]:", code.Left);
             break;
 
         case 0x70: ///< GT 16Bits
             mask = code.Right >> 16;
             value = code.Right & 0xFFFF;
-            if (mask)
-                ret = Utils::Format("if %04X>[%08X+off] & %04X:", value, code.Left, (~mask & 0xFFFF));
+            if (!g_condAgainstData)
+            {
+                if (mask)
+                    ret = Utils::Format("if %04X>[%08X+off] & %04X:", value, code.Left, (~mask & 0xFFFF));
+                else
+                    ret = Utils::Format("if %04X > [%08X+offs]:", value, code.Left);
+            }
             else
-                ret = Utils::Format("if %04X > [%08X+offs]:", value, code.Left);
+            {
+                if (mask)
+                    ret = Utils::Format("if data>[%08X+off] & %04X:", code.Left, (~mask & 0xFFFF));
+                else
+                    ret = Utils::Format("if data > [%08X+offs]:", code.Left);
+            }
             break;
         case 0x80: ///< LT 16Bits
             mask = code.Right >> 16;
             value = code.Right & 0xFFFF;
-            if (mask)
-                ret = Utils::Format("if %04X<[%08X+off] & %04X:", value, code.Left, (~mask & 0xFFFF));
+            if (!g_condAgainstData)
+            {
+                if (mask)
+                    ret = Utils::Format("if %04X<[%08X+off] & %04X:", value, code.Left, (~mask & 0xFFFF));
+                else
+                    ret = Utils::Format("if %04X < [%08X+offs]:", value, code.Left);
+            }
             else
-                ret = Utils::Format("if %04X < [%08X+offs]:", value, code.Left);
-            break;
+            {
+                if (mask)
+                    ret = Utils::Format("if data<[%08X+off] & %04X:", code.Left, (~mask & 0xFFFF));
+                else
+                    ret = Utils::Format("if data < [%08X+offs]:", code.Left);
+            }            break;
         case 0x90: ///< EQ 16Bits
             mask = code.Right >> 16;
             value = code.Right & 0xFFFF;
-            if (mask)
-                ret = Utils::Format("if %04X==[%08X+of] & %04X:", value, code.Left, (~mask & 0xFFFF));
+            if (!g_condAgainstData)
+            {
+                if (mask)
+                    ret = Utils::Format("if %04X==[%08X+of] & %04X:", value, code.Left, (~mask & 0xFFFF));
+                else
+                    ret = Utils::Format("if %04X == [%08X+offs]:", value, code.Left);
+            }
             else
-                ret = Utils::Format("if %04X == [%08X+offs]:", value, code.Left);
-            break;
+            {
+                if (mask)
+                    ret = Utils::Format("if data==[%08X+of] & %04X:", code.Left, (~mask & 0xFFFF));
+                else
+                    ret = Utils::Format("if data == [%08X+offs]:", code.Left);
+            }            break;
         case 0xA0: ///< NE 16Bits
             mask = code.Right >> 16;
             value = code.Right & 0xFFFF;
-            if (mask)
-                ret = Utils::Format("if %04X!=[%08X+of] & %04X:", value, code.Left, (~mask & 0xFFFF));
+            if (!g_condAgainstData)
+            {
+                if (mask)
+                    ret = Utils::Format("if %04X!=[%08X+of] & %04X:", value, code.Left, (~mask & 0xFFFF));
+                else
+                    ret = Utils::Format("if %04X != [%08X+offs]:", value, code.Left);
+            }
             else
-                ret = Utils::Format("if %04X != [%08X + offset]:", value, code.Left);
-            break;
+            {
+                if (mask)
+                    ret = Utils::Format("if data!=[%08X+of] & %04X:", code.Left, (~mask & 0xFFFF));
+                else
+                    ret = Utils::Format("if data != [%08X+offs]:", code.Left);
+            }            break;
 
         case 0xB0: ///< Read and Set Offset
             ret = Utils::Format("offset = [%08X + offset]", code.Left);
@@ -364,7 +433,7 @@ namespace CTRPluginFramework
         case 0xDF: ///< Registers:
         {
             // VFP Toggle
-            if (code.Left == 0xFFFFFFE)
+            if (code.Left == 0xFFFFFE)
             {
                 bool conversion = code.Right & 0x10 > 0;
                 reg = code.Right & 1 > 0 ? "enabled" : "disabled";
@@ -376,7 +445,7 @@ namespace CTRPluginFramework
             // Condition toggle
             if (code.Left == 0xFFFFFF)
             {
-                ret = code.Right > 0 ? "cond. compared to immediate" : "cond. compared to data";
+                ret = (code.Right & 1) > 0 ? "cond. compared to data" : "cond. compared to immediate";
                 break;
             }
 
@@ -446,6 +515,8 @@ namespace CTRPluginFramework
             }
             if (to && from)
                 ret = Utils::Format("%s = %s", to, from);
+            else
+                ret = "!! error !!";
             break;
         }
 
@@ -652,9 +723,20 @@ namespace CTRPluginFramework
             return;
         }
 
+        if (g_newCondDataToggle && IsInRange(base.Type, 0x30, 0xA0))
+        {
+            Set(Modified);
+        }
+
+        #define IsCondModeToggle(code) (code.Type == 0xDF && code.Left == 0x00FFFFFF)
+
         if (IsModified)
         {
-            bool error = base.Update(base.Text);
+            bool    isCondModeToggle = IsCondModeToggle(base);
+            bool    error = base.Update(base.Text);
+
+            if (isCondModeToggle || IsCondModeToggle(base))
+                g_newCondDataToggle = true;
 
             if (error)
             {
@@ -668,6 +750,11 @@ namespace CTRPluginFramework
             }
 
             Clear(Modified);
+        }
+
+        if (IsCondModeToggle(base))
+        {
+            g_condAgainstData = (base.Right & 1) > 0;
         }
     }
 
@@ -1068,8 +1155,10 @@ namespace CTRPluginFramework
         int start = std::max(_line - 10, 0);
         _cursorPosY = 83 + (_line - start) * 10;
 
+        g_condAgainstData = false;
         for (CodeLine &code : _codes)
             code.Update();
+        g_newCondDataToggle = false;
     }
 
     void    ARCodeEditor::_ReloadCodeLines(void)

@@ -366,6 +366,7 @@
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\Graphics\TouchKeyString.cpp" />
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\Graphics\UIContainer.cpp" />
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\Graphics\Window.cpp" />
+    <ClCompile Include="Sources\CTRPluginFrameworkImpl\Menu\Converter.cpp" />
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\Menu\GatewayRAMDumper.cpp" />
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\Menu\GuideReader.cpp" />
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\Menu\HexEditor.cpp" />
