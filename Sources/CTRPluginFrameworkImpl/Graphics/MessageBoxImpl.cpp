@@ -123,6 +123,14 @@ namespace CTRPluginFramework
             Renderer::EndFrame();
         }
 
+        // Wait until keys are released
+        while (true)
+        {
+            Controller::Update();
+            if (Controller::IsKeyReleased(Key::A) && Controller::IsKeyReleased(Key::B))
+                break;
+        }
+
         // Release game if we paused it in this function
         PluginMenu *menu = PluginMenu::GetRunningInstance();
         if (menu && !menu->IsOpen())
