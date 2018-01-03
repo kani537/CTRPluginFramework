@@ -511,6 +511,7 @@ namespace CTRPluginFramework
         MenuItem *ret = _folder->_items[_selector];
 
         _folder->_items.erase(_folder->_items.begin() + _selector);
+        _ScrollUp(1);
         return ret;
     }
 }
