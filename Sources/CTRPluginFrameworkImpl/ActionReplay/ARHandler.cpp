@@ -593,7 +593,7 @@ namespace CTRPluginFramework
                 }
                 if (code.Left == 0x00FFFFFF) ///< Conditional mode switch
                 {
-                    conditionalMode = static_cast<bool>(parameter);
+                    conditionalMode = static_cast<bool>(parameter & 1);
                     break;
                 }
 
