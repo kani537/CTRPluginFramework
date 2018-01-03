@@ -127,7 +127,7 @@ namespace CTRPluginFramework
         while (true)
         {
             Controller::Update();
-            if (Controller::IsKeyReleased(Key::A) && Controller::IsKeyReleased(Key::B))
+            if (!Controller::IsKeyDown(Key::A) && !Controller::IsKeyDown(Key::B))
                 break;
         }
 

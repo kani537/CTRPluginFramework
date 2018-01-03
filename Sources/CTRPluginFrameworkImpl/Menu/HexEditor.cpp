@@ -7,9 +7,11 @@
 #include "CTRPluginFrameworkImpl/Menu/PluginMenuFreeCheats.hpp"
 #include "CTRPluginFramework/Menu/MessageBox.hpp"
 #include "CTRPluginFramework/Utils/Utils.hpp"
+#include "CTRPluginFrameworkImpl/Menu/Converter.hpp"
 
 namespace CTRPluginFramework
 {
+    HexEditor *__g_hexEditor = nullptr;
     #define POS(x, y) (x | y << 16)
 
     // Start pos = (115, 82)
@@ -49,7 +51,7 @@ namespace CTRPluginFramework
 
     HexEditor::HexEditor(u32 target) :
         _closeBtn(*this, nullptr, IntRect(275, 24, 20, 20), Icon::DrawClose),
-        _submenu{ { "New FreeCheat", "Jump to", "Move backward", "Move forward", "Save this address", "Browse history", "Clear history" }}
+        _submenu{ { "New FreeCheat", "Jump to", "Converter", "Move backward", "Move forward", "Save this address", "Browse history", "Clear history" }}
     {
         // Init variables
         _invalid = true;
@@ -66,6 +68,8 @@ namespace CTRPluginFramework
         _keyboard.SetLayout(Layout::HEXADECIMAL);
         _keyboard._Hexadecimal();
         _keyboard._showCursor = false;
+
+        __g_hexEditor = this;
 
         // Init memory etc
         Goto(target);
@@ -124,11 +128,26 @@ namespace CTRPluginFramework
             int subchoice = _submenu();
             if (subchoice == 0) _CreateFreeCheat();
             else if (subchoice == 1) _JumpTo();
-            else if (subchoice == 2) _MoveBackward();
-            else if (subchoice == 3) _MoveForward();
-            else if (subchoice == 4) _SaveThisAddress();
-            else if (subchoice == 5) _BrowseHistory();
-            else if (subchoice == 6) _ClearHistory();
+            else if (subchoice == 2)
+            {
+                // Enable clear key
+                _keyboard._keys->at(15).Enable(true);
+                // Enable enter key
+                _keyboard._keys->at(16).Enable(true);
+                Converter *conv = Converter::Instance();
+
+                if (conv) (*conv)();
+
+                // Disable clear key
+                _keyboard._keys->at(15).Enable(false);
+                // Disable enter key
+                _keyboard._keys->at(16).Enable(false);
+            }
+            else if (subchoice == 3) _MoveBackward();
+            else if (subchoice == 4) _MoveForward();
+            else if (subchoice == 5) _SaveThisAddress();
+            else if (subchoice == 6) _BrowseHistory();
+            else if (subchoice == 7) _ClearHistory();
         }
 
         // Render TopScreen

@@ -6,6 +6,7 @@
 #include "Unicode.h"
 #include "CTRPluginFramework/System/Process.hpp"
 #include "CTRPluginFrameworkImpl/Preferences.hpp"
+#include "CTRPluginFrameworkImpl/Menu/HexEditor.hpp"
 
 #define PATCH_COLOR Color::Grey
 #define TYPE_COLOR Color::Brown
@@ -800,7 +801,7 @@ namespace CTRPluginFramework
      * Editor
      */
     ARCodeEditor::ARCodeEditor(void) :
-        _submenu{ { "Copy to clipboard", "Clear clipboard", "Delete all codes", "Converter", "Help" } }
+        _submenu{ { "Copy to clipboard", "Clear clipboard", "Delete all codes", "Converter", "Hex Editor", "Help" } }
     {
         _exit = false;
         _index =  _line = 0;
@@ -812,8 +813,24 @@ namespace CTRPluginFramework
         _context = nullptr;
     }
 
+    extern HexEditor *__g_hexEditor;
     bool    ARCodeEditor::operator()(EventList &eventList)
     {
+        static bool isInHexEditor = false;
+
+        if (isInHexEditor)
+        {
+            if (!__g_hexEditor)
+                isInHexEditor = false;
+            else
+            {
+                HexEditor &hexeditor = *__g_hexEditor;
+
+                isInHexEditor = !hexeditor(eventList);
+            }
+            return false;
+        }
+
         // Process event
         bool isSubMenuOpen = _submenu.IsOpen();
         for (Event &event : eventList)
@@ -863,7 +880,16 @@ namespace CTRPluginFramework
             case 3: ///< Converter
                 _converter();
                 break;
-            case 4: ///< Show help
+            case 4: ///< Hex Editor
+                if (_line < _codes.size() && _codes[_line].base.Type == 0xD3)
+                {
+                    u32 address = _codes[_line].base.Right;
+                    if (address && __g_hexEditor)
+                        __g_hexEditor->Goto(address, true);
+                }
+                isInHexEditor = true;
+                break;
+            case 5: ///< Show help
                 ShowHelp();
                 break;
             default:
