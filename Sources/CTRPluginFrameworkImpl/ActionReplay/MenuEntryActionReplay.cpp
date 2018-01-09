@@ -2,6 +2,7 @@
 #include "CTRPluginFramework/Utils/StringExtensions.hpp"
 #include "CTRPluginFrameworkImpl/ActionReplay/MenuEntryActionReplay.hpp"
 #include "CTRPluginFrameworkImpl/ActionReplay/ARHandler.hpp"
+#include "CTRPluginFrameworkImpl/Menu/PluginMenuExecuteLoop.hpp"
 
 namespace CTRPluginFramework
 {
@@ -32,6 +33,7 @@ namespace CTRPluginFramework
 
     MenuEntryActionReplay::~MenuEntryActionReplay()
     {
+        PluginMenuExecuteLoop::Remove(this);
     }
 
     MenuEntryActionReplay*    MenuEntryActionReplay::Update(void)
