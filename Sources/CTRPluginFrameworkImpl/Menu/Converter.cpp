@@ -38,7 +38,11 @@ namespace CTRPluginFramework
         do
         {
             // Update events
-            while (eventMgr.PollEvent(event));
+            while (eventMgr.PollEvent(event))
+            {
+                if (event.type == Event::KeyPressed && event.key.code == Key::B)
+                    return;
+            }
 
             bool isTouchDown = Touch::IsDown();
             IntVector touchPos(Touch::GetPosition());
