@@ -783,7 +783,9 @@ bool AlmostEqualRelative(float A, float B, float maxRelDiff = FLT_EPSILON);
             }
             case 0xFF: ///< Random number
             {
-                currentData.value = Utils::Random(Data[0].value, Data[0].value);
+                u32 min = code.Left;
+                u32 max = code.Right;
+                currentData.value = Utils::Random(min, max);
                 break;
             }
             default:
