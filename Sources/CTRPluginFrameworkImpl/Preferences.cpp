@@ -13,6 +13,7 @@ namespace CTRPluginFramework
     u32         Preferences::MenuHotkeys = static_cast<u32>(Key::Select);
     bool        Preferences::InjectBOnMenuClose = false;
     bool        Preferences::DrawTouchCursor = false;
+    bool        Preferences::DrawTouchCoord = false;
     bool        Preferences::EcoMemoryMode = false;
     bool        Preferences::DisplayFilesLoading = false;
     bool        Preferences::AutoSaveCheats = false;

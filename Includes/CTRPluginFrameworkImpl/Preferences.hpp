@@ -108,6 +108,7 @@ namespace CTRPluginFramework
         static u32          MenuHotkeys;
         static bool         InjectBOnMenuClose;
         static bool         DrawTouchCursor;
+        static bool         DrawTouchCoord;
         static bool         EcoMemoryMode;
         static bool         DisplayFilesLoading;
 

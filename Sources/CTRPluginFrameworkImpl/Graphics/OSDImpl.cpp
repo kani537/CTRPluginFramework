@@ -195,7 +195,7 @@ namespace CTRPluginFramework
         }
 
         bool drawRocket = Preferences::UseFloatingBtn && isBottom;
-        bool drawTouch =  Preferences::DrawTouchCursor && Touch::IsDown() && isBottom;
+        bool drawTouch =  (Preferences::DrawTouchCursor || Preferences::DrawTouchCoord) && Touch::IsDown() && isBottom;
         bool drawFps = (Preferences::ShowBottomFps && isBottom) || (Preferences::ShowTopFps && !isBottom);
 
         if (!drawRocket && !drawTouch && !drawFps && !DrawSaveIcon && !MessColors
@@ -249,9 +249,18 @@ namespace CTRPluginFramework
             {
                 IntVector touchPos(Touch::GetPosition());
 
-                int posX = touchPos.x - 2;
-                int posY = touchPos.y - 1;
-                Icon::DrawHandCursor(posX, posY);
+                if (Preferences::DrawTouchCursor)
+                {
+                    int posX = touchPos.x - 2;
+                    int posY = touchPos.y - 1;
+                    Icon::DrawHandCursor(posX, posY);
+                }
+                if (Preferences::DrawTouchCoord)
+                {
+                    std::string &&str = Utils::Format("Touch.x: %d  Touch.y: %d", touchPos.x, touchPos.y);
+                    int posY = 20;
+                    Renderer::DrawString(str.c_str(), 10, posY, Color::Blank, Color::Black);
+                }
                 mustFlush = true;
             }
         }

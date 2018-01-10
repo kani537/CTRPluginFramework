@@ -77,12 +77,15 @@ ZZZZZZZZ ZZZZZZZZ
 Input Codes:
 ----------------
 DD000000 XXXXXXXX – if KEYPAD has value XXXXXXXX execute next block (see SPECIAL KEY CODE for values)
-DE000000 WWXXYYZZ - if touchpos is between WW <= posX <= XX and YY <= posY <= ZZ execute next block
+DE000000 AAAABBBB - if touchpos X is between AAAA >= X >= BBBB execute next block
+DE000001 AAAABBBB - if touchpos Y is between AAAA >= Y >= BBBB execute next block
 
 Registers operations:
 -----------------------
-DFFFFFFF 00000000 - Conditional codes are compared to YYYY (immediate value)
-DFFFFFFF 00000001 - Conditional codes are compared to active data register
+DFFFFFFF 00000000 - Conditional codes: value of address is compared to YYYY (immediate value)
+DFFFFFFF 00000001 - Conditional codes: value of address is compared to active data register
+DFFFFFFF 00000002 - Conditional codes: active data register is compared to YYYY (immediate value)
+
 DFFFFFFE 000000YX - Set the active data register vfp state
 Y:
    - 0: no conversion
@@ -125,8 +128,12 @@ F8000000 YYYYYYYY - XOR - data ^= YYYYYYYY
 F9000000 00000000 - NOT - data = ~data
 FA000000 YYYYYYYY - Left shift - data <<= YYYYYYYY
 FB000000 YYYYYYYY - Right shift - data >>= YYYYYYYY
+
 FC000000 YYYYYYYY - Copy YYYYYYYY bytes from [offset#2] to [offset#1]
-FF000000 00000000 - Generate a random number, min/max can be respectively set in data#1, data#2
+FE00XXXX YYYYYYYY - Search pattern (Z) from offset to offset + Y, XXXX is pattern size (in bytes)
+ZZZZZZZZ ZZZZZZZZ   Next block of code is executed if the pattern is found and offset is updated with the address
+
+FFXXXXXX YYYYYYYY - Generate a random number between XXXXXX and YYYYYYYY
 
 ===================
 SPECIAL KEYPAD CODE
