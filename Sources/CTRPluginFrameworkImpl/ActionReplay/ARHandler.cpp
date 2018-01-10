@@ -523,10 +523,24 @@ bool AlmostEqualRelative(float A, float B, float maxRelDiff = FLT_EPSILON);
             case 0xD4: ///< Add to Data[ActiveData]
             {
                 value = code.Right;
-                if (currentData.isVFP)
-                    currentData.vfp += vfpval;
+                u32 mode = code.Left & 3;
+
+                Register &dest = mode == 0 ? currentData : Data[mode -1];
+
+                if (mode)
+                {
+                    Register &src = Data[!(mode - 1)];
+
+                    if (dest.isVFP)
+                        vfpval += src.vfp;
+                    else
+                        value += src.value;
+                }
+
+                if (dest.isVFP)
+                    dest.vfp += vfpval;
                 else
-                    currentData.value += value;
+                    dest.value += value;
                 break;
             }
             case 0xD5: ///< Set Data[ActiveData]

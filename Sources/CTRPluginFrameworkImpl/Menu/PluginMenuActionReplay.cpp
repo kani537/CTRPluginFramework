@@ -186,7 +186,11 @@ namespace CTRPluginFramework
 
     void    PluginMenuActionReplay::_NewBtn_OnClick(void)
     {
-        Keyboard    kbd("", {"Code", "Folder"});
+        Keyboard        kbd("", {"Code", "Folder"});
+        MenuFolderImpl  *f = __pmARinstance->_topMenu.GetRootFolder();
+
+        if (f == nullptr)
+            return;
 
         int choice = kbd.Open();
 
@@ -202,14 +206,14 @@ namespace CTRPluginFramework
         if (choice == 0)
         {
             MenuEntryActionReplay *entry = new MenuEntryActionReplay(name);
-            _topMenu.Insert(entry);
+            f->Append(entry);
         }
 
         // Create a new folder
         if (choice == 1)
         {
             MenuFolderImpl *folder = new MenuFolderImpl(name);
-            _topMenu.Insert(folder);
+            f->Append(folder);
         }
     }
 

@@ -61,6 +61,8 @@ D0000000 00000000 – Terminator code
 Data Register Codes:
 ---------------------
 D4000000 XXXXXXXX – Adds XXXXXXXX to the data register
+D4000001 XXXXXXXX – data#1 = data#1 + data#2 + XXXXXXXX
+D4000002 XXXXXXXX - data#2 = data#2 + data#1 + XXXXXXXX
 D500000Z XXXXXXXX – Sets the data register #Z (0: data#1, 1: data#2) to XXXXXXXX
 D6000000 XXXXXXXX – (32bit) [XXXXXXXX+offset] = data ; offset += 4
 D7000000 XXXXXXXX – (16bit) [XXXXXXXX+offset] = data & 0xffff ; offset += 2
@@ -117,6 +119,7 @@ DF000002 00020001 - Copy data #2 to storage #2
 
 Custom Codes:
 ---------------
+F0000001 0000000X - Toggle float mode for F1, F2, F3, F4, F5 (X: 0 to disable, 1 to enable) 
 F1XXXXXX YYYYYYYY - *(XXXXXX + offset) += YYYYYYYY
 F2XXXXXX YYYYYYYY - *(XXXXXX + offset) *= YYYYYYYY
 F3XXXXXX YYYYYYYY - *(XXXXXX + offset) /= YYYYYYYY

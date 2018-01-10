@@ -355,7 +355,12 @@ namespace CTRPluginFramework
             break;
 
         case 0xD4: ///< Add to register
-            ret = Utils::Format("data += %08X", code.Right);
+            if (code.Left == 0)
+                ret = Utils::Format("data += %08X", code.Right);
+            else if (code.Left == 1)
+                ret == Utils::Format("data#1 += data#2 + %08X", code.Right);
+            else if (code.Left == 2)
+                ret == Utils::Format("data#2 += data#1 + %08X", code.Right);
             break;
         case 0xD5: ///< Set register
             reg = code.Left & 1 ? "Data#2" : "Data#1";
