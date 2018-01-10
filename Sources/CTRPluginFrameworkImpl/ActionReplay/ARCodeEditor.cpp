@@ -17,10 +17,16 @@
 
 namespace CTRPluginFramework
 {
+    enum CondMode
+    {
+        ImmAgainstVal,  // YYYYYYYY > [XXXXXXX + offset]
+        DataAgainstVal, // data > [XXXXXXX + offset]
+        ImmAgainstData  // YYYYYYYY > data
+    };
     static const char       *__emptyCode = "00000000 00000000";
     static ARCodeEditor     *__arCodeEditor = nullptr;
 
-    static bool g_condAgainstData = false;
+    static CondMode g_condAgainstData = CondMode::ImmAgainstVal;
     static bool g_newCondDataToggle = false;
 
 #define IsEmpty (flags & ARCodeEditor::CodeLine::Empty)
@@ -230,10 +236,48 @@ namespace CTRPluginFramework
         return (ret);
     }
 
+    static std::string      GetCond32Str(u32 left, u32 right, const char *ope)
+    {
+        if (g_condAgainstData == CondMode::ImmAgainstVal)
+            return Utils::Format("if %08X %s [%08X+off]:", right, ope, left);
+        else if (g_condAgainstData == CondMode::DataAgainstVal)
+            return Utils::Format("if data %s [%08X+offs]:", ope, left);
+        else
+            return Utils::Format("if %08X %s data:", right, ope);
+    }
+
+    static std::string      GetCond16Str(u32 left, u32 right, const char *ope)
+    {
+        u32 mask = right >> 16;
+        u32 value = right & 0xFFFF;
+
+        if (mask) mask = ~mask;
+
+        if (g_condAgainstData == CondMode::ImmAgainstVal)
+        {
+            if (mask)
+                return Utils::Format("if %04X%s[%08X+off] & %04X:", value, ope, left, mask);
+            else
+                return Utils::Format("if %04X %s [%08X+offs]:", value, ope, left);
+        }
+        else if (g_condAgainstData == CondMode::DataAgainstVal)
+        {
+            if (mask)
+                return Utils::Format("if %04X%s[%08X+of] & %04X:", value, ope, left, mask);
+            else
+                return Utils::Format("if %04X %s [%08X+offs]:", value, ope, left);
+        }
+        else
+        {
+            if (mask)
+                return Utils::Format("if %04X %s data & %04X:", value, ope, mask);
+            else
+                return Utils::Format("if %04X %s data:", value, ope);
+        }
+    }
+
     static std::string      CommentCodeLine(const ARCode &code)
     {
-        u32         mask;
-        u32         value;
         const char  *reg;
         std::string ret;
 
@@ -250,99 +294,32 @@ namespace CTRPluginFramework
             break;
 
         case 0x30: ///< GT 32Bits
-            if (!g_condAgainstData)
-                ret = Utils::Format("if %08X > [%08X+offs]:", code.Right, code.Left);
-            else
-                ret = Utils::Format("if data > [%08X+offs]:", code.Left);
+            ret = GetCond32Str(code.Left, code.Right, ">");
             break;
         case 0x40: ///< LT 32Bits
-            if (!g_condAgainstData)
-                ret = Utils::Format("if %08X < [%08X+offs]:", code.Right, code.Left);
-            else
-                ret = Utils::Format("if data < [%08X+offs]:", code.Left);
+            ret = GetCond32Str(code.Left, code.Right, "<");
             break;
         case 0x50: ///< EQ 32Bits
-            if (!g_condAgainstData)
-                ret = Utils::Format("if %08X == [%08X+off]:", code.Right, code.Left);
-            else
-                ret = Utils::Format("if data == [%08X+offs]:", code.Left);
+            ret = GetCond32Str(code.Left, code.Right, "==");
             break;
         case 0x60: ///< NE 32Bits
-            if (!g_condAgainstData)
-                ret = Utils::Format("if %08X != [%08X+off]:", code.Right, code.Left);
-            else
-                ret = Utils::Format("if data != [%08X+offs]:", code.Left);
+            ret = GetCond32Str(code.Left, code.Right, "!=");
             break;
 
         case 0x70: ///< GT 16Bits
-            mask = code.Right >> 16;
-            value = code.Right & 0xFFFF;
-            if (!g_condAgainstData)
-            {
-                if (mask)
-                    ret = Utils::Format("if %04X>[%08X+off] & %04X:", value, code.Left, (~mask & 0xFFFF));
-                else
-                    ret = Utils::Format("if %04X > [%08X+offs]:", value, code.Left);
-            }
-            else
-            {
-                if (mask)
-                    ret = Utils::Format("if data>[%08X+off] & %04X:", code.Left, (~mask & 0xFFFF));
-                else
-                    ret = Utils::Format("if data > [%08X+offs]:", code.Left);
-            }
+            ret = GetCond16Str(code.Left, code.Right, ">");
             break;
+
         case 0x80: ///< LT 16Bits
-            mask = code.Right >> 16;
-            value = code.Right & 0xFFFF;
-            if (!g_condAgainstData)
-            {
-                if (mask)
-                    ret = Utils::Format("if %04X<[%08X+off] & %04X:", value, code.Left, (~mask & 0xFFFF));
-                else
-                    ret = Utils::Format("if %04X < [%08X+offs]:", value, code.Left);
-            }
-            else
-            {
-                if (mask)
-                    ret = Utils::Format("if data<[%08X+off] & %04X:", code.Left, (~mask & 0xFFFF));
-                else
-                    ret = Utils::Format("if data < [%08X+offs]:", code.Left);
-            }            break;
+            ret = GetCond16Str(code.Left, code.Right, "<");
+            break;
+
         case 0x90: ///< EQ 16Bits
-            mask = code.Right >> 16;
-            value = code.Right & 0xFFFF;
-            if (!g_condAgainstData)
-            {
-                if (mask)
-                    ret = Utils::Format("if %04X==[%08X+of] & %04X:", value, code.Left, (~mask & 0xFFFF));
-                else
-                    ret = Utils::Format("if %04X == [%08X+offs]:", value, code.Left);
-            }
-            else
-            {
-                if (mask)
-                    ret = Utils::Format("if data==[%08X+of] & %04X:", code.Left, (~mask & 0xFFFF));
-                else
-                    ret = Utils::Format("if data == [%08X+offs]:", code.Left);
-            }            break;
+            ret = GetCond16Str(code.Left, code.Right, "==");
+            break;
         case 0xA0: ///< NE 16Bits
-            mask = code.Right >> 16;
-            value = code.Right & 0xFFFF;
-            if (!g_condAgainstData)
-            {
-                if (mask)
-                    ret = Utils::Format("if %04X!=[%08X+of] & %04X:", value, code.Left, (~mask & 0xFFFF));
-                else
-                    ret = Utils::Format("if %04X != [%08X+offs]:", value, code.Left);
-            }
-            else
-            {
-                if (mask)
-                    ret = Utils::Format("if data!=[%08X+of] & %04X:", code.Left, (~mask & 0xFFFF));
-                else
-                    ret = Utils::Format("if data != [%08X+offs]:", code.Left);
-            }            break;
+            ret = GetCond16Str(code.Left, code.Right, "!=");
+            break;
 
         case 0xB0: ///< Read and Set Offset
             ret = Utils::Format("offset = [%08X + offset]", code.Left);
@@ -438,7 +415,7 @@ namespace CTRPluginFramework
             // VFP Toggle
             if (code.Left == 0xFFFFFE)
             {
-                bool conversion = code.Right & 0x10 > 0;
+                bool conversion = (code.Right & 0x10) > 0;
                 reg = code.Right & 1 > 0 ? "enabled" : "disabled";
                 ret = Utils::Format("data vfp state %s", reg);
                 if (conversion)
@@ -448,7 +425,13 @@ namespace CTRPluginFramework
             // Condition toggle
             if (code.Left == 0xFFFFFF)
             {
-                ret = (code.Right & 1) > 0 ? "cond. compared to data" : "cond. compared to immediate";
+                static const char * condstr[3] =
+                {
+                    "cond: immediate against value",
+                    "cond. data against to value",
+                    "cond. immediate against data"
+                };
+                ret = condstr[code.Right & 3];
                 break;
             }
 
@@ -771,7 +754,7 @@ namespace CTRPluginFramework
 
         if (IsCondModeToggle(base))
         {
-            g_condAgainstData = (base.Right & 1) > 0;
+            g_condAgainstData = static_cast<CondMode>(base.Right & 3);
         }
     }
 
@@ -1216,7 +1199,7 @@ namespace CTRPluginFramework
         int start = std::max(_line - 10, 0);
         _cursorPosY = 83 + (_line - start) * 10;
 
-        g_condAgainstData = false;
+        g_condAgainstData = CondMode::ImmAgainstVal;
         for (CodeLine &code : _codes)
             code.Update();
         g_newCondDataToggle = false;

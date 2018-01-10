@@ -11,6 +11,8 @@
 #include "ctrulib/result.h"
 #include "CTRPluginFrameworkImpl/System/ProcessImpl.hpp"
 #include <algorithm>
+#include <cmath>
+#include <cfloat>
 
 #define debug 0
 
@@ -168,8 +170,59 @@ namespace CTRPluginFramework
         return (true);
     }
 
+bool AlmostEqualRelative(float A, float B, float maxRelDiff = FLT_EPSILON);
+#define IsValid(val) (!std::isnan(val) && !std::isinf(val))
+
+#define FP_EQ(x, y) (IsValid(x) && AlmostEqualRelative(x, y))
+#define Cond32(operator, flcmp) \
+    if (conditionalMode == CondMode::ImmAgainstData) \
+    { \
+        if (currentData.isVFP) \
+        { \
+            float imm = *(float *)(code.Right); \
+\
+            if (flcmp(imm, currentData.vfp)) \
+                continue; \
+        } \
+        else if (code.Right operator currentData.value) \
+            continue; \
+    } \
+    else if (conditionalMode == CondMode::DataAgainstVal) \
+    { \
+        if (currentData.isVFP) \
+        { \
+            if (flcmp(currentData.vfp, vfpval)) \
+                continue; \
+        } \
+        else if (currentData.value operator value) \
+            continue; \
+    } \
+    else if (code.Right operator value) \
+        continue;
+
+#define Cond16(operator) \
+    if (conditionalMode == CondMode::ImmAgainstData) \
+    { \
+        if ((code.Right & 0xFFFF) operator (currentData.value & 0xFFFF) & mask) \
+            continue; \
+    } \
+    else if (conditionalMode == CondMode::DataAgainstVal) \
+    { \
+        if ((currentData.value & 0xFFFF) operator value16) \
+            continue; \
+    } \
+    else if ((code.Right & 0xFFFF) operator value16) \
+        continue;
+
     void    ARHandler::_Execute(const ARCodeVector &codes)
     {
+        enum CondMode
+        {
+            ImmAgainstVal,  // YYYYYYYY > [XXXXXXX + offset]
+            DataAgainstVal, // data > [XXXXXXX + offset]
+            ImmAgainstData  // YYYYYYYY > data
+        };
+
         union
         {
             u32         value = 0;
@@ -177,10 +230,9 @@ namespace CTRPluginFramework
         };
         u16             value16 = 0;
         u16             mask;
-        bool            copyMode = false;
         bool            waitForEndLoop = false;
         bool            waitForExitCode = false;
-        bool            conditionalMode = false;
+        CondMode        conditionalMode = ImmAgainstVal;
         int             conditionCount = 0;
         int             loopCount = 0;
         int             loopIteration = 0;
@@ -270,10 +322,10 @@ namespace CTRPluginFramework
             }
             case 0x30: ///< GreaterThan 32Bits
             {
-                if (!((ExitCodeImmediately = !Read32(code.Left + Offset[ActiveOffset], value))))
+                if (conditionalMode == CondMode::ImmAgainstData || !((ExitCodeImmediately = !Read32(code.Left + Offset[ActiveOffset], value))))
                 {
                     // If we must compare with data register
-                    if (conditionalMode)
+                  /*  if (conditionalMode)
                     {
                         // If current data is in vfp mode
                         if (currentData.isVFP)
@@ -285,7 +337,8 @@ namespace CTRPluginFramework
                             continue;
                     }
                     else if (code.Right > value)
-                        continue;
+                        continue; */
+                    Cond32(>, std::isgreater);
                 }
                 conditionCount++;
                 waitForExitCode = true;
@@ -293,10 +346,10 @@ namespace CTRPluginFramework
             }
             case 0x40: ///< LesserThan 32Bits
             {
-                if (!((ExitCodeImmediately = !Read32(code.Left + Offset[ActiveOffset], value))))
+                if (conditionalMode == CondMode::ImmAgainstData || !((ExitCodeImmediately = !Read32(code.Left + Offset[ActiveOffset], value))))
                 {
                     // If we must compare with data register
-                    if (conditionalMode)
+                    /*if (conditionalMode)
                     {
                         // If current data is in vfp mode
                         if (currentData.isVFP)
@@ -308,7 +361,8 @@ namespace CTRPluginFramework
                             continue;
                     }
                     else if (code.Right < value)
-                        continue;
+                        continue;*/
+                    Cond32(<, std::isless);
                 }
                 conditionCount++;
                 waitForExitCode = true;
@@ -316,10 +370,10 @@ namespace CTRPluginFramework
             }
             case 0x50: ///< EqualTo 32Bits
             {
-                if (!((ExitCodeImmediately = !Read32(code.Left + Offset[ActiveOffset], value))))
+                if (conditionalMode == CondMode::ImmAgainstData || !((ExitCodeImmediately = !Read32(code.Left + Offset[ActiveOffset], value))))
                 {
                     // If we must compare with data register
-                    if (conditionalMode)
+                   /* if (conditionalMode)
                     {
                         // If current data is in vfp mode
                         if (currentData.isVFP)
@@ -331,7 +385,8 @@ namespace CTRPluginFramework
                             continue;
                     }
                     else if (code.Right == value)
-                        continue;
+                        continue; */
+                    Cond32(==, FP_EQ);
                 }
                 conditionCount++;
                 waitForExitCode = true;
@@ -339,10 +394,10 @@ namespace CTRPluginFramework
             }
             case 0x60: ///< NotEqualTo 32Bits
             {
-                if (!((ExitCodeImmediately = !Read32(code.Left + Offset[ActiveOffset], value))))
+                if (conditionalMode == CondMode::ImmAgainstData || !((ExitCodeImmediately = !Read32(code.Left + Offset[ActiveOffset], value))))
                 {
                     // If we must compare with data register
-                    if (conditionalMode)
+                    /*if (conditionalMode)
                     {
                         // If current data is in vfp mode
                         if (currentData.isVFP)
@@ -354,7 +409,8 @@ namespace CTRPluginFramework
                             continue;
                     }
                     else if (code.Right != value)
-                        continue;
+                        continue;*/
+                    Cond32(!=, !FP_EQ);
                 }
                 conditionCount++;
                 waitForExitCode = true;
@@ -362,19 +418,12 @@ namespace CTRPluginFramework
             }
             case 0x70: ///< GreaterThan 16Bits
             {
-                mask = code.Right >> 16;
+                mask = ~(code.Right >> 16);
 
-                if (!((ExitCodeImmediately = !Read16(code.Left + Offset[ActiveOffset], value16))))
+                if (conditionalMode == CondMode::ImmAgainstData || !((ExitCodeImmediately = !Read16(code.Left + Offset[ActiveOffset], value16))))
                 {
-                    value16 &= ~mask;
-                    // If we must compare with data register
-                    if (conditionalMode)
-                    {
-                        if ((currentData.value & 0xFFFF) > value16)
-                            continue;
-                    }
-                    else if ((code.Right & 0xFFFF) > value16)
-                        continue;
+                    value16 &= mask;
+                    Cond16(>);
                 }
                 conditionCount++;
                 waitForExitCode = true;
@@ -382,19 +431,12 @@ namespace CTRPluginFramework
             }
             case 0x80: ///< LesserThan 16Bits
             {
-                mask = code.Right >> 16;
+                mask = ~(code.Right >> 16);
 
-                if (!((ExitCodeImmediately = !Read16(code.Left + Offset[ActiveOffset], value16))))
+                if (conditionalMode == CondMode::ImmAgainstData || !((ExitCodeImmediately = !Read16(code.Left + Offset[ActiveOffset], value16))))
                 {
-                    value16 &= ~mask;
-                    // If we must compare with data register
-                    if (conditionalMode)
-                    {
-                        if ((currentData.value & 0xFFFF) < value16)
-                            continue;
-                    }
-                    else if ((code.Right & 0xFFFF) < value16)
-                        continue;
+                    value16 &= mask;
+                    Cond16(<);
                 }
                 conditionCount++;
                 waitForExitCode = true;
@@ -402,19 +444,12 @@ namespace CTRPluginFramework
             }
             case 0x90: ///< EqualTo 16Bits
             {
-                mask = code.Right >> 16;
+                mask = ~(code.Right >> 16);
 
-                if (!((ExitCodeImmediately = !Read16(code.Left + Offset[ActiveOffset], value16))))
+                if (conditionalMode == CondMode::ImmAgainstData || !((ExitCodeImmediately = !Read16(code.Left + Offset[ActiveOffset], value16))))
                 {
-                    value16 &= ~mask;
-                    // If we must compare with data register
-                    if (conditionalMode)
-                    {
-                        if ((currentData.value & 0xFFFF) == value16)
-                            continue;
-                    }
-                    else if ((code.Right & 0xFFFF) == value16)
-                        continue;
+                    value16 &= mask;
+                    Cond16(==);
                 }
                 conditionCount++;
                 waitForExitCode = true;
@@ -422,19 +457,12 @@ namespace CTRPluginFramework
             }
             case 0xA0: ///< NotEqualTo 16Bits
             {
-                mask = code.Right >> 16;
+                mask = ~(code.Right >> 16);
 
-                if (!((ExitCodeImmediately = !Read16(code.Left + Offset[ActiveOffset], value16))))
+                if (conditionalMode == CondMode::ImmAgainstData || !((ExitCodeImmediately = !Read16(code.Left + Offset[ActiveOffset], value16))))
                 {
-                    value16 &= ~mask;
-                    // If we must compare with data register
-                    if (conditionalMode)
-                    {
-                        if ((currentData.value & 0xFFFF) != value16)
-                            continue;
-                    }
-                    else if ((code.Right & 0xFFFF) != value16)
-                        continue;
+                    value16 &= mask;
+                    Cond16(!=);
                 }
                 conditionCount++;
                 waitForExitCode = true;
@@ -594,7 +622,7 @@ namespace CTRPluginFramework
                 }
                 if (code.Left == 0x00FFFFFF) ///< Conditional mode switch
                 {
-                    conditionalMode = static_cast<bool>(parameter & 1);
+                    conditionalMode = static_cast<CondMode>(parameter & 3);
                     break;
                 }
 
