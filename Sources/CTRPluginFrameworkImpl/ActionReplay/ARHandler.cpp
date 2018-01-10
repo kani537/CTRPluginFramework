@@ -10,6 +10,7 @@
 #include "CTRPluginFrameworkImpl/System/Screen.hpp"
 #include "ctrulib/result.h"
 #include "CTRPluginFrameworkImpl/System/ProcessImpl.hpp"
+#include <algorithm>
 
 #define debug 0
 
@@ -717,6 +718,39 @@ namespace CTRPluginFramework
                 {
                     ExitCodeImmediately = !Process::CopyMemory((void *)Offset[0], (void *)Offset[1], code.Right);
                 }
+                break;
+            }
+            case 0xFE: ///< Memsearch
+            {
+                const std::vector<u32> &pattern = code.Data;
+
+                u32            regionSize = 0;
+                u32            start = Offset[ActiveOffset];
+                PageInfo       pInfo = { 0 };
+                MemInfo        mInfo = { 0 };
+
+                if (!pattern.empty() && code.Right && Process::CheckRegion(start, regionSize))
+                {
+                    u32 address = 0;
+
+                    if (R_SUCCEEDED(svcQueryMemory(&mInfo, &pInfo, start)))
+                    {
+                        u32 size = std::min((u32)code.Right, mInfo.size - (start - mInfo.base_addr));
+                        address = Utils::Search<u32>(start, size, pattern);
+                    }
+
+                    // If pattern isn't found
+                    if (!address)
+                    {
+                        waitForExitCode = true;
+                        conditionCount++;
+                        break;
+                    }
+
+                    // Pattern found, update offset
+                    Offset[ActiveOffset] = address;
+                }
+
                 break;
             }
             case 0xFF: ///< Random number

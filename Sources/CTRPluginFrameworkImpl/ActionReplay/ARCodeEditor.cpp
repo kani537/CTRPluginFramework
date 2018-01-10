@@ -3,10 +3,9 @@
 #include "CTRPluginFramework/Utils.hpp"
 #include "CTRPluginFramework/Menu/MessageBox.hpp"
 #include "CTRPluginFramework/System/System.hpp"
-#include "Unicode.h"
-#include "CTRPluginFramework/System/Process.hpp"
 #include "CTRPluginFrameworkImpl/Preferences.hpp"
 #include "CTRPluginFrameworkImpl/Menu/HexEditor.hpp"
+#include "Unicode.h"
 
 #define PATCH_COLOR Color::Grey
 #define TYPE_COLOR Color::Brown
@@ -27,7 +26,9 @@ namespace CTRPluginFramework
 #define IsEmpty (flags & ARCodeEditor::CodeLine::Empty)
 #define IsError (flags & ARCodeEditor::CodeLine::Empty)
 #define IsModified (flags & ARCodeEditor::CodeLine::Modified)
-#define IsData (flags & ARCodeEditor::CodeLine::PatchData)
+#define IsPatch (flags & ARCodeEditor::CodeLine::PatchData)
+#define IsPattern (flags & ARCodeEditor::CodeLine::PatternData)
+#define IsData (flags & (u32)(ARCodeEditor::CodeLine::PatchData | ARCodeEditor::CodeLine::PatternData))
 #define Clear(bit) (flags &= ~bit)
 #define Set(bit) (flags |= bit)
 
@@ -163,7 +164,6 @@ namespace CTRPluginFramework
         case 0xD1: ///< Loop execute
         case 0xD0: ///< Terminator
         case 0xF9: ///< NOT operation
-        case 0xFF: ///< Random
             ret.insert(0, ColorToString(TYPE_COLOR));
             ret.insert(6 /* 2 + Color */, ColorToString(UNUSED_COLOR));
             break;
@@ -216,6 +216,8 @@ namespace CTRPluginFramework
         case 0xF1: ///< Custom Codes
         case 0xF2:
         case 0xF3:
+        case 0xFE: ///< Memsearch
+        case 0xFF: ///< Random
             ret.insert(0, ColorToString(TYPE_COLOR));
             ret.insert(6 /* 2 + Color */, ColorToString(OFFSET_COLOR));
             ret.insert(17 /* 9 + Color * 2 */, ColorToString(IMMEDIATE_COLOR));
@@ -557,6 +559,15 @@ namespace CTRPluginFramework
         case 0xFC: ///< Copy
             ret = Utils::Format("Copy %08X, off#2 => off#1", code.Right);
             break;
+        case 0xFE: ///< Memsearch
+            ret = Utils::Format("if pattern in [off:%08X]:", code.Right);
+            break;
+        case 0xFF: ///< Random
+            if (!code.Left && !code.Right)
+                ret = "data = random number";
+            else
+                ret = Utils::Format("data=rand[%08X:%08X]", code.Left, code.Right);
+            break;
         default:
             ret = "!! error !!";
             break;
@@ -633,25 +644,57 @@ namespace CTRPluginFramework
             else
                 return;
 
-            // If the codetype change for E
-            if (cursor == 0 && value == 'E' && base.Text[cursor] != 'E')
+            std::string     currentCodeType = base.Text.substr(0, 2);
+            std::string     nextCodeType = currentCodeType;
+
+            if (cursor < 2)
+                nextCodeType[cursor] = value;
+
+            if (currentCodeType[0] == 'E') currentCodeType.erase(currentCodeType.begin() + 1);
+            if (nextCodeType[0] == 'E') nextCodeType.erase(nextCodeType.begin() + 1);
+
+            const bool    ctDiffer = nextCodeType != currentCodeType;
+
+            // If the codetype change for E or FE
+            if (ctDiffer && (nextCodeType == "E" || nextCodeType == "FE"))
             {
                 // Be sure that the whole line is empty
                 base.Text = __emptyCode;
-            }
 
-            // If what changes is the size to patch for E code
-            else if (cursor >= 8 && base.Text[0] == 'E')
+                // Set the code type
+                base.Text[0] = nextCodeType[0];
+                if (nextCodeType.size() > 1)
+                    base.Text[1] = nextCodeType[1];
+            }
+            // If the code type changes from E or FE to something else, ask before pursue
+            else if (ctDiffer && !base.Data.empty() && (currentCodeType == "E" || currentCodeType == "FE"))
             {
+                if (!MessageBox(Color::Orange << "Warning", "You're about to delete the E code with all it's data, continue ?", DialogType::DialogYesNo)())
+                    return;
+
+                // Be sure that the whole line is empty
+                base.Text = __emptyCode;
+                base.Data.clear();
+                base.Update(base.Text);
+                base.Text[0] = nextCodeType[0];
+                if (nextCodeType.size() > 1)
+                    base.Text[1] = nextCodeType[1];
+                __arCodeEditor->_ReloadCodeLines();
+                return;
+            }
+            // If what changes is the size to patch for E or FE code
+            else if ((cursor >= 8 && base.Type == 0xE0) || (IsInRange(cursor, 2, 7) && base.Type == 0xFE))
+            {
+                u32             size = base.Type == 0xE0 ? base.Right : base.Left;
                 bool            error;
-                int             currentLines = base.Right / 8 + (base.Right % 8 > 0 ? 1 : 0);
+                int             currentLines = size / 8 + (size % 8 > 0 ? 1 : 0);
                 int             newLines = 0;
                 int             diff = 0;
-                std::string     right = base.Text.substr(9, 8);
+                std::string     sizestr = Utils::Format("%08X", size);
 
-                right[(cursor > 8 ? cursor - 9 : cursor)] = value;
+                sizestr[(cursor > 8 ? cursor - 9 : cursor)] = value;
 
-                newLines = ActionReplayPriv::Str2U32(right, error);
+                newLines = ActionReplayPriv::Str2U32(sizestr, error);
                 if (!error)
                     newLines = newLines / 8 + (newLines % 8 > 0 ? 1 : 0);
                 else
@@ -669,28 +712,18 @@ namespace CTRPluginFramework
                 base.Text[cursor] = value;
                 if (!base.Update(base.Text))
                 {
-                    if (base.Right > 0)
-                        base.Data.resize((base.Right / 8 + ((base.Right % 8) > 0 ? 1 : 0)) * 2);
+                    size = base.Type == 0xE0 ? base.Right : base.Left;
+                    if (size > 0)
+                        base.Data.resize((size / 8 + ((size % 8) > 0 ? 1 : 0)) * 2);
                     else
                         base.Data.clear();
                     __arCodeEditor->_ReloadCodeLines();
-                    return;
                 }
             }
-            // If the code type changes from E to something else, ask before pursue
-            else if (cursor == 0 && base.Text[0] == 'E' && value != 'E' && base.Right > 0)
-            {
-                if (!MessageBox(Color::Orange << "Warning", "You're about to delete the E code with all it's data, continue ?", DialogType::DialogYesNo)())
-                    return;
-                // Be sure that the whole line is empty
-                base.Text = __emptyCode;
-                base.Data.clear();
-                base.Update(base.Text);
-                base.Text[0] = value;
-                __arCodeEditor->_ReloadCodeLines();
-                return;
-            }
-            base.Text[cursor] = value;
+
+            // Change value
+            else
+                base.Text[cursor] = value;
         }
 
         Set(Modified);
@@ -701,25 +734,8 @@ namespace CTRPluginFramework
         // If current line is E code data
         if (IsData && IsModified)
         {
-            /*
-            std::string lStr = base.Text.substr(0, 8);
-            std::string rStr = base.Text.substr(9, 8);
-
-            bool error = false;
-
-            u32 left = ActionReplayPriv::Str2U32(lStr, error);
-            if (error) left = 0;
-            u32 right = ActionReplayPriv::Str2U32(rStr, error);
-            if (error) right = 0;
-
-              if (parent)
-            {
-                parent->Data[index] = left;
-                parent->Data[index + 1] = right;
-            }
-            */
             display = ColorToString(PATCH_COLOR) + Utils::Format("%08X %08X", parent->Data[index], parent->Data[index + 1]);
-            comment = "patch data";
+            comment = IsPatch ? "patch data" : "pattern data";
             Clear(Modified);
             return;
         }
@@ -810,7 +826,6 @@ namespace CTRPluginFramework
         _keyboard._showCursor = false;
         __arCodeEditor = this;
         _clipboard = nullptr;
-        _context = nullptr;
     }
 
     extern HexEditor *__g_hexEditor;
@@ -851,9 +866,16 @@ namespace CTRPluginFramework
                 if (_codes.empty() || !_context)
                     break;
 
+                CodeLine &code = _codes[_line];
+
+                // If we're in the middle of data, don't remove anything
+                if (code.flags & (u32)(CodeLine::PatchData | CodeLine::PatternData))
+                    break;
+
                 if (_clipboard)
                     delete _clipboard;
-                _clipboard = new ARCode(_context->codes[_line]);
+
+                _clipboard = new ARCode(code.base);
                 break;
             }
             case 1: ///< Clear clipboard
@@ -870,8 +892,7 @@ namespace CTRPluginFramework
                 if (!(MessageBox(Color::Orange << "Warning", "Do you really want to delete all codes ?", DialogType::DialogYesNo)()))
                     break;
 
-                if (_context)
-                    _context->codes.clear();
+                _context->codes.clear();
 
                 _ReloadCodeLines();
 
@@ -980,14 +1001,18 @@ namespace CTRPluginFramework
                     break;
                 }
 
-                // If we're in the middle of E's data, don't insert anything
-                if (_codes[_line].flags & CodeLine::PatchData)
+                CodeLine &code = _codes[_line];
+
+                // If we're in the middle of data, don't remove anything
+                if (code.flags & (u32)(CodeLine::PatchData | CodeLine::PatternData))
                     break;
 
+                int line = code.index;
+
                 if (!_clipboard)
-                    codes.insert(codes.begin() + _line, ARCode(__emptyCode, error));
+                    codes.insert(codes.begin() + line, ARCode(__emptyCode, error));
                 else
-                    codes.insert(codes.begin() + _line, ARCode(*_clipboard));
+                    codes.insert(codes.begin() + line, ARCode(*_clipboard));
                 _ReloadCodeLines();
                 break;
             }
@@ -998,7 +1023,7 @@ namespace CTRPluginFramework
                 ARCodeVector &codes = _context->codes;
 
                 // If code is empty or we'reat the end, simply push something
-                if (_codes.empty() || _line == _codes.size() - 1)
+                if (_codes.empty())
                 {
                     if (!_clipboard)
                         codes.push_back(ARCode(__emptyCode, error));
@@ -1008,11 +1033,13 @@ namespace CTRPluginFramework
                     break;
                 }
 
-                int line = _line + 1;
+                CodeLine &code = _codes[_line];
 
-                // If we're in the middle of E's data, don't insert anything
-                if (_codes[line].flags & CodeLine::PatchData)
+                // If we're in the middle of data, don't remove anything
+                if (code.flags & (u32)(CodeLine::PatchData | CodeLine::PatternData))
                     break;
+
+                int line = code.index + 1;
 
                 if (!_clipboard)
                     codes.insert(codes.begin() + line, ARCode(__emptyCode, error));
@@ -1027,9 +1054,16 @@ namespace CTRPluginFramework
                 if (_codes.empty() || !_context)
                     break;
 
+                CodeLine &code = _codes[_line];
+
+                // If we're in the middle of data, don't remove anything
+                if (code.flags & (u32)(CodeLine::PatchData | CodeLine::PatternData))
+                    break;
+
                 if (_clipboard)
                     delete _clipboard;
-                _clipboard = new ARCode(_context->codes[_line]);
+
+                _clipboard = new ARCode(code.base);
                 break;
             }
             // Clear clipboard
@@ -1047,14 +1081,15 @@ namespace CTRPluginFramework
             {
                 if (_line >= _codes.size()) break;
 
-                // If we're in the middle of E's data, don't remove anything
-                if (_codes[_line].flags & CodeLine::PatchData)
+                CodeLine &code = _codes[_line];
+                // If we're in the middle of data, don't remove anything
+                if (code.flags & (u32)(CodeLine::PatchData | CodeLine::PatternData))
                     break;
 
-                if (!(MessageBox(Color::Orange << "Warning", "Do you really want to delete this code ?", DialogType::DialogYesNo))())
+                if (!(MessageBox(Color::Orange << "Warning", "Do you really want to delete this line ?", DialogType::DialogYesNo))())
                     break;
 
-                _context->codes.erase(_context->codes.begin() + _line);
+                _context->codes.erase(_context->codes.begin() + code.index);
                 _ReloadCodeLines();
                 break;
             }
@@ -1194,17 +1229,19 @@ namespace CTRPluginFramework
         _codes.clear();
         tempar.clear();
 
-        if (!_context)
-            return;
-
         ARCodeVector &arcodes = _context->codes;
 
+        u16 index = 0;
         for (ARCode &code : arcodes)
         {
             _codes.push_back(CodeLine(code));
-            // If the code is E type, add all its data
-            if (code.Type == 0xE0 && !code.Data.empty())
+            _codes.back().index = index++;
+
+            // If the code is E or FE type, add all its data
+            if ((code.Type == 0xE0 || code.Type == 0xFE) && !code.Data.empty())
             {
+                u32 flags = code.Type == 0xE0 ? CodeLine::PatchData : CodeLine::PatternData;
+
                 for (int i = 0; i < code.Data.size() - 1; i += 2)
                 {
                     bool error;
@@ -1216,7 +1253,7 @@ namespace CTRPluginFramework
 
                     _codes.push_back(CodeLine(tempar.back()));
                     _codes.back().parent = &code;
-                    _codes.back().flags |= CodeLine::PatchData;
+                    _codes.back().flags |= flags;
                     _codes.back().index = i;
                 }
             }
