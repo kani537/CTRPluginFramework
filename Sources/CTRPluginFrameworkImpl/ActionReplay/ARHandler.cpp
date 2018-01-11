@@ -32,6 +32,7 @@ namespace CTRPluginFramework
     u32     ARHandler::ActiveOffset = 0;
     u32     ARHandler::ActiveData = 0;
     bool    ARHandler::ExitCodeImmediately = false;
+    static bool ToggleFloat = false;
 
     bool    ActionReplay_IsValidAddress(u32 address, bool write)
     {
@@ -56,6 +57,7 @@ namespace CTRPluginFramework
         ActiveOffset = 0;
         ActiveData = 0;
         ExitCodeImmediately = false;
+        ToggleFloat = false;
         _Execute(arcodes);
         storage[0] = Storage[0];
         storage[1] = Storage[1];
@@ -475,7 +477,8 @@ bool AlmostEqualRelative(float A, float B, float maxRelDiff = FLT_EPSILON);
             }
             case 0xD3: ///< Set Offset[ActiveOffset]
             {
-                Offset[ActiveOffset] = code.Right;
+                u32 target = code.Left & 1;
+                Offset[target] = code.Right;
                 break;
             }
             case 0xDC: ///< Add to Offset[ActiveOffset]
@@ -516,6 +519,7 @@ bool AlmostEqualRelative(float A, float B, float maxRelDiff = FLT_EPSILON);
                     return;
                 }
 
+                conditionCount = 0;
                 Offset[ActiveOffset] = 0;
                 currentData.Clear();
                 break;
@@ -545,7 +549,7 @@ bool AlmostEqualRelative(float A, float B, float maxRelDiff = FLT_EPSILON);
             }
             case 0xD5: ///< Set Data[ActiveData]
             {
-                currentData.value = code.Right;
+                Data[code.Left & 1].value = code.Right;
                 break;
             }
             case 0xD6: ///< Write 32bits Data[ActiveData]
@@ -685,23 +689,72 @@ bool AlmostEqualRelative(float A, float B, float maxRelDiff = FLT_EPSILON);
                 ExitCodeImmediately = !Memcpy(code.Left + Offset[ActiveOffset], data, code.Right);
                 break;
             }
+            case 0xF0: ///< Custom things
+            {
+                switch (code.Left)
+                {
+                case 1: ///< Float toggle
+                    ToggleFloat = code.Right & 1;
+                    break;
+                default:
+                    break;
+                }
+                break;
+            }
             case 0xF1: ///< ADD code
             {
-                if (Read32(code.Left + Offset[ActiveOffset], value))
-                    ExitCodeImmediately = !Write32(code.Right + Offset[ActiveOffset], value + code.Left);
+                if (!ToggleFloat)
+                {
+                    if (Read32(code.Left + Offset[ActiveOffset], value))
+                        ExitCodeImmediately = !Write32(code.Left + Offset[ActiveOffset], value + code.Right);
+                }
+                else
+                {
+                    value = code.Right;
+                    float val = vfpval;
+                    if (Read32(code.Left + Offset[ActiveOffset], value))
+                    {
+                        vfpval += val;
+                        ExitCodeImmediately = !Write32(code.Left + Offset[ActiveOffset], value);
+                    }
+                }
                 break;
             }
             case 0xF2: ///< MUL code
             {
-                if (Read32(code.Left + Offset[ActiveOffset], value))
-                    ExitCodeImmediately = !Write32(code.Right + Offset[ActiveOffset], value * code.Left);
-                break;
+                if (!ToggleFloat)
+                {
+                    if (Read32(code.Left + Offset[ActiveOffset], value))
+                        ExitCodeImmediately = !Write32(code.Left + Offset[ActiveOffset], value * code.Right);
+                }
+                else
+                {
+                    value = code.Right;
+                    float val = vfpval;
+                    if (Read32(code.Left + Offset[ActiveOffset], value))
+                    {
+                        vfpval *= val;
+                        ExitCodeImmediately = !Write32(code.Left + Offset[ActiveOffset], value);
+                    }
+                }                break;
             }
             case 0xF3: ///< DIV code
             {
-                if (code.Left != 0 && Read32(code.Left + Offset[ActiveOffset], value))
-                    ExitCodeImmediately = !Write32(code.Right + Offset[ActiveOffset], value / code.Left);
-                break;
+                if (!ToggleFloat && code.Right)
+                {
+                    if (Read32(code.Left + Offset[ActiveOffset], value))
+                        ExitCodeImmediately = !Write32(code.Left + Offset[ActiveOffset], value / code.Right);
+                }
+                else if (code.Right)
+                {
+                    value = code.Right;
+                    float val = vfpval;
+                    if (Read32(code.Left + Offset[ActiveOffset], value))
+                    {
+                        vfpval += val;
+                        ExitCodeImmediately = !Write32(code.Left + Offset[ActiveOffset], value);
+                    }
+                }                break;
             }
             case 0xF4: ///< MUL code on Data[ActiveData]
             {

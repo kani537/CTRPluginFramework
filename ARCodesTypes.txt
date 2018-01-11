@@ -119,7 +119,7 @@ DF000002 00020001 - Copy data #2 to storage #2
 
 Custom Codes:
 ---------------
-F0000001 0000000X - Toggle float mode for F1, F2, F3, F4, F5 (X: 0 to disable, 1 to enable) 
+F0000001 0000000X - Toggle float mode for F1, F2, F3 (X: 0 to disable, 1 to enable)
 F1XXXXXX YYYYYYYY - *(XXXXXX + offset) += YYYYYYYY
 F2XXXXXX YYYYYYYY - *(XXXXXX + offset) *= YYYYYYYY
 F3XXXXXX YYYYYYYY - *(XXXXXX + offset) /= YYYYYYYY

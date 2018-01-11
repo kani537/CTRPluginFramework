@@ -137,7 +137,6 @@ namespace CTRPluginFramework
 
         case 0xC1:
         case 0xC2:
-        case 0xD3: ///< Set offset
         case 0xDC: ///< Add to offset
         case 0xD4: ///< Add to register
         case 0xD6: ///< Set data
@@ -174,6 +173,7 @@ namespace CTRPluginFramework
             ret.insert(6 /* 2 + Color */, ColorToString(UNUSED_COLOR));
             break;
 
+        case 0xD3: ///< Set offset
         case 0xD5: ///< Set data register
             ret.insert(0, ColorToString(TYPE_COLOR));
             ret.insert(6 /* 2 + Color */, ColorToString(UNUSED_COLOR));
@@ -218,7 +218,17 @@ namespace CTRPluginFramework
             ret.insert(17 /* 9 + Color * 2 */, ColorToString(MASK_COLOR));
             ret.insert(25 /* 13 + Color * 3 */, ColorToString(IMMEDIATE_COLOR));
             break;
-
+        case 0xF0:
+            if (code.Left == 1)
+            {
+                ret.insert(0, ColorToString(TYPE_COLOR));
+                ret.insert(6 /* 2 + Color */, ColorToString(MASK_COLOR));
+                ret.insert(17 /* 9 + Color * 2 */, ColorToString(UNUSED_COLOR));
+                ret.insert(28 /* 16 + Color * 3 */, ColorToString(IMMEDIATE_COLOR));
+            }
+            else
+                ret.insert(0, ColorToString(Color::Red));
+            break;
         case 0xF1: ///< Custom Codes
         case 0xF2:
         case 0xF3:
@@ -325,7 +335,8 @@ namespace CTRPluginFramework
             ret = Utils::Format("offset = [%08X + offset]", code.Left);
             break;
         case 0xD3: ///< Set offset to immediate
-            ret = Utils::Format("offset = %08X", code.Right);
+            reg = code.Left & 1 ? "Offset#2" : "Offset#1";
+            ret = Utils::Format("%s = %08X", reg, code.Right);
             break;
         case 0xDC: ///< Add to offset
             ret = Utils::Format("offset += %08X", code.Right);
@@ -506,10 +517,15 @@ namespace CTRPluginFramework
             }
             if (to && from)
                 ret = Utils::Format("%s = %s", to, from);
-            else
-                ret = "!! error !!";
             break;
         }
+        case 0xF0:
+            if (code.Left == 1)
+            {
+                ret = (code.Right & 1) > 0 ? "Enable " : "Disable ";
+                ret += "vfp mode for F1,F2,F3";
+            }
+            break;
 
         case 0xF1: ///< Add to addr
             ret = Utils::Format("[%08X+offs] += %08X", code.Left, code.Right);
@@ -563,6 +579,8 @@ namespace CTRPluginFramework
 
         if (ret.size() > 29)
             ret.erase(30);
+        if (ret.empty())
+            ret = "!! error !!";
         return (ret);
     }
 
