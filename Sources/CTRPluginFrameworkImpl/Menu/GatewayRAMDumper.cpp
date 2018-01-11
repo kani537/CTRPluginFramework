@@ -165,6 +165,7 @@ namespace CTRPluginFramework
         }
 
         bool exit = false;
+        bool select = false;
         again:
         do
         {
@@ -176,7 +177,6 @@ namespace CTRPluginFramework
                         exit = true;
                     else if (event.key.code == Key::Select)
                     {
-                        static bool select = false;
                         MenuFolderImpl &folder = *menu.GetFolder();
 
                         if (!select)
