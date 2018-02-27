@@ -8,11 +8,44 @@ namespace CTRPluginFramework
     #define endl LineWriter::endl()
     class MenuEntryActionReplay;
 
+    static std::string     RemoveFormat(const std::string &in)
+    {
+        std::string out;
+
+        for (auto it = in.begin(); it != in.end(); ++it)
+        {
+            char c = *it;
+
+            // If c is a newline symbol
+            if (c == '\n')
+            {
+                // Change the character to  \\n (2 chars)
+                out += "\\n";
+            }
+            // If we found a color pattern
+            else if (c == 0x1B)
+            {
+                u32 r = *(++it);
+                u32 g = *(++it);
+                u32 b = *(++it);
+
+                std::string color = Utils::Format("~#%02X%02X%02X~", r, g, b);
+
+                // Add the formatted color to the output
+                out += color;
+            }
+            else
+                out += *it;
+        }
+
+        return out;
+    }
+
     static bool     ActionReplay_WriteName(LineWriter &writer, const MenuItem *item)
     {
         if (!item || item->name.empty())
             return false;
-        writer << "[" << item->name << "]" << endl;
+        writer << "[" << RemoveFormat(item->name) << "]" << endl;
         return true;
     }
 
@@ -20,7 +53,7 @@ namespace CTRPluginFramework
     {
         if (!item || item->note.empty())
             return false;
-        writer << "{" << item->note << "}" << endl;
+        writer << "{" << RemoveFormat(item->note) << "}" << endl;
         return true;
     }
 
@@ -46,7 +79,7 @@ namespace CTRPluginFramework
 
     static bool     ActionReplay_WriteFolderToFile(LineWriter &writer, MenuFolderImpl &folder)
     {
-        writer << "[++" << folder.name << "++]" << endl << endl;
+        writer << "[++" << RemoveFormat(folder.name) << "++]" << endl << endl;
 
         for (u32 i = 0; i < folder.ItemsCount(); ++i)
             ActionReplay_WriteToFile(writer, folder[i]);

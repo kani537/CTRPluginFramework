@@ -216,7 +216,7 @@ bool AlmostEqualRelative(float A, float B, float maxRelDiff = FLT_EPSILON);
     else if ((code.Right & 0xFFFF) operator value16) \
         continue;
 
-    void    ARHandler::_Execute(const ARCodeVector &codes)
+    bool    ARHandler::_Execute(const ARCodeVector &codes)
     {
         enum CondMode
         {
@@ -246,7 +246,7 @@ bool AlmostEqualRelative(float A, float B, float maxRelDiff = FLT_EPSILON);
 
             // If we must exit
             if (ExitCodeImmediately)
-                return;
+                return true; ///< Consider as error
 
             // If we have a full terminator
             if (code.Type == 0xD2)
@@ -257,6 +257,7 @@ bool AlmostEqualRelative(float A, float B, float maxRelDiff = FLT_EPSILON);
                     conditionCount = 0;
                     waitForExitCode = false;
                 }
+
                 // If we have loops waiting to be launched
                 if (waitForEndLoop)
                 {
@@ -264,9 +265,12 @@ bool AlmostEqualRelative(float A, float B, float maxRelDiff = FLT_EPSILON);
                     waitForEndLoop = false;
 
                     // Execute loops
-                    while (loopIteration--)
-                        _Execute(loopCodes);
+                    while (loopIteration-- && !_Execute(loopCodes));
+
+                    // Clear codes
+                    loopCodes.clear();
                 }
+
                 // Clear registers and continue
                 Offset[ActiveOffset] = 0;
                 currentData.Clear();
@@ -295,8 +299,10 @@ bool AlmostEqualRelative(float A, float B, float maxRelDiff = FLT_EPSILON);
                     {
                         waitForEndLoop = false;
                         // Execute loop
-                        while (loopIteration--)
-                            _Execute(loopCodes);
+                        while (loopIteration-- && !_Execute(loopCodes));
+
+                        // Clear codes
+                        loopCodes.clear();
                         continue;
                     }
                 }
@@ -509,6 +515,8 @@ bool AlmostEqualRelative(float A, float B, float maxRelDiff = FLT_EPSILON);
             }
             case 0xD0: ///< Terminator
             {
+                if (code.Right == 1) ///< Exit loop
+                    return true;
                 break;
             }
             case 0xD2: ///< Full Terminator
@@ -516,12 +524,13 @@ bool AlmostEqualRelative(float A, float B, float maxRelDiff = FLT_EPSILON);
                 if (code.Right)
                 {
                     ExitCodeImmediately = true;
-                    return;
+                    return true;
                 }
 
                 conditionCount = 0;
                 Offset[ActiveOffset] = 0;
                 currentData.Clear();
+                loopCodes.clear();
                 break;
             }
             case 0xD4: ///< Add to Data[ActiveData]
@@ -736,7 +745,8 @@ bool AlmostEqualRelative(float A, float B, float maxRelDiff = FLT_EPSILON);
                         vfpval *= val;
                         ExitCodeImmediately = !Write32(code.Left + Offset[ActiveOffset], value);
                     }
-                }                break;
+                }
+                break;
             }
             case 0xF3: ///< DIV code
             {
@@ -860,6 +870,6 @@ bool AlmostEqualRelative(float A, float B, float maxRelDiff = FLT_EPSILON);
             }
         }
     error:
-        return;
+        return false;
     }
 }

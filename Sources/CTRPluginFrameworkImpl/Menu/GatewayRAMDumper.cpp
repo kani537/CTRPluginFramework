@@ -155,17 +155,18 @@ namespace CTRPluginFramework
                                                     "    Start: Start the dump");
         Event           event;
         EventManager    manager;
+        bool            exit = false;
+        bool            select = false;
 
         menu.drawFooter = true;
+
         // Construct our menu with the regions list
         for (Region &region : _regions)
         {
-            std::string name = Utils::Format("%08X - %08X", region.startAddress, region.endAddress);
+            std::string &&name = Utils::Format("%08X - %08X", region.startAddress, region.endAddress);
             menu.Append(new MenuEntryImpl(name));
         }
 
-        bool exit = false;
-        bool select = false;
         again:
         do
         {
@@ -195,6 +196,7 @@ namespace CTRPluginFramework
 
                 exit |= menu.ProcessEvent(event, nullptr) == MenuEvent::MenuClose;
             }
+
             menu.Draw();
             Renderer::EndFrame();
         } while (!exit);
@@ -206,6 +208,7 @@ namespace CTRPluginFramework
                 goto again;
             return (true);
         }
+
         // Remove every entry not checked from the regions list
         MenuFolderImpl &folder = *menu.GetFolder();
 
@@ -216,6 +219,7 @@ namespace CTRPluginFramework
                 _regions.erase(_regions.begin() + i);
             }
         }
+        
         return (false);
     }
 

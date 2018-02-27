@@ -267,10 +267,10 @@ namespace CTRPluginFramework
         if (!__pmARinstance)
             return;
 
-        File        file;
-        LineWriter  writer(file);
+        // Open a temporary file
 
-        ActionReplay_OpenCheatsFile(file, true);
+        File        file("AR.temp", File::RWC);
+        LineWriter  writer(file);
 
         if (!file.IsOpen())
             return;
@@ -284,6 +284,15 @@ namespace CTRPluginFramework
             ActionReplay_WriteToFile(writer, f[i]);
 
         writer.Close();
+
+        // If we're here, it means that everything went fine, so delete old file and rename the temporary file
+        ActionReplay_OpenCheatsFile(file, true);
+
+        std::string path = file.GetFullName();
+        file.Close();
+
+        File::Remove(path);
+        File::Rename("AR.temp", path);
     }
 
     void    PluginMenuActionReplay::NewARCode(u8 type, u32 address, u32 value)

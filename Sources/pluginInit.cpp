@@ -157,6 +157,7 @@ namespace CTRPluginFramework
 
         // Copy FwkSettings to the globals (solve initialization issues)
         Preferences::Settings = settings;
+        
         void *tst;
         // If heap error, exit
         if (g_heapError)

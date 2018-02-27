@@ -249,9 +249,9 @@ namespace CTRPluginFramework
     static std::string      GetCond32Str(u32 left, u32 right, const char *ope)
     {
         if (g_condAgainstData == CondMode::ImmAgainstVal)
-            return Utils::Format("if %08X %s [%08X+off]:", right, ope, left);
+            return Utils::Format("if %08X %s [%07X+off]:", right, ope, left);
         else if (g_condAgainstData == CondMode::DataAgainstVal)
-            return Utils::Format("if data %s [%08X+offs]:", ope, left);
+            return Utils::Format("if data %s [%07X+offs]:", ope, left);
         else
             return Utils::Format("if %08X %s data:", right, ope);
     }
@@ -261,21 +261,21 @@ namespace CTRPluginFramework
         u32 mask = right >> 16;
         u32 value = right & 0xFFFF;
 
-        if (mask) mask = ~mask;
+        if (mask) mask = (~mask) & 0xFFFF;
 
         if (g_condAgainstData == CondMode::ImmAgainstVal)
         {
             if (mask)
-                return Utils::Format("if %04X%s[%08X+off] & %04X:", value, ope, left, mask);
+                return Utils::Format("if %04X%s[%07X+off] & %04X:", value, ope, left, mask);
             else
-                return Utils::Format("if %04X %s [%08X+offs]:", value, ope, left);
+                return Utils::Format("if %04X %s [%07X+offs]:", value, ope, left);
         }
         else if (g_condAgainstData == CondMode::DataAgainstVal)
         {
             if (mask)
-                return Utils::Format("if %04X%s[%08X+of] & %04X:", value, ope, left, mask);
+                return Utils::Format("if data%s[%07X+of] & %04X:", value, ope, left, mask);
             else
-                return Utils::Format("if %04X %s [%08X+offs]:", value, ope, left);
+                return Utils::Format("if data %s [%07X+offs]:", value, ope, left);
         }
         else
         {

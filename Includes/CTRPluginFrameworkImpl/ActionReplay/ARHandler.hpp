@@ -42,7 +42,7 @@ namespace CTRPluginFramework
         static void Execute(const ARCodeVector &arcodes, u32(&storage)[2]);
 
     private:
-        static void _Execute(const ARCodeVector &codes);
+        static bool _Execute(const ARCodeVector &codes);
     };
 }
 

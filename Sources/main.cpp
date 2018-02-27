@@ -124,7 +124,7 @@ namespace CTRPluginFramework
             }
         }
         //Sleep(Seconds(5.f));
-        PluginMenu  *m = new PluginMenu("Action Replay", 1, 0, 0);
+        PluginMenu  *m = new PluginMenu("Action Replay", 1, 0, 5);
         PluginMenu  &menu = *m;
 
       /*  entry = new MenuEntry(Utils::Format("Newlib MemFree: %08X", getMemFree()));
