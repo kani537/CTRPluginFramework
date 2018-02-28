@@ -4,14 +4,12 @@
 
 #include "CTRPluginFrameworkImpl/Graphics.hpp"
 #include "CTRPluginFrameworkImpl/System.hpp"
-//#include "CTRPluginFrameworkImpl/Menu/PluginMenuSearchStructs.hpp"
 #include "CTRPluginFrameworkImpl/Search/Search32.hpp"
 #include "CTRPluginFrameworkImpl/Menu/HexEditor.hpp"
 #include "CTRPluginFramework/System/File.hpp"
 
 #include <string>
 #include <vector>
-#include "PluginMenuFreeCheats.hpp"
 #include "SubMenu.hpp"
 
 namespace CTRPluginFramework
@@ -21,7 +19,7 @@ namespace CTRPluginFramework
         using EventList = std::vector<Event>;
     public:
 
-        SearchMenu(Search* &curSearch, HexEditor &hexEditor, bool &inEditor, bool &useHexInput, FreeCheats &freeCheats, bool &inFreecheat);
+        SearchMenu(Search* &curSearch, HexEditor &hexEditor, bool &inEditor, bool &useHexInput);
         ~SearchMenu(){};
 
         bool    ProcessEvent(EventList &eventList, Time &delta);
@@ -30,7 +28,6 @@ namespace CTRPluginFramework
 
     private:
         HexEditor                   &_hexEditor;
-        FreeCheats                  &_freeCheats;
         Search*                     &_currentSearch;
         SubMenu                     _submenu;
         std::vector<std::string>    _resultsAddress;
@@ -41,7 +38,6 @@ namespace CTRPluginFramework
         u32                         _index;
         bool                        _alreadyExported;
         bool                        &_inEditor;
-        bool                        &_inFreecheats;
 		bool						&_useHexInput;
         File                        _export;
 

@@ -18,11 +18,10 @@ namespace CTRPluginFramework
 
     PluginMenuImpl::PluginMenuImpl(std::string &name, std::string &about) :
         _hexEditor(0x00100000),
-        _freeCheats(_hexEditor),
         _actionReplay{ new PluginMenuActionReplay() },
         _home(new PluginMenuHome(name)),
-        _search(new PluginMenuSearch(_hexEditor, _freeCheats)),
-        _tools(new PluginMenuTools(about, _hexEditor, _freeCheats)),
+        _search(new PluginMenuSearch(_hexEditor)),
+        _tools(new PluginMenuTools(about, _hexEditor)),
         _executeLoop(new PluginMenuExecuteLoop()),
         _guide(new GuideReader()),
         _forceOpen(false),
@@ -162,9 +161,6 @@ namespace CTRPluginFramework
          // Enable cheats
         if (Preferences::AutoLoadCheats)
             Preferences::LoadSavedEnabledCheats();
-
-        // Load FreeCheats
-        Preferences::LoadFreeCheats();
 
         // Load custom hotkeys
         Preferences::LoadHotkeysFromFile();
@@ -643,11 +639,6 @@ namespace CTRPluginFramework
     void    PluginMenuImpl::TriggerActionReplay(bool state) const
     {
         _home->TriggerActionReplay(state);
-    }
-
-    void    PluginMenuImpl::TriggerFreeCheats(bool isEnabled) const
-    {
-        _tools->TriggerFreeCheatsEntry(isEnabled);
     }
 
     void    PluginMenuImpl::SetHexEditorState(bool isEnabled) const

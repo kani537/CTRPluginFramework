@@ -9,10 +9,9 @@
 
 namespace CTRPluginFramework
 {
-    PluginMenuSearch::PluginMenuSearch(HexEditor &hexEditor, FreeCheats &freeCheats) :
+    PluginMenuSearch::PluginMenuSearch(HexEditor &hexEditor) :
         _hexEditor(hexEditor),
-        _freeCheats(freeCheats),
-        _searchMenu(_currentSearch, hexEditor, _inEditor, _hexInput, freeCheats, _inFreecheats),
+        _searchMenu(_currentSearch, hexEditor, _inEditor, _hexInput),
         // _closeBtn(*this, nullptr, IntRect(275, 24, 20, 20), Icon::DrawClose),
         _memoryRegions(150, 45, 130, 15),
         _startRangeTextBox(85, 65, 66, 15),
@@ -31,7 +30,6 @@ namespace CTRPluginFramework
         _waitForUser(false),
         _hexInput(false),
         _inEditor(false),
-        _inFreecheats(false),
         _hexBtn("Hex", *this, nullptr, IntRect(110, 145, 38, 15), nullptr)
     {
         _currentSearch = nullptr;
@@ -89,13 +87,6 @@ namespace CTRPluginFramework
         {
             if (_hexEditor(eventList))
                 _inEditor = false;
-            return (false);
-        }
-
-        if (_inFreecheats)
-        {
-            if (_freeCheats(eventList))
-                _inFreecheats = false;
             return (false);
         }
 

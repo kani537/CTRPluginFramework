@@ -10,16 +10,15 @@
 #include "Unicode.h"
 #include "CTRPluginFramework/System/System.hpp"
 #include "CTRPluginFrameworkImpl/Menu/PluginMenuActionReplay.hpp"
+#include "CTRPluginFrameworkImpl/Preferences.hpp"
 
 namespace CTRPluginFramework
 {
-    SearchMenu::SearchMenu(Search* &curSearch, HexEditor &hexEditor, bool &inEditor, bool &useHexInput, FreeCheats &freeCheats, bool &inFreecheats) :
+    SearchMenu::SearchMenu(Search* &curSearch, HexEditor &hexEditor, bool &inEditor, bool &useHexInput) :
         _currentSearch(curSearch),
         _submenu{ { "Show game" }},
         _hexEditor(hexEditor),
-        _freeCheats(freeCheats),
         _inEditor(inEditor),
-        _inFreecheats(inFreecheats),
 	    _useHexInput(useHexInput)
     {
         _index = 0;

@@ -1,4 +1,7 @@
 #include "CTRPluginFrameworkImpl/Menu/PluginMenuFreeCheats.hpp"
+
+#if FREECHEATS
+
 #include "CTRPluginFramework/Menu/Keyboard.hpp"
 #include <string>
 #include "CTRPluginFramework/Menu/MessageBox.hpp"
@@ -497,3 +500,5 @@ namespace CTRPluginFramework
         _menu.Append(new MenuEntryFreeCheat(*_selectedFC));
     }
 }
+
+#endif

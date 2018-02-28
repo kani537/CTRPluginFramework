@@ -4,7 +4,6 @@
 #include "ctrulib/result.h"
 #include <cstring>
 #include "CTRPluginFrameworkImpl/Menu/PluginMenuImpl.hpp"
-#include "CTRPluginFrameworkImpl/Menu/PluginMenuFreeCheats.hpp"
 
 namespace CTRPluginFramework
 {
@@ -177,18 +176,6 @@ namespace CTRPluginFramework
             MenuHotkeys = Key::Select;
     }
 
-    void    Preferences::LoadFreeCheats(void)
-    {
-        File    settings;
-        Header  header = { 0 };
-
-        if (OpenConfigFile(settings, header) == 0)
-        {
-            if (header.freeCheatsCount)
-                FreeCheats::LoadFromFile(header, settings);
-        }
-    }
-
     void    Preferences::LoadSavedEnabledCheats(void)
     {
         File    settings;
@@ -327,7 +314,6 @@ namespace CTRPluginFramework
         {
             if (settings.Write(&header, sizeof(Header)) != 0) goto error;
 
-            FreeCheats::WriteToFile(header, settings);
             if (AutoSaveCheats) PluginMenuExecuteLoop::WriteEnabledCheatsToFile(header, settings);///PluginMenuImpl::WriteEnabledCheatsToFile(header, settings);
             if (AutoSaveFavorites) PluginMenuImpl::WriteFavoritesToFile(header, settings);
             PluginMenuImpl::WriteHotkeysToFile(header, settings);

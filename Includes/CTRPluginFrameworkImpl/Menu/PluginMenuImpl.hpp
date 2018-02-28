@@ -4,7 +4,6 @@
 #include "CTRPluginFramework.hpp"
 #include "CTRPluginFrameworkImpl.hpp"
 #include "CTRPluginFrameworkImpl/Menu/GuideReader.hpp"
-#include "CTRPluginFrameworkImpl/Menu/PluginMenuFreeCheats.hpp"
 
 #include "CTRPluginFrameworkImpl/Menu/PluginMenuHome.hpp"
 #include "CTRPluginFrameworkImpl/Menu/PluginMenuSearch.hpp"
@@ -51,7 +50,6 @@ namespace CTRPluginFramework
 
         void    TriggerSearch(bool state) const;
         void    TriggerActionReplay(bool state) const;
-        void    TriggerFreeCheats(bool isEnabled) const;
 
         void    SetHexEditorState(bool isEnabled) const;
         void    ShowWelcomeMessage(bool showMsg);
@@ -80,7 +78,6 @@ namespace CTRPluginFramework
         PluginMenuExecuteLoop       *_executeLoop;
         GuideReader                 *_guide;
         HexEditor                   _hexEditor;
-        FreeCheats                  _freeCheats;
         std::vector<CallbackPointer>     _callbacks;
         bool                        _forceOpen;
     };

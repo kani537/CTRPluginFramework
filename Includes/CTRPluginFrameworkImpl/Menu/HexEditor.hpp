@@ -29,9 +29,9 @@ namespace CTRPluginFramework
         void    _RenderBottom(void);
         void    _Update(void);
 
+        void    _CreateCheat(void);
         u32     _GetCursorAddress(void) const;
 
-        void    _CreateFreeCheat(void);
         void    _MoveBackward(void);
         void    _MoveForward(void);
         void    _SaveThisAddress(void);

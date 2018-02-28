@@ -9,7 +9,6 @@
 #include "CTRPluginFrameworkImpl/Menu/MenuItem.hpp"
 
 #include "CTRPluginFrameworkImpl/Menu/HexEditor.hpp"
-#include "CTRPluginFrameworkImpl/Menu/PluginMenuFreeCheats.hpp"
 #include "CTRPluginFrameworkImpl/Menu/GatewayRAMDumper.hpp"
 
 #include <vector>
@@ -22,14 +21,13 @@ namespace CTRPluginFramework
     {
         using EventList = std::vector<Event>;
     public:
-        PluginMenuTools(std::string &about, HexEditor &hexEditor, FreeCheats &freeCheats);
+        PluginMenuTools(std::string &about, HexEditor &hexEditor);
         void UpdateSettings();
         void InitMenu();
         ~PluginMenuTools(){}
 
         // Return true if the Close Button is pressed, else false
         bool    operator()(EventList &eventList, Time &delta);
-        void    TriggerFreeCheatsEntry(bool isEnabled) const;
         void    TriggerHexEditor(bool isEnabled) const;
     private:
 
@@ -43,10 +41,8 @@ namespace CTRPluginFramework
         MenuFolderImpl  _mainMenu;
         MenuFolderImpl  _miscellaneousMenu;
         MenuFolderImpl  _settingsMenu;
-        MenuEntryTools  *_freecheatsEntry;
         MenuEntryTools  *_hexEditorEntry;
         HexEditor       &_hexEditor;
-        FreeCheats      &_freeCheats;
         GatewayRAMDumper    _gatewayRamDumper;
         Menu            _menu;
         TextBox         _abouttb;

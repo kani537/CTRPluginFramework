@@ -1,4 +1,8 @@
+
 #include "CTRPluginFrameworkImpl/Menu/MenuEntryFreeCheat.hpp"
+
+#if FREECHEATS
+
 #include "CTRPluginFramework/System/Process.hpp"
 #include "CTRPluginFrameworkImpl/Menu/PluginMenuFreeCheats.hpp"
 #include "CTRPluginFrameworkImpl/Menu/PluginMenuExecuteLoop.hpp"
@@ -172,3 +176,5 @@ namespace CTRPluginFramework
         std::strncpy(savedCheats.name, name.c_str(), 49);
     }
 }
+
+#endif

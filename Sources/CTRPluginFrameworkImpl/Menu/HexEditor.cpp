@@ -4,10 +4,10 @@
 #include "CTRPluginFramework/Menu/Keyboard.hpp"
 
 #include "3DS.h"
-#include "CTRPluginFrameworkImpl/Menu/PluginMenuFreeCheats.hpp"
 #include "CTRPluginFramework/Menu/MessageBox.hpp"
 #include "CTRPluginFramework/Utils/Utils.hpp"
 #include "CTRPluginFrameworkImpl/Menu/Converter.hpp"
+#include "CTRPluginFrameworkImpl/Menu/PluginMenuActionReplay.hpp"
 
 namespace CTRPluginFramework
 {
@@ -51,7 +51,7 @@ namespace CTRPluginFramework
 
     HexEditor::HexEditor(u32 target) :
         _closeBtn(*this, nullptr, IntRect(275, 24, 20, 20), Icon::DrawClose),
-        _submenu{ { "New FreeCheat", "Jump to", "Converter", "Move backward", "Move forward", "Save this address", "Browse history", "Clear history" }}
+        _submenu{ { "New cheat", "Jump to", "Converter", "Move backward", "Move forward", "Save this address", "Browse history", "Clear history" }}
     {
         // Init variables
         _invalid = true;
@@ -126,7 +126,7 @@ namespace CTRPluginFramework
         else
         {
             int subchoice = _submenu();
-            if (subchoice == 0) _CreateFreeCheat();
+            if (subchoice == 0) _CreateCheat();
             else if (subchoice == 1) _JumpTo();
             else if (subchoice == 2)
             {
@@ -474,7 +474,7 @@ namespace CTRPluginFramework
         return (cursorAddress);
     }
 
-    void    HexEditor::_CreateFreeCheat(void)
+    void    HexEditor::_CreateCheat(void)
     {
         if (_invalid)
         {
@@ -483,7 +483,7 @@ namespace CTRPluginFramework
         }
 
         u32 address = _GetCursorAddress() & ~3;
-        FreeCheats::GetInstance()->Create(address, *(u32 *)address);
+        PluginMenuActionReplay::NewARCode(0, address, *(u32 *)address);
     }
 
     void    HexEditor::_MoveBackward(void)

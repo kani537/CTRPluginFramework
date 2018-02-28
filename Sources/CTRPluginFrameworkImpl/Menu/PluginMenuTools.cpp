@@ -20,7 +20,6 @@ namespace CTRPluginFramework
         NORMAL = 0,
         ABOUT,
         HEXEDITOR,
-        FREECHEATS,
         GWRAMDUMP,
         MISCELLANEOUS,
         SETTINGS
@@ -28,15 +27,13 @@ namespace CTRPluginFramework
 
     static int  g_mode = NORMAL;
 
-    PluginMenuTools::PluginMenuTools(std::string &about, HexEditor &hexEditor, FreeCheats &freeCheats) :
+    PluginMenuTools::PluginMenuTools(std::string &about, HexEditor &hexEditor) :
         _about(about),
         _mainMenu("Tools"),
         _miscellaneousMenu("Miscellaneous"),
         _settingsMenu("Settings"),
-        _freecheatsEntry(nullptr),
         _hexEditorEntry(nullptr),
         _hexEditor(hexEditor),
-        _freeCheats(freeCheats),
         _menu(&_mainMenu, nullptr),
         _abouttb("About", _about, IntRect(30, 20, 340, 200)),
         _exit(false)
@@ -309,8 +306,6 @@ namespace CTRPluginFramework
         _mainMenu.Append(new MenuEntryTools("About", [] { g_mode = ABOUT; }, Icon::DrawAbout));
         _hexEditorEntry = new MenuEntryTools("Hex Editor", [] { g_mode = HEXEDITOR; }, Icon::DrawGrid);
         _mainMenu.Append(_hexEditorEntry);
-        _freecheatsEntry = new MenuEntryTools("Free Cheats", [] { g_mode = FREECHEATS; }, Icon::DrawCentreOfGravity);
-        _mainMenu.Append(_freecheatsEntry);
 
         _mainMenu.Append(new MenuEntryTools("Gateway RAM Dumper", [] { g_mode = GWRAMDUMP; }, Icon::DrawRAM));
         _mainMenu.Append(new MenuEntryTools("Miscellaneous", nullptr, Icon::DrawMore, new u32(MISCELLANEOUS)));
@@ -348,13 +343,6 @@ namespace CTRPluginFramework
             return (false);
         }
 
-        if (g_mode == FREECHEATS)
-        {
-            if (_freeCheats(eventList))
-                g_mode = NORMAL;
-            return (false);
-        }
-
         if (g_mode == ABOUT)
         {
             if (!_abouttb.IsOpen())
@@ -388,17 +376,6 @@ namespace CTRPluginFramework
         bool exit = _exit || Window::BottomWindow.MustClose();
         _exit = false;
         return (exit);
-    }
-
-    void    PluginMenuTools::TriggerFreeCheatsEntry(bool isEnabled) const
-    {
-        if (!isEnabled)
-        {
-            _freecheatsEntry->Hide();
-            FreeCheats::DisableAll();
-        }
-        else
-            _freecheatsEntry->Show();
     }
 
     void PluginMenuTools::TriggerHexEditor(bool isEnabled) const
@@ -449,16 +426,15 @@ namespace CTRPluginFramework
             {
                 mode = 0;
 
-                int selector = 5;
+                int selector = 4;
 
-                if (!_freecheatsEntry->IsVisible()) selector--;
                 if (!_hexEditorEntry->IsVisible()) selector--;
                 _menu.Open(&_mainMenu, selector);
             }
             else if (mode == MISCELLANEOUS)
             {
                 mode = 0;
-                _menu.Open(&_mainMenu, 4);
+                _menu.Open(&_mainMenu, 3);
             }
             else
             {

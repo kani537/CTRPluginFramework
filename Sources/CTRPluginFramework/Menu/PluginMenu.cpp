@@ -119,11 +119,6 @@ namespace CTRPluginFramework
         _menu->TriggerActionReplay(isEnabled);
     }
 
-    void    PluginMenu::SetFreeCheatsState(bool isEnabled) const
-    {
-        _menu->TriggerFreeCheats(isEnabled);
-    }
-
     void    PluginMenu::SetHexEditorState(bool isEnabled) const
     {
         _menu->SetHexEditorState(isEnabled);

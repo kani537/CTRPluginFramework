@@ -1,6 +1,10 @@
 #ifndef CTRPLUGINFRAMEWORKIMPL_PLUGINMENUFREECHEATS_HPP
 #define CTRPLUGINFRAMEWORKIMPL_PLUGINMENUFREECHEATS_HPP
 
+#define FREECHEATS 0
+
+#if FREECHEATS
+
 #include "types.h"
 #include "CTRPluginFrameworkImpl/Preferences.hpp"
 #include "CTRPluginFrameworkImpl/Menu/Menu.hpp"
@@ -75,4 +79,5 @@ namespace CTRPluginFramework
     };
 }
 
+#endif
 #endif

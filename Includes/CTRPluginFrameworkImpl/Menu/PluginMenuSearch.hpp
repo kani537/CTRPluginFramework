@@ -5,8 +5,6 @@
 #include "CTRPluginFrameworkImpl/Menu/Menu.hpp"
 #include "CTRPluginFrameworkImpl/Search/Search32.hpp"
 #include "CTRPluginFrameworkImpl/Menu/PluginMenu_SearchMenu.hpp"
-#include "CTRPluginFrameworkImpl/Menu/PluginMenuFreeCheats.hpp"
-
 
 #include <vector>
 #include <list>
@@ -18,7 +16,7 @@ namespace CTRPluginFramework
     {
         using EventList = std::vector<Event>;
     public:
-        PluginMenuSearch(HexEditor &hexEditor, FreeCheats &freeCheats);
+        PluginMenuSearch(HexEditor &hexEditor);
         ~PluginMenuSearch(){}
 
         // Return true if the Close Button is pressed, else false
@@ -47,11 +45,9 @@ namespace CTRPluginFramework
         std::list<Search *>                 _searchHistory;
         Search                              *_currentSearch;
         HexEditor                           &_hexEditor;
-        FreeCheats                          &_freeCheats;
 
         bool                                _inSearch;
         bool                                _inEditor;
-        bool                                _inFreecheats;
         bool                                _firstRegionInit;
         bool                                _waitForUser;
 		bool								_hexInput;

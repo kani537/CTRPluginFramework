@@ -102,12 +102,6 @@ namespace CTRPluginFramework
         void    SetActionReplayButtonState(bool isEnabled) const;
 
         /**
-         * \brief Enable / Disable the FreeCheats in Tools
-         * \param isEnabled If FreeCheats must be enabled or not
-         */
-        void    SetFreeCheatsState(bool isEnabled) const;
-
-        /**
         * \brief Enable / Disable the HexEditor in Tools
         * \param isEnabled If HexEditor must be enabled or not
         */

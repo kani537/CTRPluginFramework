@@ -123,7 +123,6 @@ namespace CTRPluginFramework
 
         static int          OpenConfigFile(File &file, Header &header);
         static void         LoadSettings(void);
-        static void         LoadFreeCheats(void);
         static void         LoadSavedEnabledCheats(void);
         static void         LoadSavedFavorites(void);
         static void         LoadHotkeysFromFile(void);
