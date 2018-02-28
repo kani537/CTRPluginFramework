@@ -15,8 +15,6 @@ namespace CTRPluginFramework
     PluginMenuExecuteLoop::PluginMenuExecuteLoop(void)
     {
         _firstInstance = this;
-        LightLock_Init(&_arLock);
-        LightLock_Init(&_builtinLock);
     }
 
     void PluginMenuExecuteLoop::WriteEnabledCheatsToFile(Preferences::Header& header, File& file)
@@ -231,5 +229,11 @@ namespace CTRPluginFramework
         }
 
         return (false);
+    }
+
+    void    PluginMenuExecuteLoop::InitLocks(void)
+    {
+        LightLock_Init(&_arLock);
+        LightLock_Init(&_builtinLock);
     }
 }

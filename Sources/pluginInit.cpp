@@ -121,6 +121,9 @@ namespace CTRPluginFramework
         // Init Screen
         ScreenImpl::Initialize();
 
+        // Init locks
+        PluginMenuExecuteLoop::InitLocks();
+
         // Init sdmcArchive
         {
             FS_Path sdmcPath = { PATH_EMPTY, 1, (u8*)"" };
@@ -178,7 +181,10 @@ namespace CTRPluginFramework
 
         // Create plugin's main thread
         svcCreateEvent(&g_keepEvent, RESET_ONESHOT);
+
         g_mainThread = threadCreate(ThreadInit, (void *)threadStack, 0x4000, 0x18, -2, false);
+
+        // Install CRO hook
         {
             const std::vector<u32> LoadCroPattern =
             {
@@ -205,7 +211,11 @@ namespace CTRPluginFramework
             }
         }
 
+        // Reduce priority
         while (R_FAILED(svcSetThreadPriority(g_keepThreadHandle, 0x30)));
+
+        svcWaitSynchronization(g_keepEvent, U64_MAX);
+
         if (settings.StartARHandler)
         {
             while (g_keepRunning)
@@ -268,6 +278,9 @@ namespace CTRPluginFramework
 
         // Initialize Globals settings
         InitializeRandomEngine();
+
+        // Wake up init thread
+        svcSignalEvent(g_keepEvent);
 
         // Start plugin
         int ret = main();

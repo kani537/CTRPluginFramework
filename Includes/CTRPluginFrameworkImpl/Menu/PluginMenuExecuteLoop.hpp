@@ -33,6 +33,8 @@ namespace CTRPluginFramework
 
         bool    operator()(void);
 
+        static void InitLocks(void);
+
     private:
         static PluginMenuExecuteLoop          * _firstInstance;
         static LightLock                        _arLock;
