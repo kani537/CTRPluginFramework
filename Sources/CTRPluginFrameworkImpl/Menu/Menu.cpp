@@ -7,7 +7,6 @@
 
 #include <algorithm>
 #include "CTRPluginFrameworkImpl/Menu/MenuEntryTools.hpp"
-#include "CTRPluginFrameworkImpl/Menu/MenuEntryFreeCheat.hpp"
 #include "CTRPluginFrameworkImpl/ActionReplay/MenuEntryActionReplay.hpp"
 
 namespace CTRPluginFramework
@@ -178,12 +177,12 @@ namespace CTRPluginFramework
                     }
                 }
                 // MenuEntryFreeCheat
-                else if (item->_type == MenuType::FreeCheat)
+               /* else if (item->_type == MenuType::FreeCheat)
                 {
                     MenuEntryImpl *e = reinterpret_cast<MenuEntryImpl *>(item);
 
                     Renderer::DrawSysCheckBox(item->name.c_str(), posX, posY, XMAX, c, e->IsActivated());
-                }
+                } */
                 // MenuEntryActionReplay
                 else if (item->_type == MenuType::ActionReplay)
                 {
@@ -317,7 +316,7 @@ namespace CTRPluginFramework
                         return (MenuEvent::EntrySelected);
                     }
                     // MenuEntryFreeCheat
-                    else if (item->_type == MenuType::FreeCheat)
+                    /*else if (item->_type == MenuType::FreeCheat)
                     {
                         MenuEntryFreeCheat *e = reinterpret_cast<MenuEntryFreeCheat *>(item);
 
@@ -329,7 +328,7 @@ namespace CTRPluginFramework
                             PluginMenuExecuteLoop::Remove(e);
 
                         return (MenuEvent::EntrySelected);
-                    }
+                    } */
                     // MenuEntryActionReplay
                     else if (item->_type == MenuType::ActionReplay)
                     {
@@ -338,9 +337,9 @@ namespace CTRPluginFramework
                         bool state = e->_TriggerState();
 
                         if (state)
-                            PluginMenuExecuteLoop::Add(e);
+                            PluginMenuExecuteLoop::AddAR(e);
                         else
-                            PluginMenuExecuteLoop::Remove(e);
+                            PluginMenuExecuteLoop::RemoveAR(e);
 
                         return (MenuEvent::EntrySelected);
                     }
