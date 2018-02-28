@@ -38,8 +38,8 @@ namespace CTRPluginFramework
         static LightLock                        _arLock;
         static LightLock                        _builtinLock;
 
-        std::vector<MenuEntryImpl *>            _builtinEnabledList;
-        std::vector<MenuEntryActionReplay *>    _arEnabledList;
+        std::vector<MenuEntryImpl *>            _builtinEnabledList{};
+        std::vector<MenuEntryActionReplay *>    _arEnabledList{};
     };
 }
 

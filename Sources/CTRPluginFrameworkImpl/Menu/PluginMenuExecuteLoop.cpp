@@ -9,12 +9,14 @@ namespace CTRPluginFramework
     using ExecuteIterator = std::vector<MenuEntryImpl *>::iterator;
 
     PluginMenuExecuteLoop *PluginMenuExecuteLoop::_firstInstance = nullptr;
+    LightLock PluginMenuExecuteLoop::_arLock;
+    LightLock PluginMenuExecuteLoop::_builtinLock;
 
     PluginMenuExecuteLoop::PluginMenuExecuteLoop(void)
     {
         _firstInstance = this;
-        LightLock_Init(_arLock);
-        LightLock_Init(_builtinLock);
+        LightLock_Init(&_arLock);
+        LightLock_Init(&_builtinLock);
     }
 
     void PluginMenuExecuteLoop::WriteEnabledCheatsToFile(Preferences::Header& header, File& file)
@@ -192,12 +194,13 @@ namespace CTRPluginFramework
         if (_builtinEnabledList.empty())
             return false;
 
+        bool needToRemove = false;
         for (MenuEntryImpl *entry : _builtinEnabledList)
         {
             // Execute MenuEntryImpl
             if (entry->IsEntry() && entry->_Execute()) ///< _Execute returns true if the entry have to be removed from enabled list
             {
-                Remove(entry);
+                needToRemove = true;
             }
             // Execute FreeCheat
             /*else if (entry->IsFreeCheat())
@@ -214,6 +217,17 @@ namespace CTRPluginFramework
                 if (ar->GameFunc != nullptr)
                     ar->GameFunc((MenuEntry *)ar); ///< cast only to silence a warning
             } */
+        }
+
+        if (needToRemove)
+        {
+            _builtinEnabledList.erase(
+                std::remove_if(_builtinEnabledList.begin(), _builtinEnabledList.end(),
+                    [](MenuEntryImpl *e)
+                    {
+                        return e->_MustBeRemoved();
+                    }),
+                _builtinEnabledList.end());
         }
 
         return (false);
