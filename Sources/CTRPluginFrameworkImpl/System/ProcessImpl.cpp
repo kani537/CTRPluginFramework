@@ -81,7 +81,7 @@ namespace CTRPluginFramework
         _mainThreadHandle = threadGetCurrent()->handle;
         RecursiveLock_Init(&FrameLock);
         svcCreateEvent(&FrameEvent, RESET_ONESHOT);
-        while (R_FAILED(svcSetThreadPriority(_mainThreadHandle, 0x30)));
+        while (R_FAILED(svcSetThreadPriority(_mainThreadHandle, 0x2F)));
     }
 
 	bool 	ProcessImpl::IsPaused(void)
