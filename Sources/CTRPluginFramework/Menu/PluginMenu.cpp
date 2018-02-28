@@ -116,7 +116,6 @@ namespace CTRPluginFramework
 
     void    PluginMenu::SetActionReplayButtonState(bool isEnabled) const
     {
-        return;
         _menu->TriggerActionReplay(isEnabled);
     }
 
@@ -152,6 +151,6 @@ namespace CTRPluginFramework
 
     void    PluginMenu::SyncronizeWithFrame(const bool useSync)
     {
-        OSDImpl::SyncOnFrame = useSync;
+        _menu->SyncOnFrame = useSync;
     }
 }

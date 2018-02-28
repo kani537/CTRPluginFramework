@@ -1,9 +1,4 @@
 #include "types.h"
-#include "ctrulib/services/gspgpu.h"
-
-#include <string>
-#include <vector>
-#include <cstdio>
 
 #include "CTRPluginFrameworkImpl/Graphics.hpp"
 #include "CTRPluginFramework/Graphics.hpp"
@@ -12,6 +7,10 @@
 #include "CTRPluginFrameworkImpl/System.hpp"
 #include "CTRPluginFramework/System.hpp"
 #include "CTRPluginFrameworkImpl/Preferences.hpp"
+
+#include <string>
+#include <vector>
+#include <cstdio>
 
 namespace CTRPluginFramework
 {
@@ -29,6 +28,7 @@ namespace CTRPluginFramework
         _forceOpen(false),
         OnFirstOpening(nullptr), OnOpening{ nullptr }
     {
+        SyncOnFrame = false;
         _isOpen = false;
         _wasOpened = false;
         _pluginRun = true;
@@ -117,7 +117,6 @@ namespace CTRPluginFramework
     /*
     ** Run
     **************/
-
     int    PluginMenuImpl::Run(void)
     {
         Event                   event;
@@ -220,9 +219,13 @@ namespace CTRPluginFramework
 
                         // Save settings
                         Preferences::WriteSettings();
+                        PluginMenuExecuteLoop::Unlock();
+                        PluginMenuExecuteLoop::UnlockAR();
                     }
                     else
                     {
+                        PluginMenuExecuteLoop::Lock();
+                        PluginMenuExecuteLoop::LockAR();
                         ProcessImpl::Pause(true);
                         _isOpen = true;
                         _wasOpened = true;
@@ -308,15 +311,19 @@ namespace CTRPluginFramework
 
                     // Save settings
                     Preferences::WriteSettings();
+                    PluginMenuExecuteLoop::Unlock();
+                    PluginMenuExecuteLoop::UnlockAR();
                 }
             }
             else
             {
-                if (OSDImpl::SyncOnFrame)
-                    svcWaitSynchronization(OSDImpl::OnNewFrameEvent, 1000000000); ///< Wait 1s max
+                if (SyncOnFrame)
+                    LightEvent_Wait(&OSDImpl::OnNewFrameEvent);
 
                 // Execute activated cheats
+                PluginMenuExecuteLoop::Lock();
                 executer();
+                PluginMenuExecuteLoop::Unlock();
 
                 // Execute callbacks
                 for (int i = 0; i < _callbacks.size(); i++)

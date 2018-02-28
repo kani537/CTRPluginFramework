@@ -63,6 +63,7 @@ namespace CTRPluginFramework
 
         FuncPointer     OnFirstOpening;
         FuncPointer     OnOpening;
+        bool            SyncOnFrame;
     private:
 
         static PluginMenuImpl       *_runningInstance;
