@@ -18,13 +18,12 @@
 
 namespace CTRPluginFramework
 {
-    bool    OSDImpl::DrawSaveIcon = false;
-    bool    OSDImpl::MessColors = false;
-    bool    OSDImpl::SyncOnFrame = false;
-    u32     OSDImpl::FramesToPlay = 0;
-    OSDReturn OSDImpl::HookReturn = nullptr;
-    Handle  OSDImpl::OnNewFrameEvent = 0;
-    Hook    OSDImpl::OSDHook;
+    bool        OSDImpl::DrawSaveIcon = false;
+    bool        OSDImpl::MessColors = false;
+    u32         OSDImpl::FramesToPlay = 0;
+    OSDReturn   OSDImpl::HookReturn = nullptr;
+    LightEvent  OSDImpl::OnNewFrameEvent;
+    Hook        OSDImpl::OSDHook;
     RecursiveLock OSDImpl::RecLock;
     FloatingButton OSDImpl::FloatingBtn(IntRect(0, 0, 40, 40), Icon::DrawRocket);
     std::list<OSDImpl::OSDMessage*> OSDImpl::Notifications;
@@ -36,7 +35,7 @@ namespace CTRPluginFramework
     {
         RecursiveLock_Init(&RecLock);
         InstallOSD();
-        svcCreateEvent(&OnNewFrameEvent, RESET_ONESHOT);
+        LightEvent_Init(&OnNewFrameEvent, RESET_STICKY);
     }
 
 #define XEND    390
@@ -174,8 +173,7 @@ namespace CTRPluginFramework
         {
             if (FramesToPlay)
                 FramesToPlay--;
-            if (SyncOnFrame)
-                svcSignalEvent(OnNewFrameEvent);
+            LightEvent_Pulse(&OnNewFrameEvent);
         }
 
         extern u32 __hasAborted;

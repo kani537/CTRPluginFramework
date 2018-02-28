@@ -1,10 +1,8 @@
 #include "CTRPluginFramework/Graphics/OSD.hpp"
 #include "CTRPluginFrameworkImpl/Graphics/OSDImpl.hpp"
 #include "CTRPluginFrameworkImpl/Graphics/PrivColor.hpp"
-#include "CTRPluginFrameworkImpl/System/Screen.hpp"
 #include "CTRPluginFrameworkImpl/Graphics/Renderer.hpp"
-#include "font6x10Linux.h"
-#include "CTRPluginFramework/System/Sleep.hpp"
+
 #include <algorithm>
 
 namespace CTRPluginFramework
@@ -83,17 +81,17 @@ namespace CTRPluginFramework
         OSDImpl::Unlock();
     }
 
-    void    OSD::Lock()
+    void    OSD::Lock(void)
     {
         OSDImpl::Lock();
     }
 
-    bool    OSD::TryLock()
+    bool    OSD::TryLock(void)
     {
-        return (OSDImpl::TryLock());    
+        return (OSDImpl::TryLock());
     }
 
-    void OSD::Unlock()
+    void OSD::Unlock(void)
     {
         OSDImpl::Unlock();
     }
