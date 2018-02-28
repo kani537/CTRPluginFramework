@@ -4,7 +4,6 @@
 
 #include <queue>
 
-extern CTRPluginFramework::PluginMenuExecuteLoop *g_executerInstance;
 namespace CTRPluginFramework
 {
     using ExecuteIterator = std::vector<MenuEntryImpl *>::iterator;
@@ -14,7 +13,8 @@ namespace CTRPluginFramework
     PluginMenuExecuteLoop::PluginMenuExecuteLoop(void)
     {
         _firstInstance = this;
-        g_executerInstance = this;
+        LightLock_Init(_arLock);
+        LightLock_Init(_builtinLock);
     }
 
     void PluginMenuExecuteLoop::WriteEnabledCheatsToFile(Preferences::Header& header, File& file)
@@ -23,7 +23,7 @@ namespace CTRPluginFramework
             return;
 
         std::vector<u32>    uids;
-        std::vector<MenuEntryImpl *>  &items = _firstInstance->_executeLoop;
+        std::vector<MenuEntryImpl *>  &items = _firstInstance->_builtinEnabledList;
         u32     count = items.size();
         u32     index = 0;
         u32     written = 0;
@@ -55,75 +55,46 @@ namespace CTRPluginFramework
             return;
     }
 
+    static int g_radioId; ///< Global for lambda access
     void    PluginMenuExecuteLoop::Add(MenuEntryImpl *entry)
     {
         if (_firstInstance == nullptr || entry == nullptr)
             return;
 
-        std::vector<MenuEntryImpl*> &vector = _firstInstance->_executeLoop;
-        std::queue<int>             &queue = _firstInstance->_availableIndex;
+        std::vector<MenuEntryImpl*> &vector = _firstInstance->_builtinEnabledList;
 
         int     id = entry->_radioId;
-        bool    alreadyInHere = false;
 
-        // If it's a radio entry
-        if (entry->_flags.isRadio && id != -1 && !vector.empty())
+        // If entry already in the vector, abort
+        for (MenuEntryImpl *e : vector)
+            if (e == entry)
+                return;
+
+        // If it's a radio entry remove any entry with the same radio id
+        if (entry->_flags.isRadio && id != -1)
         {
-            for (int i = 0; i < vector.size(); i++)
-            {
-                MenuEntryImpl *e = vector[i];
-
-                if (e != nullptr)
+            g_radioId = id;
+            vector.erase(std::remove_if(vector.begin(), vector.end(),
+                [](MenuEntryImpl *e)
                 {
-                    // Check that it's not the same entry that we try to add
-                    if (e == entry)
+                    if (e->_flags.state && e->_flags.isRadio && e->_radioId == g_radioId)
                     {
-                        alreadyInHere = true;
-                        continue;
-                    }
-
-                    if (e->_flags.state && e->_flags.isRadio && e->_radioId == id)
-                    {
-                        // If the entry was just added to the execute loop
+                        // If the entry was just added to the list
                         if (e->_flags.justChanged)
-                            Remove(e);
+                        {
+                            e->_flags.state = false;
+                            e->_flags.justChanged = false;
+                            return true;
+                        }
                         else
-                            e->_TriggerState();
+                            e->_TriggerState(); ///< Disable and shedule it for future remove
                     }
-                }
-            }
+                    return false;
+                }), vector.end());
         }
 
-        // If it's a non radio entry, check that the entry isn't in the vector
-        if (!entry->_flags.isRadio)
-        {
-            for (int i = 0; i < vector.size(); i++)
-            {
-                MenuEntryImpl *e = vector[i];
-
-                if (e == entry)
-                    alreadyInHere = true;
-            }
-        }
-
-        // If the entry is already in the loop, exit
-        if (alreadyInHere)
-            return;
-
-        // If queue is empty
-        if (queue.empty())
-        {
-            entry->_executeIndex = vector.size();
-            vector.push_back(entry);
-        }
-        else
-        {
-            int i = queue.front();
-            queue.pop();
-
-            vector[i] = entry;
-            entry->_executeIndex = i;
-        }
+        // Add the entry to the list
+        vector.push_back(entry);
     }
 
 
@@ -132,68 +103,119 @@ namespace CTRPluginFramework
         if (_firstInstance == nullptr || entry == nullptr)
             return;
 
-        if (_firstInstance->_executeLoop.empty())
+        if (_firstInstance->_builtinEnabledList.empty())
             return;
 
 
-        std::vector<MenuEntryImpl *>    &vector = _firstInstance->_executeLoop;
-        std::queue<int>                 &queue = _firstInstance->_availableIndex;
+        std::vector<MenuEntryImpl *>    &vector = _firstInstance->_builtinEnabledList;
 
-        int id = entry->_executeIndex;
-
-        if (id == -1)
-            return;
-
-        entry->_executeIndex = -1;
+        // Update entry's state
         entry->_flags.state = false;
         entry->_flags.justChanged = false;
-        vector[id] = nullptr;
 
-        queue.push(id);
+        // Remove the entry from list
+        vector.erase(std::remove(vector.begin(), vector.end(), entry), vector.end());
+    }
+
+    void    PluginMenuExecuteLoop::ExecuteBuiltin(void)
+    {
+        if (_firstInstance == nullptr)
+            return;
+
+        (*_firstInstance)();
+    }
+
+    void    PluginMenuExecuteLoop::Lock(void)
+    {
+        LightLock_Lock(&_builtinLock);
+    }
+
+    void    PluginMenuExecuteLoop::Unlock(void)
+    {
+        LightLock_Unlock(&_builtinLock);
+    }
+
+    void    PluginMenuExecuteLoop::AddAR(MenuEntryActionReplay *entry)
+    {
+        if (_firstInstance == nullptr || entry == nullptr)
+            return;
+
+        std::vector<MenuEntryActionReplay *> &list = _firstInstance->_arEnabledList;
+
+        // If the list already has the same code abort
+        for (MenuEntryActionReplay *ar : list)
+            if (ar == entry)
+                return;
+
+        list.push_back(entry);
+    }
+
+    void    PluginMenuExecuteLoop::RemoveAR(MenuEntryActionReplay *entry)
+    {
+        if (_firstInstance == nullptr || entry == nullptr)
+            return;
+
+        std::vector<MenuEntryActionReplay *> &list = _firstInstance->_arEnabledList;
+
+        // Update entry's state
+        entry->_flags.state = false;
+        entry->_flags.justChanged = false;
+
+        // Remove entry from list
+        list.erase(std::remove(list.begin(), list.end(), entry), list.end());
+    }
+
+    void    PluginMenuExecuteLoop::ExecuteAR(void)
+    {
+        if (_firstInstance == nullptr)
+            return;
+
+        for (MenuEntryActionReplay *ar : _firstInstance->_arEnabledList)
+        {
+            if (ar->GameFunc != nullptr)
+                ar->GameFunc((MenuEntry *)(ar)); ///< cast is just for the warning, properly handled on the callback
+        }
+    }
+
+    void    PluginMenuExecuteLoop::LockAR(void)
+    {
+        LightLock_Lock(&_arLock);
+    }
+
+    void    PluginMenuExecuteLoop::UnlockAR(void)
+    {
+        LightLock_Unlock(&_arLock);
     }
 
     bool    PluginMenuExecuteLoop::operator()(void)
     {
-        static bool isBusy = false;
-
-        if (isBusy)
+        if (_builtinEnabledList.empty())
             return false;
 
-        if (_executeLoop.empty())
-            return false;
-
-        isBusy = true;
-
-        for (int i = 0; i < _executeLoop.size(); i++)
+        for (MenuEntryImpl *entry : _builtinEnabledList)
         {
-            MenuEntryImpl *entry = _executeLoop[i];
-
-            if (entry != nullptr)
+            // Execute MenuEntryImpl
+            if (entry->IsEntry() && entry->_Execute()) ///< _Execute returns true if the entry have to be removed from enabled list
             {
-                // Execute MenuEntryImpl
-                if (entry->IsEntry() && entry->_Execute())
-                {
-                    Remove(entry);
-                }
-                // Execute FreeCheat
-                else if (entry->IsFreeCheat())
-                {
-                    MenuEntryFreeCheat *fc = reinterpret_cast<MenuEntryFreeCheat *>(entry);
-
-                    if (fc->Func != nullptr)
-                        fc->Func(fc);
-                }
-                else if (entry->_type == ActionReplay)
-                {
-                    MenuEntryActionReplay *ar = reinterpret_cast<MenuEntryActionReplay *>(entry);
-
-                    if (ar->GameFunc != nullptr)
-                        ar->GameFunc((MenuEntry *)ar); ///< cast only to silence a warning
-                }
+                Remove(entry);
             }
+            // Execute FreeCheat
+            /*else if (entry->IsFreeCheat())
+            {
+                MenuEntryFreeCheat *fc = reinterpret_cast<MenuEntryFreeCheat *>(entry);
+
+                if (fc->Func != nullptr)
+                    fc->Func(fc);
+            }*/
+            /*else if (entry->_type == ActionReplay)
+            {
+                MenuEntryActionReplay *ar = reinterpret_cast<MenuEntryActionReplay *>(entry);
+
+                if (ar->GameFunc != nullptr)
+                    ar->GameFunc((MenuEntry *)ar); ///< cast only to silence a warning
+            } */
         }
 
-        isBusy = false;
         return (false);
     }
 }
