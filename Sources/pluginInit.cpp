@@ -34,15 +34,18 @@ void abort(void)
 }
 
 static Hook    g_loadCroHook;
-CTRPluginFramework::PluginMenuExecuteLoop *g_executerInstance = nullptr;
 
 void    ExecuteLoopOnEvent(void)
 {
-    if (g_executerInstance == nullptr)
-        return;
-    CTRPluginFramework::PluginMenuExecuteLoop &executer = *g_executerInstance;
+    using CTRPluginFramework::PluginMenuExecuteLoop;
 
-    executer();
+    PluginMenuExecuteLoop::LockAR();
+    PluginMenuExecuteLoop::ExecuteAR();
+    PluginMenuExecuteLoop::UnlockAR();
+
+    PluginMenuExecuteLoop::Lock();
+    PluginMenuExecuteLoop::ExecuteBuiltin();
+    PluginMenuExecuteLoop::Unlock();
 }
 
 using LoadCROReturn = u32 (*)(u32, u32, u32, u32, u32, u32, u32);
@@ -136,6 +139,7 @@ namespace CTRPluginFramework
         // Init default settings
         settings.HeapSize = SystemImpl::IsLoaderNTR ? 0x100000 : 0x200000;
         settings.EcoMemoryMode = false;
+        settings.StartARHandler = true;
         settings.WaitTimeToBoot = Seconds(5.f);
         settings.MenuSelectedItemColor = settings.BackgroundBorderColor = settings.WindowTitleColor = settings.MainTextColor = Color(255, 255, 255);
         settings.MenuUnselectedItemColor = Color(160, 160, 160);
@@ -157,7 +161,7 @@ namespace CTRPluginFramework
 
         // Copy FwkSettings to the globals (solve initialization issues)
         Preferences::Settings = settings;
-        
+
         void *tst;
         // If heap error, exit
         if (g_heapError)
@@ -171,6 +175,7 @@ namespace CTRPluginFramework
         Heap::__ctrpf_heap = static_cast<u8*>(::operator new(Heap::__ctrpf_heap_size));
         tst = Heap::Alloc(0x100);
         Heap::Free(tst);
+
         // Create plugin's main thread
         svcCreateEvent(&g_keepEvent, RESET_ONESHOT);
         g_mainThread = threadCreate(ThreadInit, (void *)threadStack, 0x4000, 0x18, -2, false);
@@ -199,15 +204,27 @@ namespace CTRPluginFramework
                 g_loadCroHook.Enable();
             }
         }
-        while (g_keepRunning)
-        {
-            svcWaitSynchronization(g_keepEvent, U64_MAX);
-            svcClearEvent(g_keepEvent);
 
-            while (ProcessImpl::IsPaused())
+        while (R_FAILED(svcSetThreadPriority(g_keepThreadHandle, 0x30)));
+        if (settings.StartARHandler)
+        {
+            while (g_keepRunning)
             {
-                if (ProcessImpl::IsAcquiring())
-                    Sleep(Milliseconds(100));
+                // Wait for a new frame
+                LightEvent_Wait(&OSDImpl::OnNewFrameEvent);
+
+                // Lock the AR & execute codes before releasing it
+                PluginMenuExecuteLoop::LockAR();
+                PluginMenuExecuteLoop::ExecuteAR();
+                PluginMenuExecuteLoop::UnlockAR();
+            }
+        }
+        else
+        {
+            while (g_keepRunning)
+            {
+                svcWaitSynchronization(g_keepEvent, U64_MAX);
+                svcClearEvent(g_keepEvent);
             }
         }
 
@@ -242,18 +259,12 @@ namespace CTRPluginFramework
         // Init Process info
         ProcessImpl::UpdateThreadHandle();
     }
+
     void    InitializeRandomEngine(void);
     // Main thread's start
     void  ThreadInit(void *arg)
     {
         Initialize();
-
-        // Resume game
-        /*if (g_resumeEvent)
-        {
-            svcSignalEvent(g_resumeEvent);
-            Sleep(Seconds(5.f));
-        }   */
 
         // Initialize Globals settings
         InitializeRandomEngine();
