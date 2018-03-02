@@ -109,16 +109,6 @@ namespace CTRPluginFramework
         return (_menu->GetRoot()->GetFolderList());
     }
 
-    void    PluginMenu::SetSearchButtonState(bool isEnabled) const
-    {
-        _menu->TriggerSearch(isEnabled);
-    }
-
-    void    PluginMenu::SetActionReplayButtonState(bool isEnabled) const
-    {
-        _menu->TriggerActionReplay(isEnabled);
-    }
-
     void    PluginMenu::SetHexEditorState(bool isEnabled) const
     {
         _menu->SetHexEditorState(isEnabled);

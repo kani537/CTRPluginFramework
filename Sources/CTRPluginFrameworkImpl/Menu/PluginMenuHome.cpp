@@ -90,7 +90,6 @@ namespace CTRPluginFramework
 
         // Temporary disable unused buttons
         _hidMapperBtn.IsLocked = true;
-        //_arBtn.IsLocked = true;
 
         // Decode strings
         g_ctrpfString = new char[19];
@@ -115,6 +114,10 @@ namespace CTRPluginFramework
         _uiContainer += &_controllerBtn;
         _uiContainer += &_AddFavoriteBtn;
         _uiContainer += &_InfoBtn;
+
+        // Are the buttons locked ?
+        _arBtn.IsLocked = !Preferences::Settings.StartARHandler;
+        _searchBtn.IsLocked = !Preferences::Settings.AllowSearchEngine;
     }
 
     bool PluginMenuHome::operator()(EventList& eventList, int& mode, Time& delta)
@@ -915,16 +918,6 @@ namespace CTRPluginFramework
         // Init buttons state
         _AddFavoriteBtn.Enable(folder->ItemsCount() != 0);
         _InfoBtn.Enable(item != nullptr ? !item->GetNote().empty() : false);
-    }
-
-    void    PluginMenuHome::TriggerSearch(bool state)
-    {
-        _searchBtn.IsLocked = !state;
-    }
-
-    void    PluginMenuHome::TriggerActionReplay(bool state)
-    {
-        _arBtn.IsLocked = !state;
     }
 
     void    PluginMenuHome::AddPluginVersion(u32 version)

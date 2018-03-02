@@ -143,6 +143,7 @@ namespace CTRPluginFramework
         settings.HeapSize = SystemImpl::IsLoaderNTR ? 0x100000 : 0x200000;
         settings.EcoMemoryMode = false;
         settings.StartARHandler = true;
+        settings.AllowSearchEngine = true;
         settings.WaitTimeToBoot = Seconds(5.f);
         settings.MenuSelectedItemColor = settings.BackgroundBorderColor = settings.WindowTitleColor = settings.MainTextColor = Color(255, 255, 255);
         settings.MenuUnselectedItemColor = Color(160, 160, 160);
@@ -166,16 +167,15 @@ namespace CTRPluginFramework
         Preferences::Settings = settings;
 
         void *tst;
+        u32 size =  System::IsLoaderNTR() || !settings.AllowSearchEngine ? 0xC0000 : 0x180000;
+
         // If heap error, exit
         if (g_heapError)
             goto exit;
 
         // Init System::Heap
-        if (System::IsLoaderNTR())
-            Heap::__ctrpf_heap_size = 0xC0000;
-        else
-            Heap::__ctrpf_heap_size = 0x180000;
-        Heap::__ctrpf_heap = static_cast<u8*>(::operator new(Heap::__ctrpf_heap_size));
+        Heap::__ctrpf_heap_size = size;
+        Heap::__ctrpf_heap = static_cast<u8*>(::operator new(size));
         tst = Heap::Alloc(0x100);
         Heap::Free(tst);
 

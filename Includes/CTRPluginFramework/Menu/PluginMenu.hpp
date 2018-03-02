@@ -90,18 +90,6 @@ namespace CTRPluginFramework
         std::vector<MenuFolder *>   GetFolderList(void) const;
 
         /**
-         * \brief Enable / Disable the Search button in the main menu
-         * \param isEnabled If the button must be enabled or not
-         */
-        void    SetSearchButtonState(bool isEnabled) const;
-
-        /**
-         * \brief Enable / Disable the ActionReplay button in the main menu
-         * \param isEnabled If the button must be enabled or not
-         */
-        void    SetActionReplayButtonState(bool isEnabled) const;
-
-        /**
         * \brief Enable / Disable the HexEditor in Tools
         * \param isEnabled If HexEditor must be enabled or not
         */

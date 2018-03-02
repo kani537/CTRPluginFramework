@@ -169,10 +169,12 @@ namespace CTRPluginFramework
         home.Init();
 
         // Restore Search state
-        search.RestoreSearchState();
+        if (Preferences::Settings.AllowSearchEngine)
+            search.RestoreSearchState();
 
         // Load AR Cheats
-        ar.Initialize();
+        if (Preferences::Settings.StartARHandler)
+            ar.Initialize();
 
         if (_showMsg)
             OSD::Notify("Plugin ready!", Color::Blank, Color());
@@ -629,16 +631,6 @@ namespace CTRPluginFramework
         {
             _runningInstance->_home->Refresh();
         }
-    }
-
-    void    PluginMenuImpl::TriggerSearch(bool state) const
-    {
-        _home->TriggerSearch(state);
-    }
-
-    void    PluginMenuImpl::TriggerActionReplay(bool state) const
-    {
-        _home->TriggerActionReplay(state);
     }
 
     void    PluginMenuImpl::SetHexEditorState(bool isEnabled) const

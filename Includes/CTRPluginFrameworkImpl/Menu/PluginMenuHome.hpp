@@ -26,8 +26,6 @@ namespace CTRPluginFramework
         void    UnStar(MenuItem* item);
         void    Init(void);
 
-        void    TriggerSearch(bool state);
-        void    TriggerActionReplay(bool state);
         void    AddPluginVersion(u32 version);
         void    Close(MenuFolderImpl *folder);
 
