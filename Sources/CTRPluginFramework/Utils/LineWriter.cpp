@@ -1,19 +1,20 @@
 #include "CTRPluginFramework/System/File.hpp"
 #include "CTRPluginFramework/Utils/LineWriter.hpp"
+#include "CTRPluginFrameworkImpl/System/Heap.hpp"
 
 namespace CTRPluginFramework
 {
     #define BUFFER_SIZE 0x1000
 
     LineWriter::LineWriter(File &output) :
-        _output{ output }, _offsetInBuffer{ 0 }, _buffer{ new u8[BUFFER_SIZE] }
+        _output{ output }, _offsetInBuffer{ 0 }, _buffer{ static_cast<u8 *>(Heap::Alloc(BUFFER_SIZE)) }
     {
     }
 
     LineWriter::~LineWriter(void)
     {
         Flush();
-        delete[] _buffer;
+        Heap::Free(_buffer);
     }
 
     LineWriter & LineWriter::operator<<(const std::string &input)

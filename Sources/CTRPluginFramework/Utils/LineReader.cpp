@@ -1,5 +1,6 @@
 #include "CTRPluginFramework/Utils/LineReader.hpp"
 #include "CTRPluginFramework/System/File.hpp"
+#include "CTRPluginFrameworkImpl/System/Heap.hpp"
 #include <algorithm>
 
 namespace CTRPluginFramework
@@ -8,14 +9,14 @@ namespace CTRPluginFramework
         _file(file),
         _offsetInBuffer(0),
         _dataInBuffer(0),
-        _buffer(new char[0x1000])
+        _buffer(static_cast<char *>(Heap::Alloc(0x1000)))
     {
 
     }
 
     LineReader::~LineReader(void)
     {
-        delete[] _buffer;
+        Heap::Free(_buffer);
     }
 
     bool    LineReader::operator()(std::string &line)
