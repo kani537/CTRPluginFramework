@@ -412,6 +412,7 @@
     <ClCompile Include="Sources\CTRPluginFramework\System\Controller.cpp" />
     <ClCompile Include="Sources\CTRPluginFramework\System\Directory.cpp" />
     <ClCompile Include="Sources\CTRPluginFramework\System\File.cpp" />
+    <ClCompile Include="Sources\CTRPluginFramework\System\FwkSettings.cpp" />
     <ClCompile Include="Sources\CTRPluginFramework\System\Process.cpp" />
     <ClCompile Include="Sources\CTRPluginFramework\System\Sleep.cpp" />
     <ClCompile Include="Sources\CTRPluginFramework\System\System.cpp" />

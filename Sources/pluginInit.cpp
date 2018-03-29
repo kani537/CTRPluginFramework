@@ -145,11 +145,6 @@ namespace CTRPluginFramework
         settings.StartARHandler = true;
         settings.AllowSearchEngine = true;
         settings.WaitTimeToBoot = Seconds(5.f);
-        settings.MenuSelectedItemColor = settings.BackgroundBorderColor = settings.WindowTitleColor = settings.MainTextColor = Color(255, 255, 255);
-        settings.MenuUnselectedItemColor = Color(160, 160, 160);
-        settings.BackgroundMainColor = Color();
-        settings.BackgroundSecondaryColor = Color(15, 15, 15);
-        settings.CursorFadeValue = 0.2f;
 
         // Patch process before it starts & let the dev init some settings
         PatchProcess(settings);
@@ -165,6 +160,8 @@ namespace CTRPluginFramework
 
         // Copy FwkSettings to the globals (solve initialization issues)
         Preferences::Settings = settings;
+        // Set default theme
+        FwkSettings::SetThemeDefault();
 
         void *tst;
         u32 size =  System::IsLoaderNTR() || !settings.AllowSearchEngine ? (settings.EcoMemoryMode ? 0x50000 : 0xC0000) : 0x180000;

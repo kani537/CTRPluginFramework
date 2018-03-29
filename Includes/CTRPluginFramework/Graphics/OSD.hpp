@@ -44,7 +44,7 @@ namespace CTRPluginFramework
          * \return 0 if success, -1 if the notification couldn't be added
          */
         static int      Notify(std::string str, Color foreground = Color(255, 255, 255), Color background = Color());
-        
+
         /**
          * \brief Add a callback to the OSD system which will be called at each game's frame
          * \param cb The callback to add

@@ -1094,6 +1094,9 @@
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\Menu\Converter.cpp">
       <Filter>Fichiers sources</Filter>
     </ClCompile>
+    <ClCompile Include="Sources\CTRPluginFramework\System\FwkSettings.cpp">
+      <Filter>Fichiers sources</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="Sources\csvc.s" />

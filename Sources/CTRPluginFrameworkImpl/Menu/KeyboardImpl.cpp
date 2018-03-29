@@ -388,7 +388,7 @@ namespace CTRPluginFramework
         Renderer::DrawSysStringReturn(reinterpret_cast<const u8 *>(_text.c_str()), posX, posY, maxX, Preferences::Settings.MainTextColor, maxY);
 
         // IF error
-        if (_errorMessage && _error.size() > 0)
+        if (_errorMessage && !_error.empty())
         {
             if (posY < 120)
                 posY += 48;
@@ -398,37 +398,30 @@ namespace CTRPluginFramework
 
     void    KeyboardImpl::_RenderBottom(void)
     {
-        const Color     &black = Color::Black;
-        const Color     &blank = Color::Blank;
-        const Color     &grey = Color::BlackGrey;
         static IntRect  background(20, 20, 280, 200);
         static IntRect  background2(22, 22, 276, 196);
-        static IntRect  background3(22, 25, 270, 190);
+        static IntRect  clampArea(22, 25, 270, 190);
 
         Renderer::SetTarget(BOTTOM);
 
-        /*// Background
-        if (Preferences::bottomBackgroundImage->IsLoaded())
-            Preferences::bottomBackgroundImage->Draw(background.leftTop);
-        else
-        {*/
-
-           // Renderer::DrawRect(22, 22, 276, 196, blank, false);
-        //}
-
-        // Draw current input
-
+        // Draw "normal" keyboard
         if (!_customKeyboard)
         {
-            int   posY = 20;
-            int   posX = 25;
+            // Pointer to settings
+            static auto    &theme = Preferences::Settings.Keyboard;
 
-            Renderer::DrawRect(background, black);
-            Renderer::DrawSysString(_userInput.c_str(), posX, posY, 300, blank, _offset);
+            int     posY = 20;
+            int     posX = 25;
+
+            // Clean background
+            Renderer::DrawRect(background, theme.Background);
+
+            // Draw input
+            Renderer::DrawSysString(_userInput.c_str(), posX, posY, 300, theme.Input, _offset);
 
             // Draw cursor
             if (_showCursor && _blinkingClock.GetElapsedTime() < Seconds(0.5f))
-                Renderer::DrawLine(_cursorPositionOnScreen + posX, 21, 1, Color::Blank, 16);
+                Renderer::DrawLine(_cursorPositionOnScreen + posX, 21, 1, theme.Cursor, 16);
 
             // Digit layout
             if (_layout != Layout::QWERTY)
@@ -510,15 +503,19 @@ namespace CTRPluginFramework
                 }
             }
         }
+        // Draw custom keyboard
         else
         {
-            Renderer::DrawRect2(background, black, grey);
-            Renderer::DrawRect(background2, blank, false);
+            // Pointer to settings
+            static auto    &theme = Preferences::Settings.CustomKeyboard;
+
+            Renderer::DrawRect2(background, theme.BackgroundMain, theme.BackgroundSecondary);
+            Renderer::DrawRect(background2, theme.BackgroundBorder, false);
 
             int max = _strKeys.size();
             max = std::min(max, _currentPosition + 6);
 
-            PrivColor::UseClamp(true, background3);
+            PrivColor::UseClamp(true, clampArea);
 
             for (int i = _currentPosition; i < max && i < _strKeys.size(); i++)
             {
@@ -526,26 +523,28 @@ namespace CTRPluginFramework
             }
 
             PrivColor::UseClamp(false);
+
             if (!_displayScrollbar)
                 return;
 
             // Draw scroll bar
-            const Color &dimGrey = Color::DimGrey;
-            const Color &silver = Color::Silver;
+            const Color &sbBackground = theme.ScrollBarBackground;
+            const Color &sbThumb = theme.ScrollBarThumb;
 
             // Background
             int posX = 292;
             int posY = 25;
 
-            Renderer::DrawLine(posX, posY + 1, 1, silver, _scrollbarSize - 2);
-            Renderer::DrawLine(posX + 1, posY, 1, silver, _scrollbarSize);
-            Renderer::DrawLine(posX + 2, posY + 1, 1, silver, _scrollbarSize - 2);
+            Renderer::DrawLine(posX, posY + 1, 1, sbBackground, _scrollbarSize - 2);
+            Renderer::DrawLine(posX + 1, posY, 1, sbBackground, _scrollbarSize);
+            Renderer::DrawLine(posX + 2, posY + 1, 1,sbBackground, _scrollbarSize - 2);
 
-            posY += (int)(_scrollPosition);// * _scrollbarSize);
+            posY += (int)(_scrollPosition);
 
-            Renderer::DrawLine(posX, posY + 1, 1, dimGrey, _scrollCursorSize - 2);
-            Renderer::DrawLine(posX + 1, posY, 1, dimGrey, _scrollCursorSize);
-            Renderer::DrawLine(posX + 2, posY + 1, 1, dimGrey, _scrollCursorSize - 2);
+            // Draw thumb
+            Renderer::DrawLine(posX, posY + 1, 1, sbThumb, _scrollCursorSize - 2);
+            Renderer::DrawLine(posX + 1, posY, 1, sbThumb, _scrollCursorSize);
+            Renderer::DrawLine(posX + 2, posY + 1, 1, sbThumb, _scrollCursorSize - 2);
         }
     }
 

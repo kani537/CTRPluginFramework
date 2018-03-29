@@ -28,6 +28,7 @@ typedef unsigned long __PTRDIFF_TYPE__;
 #include "CTRPluginFrameworkImpl/Menu/MenuEntryImpl.hpp"
 #include "CTRPluginFrameworkImpl/System/Heap.hpp"
 #include <string>
+#include "OSDMenu.hpp"
 
 namespace CTRPluginFramework
 {
@@ -80,6 +81,44 @@ namespace CTRPluginFramework
         return (entry);
     }
 
+    void    TestOSDMenu(MenuEntry *entry)
+    {
+        OSDMenu &menu = OSDMenu::GetInstance();
+
+        if (!entry->IsActivated())
+        {
+            // Force close in case
+            menu.Close();
+            return;
+        }
+        else if (entry->WasJustActivated())
+        {
+            // Clear menu
+            menu.Clear();
+
+            // Title (optionnal)
+            menu.SetTitle("My Super Menu");
+
+            // Set the entries
+            for (int i = 0; i < 30; ++i)
+                menu += Utils::Format("Entry #%d", i);
+
+            // Open it
+            menu.Open();
+        }
+
+        // Wait until the menu is closed
+        if (menu.IsBusy())
+            return;
+
+        // -1 == error or user aborted
+        int ret = menu.GetSelectionIndex();
+
+        (MessageBox("Info", Utils::Format("You selected the Entry #%d", ret)))();
+
+        entry->Disable();
+    }
+
 #define BLANKVERSION 0
 
 #if BLANKVERSION
@@ -127,6 +166,7 @@ namespace CTRPluginFramework
         PluginMenu  *m = new PluginMenu("Action Replay", 1, 0, 5);
         PluginMenu  &menu = *m;
 
+        menu += new MenuEntry("Test OSDMenu", TestOSDMenu);
       /*  entry = new MenuEntry(Utils::Format("Newlib MemFree: %08X", getMemFree()));
         entry->CanBeSelected(false);
         menu += entry;

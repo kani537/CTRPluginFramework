@@ -1,4 +1,5 @@
 #include "CTRPluginFrameworkImpl/Graphics/TouchKey.hpp"
+#include "CTRPluginFrameworkImpl/Preferences.hpp"
 #include "ctrulib/util/utf.h"
 
 namespace CTRPluginFramework
@@ -40,7 +41,7 @@ namespace CTRPluginFramework
     }
 
     TouchKey::~TouchKey()
-    {            
+    {
     }
 
     void TouchKey::Clear(void)
@@ -85,8 +86,6 @@ namespace CTRPluginFramework
             int posX = ((rect.size.x - _content->width) / 2) + rect.leftTop.x;
             int posY = ((rect.size.y - 16) / 2) + rect.leftTop.y;
 
-            int end = posX + _content->width;
-
             u8  *str = reinterpret_cast<u8 *>(const_cast<char *>(_content->text.c_str()));
             do
             {
@@ -103,57 +102,24 @@ namespace CTRPluginFramework
 
     void    TouchKey::Draw(void)
     {
-        const Color     &background = Color::Black;
-        const Color     &pressed = Color::Silver;
-        const Color     &character = Color::Blank;
-        const Color     &characterDis = Color::DimGrey;
+        const auto      &theme = Preferences::Settings.Keyboard;
+        const Color     &background = _isPressed ? theme.KeyBackgroundPressed : theme.KeyBackground;
+        const Color     &text = _isPressed ? theme.KeyTextPressed : theme.KeyText;
 
-        // if key is disabled
-        if (!_enabled)
+        // Background
+        Renderer::DrawRect(_uiProperties, background);
+
+        // Icon
+        if (_icon != nullptr)
         {
-            Renderer::DrawRect(_uiProperties, background);
-            if (_icon != nullptr)
-            {
-                int posX = ((_uiProperties.size.x - 15) / 2) + _uiProperties.leftTop.x;
-                int posY = ((_uiProperties.size.y - 15) / 2) + _uiProperties.leftTop.y;
-                _icon(posX, posY, false);
-            }
-            else
-                DrawCharacter(_uiProperties, characterDis);
+            int     posX = ((_uiProperties.size.x - 15) / 2) + _uiProperties.leftTop.x;
+            int     posY = ((_uiProperties.size.y - 15) / 2) + _uiProperties.leftTop.y;
+
+            _icon(posX, posY, false);
         }
-        else if (_isPressed)
-        {
-            // Background
-            Renderer::DrawRect(_uiProperties, pressed);
-            // Icon
-            if (_icon != nullptr)
-            {
-                int posX = ((_uiProperties.size.x - 15) / 2) + _uiProperties.leftTop.x;
-                int posY = ((_uiProperties.size.y - 15) / 2) + _uiProperties.leftTop.y;
-                _icon(posX, posY, true);
-            }
-            // Character
-            else
-            {
-                DrawCharacter(_uiProperties, character);
-            }
-        }
+        // Character
         else
-        {
-            Renderer::DrawRect(_uiProperties, background);
-            // Icon
-            if (_icon != nullptr)
-            {
-                int posX = ((_uiProperties.size.x - 15) / 2) + _uiProperties.leftTop.x;
-                int posY = ((_uiProperties.size.y - 15) / 2) + _uiProperties.leftTop.y;
-                _icon(posX, posY, false);
-            }
-            // Character
-            else
-            {
-                DrawCharacter(_uiProperties, character);
-            }
-        }
+            DrawCharacter(_uiProperties, text);
     }
 
     void    TouchKey::Update(const bool isTouchDown, const IntVector &touchPos)
@@ -164,17 +130,12 @@ namespace CTRPluginFramework
         bool    isTouched = _uiProperties.Contains(touchPos);
 
         if (_isPressed && !isTouchDown)
-        {            
+        {
             _isPressed = false;
             _execute = true;
-        } 
-
-        if (isTouchDown && isTouched)
-        {
-            _isPressed = true;
         }
-        else
-            _isPressed = false;   
+
+        _isPressed = isTouchDown && isTouched;
     }
 
     int      TouchKey::operator()(std::string &str)

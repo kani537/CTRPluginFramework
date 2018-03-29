@@ -1,4 +1,5 @@
 #include "CTRPluginFrameworkImpl/Graphics/TouchKeyString.hpp"
+#include "CTRPluginFrameworkImpl/Preferences.hpp"
 
 namespace CTRPluginFramework
 {
@@ -21,7 +22,7 @@ namespace CTRPluginFramework
             _content.pop_back();
             _contentLength = Renderer::GetTextSize(_content.c_str());
         }
-    }  
+    }
 
     void    TouchKeyString::Enable(bool isEnabled)
     {
@@ -30,33 +31,23 @@ namespace CTRPluginFramework
 
     void    TouchKeyString::Draw(void)
     {
-        static Color    background(51, 51, 51); ///< Sort of grey
-        const Color     &blank = Color::Blank;
-        const Color     &textSe = Color::Black;
-        const Color     &pressed = Color::Gainsboro; 
-       
-
         // If key is disabled
         if (!_enabled)
             return;
 
-        if (_isPressed)
-        {
-            // Background
-            Renderer::DrawRect(_uiProperties, pressed);
-            int posX = ((_uiProperties.size.x - (int)_contentLength) / 2) + _uiProperties.leftTop.x;
-            int posY = ((_uiProperties.size.y - 16) / 2) + _uiProperties.leftTop.y;
-            int maxX = _uiProperties.leftTop.x + _uiProperties.size.x;
-            Renderer::DrawSysString(_content.c_str(), posX, posY, maxX, textSe);
-        }
-        else
-        {
-            Renderer::DrawRect(_uiProperties, background);
-            int posX = ((_uiProperties.size.x - (int)_contentLength) / 2) + _uiProperties.leftTop.x;
-            int posY = ((_uiProperties.size.y - 16) / 2) + _uiProperties.leftTop.y;
-            int maxX = _uiProperties.leftTop.x + _uiProperties.size.x;
-            Renderer::DrawSysString(_content.c_str(), posX, posY, maxX, blank);
-        }
+        const auto    &theme = Preferences::Settings.CustomKeyboard;
+        const Color &background = _isPressed ? theme.KeyBackgroundPressed : theme.KeyBackground;
+        const Color &text = _isPressed ? theme.KeyTextPressed : theme.KeyText;
+
+        int     posX = ((_uiProperties.size.x - (int)_contentLength) / 2) + _uiProperties.leftTop.x;
+        int     posY = ((_uiProperties.size.y - 16) / 2) + _uiProperties.leftTop.y;
+        int     maxX = _uiProperties.leftTop.x + _uiProperties.size.x;
+
+        // Background
+        Renderer::DrawRect(_uiProperties, background);
+
+        // Text
+        Renderer::DrawSysString(_content.c_str(), posX, posY, maxX, text);
     }
 
     void    TouchKeyString::Update(const bool isTouchDown, const IntVector &touchPos)
@@ -67,17 +58,12 @@ namespace CTRPluginFramework
         bool    isTouched = _uiProperties.Contains(touchPos);
 
         if (_isPressed && !isTouchDown)
-        {            
+        {
             _isPressed = false;
             _execute = true;
-        } 
-
-        if (isTouchDown && isTouched)
-        {
-            _isPressed = true;
         }
-        else
-            _isPressed = false;   
+
+        _isPressed = isTouchDown && isTouched;
     }
 
     void    TouchKeyString::Scroll(float amount)
