@@ -2,7 +2,7 @@
 #define CTRPLUGINFRAMEWORK_SYSTEM_SYSTEM_HPP
 
 namespace CTRPluginFramework
-{    
+{
     enum class LanguageId
     {
         Japanese = 0,
@@ -21,8 +21,8 @@ namespace CTRPluginFramework
 
     class System
     {
-    public: 
-        
+    public:
+
         /**
          * \brief Check if the current console is a New3DS
          * \return true if the current console is a New3DS,\n false otherwise
@@ -56,6 +56,12 @@ namespace CTRPluginFramework
          * \return True if the loader is NTR
          */
         static bool         IsLoaderNTR(void);
+
+
+        /**
+         * \brief A callback that will be called in std::abort if set
+         */
+        static void         (*OnAbort)(void);
     };
 }
 

@@ -33,12 +33,19 @@ namespace CTRPluginFramework
         settings.WaitTimeToBoot = Seconds(10.f);
     }
 
+    void    CBAbort(void)
+    {
+
+    }
+
     int     main(void)
     {
         PluginMenu  *m = new PluginMenu("Action Replay", 1, 0, 5);
         PluginMenu  &menu = *m;
 
         menu.SyncronizeWithFrame(true);
+
+        System::OnAbort = CBAbort;
 
         // Launch menu and mainloop
         int ret = menu.Run();

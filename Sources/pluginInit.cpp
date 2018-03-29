@@ -25,6 +25,9 @@ namespace CTRPluginFramework
 
 void abort(void)
 {
+    if (CTRPluginFramework::System::OnAbort)
+        CTRPluginFramework::System::OnAbort();
+
     CTRPluginFramework::Color c(255, 69, 0); //red(255, 0, 0);
     CTRPluginFramework::ScreenImpl::Top->Flash(c);
     CTRPluginFramework::ScreenImpl::Bottom->Flash(c);

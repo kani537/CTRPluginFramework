@@ -5,6 +5,8 @@
 
 namespace CTRPluginFramework
 {
+    void    (*System::OnAbort)(void) = nullptr;
+
     bool    System::IsNew3DS(void)
     {
         return (SystemImpl::_isNew3DS);
