@@ -422,7 +422,7 @@ namespace CTRPluginFramework
                 const Color &c = diff ? red : black;
 
                 // Convert value
-                sprintf(buffer, "%02X ", buf);
+                sprintf(buffer, "%02X", buf);
                 Renderer::DrawString(buffer, xPos, posY, c);
 
                 xPos += 21;
@@ -571,58 +571,53 @@ namespace CTRPluginFramework
         if (address % 8)
             address -= 4;
 
-        if (address >= _startRegion && address <= _endRegion)
+        if (address >= _startRegion && address < _endRegion)
         {
-            if (address + 80 > _endRegion)
+            if (address + 80 >= _endRegion)
                 address = _endRegion - 80;
 
             if (updateCursor)
                 _cursor = (addrBak - address) * 2;
 
-            _memoryAddress = (u8 *)address;
+            _memoryAddress = reinterpret_cast<u8 *>(address);
 
-            _invalid = !Process::CopyMemory(_memory, (void *)address, 80);
+            _invalid = !Process::CopyMemory(_memory, reinterpret_cast<void *>(address), 80);
 
             return;
         }
 
         if (R_SUCCEEDED(svcQueryProcessMemory(&mInfo, &pInfo, Process::GetHandle(), address)))
         {
-            if (mInfo.state == 0)
-            {
+            if (mInfo.state == 0 || mInfo.state == 2 || mInfo.state == 11)
                 goto invalid;
-            }
 
             if ((mInfo.perm & (MEMPERM_READ | MEMPERM_WRITE) != MEMPERM_READ | MEMPERM_WRITE))
             {
                 if (!Process::ProtectMemory(mInfo.base_addr, mInfo.size, mInfo.perm | (MEMPERM_READ | MEMPERM_WRITE)))
-                {
                     goto invalid;
-                }
             }
         }
         else
             goto invalid;
 
     copy:
-        if (!Process::CopyMemory(_memory, (void *)address, 80))
+        if (!Process::CopyMemory(_memory, reinterpret_cast<void *>(address), 80))
             goto invalid;
 
-        _memoryAddress = (u8 *)address;
+        _memoryAddress = reinterpret_cast<u8 *>(address);
         _invalid = false;
         _startRegion = mInfo.base_addr;
         _endRegion = _startRegion + mInfo.size;
         _cursor = (addrBak - address) * 2;
 
         return;
+
     invalid:
-        _memoryAddress = (u8 *)address;
+        _memoryAddress = reinterpret_cast<u8 *>(address);
         _invalid = true;
         _startRegion = mInfo.base_addr;
         _endRegion = _startRegion + mInfo.size;
         _cursor = (addrBak - address) * 2;
-        return;
-
     }
 
     void    HexEditor::_ApplyChanges(void)
@@ -640,8 +635,10 @@ namespace CTRPluginFramework
         std::memcpy(_memory, _memoryAddress, 80);
     }
 
-    u32  HexEditor::_PromptForAddress(const char *msg)
+    u32     HexEditor::_PromptForAddress(int mode)
     {
+        static const char *msg[2] = {"Enter the address to jump to:", "Enter the offset to jump to:"};
+
         Keyboard    keyboard;
 
         const Color     &bgMain = Preferences::Settings.BackgroundMainColor;
@@ -655,7 +652,7 @@ namespace CTRPluginFramework
         Renderer::DrawRect2(background, bgMain, bgSecondary);
 
         int posY = 115;
-        Renderer::DrawString(msg, 98, posY, skyblue);
+        Renderer::DrawString(msg[mode], 98, posY, skyblue);
 
         // We write to second framebuffer too because of keyboard below
         Renderer::EndFrame();
@@ -663,11 +660,11 @@ namespace CTRPluginFramework
         Renderer::SetTarget(TOP);
         Renderer::DrawRect2(background, bgMain, bgSecondary);
         posY = 115;
-        Renderer::DrawString(msg, 98, posY, skyblue);
+        Renderer::DrawString(msg[mode], 98, posY, skyblue);
 
         keyboard.DisplayTopScreen = false;
 
-        u32 address = (u32)_memoryAddress;
+        u32 address = mode == 0 ? (u32)_memoryAddress : 0;
 
         // Enable clear key
         _keyboard._keys->at(15).Enable(true);
@@ -679,6 +676,8 @@ namespace CTRPluginFramework
         // If user aborted, return 0
         if (keyboard.Open(address, address) == -1)
             address = 0;
+        else if (mode == 1)
+            address += (u32)_memoryAddress;
 
         // Disable clear key
         _keyboard._keys->at(15).Enable(false);
@@ -691,8 +690,6 @@ namespace CTRPluginFramework
     }
     void    HexEditor::_JumpTo(int mode)
     {
-        static const char *msg[2] = {"Enter the address to jump to:", "Enter the offset to jump to:"};
-
         u32 address;
 
         if (mode == 2)
@@ -706,7 +703,7 @@ namespace CTRPluginFramework
         }
         else if (mode < 2)
         {
-            address = _PromptForAddress(msg[mode]);
+            address = _PromptForAddress(mode);
             if (!address)
                 return;
         }
@@ -725,30 +722,22 @@ namespace CTRPluginFramework
         {
             u32 address = _startRegion - 8;
 
-            if (address >= 0x10000000 && address < 0x14000000)
-                address = 0x10000000 - 8;
-
             Goto(address);
-            _cursor = 0;
             Goto(_startRegion);
             _cursor = 0;
         }
     }
 
-    void    HexEditor::_GotoNextRegion()
+    void    HexEditor::_GotoNextRegion(void)
     {
         if (_isModified || _submenu.IsOpen())
             return;
 
         u32 address = _endRegion + 8;
 
-        if (address < 0x50000000)
+        if (address < 0x40000000)
         {
-            if (address >= 0x10000000 && address < 0x14000000)
-                address = 0x14000000;
-
             Goto(address);
-            _cursor = 0;
             Goto(_startRegion);
             _cursor = 0;
         }
