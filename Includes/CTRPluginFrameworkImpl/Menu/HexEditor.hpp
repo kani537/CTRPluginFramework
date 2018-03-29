@@ -39,7 +39,8 @@ namespace CTRPluginFramework
         void    _ClearHistory(void);
         void    _ApplyChanges(void);
         void    _DiscardChanges(void);
-        void    _JumpTo(void);
+        u32     _PromptForAddress(const char *msg);
+        void    _JumpTo(int mode);
         void    _GotoPreviousRegion(void);
         void    _GotoNextRegion(void);
 

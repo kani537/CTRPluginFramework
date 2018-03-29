@@ -127,10 +127,8 @@ namespace CTRPluginFramework
         {
             int subchoice = _submenu();
             if (subchoice == 0) _CreateCheat();
-            else if (subchoice == 1) _JumpTo(0);
-            else if (subchoice == 2) _JumpTo(1);
-            else if (subchoice == 3) _JumpTo(2);
-            else if (subchoice == 4)
+            else if (subchoice == 1) _JumpTo();
+            else if (subchoice == 2)
             {
                 // Enable clear key
                 _keyboard._keys->at(15).Enable(true);
@@ -145,11 +143,11 @@ namespace CTRPluginFramework
                 // Disable enter key
                 _keyboard._keys->at(16).Enable(false);
             }
-            else if (subchoice == 5) _MoveBackward();
-            else if (subchoice == 6) _MoveForward();
-            else if (subchoice == 7) _SaveThisAddress();
-            else if (subchoice == 8) _BrowseHistory();
-            else if (subchoice == 9) _ClearHistory();
+            else if (subchoice == 3) _MoveBackward();
+            else if (subchoice == 4) _MoveForward();
+            else if (subchoice == 5) _SaveThisAddress();
+            else if (subchoice == 6) _BrowseHistory();
+            else if (subchoice == 7) _ClearHistory();
         }
 
         // Render TopScreen
@@ -644,10 +642,11 @@ namespace CTRPluginFramework
     {
         Keyboard    keyboard;
 
-        const Color     &bgMain = Preferences::Settings.BackgroundMainColor;
+const Color     &bgMain = Preferences::Settings.BackgroundMainColor;
         const Color     &bgSecondary = Preferences::Settings.BackgroundSecondaryColor;
         const Color     &skyblue = Color::SkyBlue;
         static IntRect  background(93, 95, 213, 50);
+
 
         Renderer::SetTarget(TOP);
 
@@ -655,15 +654,21 @@ namespace CTRPluginFramework
         Renderer::DrawRect2(background, bgMain, bgSecondary);
 
         int posY = 115;
-        Renderer::DrawString(msg, 98, posY, skyblue);
+        static const char *addrPrompt = "Enter the address to jump to:";
+        Renderer::DrawString(addrPrompt, 98, posY, skyblue);
 
         // We write to second framebuffer too because of keyboard below
         Renderer::EndFrame();
 
         Renderer::SetTarget(TOP);
+
+        // Draw "window" background
         Renderer::DrawRect2(background, bgMain, bgSecondary);
+
         posY = 115;
-        Renderer::DrawString(msg, 98, posY, skyblue);
+
+        Renderer::DrawString(addrPrompt, 98, posY, skyblue);
+
 
         keyboard.DisplayTopScreen = false;
 
@@ -675,45 +680,71 @@ namespace CTRPluginFramework
         _keyboard._keys->at(16).Enable(true);
         // Enable cursor
         _keyboard._showCursor = true;
-
-        // If user aborted, return 0
-        if (keyboard.Open(address, address) == -1)
-            address = 0;
-
+        if (keyboard.Open(address, address) != -1)
+        {
+            Goto(address, true);
+            _history.push_back(address);
+            _indexHistory = _history.size() - 1;
+        }
         // Disable clear key
         _keyboard._keys->at(15).Enable(false);
         // Disable enter key
         _keyboard._keys->at(16).Enable(false);
         // Disable cursor
         _keyboard._showCursor = false;
-
-        return address;
     }
     void    HexEditor::_JumpTo(int mode)
     {
-        static const char *msg[2] = {"Enter the address to jump to:", "Enter the offset to jump to:"};
+        const Color     &bgMain = Preferences::Settings.BackgroundMainColor;
+        const Color     &bgSecondary = Preferences::Settings.BackgroundSecondaryColor;
+        const Color     &skyblue = Color::SkyBlue;
+        static IntRect  background(93, 95, 213, 50);
 
-        u32 address;
 
-        if (mode == 2)
+        Renderer::SetTarget(TOP);
+
+        // Draw "window" background
+        Renderer::DrawRect2(background, bgMain, bgSecondary);
+
+        int posY = 115;
+        static const char *addrPrompt = "Enter the address to jump to:";
+        Renderer::DrawString(addrPrompt, 98, posY, skyblue);
+
+        // We write to second framebuffer too because of keyboard below
+        Renderer::EndFrame();
+
+        Renderer::SetTarget(TOP);
+
+        // Draw "window" background
+        Renderer::DrawRect2(background, bgMain, bgSecondary);
+
+        posY = 115;
+
+        Renderer::DrawString(addrPrompt, 98, posY, skyblue);
+
+
+        keyboard.DisplayTopScreen = false;
+
+        u32 address = (u32)_memoryAddress;
+
+        // Enable clear key
+        _keyboard._keys->at(15).Enable(true);
+        // Enable enter key
+        _keyboard._keys->at(16).Enable(true);
+        // Enable cursor
+        _keyboard._showCursor = true;
+        if (keyboard.Open(address, address) != -1)
         {
-            if (!Process::Read32(_GetCursorAddress(), address))
-                return;
-
-            if (!(MessageBox("Confirm",
-                Utils::Format("Do you want to jump to: 0x%08X ?", address), DialogType::DialogYesNo))())
-                return;
+            Goto(address, true);
+            _history.push_back(address);
+            _indexHistory = _history.size() - 1;
         }
-        else if (mode < 2)
-        {
-            address = _PromptForAddress(msg[mode]);
-            if (!address)
-                return;
-        }
-
-        Goto(address, true);
-        _history.push_back(address);
-        _indexHistory = _history.size() - 1;
+        // Disable clear key
+        _keyboard._keys->at(15).Enable(false);
+        // Disable enter key
+        _keyboard._keys->at(16).Enable(false);
+        // Disable cursor
+        _keyboard._showCursor = false;
     }
 
     void    HexEditor::_GotoPreviousRegion(void)
