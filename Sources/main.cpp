@@ -23,12 +23,7 @@ typedef unsigned long __PTRDIFF_TYPE__;
 #include "Hook.hpp"
 #include "3DS.h"
 #include "CTRPluginFramework.hpp"
-#include "CTRPluginFramework/System/FwkSettings.hpp"
-#include "CTRPluginFrameworkImpl/Graphics/TextBox.hpp"
-#include "CTRPluginFrameworkImpl/Menu/MenuEntryImpl.hpp"
-#include "CTRPluginFrameworkImpl/System/Heap.hpp"
 #include <string>
-#include "OSDMenu.hpp"
 
 namespace CTRPluginFramework
 {
@@ -38,171 +33,17 @@ namespace CTRPluginFramework
         settings.WaitTimeToBoot = Seconds(10.f);
     }
 
-    bool    IsHomebrew(void)
-    {
-        Handle *fsUser = fsGetSessionHandle();
-
-        return (fsUser == nullptr);
-    }
-
-    MenuEntry *AddArg(void *arg, MenuEntry *entry)
-    {
-        if(entry != nullptr)
-            entry->SetArg(arg);
-        return (entry);
-    }
-
-    MenuEntry *EntryWithHotkey(MenuEntry *entry, const Hotkey &hotkey)
-    {
-        if (entry != nullptr)
-        {
-            entry->Hotkeys += hotkey;
-            entry->SetArg(new std::string(entry->Name()));
-            entry->Name() += " " + hotkey.ToString();
-            entry->Hotkeys.OnHotkeyChangeCallback([](MenuEntry *entry, int index)
-            {
-                std::string *name = reinterpret_cast<std::string *>(entry->GetArg());
-
-                entry->Name() = *name + " " + entry->Hotkeys[0].ToString();
-            });
-        }
-
-        return (entry);
-    }
-
-    MenuEntry *EntryWithHotkey(MenuEntry *entry, const std::vector<Hotkey> &hotkeys)
-    {
-        if (entry != nullptr)
-        {
-            for (const Hotkey &hotkey : hotkeys)
-                entry->Hotkeys += hotkey;
-        }
-
-        return (entry);
-    }
-
-    void    TestOSDMenu(MenuEntry *entry)
-    {
-        OSDMenu &menu = OSDMenu::GetInstance();
-
-        if (!entry->IsActivated())
-        {
-            // Force close in case
-            menu.Close();
-            return;
-        }
-        else if (entry->WasJustActivated())
-        {
-            // Clear menu
-            menu.Clear();
-
-            // Title (optionnal)
-            menu.SetTitle("My Super Menu");
-
-            // Set the entries
-            for (int i = 0; i < 30; ++i)
-                menu += Utils::Format("Entry #%d", i);
-
-            // Open it
-            menu.Open();
-        }
-
-        // Wait until the menu is closed
-        if (menu.IsBusy())
-            return;
-
-        // -1 == error or user aborted
-        int ret = menu.GetSelectionIndex();
-
-        (MessageBox("Info", Utils::Format("You selected the Entry #%d", ret)))();
-
-        entry->Disable();
-    }
-
-#define BLANKVERSION 0
-
-#if BLANKVERSION
     int     main(void)
     {
-        //Directory::ChangeWorkingDirectory("/3ds/ntr/plugin/" + Utils::Format("%016llX/", Process::GetTitleID()));
-
-        static const char *about = "This is a blank plugin to let you use ctrpf on multiple games without being annoyed by builtin cheats.";
-        PluginMenu  *m = new PluginMenu("Blank plugin", 0, 3, 0, about);
-        PluginMenu  &menu = *m;
-
-#else
-
-    int     main(void)
-    {
-        if (!System::IsLoaderNTR())
-        {
-            if (*(vu32 *)0x070000FC)
-                Directory::ChangeWorkingDirectory("/luma/plugins/ActionReplay/");
-            else
-                Directory::ChangeWorkingDirectory(Utils::Format("/luma/plugins/%016llX/", Process::GetTitleID()));
-        }
-        else
-        {
-            std::string dirpath = "/plugin/%016llX";
-
-            // Check if game's folder exists
-            if (!Directory::IsExists(dirpath))
-            {
-                // If doesn't exist, so create a temporary folder
-                dirpath = "/plugin/game/ctrpf";
-                if (!Directory::IsExists(dirpath))
-                    Directory::Create(dirpath);
-                dirpath += "/";
-                Process::GetName(dirpath);
-
-                if (!Directory::IsExists(dirpath))
-                    Directory::Create(dirpath);
-
-                dirpath += "/";
-                Directory::ChangeWorkingDirectory(dirpath);
-            }
-        }
-        //Sleep(Seconds(5.f));
         PluginMenu  *m = new PluginMenu("Action Replay", 1, 0, 5);
         PluginMenu  &menu = *m;
 
-        menu += new MenuEntry("Test OSDMenu", TestOSDMenu);
-      /*  entry = new MenuEntry(Utils::Format("Newlib MemFree: %08X", getMemFree()));
-        entry->CanBeSelected(false);
-        menu += entry;
-
-        ctrpfHeap = new MenuEntry(Utils::Format("Ctrpf MemFree: %08X", Heap::SpaceFree()));
-        ctrpfHeap->CanBeSelected(false);
-        menu += ctrpfHeap;
-
-        menu += new MenuEntry("TB 1", nullptr, [](MenuEntry *entry)
-        {
-            MessageBox("Title", "1 line text")();
-        });
-
-        menu += new MenuEntry("TB 2", nullptr, [](MenuEntry *entry)
-        {
-            MessageBox("Title", "Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt. Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore et dolore magnam aliquam quaerat voluptatem. Ut enim ad minima veniam, quis nostrum exercitationem ullam corporis suscipit laboriosam, nisi ut aliquid ex ea commodi consequatur? Quis autem vel eum iure reprehenderit qui in ea voluptate velit esse quam nihil molestiae consequatur, vel illum qui dolorem eum fugiat quo voluptas nulla pariatur?")();
-        });
-
-        menu += new MenuEntry("TB 3", nullptr, [](MenuEntry *entry)
-        {
-            MessageBox("1 line text")();
-        });
-
-        /*menu += new MenuEntry("Notification R", []
-        (MenuEntry *entry)
-        {
-            if (Controller::IsKeyDown(R))
-                OSD::Notify("Woooow");
-        });*/
-
-#endif
-
         menu.SyncronizeWithFrame(true);
-        // Launch menu and mainloop
-        menu.Run();
 
+        // Launch menu and mainloop
+        int ret = menu.Run();
+
+        delete m;
         // Exit plugin
         return (0);
     }

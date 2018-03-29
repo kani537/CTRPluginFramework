@@ -259,8 +259,40 @@ namespace CTRPluginFramework
         OSDImpl::_Initialize();
 
         // Set current working directory
+        if (!System::IsLoaderNTR()) // Luma's loader
         {
-            Directory::ChangeWorkingDirectory(Utils::Format("/plugin/%016llX/", Process::GetTitleID()));
+            if (*(vu32 *)0x070000FC)
+            {
+                std::string path = Utils::Format("/luma/plugins/ActionReplay/%016llX", Process::GetTitleID());
+
+                if (!Directory::IsExists(path))
+                    Directory::Create(path);
+
+                Directory::ChangeWorkingDirectory(path + "/");
+            }
+            else
+                Directory::ChangeWorkingDirectory(Utils::Format("/luma/plugins/%016llX/", Process::GetTitleID()));
+        }
+        else
+        {
+            std::string dirpath = Utils::Format("/plugin/%016llX", Process::GetTitleID());
+
+            // Check if game's folder exists
+            if (!Directory::IsExists(dirpath))
+            {
+                // If doesn't exist, so create a temporary folder
+                dirpath = "/plugin/game/ctrpf";
+                if (!Directory::IsExists(dirpath))
+                    Directory::Create(dirpath);
+                dirpath += "/";
+                Process::GetName(dirpath);
+
+                if (!Directory::IsExists(dirpath))
+                    Directory::Create(dirpath);
+            }
+
+            dirpath += "/";
+            Directory::ChangeWorkingDirectory(dirpath);
         }
 
         // Init Process info
