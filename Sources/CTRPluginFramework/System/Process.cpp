@@ -160,6 +160,8 @@ namespace CTRPluginFramework
     {
         if (!CheckAddress((u32)src)) goto error;
         if (!CheckAddress((u32)dst)) goto error;
+        if (!CheckAddress((u32)dst + size)) goto error;
+        if (!CheckAddress((u32)src + size)) goto error;
 
         svcFlushProcessDataCache(ProcessImpl::_processHandle, src, size);
         svcInvalidateProcessDataCache(ProcessImpl::_processHandle, dst, size);
