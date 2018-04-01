@@ -280,7 +280,7 @@ bool AlmostEqualRelative(float A, float B, float maxRelDiff = FLT_EPSILON);
             // If we're waiting for the end of a block
             if (waitForExitCode)
             {
-                if (code.Type == 0xD0) ///< Terminator code
+                if (code.Type == 0xD0 && code.Right == 0) ///< Terminator code
                 {
                     conditionCount--;
                     if (conditionCount == 0)
