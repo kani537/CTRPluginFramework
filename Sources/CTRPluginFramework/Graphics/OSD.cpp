@@ -4,6 +4,7 @@
 #include "CTRPluginFrameworkImpl/Graphics/Renderer.hpp"
 
 #include <algorithm>
+#include "CTRPluginFrameworkImpl/System/Screen.hpp"
 
 namespace CTRPluginFramework
 {
@@ -27,17 +28,20 @@ namespace CTRPluginFramework
 
     u32     Screen::Draw(const std::string &str, u32 posX, u32 posY, const Color& foreground, const Color& background) const
     {
+        Renderer::SetTarget(IsTop ? TOP : BOTTOM);
         Renderer::DrawString(str.c_str(), posX, (int &)posY, foreground, background);
         return (posY);
     }
 
     void    Screen::DrawRect(u32 posX, u32 posY, u32 width, u32 height, const Color& color, bool filled) const
     {
+        Renderer::SetTarget(IsTop ? TOP : BOTTOM);
         Renderer::DrawRect(posX, posY, width, height, color, filled);
     }
 
     void    Screen::DrawPixel(u32 posX, u32 posY, const Color& color) const
     {
+        Renderer::SetTarget(IsTop ? TOP : BOTTOM);
         Renderer::DrawPixel(posX, posY, color);
     }
 
@@ -79,6 +83,26 @@ namespace CTRPluginFramework
         OSDImpl::Lock();
         OSDImpl::Callbacks.erase(std::remove(OSDImpl::Callbacks.begin(), OSDImpl::Callbacks.end(), cb), OSDImpl::Callbacks.end());
         OSDImpl::Unlock();
+    }
+
+    const Screen & OSD::GetTopScreen(void)
+    {
+        return OSDImpl::TopScreen;
+    }
+
+    const Screen & OSD::GetBottomScreen(void)
+    {
+        return OSDImpl::BottomScreen;
+    }
+
+    void    OSD::SwapBuffers(void)
+    {
+        ScreenImpl::Bottom->SwapBuffer(true, false);
+        ScreenImpl::Top->SwapBuffer(true, false);
+
+        gspWaitForVBlank();
+
+        OSDImpl::UpdateScreens();
     }
 
     void    OSD::Lock(void)

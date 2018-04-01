@@ -57,6 +57,11 @@ namespace CTRPluginFramework
          */
         static void     Stop(OSDCallback cb);
 
+        /* Those are to be used only when the process is paused */
+        static const Screen&    GetTopScreen(void);
+        static const Screen&    GetBottomScreen(void);
+        static void             SwapBuffers(void);
+
         static void     Lock(void);
         static bool     TryLock(void); //false success, true failure
         static void     Unlock(void);

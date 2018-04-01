@@ -19,8 +19,27 @@ namespace CTRPluginFramework
         return AtomicRead(&_isBusy);
     }
 
-    void     OSDMenu_UpdateMenu(void);
-    bool     OSDMenu_Draw(const Screen &screen);
+    void    OSDMenu_UpdateMenu(void);
+    bool    OSDMenu_Draw(const Screen &screen);
+    int     GetMenuInput(void)
+    {
+        Process::Pause();
+
+        const Screen &topScreen = OSD::GetTopScreen();
+        OSDMenu &menu = OSDMenu::GetInstance();
+
+        while (menu.IsBusy())
+        {
+            Controller::Update();
+            OSDMenu_Draw(topScreen);
+            OSDMenu_UpdateMenu();
+            OSD::SwapBuffers();
+        }
+
+        Process::Play();
+
+        return menu.GetSelectionIndex();
+    }
 
     void    OSDMenu::Open(void)
     {
@@ -32,9 +51,12 @@ namespace CTRPluginFramework
         AtomicIncrement(&_isBusy);
         _selector = 0;
         _selection = -1;
-        *menu += OSDMenu_UpdateMenu;
-        OSD::Run(OSDMenu_Draw);
+        //*menu += OSDMenu_UpdateMenu;
+        //OSD::Run(OSDMenu_Draw);
     }
+
+
+
 
     void    OSDMenu::Close(void)
     {

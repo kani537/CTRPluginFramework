@@ -167,7 +167,7 @@ namespace CTRPluginFramework
         FwkSettings::SetThemeDefault();
 
         void *tst;
-        u32 size =  System::IsLoaderNTR() || !settings.AllowSearchEngine ? (settings.EcoMemoryMode ? 0x50000 : 0xC0000) : 0x180000;
+        u32 size =  System::IsLoaderNTR() || !settings.AllowSearchEngine ? (settings.EcoMemoryMode ? 0x50000 : 0xC0000) : (settings.EcoMemoryMode ? 0xC0000 : 0x180000);
 
         // If heap error, exit
         if (g_heapError)

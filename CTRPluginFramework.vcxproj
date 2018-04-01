@@ -286,7 +286,10 @@
     <ClInclude Include="Sources\ctrulib\allocator\mem_pool.h" />
     <ClInclude Include="Sources\ctrulib\internal.h" />
     <ClInclude Include="Sources\ctrulib\util\rbtree\rbtree_internal.h" />
+    <ClInclude Include="Sources\Excluded\OSDMenu.hpp" />
+    <ClInclude Include="Sources\OSDMenu.hpp" />
     <ClInclude Include="Sources\OSDManager.hpp" />
+    <ClInclude Include="Sources\Excluded\PointerSearcher.hpp" />
     <ClInclude Include="Sources\Speedometer.hpp" />
   </ItemGroup>
   <ItemGroup>
@@ -473,10 +476,13 @@
     <ClCompile Include="Sources\ctrulib\util\utf\utf32_to_utf8.c" />
     <ClCompile Include="Sources\ctrulib\util\utf\utf8_to_utf16.c" />
     <ClCompile Include="Sources\ctrulib\util\utf\utf8_to_utf32.c" />
+    <ClCompile Include="Sources\Excluded\OSDMenu.cpp" />
+    <ClCompile Include="Sources\OSDMenu.cpp" />
     <ClCompile Include="Sources\Hook.cpp" />
     <ClCompile Include="Sources\main.cpp" />
     <ClCompile Include="Sources\OSDManager.cpp" />
     <ClCompile Include="Sources\pluginInit.cpp" />
+    <ClCompile Include="Sources\Excluded\PointerSearcher.cpp" />
     <ClCompile Include="Sources\PointerTesting.cpp" />
     <ClCompile Include="Sources\Speedometer.cpp" />
   </ItemGroup>

@@ -33,9 +33,32 @@ namespace CTRPluginFramework
         settings.WaitTimeToBoot = Seconds(10.f);
     }
 
-    void    CBAbort(void)
-    {
+#define DEBUG 1
+#if DEBUG
+#   define TRACE Debug_Trace()
+#else
+#   define TRACE
+#endif
+    static std::string g_abortDebugStr;
 
+    void    Debug_Trace(void)
+    {
+        g_abortDebugStr = Utils::Format("%s: %s:%d", __FILE__, __FUNCTION__, __LINE__);
+    }
+
+    void    OnAbort(void)
+    {
+        OSD::Run([](const Screen &screen)
+        {
+            if (screen.IsTop)
+                return false;
+
+            screen.Draw("std::abort!!!", 10, 10, Color::Blank, Color::Red);
+            screen.Draw("Last function: " + g_abortDebugStr, 10, 20, Color::Blank, Color::Black);
+            return true;
+        });
+
+        for (;;); // Don't exit this function or the plugin will be shutdown (threads stopped and OSD unhooked)
     }
 
     int     main(void)
@@ -45,7 +68,9 @@ namespace CTRPluginFramework
 
         menu.SyncronizeWithFrame(true);
 
-        System::OnAbort = CBAbort;
+#if DEBUG
+        System::OnAbort = OnAbort;
+#endif
 
         // Launch menu and mainloop
         int ret = menu.Run();

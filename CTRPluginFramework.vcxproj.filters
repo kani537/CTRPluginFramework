@@ -528,6 +528,15 @@
     <ClInclude Include="Includes\CTRPluginFrameworkImpl\Menu\Converter.hpp">
       <Filter>Fichiers d%27en-tête</Filter>
     </ClInclude>
+    <ClInclude Include="Sources\OSDMenu.hpp">
+      <Filter>Fichiers d%27en-tête</Filter>
+    </ClInclude>
+    <ClInclude Include="Sources\Excluded\PointerSearcher.hpp">
+      <Filter>Fichiers d%27en-tête</Filter>
+    </ClInclude>
+    <ClInclude Include="Sources\Excluded\OSDMenu.hpp">
+      <Filter>Fichiers d%27en-tête</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Sources\CTRPluginFramework\Graphics\Color.cpp">
@@ -1095,6 +1104,15 @@
       <Filter>Fichiers sources</Filter>
     </ClCompile>
     <ClCompile Include="Sources\CTRPluginFramework\System\FwkSettings.cpp">
+      <Filter>Fichiers sources</Filter>
+    </ClCompile>
+    <ClCompile Include="Sources\OSDMenu.cpp">
+      <Filter>Fichiers sources</Filter>
+    </ClCompile>
+    <ClCompile Include="Sources\Excluded\PointerSearcher.cpp">
+      <Filter>Fichiers sources</Filter>
+    </ClCompile>
+    <ClCompile Include="Sources\Excluded\OSDMenu.cpp">
       <Filter>Fichiers sources</Filter>
     </ClCompile>
   </ItemGroup>

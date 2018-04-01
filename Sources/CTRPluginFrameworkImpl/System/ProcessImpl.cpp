@@ -6,6 +6,7 @@
 #include <cstdio>
 #include <cstring>
 #include "ctrulib/gpu/gpu.h"
+#include "CTRPluginFrameworkImpl/Graphics/OSDImpl.hpp"
 
 extern 		Handle gspThreadEventHandle;
 
@@ -124,6 +125,7 @@ namespace CTRPluginFramework
 
 		ScreenImpl::Top->Acquire();
         ScreenImpl::Bottom->Acquire();
+        OSDImpl::UpdateScreens();
 
         if (!useFading)
             return;

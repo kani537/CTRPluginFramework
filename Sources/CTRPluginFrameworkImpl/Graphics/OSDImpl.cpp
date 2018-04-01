@@ -24,6 +24,8 @@ namespace CTRPluginFramework
     OSDReturn   OSDImpl::HookReturn = nullptr;
     LightEvent  OSDImpl::OnNewFrameEvent;
     Hook        OSDImpl::OSDHook;
+    Screen      OSDImpl::TopScreen;
+    Screen      OSDImpl::BottomScreen;
     RecursiveLock OSDImpl::RecLock;
     FloatingButton OSDImpl::FloatingBtn(IntRect(0, 0, 40, 40), Icon::DrawRocket);
     std::list<OSDImpl::OSDMessage*> OSDImpl::Notifications;
@@ -188,8 +190,7 @@ namespace CTRPluginFramework
             GSPGPU_RestoreVramSysArea();
             GSPGPU_FlushDataCache((void *)0x1F000000, 0x00600000);
             RecursiveLock_Unlock(&ProcessImpl::FrameLock);
-            if (__hasAborted)
-                return;
+            return;
         }
 
         bool drawRocket = Preferences::UseFloatingBtn && isBottom;
@@ -297,9 +298,31 @@ namespace CTRPluginFramework
             if (!isBottom && addrB && addrB != addr)
                 svcFlushProcessDataCache(handle, addrB, size);
         }
+    }
 
-        return;
+    void    OSDImpl::UpdateScreens(void)
+    {
+        ScreenImpl *screen = ScreenImpl::Top;
 
+        // Top screen
+        TopScreen.IsTop = true;
+        TopScreen.Is3DEnabled = screen->Is3DEnabled();
+        TopScreen.LeftFramebuffer = (u32)screen->GetLeftFramebuffer(false);
+        TopScreen.RightFramebuffer = (u32)screen->GetRightFramebuffer(false);
+        TopScreen.Stride = (u32)screen->GetStride();
+        TopScreen.BytesPerPixel = screen->GetBytesPerPixel();
+        TopScreen.Format = screen->GetFormat();
+
+        screen = ScreenImpl::Bottom;
+
+        // Bottom screen
+        BottomScreen.IsTop = false;
+        BottomScreen.Is3DEnabled = screen->Is3DEnabled();
+        BottomScreen.LeftFramebuffer = (u32)screen->GetLeftFramebuffer(false);
+        BottomScreen.RightFramebuffer = (u32)screen->GetRightFramebuffer(false);
+        BottomScreen.Stride = (u32)screen->GetStride();
+        BottomScreen.BytesPerPixel = screen->GetBytesPerPixel();
+        BottomScreen.Format = screen->GetFormat();
     }
 
     static const u32    g_OSDPattern[] =

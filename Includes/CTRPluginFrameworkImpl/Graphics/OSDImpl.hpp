@@ -53,13 +53,15 @@ namespace CTRPluginFramework
         static Hook             OSDHook;
         static RecursiveLock    RecLock;
         static FloatingButton   FloatingBtn;
+        static Screen           TopScreen;
+        static Screen           BottomScreen;
         static std::list<OSDMessage*>      Notifications;
         static std::vector<OSDCallback>    Callbacks;
 
         static  int     MainCallback(u32 isBottom, int arg2, void *addr, void *addrB, int stride, int format, int arg7);
         static  int     MainCallback2(u32 r0, u32 *params, u32 isBottom, u32 arg);
         static  void    CallbackGlobal(u32 isBottom, void *addr, void *addrB, int stride, int format);
-
+        static  void    UpdateScreens(void);
     private:
         friend class PluginMenu;
         friend class OSD;
