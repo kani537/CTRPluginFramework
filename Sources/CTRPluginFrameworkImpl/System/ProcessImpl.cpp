@@ -2,6 +2,7 @@
 #include "CTRPluginFramework/System.hpp"
 #include "CTRPluginFrameworkImpl/System.hpp"
 #include "CTRPluginFrameworkImpl/arm11kCommands.h"
+#include "CTRPluginFrameworkImpl/Preferences.hpp"
 
 #include <cstdio>
 #include <cstring>
@@ -82,7 +83,7 @@ namespace CTRPluginFramework
         _mainThreadHandle = threadGetCurrent()->handle;
         RecursiveLock_Init(&FrameLock);
         svcCreateEvent(&FrameEvent, RESET_ONESHOT);
-        while (R_FAILED(svcSetThreadPriority(_mainThreadHandle, 0x2F)));
+        while (R_FAILED(svcSetThreadPriority(_mainThreadHandle, Preferences::Settings.ThreadPriority)));
     }
 
 	bool 	ProcessImpl::IsPaused(void)
@@ -95,7 +96,7 @@ namespace CTRPluginFramework
 		return (_isAcquiring);
 	}
 
-    extern "C" Handle g_gspSignalEvent;
+    extern "C" Handle gspThreadEventHandle;;
     extern "C" Handle gspEvent;
     extern "C" bool   IsPaused(void)
     {

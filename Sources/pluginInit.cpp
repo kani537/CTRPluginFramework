@@ -13,6 +13,7 @@ extern "C" void     __system_initSyscalls(void);
 extern "C" Thread   g_mainThread;
 extern "C" void     loadCROHooked(void);
 extern "C" u32      croReturn;
+extern "C" u32      __ctru_heap_size;
 u32 croReturn = 0;
 
 u32     g_resumeHookAddress = 0; ///< Used in arm11k.s for resume hook
@@ -143,6 +144,7 @@ namespace CTRPluginFramework
         SystemImpl::IsLoaderNTR = Process::CheckAddress(0x06000000, 3);
 
         // Init default settings
+        settings.ThreadPriority = 0x30;
         settings.HeapSize = SystemImpl::IsLoaderNTR ? 0x100000 : 0x200000;
         settings.EcoMemoryMode = false;
         settings.StartARHandler = true;
@@ -159,6 +161,7 @@ namespace CTRPluginFramework
         Sleep(settings.WaitTimeToBoot);
 
         // Init heap and newlib's syscalls
+        __ctru_heap_size = settings.HeapSize;
         initLib();
 
         // Copy FwkSettings to the globals (solve initialization issues)
@@ -212,7 +215,7 @@ namespace CTRPluginFramework
         }
 
         // Reduce priority
-        while (R_FAILED(svcSetThreadPriority(g_keepThreadHandle, 0x30)));
+        while (R_FAILED(svcSetThreadPriority(g_keepThreadHandle, settings.ThreadPriority - 1)));
 
         svcWaitSynchronization(g_keepEvent, U64_MAX);
 
