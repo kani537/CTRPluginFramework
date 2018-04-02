@@ -33,6 +33,13 @@ namespace CTRPluginFramework
         return (posY);
     }
 
+    u32 Screen::DrawSysfont(const std::string &str, u32 posX, u32 posY, const Color &foreground) const
+    {
+        Renderer::SetTarget(IsTop ? TOP : BOTTOM);
+        Renderer::DrawSysString(str.c_str(), posX, (int &)posY, 400, foreground);
+        return (posY);
+    }
+
     void    Screen::DrawRect(u32 posX, u32 posY, u32 width, u32 height, const Color& color, bool filled) const
     {
         Renderer::SetTarget(IsTop ? TOP : BOTTOM);
