@@ -159,6 +159,7 @@ namespace CTRPluginFramework
             ret.insert(17 /* 9 + Color * 2 */, ColorToString(IMMEDIATE_COLOR));
             break;
 
+        case 0xD0: ///< Terminator
         case 0xD2: ///< Full terminator
             ret.insert(0, ColorToString(TYPE_COLOR));
             ret.insert(6 /* 2 + Color */, ColorToString(UNUSED_COLOR));
@@ -167,7 +168,6 @@ namespace CTRPluginFramework
             break;
 
         case 0xD1: ///< Loop execute
-        case 0xD0: ///< Terminator
         case 0xF9: ///< NOT operation
             ret.insert(0, ColorToString(TYPE_COLOR));
             ret.insert(6 /* 2 + Color */, ColorToString(UNUSED_COLOR));
@@ -362,7 +362,10 @@ namespace CTRPluginFramework
             ret = "start loop";
             break;
         case 0xD0: ///< Terminator
-            ret = "end if";
+            if (code.Right == 0)
+                ret = "end if";
+            else
+                ret = "exit loop";
             break;
 
         case 0xD4: ///< Add to register
