@@ -249,7 +249,7 @@ bool AlmostEqualRelative(float A, float B, float maxRelDiff = FLT_EPSILON);
                 return true; ///< Consider as error
 
             // If we have a full terminator
-            if (code.Type == 0xD2)
+            if (code.Type == 0xD2 && code.Right == 0)
             {
                 // If we have blocks waiting to be ended
                 if (waitForExitCode)

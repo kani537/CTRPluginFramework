@@ -30,10 +30,6 @@ namespace CTRPluginFramework
     // This function is called on the plugin starts, before main
     void    PatchProcess(FwkSettings &settings)
     {
-        settings.WaitTimeToBoot = Seconds(10.f);
-        settings.EcoMemoryMode = true;
-        if (System::IsLoaderNTR())
-            settings.HeapSize = 0x150000;
     }
 
 #define DEBUG 1
