@@ -88,6 +88,7 @@ namespace CTRPluginFramework
             {
                 OSDImpl::FramesToPlay = frames;
                 RecursiveLock_Unlock(&ProcessImpl::FrameLock);
+                LightEvent_Wait(&OSDImpl::OnNewFrameEvent);
                 RecursiveLock_Lock(&ProcessImpl::FrameLock);
             }
             else

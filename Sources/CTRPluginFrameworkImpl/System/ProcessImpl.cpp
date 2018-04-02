@@ -105,25 +105,22 @@ namespace CTRPluginFramework
 
 	void 	ProcessImpl::Pause(bool useFading)
 	{
-        _isPaused++;
-
-        if (_isPaused == 1)
-            // Wake up gsp event thread
-            svcSignalEvent(gspEvent);
-
-        // Lock at game's new frame
+        // Lock game's new frame
         RecursiveLock_Lock(&FrameLock);
+        // Increase pause counter
+        ++_isPaused;
 
+        // If game is already paused, nothing to do
         if (_isPaused > 1)
             return;
 
+        // Wake up gsp event thread
+        svcSignalEvent(gspEvent);
+
         // Wait for the frame event
         svcWaitSynchronization(FrameEvent, U64_MAX);
-        svcClearEvent(FrameEvent);
 
-        // Wake up gsp event thread
-       // svcSignalEvent(gspEvent);
-
+        // Update screen's infos
 		ScreenImpl::Top->Acquire();
         ScreenImpl::Bottom->Acquire();
         OSDImpl::UpdateScreens();
@@ -155,6 +152,7 @@ namespace CTRPluginFramework
 
 	void 	ProcessImpl::Play(bool useFading)
 	{
+        // If game isn't paused, abort
         if (!_isPaused)
             return;
 
@@ -179,8 +177,10 @@ namespace CTRPluginFramework
                     while (t.GetElapsedTime() < limit); //<- On New3DS frequencies, the alpha would be too dense
             }
 		}
+        // Decrease pause counter
+        --_isPaused;
+        // Release lock
         RecursiveLock_Unlock(&ProcessImpl::FrameLock);
-        _isPaused--;
 	}
 
     bool     ProcessImpl::PatchProcess(u32 addr, u8 *patch, u32 length, u8 *original)

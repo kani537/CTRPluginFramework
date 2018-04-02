@@ -174,11 +174,10 @@ namespace CTRPluginFramework
         if (!isBottom)
         {
             if (FramesToPlay)
-                FramesToPlay--;
+                --FramesToPlay;
             LightEvent_Pulse(&OnNewFrameEvent);
         }
 
-        extern u32 __hasAborted;
         if (ProcessImpl::_isPaused && !FramesToPlay)
         {
             GSPGPU_FlushDataCache((void *)0x1F000000, 0x00600000);
@@ -190,6 +189,7 @@ namespace CTRPluginFramework
             GSPGPU_RestoreVramSysArea();
             GSPGPU_FlushDataCache((void *)0x1F000000, 0x00600000);
             RecursiveLock_Unlock(&ProcessImpl::FrameLock);
+            svcClearEvent(ProcessImpl::FrameEvent);
             return;
         }
 
