@@ -31,28 +31,28 @@ namespace CTRPluginFramework
         ~BMPImage();
 
         BMPImage(void) :
-        _data(nullptr),
-        _dataSize(0),
         _fileName(""),
         _width(0),
         _height(0),
         _rowIncrement(0),
         _bytesPerPixel(3),
         _channelMode(BGR_Mode),
+        _data(nullptr),
+        _dataSize(0),
         _loaded(false)
         {
 
         }
 
         BMPImage(const std::string &filename) :
-        _data(nullptr),
-        _dataSize(0),
         _fileName(filename),
         _width(0),
         _height(0),
         _rowIncrement(0),
         _bytesPerPixel(0),
         _channelMode(BGR_Mode),
+        _data(nullptr),
+        _dataSize(0),
         _loaded(false)
         {
             LoadBitmap();
@@ -60,28 +60,28 @@ namespace CTRPluginFramework
         }
 
         BMPImage(const u32 width, const u32 height) :
-        _data(nullptr),
-        _dataSize(0),
         _fileName(""),
         _width(width),
         _height(height),
         _rowIncrement(0),
         _bytesPerPixel(3),
         _channelMode(BGR_Mode),
+        _data(nullptr),
+        _dataSize(0),
         _loaded(false)
         {
             CreateBitmap();
         }
 
         BMPImage(const BMPImage &src, const unsigned int width, const unsigned int height) :
-        _data(nullptr),
-        _dataSize(0),
         _fileName(src._fileName),
         _width(width),
         _height(height),
         _rowIncrement(0),
         _bytesPerPixel(3),
         _channelMode(BGR_Mode),
+        _data(nullptr),
+        _dataSize(0),
         _loaded(false)
         {
             CreateBitmap();
@@ -100,7 +100,7 @@ namespace CTRPluginFramework
             return (_dimensions);
         }
 
-       inline void Clear(const unsigned char v = 0x00)
+       inline void Clear(void)
        {
           DataClear();
        }

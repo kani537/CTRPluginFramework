@@ -51,6 +51,7 @@ typedef void (*voidfn)(void);
 #define ALIGN(m)   __attribute__((aligned(m)))
 /// Packs a struct (and other types?) so it won't include padding bytes.
 #define PACKED     __attribute__((packed))
+#define UNUSED     __attribute__((unused))
 
 #ifndef LIBCTRU_NO_DEPRECATION
 /// Flags a function as deprecated.

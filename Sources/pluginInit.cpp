@@ -4,63 +4,20 @@
 #include "CTRPluginFramework.hpp"
 #include "CTRPluginFrameworkImpl/Graphics/Font.hpp"
 
-extern "C" void     abort(void);
-extern "C" void     initSystem();
-extern "C" void     initLib();
-extern "C" void     resumeHook(void);
-extern "C" Result   __sync_init(void);
-extern "C" void     __system_initSyscalls(void);
-extern "C" Thread   g_mainThread;
-extern "C" void     loadCROHooked(void);
-extern "C" u32      croReturn;
-extern "C" u32      __ctru_heap_size;
-u32 croReturn = 0;
-
-u32     g_resumeHookAddress = 0; ///< Used in arm11k.s for resume hook
-Thread  g_mainThread = nullptr; ///< Used in syscalls.c for __ctru_get_reent
-
-namespace CTRPluginFramework
+extern "C"
 {
-    void    ThreadExit(void);
-}
+    Thread  g_mainThread = nullptr; ///< Used in syscalls.c for __ctru_get_reent
+    u32     croReturn = 0;
+    u32     __ctru_heap_size;
+    u32     g_gspEventThreadPriority;
 
-void abort(void)
-{
-    if (CTRPluginFramework::System::OnAbort)
-        CTRPluginFramework::System::OnAbort();
-
-    CTRPluginFramework::Color c(255, 69, 0); //red(255, 0, 0);
-    CTRPluginFramework::ScreenImpl::Top->Flash(c);
-    CTRPluginFramework::ScreenImpl::Bottom->Flash(c);
-
-    CTRPluginFramework::ThreadExit();
-    while (true);
-}
-
-static Hook    g_loadCroHook;
-
-void    ExecuteLoopOnEvent(void)
-{
-    using CTRPluginFramework::PluginMenuExecuteLoop;
-
-    PluginMenuExecuteLoop::LockAR();
-    PluginMenuExecuteLoop::ExecuteAR();
-    PluginMenuExecuteLoop::UnlockAR();
-
-    PluginMenuExecuteLoop::Lock();
-    PluginMenuExecuteLoop::ExecuteBuiltin();
-    PluginMenuExecuteLoop::Unlock();
-}
-
-using LoadCROReturn = u32 (*)(u32, u32, u32, u32, u32, u32, u32);
-static LightLock onLoadCroLock;
-
-extern "C" void onLoadCro(void);
-void onLoadCro(void)
-{
-    LightLock_Lock(&onLoadCroLock);
-    ExecuteLoopOnEvent();
-    LightLock_Unlock(&onLoadCroLock);
+    void    loadCROHooked(void);
+    void    onLoadCro(void);
+    void    abort(void);
+    void    initSystem();
+    void    initLib();
+    Result  __sync_init(void);
+    void    __system_initSyscalls(void);
 }
 
 namespace CTRPluginFramework
@@ -80,26 +37,62 @@ namespace CTRPluginFramework
     extern bool     g_heapError; ///< allocateHeaps.cpp
 
     void    ThreadInit(void *arg);
+    void    ThreadExit(void);
     void    InstallOSD(void); ///< OSDImpl
+    void    InitializeRandomEngine(void);
 
     // From main.cpp
     void    PatchProcess(FwkSettings &settings);
     int     main(void);
+}
 
-    static bool     IsPokemonSunOrMoon(void)
-    {
-        u32 lowtid = (u32)Process::GetTitleID();
+using LoadCROReturn = u32 (*)(u32, u32, u32, u32, u32, u32, u32);
 
-        return (lowtid == 0x00164800 || lowtid == 0x00175E00);
-    }
+static Hook         g_loadCroHook;
+static LightLock    onLoadCroLock;
 
+void abort(void)
+{
+    if (CTRPluginFramework::System::OnAbort)
+        CTRPluginFramework::System::OnAbort();
+
+    CTRPluginFramework::Color c(255, 69, 0); //red(255, 0, 0);
+    CTRPluginFramework::ScreenImpl::Top->Flash(c);
+    CTRPluginFramework::ScreenImpl::Bottom->Flash(c);
+
+    CTRPluginFramework::ThreadExit();
+    while (true);
+}
+
+static void    ExecuteLoopOnEvent(void)
+{
+    using CTRPluginFramework::PluginMenuExecuteLoop;
+
+    PluginMenuExecuteLoop::LockAR();
+    PluginMenuExecuteLoop::ExecuteAR();
+    PluginMenuExecuteLoop::UnlockAR();
+
+    PluginMenuExecuteLoop::Lock();
+    PluginMenuExecuteLoop::ExecuteBuiltin();
+    PluginMenuExecuteLoop::Unlock();
+}
+
+void     onLoadCro(void)
+{
+    LightLock_Lock(&onLoadCroLock);
+    ExecuteLoopOnEvent();
+    LightLock_Unlock(&onLoadCroLock);
+}
+
+namespace CTRPluginFramework
+{
     namespace Heap
     {
         extern u8* __ctrpf_heap;
         extern u32 __ctrpf_heap_size;
     }
 
-    void    KeepThreadMain(void *arg)
+    void    KeepThreadMain(void *arg UNUSED)
     {
         FwkSettings settings;
 
@@ -165,6 +158,8 @@ namespace CTRPluginFramework
         initLib();
 
         // Copy FwkSettings to the globals (solve initialization issues)
+        settings.ThreadPriority = std::min(settings.ThreadPriority, (u32)0x3E);
+        g_gspEventThreadPriority = settings.ThreadPriority + 1;
         Preferences::Settings = settings;
         // Set default theme
         FwkSettings::SetThemeDefault();
@@ -215,7 +210,7 @@ namespace CTRPluginFramework
         }
 
         // Reduce priority
-        while (R_FAILED(svcSetThreadPriority(g_keepThreadHandle, settings.ThreadPriority - 1)));
+        while (R_FAILED(svcSetThreadPriority(g_keepThreadHandle, settings.ThreadPriority + 1)));
 
         svcWaitSynchronization(g_keepEvent, U64_MAX);
 
@@ -305,7 +300,6 @@ namespace CTRPluginFramework
         ProcessImpl::UpdateThreadHandle();
     }
 
-    void    InitializeRandomEngine(void);
     // Main thread's start
     void  ThreadInit(void *arg)
     {
@@ -318,24 +312,21 @@ namespace CTRPluginFramework
         svcSignalEvent(g_keepEvent);
 
         // Start plugin
-        int ret = main();
+        main();
 
         ThreadExit();
     }
 
-    u32   __hasAborted = 0;
     void  ThreadExit(void)
     {
-     /*   if (g_resumeEvent)
-            svcSignalEvent(g_resumeEvent); */
-        __hasAborted = 1;
         // In which thread are we ?
         if (threadGetCurrent() != nullptr)
         {
-            // MainThread
+            // ## MainThread ##
 
             // Remove the OSD Hook
             OSDImpl::OSDHook.Disable();
+
             // Release process in case it's currently paused
             ProcessImpl::Play(false);
 
@@ -350,7 +341,8 @@ namespace CTRPluginFramework
         }
         else
         {
-            // KeepThread
+            // ## KeepThread ##
+
             if (g_mainThread != nullptr)
             {
                 ProcessImpl::Play(false);
@@ -369,13 +361,18 @@ namespace CTRPluginFramework
             exit(-1);
         }
     }
-
-    extern "C" int LaunchMainThread(int arg);
+    extern "C"
     int   LaunchMainThread(int arg)
     {
+        // Create event
         svcCreateEvent(&g_continueGameEvent, RESET_ONESHOT);
-        svcCreateThread(&g_keepThreadHandle, KeepThreadMain, 0, &keepThreadStack[0x1000], 0x1A, -2);
+        // Start ctrpf's primary thread
+        svcCreateThread(&g_keepThreadHandle, KeepThreadMain, arg, &keepThreadStack[0x1000], 0x1A, -2);
+        // Wait until basic initialization has been made before returning to game
         svcWaitSynchronization(g_continueGameEvent, U64_MAX);
+        // Close the event
+        svcCloseHandle(g_continueGameEvent);
+
         return (0);
     }
 }

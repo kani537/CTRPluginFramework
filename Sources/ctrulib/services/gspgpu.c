@@ -19,13 +19,9 @@ Handle gspGpuHandle;
 static int gspRefCount;
 
 static s32 gspLastEvent = -1;
+static bool gspRunEvents;
 static LightEvent gspEvents[GSPGPU_EVENT_MAX];
 static vu32 gspEventCounts[GSPGPU_EVENT_MAX];
-static ThreadFunc gspEventCb[GSPGPU_EVENT_MAX];
-static void* gspEventCbData[GSPGPU_EVENT_MAX];
-static bool gspEventCbOneShot[GSPGPU_EVENT_MAX];
-static volatile bool gspRunEvents;
-static Thread gspEventThread;
 static u8 gfxThreadID;
 static u8 *gfxSharedMemory;
 
@@ -34,6 +30,7 @@ Handle gspEvent, gspSharedMemHandle;
 static void gspEventThreadMain(u32 arg);
 
 Handle gspThreadEventHandle;
+u32     g_gspEventThreadPriority;
 static char gspThreadEventStack[GSP_EVENT_STACK_SIZE] = {0};
 
 Handle __sync_get_arbiter(void);
@@ -82,15 +79,6 @@ void gspExit(void)
 	svcCloseHandle(gspGpuHandle);
 }
 
-void gspSetEventCallback(GSPGPU_Event id, ThreadFunc cb, void* data, bool oneShot)
-{
-	if(id>= GSPGPU_EVENT_MAX)return;
-
-	gspEventCb[id] = cb;
-	gspEventCbData[id] = data;
-	gspEventCbOneShot[id] = oneShot;
-}
-
 Result gspInitEventHandler(Handle _gspEvent, vu8* _gspSharedMem, u8 gspThreadId)
 {
 	// Initialize events
@@ -103,7 +91,7 @@ Result gspInitEventHandler(Handle _gspEvent, vu8* _gspSharedMem, u8 gspThreadId)
 	gspEvent = _gspEvent;
 	gspEventData = _gspSharedMem + gspThreadId*0x40;
 	gspRunEvents = true;
-	svcCreateThread(&gspThreadEventHandle, gspEventThreadMain, 0, (u32*)&gspThreadEventStack[0x1000], 0x31, -2);
+	svcCreateThread(&gspThreadEventHandle, gspEventThreadMain, 0, (u32*)&gspThreadEventStack[GSP_EVENT_STACK_SIZE], g_gspEventThreadPriority, -2);
 	//gspEventThread = threadCreate(gspEventThreadMain, gspThreadEventStack, 0x1000, 0x31, -2, true);
 	//gspThreadEventHandle = threadGetHandle(gspEventThread);
 	return 0;
@@ -135,8 +123,8 @@ void gspWaitForEvent(GSPGPU_Event id, bool nextEvent)
 
 GSPGPU_Event gspWaitForAnyEvent(void)
 {
-    return;
-	s32 x;
+    return 0;
+	/*s32 x;
 	do
 	{
 		do
@@ -151,7 +139,7 @@ GSPGPU_Event gspWaitForAnyEvent(void)
 		if (x < 0)
 			svcArbitrateAddress(__sync_get_arbiter(), (u32)&gspLastEvent, ARBITRATION_WAIT_IF_LESS_THAN, 0, 0);
 	} while (x < 0);
-	return (GSPGPU_Event)x;
+	return (GSPGPU_Event)x; */
 }
 
 static int popInterrupt()

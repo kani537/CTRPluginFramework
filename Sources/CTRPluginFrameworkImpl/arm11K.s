@@ -119,27 +119,10 @@ executeKernelCmd:
         LDMFD       SP!, {R3-R11,PC}
 @ End of function executeKernelCmd
 
-FUNCTION    resumeHook
-    bl  CResume
-    ldr lr, =g_resumeHookAddress
-    ldr lr, [lr]
-    mov pc, lr
-
-FUNCTION    aptHookHome
-    ldr r0, =g_isHomeBtnPressed
-    mov r1, #1
-    str r1, [r0]
-    add lr, pc, #4
-    ldr r0, =0x00106774
-    mov pc, r0
-    ldr r0, =0x00103F38
-    mov pc, r0
-
 FUNCTION	loadCROHooked
 	stmfd	sp!, {r0-r12, lr}
 	bl		onLoadCro
-	ldmfd	sp!, {r0-r12, lr}
-	stmfd	sp!, {r0-r12, lr}
+	ldmfd	sp, {r0-r12, lr}
 	add		r4, sp, #0x38
 	ldr		r12, =croReturn
 	ldr		pc, [r12]

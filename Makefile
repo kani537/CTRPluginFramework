@@ -59,6 +59,7 @@ CFLAGS	:=	-g -Os -mword-relocations \
 			$(ARCH)
 
 CFLAGS		+=	$(INCLUDE) -DARM11 -D_3DS
+#-Wall -Wextra -Wdouble-promotion -Werror
 
 CXXFLAGS	:= $(CFLAGS) -fno-rtti -fno-exceptions -std=gnu++11
 
@@ -162,4 +163,3 @@ $(LIBOUT):	$(filter-out $(EXCLUDE), $(OFILES))
 #---------------------------------------------------------------------------------------
 endif
 #---------------------------------------------------------------------------------------
-
