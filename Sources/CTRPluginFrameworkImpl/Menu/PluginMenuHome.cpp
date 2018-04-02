@@ -116,7 +116,7 @@ namespace CTRPluginFramework
         _uiContainer += &_InfoBtn;
 
         // Are the buttons locked ?
-        _arBtn.IsLocked = !Preferences::Settings.StartARHandler;
+        _arBtn.IsLocked = !Preferences::Settings.AllowActionReplay;
         _searchBtn.IsLocked = !Preferences::Settings.AllowSearchEngine;
     }
 

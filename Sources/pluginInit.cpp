@@ -147,7 +147,7 @@ namespace CTRPluginFramework
         settings.ThreadPriority = 0x30;
         settings.HeapSize = SystemImpl::IsLoaderNTR ? 0x100000 : 0x200000;
         settings.EcoMemoryMode = false;
-        settings.StartARHandler = true;
+        settings.AllowActionReplay = true;
         settings.AllowSearchEngine = true;
         settings.WaitTimeToBoot = Seconds(5.f);
 
@@ -219,7 +219,7 @@ namespace CTRPluginFramework
 
         svcWaitSynchronization(g_keepEvent, U64_MAX);
 
-        if (settings.StartARHandler)
+        if (settings.AllowActionReplay)
         {
             while (g_keepRunning)
             {

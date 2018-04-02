@@ -478,7 +478,7 @@ namespace CTRPluginFramework
 
     void    HexEditor::_CreateCheat(void)
     {
-        if (!Preferences::Settings.StartARHandler)
+        if (!Preferences::Settings.AllowActionReplay)
             return;
 
         if (_invalid)

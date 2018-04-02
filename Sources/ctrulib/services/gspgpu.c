@@ -34,7 +34,7 @@ Handle gspEvent, gspSharedMemHandle;
 static void gspEventThreadMain(u32 arg);
 
 Handle gspThreadEventHandle;
-static char gspThreadEventStack[0x1000] = {0};
+static char gspThreadEventStack[GSP_EVENT_STACK_SIZE] = {0};
 
 Handle __sync_get_arbiter(void);
 
@@ -118,8 +118,7 @@ void gspExitEventHandler(void)
 	//threadJoin(gspEventThread, U64_MAX);
 }
 
-bool   IsGamePrior(void);
-bool   IsPaused(void);
+bool   IsPaused(void); ///< ProcessImpl.cpp
 
 void gspWaitForEvent(GSPGPU_Event id, bool nextEvent)
 {

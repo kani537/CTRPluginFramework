@@ -173,7 +173,7 @@ namespace CTRPluginFramework
             search.RestoreSearchState();
 
         // Load AR Cheats
-        if (Preferences::Settings.StartARHandler)
+        if (Preferences::Settings.AllowActionReplay)
             ar.Initialize();
 
         if (_showMsg)

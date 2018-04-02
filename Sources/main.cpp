@@ -31,6 +31,9 @@ namespace CTRPluginFramework
     void    PatchProcess(FwkSettings &settings)
     {
         settings.WaitTimeToBoot = Seconds(10.f);
+        settings.EcoMemoryMode = true;
+        if (System::IsLoaderNTR())
+            settings.HeapSize = 0x150000;
     }
 
 #define DEBUG 1
@@ -66,6 +69,14 @@ namespace CTRPluginFramework
         PluginMenu  *m = new PluginMenu("Action Replay", 1, 0, 5);
         PluginMenu  &menu = *m;
 
+        OSD::Run([](const Screen &screen)
+        {
+            if (!screen.IsTop) return false;
+
+            screen.Draw(Utils::Format("Free: %08X", getMemFree()), 10, 10);
+
+            return true;
+        });
         menu.SyncronizeWithFrame(true);
 
 #if DEBUG
