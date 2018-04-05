@@ -5,13 +5,13 @@
 
 namespace CTRPluginFramework
 {
-    MenuEntry::MenuEntry(const std::string &name, const std::string &note) : 
+    MenuEntry::MenuEntry(const std::string &name, const std::string &note) :
         _item(new MenuEntryImpl(name, note, this)),
         Hotkeys(this)
-    {   
+    {
     }
-    
-    MenuEntry::MenuEntry(const std::string &name, FuncPointer func, const std::string &note) : 
+
+    MenuEntry::MenuEntry(const std::string &name, FuncPointer func, const std::string &note) :
         _item(new MenuEntryImpl(name, func, note, this)),
         Hotkeys(this)
     {
@@ -25,7 +25,7 @@ namespace CTRPluginFramework
         _item->MenuFunc = MenuFunc;
     }
 
-    MenuEntry::MenuEntry(int radioId, const std::string &name, FuncPointer func, const std::string &note) : 
+    MenuEntry::MenuEntry(int radioId, const std::string &name, FuncPointer func, const std::string &note) :
         _item(new MenuEntryImpl(name, func, note, this)),
         Hotkeys(this)
     {
@@ -94,15 +94,15 @@ namespace CTRPluginFramework
         return (_item->IsVisible());
     }
 
-    void    MenuEntry::UseTopSeparator(bool useSeparator, Separator type) const
+    void    MenuEntry::UseTopSeparator(Separator type) const
     {
-        _item->Flags.useSeparatorBefore = useSeparator;
+        _item->Flags.useSeparatorBefore = type != Separator::None;
         _item->Flags.useStippledLineForBefore = type == Separator::Stippled;
     }
 
-    void    MenuEntry::UseBottomSeparator(bool useSeparator, Separator type) const
+    void    MenuEntry::UseBottomSeparator(Separator type) const
     {
-        _item->Flags.useSeparatorAfter = useSeparator;
+        _item->Flags.useSeparatorAfter = type != Separator::None;
         _item->Flags.useStippledLineForAfter = type == Separator::Stippled;
     }
 
