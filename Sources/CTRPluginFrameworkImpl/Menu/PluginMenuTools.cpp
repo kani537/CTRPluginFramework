@@ -491,7 +491,7 @@ namespace CTRPluginFramework
 
         // Draw Framework version
         {
-            static const char *version = "CTRPluginFramework Alpha V.0.4.1";
+            static const char *version = "CTRPluginFramework Beta V.0.4.0";
             static const u32 xpos = (320 - Renderer::LinuxFontSize(version)) / 2;
 
             int posY = 205;
