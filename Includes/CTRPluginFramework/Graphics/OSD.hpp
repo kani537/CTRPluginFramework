@@ -95,7 +95,7 @@ namespace CTRPluginFramework
          * \param background The color of the background (Default: black)
          * \return 0 if success, -1 if the notification couldn't be added
          */
-        static int      Notify(std::string str, Color foreground = Color(255, 255, 255), Color background = Color());
+        static int      Notify(const std::string &str, const Color &foreground = Color::Blank, const Color &background = Color::Black);
 
         /**
          * \brief Add a callback to the OSD system which will be called at each game's frame

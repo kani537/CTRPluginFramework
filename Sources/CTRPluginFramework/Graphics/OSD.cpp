@@ -59,7 +59,7 @@ namespace CTRPluginFramework
         pixel = PrivColor::FromFramebuffer(fb);
     }
 
-    int     OSD::Notify(std::string str, Color fg, Color bg)
+    int     OSD::Notify(const std::string &str, const Color &fg, const Color &bg)
     {
         OSDImpl::Lock();
 
