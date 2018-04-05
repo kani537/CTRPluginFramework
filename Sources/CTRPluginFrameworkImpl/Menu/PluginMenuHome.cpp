@@ -398,6 +398,12 @@ namespace CTRPluginFramework
                     case Key::B:
                     {
                         MenuFolderImpl *newFolder = folder->_Close(_selector, _starMode);
+
+                        // Call the MenuEntry::OnAction callback if there's one
+                        if (folder->_owner != nullptr && folder->_owner->OnAction != nullptr)
+                            folder->_owner->OnAction(*_folder->_owner, ActionType::Closing);
+
+                        // Switch current folder
                         if (newFolder != nullptr)
                         {
                             if (_starMode)
@@ -751,10 +757,10 @@ namespace CTRPluginFramework
             MenuFolderImpl* p = reinterpret_cast<MenuFolderImpl *>(item);
 
             // If a MenuFolder exists and has a callback
-            if (p->_owner != nullptr && p->_owner->OnOpening != nullptr)
+            if (p->_owner != nullptr && p->_owner->OnAction != nullptr)
             {
                 // If the callabck tells us to not open the folder
-                if (!(p->_owner->OnOpening(*p->_owner)))
+                if (!(p->_owner->OnAction(*p->_owner, ActionType::Opening)))
                     return;
             }
             p->_Open(folder, _selector, _starMode);
@@ -766,7 +772,7 @@ namespace CTRPluginFramework
         }
     }
 
-    void PluginMenuHome::_showStarredBtn_OnClick()
+    void    PluginMenuHome::_showStarredBtn_OnClick(void)
     {
         static int bak = 0;
         std::swap(bak, _selector);

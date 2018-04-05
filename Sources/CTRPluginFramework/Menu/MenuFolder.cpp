@@ -5,20 +5,20 @@
 namespace CTRPluginFramework
 {
     MenuFolder::MenuFolder(const std::string &name, const std::string &note) :
-        OnOpening{ nullptr }, _item(new MenuFolderImpl(this, name, note))
+        OnAction{ nullptr }, _item(new MenuFolderImpl(this, name, note))
     {
 
     }
 
     MenuFolder::MenuFolder(const std::string& name, const std::vector<MenuEntry*>& entries) :
-        OnOpening{ nullptr }, _item(new MenuFolderImpl(this, name))
+        OnAction{ nullptr }, _item(new MenuFolderImpl(this, name))
     {
         for (MenuEntry *entry : entries)
             Append(entry);
     }
 
     MenuFolder::MenuFolder(const std::string& name, const std::string& note, const std::vector<MenuEntry*>& entries) :
-        OnOpening{ nullptr }, _item(new MenuFolderImpl(this, name, note))
+        OnAction{ nullptr }, _item(new MenuFolderImpl(this, name, note))
     {
         for (MenuEntry *entry : entries)
             Append(entry);
@@ -43,15 +43,15 @@ namespace CTRPluginFramework
         return(_item->IsVisible());
     }
 
-    void    MenuFolder::UseTopSeparator(bool useSeparator, Separator type) const
+    void    MenuFolder::UseTopSeparator(Separator type) const
     {
-        _item->Flags.useSeparatorBefore = useSeparator;
+        _item->Flags.useSeparatorBefore = type != Separator::None;
         _item->Flags.useStippledLineForBefore = type == Separator::Stippled;
     }
 
-    void    MenuFolder::UseBottomSeparator(bool useSeparator, Separator type) const
+    void    MenuFolder::UseBottomSeparator(Separator type) const
     {
-        _item->Flags.useSeparatorAfter = useSeparator;
+        _item->Flags.useSeparatorAfter = type != Separator::None;
         _item->Flags.useStippledLineForBefore = type == Separator::Stippled;
     }
 
