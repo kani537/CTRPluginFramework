@@ -30,7 +30,7 @@ namespace CTRPluginFramework
          * \return An \ref OPResult code
          */
         static  int     ChangeWorkingDirectory(const std::string &path);
-        
+
         /**
          * \brief Create a directory
          * \param path Path of the directory to create
@@ -115,7 +115,7 @@ namespace CTRPluginFramework
          * \return An std::string with the full path of the current Directory
          */
         std::string     GetFullName(void) const;
-        
+
         /**
          * \brief Check if the current Directory is open
          * \return true if the specified path was successfully opened, false otherwise
@@ -133,7 +133,13 @@ namespace CTRPluginFramework
         std::string     _path;
         Handle          _handle;
         mutable bool    _isOpen;
-        mutable std::vector<FS_DirectoryEntry>    _list;
+        struct DirectoryEntry
+        {
+            DirectoryEntry(u32 attrib, u8 *name);
+            u32         attributes;
+            std::string name;
+        };
+        mutable std::vector<DirectoryEntry>    _list;
     };
 }
 

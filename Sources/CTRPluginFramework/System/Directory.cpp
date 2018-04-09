@@ -3,7 +3,9 @@
 #include "ctrulib/result.h"
 #include <limits.h>
 #include <cstring>
+#include "CTRPluginFrameworkImpl/System/Heap.hpp"
 #include <algorithm>
+#include "ctrulib/svc.h"
 
 namespace CTRPluginFramework
 {
@@ -316,24 +318,39 @@ namespace CTRPluginFramework
 
     int     Directory::_List(void) const
     {
-        FS_DirectoryEntry   entry;
+        FS_DirectoryEntry   *entry = (FS_DirectoryEntry *)Heap::Alloc(sizeof(FS_DirectoryEntry) * 100);
         u32                 entriesNb = 0;
+        u8                  filename[PATH_MAX + 1];
+        int                 units;
 
-        while (R_SUCCEEDED(FSDIR_Read(_handle, &entriesNb, 1, &entry)))
+        if (entry != nullptr)
+        while (R_SUCCEEDED(FSDIR_Read(_handle, &entriesNb, 100, entry)))
         {
             if (entriesNb == 0)
                 break;
 
-            _list.push_back(entry);
+            for (u32 i = 0; i < entriesNb; ++i)
+            {
+                // Convert name from utf16 to utf8
+                units = utf16_to_utf8(filename, entry[i].name, PATH_MAX);
+                if (units == -1)
+                    continue;
+                filename[units] = 0;
+                _list.push_back(DirectoryEntry(entry[i].attributes, filename));
+            }
         }
 
-        if (_list.empty())
-            return (-1);
-
-        std::sort(_list.begin(), _list.end(), [](const FS_DirectoryEntry &lhs, const FS_DirectoryEntry &rhs )
+        if (entry == nullptr || _list.empty())
         {
-            u8      *left = (u8 *)lhs.name;
-            u8      *right = (u8 *)rhs.name;
+            Heap::Free(entry);
+            return (-1);
+        }
+
+        // Sort the file list
+        std::sort(_list.begin(), _list.end(), [](const DirectoryEntry &lhs, const DirectoryEntry &rhs )
+        {
+            u8      *left = (u8 *)lhs.name.c_str();
+            u8      *right = (u8 *)rhs.name.c_str();
             u32     leftCode;
             u32     rightCode;
 
@@ -350,7 +367,13 @@ namespace CTRPluginFramework
 
             return (leftCode < rightCode);
         });
+        Heap::Free(entry);
         return (0);
+    }
+
+    Directory::DirectoryEntry::DirectoryEntry(u32 attrib, u8 *fname) :
+    attributes{ attrib }, name{reinterpret_cast<char *>(fname)}
+    {
     }
 
     /*
@@ -360,28 +383,20 @@ namespace CTRPluginFramework
     {
         if (!_isOpen) return (NOT_OPEN);
 
-        bool patternCheck = (pattern.size() > 0);
-        FS_DirectoryEntry   entry;
-        ssize_t             units;
-        u8                  filename[PATH_MAX + 1] = {0};
+        const bool patternCheck = !pattern.empty();
 
         if (_list.empty())
             _List();
 
         int   count = files.size();
 
-        for (int i = 0; i < _list.size(); i++)
+        for (DirectoryEntry &entry : _list)
         {
-            entry = _list[i];
+            // If entry is a folder, continue
             if (entry.attributes & 1)
                 continue;
 
-            std::memset(filename, 0, sizeof(filename));
-            units = utf16_to_utf8(filename, entry.name, PATH_MAX);
-            if (units < 0)
-                continue;
-
-            std::string fn = (char *)filename;
+            std::string &fn = entry.name;
             if (patternCheck && fn.find(pattern) == std::string::npos)
                 continue;
 
@@ -397,27 +412,20 @@ namespace CTRPluginFramework
     {
         if (!_isOpen) return (NOT_OPEN);
 
-        bool patternCheck = (pattern.size() > 0);
-        FS_DirectoryEntry   entry;
-        ssize_t             units;
-        u8                  filename[PATH_MAX + 1] = {0};
+        const bool patternCheck = !pattern.empty();
 
         if (_list.empty())
             _List();
 
         int count = folders.size();
 
-        for (int i = 0; i < _list.size(); i++)
+        for (DirectoryEntry &entry : _list)
         {
-            entry = _list[i];
-
+            // If entry is a file, continue
             if (!(entry.attributes & 1))
                 continue;
-            std::memset(filename, 0, sizeof(filename));
-            units = utf16_to_utf8(filename, entry.name, PATH_MAX);
-            if (units < 0)
-                continue;
-            std::string fn = (char *)filename;
+
+            std::string &fn = entry.name;
             if (patternCheck && fn.find(pattern) == std::string::npos)
                 continue;
             folders.push_back(fn);
@@ -450,13 +458,15 @@ namespace CTRPluginFramework
     {
     }
 
-    Directory::Directory(const std::string &path, bool create)
+    Directory::Directory(const std::string &path, bool create) :
+        _handle(0), _isOpen(false)
     {
         Open(*this, path, create);
     }
 
     Directory::~Directory()
     {
+        _list.clear();
         Close();
     }
 }
