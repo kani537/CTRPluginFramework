@@ -270,6 +270,7 @@ namespace CTRPluginFramework
             std::string &&fps = Utils::Format("FPS: %.02f", g_second / g_fpsClock[isBottom].Restart().AsSeconds());
             int posY = 10;
             Renderer::DrawString(fps.c_str(), 10, posY, Color::Blank, Color::Black);
+            mustFlush |= true;
         }
 
         OSDImpl::Lock();
@@ -439,6 +440,15 @@ namespace CTRPluginFramework
     Hook    OSDHook2;
     void    InstallOSD(void)
     {
+        static u32  returnCode[4];
+
+        auto  createReturncode = [](u32 address, u32 *buf)
+        {
+            Process::CopyMemory(buf, (void *)address, 8);
+            buf[2] = 0xE51FF004;
+            buf[3] = address + 8;
+        };
+
         const u32   stmfd2 = 0xE92D47F0; // STMFD SP!, {R4-R10,LR}
         const u32   stmfd1 = 0xE92D5FF0; // STMFD SP!, {R4-R12, LR}
         const u32   stmfd3 = 0xE92D4070; // STMFD SP!, {R4-R6, LR}
@@ -466,21 +476,26 @@ namespace CTRPluginFramework
             }
         }
 
+        OSDImpl::OSDHook.flags.useLinkRegisterToReturn = false;
+        OSDImpl::OSDHook.flags.ExecuteOverwrittenInstructionBeforeCallback = false;
+
         if (found2)
         {
+            createReturncode(found2, returnCode);
             OSDImpl::OSDHook.Initialize(found2, (u32)OSDImpl::MainCallback2);
             OSDImpl::OSDHook.Enable();
             if (!isHook)
-                OSDImpl::HookReturn = (OSDReturn)OSDImpl::OSDHook.returnCode;
+                OSDImpl::HookReturn = (OSDReturn)returnCode;
             else
                 OSDImpl::HookReturn = (OSDReturn)*((u32 *)found2 + 1);
             return;
         }
 
+        createReturncode(found, returnCode);
         OSDImpl::OSDHook.Initialize(found, (u32)OSDImpl::MainCallback);
         OSDImpl::OSDHook.Enable();
         if (!isHook)
-            OSDImpl::HookReturn = (OSDReturn)OSDImpl::OSDHook.returnCode;
+            OSDImpl::HookReturn = (OSDReturn)returnCode;
         else
             OSDImpl::HookReturn = (OSDReturn)*((u32 *)found + 1);
     }
