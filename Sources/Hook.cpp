@@ -8,8 +8,9 @@
 
 struct HookWrapper
 {
-    u32     backupAndUpdateLR[3];  ///< Default: nop
+    u32     backupAndUpdateLR;  ///< Default: nop
     u32     overwrittenInstr;   ///< Default: nop
+    u32     setLR[2];           ///< Default: nop
     u32     jumpToCallback;     ///< ldr pc, [pc, #-4]
     u32     callbackAddress;    ///< Address of the code to jump to
     u32     restoreLR;          ///< Default: nop
@@ -132,14 +133,17 @@ bool    Hook::Enable(void)
     // Use BX LR option
     if (flags.useLinkRegisterToReturn)
     {
-        /*  Backup LR and update it
+        /*  Backup LR
         str     lr, [pc, #36]
-        mov     lr, pc
-        add     lr, lr, #12
         */
-        wrapper->backupAndUpdateLR[0] = 0xE58FE024;
-        wrapper->backupAndUpdateLR[1] = 0xE1A0E00F;
-        wrapper->backupAndUpdateLR[2] = 0xE28EE00C;
+        wrapper->backupAndUpdateLR = 0xE58FE024;
+
+        /* Set LR
+        mov     lr, pc
+        add     lr, lr, #8
+        */
+        wrapper->setLR[0] = 0xE1A0E00F;
+        wrapper->setLR[1] = 0xE28EE008;
 
         /* Restore LR
         ldr     lr, [pc, #8]
@@ -148,9 +152,9 @@ bool    Hook::Enable(void)
     }
     else
     {
-        wrapper->backupAndUpdateLR[0] = nop;
-        wrapper->backupAndUpdateLR[1] = nop;
-        wrapper->backupAndUpdateLR[2] = nop;
+        wrapper->backupAndUpdateLR = nop;
+        wrapper->setLR[0] = nop;
+        wrapper->setLR[1] = nop;
         wrapper->restoreLR = nop;
     }
 
