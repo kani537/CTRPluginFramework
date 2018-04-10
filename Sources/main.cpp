@@ -401,35 +401,6 @@ namespace CTRPluginFramework
                 MessageBox("Info", "You chose: " + path)();
         });
 
-        menu += new MenuEntry("Invincible", [](MenuEntry *entry)
-        {
-            static Hook hook;
-
-            if (entry->WasJustActivated())
-            {
-                // No need as I want to replace it
-                hook.flags.ExecuteOverwrittenInstructionBeforeCallback = false;
-                hook.Initialize(0x00352E24, reinterpret_cast<u32>(invincibleHooked));
-                hook.Enable();
-            }
-
-            if (!entry->IsActivated())
-                hook.Disable();
-        });
-
-        menu += new MenuEntry("Notify", [](MenuEntry *entry)
-        {
-            auto osd = [](const Screen &screen)
-            {
-                screen.Draw("Hello world !", 10, 10);
-                return true;
-            };
-            if (entry->WasJustActivated())
-                OSD::Run(osd);
-            if (!entry->IsActivated())
-                OSD::Stop(osd);
-        });
-
 #if DEBUG
         System::OnAbort = OnAbort;
 #endif

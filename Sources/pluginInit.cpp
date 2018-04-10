@@ -7,7 +7,6 @@
 extern "C"
 {
     Thread  g_mainThread = nullptr; ///< Used in syscalls.c for __ctru_get_reent
-    u32     croReturn = 0;
     u32     __ctru_heap_size;
     u32     g_gspEventThreadPriority;
 
@@ -46,8 +45,6 @@ namespace CTRPluginFramework
     int     main(void);
 }
 
-using LoadCROReturn = u32 (*)(u32, u32, u32, u32, u32, u32, u32);
-
 static Hook         g_loadCroHook;
 static LightLock    onLoadCroLock;
 
@@ -68,10 +65,12 @@ static void    ExecuteLoopOnEvent(void)
 {
     using CTRPluginFramework::PluginMenuExecuteLoop;
 
+    // Execute AR codes
     PluginMenuExecuteLoop::LockAR();
     PluginMenuExecuteLoop::ExecuteAR();
     PluginMenuExecuteLoop::UnlockAR();
 
+    // Execute builtin codes
     PluginMenuExecuteLoop::Lock();
     PluginMenuExecuteLoop::ExecuteBuiltin();
     PluginMenuExecuteLoop::Unlock();
@@ -204,7 +203,7 @@ namespace CTRPluginFramework
             {
                 LightLock_Init(&onLoadCroLock);
                 g_loadCroHook.Initialize(loadCroAddress, (u32)loadCROHooked);
-                croReturn = loadCroAddress + 8;
+                //croReturn = loadCroAddress + 8;
                 g_loadCroHook.Enable();
             }
         }

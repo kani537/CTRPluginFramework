@@ -120,15 +120,9 @@ executeKernelCmd:
 @ End of function executeKernelCmd
 
 FUNCTION	loadCROHooked
-	stmfd	sp!, {r0-r12, lr}
-	bl		onLoadCro
-	ldmfd	sp, {r0-r12, lr}
-	add		r4, sp, #0x38
-	ldr		r12, =croReturn
-	ldr		pc, [r12]
-
-FUNCTION	invincibleHooked
-	ldrh    r0, [r5, #0x42]
-	strh    r0, [r5, #0x44]
-	bx lr
-
+	@stmfd	sp!, {r0-r12, lr}  @ Overwritten instruction
+	str		lr, [sp, #-4]!     @ Save lr
+	bl		onLoadCro          @ Execute codes
+	ldr		lr, [sp], #4       @ Restore lr
+	ldmfd	sp, {r0-r12}       @ Restore registers, do not update sp
+	bx      lr                 @ Return to game
