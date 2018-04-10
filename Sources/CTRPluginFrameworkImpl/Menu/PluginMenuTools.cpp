@@ -15,6 +15,14 @@
 #include "ctrulib/util/utf.h"
 #include "CTRPluginFramework/Utils/Utils.hpp"
 
+#define ALPHA 1
+
+#if ALPHA
+#define VersionStr "CTRPluginFramework Alpha V.0.4.2"
+#else
+#define VersionStr "CTRPluginFramework Beta V.0.4.0"
+#endif
+
 namespace CTRPluginFramework
 {
     enum Mode
@@ -504,7 +512,7 @@ namespace CTRPluginFramework
 
         // Draw Framework version
         {
-            static const char *version = "CTRPluginFramework Beta V.0.4.0";
+            static const char *version = VersionStr;
             static const u32 xpos = (320 - Renderer::LinuxFontSize(version)) / 2;
 
             int posY = 205;
