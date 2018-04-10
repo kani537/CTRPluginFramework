@@ -1,4 +1,11 @@
 #include "CTRPluginFramework/Utils/Utils.hpp"
+#include "CTRPluginFramework/System/Directory.hpp"
+#include "CTRPluginFramework/Menu/MessageBox.hpp"
+#include "CTRPluginFrameworkImpl/Graphics/Icon.hpp"
+#include "CTRPluginFrameworkImpl/Menu/MenuFolderImpl.hpp"
+#include "CTRPluginFrameworkImpl/Menu/MenuEntryImpl.hpp"
+#include "CTRPluginFrameworkImpl/Menu/Menu.hpp"
+
 #include <cstdarg>
 #include <cstdio>
 #include <cstring>
@@ -95,6 +102,86 @@ namespace CTRPluginFramework
             size++;
         }
         return (size);
+    }
+
+    static void     ListFolders(MenuFolderImpl &folder, const std::string &filter)
+    {
+        std::string     &path = folder.note;
+        Directory       dir;
+        std::vector<std::string>    list;
+
+        int res = Directory::Open(dir, path);
+
+        if (res != 0)
+            MessageBox("Error", Utils::Format("%08X - %s", res, path.c_str()))();
+
+        if (path.size() > 1 && path[path.size() - 1] != '/')
+            path.append("/");
+        if (dir.ListDirectories(list) > 0)
+        {
+            for (std::string &name : list)
+            {
+                folder.Append(new MenuFolderImpl(name, path + name));
+            }
+        }
+
+        list.clear();
+
+        if (dir.ListFiles(list, filter) > 0)
+        {
+            for (std::string &name : list)
+            {
+                folder.Append(new MenuEntryImpl(name));
+            }
+        }
+    }
+
+    int Utils::SDExplorer(std::string &out, const std::string &filter)
+    {
+        Menu            menu("/", "", Icon::DrawFile);
+        MenuFolderImpl  &root = *menu.GetRootFolder();
+
+        // Use note to store current path
+        root.note = "/";
+
+        // List root's items
+        ListFolders(root, filter);
+
+        // Open menu
+        int             menuEvent = Nothing;
+        Event           event;
+        EventManager    eventManager;
+        MenuItem        *item;
+        Clock           clock;
+
+        do
+        {
+            menuEvent = Nothing;
+            while (eventManager.PollEvent(event) && menuEvent == Nothing)
+                menuEvent = menu.ProcessEvent(event, &item);
+
+            if (menuEvent == FolderChanged)
+            {
+                MenuFolderImpl *folder = reinterpret_cast<MenuFolderImpl *>(item);
+
+                if (!folder->ItemsCount())
+                {
+                    ListFolders(*folder, filter);
+                }
+            }
+
+            menu.Update(clock.Restart());
+            menu.Draw();
+            Renderer::EndFrame();
+        } while (menuEvent != EntrySelected && menuEvent != MenuClose);
+
+        if (menuEvent == MenuClose)
+            return -1;
+
+        out = menu.GetFolder()->note;
+        out.append("/");
+        out.append(menu.GetSelectedItem()->name);
+        return 0;
     }
 
     u32     Utils::RemoveLastChar(std::string &str)

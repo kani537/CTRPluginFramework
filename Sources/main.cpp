@@ -26,10 +26,6 @@ typedef unsigned long __PTRDIFF_TYPE__;
 #include <string>
 #include <iterator>
 
-#include "CTRPluginFrameworkImpl/Menu/MenuFolderImpl.hpp"
-#include "CTRPluginFrameworkImpl/Menu/MenuEntryImpl.hpp"
-#include "CTRPluginFrameworkImpl/Menu/Menu.hpp"
-#include "CTRPluginFrameworkImpl/Graphics/Icon.hpp"
 
 namespace CTRPluginFramework
 {
@@ -277,129 +273,12 @@ namespace CTRPluginFramework
         return *this;
     }
 
-    static void     ListFolders(MenuFolderImpl &folder, const std::string &filter)
-    {
-        std::string     &path = folder.note;
-        Directory       dir;
-        std::vector<std::string>    list;
-
-        int res = Directory::Open(dir, path);
-
-        if (res != 0)
-            MessageBox("Error", Utils::Format("%d - %s", res, path.c_str()))();
-
-        if (path.size() > 1 && path[path.size() - 1] != '/')
-            path.append("/");
-        if (dir.ListDirectories(list) > 0)
-        {
-            for (std::string &name : list)
-            {
-                folder.Append(new MenuFolderImpl(name, path + name));
-            }
-        }
-
-        list.clear();
-
-        if (dir.ListFiles(list, filter) > 0)
-        {
-            for (std::string &name : list)
-            {
-                folder.Append(new MenuEntryImpl(name));
-            }
-        }
-    }
-
-    int    SDExplorer(std::string &out, const std::string &filter = "")
-    {
-        Menu            menu("/", "", Icon::DrawFile);
-        MenuFolderImpl  &root = *menu.GetRootFolder();
-
-        // Use note to store current path
-        root.note = "/";
-
-        // List root's items
-        ListFolders(root, filter);
-
-        // Open menu
-        int             menuEvent = Nothing;
-        Event           event;
-        EventManager    eventManager;
-        MenuItem        *item;
-        Clock           clock;
-
-        do
-        {
-            menuEvent = Nothing;
-            while (eventManager.PollEvent(event) && menuEvent == Nothing)
-                menuEvent = menu.ProcessEvent(event, &item);
-
-            if (menuEvent == FolderChanged)
-            {
-                MenuFolderImpl *folder = reinterpret_cast<MenuFolderImpl *>(item);
-
-                if (!folder->ItemsCount())
-                {
-                    ListFolders(*folder, filter);
-                }
-            }
-
-            menu.Update(clock.Restart());
-            menu.Draw();
-            Renderer::EndFrame();
-        } while (menuEvent != EntrySelected && menuEvent != MenuClose);
-
-        if (menuEvent == MenuClose)
-            return -1;
-
-        out = menu.GetFolder()->note;
-        out.append("/");
-        out.append(menu.GetSelectedItem()->name);
-        return 0;
-    }
-
-    #define DEBUG 1
-#if DEBUG
-#   define TRACE Debug_Trace()
-#else
-#   define TRACE
-#endif
-    static std::string g_abortDebugStr;
-
-    void    Debug_Trace(void)
-    {
-        g_abortDebugStr = Utils::Format("%s: %s:%d", __FILE__, __FUNCTION__, __LINE__);
-    }
-
-    void    OnAbort(void)
-    {
-        OSD::Run([](const Screen &screen)
-        {
-            if (screen.IsTop)
-                return false;
-
-            screen.Draw("std::abort!!!", 10, 10, Color::Blank, Color::Red);
-            screen.Draw("Last function: " + g_abortDebugStr, 10, 20, Color::Blank, Color::Black);
-            return true;
-        });
-
-        for (;;); // Don't exit this function or the plugin will be shutdown (threads stopped and OSD unhooked)
-    }
-    extern "C" void invincibleHooked(void);
     int     main(void)
     {
         PluginMenu  *m = new PluginMenu("Action Replay", 1, 0, 5);
         PluginMenu  &menu = *m;
 
         menu.SynchronizeWithFrame(true);
-
-        menu += new MenuEntry("SDExplorer test", nullptr,
-        [](MenuEntry *entry)
-        {
-            std::string path;
-
-            if (!SDExplorer(path, ".txt"))
-                MessageBox("Info", "You chose: " + path)();
-        });
 
 #if DEBUG
         System::OnAbort = OnAbort;

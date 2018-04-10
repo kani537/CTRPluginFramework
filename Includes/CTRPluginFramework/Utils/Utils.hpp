@@ -62,6 +62,15 @@ namespace CTRPluginFramework
          */
         static u32          GetSize(const std::string &str);
 
+
+        /**
+         * \brief Open a menu which allow to browse the SD card to select a file
+         * \param out The path of the selected file
+         * \param filter If the files must be filtered (can be an extension or something that must be present in the filename)
+         * \return -1 if the user aborted the operation, 0 on success
+         */
+        static int          SDExplorer(std::string &out, const std::string &filter = "");
+
         /**
          * \brief Remove the last char of an utf8 string (max size 0x100)
          * \param str The string to remove the char from
