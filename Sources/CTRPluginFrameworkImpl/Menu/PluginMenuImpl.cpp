@@ -329,31 +329,6 @@ namespace CTRPluginFramework
                     _callbacks[i]();
                 }
 
-                // Check filenames
-                if (Preferences::DisplayFilesLoading)
-                {
-                    extern char                **g_filenames;
-                    extern int                 g_index;
-                    extern LightLock           g_OpenFileLock;
-
-                    if (g_index)
-                    {
-                        if (!OSD::TryLock())
-                        {
-                            if (!LightLock_TryLock(&g_OpenFileLock))
-                            {
-                                for (int i = 0; i < g_index; i++)
-                                {
-                                    OSD::Notify(g_filenames[i]);
-                                }
-                                g_index = 0;
-                                LightLock_Unlock(&g_OpenFileLock);
-                            }
-                            OSD::Unlock();
-                        }
-                    }
-                }
-
                 static KeySequenceImpl konamicode({ DPadUp, DPadUp, DPadDown, DPadDown, DPadLeft, DPadRight, DPadLeft, DPadRight, B, A, B, A });
 
                 if (konamicode())

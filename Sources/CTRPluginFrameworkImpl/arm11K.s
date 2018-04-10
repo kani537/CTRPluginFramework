@@ -126,3 +126,9 @@ FUNCTION	loadCROHooked
 	add		r4, sp, #0x38
 	ldr		r12, =croReturn
 	ldr		pc, [r12]
+
+FUNCTION	invincibleHooked
+	ldrh    r0, [r5, #0x42]
+	strh    r0, [r5, #0x44]
+	bx lr
+

@@ -28,7 +28,7 @@ namespace CTRPluginFramework
         {
             int val = *str - '0';
 
-            // Check that the mutiplication won't overflow 
+            // Check that the mutiplication won't overflow
             if (res > UINT32_MAX / 10)
                 goto overflow;
 
@@ -73,7 +73,7 @@ namespace CTRPluginFramework
         {
             int val = *str - '0';
 
-            // Check that the mutiplication won't overflow 
+            // Check that the mutiplication won't overflow
             if (res > U64_MAX / 10)
                 goto overflow;
 
@@ -118,11 +118,11 @@ namespace CTRPluginFramework
             {
                 temp = static_cast<u8>(std::stoul(input, nullptr, 16));
             }
-                
+
         }
         else
             temp = 0;
-            
+
         return (static_cast<void *>(&temp));
     }
 

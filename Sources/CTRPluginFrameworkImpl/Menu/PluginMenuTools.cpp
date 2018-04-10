@@ -12,6 +12,8 @@
 #include <cstring>
 #include <cstdio>
 #include "ctrulib/srv.h"
+#include "ctrulib/util/utf.h"
+#include "CTRPluginFramework/Utils/Utils.hpp"
 
 namespace CTRPluginFramework
 {
@@ -88,13 +90,10 @@ namespace CTRPluginFramework
     };
     static Hook         g_FsTryOpenFileHook;
     static u32          g_HookMode = NONE;
+    static u32          g_returncode[4];
     static File         g_hookExportFile;
-    static char         *g_buffer = nullptr;
-    static char         *g_buffer2 = nullptr;
     u32                 g_FsTryOpenFileAddress = 0;
-    char                **g_filenames = nullptr;
-    int                 g_index = 0;
-    LightLock           g_OpenFileLock;
+    static LightLock    g_OpenFileLock;
 
     static u32      FindNearestSTMFD(u32 addr)
     {
@@ -125,153 +124,167 @@ namespace CTRPluginFramework
             addr++;
         }
     }
+    static u32      FsTryOpenFileCallback(u32 a1, u16 *fileName, u32 mode);
+    static bool     InitFsTryOpenFileHook(void)
+    {
+        static bool isInitialized = false;
+
+        if (isInitialized)
+            return isInitialized;
+
+        auto  createReturncode = [](u32 address, u32 *buf)
+        {
+            Process::CopyMemory(buf, (void *)address, 8);
+            buf[2] = 0xE51FF004;
+            buf[3] = address + 8;
+        };
+
+        // Hook on OpenFile
+        u32     FsTryOpenFileAddress = 0;
+
+        FindFunction(FsTryOpenFileAddress);
+
+        // Check that we found the function
+        if (FsTryOpenFileAddress != 0)
+        {
+            // Create lock
+            LightLock_Init(&g_OpenFileLock);
+
+            // Initialize the return code
+            createReturncode(FsTryOpenFileAddress, g_returncode);
+
+            // Initialize the hook
+            g_FsTryOpenFileHook.flags.useLinkRegisterToReturn = false;
+            g_FsTryOpenFileHook.flags.ExecuteOverwrittenInstructionBeforeCallback = false;
+            g_FsTryOpenFileHook.Initialize(FsTryOpenFileAddress, (u32)FsTryOpenFileCallback);
+            g_FsTryOpenFileAddress = FsTryOpenFileAddress;
+            isInitialized = true;
+        }
+        else
+        {
+            OSD::Notify("Error: couldn't find OpenFile function");
+            // Disable the option
+            Preferences::DisplayFilesLoading = false;
+        }
+
+        return isInitialized;
+    }
 
     static u32      FsTryOpenFileCallback(u32 a1, u16 *fileName, u32 mode)
     {
+        u8      buffer[256] = {0};
+        std::string str;
+        int     units;
+
+        LightLock_Lock(&g_OpenFileLock);
+
         if (g_HookMode & OSD)
         {
-            while (g_index >= 50)
-                Sleep(Microseconds(1));
+            // Convert utf16 to utf8
+            units = utf16_to_utf8(buffer, fileName, 255);
 
-            LightLock_Lock(&g_OpenFileLock);
-
-            u8  *pname = (u8 *)g_filenames[g_index++];
-            u16 *name = fileName;
-            int i = 0;
-            while (*name && i++ < 79)
-                *pname++ = (u8)*name++;
-
-            *pname = 0;
-
-            LightLock_Unlock(&g_OpenFileLock);
+            if (units > 0)
+            {
+                str = (char *)buffer;
+                OSD::Notify(str);
+            }
         }
 
         if (g_HookMode & FILE)
         {
-            u16 *name = fileName;
-            u8  *u8Name = (u8 *)g_buffer2;
-           // u8  *pBuf = (u8 *)g_buffer;
+            // Convert utf16 to utf8 if necessary
+            if (str.empty())
+            {
+                units = utf16_to_utf8(buffer, fileName, 255);
+                if (units > 0)
+                    str = (char *)buffer;
+            }
 
-            while (*name)
-                *u8Name++ = (u8)*name++;
-            *u8Name++ = '\r';
-            *u8Name++ = '\n';
-            *u8Name = 0;
-
-            g_hookExportFile.Write(g_buffer2, strlen(g_buffer2));
+            // If string isn't empty, write to file
+            if (!str.empty())
+            {
+                g_hookExportFile.WriteLine(str);
+            }
         }
 
-        return (((FsTryOpenFileType)g_FsTryOpenFileHook.returnCode)(a1, fileName, mode));
+        LightLock_Unlock(&g_OpenFileLock);
+
+        return (((FsTryOpenFileType)g_returncode)(a1, fileName, mode));
     }
 
     static void    _DisplayLoadedFiles(MenuEntryTools *entry)
     {
         // If we must enable the hook
-        if (entry->IsActivated())
+        if (entry->WasJustActivated())
         {
-            // If buffer is null, allocate it
-            if (g_filenames == nullptr)
-            {
-                g_filenames = new char*[50];
-                for (int i = 0; i < 50; i++)
-                    g_filenames[i] = new char[80];
-            }
-
-            // If hook is not initialized
-            if (!g_FsTryOpenFileHook.flags.isInitialized)
-            {
-                // Hook on OpenFile
-                u32 FsTryOpenFileAddress = 0;
-
-                FindFunction(FsTryOpenFileAddress);
-
-                // Check that we found the function
-                if (FsTryOpenFileAddress)
-                {
-                    LightLock_Init(&g_OpenFileLock);
-
-                    g_FsTryOpenFileHook.Initialize(FsTryOpenFileAddress, (u32)FsTryOpenFileCallback);
-                    g_FsTryOpenFileAddress = FsTryOpenFileAddress;
-                }
-                else
-                {
-                    OSD::Notify("Error: couldn't find OpenFile function");
-                    Preferences::DisplayFilesLoading = false;
-                    return;
-
-                }
-            }
+            // Initialize hook
+            if (!InitFsTryOpenFileHook())
+                entry->Disable(); ///< Hook failed
 
             // Enable the hook
-            g_FsTryOpenFileHook.Enable();
             Preferences::DisplayFilesLoading = true;
             g_HookMode |= OSD;
+            g_FsTryOpenFileHook.Enable();
             return;
         }
+        if (!entry->IsActivated())
+        {
+            // Disable OSD
+            Preferences::DisplayFilesLoading = false;
+            g_HookMode &= ~OSD;
 
-        // If we must disable the hook
-        Preferences::DisplayFilesLoading = false;
-        g_HookMode &= OSD;
-
-        if (!g_HookMode)
-            g_FsTryOpenFileHook.Disable();
+            // If there's no task to do on the hook, disable it
+            if (g_HookMode == 0)
+                g_FsTryOpenFileHook.Disable();
+        }
     }
 
     static void    _WriteLoadedFiles(MenuEntryTools *entry)
     {
         // If we must enable the hook
-        if (entry->IsActivated())
+        if (entry->WasJustActivated())
         {
-
-            // If buffers aren't allocated
-            if (g_buffer == nullptr)
-                g_buffer = new char[256];
-            if (g_buffer2 == nullptr)
-                g_buffer2 = new char[256];
-
-            // If hook is not initialized
-            if (!g_FsTryOpenFileHook.flags.isInitialized)
-            {
-                // Hook on OpenFile
-                u32 FsTryOpenFileAddress = 0;
-
-                FindFunction(FsTryOpenFileAddress);
-
-                // Check that we found the function
-                if (FsTryOpenFileAddress)
-                {
-                    LightLock_Init(&g_OpenFileLock);
-
-                    g_FsTryOpenFileHook.Initialize(FsTryOpenFileAddress, (u32)FsTryOpenFileCallback);
-                    g_FsTryOpenFileAddress = FsTryOpenFileAddress;
-                }
-                else
-                {
-                    OSD::Notify("Error: couldn't find OpenFile function");
-                    return;
-                }
-            }
+            // Initialize hook
+            if (!InitFsTryOpenFileHook())
+                entry->Disable(); ///< Hook failed
 
             // Open the file
-            int mode = File::READ | File::WRITE | File::CREATE | File::APPEND;
-            if (File::Open(g_hookExportFile, "LoadedFiles.txt", mode) != 0)
+            int     mode = File::READ | File::WRITE | File::CREATE | File::APPEND;
+            std::string filename = Utils::Format("[%016llX] - LoadedFiles.txt", Process::GetTitleID());
+
+            if (File::Open(g_hookExportFile, filename, mode) != 0)
             {
-                OSD::Notify("Error: couldn't open LoadedFiles.txt", Color::Red, Color::Blank);
+                OSD::Notify(std::string("Error: couldn't open \"").append(filename).append("\""), Color::Red, Color::Blank);
+                entry->Disable(); ///< Disable the entry
                 return;
             }
 
+            static bool firstActivation = true;
+
+            if (firstActivation)
+            {
+                g_hookExportFile.WriteLine("\r\n\r\n### New log ###\r\n");
+                firstActivation = false;
+            }
+
             // Enable the hook
-            g_FsTryOpenFileHook.Enable();
             g_HookMode |= FILE;
+            g_FsTryOpenFileHook.Enable();
+
             return;
         }
 
-        // If we must disable the hook
-        g_HookMode &= FILE;
-        g_hookExportFile.Flush();
-        g_hookExportFile.Close();
-        if (!g_HookMode)
-            g_FsTryOpenFileHook.Disable();
+        if (!entry->IsActivated())
+        {
+            // Disable File exporting
+            g_HookMode &= ~FILE;
+            g_hookExportFile.Flush();
+            g_hookExportFile.Close();
+
+            // If there's no task to do on the hook, disable it
+            if (g_HookMode == 0)
+                g_FsTryOpenFileHook.Disable();
+        }
     }
 
     static bool     ConfirmBeforeProceed(const std::string &task)
