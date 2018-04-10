@@ -1,92 +1,200 @@
 #include "Hook.hpp"
 #include "CTRPluginFramework/System/Process.hpp"
 #include <cstring>
+#include "ctrulib/result.h"
+#include "CTRPluginFrameworkImpl/arm11kCommands.h"
 
-static void  generate_jump_code(u32 jump_addr, u32 *jump_code)
+#define MAX_HOOK_WRAPPERS 93
+
+struct HookWrapper
 {
-    jump_code[0] = 0xE51FF004; // LDR   PC, [PC, #-4]
-    jump_code[1] = jump_addr;
+    u32     backupAndUpdateLR[3];  ///< Default: nop
+    u32     overwrittenInstr;   ///< Default: nop
+    u32     jumpToCallback;     ///< ldr pc, [pc, #-4]
+    u32     callbackAddress;    ///< Address of the code to jump to
+    u32     restoreLR;          ///< Default: nop
+    u32     overwrittenInstr2;  ///< Default: nop
+    u32     jumpBackToGame;     ///< ldr pc, [pc, #-4]
+    u32     returnAddress;
+    u32     lrBackup;
+};
+
+struct HookManager  ///< 0x1E8 0000
+{
+    HookWrapper     wrappers[MAX_HOOK_WRAPPERS];
+
+    // Return index free or -1 if error
+    static int      AllocNewHook(void);
+    // Free a new index
+    static void     FreeHook(u32 &index);
+};
+
+static bool     HookManagerInit(void);
+static HookManager  *g_manager = nullptr;
+
+int     HookManager::AllocNewHook(void)
+{
+    if (!HookManagerInit())
+        return -1;
+
+    for (int i = 0; i < MAX_HOOK_WRAPPERS; ++i)
+    {
+        if (g_manager->wrappers[i].callbackAddress == 0)
+            return i;
+    }
+
+    return -1;
 }
 
-static void  generate_jump_code_with_pc(u32 jump_addr, u32 *jump_code)
+void    HookManager::FreeHook(u32 &index)
 {
-    jump_code[0] = 0xE52DF004; // PUSH  {PC}
-    jump_code[1] = 0xE51FF004; // LDR   PC, [PC, #-4]
-    jump_code[2] = jump_addr;
+    if (!HookManagerInit() || index >= MAX_HOOK_WRAPPERS)
+        return;
+
+    memset(&g_manager->wrappers[index], 0, sizeof(HookWrapper));
+
+    index = -1;
+}
+
+static bool     HookManagerInit(void)
+{
+    if (g_manager != nullptr)
+        return true;
+
+    if (CTRPluginFramework::Process::CheckAddress(0x1E80000))
+    {
+        g_manager = reinterpret_cast<HookManager *>(0x1E80000);
+
+        // Clear the memory
+        u32     *mem = reinterpret_cast<u32 *>(0x1E80000);
+        for (u32 i = 0; i < 1024; ++i)
+            mem[i] = 0;
+
+        return true;
+    }
+
+    // Allocate the region
+    u32     dest = 0x1E80000;
+    if (R_FAILED(arm11kSvcControlMemory(&dest, dest, 0x1000, 0x203u, MEMPERM_READ | MEMPERM_WRITE)))
+        return false;
+
+    // Fix perms
+    CTRPluginFramework::Process::CheckRegion(dest, dest, 7);
+
+    return HookManagerInit();
 }
 
 Hook::Hook(void)
 {
-    flags.isInitialized = false;
     flags.isEnabled = false;
-    flags.isPcSavingHook = false;
+    flags.useLinkRegisterToReturn = true;
+    flags.ExecuteOverwrittenInstructionBeforeCallback = true;
+    flags.ExecuteOverwrittenInstructionAfterCallback = false;
     targetAddress = 0;
-    afterHookAddress = 0;
-    memset(targetCode, 0, 12);
-    memset(jumpCode, 0, 12);
-    memset(returnCode, 0, 20);
+    returnAddress = 0;
+    callbackAddress = 0;
+    overwritterInstr = 0;
+    index = -1;
 }
 
-void    Hook::Initialize(u32 addr, u32 callbackAddr, bool savePc)
+void    Hook::Initialize(u32 targetAddr, u32 callbackAddr, u32 returnAddr)
 {
-    if (flags.isInitialized)
-        return;
-
-    flags.isEnabled = false;
-    flags.isPcSavingHook = savePc;
-    targetAddress = addr;
-    afterHookAddress = addr + (savePc ? 12 : 8);
-
-    // Backup original code
-    if (!CTRPluginFramework::Process::CopyMemory(targetCode, (void *)addr, 12))
-        goto error;
-
-    // Generate jump instruction
-    if (savePc)
-        generate_jump_code_with_pc(callbackAddr, jumpCode);
-    else
-        generate_jump_code(callbackAddr, jumpCode);
-
-    // Create return code, no need to adapt to PC mode as it shouldn't be used with this kind of hook
-    if (!CTRPluginFramework::Process::CopyMemory(returnCode, (void *)addr, 8))
-        goto error;
-
-    generate_jump_code(targetAddress + 8, returnCode + 2);
-
-    flags.isInitialized = true;
-    return;
-
-error:
-    flags.isInitialized = false;
+    targetAddress = targetAddr;
+    callbackAddress = callbackAddr;
+    if (returnAddr == 0)
+        returnAddr = targetAddr + 4;
+    returnAddress = returnAddr;
 }
 
-void    Hook::DeInitialize(void)
+bool    Hook::Enable(void)
 {
-    if (!flags.isInitialized)
-        return;
-
     if (flags.isEnabled)
-        Disable();
+        return true;
 
-    flags.isInitialized = false;
-}
+    // Check that the target is writable
+    if (!CTRPluginFramework::Process::CheckAddress(targetAddress, 7))
+        return false;
 
-void    Hook::Enable(void)
-{
-    if (flags.isEnabled || !flags.isInitialized)
-        return;
+    // Try to get a free slot in the HookManager
+    index = HookManager::AllocNewHook();
 
-    if (CTRPluginFramework::Process::CheckAddress(targetAddress, 7))
-        if (CTRPluginFramework::Process::CopyMemory((void *)targetAddress, jumpCode, flags.isPcSavingHook ? 12 : 8))
-            flags.isEnabled = true;
+    if (index >= MAX_HOOK_WRAPPERS)
+        return false;
+
+    // Get the current instruction
+    overwritterInstr = *reinterpret_cast<u32 *>(targetAddress);
+
+    // Time to configure the wrapper
+    u32         nop = 0xE320F000;
+    u32         jmpAddr = 0xE51FF004;
+    HookWrapper *wrapper = &g_manager->wrappers[index];
+
+    // Use BX LR option
+    if (flags.useLinkRegisterToReturn)
+    {
+        /*  Backup LR and update it
+        str     lr, [pc, #36]
+        mov     lr, pc
+        add     lr, lr, #12
+        */
+        wrapper->backupAndUpdateLR[0] = 0xE58FE024;
+        wrapper->backupAndUpdateLR[1] = 0xE1A0E00F;
+        wrapper->backupAndUpdateLR[2] = 0xE28EE00C;
+
+        /* Restore LR
+        ldr     lr, [pc, #8]
+        */
+        wrapper->restoreLR = 0xE59FE008;
+    }
+    else
+    {
+        wrapper->backupAndUpdateLR[0] = nop;
+        wrapper->backupAndUpdateLR[1] = nop;
+        wrapper->backupAndUpdateLR[2] = nop;
+        wrapper->restoreLR = nop;
+    }
+
+    // Execute overwritten instruction before callback
+    if (flags.ExecuteOverwrittenInstructionBeforeCallback)
+    {
+        wrapper->overwrittenInstr = overwritterInstr;
+    }
+    else
+        wrapper->overwrittenInstr = nop;
+
+    // Jump code to callback
+    wrapper->jumpToCallback = jmpAddr;
+    wrapper->callbackAddress = callbackAddress;
+
+    // Execute overwritten instruction after callback
+    if (flags.ExecuteOverwrittenInstructionAfterCallback)
+    {
+        wrapper->overwrittenInstr2 = overwritterInstr;
+    }
+    else
+        wrapper->overwrittenInstr2 = nop;
+
+    // Return to game
+    wrapper->jumpBackToGame = jmpAddr;
+    wrapper->returnAddress = returnAddress;
+
+    // Now set the branch
+    u32 off = reinterpret_cast<u32>(wrapper) - (targetAddress + 8);
+    *reinterpret_cast<u32 *>(targetAddress) = 0xEA000000 | ((off >> 2) & 0xFFFFFF);
+
+    // We're done
+    flags.isEnabled = true;
+    return true;
 }
 
 void    Hook::Disable(void)
 {
-    if (!flags.isEnabled || !flags.isInitialized)
+    if (!flags.isEnabled)
         return;
 
-    if (CTRPluginFramework::Process::CheckAddress(targetAddress, 7))
-        if (CTRPluginFramework::Process::CopyMemory((void *)targetAddress, targetCode, flags.isPcSavingHook ? 12 : 8))
-            flags.isEnabled = false;
+    if (CTRPluginFramework::Process::Write32(targetAddress, overwritterInstr))
+    {
+        flags.isEnabled = false;
+        HookManager::FreeHook(index);
+    }
 }
