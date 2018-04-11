@@ -31,6 +31,7 @@ struct HookManager  ///< 0x1E8 0000
 };
 
 static bool     HookManagerInit(void);
+
 static HookManager  *g_manager = nullptr;
 
 int     HookManager::AllocNewHook(void)
@@ -40,7 +41,9 @@ int     HookManager::AllocNewHook(void)
 
     for (int i = 0; i < MAX_HOOK_WRAPPERS; ++i)
     {
-        if (g_manager->wrappers[i].callbackAddress == 0)
+        HookWrapper *wrapper = &g_manager->wrappers[i];
+
+        if (wrapper->callbackAddress == 0)
             return i;
     }
 
@@ -94,7 +97,7 @@ Hook::Hook(void)
     targetAddress = 0;
     returnAddress = 0;
     callbackAddress = 0;
-    overwritterInstr = 0;
+    overwrittenInstr = 0;
     index = -1;
 }
 
@@ -107,23 +110,70 @@ void    Hook::Initialize(u32 targetAddr, u32 callbackAddr, u32 returnAddr)
     returnAddress = returnAddr;
 }
 
-bool    Hook::Enable(void)
+static bool  IsTargetAlreadyHooked(u32 target, u32 instruction)
+{
+    if ((instruction >> 24) != 0xEA)
+        return false;
+
+    u32     minOffset = (0x1E80000 - (target + 8)) >> 2;
+    u32     maxOffset = (0x1E81000 - (target + 8)) >> 2;
+    u32     off = instruction & 0xFFFFFF;
+
+    return off >= minOffset && off < maxOffset;
+}
+
+// Ensure that the instruction isn't a memory access depending on PC
+static bool  IsInstructionPCDependant(u32 instruction)
+{
+    static const u32  forbiddenInstructions[] =
+    {
+        0xE59F, ///< ldr x, [pc, x]
+        0xE58F, ///< str x, [pc, x]
+        0xED9F, ///< vldr x, [pc, x] even register (s0, s2 etc)
+        0xEDDF, ///< vldr x, [pc, x] odd register (s1, s3 etc)
+        0xED8F, ///< vstr x, [pc, x] even register (s0, s2 etc)
+        0xEDCF, ///< vstr x, [pc, x] odd register (s1, s3 etc)
+    };
+
+    instruction >>= 16;
+
+    for (u32 forbiddenInstruction : forbiddenInstructions)
+        if (instruction == forbiddenInstruction)
+            return true;
+
+    return false;
+}
+
+HookResult    Hook::Enable(void)
 {
     if (flags.isEnabled)
-        return true;
+        return HookResult::Success;
+
+    // Check hook parameters
+    if (flags.ExecuteOverwrittenInstructionBeforeCallback && flags.ExecuteOverwrittenInstructionAfterCallback)
+        return HookResult::HookParamsError;
 
     // Check that the target is writable
     if (!CTRPluginFramework::Process::CheckAddress(targetAddress, 7))
-        return false;
+        return HookResult::InvalidAddress;
+
+    // Get the current instruction
+    overwrittenInstr = *reinterpret_cast<u32 *>(targetAddress);
+
+    // Check if the target is already hooked
+    if (IsTargetAlreadyHooked(targetAddress, overwrittenInstr))
+        return HookResult::AddressAlreadyHooked;
 
     // Try to get a free slot in the HookManager
     index = HookManager::AllocNewHook();
 
     if (index >= MAX_HOOK_WRAPPERS)
-        return false;
+        return HookResult::TooManyHooks;
 
-    // Get the current instruction
-    overwritterInstr = *reinterpret_cast<u32 *>(targetAddress);
+    // Check if the instruction is PC dependant
+    if (flags.ExecuteOverwrittenInstructionBeforeCallback || flags.ExecuteOverwrittenInstructionAfterCallback)
+        if (IsInstructionPCDependant(overwrittenInstr))
+            return HookResult::TargetInstructionCannotBeHandledAutomatically;
 
     // Time to configure the wrapper
     u32         nop = 0xE320F000;
@@ -161,7 +211,7 @@ bool    Hook::Enable(void)
     // Execute overwritten instruction before callback
     if (flags.ExecuteOverwrittenInstructionBeforeCallback)
     {
-        wrapper->overwrittenInstr = overwritterInstr;
+        wrapper->overwrittenInstr = overwrittenInstr;
     }
     else
         wrapper->overwrittenInstr = nop;
@@ -173,7 +223,7 @@ bool    Hook::Enable(void)
     // Execute overwritten instruction after callback
     if (flags.ExecuteOverwrittenInstructionAfterCallback)
     {
-        wrapper->overwrittenInstr2 = overwritterInstr;
+        wrapper->overwrittenInstr2 = overwrittenInstr;
     }
     else
         wrapper->overwrittenInstr2 = nop;
@@ -188,7 +238,7 @@ bool    Hook::Enable(void)
 
     // We're done
     flags.isEnabled = true;
-    return true;
+    return HookResult::Success;
 }
 
 void    Hook::Disable(void)
@@ -196,7 +246,7 @@ void    Hook::Disable(void)
     if (!flags.isEnabled)
         return;
 
-    if (CTRPluginFramework::Process::Write32(targetAddress, overwritterInstr))
+    if (CTRPluginFramework::Process::Write32(targetAddress, overwrittenInstr))
     {
         flags.isEnabled = false;
         HookManager::FreeHook(index);

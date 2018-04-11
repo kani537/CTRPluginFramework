@@ -15,13 +15,23 @@ union   HookStatus
     u32     raw;
 };
 
+enum class HookResult
+{
+    Success,
+    InvalidAddress,     ///< The target address was not reachable
+    AddressAlreadyHooked,   ///< A hook is already enabled to the same address
+    TooManyHooks,       ///< You attained the maximum of enabled hooks (current limit: 91)
+    HookParamsError,     ///< The parameters of your hook seems off
+    TargetInstructionCannotBeHandledAutomatically ///< The target's instruction is position dependant (PC) hence using ExecuteOverwrittenInstructionBeforeCallback or ExecuteOverwrittenInstructionAfterCallback is impossible.
+};
+
 struct  Hook
 {
     HookStatus  flags{};  ///< See HookStatus
     u32         targetAddress;  ///< The address to hook from
     u32         returnAddress;  ///< The address to return to after callback | Default: targetAddress + 4
     u32         callbackAddress;   ///< The address of the callback
-    u32         overwritterInstr;
+    u32         overwrittenInstr;
     u32         index;
 
     Hook();
@@ -36,9 +46,9 @@ struct  Hook
 
     /**
      * \brief Apply the hook
-     * \return true if the operation was a success
+     * \return Return the result of the operation (see HookResult for more infos)
      */
-    bool        Enable(void);
+    HookResult  Enable(void);
 
     /**
      * \brief Disable the hook
