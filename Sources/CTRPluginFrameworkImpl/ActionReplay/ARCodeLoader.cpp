@@ -400,7 +400,7 @@ namespace CTRPluginFramework
             // Add current line to ctx in case of error later
             //entry->context.data += line + "\r\n";
 
-            // If we're in E or FE mode
+            // If we're in E or FE, FD mode
             if (ecode)
             {
                 if (!ActionReplay_GetData(line, &entry->context, index))
@@ -420,10 +420,10 @@ namespace CTRPluginFramework
             if (error)
                 XTRACE4("Error: %s", line.c_str());
             // If the code is a E code (data)
-            ecode = !error && (code.Type == 0xE0 || code.Type == 0xFE);
+            ecode = !error && IsCodeWithData(code.Type);
             if (ecode)
             {
-                u32 bytes = code.Type == 0xE0 ? code.Right : code.Left;
+                u32 bytes = code.Type == 0xE0 || code.Type == 0xFD ? code.Right : code.Left;
 
                 count = bytes / 8 + (bytes % 8 > 0 ? 1 : 0);
                 code.Data.resize(count * 2);

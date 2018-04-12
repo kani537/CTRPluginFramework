@@ -161,6 +161,14 @@ namespace CTRPluginFramework
         entry->_flags.state = false;
         entry->_flags.justChanged = false;
 
+        // Disable all hooks
+        if (entry->context.hooks != nullptr)
+        {
+            for (Hook &hook : *entry->context.hooks)
+                hook.Disable();
+            entry->context.hooks->clear();
+        }
+
         // Remove entry from list
         list.erase(std::remove(list.begin(), list.end(), entry), list.end());
     }

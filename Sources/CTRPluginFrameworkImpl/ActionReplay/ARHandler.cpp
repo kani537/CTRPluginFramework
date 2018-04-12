@@ -33,6 +33,7 @@ namespace CTRPluginFramework
     u32     ARHandler::ActiveData = 0;
     bool    ARHandler::ExitCodeImmediately = false;
     static bool ToggleFloat = false;
+    static ARCodeContext *g_context;
 
     bool    ActionReplay_IsValidAddress(u32 address, bool write)
     {
@@ -46,21 +47,22 @@ namespace CTRPluginFramework
 
 #define CheckAddress(addr, write) ActionReplay_IsValidAddress(addr, write)
 
-    void    ARHandler::Execute(const ARCodeVector& arcodes, u32(&storage)[2])
+    void    ARHandler::Execute(ARCodeContext &ctx)
     {
+        g_context = &ctx;
         Offset[0] = 0;
         Offset[1] = 0;
         Data[0].Clear();
         Data[1].Clear();
-        Storage[0] = storage[0];
-        Storage[1] = storage[1];
+        Storage[0] = ctx.storage[0];
+        Storage[1] = ctx.storage[1];
         ActiveOffset = 0;
         ActiveData = 0;
         ExitCodeImmediately = false;
         ToggleFloat = false;
-        _Execute(arcodes);
-        storage[0] = Storage[0];
-        storage[1] = Storage[1];
+        _Execute(ctx.codes);
+        ctx.storage[0] = Storage[0];
+        ctx.storage[1] = Storage[1];
     }
 
     bool    Write32(u32 address, u32 value)
@@ -240,7 +242,7 @@ bool AlmostEqualRelative(float A, float B, float maxRelDiff = FLT_EPSILON);
         int             loopIteration = 0;
         ARCodeVector    loopCodes;
 
-        for (const ARCode code : codes)
+        for (const ARCode &code : codes)
         {
             Register &currentData = Data[ActiveData];
 
@@ -822,6 +824,45 @@ bool AlmostEqualRelative(float A, float B, float maxRelDiff = FLT_EPSILON);
                 if (Offset[0] && Offset[1])
                 {
                     ExitCodeImmediately = !Process::CopyMemory((void *)Offset[0], (void *)Offset[1], code.Right);
+                }
+                break;
+            }
+            case 0xFD: ///< Hook
+            {
+                HookVector *hooks = g_context->hooks;
+
+                // Check for disable mode (FD1)
+                if (code.Left >> 20 == 1)
+                {
+                    if (hooks != nullptr)
+                    {
+                        int index = 0;
+                        for (Hook &hook : *hooks)
+                        {
+                            if (hook.targetAddress == code.Right)
+                            {
+                                hook.Disable();
+                                hooks->erase(hooks->begin() + index);
+                                break;
+                            }
+                            ++index;
+                        }
+                    }
+                    break;
+                }
+
+                // Add a new hook
+                if (hooks == nullptr) g_context->hooks = hooks = new HookVector;
+
+                Hook    hook;
+
+                hook.flags.useLinkRegisterToReturn = (code.Left & 0x10) != 0x10;
+                hook.flags.ExecuteOverwrittenInstructionBeforeCallback = (code.Left & 1) != 1;
+                hook.Initialize(Offset[ActiveOffset], (u32)code.Data.data());
+
+                if (hook.Enable() == HookResult::Success)
+                {
+                    hooks->push_back(hook);
                 }
                 break;
             }

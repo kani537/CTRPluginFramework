@@ -1,4 +1,5 @@
 #include "CTRPluginFrameworkImpl/Menu/PluginMenuActionReplay.hpp"
+#include "CTRPluginFrameworkImpl/Menu/PluginMenuExecuteLoop.hpp"
 #include "CTRPluginFrameworkImpl/ActionReplay/ARCode.hpp"
 #include "CTRPluginFrameworkImpl/ActionReplay/MenuEntryActionReplay.hpp"
 #include "CTRPluginFramework/Utils.hpp"
@@ -176,7 +177,9 @@ namespace CTRPluginFramework
             {
                 MenuEntryActionReplay *e = reinterpret_cast<MenuEntryActionReplay *>(item);
 
-                e->Disable();
+                // Disable the hard way :p
+                PluginMenuExecuteLoop::RemoveAR(e);
+
                 // Edit code
                 ARCodeEditor::Edit(e->context);
                 e->context.Update();

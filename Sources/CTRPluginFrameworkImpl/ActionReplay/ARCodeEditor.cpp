@@ -566,6 +566,9 @@ namespace CTRPluginFramework
         case 0xFC: ///< Copy
             ret = Utils::Format("Copy %08X, off#2 => off#1", code.Right);
             break;
+        case 0xFD: ///< Hook
+            ret = "hook at offset";
+            break;
         case 0xFE: ///< Memsearch
             ret = Utils::Format("if pattern in [off:%08X]:", code.Right);
             break;
@@ -664,8 +667,8 @@ namespace CTRPluginFramework
 
             const bool    ctDiffer = nextCodeType != currentCodeType;
 
-            // If the codetype change for E or FE
-            if (ctDiffer && (nextCodeType == "E" || nextCodeType == "FE"))
+            // If the codetype change for E or FE or FD
+            if (ctDiffer && (nextCodeType == "E" || nextCodeType == "FE" || nextCodeType == "FD"))
             {
                 // Be sure that the whole line is empty
                 base.Text = __emptyCode;
@@ -676,9 +679,9 @@ namespace CTRPluginFramework
                     base.Text[1] = nextCodeType[1];
             }
             // If the code type changes from E or FE to something else, ask before pursue
-            else if (ctDiffer && !base.Data.empty() && (currentCodeType == "E" || currentCodeType == "FE"))
+            else if (ctDiffer && !base.Data.empty() && (currentCodeType == "E" || currentCodeType == "FE" || currentCodeType == "FD"))
             {
-                if (!MessageBox(Color::Orange << "Warning", "You're about to delete the E code with all it's data, continue ?", DialogType::DialogYesNo)())
+                if (!MessageBox(Color::Orange << "Warning", "You're about to delete a code with all it's data, continue ?", DialogType::DialogYesNo)())
                     return;
 
                 // Be sure that the whole line is empty
@@ -692,9 +695,9 @@ namespace CTRPluginFramework
                 return;
             }
             // If what changes is the size to patch for E or FE code
-            else if ((cursor >= 8 && base.Type == 0xE0) || (IsInRange(cursor, 2, 7) && base.Type == 0xFE))
+            else if ((cursor >= 8 && (base.Type == 0xE0 || base.Type == 0xFD) || (IsInRange(cursor, 2, 7) && base.Type == 0xFE)))
             {
-                u32             size = base.Type == 0xE0 ? base.Right : base.Left;
+                u32             size = base.Type == 0xE0 || base.Type == 0xFD ? base.Right : base.Left;
                 bool            error;
                 int             currentLines = size / 8 + (size % 8 > 0 ? 1 : 0);
                 int             newLines = 0;
@@ -721,7 +724,7 @@ namespace CTRPluginFramework
                 base.Text[cursor] = value;
                 if (!base.Update(base.Text))
                 {
-                    size = base.Type == 0xE0 ? base.Right : base.Left;
+                    size = base.Type == 0xE0 || base.Type == 0xFD ? base.Right : base.Left;
                     if (size > 0)
                         base.Data.resize((size / 8 + ((size % 8) > 0 ? 1 : 0)) * 2);
                     else
@@ -1246,10 +1249,10 @@ namespace CTRPluginFramework
             _codes.push_back(CodeLine(code));
             _codes.back().index = index++;
 
-            // If the code is E or FE type, add all its data
-            if ((code.Type == 0xE0 || code.Type == 0xFE) && !code.Data.empty())
+            // If the code is E or FD, FE type, add all its data
+            if (IsCodeWithData(code.Type) && !code.Data.empty())
             {
-                u32 flags = code.Type == 0xE0 ? CodeLine::PatchData : CodeLine::PatternData;
+                u32 flags = code.Type == 0xE0 || code.Type == 0xFD ? CodeLine::PatchData : CodeLine::PatternData;
 
                 for (int i = 0; i < code.Data.size() - 1; i += 2)
                 {

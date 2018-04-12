@@ -8,6 +8,7 @@
 
 #include <string>
 #include <vector>
+#include "Hook.hpp"
 
 namespace CTRPluginFramework
 {
@@ -42,14 +43,16 @@ namespace CTRPluginFramework
     };
 
     using ARCodeVector = std::vector<ARCode>;
+    using HookVector = std::vector<Hook>;
 
     struct ARCodeContext
     {
+        ARCodeContext();
         bool            hasError;   ///< True if any of the codes has an unrecognized char
         //std::string     data;       ///< Original data in case of error
-        u32             storage[2]; ///< Storage for this code
+        u32             storage[2]; ///< Storage for this code (persistent register)
         ARCodeVector    codes;      ///< List of all codes
-
+        HookVector      *hooks;     ///< List of all hooks
         bool            Update(void);
         void            Clear(void);
     };
@@ -78,6 +81,11 @@ namespace CTRPluginFramework
     void    ActionReplay_ProcessString(std::string &str, bool canNewLine = true);
     void    ActionReplay_LoadCodes(MenuFolderImpl *dst);
     bool    ActionReplay_WriteToFile(LineWriter &file, MenuItem *item);
+
+    static inline bool IsCodeWithData(u32 type)
+    {
+        return type == 0xE0 || type == 0xFD || type == 0xFE;
+    }
 }
 
 #endif

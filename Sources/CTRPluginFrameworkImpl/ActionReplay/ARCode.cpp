@@ -10,8 +10,8 @@ namespace CTRPluginFramework
         0x00, 0x10, 0x20, 0x30, 0x40, 0x50, 0x60, 0x70, 0x80, 0x90, 0xA0,
         0xB0, 0xD3, 0xDC, 0xC0, 0xD2, 0xD1, 0xD0, 0xD4, 0xD5, 0xD6, 0xD7,
         0xD8, 0xD9, 0xDA, 0xDB, 0xE0, 0xDD, 0xDE, 0xDF, 0xF0, 0xF1, 0xF2,
-        0xF3, 0xF4, 0xF5, 0xF6, 0xF7, 0xF8, 0xF9, 0xFA, 0xFB, 0xFC, 0xFE,
-        0xFF
+        0xF3, 0xF4, 0xF5, 0xF6, 0xF7, 0xF8, 0xF9, 0xFA, 0xFB, 0xFC, 0xFD,
+        0xFE, 0xFF
     };
 
     namespace ActionReplayPriv
@@ -121,7 +121,7 @@ namespace CTRPluginFramework
 
     bool    ARCode::Update(void)
     {
-        if (Type == 0xE0 || Type == 0xFE)
+        if (Type == 0xE0 || Type == 0xFE || Type == 0xFD)
             return HasError;
 
         if (HasError && !Text.empty())
@@ -131,6 +131,13 @@ namespace CTRPluginFramework
             Text.clear();
 
         return HasError;
+    }
+
+    ARCodeContext::ARCodeContext() :
+        hasError{ false }, hooks{ nullptr }
+    {
+        storage[0] = 0;
+        storage[1] = 0;
     }
 
     std::string     ARCode::ToString(void) const
@@ -165,5 +172,12 @@ namespace CTRPluginFramework
         //data.clear();
         storage[0] = storage[1] = 0;
         codes.clear();
+
+        if (hooks != nullptr)
+        {
+            for (Hook &hook : *hooks)
+                hook.Disable();
+            hooks->clear();
+        }
     }
 }

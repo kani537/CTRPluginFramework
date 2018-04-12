@@ -11,16 +11,15 @@ namespace CTRPluginFramework
         if (!entry || !entry->IsActivated()) return;
 
         MenuEntryActionReplay *ar = reinterpret_cast<MenuEntryActionReplay *>(entry);
+        ARCodeContext &ctx = ar->context;
 
-        if (!ar) return;
-
-        if (ar->context.hasError || ar->context.codes.empty())
+        if (ctx.hasError || ctx.codes.empty())
         {
             entry->Disable();
             return;
         }
 
-        ARHandler::Execute(ar->context.codes, ar->context.storage);
+        ARHandler::Execute(ctx);
     }
 
     MenuEntryActionReplay::MenuEntryActionReplay(const std::string &name, const std::string &note) :
@@ -33,7 +32,8 @@ namespace CTRPluginFramework
 
     MenuEntryActionReplay::~MenuEntryActionReplay()
     {
-        PluginMenuExecuteLoop::Remove(this);
+        // Remove from execution's list, will also disable all hooks
+        PluginMenuExecuteLoop::RemoveAR(this);
     }
 
     MenuEntryActionReplay*    MenuEntryActionReplay::Update(void)

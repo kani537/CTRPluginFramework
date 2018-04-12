@@ -39,7 +39,7 @@ namespace CTRPluginFramework
         static u32  ActiveData;
         static bool ExitCodeImmediately;
 
-        static void Execute(const ARCodeVector &arcodes, u32(&storage)[2]);
+        static void Execute(ARCodeContext &ctx);
 
     private:
         static bool _Execute(const ARCodeVector &codes);
