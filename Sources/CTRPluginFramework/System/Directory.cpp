@@ -172,7 +172,7 @@ namespace CTRPluginFramework
 
         Result res;
 
-        res = FSUSER_DeleteDirectory(_sdmcArchive, fsPath);
+        res = FSUSER_DeleteDirectoryRecursively(_sdmcArchive, fsPath);
         if (R_SUCCEEDED(res))
             return (SUCCESS);
 
