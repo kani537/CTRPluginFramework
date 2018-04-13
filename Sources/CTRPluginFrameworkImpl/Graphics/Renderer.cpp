@@ -48,7 +48,10 @@ namespace CTRPluginFramework
             touchPos.x += 10;
             touchPos.y += 15;
             if (background.Contains(touchPos))
+            {
+                SetTarget(BOTTOM);
                 DrawSysString("\uE058", posX, posY, 320, Color::Blank);
+            }
         }
 
      //   ScreenImpl::Top->Debug();
