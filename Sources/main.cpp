@@ -273,12 +273,75 @@ namespace CTRPluginFramework
         return *this;
     }
 
+struct Course
+{
+    const char  *name;
+    const u8    id;
+};
+
+static const Course g_courses[] =
+{
+    { "Mario Circuit", 0x00 },
+    { "Alphine Pass", 0x01 },
+    { "Cheep Cheep Lagoon", 0x02 },
+    { "Daisy Hills", 0x03 },
+    { "Toad Circuit", 0x04 },
+    { "Shyguy Bazaar", 0x05 },
+    { "Koopa City", 0x06 },
+    { "DK Jungle", 0x07 },
+    { "Wuhu Island Loop", 0x08 },
+    { "Wuhu Mountain Loop", 0x09 },
+    { "Rosalina Ice World", 0x0A },
+    { "Bowser Castle", 0x0B },
+    { "Piranha Plant Slide", 0x0C },
+    { "Rainbow Road", 0x0D },
+    { "Wario Shipwreck", 0x0E },
+    { "Melody Motorway", 0x0F },
+    { "Wii Coconut Mall", 0x10 },
+    { "WIi Koopa Cape", 0x11 },
+    { "Wii Maple Treeway", 0x12 },
+    { "Wii Mushroom Gorge", 0x13 },
+    { "DS Luigi Mansion", 0x14 },
+    { "DS Airship Fortress", 0x15},
+    { "DS DK Pass", 0x16 },
+    { "DS Waluigi Pinball", 0x17 },
+    { "GCN Dino Dino Jungle", 0x18 },
+    { "GCN Daisy Cruiser", 0x19 },
+    { "N64 Luigi Raceway", 0x1A },
+    { "N64 Kalamari Desert", 0x1B },
+    { "N64 Koopa Troopa Beach", 0x1C },
+    { "GBA Bowser Castle 1", 0x1D },
+    { "SNES Mario Circuit 2", 0x1E },
+    { "SNES Rainbow Road", 0x1F },
+    { "Wuhu Town", 0x20 },
+    { "Honey Hive", 0x21 },
+    { "Ice Rink", 0x22 },
+    { "Palm Shore", 0x23 },
+    { "Big Donut", 0x24 },
+    { "Battle Course 1", 0x25 },
+    { "Winning Run", 0x26 },
+    { "Test", 0x27 },
+    { "150cc", 0x28 },
+    { "100cc", 0x29 },
+    { "50cc", 0x2A }
+};
+
     int     main(void)
     {
+        for (const Course &course : g_courses)
+            ;
+
         PluginMenu  *m = new PluginMenu("Action Replay", 1, 0, 5);
         PluginMenu  &menu = *m;
 
         menu.SynchronizeWithFrame(true);
+
+        menu += new MenuEntry("SD Browser", nullptr, [](MenuEntry *entry)
+        {
+            //MessageBox(Utils::Format("%08X", getMemFree()))();
+            std::string out;
+            Utils::SDExplorer(out);
+        });
 
 #if DEBUG
         System::OnAbort = OnAbort;

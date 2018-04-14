@@ -32,7 +32,7 @@ namespace CTRPluginFramework
         void            Remove(MenuItem *item);
         MenuFolderImpl  *GetFolder(void) const;
         MenuFolderImpl  *GetRootFolder(void) const;
-        MenuItem        *GetSelectedItem(void) const;
+        MenuItem        *GetSelectedItem(void);
 
         void    Draw(void) const; ///< Stupid I know
         MenuFolderImpl    *Open(MenuFolderImpl *folder, int selector = 0);

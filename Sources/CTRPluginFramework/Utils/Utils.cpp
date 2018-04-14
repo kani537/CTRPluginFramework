@@ -1,10 +1,13 @@
 #include "CTRPluginFramework/Utils/Utils.hpp"
+#include "CTRPluginFramework/Utils/StringExtensions.hpp"
 #include "CTRPluginFramework/System/Directory.hpp"
 #include "CTRPluginFramework/Menu/MessageBox.hpp"
 #include "CTRPluginFrameworkImpl/Graphics/Icon.hpp"
 #include "CTRPluginFrameworkImpl/Menu/MenuFolderImpl.hpp"
 #include "CTRPluginFrameworkImpl/Menu/MenuEntryImpl.hpp"
 #include "CTRPluginFrameworkImpl/Menu/Menu.hpp"
+#include "CTRPluginFrameworkImpl/Menu/SubMenu.hpp"
+#include "CTRPluginFrameworkImpl/Preferences.hpp"
 
 #include <cstdarg>
 #include <cstdio>
@@ -12,6 +15,9 @@
 #include <random>
 #include "ctrulib/util/utf.h"
 #include "ctrulib/svc.h"
+#include "CTRPluginFramework/Menu/Keyboard.hpp"
+#include "Unicode.h"
+
 
 namespace CTRPluginFramework
 {
@@ -106,9 +112,13 @@ namespace CTRPluginFramework
 
     static void     ListFolders(MenuFolderImpl &folder, const std::string &filter)
     {
-        std::string     &path = folder.note;
+        std::string     path = folder.note;
         Directory       dir;
         std::vector<std::string>    list;
+
+        // Clear folder if necessary
+        if (folder.ItemsCount() > 0)
+            folder.Clear();
 
         int res = Directory::Open(dir, path);
 
@@ -136,10 +146,25 @@ namespace CTRPluginFramework
         }
     }
 
+    static bool     GetName(std::string &out)
+    {
+        Keyboard kb;
+
+        out.clear();
+        return kb.Open(out) != -1;
+    }
+
     int Utils::SDExplorer(std::string &out, const std::string &filter)
     {
+        const char *    footer =    FONT_A ": Open folder / Select file\n" \
+                                    FONT_B ": Close folder\n" \
+                                    FONT_X ": Open options";
+
         Menu            menu("/", "", Icon::DrawFile);
         MenuFolderImpl  &root = *menu.GetRootFolder();
+
+        // Ensure the process is paused
+        Process::Pause();
 
         // Use note to store current path
         root.note = "/";
@@ -148,39 +173,150 @@ namespace CTRPluginFramework
         ListFolders(root, filter);
 
         // Open menu
-        int             menuEvent = Nothing;
+        int             menuEvent;
         Event           event;
         EventManager    eventManager;
         MenuItem        *item;
         Clock           clock;
+        SubMenu         submenu({ "Create folder", "Create file", "Delete", "Cancel" });
 
         do
         {
             menuEvent = Nothing;
-            while (eventManager.PollEvent(event) && menuEvent == Nothing)
-                menuEvent = menu.ProcessEvent(event, &item);
 
-            if (menuEvent == FolderChanged)
+            // Process events
+            while (eventManager.PollEvent(event))
             {
-                MenuFolderImpl *folder = reinterpret_cast<MenuFolderImpl *>(item);
+                if (!submenu.IsOpen())
+                    if ((menuEvent = menu.ProcessEvent(event, &item)) != Nothing)
+                        break;
+                submenu.ProcessEvent(event);
+            }
 
-                if (!folder->ItemsCount())
+            // If submenu is closed
+            if (!submenu.IsOpen())
+            {
+                // Check if folder changed
+                if (menuEvent == FolderChanged)
                 {
-                    ListFolders(*folder, filter);
+                    MenuFolderImpl *folder = reinterpret_cast<MenuFolderImpl *>(item);
+
+                    if (!folder->ItemsCount())
+                    {
+                        ListFolders(*folder, filter);
+                    }
+                }
+            }
+            // Else check submenu
+            else
+            {
+                // Get menu's action
+                menuEvent = submenu();
+
+                MenuFolderImpl *folder = menu.GetFolder();
+                std::string     path;
+                std::string     name;
+
+                if (menuEvent >= 0)
+                {
+                    // Get current path
+                    path = folder->note;
+                    if (path != "/")
+                        path += "/";
+
+                    if (menuEvent == 0) // Create folder
+                    {
+                        if (GetName(name))
+                        {
+                            Directory::Create(path + name);
+
+                            // Relist folder
+                            ListFolders(*folder, filter);
+                        }
+                    }
+                    if (menuEvent == 1) // Create file
+                    {
+                        if (GetName(name))
+                        {
+                            File::Create(path + name);
+
+                            // Relist folder
+                            ListFolders(*folder, filter);
+                        }
+                    }
+                    if (menuEvent == 2) // Delete
+                    {
+                        item = menu.GetSelectedItem();
+
+                        // Display a little warning
+                        {
+                            std::string body = "Do you really want to delete the ";
+
+                            body.append(item->IsEntry() ? "file" : "folder");
+                            body.append(" : ").append(item->name).append(" ?");
+
+                            MessageBox  msgBox(Color::Orange << "Warning", body, DialogType::DialogYesNo);
+
+                            if (msgBox())
+                            {
+                                int     res;
+
+                                path += item->name;
+
+                                if (item->IsEntry())
+                                    res = File::Remove(path);
+                                else
+                                    res = Directory::Remove(path);
+
+                                if (R_SUCCEEDED(res))
+                                {
+                                    MessageBox(Color::LimeGreen << "Info", "Operation succeeded")();
+
+                                    // Relist folder
+                                    ListFolders(*folder, filter);
+                                }
+                                else
+                                    MessageBox(Color::Red << "Error", Utils::Format("Operation failed: %08X", res))();
+                            }
+                        }
+                    }
+                    if (menuEvent == 3) menuEvent = MenuClose;// Cancel
                 }
             }
 
+            // Render menu
             menu.Update(clock.Restart());
             menu.Draw();
+
+            // Render submenu
+            submenu.Draw();
+
+            // Render bottom screen
+
+            Renderer::SetTarget(BOTTOM);
+
+            Window::BottomWindow.Draw();
+            int posY = 55;
+            Renderer::DrawSysStringReturn((u8 *)footer, 50, posY, 300, Preferences::Settings.MainTextColor);
+
+            // Swap buffers
             Renderer::EndFrame();
+
         } while (menuEvent != EntrySelected && menuEvent != MenuClose);
 
         if (menuEvent == MenuClose)
+        {
+            // Release the process
+            Process::Play();
             return -1;
+        }
 
         out = menu.GetFolder()->note;
-        out.append("/");
+        if (out != "/")
+            out.append("/");
         out.append(menu.GetSelectedItem()->name);
+        // Release the process
+        Process::Play();
         return 0;
     }
 
