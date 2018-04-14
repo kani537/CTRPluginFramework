@@ -80,10 +80,16 @@ namespace CTRPluginFramework
         return (_root);
     }
 
-    MenuItem    *Menu::GetSelectedItem() const
+    MenuItem    *Menu::GetSelectedItem()
     {
-        if (_folder->ItemsCount())
+        u32 count = _folder->ItemsCount();
+
+        if (count > 0)
+        {
+            if (_selector >= count)
+                _selector = std::max(0, (int)count - 1);
             return (_folder->_items[_selector]);
+        }
         return (nullptr);
     }
 

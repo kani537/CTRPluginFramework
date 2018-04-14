@@ -34,6 +34,8 @@ namespace CTRPluginFramework
         const Color    &gainsboro = Color::Gainsboro;
         const Color    &textcolor = Preferences::Settings.MainTextColor;
 
+        // Ensure the top screen is the target
+        Renderer::SetTarget(TOP);
 
         // Draw background
         Renderer::DrawRect2(background, Preferences::Settings.BackgroundMainColor, Preferences::Settings.BackgroundSecondaryColor);
