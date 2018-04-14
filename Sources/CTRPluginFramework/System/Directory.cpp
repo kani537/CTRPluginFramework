@@ -165,6 +165,10 @@ namespace CTRPluginFramework
     ************/
     int     Directory::Remove(const std::string &path)
     {
+        // Don't recursively delete root !
+        if (path == "/")
+            return INVALID_PATH;
+
         FS_Path fsPath = _Path::SdmcUtf16Path(path);
 
         if (fsPath.data == nullptr)
