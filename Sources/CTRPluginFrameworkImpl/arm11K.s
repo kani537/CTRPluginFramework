@@ -84,8 +84,8 @@ SetKProcessID:
         LDR         R0, [R1,R2] @ r0 = *(kprocess + g_KProcessPIDOffset)
         STR         R0, [R4,#4] @ g_kernelParams[1] = *(kprocess + g_KProcessPIDOffset)
         LDR	    R0, [R4, #0xC] @ R0 = g_kernelParams[3]
-	CMP         R0, #0
-	STRNE       R3, [R1,R2]
+		CMP         R0, #0
+		STRNE       R3, [R1,R2]
         LDMFD       SP!, {R4,PC}
 @ ---------------------------------------------------------------------------
 
@@ -100,10 +100,20 @@ GetKProcessState:
 
 ReadCTXID:
 	CMP     R3, #7
-	BNE	    exit
+	BNE	    GetMainThreadTLS
 
 	MRC         p15, 0, R1,c13,c0, 1
 	STR	    R1, [R4]
+
+GetMainThreadTLS:
+	CMP		R3, #8
+	BNE		exit
+
+	ldr r0, =0xFFFF9004
+	ldr r0, [r0]
+	ldr r0, [r0, #0xc8]
+	ldr r0, [r0, #0x94]
+	str r0, [r4]
 
 exit:
         LDMFD       SP!, {R4,PC};

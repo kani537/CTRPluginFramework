@@ -26,6 +26,7 @@ namespace CTRPluginFramework
     private:
         ARCodeEditor    _editor;
         Menu            _topMenu;
+
         using ToggleBtn = ToggleButton<PluginMenuActionReplay, void>;
         using IconBtn = IconButton<PluginMenuActionReplay, void>;
 
@@ -36,8 +37,10 @@ namespace CTRPluginFramework
         IconBtn         _pasteBtn;
         IconBtn         _duplicateBtn;
         IconBtn         _trashBtn;
+        Button<PluginMenuActionReplay, void> _openFileBtn;
 
         MenuItem        *_clipboard;
+        u8              _path[40];
 
         void    _DrawBottom(void);
         void    _ProcessEvent(EventList &eventList);
@@ -48,6 +51,7 @@ namespace CTRPluginFramework
         void    _PasteBtn_OnClick(void);
         void    _DuplicateBtn_OnClick(void);
         void    _TrashBtn_OnClick(void);
+        void    _OpenFileBtn_OnClick(void);
     };
 }
 

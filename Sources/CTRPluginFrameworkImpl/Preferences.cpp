@@ -26,6 +26,7 @@ namespace CTRPluginFramework
     bool        Preferences::ShowTopFps = false;
     bool        Preferences::UseFloatingBtn = false;
     FwkSettings Preferences::Settings;
+    std::string Preferences::CheatsFile;
 
     static const char *g_signature = "CTRPF\0\0";
 

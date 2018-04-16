@@ -1,10 +1,13 @@
 #include "CTRPluginFrameworkImpl/Graphics/Font.hpp"
+#include "CTRPluginFrameworkImpl/Graphics/Renderer.hpp"
 #include "ctrulib/allocator/linear.h"
 #include "ctrulib/font.h"
 #include "ctrulib/util/utf.h"
+
 #include <cstring>
 #include <cmath>
-#include "CTRPluginFrameworkImpl/Graphics/Renderer.hpp"
+
+
 namespace CTRPluginFramework
 {
     extern "C" CFNT_s* g_sharedFont;
@@ -143,6 +146,7 @@ namespace CTRPluginFramework
         int start = std::round(index * w);
         int end = start + w;
         u8  *p = glyph;
+        
         for (int y = 0; y < 32; y++)
         {
             for (int x = start; x < end; x++)

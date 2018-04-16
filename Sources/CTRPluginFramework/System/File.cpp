@@ -105,6 +105,10 @@ namespace CTRPluginFramework
         Handle handle;
         Result res;
 
+        // So we can get path even if the opening failed
+        output._path = path;
+        _Path::SdmcFixPath(output._path);
+
         res = FSUSER_OpenFile(&handle, _sdmcArchive, fsPath, fsmode, 0);
 
         if (R_FAILED(res))
@@ -112,8 +116,6 @@ namespace CTRPluginFramework
 
         output._handle = handle;
         output._mode = mode;
-        output._path = path;
-        _Path::SdmcFixPath(output._path);
         output._offset = 0;
         output._isOpen = true;
 
@@ -128,7 +130,7 @@ namespace CTRPluginFramework
             return (NOT_OPEN);
 
         Result res = FSFILE_Close(_handle);
-        
+
         if (R_SUCCEEDED(res))
         {
             _path = "";
@@ -247,7 +249,7 @@ namespace CTRPluginFramework
     {
         if (!_isOpen)
             return (NOT_OPEN);
-        
+
         u64 size = 0;
         Result res = FSFILE_GetSize(_handle, &size);
         if (R_FAILED(res))
@@ -296,8 +298,8 @@ namespace CTRPluginFramework
         if (!(_mode & READ)) return (INVALID_MODE);
         if (!Process::CheckAddress(address)) return (INVALID_ARG);
 
-        u8      *buffer = new u8[0x40000]; //256KB
-        
+        u8      *buffer = ::new u8[0x40000]; //256KB
+
 
         if (buffer == nullptr)
             return (MAKERESULT(RL_USAGE, RS_OUTOFRESOURCE, 0, RD_OUT_OF_MEMORY)); ///< I think it'll abort() so it won't be reached anyway

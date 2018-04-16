@@ -150,8 +150,7 @@ namespace CTRPluginFramework
     {
         Keyboard kb;
 
-        out.clear();
-        return kb.Open(out) != -1;
+        return kb.Open(out, out) != -1;
     }
 
     int Utils::SDExplorer(std::string &out, const std::string &filter)
@@ -178,7 +177,7 @@ namespace CTRPluginFramework
         EventManager    eventManager;
         MenuItem        *item;
         Clock           clock;
-        SubMenu         submenu({ "Create folder", "Create file", "Delete", "Cancel" });
+        SubMenu         submenu({ "Create folder", "Create file", "Rename", "Delete", "Cancel" });
 
         do
         {
@@ -244,7 +243,27 @@ namespace CTRPluginFramework
                             ListFolders(*folder, filter);
                         }
                     }
-                    if (menuEvent == 2) // Delete
+                    if (menuEvent == 2) // Rename
+                    {
+                        item = menu.GetSelectedItem();
+
+                        name = item->name;
+                        if (GetName(name))
+                        {
+                            name.insert(0, path); ///< New path
+                            path.append(name); ///< Old path
+
+                            if (item->IsEntry())
+                                File::Rename(path, name);
+                            else
+                                Directory::Rename(path, name);
+
+                            // Relist folder
+                            ListFolders(*folder, filter);
+                        }
+
+                    }
+                    if (menuEvent == 3) // Delete
                     {
                         item = menu.GetSelectedItem();
 
@@ -280,7 +299,7 @@ namespace CTRPluginFramework
                             }
                         }
                     }
-                    if (menuEvent == 3) menuEvent = MenuClose;// Cancel
+                    if (menuEvent == 4) menuEvent = MenuClose;// Cancel
                 }
             }
 

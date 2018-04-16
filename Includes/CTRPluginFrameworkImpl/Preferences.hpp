@@ -120,6 +120,7 @@ namespace CTRPluginFramework
         static bool         ShowBottomFps;
         static bool         UseFloatingBtn;
         static FwkSettings  Settings;
+        static std::string  CheatsFile;
 
         static int          OpenConfigFile(File &file, Header &header);
         static void         LoadSettings(void);

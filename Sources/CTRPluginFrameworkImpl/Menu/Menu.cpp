@@ -436,11 +436,11 @@ namespace CTRPluginFramework
             float namesize = Renderer::GetTextSize(item->name.c_str());
 
             // If name can fit totally in the screen, no need to scroll
-            if (namesize < 300.f)
+            if (namesize < 280.f)
                 _selectedNameSize = 0;
 
             _selectedNameSize = static_cast<u32>(namesize);
-            _maxScrollOffset = namesize - 300.f;
+            _maxScrollOffset = namesize - 280.f;
             _scrollClock.Restart();
             return;
         }

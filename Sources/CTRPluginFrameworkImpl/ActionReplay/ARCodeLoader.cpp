@@ -13,6 +13,7 @@
 #include <cstring>
 #include "CTRPluginFramework/Menu/MessageBox.hpp"
 #include "../../OSDManager.hpp"
+#include "CTRPluginFrameworkImpl/Preferences.hpp"
 
 #undef DEBUG
 #undef TRACE
@@ -40,22 +41,11 @@ namespace CTRPluginFramework
     void    ActionReplay_OpenCheatsFile(File &output, bool create)
     {
         u32 flags = File::RW | File::SYNC;
+
         if (create)
-            flags |= File::TRUNCATE;
+            flags |= File::TRUNCATE | File::CREATE;
 
-        // If /cheats/ doesn't exists, create it
-        const char *dirpath = "/cheats";
-        if (!Directory::IsExists(dirpath))
-            Directory::Create(dirpath);
-
-        if (File::Open(output, "cheats.txt", flags) == File::OPResult::SUCCESS)
-            return;
-
-        if (create) flags |= File::CREATE;
-
-        std::string path = Utils::Format("/cheats/%016llX.txt", Process::GetTitleID());
-
-        File::Open(output, path, flags);
+        File::Open(output, Preferences::CheatsFile, flags);
     }
 
     bool    ActionReplay_CheckCodeTypeValidity(u32 left)

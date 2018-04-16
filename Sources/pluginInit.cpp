@@ -160,6 +160,7 @@ namespace CTRPluginFramework
         settings.ThreadPriority = std::min(settings.ThreadPriority, (u32)0x3E);
         g_gspEventThreadPriority = settings.ThreadPriority + 1;
         Preferences::Settings = settings;
+
         // Set default theme
         FwkSettings::SetThemeDefault();
 
@@ -294,6 +295,18 @@ namespace CTRPluginFramework
             dirpath += "/";
             Directory::ChangeWorkingDirectory(dirpath);
         }
+
+        // If /cheats/ doesn't exists, create it
+        const char *dirpath = "/cheats";
+        if (!Directory::IsExists(dirpath))
+            Directory::Create(dirpath);
+
+        // Set AR file path
+        Preferences::CheatsFile = "cheats.txt";
+
+        // Default: cheats.txt in cwd
+        if (!File::Exists(Preferences::CheatsFile))
+            Preferences::CheatsFile = Utils::Format("/cheats/%016llX.txt", Process::GetTitleID());
 
         // Init Process info
         ProcessImpl::UpdateThreadHandle();

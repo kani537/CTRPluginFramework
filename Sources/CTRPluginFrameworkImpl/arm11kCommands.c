@@ -72,6 +72,13 @@ u32  arm11kReadContextId(void)
     return (g_kernelParams[0]);
 }
 
+u32     arm11kGetMainThreadTLS(void)
+{
+    g_kernelParams[0] = 8;
+    svcBackdoor(executeKernelCmd);
+    return (g_kernelParams[0]);
+}
+
 Result  arm11kSvcControlMemory(u32 *addr, u32 addr1, u32 size, u32 op, u32 perm)
 {
   u32 currentKProcess;

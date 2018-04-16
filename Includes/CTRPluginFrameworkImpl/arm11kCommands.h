@@ -32,6 +32,8 @@ u32     arm11kGetKProcessState(u32 kProcessState);
 // Do a memcpy in kernel mode
 void arm11kMemcpy(u32 dst, u32 src, u32 size);
 
+u32     arm11kGetMainThreadTLS(void);
+
 //
 Result  arm11kSvcControlMemory(u32 *addr, u32 addr1, u32 size, u32 op, u32 perm);
 

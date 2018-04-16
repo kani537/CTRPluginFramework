@@ -9,6 +9,73 @@
 
 namespace CTRPluginFramework
 {
+    static inline const char *FindFolder(const char *path)
+    {
+        while (path && *path && (*path != '\\' && *path != '/'))
+            ++path;
+
+        if (!path || !*path)
+            return nullptr;
+
+        return path;
+    }
+
+    static void     ProcessPathString(u8 *out)
+    {
+        std::string &path = Preferences::CheatsFile;
+        const char  *cpath = path.c_str();
+        const u32   size = Utils::GetSize(path);
+
+        if (size < 36)
+        {
+            *out++ = '.';
+            if (*cpath != '/')
+                *out++ = '/';
+            while (*cpath)
+                *out++ = *cpath++;
+
+            *out = 0;
+            return;
+        }
+
+        // Try to cut in folders
+        u32 ssize = size;
+        const char *cut = cpath;
+
+        while (ssize >= 35)
+        {
+            // Skip the first '/' character
+            ++cut;
+
+            cut = FindFolder(cut);
+
+            if (cut == nullptr)
+                break;
+
+            ssize = Utils::GetSize(cut);
+        }
+
+        // If we have a cut path which fits
+        if (cut != nullptr)
+        {
+            *out++ = '.';
+            *out++ = '/';
+            *out++ = '.';
+            *out++ = '.';
+            while (*cut)
+                *out++ = *cut++;
+            *out = 0;
+            return;
+        }
+
+        // Else, just display the end of the filename
+        cut = cpath + path.size() - 2 - 34;
+
+        while (*cut)
+            *out++ = *cut++;
+        *out = 0;
+    }
+
     static PluginMenuActionReplay *__pmARinstance = nullptr;
     PluginMenuActionReplay::PluginMenuActionReplay() :
         _topMenu{ "ActionReplay" },
@@ -19,10 +86,17 @@ namespace CTRPluginFramework
         _pasteBtn(*this, &PluginMenuActionReplay::_PasteBtn_OnClick, IntRect(200, 30, 25, 25), Icon::DrawClipboard, false),
         _duplicateBtn(*this, &PluginMenuActionReplay::_DuplicateBtn_OnClick, IntRect(235, 30, 25, 25), Icon::DrawDuplicate, false),
         _trashBtn(*this, &PluginMenuActionReplay::_TrashBtn_OnClick, IntRect(50, 30, 25, 25), Icon::DrawTrash, false),
-        _clipboard{ nullptr }
+        _openFileBtn("Open", *this, &PluginMenuActionReplay::_OpenFileBtn_OnClick, IntRect(30, 195, 34, 15)),
+
+        _clipboard{ nullptr },
+        _path{0}
     {
         _newBtn.Enable(true);
         __pmARinstance = this;
+
+        _openFileBtn.UseSysFont(false);
+
+        ProcessPathString(_path);
     }
 
     PluginMenuActionReplay::~PluginMenuActionReplay()
@@ -63,6 +137,7 @@ namespace CTRPluginFramework
         _pasteBtn();
         _duplicateBtn();
         _trashBtn();
+        _openFileBtn();
 
         // Draw menu on top screen
         _topMenu.Draw();
@@ -86,6 +161,15 @@ namespace CTRPluginFramework
         _pasteBtn.Draw();
         _duplicateBtn.Draw();
         _trashBtn.Draw();
+
+        _openFileBtn.Draw();
+
+        int posX = 30 + 34 + 5;
+        int posY = 195;
+
+        Renderer::DrawRect(posX, posY, 220, 15, Color::Grey);
+        posY += 3;
+        Renderer::DrawString((const char *)_path, posX + 2, posY, Color::Black);
     }
 
     void    PluginMenuActionReplay::_ProcessEvent(EventList &eventList)
@@ -128,6 +212,7 @@ namespace CTRPluginFramework
         _pasteBtn.Update(touchIsDown, touchPos);
         _duplicateBtn.Update(touchIsDown, touchPos);
         _trashBtn.Update(touchIsDown, touchPos);
+        _openFileBtn.Update(touchIsDown, touchPos);
     }
 
     static bool ActionReplay_GetInput(std::string &ret)
@@ -265,23 +350,62 @@ namespace CTRPluginFramework
         delete item;
     }
 
+    void    PluginMenuActionReplay::_OpenFileBtn_OnClick(void)
+    {
+        if (!__pmARinstance)
+            return;
+
+        // Backup current codes
+        if (MessageBox(Color::Orange << "Warning", "Do you want to save all changes to current file ?", DialogType::DialogYesNo)())
+            SaveCodes();
+
+        std::string newPath;
+
+        if (Utils::SDExplorer(newPath, ".txt") == -1)
+            return;
+
+        // Set path
+        Preferences::CheatsFile = newPath;
+
+        MenuFolderImpl *root = __pmARinstance->_topMenu.GetRootFolder();
+
+        if (root->ItemsCount() > 0)
+        {
+            if (MessageBox(Color::Orange << "Warning", "Do you want to clear current code list ?", DialogType::DialogYesNo)())
+            {
+                // Ensure we're at the root of the menu
+                __pmARinstance->_topMenu.CloseAll();
+
+                // Delete all codes
+                root->Clear();
+            }
+        }
+
+        // Open file and load codes
+        ActionReplay_LoadCodes(root);
+
+        // Update path
+        ProcessPathString(_path);
+    }
+
     void    PluginMenuActionReplay::SaveCodes(void)
     {
         if (!__pmARinstance)
             return;
 
-        // Open a temporary file
+        MenuFolderImpl *folder = __pmARinstance->_topMenu.GetRootFolder();
 
-        File        file("AR.temp", File::RWC);
+        // If nothing to save, abort
+        if (!folder || folder->ItemsCount() == 0) return;
+
+        // Open a temporary file
+        File        file("AR.temp", File::RWC | File::TRUNCATE);
         LineWriter  writer(file);
 
         if (!file.IsOpen())
             return;
 
-        MenuFolderImpl *folder = __pmARinstance->_topMenu.GetRootFolder();
-
-        if (!folder) return;
-
+        // Write all codes to the temporary file
         MenuFolderImpl &f = *folder;
         for (u32 i = 0; i < f.ItemsCount(); i++)
             ActionReplay_WriteToFile(writer, f[i]);
