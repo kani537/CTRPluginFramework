@@ -45,6 +45,25 @@ namespace CTRPluginFramework
         return (f);
     }
 
+    void    Menu::CloseAll(void)
+    {
+        if (_root == nullptr) return;
+
+        while (_root != _folder)
+        {
+            MenuFolderImpl *f = _folder->_Close(_selector);
+
+            if (f == nullptr)
+            {
+                _root = _folder;
+                break;
+            }
+            _folder = f;
+        }
+
+        _selector = 0;
+    }
+
     Menu::~Menu(void)
     {
         delete _folder;
@@ -245,7 +264,7 @@ namespace CTRPluginFramework
                 else
                     return (MenuEvent::MenuClose);
             }
-            return (MenuEvent::Error);
+            return (MenuEvent::Nothing);
         }
 
         // Scrolling Event

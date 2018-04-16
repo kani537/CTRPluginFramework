@@ -36,6 +36,7 @@ namespace CTRPluginFramework
 
         void    Draw(void) const; ///< Stupid I know
         MenuFolderImpl    *Open(MenuFolderImpl *folder, int selector = 0);
+        void    CloseAll(void);
         void    Update(const Time &delta);
         bool    ShowNote(void);
         void    CloseNote(void);
