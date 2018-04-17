@@ -18,6 +18,10 @@ namespace CTRPluginFramework
 
     }
 
+    Clock::Clock(Time time) : _startTime{ time }
+    {
+    }
+
     Time    Clock::GetElapsedTime(void) const
     {
         return (GetCurrentTime() - _startTime);
