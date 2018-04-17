@@ -19,6 +19,7 @@ extern "C"
     void    __system_initSyscalls(void);
 }
 
+using CTRPluginFramework::Hook;
 namespace CTRPluginFramework
 {
     // Threads stacks

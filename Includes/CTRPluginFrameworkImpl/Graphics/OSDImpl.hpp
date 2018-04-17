@@ -3,18 +3,17 @@
 
 #include "types.h"
 
+#include "CTRPluginFramework/Graphics/OSD.hpp"
+#include "CTRPluginFramework/System/Hook.hpp"
 #include "CTRPluginFramework/Graphics/Color.hpp"
-#include "CTRPluginFrameworkImpl/Graphics/PrivColor.hpp"
 #include "CTRPluginFramework/System/Clock.hpp"
+#include "CTRPluginFrameworkImpl/Graphics/FloatingButton.hpp"
+#include "../../../Sources/ctrulib/internal.h"
 
-#include <iterator>
 #include <string>
 #include <list>
 #include <queue>
-#include "../../../Sources/ctrulib/internal.h"
-#include "CTRPluginFramework/Graphics/OSD.hpp"
-#include "Hook.hpp"
-#include "FloatingButton.hpp"
+
 
 namespace CTRPluginFramework
 {

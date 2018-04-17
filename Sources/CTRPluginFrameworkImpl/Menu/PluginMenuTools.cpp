@@ -2,18 +2,22 @@
 #include "CTRPluginFrameworkImpl/Menu/PluginMenuTools.hpp"
 #include "CTRPluginFrameworkImpl/Menu/MenuEntryTools.hpp"
 #include "CTRPluginFrameworkImpl/Preferences.hpp"
+
+
+#include "CTRPluginFramework/Graphics/OSD.hpp"
 #include "CTRPluginFramework/Menu/MessageBox.hpp"
-#include "CTRPluginFramework/Utils/StringExtensions.hpp"
-#include "Hook.hpp"
+#include "CTRPluginFramework/System/Hook.hpp"
 #include "CTRPluginFramework/System/Sleep.hpp"
 #include "CTRPluginFramework/System/Process.hpp"
-#include "CTRPluginFramework/Graphics/OSD.hpp"
+#include "CTRPluginFramework/Utils/StringExtensions.hpp"
+#include "CTRPluginFramework/Utils/Utils.hpp"
+
+#include "ctrulib/srv.h"
+#include "ctrulib/util/utf.h"
+
 #include <ctime>
 #include <cstring>
 #include <cstdio>
-#include "ctrulib/srv.h"
-#include "ctrulib/util/utf.h"
-#include "CTRPluginFramework/Utils/Utils.hpp"
 
 #define ALPHA 1
 

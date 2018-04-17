@@ -1,92 +1,10 @@
-#include "Hook.hpp"
+#include "CTRPluginFramework/System/Hook.hpp"
 #include "CTRPluginFramework/System/Process.hpp"
-#include <cstring>
-#include "ctrulib/result.h"
-#include "CTRPluginFrameworkImpl/arm11kCommands.h"
+#include "CTRPluginFrameworkImpl/System/HookManager.hpp"
+#include "CTRPluginFramework/System/Lock.hpp"
 
-#define MAX_HOOK_WRAPPERS 93
 
-struct HookWrapper
-{
-    u32     backupAndUpdateLR;  ///< Default: nop
-    u32     overwrittenInstr;   ///< Default: nop
-    u32     setLR[2];           ///< Default: nop
-    u32     jumpToCallback;     ///< ldr pc, [pc, #-4]
-    u32     callbackAddress;    ///< Address of the code to jump to
-    u32     restoreLR;          ///< Default: nop
-    u32     overwrittenInstr2;  ///< Default: nop
-    u32     jumpBackToGame;     ///< ldr pc, [pc, #-4]
-    u32     returnAddress;
-    u32     lrBackup;
-};
-
-struct HookManager  ///< 0x1E8 0000
-{
-    HookWrapper     wrappers[MAX_HOOK_WRAPPERS];
-
-    // Return index free or -1 if error
-    static int      AllocNewHook(void);
-    // Free a new index
-    static void     FreeHook(u32 &index);
-};
-
-static bool     HookManagerInit(void);
-
-static HookManager  *g_manager = nullptr;
-
-int     HookManager::AllocNewHook(void)
-{
-    if (!HookManagerInit())
-        return -1;
-
-    for (int i = 0; i < MAX_HOOK_WRAPPERS; ++i)
-    {
-        HookWrapper *wrapper = &g_manager->wrappers[i];
-
-        if (wrapper->callbackAddress == 0)
-            return i;
-    }
-
-    return -1;
-}
-
-void    HookManager::FreeHook(u32 &index)
-{
-    if (!HookManagerInit() || index >= MAX_HOOK_WRAPPERS)
-        return;
-
-    memset(&g_manager->wrappers[index], 0, sizeof(HookWrapper));
-
-    index = -1;
-}
-
-static bool     HookManagerInit(void)
-{
-    if (g_manager != nullptr)
-        return true;
-
-    if (CTRPluginFramework::Process::CheckAddress(0x1E80000))
-    {
-        g_manager = reinterpret_cast<HookManager *>(0x1E80000);
-
-        // Clear the memory
-        u32     *mem = reinterpret_cast<u32 *>(0x1E80000);
-        for (u32 i = 0; i < 1024; ++i)
-            mem[i] = 0;
-
-        return true;
-    }
-
-    // Allocate the region
-    u32     dest = 0x1E80000;
-    if (R_FAILED(arm11kSvcControlMemory(&dest, dest, 0x1000, 0x203u, MEMPERM_READ | MEMPERM_WRITE)))
-        return false;
-
-    // Fix perms
-    CTRPluginFramework::Process::CheckRegion(dest, dest, 7);
-
-    return HookManagerInit();
-}
+using namespace CTRPluginFramework;
 
 Hook::Hook(void)
 {
@@ -149,6 +67,9 @@ HookResult    Hook::Enable(void)
     if (flags.isEnabled)
         return HookResult::Success;
 
+    // Only 1 thread at a time please
+    Lock    lock(HookManager::Lock());
+
     // Check hook parameters
     if (flags.ExecuteOverwrittenInstructionBeforeCallback && flags.ExecuteOverwrittenInstructionAfterCallback)
         return HookResult::HookParamsError;
@@ -165,9 +86,15 @@ HookResult    Hook::Enable(void)
         return HookResult::AddressAlreadyHooked;
 
     // Try to get a free slot in the HookManager
-    index = HookManager::AllocNewHook();
+    int i = HookManager::AllocNewHook();
 
-    if (index >= MAX_HOOK_WRAPPERS)
+    if (i >= 0)
+        index = i;
+    else if (i == -1)
+        return HookResult::HookParamsError; ///< Technically the plugin will crash since OSD's hook will fail
+    else if (i == -2)
+        return HookResult::AddressAlreadyHooked;
+    else if (i == -3)
         return HookResult::TooManyHooks;
 
     // Check if the instruction is PC dependant
@@ -178,7 +105,8 @@ HookResult    Hook::Enable(void)
     // Time to configure the wrapper
     u32         nop = 0xE320F000;
     u32         jmpAddr = 0xE51FF004;
-    HookWrapper *wrapper = &g_manager->wrappers[index];
+    HookWrapperStatus &hws = HookManager::instance->hws[index];
+    HookWrapper *wrapper = hws.wrapper;
 
     // Use BX LR option
     if (flags.useLinkRegisterToReturn)
@@ -232,6 +160,10 @@ HookResult    Hook::Enable(void)
     wrapper->jumpBackToGame = jmpAddr;
     wrapper->returnAddress = returnAddress;
 
+    // Set hook status
+    hws.isEnabled = true;
+    hws.target = targetAddress;
+
     // Now set the branch
     u32 off = reinterpret_cast<u32>(wrapper) - (targetAddress + 8);
     *reinterpret_cast<u32 *>(targetAddress) = 0xEA000000 | ((off >> 2) & 0xFFFFFF);
@@ -245,6 +177,9 @@ void    Hook::Disable(void)
 {
     if (!flags.isEnabled)
         return;
+
+    // Only 1 thread at a time please
+    Lock    lock(HookManager::Lock());
 
     if (CTRPluginFramework::Process::Write32(targetAddress, overwrittenInstr))
     {

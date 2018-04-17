@@ -6,6 +6,8 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
+#include <types.h>
+#include <ctrulib/svc.h>
 #include <sys/lock.h>
 
 /// A light lock.

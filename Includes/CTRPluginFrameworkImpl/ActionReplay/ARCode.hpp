@@ -2,13 +2,11 @@
 #define CTRPLUGINFRAMEWORKIMPL_ACTIONREPLAY_ARCODE_HPP
 
 #include "types.h"
-
-
 #include "CTRPluginFramework/System/File.hpp"
+#include "CTRPluginFramework/System/Hook.hpp"
 
 #include <string>
 #include <vector>
-#include "Hook.hpp"
 
 namespace CTRPluginFramework
 {
@@ -49,10 +47,10 @@ namespace CTRPluginFramework
     {
         ARCodeContext();
         bool            hasError;   ///< True if any of the codes has an unrecognized char
-        //std::string     data;       ///< Original data in case of error
         u32             storage[2]; ///< Storage for this code (persistent register)
         ARCodeVector    codes;      ///< List of all codes
         HookVector      *hooks;     ///< List of all hooks
+
         bool            Update(void);
         void            Clear(void);
     };

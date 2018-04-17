@@ -20,7 +20,6 @@ typedef unsigned long __PTRDIFF_TYPE__;
 #define __builtin_va_start(a,b)
 #endif
 
-#include "Hook.hpp"
 #include "3DS.h"
 #include "CTRPluginFramework.hpp"
 #include <string>

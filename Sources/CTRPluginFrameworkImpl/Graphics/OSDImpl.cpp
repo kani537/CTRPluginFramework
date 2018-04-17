@@ -7,7 +7,7 @@
 #include "CTRPluginFramework/System/Sleep.hpp"
 #include "CTRPluginFramework/Utils/Utils.hpp"
 #include "CTRPluginFramework/Menu/MessageBox.hpp"
-#include "Hook.hpp"
+#include "CTRPluginFramework/System/Hook.hpp"
 #include "CTRPluginFramework/System/Process.hpp"
 #include "CTRPluginFrameworkImpl/System/ProcessImpl.hpp"
 #include "CTRPluginFrameworkImpl/Graphics/Renderer.hpp"

@@ -157,10 +157,13 @@
     <ClInclude Include="Includes\CTRPluginFrameworkImpl\Search\Search32.hpp" />
     <ClInclude Include="Includes\CTRPluginFrameworkImpl\Search\SearchBase.hpp" />
     <ClInclude Include="Includes\CTRPluginFrameworkImpl\System\Heap.hpp" />
+    <ClInclude Include="Includes\CTRPluginFrameworkImpl\System\HookManager.hpp" />
     <ClInclude Include="Includes\CTRPluginFrameworkImpl\System\IAllocator.hpp" />
     <ClInclude Include="Includes\CTRPluginFrameworkImpl\System\Storage.hpp" />
     <ClInclude Include="Includes\CTRPluginFramework\Menu\MenuEntryHotkeys.hpp" />
     <ClInclude Include="Includes\CTRPluginFramework\System\FwkSettings.hpp" />
+    <ClInclude Include="Includes\CTRPluginFramework\System\Lock.hpp" />
+    <ClInclude Include="Includes\CTRPluginFramework\System\Mutex.hpp" />
     <ClInclude Include="Includes\CTRPluginFramework\System\Rect.hpp" />
     <ClInclude Include="Includes\CTRPluginFrameworkImpl\Graphics\Renderer.hpp" />
     <ClInclude Include="Includes\CTRPluginFrameworkImpl\Graphics\TextBox.hpp" />
@@ -247,7 +250,7 @@
     <ClInclude Include="Includes\ctrulib\util\rbtree.h" />
     <ClInclude Include="Includes\ctrulib\util\utf.h" />
     <ClInclude Include="Includes\font6x10Linux.h" />
-    <ClInclude Include="Includes\Hook.hpp" />
+    <ClInclude Include="Includes\CTRPluginFramework\System\Hook.hpp" />
     <ClInclude Include="Includes\libctr\AC.h" />
     <ClInclude Include="Includes\libctr\APT.h" />
     <ClInclude Include="Includes\libctr\CFGNOR.h" />
@@ -400,6 +403,7 @@
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\Search\SearchBase.cpp" />
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\System\EventManager.cpp" />
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\System\Heap.cpp" />
+    <ClCompile Include="Sources\CTRPluginFrameworkImpl\System\HookManager.cpp" />
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\System\ProcessImpl.cpp" />
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\System\Screen.cpp" />
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\System\SystemImpl.cpp" />
@@ -416,6 +420,8 @@
     <ClCompile Include="Sources\CTRPluginFramework\System\Directory.cpp" />
     <ClCompile Include="Sources\CTRPluginFramework\System\File.cpp" />
     <ClCompile Include="Sources\CTRPluginFramework\System\FwkSettings.cpp" />
+    <ClCompile Include="Sources\CTRPluginFramework\System\Lock.cpp" />
+    <ClCompile Include="Sources\CTRPluginFramework\System\Mutex.cpp" />
     <ClCompile Include="Sources\CTRPluginFramework\System\Process.cpp" />
     <ClCompile Include="Sources\CTRPluginFramework\System\Sleep.cpp" />
     <ClCompile Include="Sources\CTRPluginFramework\System\System.cpp" />
@@ -478,7 +484,7 @@
     <ClCompile Include="Sources\ctrulib\util\utf\utf8_to_utf32.c" />
     <ClCompile Include="Sources\Excluded\OSDMenu.cpp" />
     <ClCompile Include="Sources\OSDMenu.cpp" />
-    <ClCompile Include="Sources\Hook.cpp" />
+    <ClCompile Include="Sources\CTRPluginFramework\System\Hook.cpp" />
     <ClCompile Include="Sources\main.cpp" />
     <ClCompile Include="Sources\OSDManager.cpp" />
     <ClCompile Include="Sources\pluginInit.cpp" />
