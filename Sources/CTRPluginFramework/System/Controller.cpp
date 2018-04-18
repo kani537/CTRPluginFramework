@@ -18,17 +18,17 @@ namespace CTRPluginFramework
 
     bool    Controller::IsKeyDown(Key key)
     {
-        return (_keysHeld & (u32)key);
+        return (_keysHeld & (u32)key) != 0;
     }
 
     bool    Controller::IsKeyPressed(Key key)
     {
-        return (_keysDown & (u32)key);
+        return (_keysDown & (u32)key) != 0;
     }
 
     bool    Controller::IsKeyReleased(Key key)
     {
-        return (_keysReleased & (u32)key);
+        return (_keysReleased & (u32)key) != 0;
     }
 
     bool    Controller::IsKeysDown(u32 keys)
@@ -59,7 +59,7 @@ namespace CTRPluginFramework
         {
             int j = 42 + 8 + i * 2;
             *(touchPosition *)(&hidSharedMem[j]) = tpos;
-            hidSharedMem[j + 1] = 1;           
+            hidSharedMem[j + 1] = 1;
         }
 
         u64 tick = svcGetSystemTick();
@@ -72,8 +72,8 @@ namespace CTRPluginFramework
         for (int i = 0; i < 8; i++)
         {
             int j = 10 + i * 4;
-            *(u32 *)(&hidSharedMem[j]) |= key;        
-        }       
+            *(u32 *)(&hidSharedMem[j]) |= key;
+        }
     }
 
     void    Controller::Update(void)

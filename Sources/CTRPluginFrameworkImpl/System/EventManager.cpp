@@ -68,7 +68,7 @@ namespace CTRPluginFramework
     void    EventManager::ProcessEvents(void)
     {
         Event   event;
-        
+
         Controller::Update();
 
         // Key Event
@@ -91,11 +91,12 @@ namespace CTRPluginFramework
             {
                 event.type = Event::KeyReleased;
                 event.key.code = code;
+                PushEvent(event);
             }
         }
 
         // Touch Event
-        static bool  isTouching = false;     
+        static bool  isTouching = false;
         static touchPosition firstTouch;
 
         touchPosition touchPos;
@@ -103,8 +104,8 @@ namespace CTRPluginFramework
 
         if (Controller::IsKeyDown(Key::Touchpad))
         {
-            if (touchPos.px != _lastTouch.px 
-            || touchPos.py != _lastTouch.py 
+            if (touchPos.px != _lastTouch.px
+            || touchPos.py != _lastTouch.py
             || !isTouching)
             {
                 _lastTouch = touchPos;
