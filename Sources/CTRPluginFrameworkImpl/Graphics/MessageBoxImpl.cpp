@@ -6,6 +6,7 @@
 #include "CTRPluginFrameworkImpl/System/Screen.hpp"
 #include "CTRPluginFramework/System/FwkSettings.hpp"
 #include "CTRPluginFrameworkImpl/Preferences.hpp"
+#include "CTRPluginFramework/System/Sleep.hpp"
 
 namespace CTRPluginFramework
 {
@@ -124,11 +125,10 @@ namespace CTRPluginFramework
         }
 
         // Wait until keys are released
-        while (true)
+        while (Controller::GetKeysDown())
         {
+            Sleep(Seconds(0.25));
             Controller::Update();
-            if (!Controller::IsKeyDown(Key::A) && !Controller::IsKeyDown(Key::B))
-                break;
         }
 
         // Release game if we paused it in this function
@@ -147,17 +147,6 @@ namespace CTRPluginFramework
         {
             switch (event.key.code)
             {
-                case Key::A:
-                {
-                    _exit = true;
-                    break;
-                }
-                case Key::B:
-                {
-                    _cursor = 1;
-                    _exit = true;
-                    break;
-                }
                 case Key::DPadLeft:
                 {
                     if (_cursor == 1)
@@ -168,6 +157,25 @@ namespace CTRPluginFramework
                 {
                     if (_cursor == 0 && _dialogType != DialogType::DialogOk)
                         _cursor = 1;
+                    break;
+                }
+                default:
+                    break;
+            }
+        }
+        if (event.type == Event::KeyReleased)
+        {
+            switch (event.key.code)
+            {
+                case Key::A:
+                {
+                    _exit = true;
+                    break;
+                }
+                case Key::B:
+                {
+                    _cursor = 1;
+                    _exit = true;
                     break;
                 }
                 default:
