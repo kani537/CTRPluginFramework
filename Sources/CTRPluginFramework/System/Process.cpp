@@ -84,15 +84,12 @@ namespace CTRPluginFramework
 
     void    Process::Play(const u32 frames)
 	{
-            if (frames)
-            {
-                OSDImpl::FramesToPlay = frames;
-                RecursiveLock_Unlock(&ProcessImpl::FrameLock);
-                LightEvent_Wait(&OSDImpl::OnNewFrameEvent);
-                RecursiveLock_Lock(&ProcessImpl::FrameLock);
-            }
-            else
-                ProcessImpl::Play(false);
+        if (frames)
+        {
+            OSDImpl::ResumeFrame(frames);
+        }
+        else
+            ProcessImpl::Play(false);
 	}
 
     bool 	Process::Patch(u32 	addr, void *patch, u32 length, void *original)

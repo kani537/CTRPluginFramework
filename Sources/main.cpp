@@ -24,12 +24,15 @@ typedef unsigned long __PTRDIFF_TYPE__;
 #include "CTRPluginFramework.hpp"
 #include <string>
 #include <iterator>
+#include "csvc.h"
 
 namespace CTRPluginFramework
 {
+    s64 g_free;
     // This function is called on the plugin starts, before main
     void    PatchProcess(FwkSettings &settings)
     {
+        g_free = osGetMemRegionFree(MEMREGION_APPLICATION);
     }
 
     u32     strlen(const char *s)
@@ -284,6 +287,43 @@ namespace CTRPluginFramework
             std::string out;
             Utils::SDExplorer(out);
         });*/
+
+        menu += new MenuEntry("Textbox", [](MenuEntry *entry)
+        {
+            if (Controller::IsKeyPressed(ZR))
+            {
+                Process::Pause();
+                MessageBox("Info", "MsgBox 1, zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz")();
+                MessageBox("Info", "MsgBox 2, aaaaaaaaaaa")();
+                MessageBox("Info", "MsgBox 3, bbb")();
+                MessageBox("Info", "MsgBox 4")();
+                Process::Play();
+            }
+        });
+
+        menu += new MenuEntry("Textbox with frame", [](MenuEntry *entry)
+        {
+            if (Controller::IsKeyPressed(ZR))
+            {
+                Process::Pause();
+                for (int i = 0; i < 4; ++i)
+                {
+                    MessageBox("Info", Utils::Format("MsgBox %d", i))();
+                    Process::Play(2);
+                }
+                Process::Play();
+            }
+        });
+
+        menu += new MenuEntry("Test", nullptr, [](MenuEntry *entry)
+        {
+            s64 free = osGetMemRegionFree(MEMREGION_APPLICATION);
+            u32 vramPa = svcConvertVAToPA((void *)0x1F000000, false);
+
+            MessageBox(Utils::Format("Appmem free: %llX\nAppmem free: %llX", g_free, free))();
+            MessageBox(Utils::Format("vram pa: %08X", vramPa))();
+
+        });
 
         // Launch menu and mainloop
         int ret = menu.Run();

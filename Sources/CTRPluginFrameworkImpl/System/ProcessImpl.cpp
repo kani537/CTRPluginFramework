@@ -105,8 +105,6 @@ namespace CTRPluginFramework
 
 	void 	ProcessImpl::Pause(bool useFading)
 	{
-        // Lock game's new frame
-        RecursiveLock_Lock(&FrameLock);
         // Increase pause counter
         ++_isPaused;
 
@@ -117,13 +115,8 @@ namespace CTRPluginFramework
         // Wake up gsp event thread
         svcSignalEvent(gspEvent);
 
-        // Wait for the frame event
-        svcWaitSynchronization(FrameEvent, U64_MAX);
-
-        // Update screen's infos
-		ScreenImpl::Top->Acquire();
-        ScreenImpl::Bottom->Acquire();
-        OSDImpl::UpdateScreens();
+        // Wait for the frame to be paused
+        OSDImpl::WaitFramePaused();
 
         if (!useFading)
             return;
@@ -178,9 +171,12 @@ namespace CTRPluginFramework
             }
 		}
         // Decrease pause counter
-        --_isPaused;
-        // Release lock
-        RecursiveLock_Unlock(&ProcessImpl::FrameLock);
+        if (_isPaused)
+            --_isPaused;
+
+        // Resume frame
+        if (!_isPaused)
+            OSDImpl::ResumeFrame();
 	}
 
     bool     ProcessImpl::PatchProcess(u32 addr, u8 *patch, u32 length, u8 *original)

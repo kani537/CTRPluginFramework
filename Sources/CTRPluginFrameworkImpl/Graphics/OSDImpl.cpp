@@ -22,7 +22,6 @@ namespace CTRPluginFramework
     bool        OSDImpl::MessColors = false;
     u32         OSDImpl::FramesToPlay = 0;
     OSDReturn   OSDImpl::HookReturn = nullptr;
-    LightEvent  OSDImpl::OnNewFrameEvent;
     Hook        OSDImpl::OSDHook;
     Screen      OSDImpl::TopScreen;
     Screen      OSDImpl::BottomScreen;
@@ -31,12 +30,23 @@ namespace CTRPluginFramework
     std::list<OSDImpl::OSDMessage*> OSDImpl::Notifications;
     std::vector<OSDCallback> OSDImpl::Callbacks;
 
+    bool        OSDImpl::IsFramePaused = false;
+    LightEvent  OSDImpl::OnNewFrameEvent;
+    LightEvent  OSDImpl::OnFramePaused;
+    LightEvent  OSDImpl::OnFrameResume;
+
     void    InstallOSD(void);
 
     void    OSDImpl::_Initialize(void)
     {
         RecursiveLock_Init(&RecLock);
+
+        // Init frame event
         LightEvent_Init(&OnNewFrameEvent, RESET_STICKY);
+        LightEvent_Init(&OnFramePaused, RESET_STICKY);
+        LightEvent_Init(&OnFrameResume, RESET_STICKY);
+        IsFramePaused = false;
+
         InstallOSD();
     }
 
@@ -166,6 +176,70 @@ namespace CTRPluginFramework
         return ((OSDReturn)(OSDImpl::HookReturn))(r0, params, isBottom, arg);
     }
 
+    static u32  *topFb;
+    static u32  *botFb;
+
+    static  inline  void memcpy32(u32 *dst, u32 *src, u32 size)
+    {
+        for (; size > 0; size -= 4)
+            *dst++ = *src++;
+    }
+
+    static  void    SaveVram(void)
+    {
+        ScreenImpl::Top->Acquire();
+        ScreenImpl::Bottom->Acquire();
+
+        ScreenImpl::Top->Invalidate();
+        ScreenImpl::Bottom->Invalidate();
+
+        OSDImpl::UpdateScreens();
+
+        // Copy FB1 to FB2
+        memcpy32((u32 *)ScreenImpl::Top->GetLeftFramebuffer(true), (u32 *)ScreenImpl::Top->GetLeftFramebuffer(), ScreenImpl::Top->GetFramebufferSize());
+        memcpy32((u32 *)ScreenImpl::Bottom->GetLeftFramebuffer(true), (u32 *)ScreenImpl::Bottom->GetLeftFramebuffer(), ScreenImpl::Bottom->GetFramebufferSize());
+
+        if (!System::IsNew3DS())
+        {
+            __dsb();
+            return;
+        }
+
+        u32     vramext = 0x1F000000 | (1u << 31);
+        u32     vramSize = 0;
+
+        // Top Screen
+        topFb = (u32 *)vramext;
+        memcpy32(topFb, (u32 *)ScreenImpl::Top->GetLeftFramebuffer(), ScreenImpl::Top->GetFramebufferSize());
+
+        vramext += ScreenImpl::Top->GetFramebufferSize();
+
+        // Bottom Screen
+        botFb = (u32 *)vramext;
+        memcpy32(botFb, (u32 *)ScreenImpl::Bottom->GetLeftFramebuffer(), ScreenImpl::Bottom->GetFramebufferSize());
+
+        __dsb();
+    }
+
+    void     RestoreVram(void)
+    {
+        if (!System::IsNew3DS())
+            return;
+
+        __dsb();
+
+        // Top screen
+        for (int i = 0; i < 2; ++i)
+            memcpy32((u32 *)ScreenImpl::Top->GetLeftFramebuffer(static_cast<bool>(i)), topFb, ScreenImpl::Top->GetFramebufferSize());
+
+        // Bottom screen
+        for (int i = 0; i < 2; ++i)
+            memcpy32((u32 *)ScreenImpl::Bottom->GetLeftFramebuffer(static_cast<bool>(i)), botFb, ScreenImpl::Bottom->GetFramebufferSize());
+
+        ScreenImpl::Top->Flush();
+        ScreenImpl::Bottom->Flush();
+    }
+
     void     OSDImpl::CallbackGlobal(u32 isBottom, void* addr, void* addrB, int stride, int format)
     {
         if (!addr)
@@ -175,21 +249,38 @@ namespace CTRPluginFramework
         {
             if (FramesToPlay)
                 --FramesToPlay;
+
+            // Signal a new frame to all threads waiting for it
             LightEvent_Pulse(&OnNewFrameEvent);
         }
 
+        // If frame have to be paused
         if (ProcessImpl::_isPaused && !FramesToPlay)
         {
-            GSPGPU_FlushDataCache((void *)0x1F000000, 0x00600000);
-            while (R_FAILED(GSPGPU_SaveVramSysArea()));
+            __dsb();
+
+            // Wait for vblank
             gspWaitForVBlank();
-            svcSignalEvent(ProcessImpl::FrameEvent);
-            RecursiveLock_Lock(&ProcessImpl::FrameLock);
-            GSPGPU_InvalidateDataCache((void *)0x1F000000, 0x00600000);
-            GSPGPU_RestoreVramSysArea();
-            GSPGPU_FlushDataCache((void *)0x1F000000, 0x00600000);
-            RecursiveLock_Unlock(&ProcessImpl::FrameLock);
-            svcClearEvent(ProcessImpl::FrameEvent);
+
+            // Backup vram
+            SaveVram();
+
+            IsFramePaused = true;
+
+            // Wake up threads waiting for frame to be paused
+            LightEvent_Pulse(&OnFramePaused);
+
+            // Wait until the frame is ready to continue
+            LightEvent_Wait(&OnFrameResume);
+
+            // Restore vram
+            __dsb();
+            //GSPGPU_RestoreVramSysArea();
+            //__dsb();
+            // Signal that the frame continue
+            LightEvent_Pulse(&OnFrameResume);
+
+            IsFramePaused = false;
             return;
         }
 
@@ -326,6 +417,34 @@ namespace CTRPluginFramework
         BottomScreen.Format = screen->GetFormat();
     }
 
+    void    OSDImpl::WaitFramePaused(void)
+    {
+        if (IsFramePaused)
+            return;
+
+        LightEvent_Wait(&OnFramePaused);
+    }
+
+    void    OSDImpl::ResumeFrame(const u32 nbFrames)
+    {
+        if (!IsFramePaused)
+            return;
+
+        FramesToPlay = nbFrames;
+
+        // Restore framebuffer
+        RestoreVram();
+
+        // Wake up game's thread
+        LightEvent_Pulse(&OnFrameResume);
+
+        if (nbFrames)
+        {
+            // Wait until all our frames are rendered and the process is paused again
+            LightEvent_Wait(&OnFramePaused);
+        }
+    }
+
     static const u32    g_OSDPattern[] =
     {
         0xE1833000, // ORR R3, R3, R0
@@ -392,6 +511,7 @@ namespace CTRPluginFramework
         for (u32 *addr = (u32 *)start; addr > end; addr--)
         {
             u32 val = *addr;
+
             if (val == stmfd)
             {
                 result = (u32)addr;
@@ -408,9 +528,9 @@ namespace CTRPluginFramework
         return (result);
     }
 
-    static u32     SearchOSD(int pattern)
+    static u32     SearchOSD(u32 pattern)
     {
-        u8  *address = nullptr;
+        u8     *address = nullptr;
 
         if (pattern == 0)
         {
@@ -434,10 +554,9 @@ namespace CTRPluginFramework
             address = memsearch((u8 *)0x100000, &g_OSDPattern[18], Process::GetTextSize(), 0x10);
         }
 
-        return ((u32)address);
+        return (u32)address;
     }
 
-    Hook    OSDHook2;
     void    InstallOSD(void)
     {
         static u32  returnCode[4];
@@ -471,8 +590,6 @@ namespace CTRPluginFramework
                     MessageBox("OSD couldn't be installed: #1 !")();
                     return;
                 }
-                //found2 = SearchOSD(5);
-                //found2 = SearchStmfd(found, 0x400, stmfd3, isHook);
             }
         }
 
