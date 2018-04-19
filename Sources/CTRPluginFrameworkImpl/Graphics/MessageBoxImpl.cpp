@@ -105,6 +105,10 @@ namespace CTRPluginFramework
         Event               event;
         EventManager        manager;
 
+        // Wait until keys are released
+        while (Controller::GetKeysDown())
+            Controller::Update();
+
         // While user didn't close the MessageBox
         while (!_exit)
         {
@@ -122,13 +126,6 @@ namespace CTRPluginFramework
             _Draw();
             Renderer::SetTarget(BOTTOM);
             Renderer::EndFrame();
-        }
-
-        // Wait until keys are released
-        while (Controller::GetKeysDown())
-        {
-            Sleep(Seconds(0.25));
-            Controller::Update();
         }
 
         // Release game if we paused it in this function
