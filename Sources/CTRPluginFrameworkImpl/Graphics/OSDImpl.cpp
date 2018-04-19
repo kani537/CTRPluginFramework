@@ -176,70 +176,6 @@ namespace CTRPluginFramework
         return ((OSDReturn)(OSDImpl::HookReturn))(r0, params, isBottom, arg);
     }
 
-    static u32  *topFb;
-    static u32  *botFb;
-
-    static  inline  void memcpy32(u32 *dst, u32 *src, u32 size)
-    {
-        for (; size > 0; size -= 4)
-            *dst++ = *src++;
-    }
-
-    static  void    SaveVram(void)
-    {
-        ScreenImpl::Top->Acquire();
-        ScreenImpl::Bottom->Acquire();
-
-        ScreenImpl::Top->Invalidate();
-        ScreenImpl::Bottom->Invalidate();
-
-        OSDImpl::UpdateScreens();
-
-        // Copy FB1 to FB2
-        memcpy32((u32 *)ScreenImpl::Top->GetLeftFramebuffer(true), (u32 *)ScreenImpl::Top->GetLeftFramebuffer(), ScreenImpl::Top->GetFramebufferSize());
-        memcpy32((u32 *)ScreenImpl::Bottom->GetLeftFramebuffer(true), (u32 *)ScreenImpl::Bottom->GetLeftFramebuffer(), ScreenImpl::Bottom->GetFramebufferSize());
-
-        if (!System::IsNew3DS())
-        {
-            __dsb();
-            return;
-        }
-
-        u32     vramext = 0x1F000000 | (1u << 31);
-        u32     vramSize = 0;
-
-        // Top Screen
-        topFb = (u32 *)vramext;
-        memcpy32(topFb, (u32 *)ScreenImpl::Top->GetLeftFramebuffer(), ScreenImpl::Top->GetFramebufferSize());
-
-        vramext += ScreenImpl::Top->GetFramebufferSize();
-
-        // Bottom Screen
-        botFb = (u32 *)vramext;
-        memcpy32(botFb, (u32 *)ScreenImpl::Bottom->GetLeftFramebuffer(), ScreenImpl::Bottom->GetFramebufferSize());
-
-        __dsb();
-    }
-
-    void     RestoreVram(void)
-    {
-        if (!System::IsNew3DS())
-            return;
-
-        __dsb();
-
-        // Top screen
-        for (int i = 0; i < 2; ++i)
-            memcpy32((u32 *)ScreenImpl::Top->GetLeftFramebuffer(static_cast<bool>(i)), topFb, ScreenImpl::Top->GetFramebufferSize());
-
-        // Bottom screen
-        for (int i = 0; i < 2; ++i)
-            memcpy32((u32 *)ScreenImpl::Bottom->GetLeftFramebuffer(static_cast<bool>(i)), botFb, ScreenImpl::Bottom->GetFramebufferSize());
-
-        ScreenImpl::Top->Flush();
-        ScreenImpl::Bottom->Flush();
-    }
-
     void     OSDImpl::CallbackGlobal(u32 isBottom, void* addr, void* addrB, int stride, int format)
     {
         if (!addr)
@@ -259,12 +195,6 @@ namespace CTRPluginFramework
         {
             __dsb();
 
-            // Wait for vblank
-            gspWaitForVBlank();
-
-            // Backup vram
-            SaveVram();
-
             IsFramePaused = true;
 
             // Wake up threads waiting for frame to be paused
@@ -273,10 +203,6 @@ namespace CTRPluginFramework
             // Wait until the frame is ready to continue
             LightEvent_Wait(&OnFrameResume);
 
-            // Restore vram
-            __dsb();
-            //GSPGPU_RestoreVramSysArea();
-            //__dsb();
             // Signal that the frame continue
             LightEvent_Pulse(&OnFrameResume);
 
@@ -432,8 +358,8 @@ namespace CTRPluginFramework
 
         FramesToPlay = nbFrames;
 
-        // Restore framebuffer
-        RestoreVram();
+        // Restore framebuffer if possible
+        ScreenImpl::Clean();
 
         // Wake up game's thread
         LightEvent_Pulse(&OnFrameResume);

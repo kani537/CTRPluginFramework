@@ -22,7 +22,7 @@ namespace CTRPluginFramework
             FramebufferB2 = 0x98    ///< Framebuffer B second address    For top screen, this is the right eye 3D framebuffer. Unused for bottom screen.
         };
 
-        static  ScreenImpl *Top; 
+        static  ScreenImpl *Top;
         static  ScreenImpl *Bottom;
 
         ScreenImpl(u32 lcdSetupInfo, u32 fillColorAddress, bool isTopScreen = false);
@@ -50,7 +50,7 @@ namespace CTRPluginFramework
         u8                          *GetLeftFramebuffer(bool current = false);
         u8                          *GetLeftFramebuffer(int posX, int posY);
         u8                          *GetRightFramebuffer(bool current = false);
-        u8                          *GetRightFramebuffer(int posX, int posY); 
+        u8                          *GetRightFramebuffer(int posX, int posY);
         void                        GetPosFromAddress(u32 address, int &posX, int &posY);
 
         void                        Fade(float fade, bool copy = false);
@@ -65,13 +65,14 @@ namespace CTRPluginFramework
 
         static void                 Initialize(void);
 
-        u32                         _LCDSetup;
-        u32                         _FillColor;
+        u32                         _LCDSetup;  ///< Address of this screen LCD configuration
+        u32                         _FillColor; ///< Address of this screen fill color register
+        u32                        *_currentBufferReg; ///< Addres of this screen current buffer register
         u32                         _leftFramebuffers[2];
         u32                         _rightFramebuffers[2];
+        u32                        *_backupFramebuffer;
         u32                         _currentBuffer;
-        u32                         _originalBuffer;
-        u32                         *_currentBufferReg;
+
         u16                         _width;
         u16                         _height;
         u32                         _stride;

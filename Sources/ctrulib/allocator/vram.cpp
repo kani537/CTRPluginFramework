@@ -5,6 +5,7 @@ extern "C"
 	#include <ctrulib/util/rbtree.h>
 }
 
+#include "CTRPluginFramework/System/System.hpp"
 #include "mem_pool.h"
 #include "addrmap.h"
 
@@ -12,13 +13,18 @@ static MemPool sVramPool;
 
 static bool vramInit()
 {
-	auto blk = MemBlock::Create((u8*)0x1F000000, 0x00600000);
-	if (blk)
-	{
-		sVramPool.AddBlock(blk);
-		rbtree_init(&sAddrMap, addrMapNodeComparator);
-		return true;
-	}
+    if (CTRPluginFramework::System::IsNew3DS())
+    {
+        // Take advantage of the extra vram and Luma's mapping
+        auto blk = MemBlock::Create((u8*)(0x1F000000 | (1u << 31)), 0x00200000);
+
+	    if (blk)
+	    {
+		    sVramPool.AddBlock(blk);
+		    rbtree_init(&sAddrMap, addrMapNodeComparator);
+		    return true;
+	    }
+    }
 	return false;
 }
 

@@ -1,25 +1,28 @@
 #include "types.h"
-#include "3DS.h"
 
-#include "CTRPluginFramework/Graphics.hpp"
 #include "CTRPluginFrameworkImpl/Graphics.hpp"
-#include "CTRPluginFramework/System.hpp"
 #include "CTRPluginFrameworkImpl/System.hpp"
-#include <cstring>
-#include <cstdio>
+#include "CTRPluginFramework/System/System.hpp"
 #include "CTRPluginFramework/Utils/Utils.hpp"
+#include "ctrulib/allocator/vram.h"
 
 
 namespace CTRPluginFramework
 {
-
     #define REG(x) *(vu32 *)(x)
 
+    // Reserve the place for the Screen objects
     static u8  _topBuf[sizeof(ScreenImpl)];
     static u8  _botBuf[sizeof(ScreenImpl)];
 
     ScreenImpl  *ScreenImpl::Top = nullptr;
     ScreenImpl  *ScreenImpl::Bottom = nullptr;
+
+    static  inline  void memcpy32(u32 *dst, u32 *src, u32 size)
+    {
+        for (; size > 0; size -= 4)
+            *dst++ = *src++;
+    }
 
     u32     FromPhysicalToVirtual(u32 address)
     {
@@ -59,7 +62,11 @@ namespace CTRPluginFramework
     ScreenImpl::ScreenImpl(u32 lcdSetupInfo, u32 fillColorAddress, bool isTopScreen) :
         _LCDSetup(lcdSetupInfo),
         _FillColor(fillColorAddress),
-        _currentBuffer(0), _currentBufferReg((u32 *)(lcdSetupInfo + Select)),
+        _currentBufferReg((u32 *)(lcdSetupInfo + Select)),
+        _leftFramebuffers{},
+        _rightFramebuffers{},
+        _backupFramebuffer{ nullptr },
+        _currentBuffer(0),
         _width(0), _height(0),
         _stride(0), _rowSize(0), _bytesPerPixel(0),
         _isTopScreen(isTopScreen), _format()
@@ -71,7 +78,6 @@ namespace CTRPluginFramework
         ScreenImpl::Top = new (_topBuf) ScreenImpl(SystemImpl::GetIOBasePDC() + 0x400, SystemImpl::GetIOBaseLCD() + 0x204, true);
         ScreenImpl::Bottom = new (_botBuf) ScreenImpl(SystemImpl::GetIOBasePDC() + 0x500, SystemImpl::GetIOBaseLCD() + 0xA04);
     }
-
 
     void    ScreenImpl::Fade(float fade, bool copy)
     {
@@ -91,7 +97,7 @@ namespace CTRPluginFramework
         u32     leftFB1 = FromPhysicalToVirtual(REG(_LCDSetup + FramebufferA1));
         u32     leftFB2 = FromPhysicalToVirtual(REG(_LCDSetup + FramebufferA2));
 
-        _originalBuffer = _currentBuffer = *_currentBufferReg & 1u;
+        _currentBuffer = *_currentBufferReg & 1u;
         // Get format
         _format = (GSPGPU_FramebufferFormats)(REG(_LCDSetup + LCDSetup::Format) & 0b111);
 
@@ -121,7 +127,23 @@ namespace CTRPluginFramework
             REG(_LCDSetup + FramebufferB2) = REG(_LCDSetup + FramebufferA2);
         }
 
-        //Copy();
+        // Alloc framebuffer
+        u32 size = GetFramebufferSize();
+        if (_backupFramebuffer == nullptr)
+        {
+            _backupFramebuffer = static_cast<u32 *>(vramAlloc(size));
+            if (_backupFramebuffer == nullptr)
+                return;
+        }
+
+        // Invalidate cache
+        Invalidate();
+
+        // Backup the framebuffer
+        memcpy32(_backupFramebuffer, (u32 *)GetLeftFramebuffer(), size);
+
+        // Copy the framebuffer to the second framebuffer (avoid the sensation of flickering on buffer swap)
+        memcpy32((u32 *)GetLeftFramebuffer(true), (u32 *)GetLeftFramebuffer(), size);
     }
 
     void    ScreenImpl::Acquire(u32 left, u32 right, u32 stride, u32 format)
@@ -144,22 +166,20 @@ namespace CTRPluginFramework
     void    ScreenImpl::Flush(void)
     {
         u32 size = GetFramebufferSize();
+
         // Flush currentBuffer
-        //if (R_FAILED(GSPGPU_FlushDataCache((void *)_leftFramebuffers[_currentBuffer], size)))
-            svcFlushProcessDataCache(Process::GetHandle(), (void *)_leftFramebuffers[_currentBuffer], size);
+        svcFlushProcessDataCache(Process::GetHandle(), (void *)_leftFramebuffers[_currentBuffer], size);
 
         // Flush second buffer
-        //if (R_FAILED(GSPGPU_FlushDataCache((void *)_leftFramebuffers[!_currentBuffer], size)))
-            svcFlushProcessDataCache(Process::GetHandle(), (void *)_leftFramebuffers[!_currentBuffer], size);
+        svcFlushProcessDataCache(Process::GetHandle(), (void *)_leftFramebuffers[!_currentBuffer], size);
 
         if (Is3DEnabled())
         {
-        //    if (R_FAILED(GSPGPU_FlushDataCache((void *)_rightFramebuffers[_currentBuffer], size)))
-                svcFlushProcessDataCache(Process::GetHandle(), (void *)_rightFramebuffers[_currentBuffer], size);
+            // Flush current buffer
+            svcFlushProcessDataCache(Process::GetHandle(), (void *)_rightFramebuffers[_currentBuffer], size);
 
             // Flush second buffer
-        //    if (R_FAILED(GSPGPU_FlushDataCache((void *)_rightFramebuffers[!_currentBuffer], size)))
-                svcFlushProcessDataCache(Process::GetHandle(), (void *)_rightFramebuffers[!_currentBuffer], size);
+            svcFlushProcessDataCache(Process::GetHandle(), (void *)_rightFramebuffers[!_currentBuffer], size);
         }
     }
 
@@ -168,21 +188,18 @@ namespace CTRPluginFramework
 		u32 size = GetFramebufferSize();
 
 		// Invalidate currentBuffer
-		//if (R_FAILED(GSPGPU_InvalidateDataCache((void *)_leftFramebuffers[_currentBuffer], size)))
-			svcInvalidateProcessDataCache(Process::GetHandle(), (void *)_leftFramebuffers[_currentBuffer], size);
+		svcInvalidateProcessDataCache(Process::GetHandle(), (void *)_leftFramebuffers[_currentBuffer], size);
 
     	// Invalidate second buffer
-		//if (R_FAILED(GSPGPU_InvalidateDataCache((void *)_leftFramebuffers[!_currentBuffer], size)))
-			svcInvalidateProcessDataCache(Process::GetHandle(), (void *)_leftFramebuffers[!_currentBuffer], size);
+		svcInvalidateProcessDataCache(Process::GetHandle(), (void *)_leftFramebuffers[!_currentBuffer], size);
 
 		if (Is3DEnabled())
 		{
-		//	if (R_FAILED(GSPGPU_InvalidateDataCache((void *)_rightFramebuffers[_currentBuffer], size)))
-				svcInvalidateProcessDataCache(Process::GetHandle(), (void *)_rightFramebuffers[_currentBuffer], size);
+            // Invalidate current buffer
+			svcInvalidateProcessDataCache(Process::GetHandle(), (void *)_rightFramebuffers[_currentBuffer], size);
 
 			// Invalidate second buffer
-		//	if (R_FAILED(GSPGPU_InvalidateDataCache((void *)_rightFramebuffers[!_currentBuffer], size)))
-				svcInvalidateProcessDataCache(Process::GetHandle(), (void *)_rightFramebuffers[!_currentBuffer], size);
+		    svcInvalidateProcessDataCache(Process::GetHandle(), (void *)_rightFramebuffers[!_currentBuffer], size);
 		}
 	}
 
@@ -190,20 +207,13 @@ namespace CTRPluginFramework
     {
         u32 size = GetFramebufferSize();
 
-        // Flush currentBuffer
-        //if (R_FAILED(GSPGPU_FlushDataCache((void *)_leftFramebuffers[_currentBuffer], size)))
-            svcFlushProcessDataCache(Process::GetHandle(), (void *)_leftFramebuffers[_currentBuffer], size);
-
-        // Invalidate alt buffer
-        //if (R_FAILED(GSPGPU_InvalidateDataCache((void *)_leftFramebuffers[!_currentBuffer], size)))
-            svcInvalidateProcessDataCache(Process::GetHandle(), (void *)_leftFramebuffers[!_currentBuffer], size);
-
-        // Copy current buffer in the alternative buffer
-        memcpy((void *)_leftFramebuffers[!_currentBuffer], (void *)_leftFramebuffers[_currentBuffer], size);
+        // Copy the framebuffer to the second framebuffer (avoid the sensation of flickering on buffer swap)
+        memcpy32((u32 *)GetLeftFramebuffer(), (u32 *)GetLeftFramebuffer(true), size);
     }
 
     void    ScreenImpl::Debug(void)
     {
+        /*
         int posY = 10;
         if (_isTopScreen)
         {
@@ -219,6 +229,7 @@ namespace CTRPluginFramework
             Renderer::DrawString(Utils::Format("FB1: %08X", _leftFramebuffers[1]).c_str(), 10, posY, Color::Blank, Color::Black);
             Renderer::DrawString(Utils::Format("Sel: %d", _originalBuffer).c_str(), 10, posY, Color::Blank, Color::Black);
         }
+        */
     }
 
     bool    ScreenImpl::IsTopScreen(void)
@@ -249,27 +260,31 @@ namespace CTRPluginFramework
         REG(_FillColor) = 0;
     }
 
-    extern u32     topFB;
-    extern u32     botFB;
-
-    void     RestoreVram(void);
     void    ScreenImpl::Clean(void)
     {
-        gspWaitForVBlank();
-        RestoreVram();
-        // Invalidate and restore vram
-        /*GSPGPU_InvalidateDataCache((void *)0x1F000000, 0x00600000);
-        Top->Invalidate();
-        Bottom->Invalidate();
-        while (R_FAILED(GSPGPU_RestoreVramSysArea()));
-        gspWaitForVBlank();
+        if (!System::IsNew3DS())
+            return;
 
-        // Flush and save vram
+        __dsb();
+
+        u32 *src = Top->_backupFramebuffer;
+
+        if (src != nullptr)
+        {
+            for (int i = 0; i < 2; ++i)
+                memcpy32((u32 *)Top->_leftFramebuffers[i], src, Top->GetFramebufferSize());
+        }
+
+        src = Bottom->_backupFramebuffer;
+
+        if (src != nullptr)
+        {
+            for (int i = 0; i < 2; ++i)
+                memcpy32((u32 *)Bottom->_leftFramebuffers[i], src, Bottom->GetFramebufferSize());
+        }
+
         Top->Flush();
         Bottom->Flush();
-        GSPGPU_FlushDataCache((void *)0x1F000000, 0x00600000);
-        while (R_FAILED(GSPGPU_SaveVramSysArea()));
-        gspWaitForVBlank();*/
     }
 
     /*

@@ -118,6 +118,14 @@ namespace CTRPluginFramework
         // Wait for the frame to be paused
         OSDImpl::WaitFramePaused();
 
+        // Wait for the vblank
+        gspWaitForVBlank();
+
+        // Acquire screens
+        ScreenImpl::Top->Acquire();
+        ScreenImpl::Bottom->Acquire();
+        OSDImpl::UpdateScreens();
+
         if (!useFading)
             return;
 
@@ -141,6 +149,10 @@ namespace CTRPluginFramework
         	if (System::IsNew3DS())
         		while (t.GetElapsedTime() < limit);
         }
+
+        // Copy framebuffers
+        ScreenImpl::Top->Copy();
+        ScreenImpl::Bottom->Copy();
 	}
 
 	void 	ProcessImpl::Play(bool useFading)
