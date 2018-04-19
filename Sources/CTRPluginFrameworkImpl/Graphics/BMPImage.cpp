@@ -4,12 +4,11 @@
 #include "CTRPluginFrameworkImpl/Graphics/PrivColor.hpp"
 #include "CTRPluginFramework/Graphics/OSD.hpp"
 #include "CTRPluginFrameworkImpl/Graphics/Renderer.hpp"
-#include "CTRPluginFrameworkImpl/System/Screen.hpp"
-
-#include "ctrulib/allocator/linear.h"
-#include "3DS.h"
-#include "CTRPluginFramework/Utils/Utils.hpp"
 #include "CTRPluginFrameworkImpl/System/Heap.hpp"
+#include "CTRPluginFrameworkImpl/System/Screen.hpp"
+#include "CTRPluginFramework/Utils/Utils.hpp"
+
+#include "ctrulib/allocator/vram.h"
 
 namespace CTRPluginFramework
 {
@@ -17,8 +16,10 @@ namespace CTRPluginFramework
     {
         if (_data != nullptr)
         {
-            //linearFree(_data);
-            Heap::Free(_data);
+            if ((u32)_data >> 24 < 0x10)
+                Heap::Free(_data);
+            else
+                vramFree(_data);
             _data = nullptr;
         }
     }
@@ -28,7 +29,12 @@ namespace CTRPluginFramework
         if (!_loaded)
             return;
         if (_data)
-            Heap::Free(_data);
+        {
+            if ((u32)_data >> 24 < 0x10)
+                Heap::Free(_data);
+            else
+                vramFree(_data);
+        }
         _data = nullptr;
         _dataSize = 0;
         _loaded = false;
@@ -239,20 +245,28 @@ namespace CTRPluginFramework
 
     int     BMPImage::CreateBitmap(void)
     {
-      _rowIncrement = _width * _bytesPerPixel;
-      if (_data != nullptr)
-        Heap::Free(_data);
+        _rowIncrement = _width * _bytesPerPixel;
 
-      _dataSize = _height * _rowIncrement;
-      _data = static_cast<u8 *>(Heap::Alloc(_dataSize));
+        if (_data != nullptr)
+        {
+            if (((u32)_data >> 24) < 0x10)
+                Heap::Free(_data);
+            else
+                vramFree(_data);
+        }
 
-      if (_data == nullptr)
-      {
-        _dataSize = 0;
-        _loaded = false;
-        return (-1);
-      }
-      return (0);
+        _dataSize = _height * _rowIncrement;
+
+        if ((_data = static_cast<u8 *>(vramAlloc(_dataSize))) == nullptr)
+            _data = static_cast<u8 *>(Heap::Alloc(_dataSize));
+
+        if (_data == nullptr)
+        {
+            _dataSize = 0;
+            _loaded = false;
+            return (-1);
+        }
+        return (0);
     }
 
     void     BMPImage::LoadBitmap(void)
@@ -318,18 +332,6 @@ namespace CTRPluginFramework
             return;
         }
 
-        /*if (bih.size != bih.StructSize())
-        {
-            bfh.Clear();
-            bih.Clear();
-
-            file.Close();
-
-            sprintf(buffer, "BMP Error: Invalid BIH size: %X, expected; %X", bih.size, bih.StructSize());
-            OSD::Notify(buffer, red, black);
-            return;
-        }*/
-
         _width  = bih.width;
         _height = bih.height;
 
@@ -364,20 +366,6 @@ namespace CTRPluginFramework
             return;
         }
 
-       /* std::size_t bitmapLogicalSize = (_height * _width * _bytesPerPixel) + (_height * padding) + bih.StructSize() + bfh.StructSize();
-
-        if (bitmapFileSize != bitmapLogicalSize)
-        {
-            bfh.Clear();
-            bih.Clear();
-
-            file.Close();
-
-            OSD::Notify("BMP Error: Mismatch between logical and physical sizes of BMP.", red, black);
-
-            return;
-        }*/
-
         if (CreateBitmap())
         {
             bfh.Clear();
@@ -397,6 +385,7 @@ namespace CTRPluginFramework
         int   oddRows = rows * 5;
 
         unsigned char *buf = (u8 *)Heap::Alloc(totalwidth);
+
         if (buf == nullptr)
         {
             OSD::Notify("BMP Error: temp buffer allocation failed");
