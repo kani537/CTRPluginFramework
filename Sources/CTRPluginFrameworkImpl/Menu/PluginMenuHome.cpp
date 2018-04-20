@@ -4,6 +4,8 @@
 #include "CTRPluginFrameworkImpl/Menu/PluginMenuExecuteLoop.hpp"
 #include "CTRPluginFramework/Menu/MenuFolder.hpp"
 
+#include <cstring>
+
 namespace CTRPluginFramework
 {
     static char* g_ctrpfString = nullptr;

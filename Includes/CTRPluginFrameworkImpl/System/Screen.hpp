@@ -2,9 +2,16 @@
 #define CTRPLUGINFRAMEWORK_SCREENIMPL_HPP
 
 #include "ctrulib/services/gspgpu.h"
+#include "CTRPluginFrameworkImpl/Graphics/BMPImage.hpp"
 
 namespace CTRPluginFramework
 {
+    enum
+    {
+        SCREENSHOT_TOP,
+        SCREENSHOT_BOTTOM,
+        SCREENSHOT_BOTH
+    };
     class Color;
     class ScreenImpl
     {
@@ -58,6 +65,8 @@ namespace CTRPluginFramework
 		void						Invalidate(void);
         void                        Copy(void);
         void                        Debug(void);
+        void                        ScreenToBMP(BMPImage::Pixel *bmp, u32 padding = 0);
+        static BMPImage             *Screenshot(int screen);
 
     private:
         friend class Renderer;

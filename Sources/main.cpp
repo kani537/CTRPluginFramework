@@ -25,6 +25,8 @@ typedef unsigned long __PTRDIFF_TYPE__;
 #include <string>
 #include <iterator>
 #include "csvc.h"
+#include "CTRPluginFrameworkImpl/System/Screen.hpp"
+#include "CTRPluginFrameworkImpl/Graphics/BMPImage.hpp"
 
 namespace CTRPluginFramework
 {
@@ -274,6 +276,50 @@ namespace CTRPluginFramework
         return *this;
     }
 
+    using FuncPointer = void(*)(MenuEntry*);
+
+    static MenuEntry *EntryWithHotkey(const std::string &name, const std::string &note, FuncPointer gamefunc, const Hotkey &hotkey)
+    {
+        MenuEntry   *entry = new MenuEntry(name, gamefunc, note);
+
+        entry->Hotkeys += hotkey;
+
+        return (entry);
+    }
+
+    static MenuEntry *EntryWithHotkey(const std::string &name, const std::string &note, FuncPointer gamefunc, FuncPointer menufunc, const Hotkey &hotkey)
+    {
+        MenuEntry   *entry = new MenuEntry(name, gamefunc, menufunc, note);
+
+        entry->Hotkeys += hotkey;
+
+        return (entry);
+    }
+
+    static MenuEntry *EntryWithHotkey(const std::string &name, const std::string &note, FuncPointer gamefunc, const std::vector<Hotkey> &hotkeys)
+    {
+        MenuEntry   *entry = new MenuEntry(name, gamefunc, note);
+
+        for (const Hotkey &hk : hotkeys)
+        {
+            entry->Hotkeys += hk;
+        }
+
+        return (entry);
+    }
+
+    static MenuEntry *EntryWithHotkey(const std::string &name, const std::string &note, FuncPointer gamefunc, FuncPointer menuFunc, const std::vector<Hotkey> &hotkeys)
+    {
+        MenuEntry   *entry = new MenuEntry(name, gamefunc, menuFunc, note);
+
+        for (const Hotkey &hk : hotkeys)
+        {
+            entry->Hotkeys += hk;
+        }
+
+        return (entry);
+    }
+
     int     main(void)
     {
         PluginMenu  *m = new PluginMenu("Action Replay", 1, 2, 0);
@@ -323,6 +369,23 @@ namespace CTRPluginFramework
             MessageBox(Utils::Format("Appmem free: %llX\nAppmem free: %llX", g_free, free))();
             MessageBox(Utils::Format("vram pa: %08X", vramPa))();
 
+        });
+
+        menu += new MenuEntry("Screenshot", nullptr, [](MenuEntry *entry)
+        {
+            //MessageBox(Utils::Format("%d", ScreenImpl::Top->GetFormat()))();
+            //for (int i = 0; i < 3; ++i)
+            {
+                Clock clock;
+                BMPImage *img = ScreenImpl::Screenshot(2);
+
+              //  MessageBox(Utils::Format("Done: %f", clock.Restart().AsSeconds()))();
+
+                img->SaveImage("/CTRPFScreenshotBoth.bmp");
+
+                MessageBox(Utils::Format("Done: %f", clock.GetElapsedTime().AsSeconds()))();
+                delete img;
+            }
         });
 
         // Launch menu and mainloop

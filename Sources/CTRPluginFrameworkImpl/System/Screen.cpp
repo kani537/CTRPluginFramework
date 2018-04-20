@@ -133,7 +133,10 @@ namespace CTRPluginFramework
         {
             _backupFramebuffer = static_cast<u32 *>(vramAlloc(size));
             if (_backupFramebuffer == nullptr)
+            {
+                OSD::Notify("Failure");
                 return;
+            }
         }
 
         // Invalidate cache
@@ -235,6 +238,79 @@ namespace CTRPluginFramework
     bool    ScreenImpl::IsTopScreen(void)
     {
         return (_isTopScreen);
+    }
+
+    using Pixel = BMPImage::Pixel;
+
+    void    ScreenToBMP_BGR8(Pixel *bmp, u32 padding, u8 *src, u32 width, u32 stride)
+    {
+        u32     height = 240;
+
+        stride -= 3;
+
+        while (height--)
+        {
+            u8 *fb = src;
+
+            for (u32 w = width; w > 0; --w, ++bmp)
+            {
+                bmp->b = *fb++;
+                bmp->g = *fb++;
+                bmp->r = *fb++;
+                fb += stride;
+            }
+            src += 3;
+            bmp += padding;
+        }
+    }
+    void    ScreenImpl::ScreenToBMP(Pixel *bmp, u32 padding)
+    {
+        if (bmp == nullptr)
+            return;
+
+        u8      *src = reinterpret_cast<u8 *>(_backupFramebuffer);
+
+        if (_format == GSP_BGR8_OES) ScreenToBMP_BGR8(bmp, padding, src, _width, _stride);
+    }
+
+    static inline BMPImage* CreateBMP(u32 width, u32 height)
+    {
+        return new BMPImage(width, height, false);
+    }
+
+    BMPImage *ScreenImpl::Screenshot(int screen)
+    {
+        BMPImage    *bmp = nullptr;
+
+        // Top screen only
+        if (screen == SCREENSHOT_TOP)
+        {
+            bmp = CreateBMP(400, 240);
+
+            Top->ScreenToBMP(reinterpret_cast<BMPImage::Pixel *>(bmp->data()));
+        }
+        // Bottom screen only
+        else if (screen == SCREENSHOT_BOTTOM)
+        {
+            bmp = CreateBMP(320, 240);
+            Bottom->ScreenToBMP(reinterpret_cast<BMPImage::Pixel *>(bmp->data()));
+        }
+        // Both screens
+        else
+        {
+            bmp = CreateBMP(400, 480);
+
+            // Bottom screen comes first in the bmp
+            BMPImage::Pixel *dst = reinterpret_cast<BMPImage::Pixel *>(bmp->data());
+
+            Bottom->ScreenToBMP(dst + 40, 80);
+
+            // Then the top screen
+            dst += 400 * 240;
+            Top->ScreenToBMP(dst);
+        }
+
+        return bmp;
     }
 
     bool    ScreenImpl::Is3DEnabled(void)

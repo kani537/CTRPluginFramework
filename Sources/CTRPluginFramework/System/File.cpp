@@ -370,9 +370,11 @@ namespace CTRPluginFramework
     {
     }
 
+    Handle __fileHandle;
     File::File(const std::string& path, u32 mode) :
         _handle(0), _offset(0), _mode(0), _isOpen(false)
     {
         Open(*this, path, mode);
+        __fileHandle = _handle;
     }
 }

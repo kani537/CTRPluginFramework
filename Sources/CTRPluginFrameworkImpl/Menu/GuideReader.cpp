@@ -1,6 +1,7 @@
 #include "CTRPluginFrameworkImpl/Menu/GuideReader.hpp"
 #include "CTRPluginFrameworkImpl/Preferences.hpp"
 #include <cmath>
+#include <cstring>
 
 namespace CTRPluginFramework
 {
@@ -190,7 +191,7 @@ namespace CTRPluginFramework
                     if (!_bmpList.empty())
                     {
                         _currentBMP = 0;
-                        _image = new BMPImage(item->note + "/" + _bmpList[0]);                        
+                        _image = new BMPImage(item->note + "/" + _bmpList[0]);
                         _image = PostProcess(_image, 280, 200);
                     }
                 }
@@ -262,7 +263,7 @@ namespace CTRPluginFramework
                 {
                     _currentBMP++;
                     _LoadBMP();
-                }  
+                }
             }
         }
 

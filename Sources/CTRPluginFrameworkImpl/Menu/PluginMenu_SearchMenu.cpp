@@ -12,6 +12,8 @@
 #include "CTRPluginFrameworkImpl/Menu/PluginMenuActionReplay.hpp"
 #include "CTRPluginFrameworkImpl/Preferences.hpp"
 
+#include <cstring>
+
 namespace CTRPluginFramework
 {
     SearchMenu::SearchMenu(Search* &curSearch, HexEditor &hexEditor, bool &inEditor, bool &useHexInput) :
