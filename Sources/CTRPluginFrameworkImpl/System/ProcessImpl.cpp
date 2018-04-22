@@ -53,6 +53,9 @@ namespace CTRPluginFramework
             // Get mmutable
             mmuTableSize = *(u32 *)(kproc + 0x1C + 0x44);
             mmuTable = *(u32 *)(kproc + 0x1C + 0x48);
+
+            // Patch KProcess to allow creating threads on Core2
+            arm11kAllowCore2();
 		}
 		else
 		{

@@ -79,6 +79,12 @@ u32     arm11kGetMainThreadTLS(void)
     return (g_kernelParams[0]);
 }
 
+void     arm11kAllowCore2(void)
+{
+    g_kernelParams[0] = 9;
+    svcBackdoor(executeKernelCmd);
+}
+
 Result  arm11kSvcControlMemory(u32 *addr, u32 addr1, u32 size, u32 op, u32 perm)
 {
   u32 currentKProcess;
