@@ -37,7 +37,7 @@ static void _thread_begin(void  *arg)
 	threadExit(0);
 }
 
-Thread threadCreate(ThreadFunc entrypoint, void *stack_pointer, size_t stack_size, int prio, int affinity, bool detached)
+Thread threadCreate(ThreadFunc entrypoint, void *arg, void *stack_pointer, size_t stack_size, int prio, int affinity)
 {
 	size_t stackoffset 	= (sizeof(struct Thread_tag) + 7) &~ 7;
 	size_t allocsize   	= ((stack_size - stackoffset) - 7) &~ 7;
@@ -54,8 +54,8 @@ Thread threadCreate(ThreadFunc entrypoint, void *stack_pointer, size_t stack_siz
 	if (!t) return NULL;
 
 	t->ep       = entrypoint;
-	t->arg      = 0;
-	t->detached = detached;
+	t->arg      = arg;
+	t->detached = false;
 	t->finished = false;
 	t->stacktop = (u8*)t + (allocsize - tlssize);
 

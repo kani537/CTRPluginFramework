@@ -11,6 +11,8 @@ extern "C" {
 #include "synchronization.h"
 #include "svc.h"
 
+#include <sys/reent.h>
+
 typedef struct
 {
     Handle handle;
@@ -49,7 +51,7 @@ typedef Thread_tag* Thread;
  * @note Default exit code of a thread is 0.
  * @warning @ref svcExitThread should never be called from the thread, use @ref threadExit instead.
  */
-Thread threadCreate(ThreadFunc entrypoint, void *stack_top, size_t stack_size, int prio, int affinity, bool detached);
+Thread threadCreate(ThreadFunc entrypoint, void *arg, void *stack, size_t stack_size, int prio, int affinity);
 
 /**
  * @brief Retrieves the OS thread handle of a libctru thread.
