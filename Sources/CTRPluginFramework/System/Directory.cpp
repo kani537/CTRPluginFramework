@@ -4,8 +4,11 @@
 #include <limits.h>
 #include <cstring>
 #include "CTRPluginFrameworkImpl/System/Heap.hpp"
+#include "CTRPluginFramework/System/Mutex.hpp"
+#include "CTRPluginFramework/System/Lock.hpp"
 #include <algorithm>
 #include "ctrulib/svc.h"
+
 
 namespace CTRPluginFramework
 {
@@ -14,8 +17,11 @@ namespace CTRPluginFramework
 
     namespace   _Path
     {
+        static Mutex    _mutex;
         int     SdmcFixPath(std::string &path)
         {
+            Lock            lock(_mutex);
+
             ssize_t         units;
             uint32_t        code;
             std::string     fixPath;
@@ -81,6 +87,8 @@ namespace CTRPluginFramework
 
         FS_Path     SdmcUtf16Path(std::string path)
         {
+            Lock            lock(_mutex);
+
             ssize_t     units;
             FS_Path     fspath = { PATH_EMPTY, 0, nullptr };
             static      uint16_t    utf16Path[PATH_MAX + 1] = { 0 };
