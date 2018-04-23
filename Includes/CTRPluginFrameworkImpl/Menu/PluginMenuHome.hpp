@@ -6,6 +6,7 @@
 #include "CTRPluginFrameworkImpl/Menu/MenuFolderImpl.hpp"
 #include "CTRPluginFrameworkImpl/Menu/MenuEntryImpl.hpp"
 #include "CTRPluginFrameworkImpl/Menu/MenuItem.hpp"
+#include "CTRPluginFramework/Menu/PluginMenu.hpp"
 
 #include <vector>
 #include "CTRPluginFrameworkImpl/Graphics/UIContainer.hpp"
@@ -31,6 +32,7 @@ namespace CTRPluginFramework
 
     private:
         friend class PluginMenuImpl;
+        friend std::string &PluginMenu::Title(void);
 
         void    _ProcessEvent(Event &event);
         void    _RenderTop(void);

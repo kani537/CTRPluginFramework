@@ -251,6 +251,8 @@ namespace CTRPluginFramework
             {
                 if (mode == 0)
                 { /* Home */
+                    if (OnFrame != nullptr)
+                        OnFrame(delta);
                     shouldClose = home(eventList, mode, delta);
                 }
                 /*

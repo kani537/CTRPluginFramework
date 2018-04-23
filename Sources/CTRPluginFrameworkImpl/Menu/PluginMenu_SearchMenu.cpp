@@ -575,7 +575,7 @@ namespace CTRPluginFramework
 
     void    SearchMenu::_ShowGame(void)
     {
-        MessageBox(Color::Green << "Info", "Press " FONT_B " to return to the menu when\nyou've done.")();
+        MessageBox(Color::Green << "Info", "Press " FONT_B " to return to the menu.")();
 
         ScreenImpl::Clean();
 

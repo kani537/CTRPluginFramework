@@ -7,12 +7,12 @@ namespace CTRPluginFramework
     static PluginMenu   *g_runningInstance = nullptr;
 
     PluginMenu::PluginMenu(std::string name, std::string about) :
-        _menu(new PluginMenuImpl(name, about)), OnFirstOpening{ nullptr }, OnOpening{ nullptr }
+        _menu(new PluginMenuImpl(name, about)), OnFirstOpening{ nullptr }, OnOpening{ nullptr }, OnNewFrame{ nullptr }
     {
     }
 
     PluginMenu::PluginMenu(std::string name, void *about, DecipherPointer func) :
-        OnFirstOpening{ nullptr }, OnOpening{ nullptr }
+        OnFirstOpening{ nullptr }, OnOpening{ nullptr }, OnNewFrame{ nullptr }
     {
         std::string aboutStr = "";
         func(aboutStr, about);
@@ -21,7 +21,7 @@ namespace CTRPluginFramework
     }
 
     PluginMenu::PluginMenu(std::string name, u32 major, u32 minor, u32 revision, std::string about) :
-        _menu(new PluginMenuImpl(name, about)), OnFirstOpening{ nullptr }, OnOpening{ nullptr }
+        _menu(new PluginMenuImpl(name, about)), OnFirstOpening{ nullptr }, OnOpening{ nullptr }, OnNewFrame{ nullptr }
     {
         u32 version = (major & 0xFF) | ((minor & 0xFF) << 8) | ((revision & 0xFF) << 16);
 
@@ -92,6 +92,8 @@ namespace CTRPluginFramework
 
         _menu->OnFirstOpening = OnFirstOpening;
         _menu->OnOpening = OnOpening;
+        _menu->OnFrame = OnNewFrame;
+
         int ret = _menu->Run();
 
         g_runningInstance = nullptr;
@@ -137,5 +139,10 @@ namespace CTRPluginFramework
     void    PluginMenu::SynchronizeWithFrame(const bool useSync)
     {
         _menu->SyncOnFrame = useSync;
+    }
+
+    std::string &   PluginMenu::Title(void)
+    {
+        return _menu->_home->_root->name;
     }
 }
