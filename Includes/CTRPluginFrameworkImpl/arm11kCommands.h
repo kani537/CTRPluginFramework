@@ -12,7 +12,6 @@ asm
 **/
 s32     executeKernelCmd(void);
 
-u32  arm11kReadContextId(void);
 // Set a new pid to the KObject and return the old one
 u32     arm11kSetKProcessId(u32 kprocess, u32 newPid);
 u32     arm11kGetKProcessId(u32 kprocess);
@@ -32,8 +31,14 @@ u32     arm11kGetKProcessState(u32 kProcessState);
 // Do a memcpy in kernel mode
 void arm11kMemcpy(u32 dst, u32 src, u32 size);
 
-u32     arm11kGetMainThreadTLS(void);
+// Patch KProcess to allow running threads on Core2 (N3DS)
 void    arm11kAllowCore2(void);
+
+// Get the current coreID
+u32     arm11kGetCurrentCoreID(void);
+
+// Patch KProcess to cahnge current app type
+u32     arm11kChangeProcessType(u32 newType);
 
 //
 Result  arm11kSvcControlMemory(u32 *addr, u32 addr1, u32 size, u32 op, u32 perm);
