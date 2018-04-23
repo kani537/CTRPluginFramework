@@ -40,6 +40,7 @@ namespace CTRPluginFramework
         void                        Flash(Color &color);
 
         static void                 Clean(void);
+        static void                 ApplyFading(void);
         void                        Acquire(void);
         void                        Acquire(u32 left, u32 right, u32 stride, u32 format);
         void                        SwapBuffer(bool flush = false, bool copy = false);

@@ -366,6 +366,17 @@ namespace CTRPluginFramework
         Bottom->Flush();
     }
 
+    void    ScreenImpl::ApplyFading(void)
+    {
+        Top->Fade(0.5f);
+        Bottom->Fade(0.5f);
+
+        __dsb();
+
+        Top->SwapBuffer(true, true);
+        Bottom->SwapBuffer(true, true);
+    }
+
     /*
     ** Swap buffers
     *****************/
@@ -392,7 +403,13 @@ namespace CTRPluginFramework
         }
 
         if (copy)
+        {
+            if (IsTopScreen())
+                gspWaitForVBlank1();
+            else
+                gspWaitForVBlank();
             Copy();
+        }
     }
 
     GSPGPU_FramebufferFormats   ScreenImpl::GetFormat(void)

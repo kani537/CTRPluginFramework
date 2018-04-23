@@ -132,7 +132,7 @@ namespace CTRPluginFramework
         if (!useFading)
             return;
 
-        float fade = 0.03f;
+     /*   float fade = 0.03f;
         Clock t = Clock();
         Time limit = Seconds(1) / 10.f;
         Time delta;
@@ -151,11 +151,9 @@ namespace CTRPluginFramework
         	gspWaitForVBlank();
         	if (System::IsNew3DS())
         		while (t.GetElapsedTime() < limit);
-        }
+        } */
 
-        // Copy framebuffers
-        ScreenImpl::Top->Copy();
-        ScreenImpl::Bottom->Copy();
+        ScreenImpl::ApplyFading();
 	}
 
 	void 	ProcessImpl::Play(bool useFading)
@@ -164,7 +162,7 @@ namespace CTRPluginFramework
         if (!_isPaused)
             return;
 
-		if (useFading)
+		/*if (useFading)
 		{
             Time limit = Seconds(1) / 10.f;
             Time delta;
@@ -184,7 +182,8 @@ namespace CTRPluginFramework
                 if (System::IsNew3DS())
                     while (t.GetElapsedTime() < limit); //<- On New3DS frequencies, the alpha would be too dense
             }
-		}
+		} */
+
         // Decrease pause counter
         if (_isPaused)
             --_isPaused;

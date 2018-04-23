@@ -578,6 +578,7 @@ namespace CTRPluginFramework
         MessageBox(Color::Green << "Info", "Press " FONT_B " to return to the menu when\nyou've done.")();
 
         ScreenImpl::Clean();
+
         while (true)
         {
             Controller::Update();
@@ -585,7 +586,7 @@ namespace CTRPluginFramework
                 break;
         }
 
-        float fade = 0.03f;
+       /* float fade = 0.03f;
         Clock t = Clock();
         Time limit = Seconds(1) / 10.f;
         Time delta;
@@ -604,6 +605,7 @@ namespace CTRPluginFramework
             gspWaitForVBlank();
             if (System::IsNew3DS())
                 while (t.GetElapsedTime() < limit);
-        }
+        }*/
+        ScreenImpl::ApplyFading();
     }
 }
