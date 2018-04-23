@@ -1,9 +1,11 @@
 #include "CTRPluginFramework/System/File.hpp"
+#include "CTRPluginFramework/System/Lock.hpp"
 #include "CTRPluginFramework/System/Process.hpp"
 #include "CTRPluginFrameworkImpl/System/ProcessImpl.hpp"
 #include "ctrulib/services/fs.h"
 #include "ctrulib/util/utf.h"
 #include "ctrulib/result.h"
+
 #include <limits.h>
 #include <cstring>
 
@@ -126,6 +128,8 @@ namespace CTRPluginFramework
 
     int     File::Close(void) const
     {
+        Lock    lock(_mutex);
+
         if (!_isOpen)
             return (NOT_OPEN);
 
@@ -145,6 +149,8 @@ namespace CTRPluginFramework
 
     int     File::Read(void *buffer, u32 length) const
     {
+        Lock    lock(_mutex);
+
         if (!_isOpen) return (NOT_OPEN);
         if (!(_mode & READ)) return (INVALID_MODE);
         if (!buffer || !Process::CheckAddress((u32)buffer, MEMPERM_WRITE)) return (INVALID_ARG);
@@ -162,6 +168,8 @@ namespace CTRPluginFramework
 
     int     File::Write(const void *data, u32 length)
     {
+        Lock    lock(_mutex);
+
         if (!_isOpen) return (NOT_OPEN);
         if (!(_mode & WRITE)) return (INVALID_MODE);
         if (!data || !Process::CheckAddress((u32)data, MEMPERM_READ)) return (INVALID_ARG);
@@ -193,6 +201,8 @@ namespace CTRPluginFramework
 
     int     File::Seek(s64 position, SeekPos rel) const
     {
+        Lock    lock(_mutex);
+
         if (!_isOpen)
             return (NOT_OPEN);
 
@@ -237,16 +247,22 @@ namespace CTRPluginFramework
 
     void    File::Rewind(void) const
     {
+        Lock    _lock(_mutex);
+
         _offset = 0;
     }
 
     int     File::Flush(void) const
     {
+        Lock    lock(_mutex);
+
         return (FSFILE_Flush(_handle));
     }
 
     u64     File::GetSize(void) const
     {
+        Lock    lock(_mutex);
+
         if (!_isOpen)
             return (NOT_OPEN);
 
@@ -259,6 +275,8 @@ namespace CTRPluginFramework
 
     int     File::Dump(u32 address, u32 length)
     {
+        Lock    lock(_mutex);
+
         if (!_isOpen) return (NOT_OPEN);
         if (!(_mode & WRITE)) return (INVALID_MODE);
         if (!Process::CheckAddress(address, MEMPERM_READ))
@@ -289,17 +307,19 @@ namespace CTRPluginFramework
 
         if (unpause)
             ProcessImpl::Play(false);
+
         return (res);
     }
 
     int     File::Inject(u32 address, u32 length) const
     {
+        Lock    _lock(_mutex);
+
         if (!_isOpen) return (NOT_OPEN);
         if (!(_mode & READ)) return (INVALID_MODE);
         if (!Process::CheckAddress(address)) return (INVALID_ARG);
 
-        u8      *buffer = ::new u8[0x40000]; //256KB
-
+        u8      *buffer = (u8 *)::operator new(0x40000); //256KB
 
         if (buffer == nullptr)
             return (MAKERESULT(RL_USAGE, RS_OUTOFRESOURCE, 0, RD_OUT_OF_MEMORY)); ///< I think it'll abort() so it won't be reached anyway
@@ -332,7 +352,7 @@ namespace CTRPluginFramework
 
         } while (length > 0 && res == SUCCESS);
 
-        delete[] buffer;
+        ::operator delete(buffer);
         if (unpause)
             ProcessImpl::Play(false);
         return (res);
