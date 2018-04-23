@@ -15,9 +15,6 @@ namespace CTRPluginFramework
         _maxLines{ 0 }, _scrollbarSize{ 0 }, _scrollCursorSize{ 0 }, _maxScrollCursorPosY{ 0 }, _scrollPadding{ 0 },
         _scrollPosition{ 0 }
     {
-        titleColor = Preferences::Settings.WindowTitleColor;
-        textColor = Preferences::Settings.MainTextColor;
-        borderColor = Preferences::Settings.BackgroundBorderColor;
         _drawBox = true;
     }
 
@@ -58,10 +55,6 @@ namespace CTRPluginFramework
             _scrollPosition = 0.f;
             _displayScrollbar = true;
         }
-        //Color blank(255, 255, 255);
-        titleColor = Preferences::Settings.WindowTitleColor;//blank;
-        textColor = Preferences::Settings.MainTextColor;//blank;
-        borderColor = Preferences::Settings.BackgroundBorderColor;//blank;
         _fastscroll = _drawBox = true;
     }
 
@@ -246,10 +239,11 @@ namespace CTRPluginFramework
 
         int  max = std::min((int)(_currentLine + _maxLines), (int)(_newline.size() - 1));
 
-        const Color     &black = Color::Black;
-        const Color     &blank = Color::Blank;
-        const Color     &grey = Color::BlackGrey;
         FwkSettings     &settings = Preferences::Settings;
+        const Color     &titleColor = settings.WindowTitleColor;
+        const Color     &textColor = settings.MainTextColor;
+        const Color     &blank = Color::Blank;
+
 
         if (_drawBox)
         {
@@ -274,7 +268,7 @@ namespace CTRPluginFramework
         if (!_title.empty())
         {
             int width;
-            width = Renderer::DrawSysString((const char *)_title.c_str(), posX, posY, xLimit, titleColor);
+            width = Renderer::DrawSysString((const char *)_title.c_str(), posX, posY, xLimit, settings.WindowTitleColor);
             u32 length = width - posX + 30;
             if (posX + length > xLimit)
                 length = xLimit - posX;

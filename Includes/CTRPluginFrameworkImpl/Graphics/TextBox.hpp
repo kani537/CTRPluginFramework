@@ -34,10 +34,6 @@ namespace CTRPluginFramework
         void    DrawConst(void) const;
         void    Update(const bool isTouchDown, const IntVector &pos) override;
 
-        Color   titleColor;
-        Color   textColor;
-        Color   borderColor;
-
     private:
         friend class MessageBoxImpl;
         void    _GetTextInfos(void);

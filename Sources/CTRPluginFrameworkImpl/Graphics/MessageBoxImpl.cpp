@@ -31,16 +31,6 @@ namespace CTRPluginFramework
         float   maxLineWidth;
         float   maxTitleWidth;
 
-        // Check if a color is defined in the string of the title
-        if (title[0] == 0x1B)
-        {
-            _titleColor.r = title[1];
-            _titleColor.g = title[2];
-            _titleColor.b = title[3];
-        }
-        else
-            _titleColor = Preferences::Settings.WindowTitleColor;
-
         Renderer::GetTextInfos(title.c_str(), lineCount, maxTitleWidth, 320.f);
         Renderer::GetTextInfos(message.c_str(), lineCount, maxLineWidth, 320.f);
         maxLineWidth = std::max(maxLineWidth, maxTitleWidth) + 10.f; /// Size + potential scrollbar
@@ -60,7 +50,6 @@ namespace CTRPluginFramework
         _box.size.y = height;
         _textbox.Update(_title, _message);
         _textbox.Open();
-        _textbox.titleColor = _titleColor;
         _textbox._fastscroll = _textbox._drawBox = false;
     }
     MessageBoxImpl::MessageBoxImpl(const std::string &message, const DialogType dType) :
@@ -87,7 +76,6 @@ namespace CTRPluginFramework
         _box.size.y = height;
         _textbox.Update(_title, _message);
         _textbox.Open();
-        _textbox.titleColor = _titleColor;
         _textbox._fastscroll = _textbox._drawBox = false;
     }
 

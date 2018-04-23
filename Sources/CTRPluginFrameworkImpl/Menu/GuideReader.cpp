@@ -58,8 +58,6 @@ namespace CTRPluginFramework
     _isOpen(false), _menu(CreateFolder("Guide"), Icon::DrawFile), _guideTB("", "", Window::TopWindow.GetRect()), _text(""), _last(nullptr),
     _closeBtn(*this, nullptr, IntRect(275, 24, 20, 20), Icon::DrawClose)
     {
-        _guideTB.titleColor = Color::LimeGreen;
-        _guideTB.borderColor = Color::LimeGreen;
         _isOpen = false;
         _image = nullptr;
         if (Directory::Open(_currentDirectory, "Guide") == 0)

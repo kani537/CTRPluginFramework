@@ -28,7 +28,6 @@ namespace CTRPluginFramework
         void    _ProcessEvent(Event &event);
         void    _Draw(void);
 
-        Color           _titleColor;
         std::string     _title;
         std::string     _message;
         DialogType      _dialogType;
