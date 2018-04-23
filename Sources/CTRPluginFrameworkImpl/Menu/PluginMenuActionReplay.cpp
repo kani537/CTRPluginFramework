@@ -107,7 +107,14 @@ namespace CTRPluginFramework
 
     void    PluginMenuActionReplay::Initialize(void)
     {
-        ActionReplay_LoadCodes(_topMenu.GetFolder());
+        Task    task([](void *arg)
+        {
+            ActionReplay_LoadCodes(__pmARinstance->_topMenu.GetFolder());
+            return (s32)0;
+        });
+
+        // Async job
+        task.Start();
     }
 
     bool    PluginMenuActionReplay::operator()(EventList &eventList, const Time &delta)
