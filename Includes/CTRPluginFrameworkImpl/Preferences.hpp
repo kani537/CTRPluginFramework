@@ -106,6 +106,7 @@ namespace CTRPluginFramework
         static BMPImage     *bottomBackgroundImage;
 
         static u32          MenuHotkeys;
+        static u32          ScreenshotKeys;
         static bool         InjectBOnMenuClose;
         static bool         DrawTouchCursor;
         static bool         DrawTouchCoord;
@@ -121,6 +122,8 @@ namespace CTRPluginFramework
         static bool         UseFloatingBtn;
         static FwkSettings  Settings;
         static std::string  CheatsFile;
+        static std::string  ScreenshotPath;
+        static std::string  ScreenshotPrefix;
 
         static int          OpenConfigFile(File &file, Header &header);
         static void         LoadSettings(void);

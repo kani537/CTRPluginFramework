@@ -2,10 +2,12 @@
 #include "CTRPluginFrameworkImpl/Menu/PluginMenuTools.hpp"
 #include "CTRPluginFrameworkImpl/Menu/MenuEntryTools.hpp"
 #include "CTRPluginFrameworkImpl/Preferences.hpp"
+#include "CTRPluginFrameworkImpl/Menu/PluginMenuExecuteLoop.hpp"
 
 
 #include "CTRPluginFramework/Graphics/OSD.hpp"
 #include "CTRPluginFramework/Menu/MessageBox.hpp"
+#include "CTRPluginFramework/Menu/PluginMenu.hpp"
 #include "CTRPluginFramework/System/Hook.hpp"
 #include "CTRPluginFramework/System/Sleep.hpp"
 #include "CTRPluginFramework/System/Process.hpp"
@@ -18,6 +20,8 @@
 #include <ctime>
 #include <cstring>
 #include <cstdio>
+#include "CTRPluginFramework/System/Directory.hpp"
+#include "CTRPluginFramework/System/System.hpp"
 
 #define ALPHA 1
 
@@ -35,8 +39,9 @@ namespace CTRPluginFramework
         ABOUT,
         HEXEDITOR,
         GWRAMDUMP,
+        SCREENSHOT,
         MISCELLANEOUS,
-        SETTINGS
+        SETTINGS,
     };
 
     static int  g_mode = NORMAL;
@@ -45,6 +50,7 @@ namespace CTRPluginFramework
         _about(about),
         _mainMenu("Tools"),
         _miscellaneousMenu("Miscellaneous"),
+        _screenshotMenu("Screenshots"),
         _settingsMenu("Settings"),
         _hexEditorEntry(nullptr),
         _hexEditor(hexEditor),
@@ -325,6 +331,151 @@ namespace CTRPluginFramework
         }
     }
 
+    static u32      g_screenshotSuffix;
+    static u32      g_screenshotMode = SCREENSHOT_TOP;
+    static MenuEntryTools    *g_screenshotEntry;
+
+    static void     UpdateScreenshotSuffix(void)
+    {
+        Directory dir(Preferences::ScreenshotPath);
+        std::vector<std::string> files;
+
+        dir.ListFiles(files, ".bmp");
+
+        g_screenshotSuffix = 0;
+
+        std::string name = Preferences::ScreenshotPrefix + (!g_screenshotSuffix ? ".bmp" : Utils::Format(" - %d.bmp", g_screenshotSuffix));
+        for (std::string &filename : files)
+        {
+            if (filename == name)
+            {
+                ++g_screenshotSuffix;
+                name = Preferences::ScreenshotPrefix + Utils::Format(" - %d.bmp", g_screenshotSuffix);
+            }
+        }
+    }
+
+    // Called from PluginMenu
+    static void     ScreenshotMenuCallbackBackground(void)
+    {
+        if (Controller::IsKeysPressed(Preferences::ScreenshotKeys))
+        {
+            bool error = false;
+
+            // Wait for frame
+            OSDImpl::WaitingForScreenshot = true;
+            LightEvent_Pulse(&OSDImpl::OnFramePaused);
+
+            BMPImage        *image = ScreenImpl::Screenshot(g_screenshotMode);
+            std::string     name;
+
+            if (!image->IsLoaded())
+            {
+                error = true;
+                goto exit;
+            }
+
+            name = Preferences::ScreenshotPrefix;
+            name += (!g_screenshotSuffix ? ".bmp" : Utils::Format(" - %d.bmp", g_screenshotSuffix));
+            image->SaveImage(Preferences::ScreenshotPath + name);
+
+        exit:
+            // Release the frame
+            if (!System::IsNew3DS())
+                LightEvent_Pulse(&OSDImpl::OnFrameResume);
+
+            delete image;
+
+            if (error)
+                OSD::Notify("An error occurred while creating the screenshot");
+
+            else
+            {
+                ++g_screenshotSuffix;
+                OSD::Notify("Done: " + name);
+            }
+        }
+    }
+
+    static void     Screenshot_Enabler(MenuEntryTools *entry)
+    {
+        if (entry->IsActivated())
+            *PluginMenu::GetRunningInstance() += ScreenshotMenuCallbackBackground;
+        else
+            *PluginMenu::GetRunningInstance() -= ScreenshotMenuCallbackBackground;
+    }
+
+    static void      GetScreenShotMode(void)
+    {
+        Keyboard    kb(Color::LimeGreen << "Screenshot settings\x18\n\nWhich screen(s) would you like to capture ?", {"Top screen", "Bottom screen", "Both screens"});
+
+        int mode = kb.Open();
+        if (mode != -1)
+            g_screenshotMode = mode;
+    }
+
+    std::string     KeysToString(u32 keys);
+    static void     ScreenshotMenuCallback(void)
+    {
+        Keyboard    kb(Color::LimeGreen << "Screenshot settings\x18\n\nWhat do you want to change ?", { "Screens", "Hotkeys", "Name", "Directory" });
+
+        int choice;
+
+        do
+        {
+            choice = kb.Open();
+
+            switch (choice)
+            {
+            case 0: ///< Screens
+            {
+                GetScreenShotMode();
+                break;
+            }
+
+            case 1: ///< Hotkeys
+            {
+                u32 keys = Preferences::ScreenshotKeys;
+
+                (HotkeysModifier(keys, "Select the hotkeys you'd like to use to take a new screenshot."))();
+
+                if (keys != 0)
+                    Preferences::ScreenshotKeys = keys;
+                break;
+            }
+
+            case 2: ///< Name
+            {
+                Keyboard nameKb(Color::LimeGreen << "Screenshot name\x18\n\nWhich name would you like for the files ?");
+                std::string out;
+
+                if (nameKb.Open(out, Preferences::ScreenshotPrefix) != -1)
+                    Preferences::ScreenshotPrefix = out;
+                break;
+            }
+
+            case 3: ///< Directory
+            {
+               /* Keyboard dirKb(Color::LimeGreen << "Screenshot directory\x1B\n\nIn which directory would you like to save the screenshots ?");
+                std::string out;
+
+                if (dirKb.Open(out, Preferences::ScreenshotPrefix) != -1)
+                {
+
+                    Preferences::ScreenshotPrefix = out;
+                }*/
+                break;
+            }
+
+            default:
+                break;
+            }
+        } while (choice != -1);
+
+        static const char *screens[3] = {"Top screen", "Bottom screen", "Both screens"};
+        g_screenshotEntry->name = "Screenshot: " << Color::LimeGreen << KeysToString(Preferences::ScreenshotKeys) << "\x18, " << Color::Orange << screens[g_screenshotMode];
+    }
+
     void    PluginMenuTools::InitMenu(void)
     {
         // Main menu
@@ -333,10 +484,15 @@ namespace CTRPluginFramework
         _mainMenu.Append(_hexEditorEntry);
 
         _mainMenu.Append(new MenuEntryTools("Gateway RAM Dumper", [] { g_mode = GWRAMDUMP; }, Icon::DrawRAM));
+        _mainMenu.Append(new MenuEntryTools("Screenshots", nullptr, nullptr, new u32(SCREENSHOT)));
         _mainMenu.Append(new MenuEntryTools("Miscellaneous", nullptr, Icon::DrawMore, new u32(MISCELLANEOUS)));
         _mainMenu.Append(new MenuEntryTools("Settings", nullptr, Icon::DrawSettings, this));
         _mainMenu.Append(new MenuEntryTools("Shutdown the 3DS", Shutdown, Icon::DrawShutdown));
         _mainMenu.Append(new MenuEntryTools("Reboot the 3DS", Reboot, Icon::DrawRestart));
+
+        // Screenshots menu
+        _screenshotMenu.Append(new MenuEntryTools("Change screenshot settings", ScreenshotMenuCallback, nullptr, nullptr));
+        _screenshotMenu.Append((g_screenshotEntry = new MenuEntryTools("Enable screenshot", Screenshot_Enabler, true)));
 
         // Miscellaneous menu
         _miscellaneousMenu.Append(new MenuEntryTools("Display loaded files", _DisplayLoadedFiles, true));
@@ -356,7 +512,6 @@ namespace CTRPluginFramework
         _settingsMenu.Append(new MenuEntryTools("Load enabled cheats now", [] { Preferences::LoadSavedEnabledCheats(); }, nullptr));
         _settingsMenu.Append(new MenuEntryTools("Load favorites now", [] { Preferences::LoadSavedFavorites(); }, nullptr));
 
-        //_settingsMenu.Append(new MenuEntryTools("Inject B when closing the menu", [] { Preferences::InjectBOnMenuClose = !Preferences::InjectBOnMenuClose; }, true));
     }
 
     bool    PluginMenuTools::operator()(EventList &eventList, Time &delta)
@@ -443,6 +598,11 @@ namespace CTRPluginFramework
                 mode = MISCELLANEOUS;
                 _menu.Open(&_miscellaneousMenu);
             }
+            else if (arg != nullptr &&  *(u32 *)arg == SCREENSHOT)
+            {
+                mode = SCREENSHOT;
+                _menu.Open(&_screenshotMenu);
+            }
         }
 
         if (ret == MenuClose)
@@ -457,6 +617,11 @@ namespace CTRPluginFramework
                 _menu.Open(&_mainMenu, selector);
             }
             else if (mode == MISCELLANEOUS)
+            {
+                mode = 0;
+                _menu.Open(&_mainMenu, 4);
+            }
+            else if (mode == SCREENSHOT)
             {
                 mode = 0;
                 _menu.Open(&_mainMenu, 3);

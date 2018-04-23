@@ -10,6 +10,7 @@ namespace CTRPluginFramework
     BMPImage    *Preferences::topBackgroundImage = nullptr;
     BMPImage    *Preferences::bottomBackgroundImage = nullptr;
     u32         Preferences::MenuHotkeys = static_cast<u32>(Key::Select);
+    u32         Preferences::ScreenshotKeys = static_cast<u32>(Key::Start);
     bool        Preferences::InjectBOnMenuClose = false;
     bool        Preferences::DrawTouchCursor = false;
     bool        Preferences::DrawTouchCoord = false;
@@ -27,6 +28,8 @@ namespace CTRPluginFramework
     bool        Preferences::UseFloatingBtn = false;
     FwkSettings Preferences::Settings;
     std::string Preferences::CheatsFile;
+    std::string Preferences::ScreenshotPath;
+    std::string Preferences::ScreenshotPrefix;
 
     static const char *g_signature = "CTRPF\0\0";
 

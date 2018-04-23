@@ -15,6 +15,7 @@ namespace CTRPluginFramework
     u8      SystemImpl::_language = CFG_LANGUAGE_EN;
 
     extern "C" u32     g_KProcessPIDOffset;
+    extern "C" u32     g_KProcessKernelFlagsOffset;
 
     void    SystemImpl::Initialize(void)
     {
@@ -31,6 +32,7 @@ namespace CTRPluginFramework
             _IOBasePAD = 0xFFFC2000;
             _IOBasePDC = 0xFFFBC000;
             g_KProcessPIDOffset = 0xBC;
+            g_KProcessKernelFlagsOffset = 0xB0;
         }
         else
         {
@@ -38,6 +40,7 @@ namespace CTRPluginFramework
             _IOBasePAD = 0xFFFC6000;
             _IOBasePDC = 0xFFFC0000;
             g_KProcessPIDOffset = 0xB4;
+            g_KProcessKernelFlagsOffset = 0xA8;
         }
 
         s64 out = 0;

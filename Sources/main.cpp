@@ -27,6 +27,9 @@ typedef unsigned long __PTRDIFF_TYPE__;
 #include "csvc.h"
 #include "CTRPluginFrameworkImpl/System/Screen.hpp"
 #include "CTRPluginFrameworkImpl/Graphics/BMPImage.hpp"
+#include "OSDManager.hpp"
+#include "CTRPluginFrameworkImpl/System/Task.hpp"
+#include "CTRPluginFrameworkImpl/arm11kCommands.h"
 
 namespace CTRPluginFramework
 {
@@ -320,6 +323,34 @@ namespace CTRPluginFramework
         return (entry);
     }
 
+    static  bool g_takeScreenshot = false;
+
+    static u8 threadStack[0x1000] ALIGN(8);
+
+
+
+
+
+    void    DisplayInfos(void)
+    {
+        u32    cpuid = arm11kGetCurrentCoreID();
+
+        OSD::Notify(Utils::Format("cpu id: %d", cpuid));
+    }
+
+    void     __attribute__((noreturn)) threadFunc(void *arg)
+    {
+        for (int i = 10; i > 0; --i)
+        {
+            DisplayInfos();
+            Sleep(Seconds(3.f));
+        }
+
+        OSD::Notify("We will exit");
+        Sleep(Seconds(5.f));
+        svcExitThread();
+    }
+
     int     main(void)
     {
         PluginMenu  *m = new PluginMenu("Action Replay", 1, 2, 0);
@@ -333,33 +364,6 @@ namespace CTRPluginFramework
             std::string out;
             Utils::SDExplorer(out);
         });*/
-
-        menu += new MenuEntry("Textbox", [](MenuEntry *entry)
-        {
-            if (Controller::IsKeyPressed(ZR))
-            {
-                Process::Pause();
-                MessageBox("Info", "MsgBox 1, zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz")();
-                MessageBox("Info", "MsgBox 2, aaaaaaaaaaa")();
-                MessageBox("Info", "MsgBox 3, bbb")();
-                MessageBox("Info", "MsgBox 4")();
-                Process::Play();
-            }
-        });
-
-        menu += new MenuEntry("Textbox with frame", [](MenuEntry *entry)
-        {
-            if (Controller::IsKeyPressed(ZR))
-            {
-                Process::Pause();
-                for (int i = 0; i < 4; ++i)
-                {
-                    MessageBox("Info", Utils::Format("MsgBox %d", i))();
-                    Process::Play(2);
-                }
-                Process::Play();
-            }
-        });
 
         menu += new MenuEntry("Test", nullptr, [](MenuEntry *entry)
         {
@@ -375,6 +379,7 @@ namespace CTRPluginFramework
         {
             //MessageBox(Utils::Format("%d", ScreenImpl::Top->GetFormat()))();
             //for (int i = 0; i < 3; ++i)
+           // if (C)
             {
                 Clock clock;
                 BMPImage *img = ScreenImpl::Screenshot(2);
@@ -385,6 +390,38 @@ namespace CTRPluginFramework
 
                 MessageBox(Utils::Format("Done: %f", clock.GetElapsedTime().AsSeconds()))();
                 delete img;
+            }
+        });
+
+        DisplayInfos();
+
+        menu += new MenuEntry("Thread Infos", nullptr, [](MenuEntry *entry)
+        {
+            DisplayInfos();
+        });
+
+        menu += new MenuEntry("Thread", nullptr, [](MenuEntry *entry)
+        {
+            Handle thread;
+            Result res = svcCreateThread(&thread, threadFunc, 0, (u32 *)&threadStack[0x1000], 0x18, 1);
+            MessageBox(Utils::Format("%08X", res))();
+        });
+
+        menu += new MenuEntry("Task", nullptr, [](MenuEntry *entry)
+        {
+            for (u32 i = 0; i < 2; ++i)
+            {
+                Task task([](void *arg)
+                {
+                    for (int i = 0; i < 10; ++i)
+                    {
+                        OSD::Notify(Utils::Format("Task: CoreId: %d, #%d", arm11kGetCurrentCoreID(), i));
+                        Sleep(Seconds(5.f));
+                    }
+                    return (s32)0;
+                }, nullptr);
+
+                task.Start();
             }
         });
 

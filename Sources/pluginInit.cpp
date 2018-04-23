@@ -196,7 +196,7 @@ namespace CTRPluginFramework
         // Create plugin's main thread
         svcCreateEvent(&g_keepEvent, RESET_ONESHOT);
 
-        g_mainThread = threadCreate(ThreadInit, (void *)threadStack, 0x4000, 0x18, -2, false);
+        g_mainThread = threadCreate(ThreadInit, nullptr, (void *)threadStack, 0x4000, 0x18, -2);
 
         // Install CRO hook
         {
@@ -312,10 +312,12 @@ namespace CTRPluginFramework
             Directory::ChangeWorkingDirectory(dirpath);
         }
 
-        // If /cheats/ doesn't exists, create it
-        const char *dirpath = "/cheats";
-        if (!Directory::IsExists(dirpath))
-            Directory::Create(dirpath);
+        {
+            // If /cheats/ doesn't exists, create it
+            const char *dirpath = "/cheats";
+            if (!Directory::IsExists(dirpath))
+                Directory::Create(dirpath);
+        }
 
         // Set AR file path
         Preferences::CheatsFile = "cheats.txt";
@@ -323,6 +325,23 @@ namespace CTRPluginFramework
         // Default: cheats.txt in cwd
         if (!File::Exists(Preferences::CheatsFile))
             Preferences::CheatsFile = Utils::Format("/cheats/%016llX.txt", Process::GetTitleID());
+
+        {
+            // If /Screenshots/ doesn't exists, create it
+            const char *dirpath = "/Screenshots";
+            if (!Directory::IsExists(dirpath))
+                Directory::Create(dirpath);
+
+            // Set default screenshot path
+            Preferences::ScreenshotPath = dirpath;
+            Preferences::ScreenshotPath.append("/");
+
+            // Set default screenshot prefix
+            Preferences::ScreenshotPrefix = "[";
+            Process::GetName(Preferences::ScreenshotPrefix);
+            Preferences::ScreenshotPrefix += Utils::Format(" - %08X] - Screenshot", (u32)Process::GetTitleID());
+        }
+
 
         // Init Process info
         ProcessImpl::UpdateThreadHandle();

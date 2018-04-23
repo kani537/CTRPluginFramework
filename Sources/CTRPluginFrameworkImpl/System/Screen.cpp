@@ -134,13 +134,13 @@ namespace CTRPluginFramework
             _backupFramebuffer = static_cast<u32 *>(vramAlloc(size));
             if (_backupFramebuffer == nullptr)
             {
-                OSD::Notify("Failure");
+                //OSD::Notify("Failure");
                 return;
             }
         }
 
         // Invalidate cache
-        Invalidate();
+        //Invalidate();
 
         // Backup the framebuffer
         memcpy32(_backupFramebuffer, (u32 *)GetLeftFramebuffer(), size);
@@ -269,6 +269,9 @@ namespace CTRPluginFramework
             return;
 
         u8      *src = reinterpret_cast<u8 *>(_backupFramebuffer);
+
+        if (src == nullptr)
+            src = GetLeftFramebuffer();
 
         if (_format == GSP_BGR8_OES) ScreenToBMP_BGR8(bmp, padding, src, _width, _stride);
     }

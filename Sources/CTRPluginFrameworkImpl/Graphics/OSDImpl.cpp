@@ -20,6 +20,7 @@ namespace CTRPluginFramework
 {
     bool        OSDImpl::DrawSaveIcon = false;
     bool        OSDImpl::MessColors = false;
+    bool        OSDImpl::WaitingForScreenshot = false;
     u32         OSDImpl::FramesToPlay = 0;
     OSDReturn   OSDImpl::HookReturn = nullptr;
     Hook        OSDImpl::OSDHook;
@@ -188,6 +189,25 @@ namespace CTRPluginFramework
 
             // Signal a new frame to all threads waiting for it
             LightEvent_Pulse(&OnNewFrameEvent);
+
+            // If we have to take a screenshot
+            if (WaitingForScreenshot)
+            {
+                ScreenImpl::Top->Acquire();
+                ScreenImpl::Bottom->Acquire();
+
+                // Wake up thread
+                LightEvent_Pulse(&OnFramePaused);
+
+                // N3DS can be async thanks to vram
+                if (!System::IsNew3DS())
+                {
+                    // Wait until screenshot is done
+                    LightEvent_Wait(&OnFrameResume);
+                }
+
+                WaitingForScreenshot = false;
+            }
         }
 
         // If frame have to be paused

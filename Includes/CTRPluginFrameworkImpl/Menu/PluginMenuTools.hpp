@@ -40,6 +40,7 @@ namespace CTRPluginFramework
         std::string     _about;
         MenuFolderImpl  _mainMenu;
         MenuFolderImpl  _miscellaneousMenu;
+        MenuFolderImpl  _screenshotMenu;
         MenuFolderImpl  _settingsMenu;
         MenuEntryTools  *_hexEditorEntry;
         HexEditor       &_hexEditor;
