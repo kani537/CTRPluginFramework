@@ -235,40 +235,45 @@ namespace CTRPluginFramework
         if (!_bmpCanBeLoaded)
             return;
 
-        // Try to load top background
-        if (!EcoMemoryMode && File::Exists("TopBackground.bmp")) // Load the backgrounds
+        Task    task([](void *arg)
         {
-            topBackgroundImage = new BMPImage("TopBackground.bmp");
-            if (topBackgroundImage->IsLoaded())
-                topBackgroundImage = PostProcess(topBackgroundImage, 340, 200);
-            else
+            // Try to load top background
+            if (!EcoMemoryMode && File::Exists("TopBackground.bmp"))
             {
-                delete topBackgroundImage;
-                topBackgroundImage = nullptr;
-            }
-        }
-        else
-            topBackgroundImage = nullptr;
+                topBackgroundImage = new BMPImage("TopBackground.bmp");
 
-        // Try to load bottom background
-        if (!EcoMemoryMode && File::Exists("BottomBackground.bmp"))
-        {
-            bottomBackgroundImage = new BMPImage("BottomBackground.bmp");
-            if (bottomBackgroundImage->IsLoaded())
-                bottomBackgroundImage = PostProcess(bottomBackgroundImage, 280, 200);
-            else
-            {
-                delete bottomBackgroundImage;
-                bottomBackgroundImage = nullptr;
+                if (topBackgroundImage->IsLoaded())
+                    topBackgroundImage = PostProcess(topBackgroundImage, 340, 200);
+                else
+                {
+                    delete topBackgroundImage;
+                    topBackgroundImage = nullptr;
+                }
             }
-        }
-        else
-            bottomBackgroundImage = nullptr;
+
+            // Try to load top background
+            if (!EcoMemoryMode && File::Exists("TopBackground.bmp"))
+            {
+                bottomBackgroundImage = new BMPImage("BottomBackground.bmp");
+
+                if (bottomBackgroundImage->IsLoaded())
+                    bottomBackgroundImage = PostProcess(bottomBackgroundImage, 280, 200);
+                else
+                {
+                    delete bottomBackgroundImage;
+                    bottomBackgroundImage = nullptr;
+                }
+            }
+
+            // Update Window
+            Window::UpdateBackgrounds();
+
+            return (s32)0;
+        });
+
+        task.Start();
 
         _bmpCanBeLoaded = false;
-
-        // Update Window
-        Window::Initialize();
     }
 
     void    Preferences::UnloadBackgrounds(void)
@@ -289,7 +294,7 @@ namespace CTRPluginFramework
         }
 
         // Update Window
-        Window::Initialize();
+        Window::UpdateBackgrounds();
     }
 
     void    Preferences::WriteSettings(void)

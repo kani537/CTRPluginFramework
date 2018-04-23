@@ -26,15 +26,14 @@ namespace CTRPluginFramework
         static Window   TopWindow;
         static Window   BottomWindow;
 
+        static void     UpdateBackgrounds(void);
+
     private:
 
         IntRect     _rect;
         IntRect     _border;
         IconButton<Window, void>    *_closeBtn;
         BMPImage    *_image;
-
-        friend class Preferences;
-        static void     Initialize(void);
     };
 }
 

@@ -3,6 +3,7 @@
 #include "CTRPluginFramework/Graphics/Color.hpp"
 #include "CTRPluginFrameworkImpl/Graphics/Icon.hpp"
 #include "CTRPluginFrameworkImpl/Graphics/Renderer.hpp"
+#include "CTRPluginFramework/System/Lock.hpp"
 
 namespace CTRPluginFramework
 {
@@ -90,7 +91,7 @@ namespace CTRPluginFramework
         return (_rect);
     }
 
-    void    Window::Initialize(void)
+    void    Window::UpdateBackgrounds(void)
     {
         BottomWindow._image = Preferences::bottomBackgroundImage;
         TopWindow._image = Preferences::topBackgroundImage;
