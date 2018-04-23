@@ -2,11 +2,10 @@
 #define CTRPLUGINFRAMEWORK_DIRECTORY_HPP
 
 #include "types.h"
+#include "CTRPluginFramework/System/File.hpp"
+
 #include <string>
 #include <vector>
-
-#include "ctrulib/services/fs.h"
-#include "CTRPluginFramework/System/File.hpp"
 
 namespace CTRPluginFramework
 {
@@ -133,6 +132,7 @@ namespace CTRPluginFramework
         std::string     _path;
         Handle          _handle;
         mutable bool    _isOpen;
+        mutable Mutex   _mutex;
         struct DirectoryEntry
         {
             DirectoryEntry(u32 attrib, u8 *name);

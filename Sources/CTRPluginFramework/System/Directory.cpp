@@ -1,13 +1,16 @@
 #include "CTRPluginFramework/System/Directory.hpp"
-#include "ctrulib/util/utf.h"
-#include "ctrulib/result.h"
-#include <limits.h>
-#include <cstring>
 #include "CTRPluginFrameworkImpl/System/Heap.hpp"
 #include "CTRPluginFramework/System/Mutex.hpp"
 #include "CTRPluginFramework/System/Lock.hpp"
+
+
+#include "ctrulib/services/fs.h"
+#include "ctrulib/util/utf.h"
+#include "ctrulib/result.h"
+
 #include <algorithm>
-#include "ctrulib/svc.h"
+#include <limits.h>
+#include <cstring>
 
 
 namespace CTRPluginFramework
@@ -250,6 +253,8 @@ namespace CTRPluginFramework
     **********/
     int     Directory::Open(Directory &output, const std::string &path, bool create)
     {
+        Lock    lock(output._mutex);
+
         if (output._isOpen) output.Close();
         output._path.clear();
         output._handle = 0;
@@ -292,6 +297,8 @@ namespace CTRPluginFramework
     ***********/
     int     Directory::Close(void) const
     {
+        Lock    lock(_mutex);
+
         if (!_isOpen) return (NOT_OPEN);
 
         Result res;
@@ -330,27 +337,29 @@ namespace CTRPluginFramework
 
     int     Directory::_List(void) const
     {
+        Lock    _lock(_mutex);
+
         FS_DirectoryEntry   *entry = (FS_DirectoryEntry *)Heap::Alloc(sizeof(FS_DirectoryEntry) * 100);
         u32                 entriesNb = 0;
         u8                  filename[PATH_MAX + 1];
         int                 units;
 
         if (entry != nullptr)
-        while (R_SUCCEEDED(FSDIR_Read(_handle, &entriesNb, 100, entry)))
-        {
-            if (entriesNb == 0)
-                break;
-
-            for (u32 i = 0; i < entriesNb; ++i)
+            while (R_SUCCEEDED(FSDIR_Read(_handle, &entriesNb, 100, entry)))
             {
-                // Convert name from utf16 to utf8
-                units = utf16_to_utf8(filename, entry[i].name, PATH_MAX);
-                if (units == -1)
-                    continue;
-                filename[units] = 0;
-                _list.push_back(DirectoryEntry(entry[i].attributes, filename));
+                if (entriesNb == 0)
+                    break;
+
+                for (u32 i = 0; i < entriesNb; ++i)
+                {
+                    // Convert name from utf16 to utf8
+                    units = utf16_to_utf8(filename, entry[i].name, PATH_MAX);
+                    if (units == -1)
+                        continue;
+                    filename[units] = 0;
+                    _list.push_back(DirectoryEntry(entry[i].attributes, filename));
+                }
             }
-        }
 
         if (entry == nullptr || _list.empty())
         {
@@ -393,6 +402,8 @@ namespace CTRPluginFramework
     ***************/
     int     Directory::ListFiles(std::vector<std::string> &files, const std::string &pattern) const
     {
+        Lock    _lock(_mutex);
+
         if (!_isOpen) return (NOT_OPEN);
 
         const bool patternCheck = !pattern.empty();
@@ -422,6 +433,8 @@ namespace CTRPluginFramework
     *****************/
     int     Directory::ListDirectories(std::vector<std::string> &folders, const std::string &pattern) const
     {
+        Lock    lock(_mutex);
+
         if (!_isOpen) return (NOT_OPEN);
 
         const bool patternCheck = !pattern.empty();

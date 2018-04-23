@@ -95,6 +95,8 @@ namespace CTRPluginFramework
 
     int     File::Open(File &output, const std::string &path, int mode)
     {
+        Lock    lock(output._mutex);
+
         if (output._isOpen)
             output.Close();
 
