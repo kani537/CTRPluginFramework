@@ -1,3 +1,6 @@
+#include "CTRPluginFramework/System/Mutex.hpp"
+#include "CTRPluginFramework/System/Lock.hpp"
+
 extern "C"
 {
 	#include <types.h>
@@ -10,9 +13,14 @@ extern "C"
 #include "addrmap.h"
 
 static MemPool sVramPool;
+static CTRPluginFramework::Mutex _mutex;
+
+using   CTRPluginFramework::Lock;
 
 static bool vramInit()
 {
+    Lock    lock(_mutex);
+
     if (CTRPluginFramework::System::IsNew3DS())
     {
         // Take advantage of the extra vram and Luma's mapping
@@ -30,6 +38,7 @@ static bool vramInit()
 
 void* vramMemAlign(size_t size, size_t alignment)
 {
+    Lock    lock(_mutex);
 	// Enforce minimum alignment
 	if (alignment < 16)
 		alignment = 16;
@@ -76,6 +85,8 @@ void* vramRealloc(void* mem, size_t size)
 
 void vramFree(void* mem)
 {
+    Lock    lock(_mutex);
+
 	auto node = getNode(mem);
 	if (!node) return;
 

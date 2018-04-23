@@ -1,3 +1,6 @@
+#include "CTRPluginFramework/System/Mutex.hpp"
+#include "CTRPluginFramework/System/Lock.hpp"
+
 extern "C"
 {
     #include "types.h"
@@ -20,6 +23,7 @@ namespace CTRPluginFramework
         u8*     __ctrpf_heap = nullptr;
         u32     __ctrpf_heap_size = 0;
 
+        static Mutex    _mutex;
         static MemPool  g_heapPool;
 
         static bool     HeapInit(void)
@@ -40,6 +44,7 @@ namespace CTRPluginFramework
 
         void    *MemAlign(size_t size, size_t alignment)
         {
+            Lock    lock(_mutex);
             // Enforce minimum alignment
             if (alignment < 16)
                 alignment = 16;
@@ -80,6 +85,7 @@ namespace CTRPluginFramework
 
         void    *Realloc(void *ptr, const size_t size)
         {
+            Lock    lock(_mutex);
             addrMapNode   *node = getNode(ptr);
             addrMapNode   *newnode;
 
@@ -123,6 +129,7 @@ namespace CTRPluginFramework
 
         void    Free(void *ptr)
         {
+            Lock    lock(_mutex);
             addrMapNode   *node = getNode(ptr);
 
             if (!node) return;
