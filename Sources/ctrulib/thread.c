@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <malloc.h>
 #include <string.h>
+#include "CTRPluginFrameworkImpl/arm11kCommands.h"
 
 extern const u8 __tdata_lma[];
 extern const u8 __tdata_lma_end[];
@@ -71,9 +72,15 @@ Thread threadCreate(ThreadFunc entrypoint, void *arg, void *stack_pointer, size_
 	t->reent._stdout = cur->_stdout;
 	t->reent._stderr = cur->_stderr;
 
-	Result rc;
+    u32     oldAppType;
+	Result  rc;
+
+    // If affinity is meant to be on syscore, patch the application
+    if (affinity == 1)
+        oldAppType = arm11kChangeProcessType(0x300);
 	rc = svcCreateThread(&t->handle, (ThreadFunc)_thread_begin, (u32)t, (u32*)t->stacktop, prio, affinity);
-	if (R_FAILED(rc))
+	arm11kChangeProcessType(oldAppType);
+    if (R_FAILED(rc))
 	{
 		//free(t);
 		return NULL;

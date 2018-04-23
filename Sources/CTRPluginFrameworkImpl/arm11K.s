@@ -10,16 +10,12 @@
 \name:
 .endm
 
-.section .text
-.global  dispatchArm11KernelCmd
-.type    dispatchArm11KernelCmd, %function
-
-dispatchArm11KernelCmd:
+FUNCTION    dispatchArm11KernelCmd
         STMFD       SP!, {R4,LR}
         LDR         R4, =g_kernelParams
         LDR         R3, [R4]
         CMP         R3, #1
-        BNE         loc_108230
+        BNE         GetKprocessFromHandle
 
 arm11kMemcpy:
         LDR         R2, [R4,#0xC]
@@ -36,35 +32,29 @@ _memcpy:
         LDMFD       SP!, {R4,PC}
 @ ---------------------------------------------------------------------------
 
-loc_108230:
-        CMP         R3, #2
-        BNE         loc_10825C
-
 GetKprocessFromHandle:
+        CMP         R3, #2
+        BNE         GetCurrentKprocess
         LDR         R3, =g_KProcessHandleDataOffset
         LDR         R1, [R4,#4] @ processHandle
         LDR         R0, [R3]
         MOV         R3, #0xFFFF9FFF
         LDR         R3, [R3,#-0xFFB] @ R3 = (0xFFFF9004 == currentKProcess)
         ADD         R0, R0, R3 @ KProcessHandleTable
-        BL          getKernelObjectPtr
+        BL          K_GetKObjFromHandle
         STR         R0, [R4,#8]
         LDMFD       SP!, {R4,PC}
 @ ---------------------------------------------------------------------------
 
-loc_10825C:
-        CMP         R3, #3
-
 GetCurrentKprocess:
+		CMP         R3, #3
         MOVEQ       R3, #0xFFFF9FFF
         LDREQ       R3, [R3,#-0xFFB] @ R3 = (0xFFFF9004 == currentKProcess)
         STREQ       R3, [R4,#4] @ g_kernelParams[1] = currentKProcess
         LDMEQFD     SP!, {R4,PC}
 
-test4:
-        CMP         R3, #4
-
 SetCurrentKprocess:
+		CMP         R3, #4
         MOVEQ       R3, #0xFFFF9FFF
         LDREQ       R1, [R4,#8]
         LDREQ       R2, [R3,#-0xFFB]
@@ -74,7 +64,7 @@ SetCurrentKprocess:
         LDMEQFD     SP!, {R4,PC}
 
         CMP         R3, #5
-        BNE         loc_1082AC
+        BNE         exit
 
 SetKProcessID:
         LDR         R3, =g_KProcessPIDOffset
@@ -83,37 +73,11 @@ SetKProcessID:
         LDR         R3, [R4, #8] @ R3 = g_kernelParams[2]
         LDR         R0, [R1,R2] @ r0 = *(kprocess + g_KProcessPIDOffset)
         STR         R0, [R4,#4] @ g_kernelParams[1] = *(kprocess + g_KProcessPIDOffset)
-        LDR	    R0, [R4, #0xC] @ R0 = g_kernelParams[3]
+        LDR			R0, [R4, #0xC] @ R0 = g_kernelParams[3]
 		CMP         R0, #0
 		STRNE       R3, [R1,R2]
         LDMFD       SP!, {R4,PC}
 @ ---------------------------------------------------------------------------
-
-loc_1082AC:
-        CMP         R3, #6
-        BNE         ReadCTXID
-
-GetKProcessState:
-        LDR         R1, [R4, #4]
-        LDR         R2, [R1]
-        STR         R2, [R4, #8]
-
-ReadCTXID:
-	CMP     R3, #7
-	BNE	    GetMainThreadTLS
-
-	MRC         p15, 0, R1,c13,c0, 1
-	STR	    R1, [R4]
-
-GetMainThreadTLS:
-	CMP		R3, #8
-	BNE		exit
-
-	ldr r0, =0xFFFF9004
-	ldr r0, [r0]
-	ldr r0, [r0, #0xc8]
-	ldr r0, [r0, #0x94]
-	str r0, [r4]
 
 exit:
         LDMFD       SP!, {R4,PC};
@@ -123,7 +87,7 @@ exit:
 .global  executeKernelCmd
 .type    executeKernelCmd, %function
 executeKernelCmd:
-        CPSID       IF  @ Disable Interrupts
+        CPSID       AIF  @ Disable Interrupts
         STMFD       SP!, {R3-R11,LR}
         BL          dispatchArm11KernelCmd
         LDMFD       SP!, {R3-R11,PC}
@@ -136,3 +100,4 @@ FUNCTION	loadCROHooked
 	ldr		lr, [sp], #4       @ Restore lr
 	ldmfd	sp, {r0-r12}       @ Restore registers, do not update sp
 	bx      lr                 @ Return to game
+@ End of function loadCROHooked
