@@ -3,7 +3,7 @@
 
 #include "types.h"
 #include "CTRPluginFramework/System/Mutex.hpp"
-#include "CTRPluginFrameworkImpl/System/Task.hpp"
+#include "CTRPluginFramework/System/Task.hpp"
 #include "ctrulib/thread.h"
 #include <queue>
 

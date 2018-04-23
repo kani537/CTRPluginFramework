@@ -1,4 +1,4 @@
-#include "CTRPluginFrameworkImpl/System/Task.hpp"
+#include "CTRPluginFramework/System/Task.hpp"
 #include "CTRPluginFrameworkImpl/System/Scheduler.hpp"
 
 namespace CTRPluginFramework

@@ -28,8 +28,6 @@ typedef unsigned long __PTRDIFF_TYPE__;
 #include "CTRPluginFrameworkImpl/System/Screen.hpp"
 #include "CTRPluginFrameworkImpl/Graphics/BMPImage.hpp"
 #include "OSDManager.hpp"
-#include "CTRPluginFrameworkImpl/System/Task.hpp"
-#include "CTRPluginFrameworkImpl/arm11kCommands.h"
 
 namespace CTRPluginFramework
 {
@@ -323,47 +321,12 @@ namespace CTRPluginFramework
         return (entry);
     }
 
-    static  bool g_takeScreenshot = false;
-
-    static u8 threadStack[0x1000] ALIGN(8);
-
-
-
-
-
-    void    DisplayInfos(void)
-    {
-        u32    cpuid = arm11kGetCurrentCoreID();
-
-        OSD::Notify(Utils::Format("cpu id: %d", cpuid));
-    }
-
-    void     __attribute__((noreturn)) threadFunc(void *arg)
-    {
-        for (int i = 10; i > 0; --i)
-        {
-            DisplayInfos();
-            Sleep(Seconds(3.f));
-        }
-
-        OSD::Notify("We will exit");
-        Sleep(Seconds(5.f));
-        svcExitThread();
-    }
-
     int     main(void)
     {
         PluginMenu  *m = new PluginMenu("Action Replay", 1, 2, 0);
         PluginMenu  &menu = *m;
 
         menu.SynchronizeWithFrame(true);
-
-        /*menu += new MenuEntry("SD Browser", nullptr, [](MenuEntry *entry)
-        {
-            //MessageBox(Utils::Format("%08X", getMemFree()))();
-            std::string out;
-            Utils::SDExplorer(out);
-        });*/
 
         menu += new MenuEntry("Test", nullptr, [](MenuEntry *entry)
         {
@@ -373,56 +336,6 @@ namespace CTRPluginFramework
             MessageBox(Utils::Format("Appmem free: %llX\nAppmem free: %llX", g_free, free))();
             MessageBox(Utils::Format("vram pa: %08X", vramPa))();
 
-        });
-
-        menu += new MenuEntry("Screenshot", nullptr, [](MenuEntry *entry)
-        {
-            //MessageBox(Utils::Format("%d", ScreenImpl::Top->GetFormat()))();
-            //for (int i = 0; i < 3; ++i)
-           // if (C)
-            {
-                Clock clock;
-                BMPImage *img = ScreenImpl::Screenshot(2);
-
-              //  MessageBox(Utils::Format("Done: %f", clock.Restart().AsSeconds()))();
-
-                img->SaveImage("/CTRPFScreenshotBoth.bmp");
-
-                MessageBox(Utils::Format("Done: %f", clock.GetElapsedTime().AsSeconds()))();
-                delete img;
-            }
-        });
-
-        DisplayInfos();
-
-        menu += new MenuEntry("Thread Infos", nullptr, [](MenuEntry *entry)
-        {
-            DisplayInfos();
-        });
-
-        menu += new MenuEntry("Thread", nullptr, [](MenuEntry *entry)
-        {
-            Handle thread;
-            Result res = svcCreateThread(&thread, threadFunc, 0, (u32 *)&threadStack[0x1000], 0x18, 1);
-            MessageBox(Utils::Format("%08X", res))();
-        });
-
-        menu += new MenuEntry("Task", nullptr, [](MenuEntry *entry)
-        {
-            for (u32 i = 0; i < 2; ++i)
-            {
-                Task task([](void *arg)
-                {
-                    for (int i = 0; i < 10; ++i)
-                    {
-                        OSD::Notify(Utils::Format("Task: CoreId: %d, #%d", arm11kGetCurrentCoreID(), i));
-                        Sleep(Seconds(5.f));
-                    }
-                    return (s32)0;
-                }, nullptr);
-
-                task.Start();
-            }
         });
 
         // Launch menu and mainloop

@@ -1,5 +1,5 @@
-#ifndef CTRPLUGINFRAMEWORKIMPL_SYSTEM_TASK_HPP
-#define CTRPLUGINFRAMEWORKIMPL_SYSTEM_TASK_HPP
+#ifndef CTRPLUGINFRAMEWORK_SYSTEM_TASK_HPP
+#define CTRPLUGINFRAMEWORK_SYSTEM_TASK_HPP
 
 #include "types.h"
 #include "ctrulib/synchronization.h"
@@ -45,7 +45,7 @@ namespace CTRPluginFramework
 
         /**
          * \brief Wait for the Task to be completed
-         * \return The result of the Task
+         * \return The result of the Task (returned by TaskFunc)
          */
         s32     Wait(void) const;
 
