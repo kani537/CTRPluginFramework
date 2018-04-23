@@ -1,9 +1,12 @@
 #include "CTRPluginFrameworkImpl/System/Scheduler.hpp"
 #include "CTRPluginFramework/System/System.hpp"
 #include "CTRPluginFramework/System/Lock.hpp"
+#include "CTRPluginFramework/Graphics/OSD.hpp"
+#include "CTRPluginFramework/Utils/Utils.hpp"
 
 namespace CTRPluginFramework
 {
+#define DEBUG 0
     Scheduler   Scheduler::_singleton;
 
     Scheduler::Core::Core(void)
@@ -46,6 +49,9 @@ namespace CTRPluginFramework
                 LightEvent_Clear(&core.newTaskEvent);
             }
 
+#if DEBUG
+            OSD::Notify(Utils::Format("New task on core: %d", core.id));
+#endif
             core.flags = Scheduler::Core::Busy;
 
             TaskContext *ctx = core.ctx;
@@ -66,6 +72,9 @@ namespace CTRPluginFramework
                 ctx->flags = Task::Finished;
                 LightEvent_Signal(&ctx->event);
             }
+#if DEBUG
+            OSD::Notify(Utils::Format("Task ended on core: %d", core.id));
+#endif
         }
 
         svcExitThread();
@@ -111,6 +120,7 @@ namespace CTRPluginFramework
         _cores[0].flags = Core::Exit;
 
         // Create handler on Core1
+        _cores[1].id = 1;
         _cores[1].stack = static_cast<u8 *>(::operator new(0x1000));
         _cores[1].thread = threadCreate(Scheduler__CoreHandler, &_cores[1], _cores[1].stack, 0x1000, 0x18, 1);
 
@@ -122,6 +132,7 @@ namespace CTRPluginFramework
         }
         else
         {
+            _cores[2].id = 2;
             _cores[2].stack = static_cast<u8 *>(::operator new(0x1000));
             _cores[2].thread = threadCreate(Scheduler__CoreHandler, &_cores[2], _cores[2].stack, 0x1000, 0x18, 2);
         }

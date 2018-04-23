@@ -21,6 +21,7 @@ namespace CTRPluginFramework
                 Exit = 2
             };
 
+            u32         id{0};
             u32         flags{Idle};
             u8          *stack{nullptr};
             Thread      thread{nullptr};
