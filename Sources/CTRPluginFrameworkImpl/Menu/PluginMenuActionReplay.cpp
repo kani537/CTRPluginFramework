@@ -119,10 +119,11 @@ namespace CTRPluginFramework
 
     bool    PluginMenuActionReplay::operator()(EventList &eventList, const Time &delta)
     {
-        static Task top([](void *arg)
+        static Task     top([](void *arg)
         {
-            ((PluginMenuActionReplay *)arg)->_topMenu.Draw();
-            return (s32)0;
+            static_cast<PluginMenuActionReplay *>(arg)->_topMenu.Draw();
+
+            return static_cast<s32>(0);
         }, this);
 
         // Process events
@@ -143,12 +144,6 @@ namespace CTRPluginFramework
                 _topMenu.CloseNote();
         }
 
-        // Draw menu on top screen
-        top.Start();
-
-        // Draw bottom screen
-        _DrawBottom();
-
         // Check editor btn
         _editorBtn();
         _newBtn();
@@ -158,7 +153,15 @@ namespace CTRPluginFramework
         _trashBtn();
         _openFileBtn();
 
+        // Draw menu on top screen
+        top.Start();
+
+        // Draw bottom screen
+        _DrawBottom();
+
+        // Wait until rendering on Top Screen is finished
         top.Wait();
+
         // Return if user want to close the window
         return (Window::BottomWindow.MustClose());
     }

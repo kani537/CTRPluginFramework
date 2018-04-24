@@ -166,12 +166,13 @@ namespace CTRPluginFramework
         // RenderBottom
         _RenderBottom();
 
+        top.Wait();
+
         // Execute UIControls
         _uiContainer.ExecuteAll();
 
         mode = _mode;
 
-        top.Wait();
         return (Window::BottomWindow.MustClose());
     }
 
