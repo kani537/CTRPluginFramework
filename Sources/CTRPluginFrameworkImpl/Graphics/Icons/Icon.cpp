@@ -72,6 +72,7 @@ namespace CTRPluginFramework
     {
         u8      *framebuf = nullptr;
         u8      *imgb = img;
+        u32     target = Renderer::GetContext()->target;
         int     rowstride;
         int     bpp;
         bool    is3d = false;
@@ -80,7 +81,7 @@ namespace CTRPluginFramework
         posY += sizeY;
         GSPGPU_FramebufferFormats fmt;
         // Get target infos
-        switch (Renderer::_target)
+        switch (target)
         {
             case Target::TOP:
             {
@@ -121,7 +122,7 @@ namespace CTRPluginFramework
             }
         }
 
-        if (!is3d && Renderer::_target == Target::TOP && ScreenImpl::Top->Is3DEnabled())
+        if (!is3d && target == Target::TOP && ScreenImpl::Top->Is3DEnabled())
         {
             framebuf = ScreenImpl::Top->GetRightFramebuffer(posX, posY);
             img = imgb;

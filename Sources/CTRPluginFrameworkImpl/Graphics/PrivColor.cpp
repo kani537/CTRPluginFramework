@@ -52,7 +52,7 @@ namespace CTRPluginFramework
             case GSP_RGBA4_OES:
                 FromFramebuffer = _ReadRGBA4;
                 ToFramebuffer = _useClamp ? _WriteRGBA4Clamp : _WriteRGBA4;
-                break;            
+                break;
         }
     }
 
@@ -213,7 +213,7 @@ namespace CTRPluginFramework
         int posX;
         int posY;
 
-        if (Renderer::_target == BOTTOM)
+        if (Renderer::GetContext()->target == BOTTOM)
             ScreenImpl::Bottom->GetPosFromAddress((u32)dst, posX, posY);
         else
             ScreenImpl::Top->GetPosFromAddress((u32)dst, posX, posY);
@@ -233,7 +233,7 @@ namespace CTRPluginFramework
         int posX;
         int posY;
 
-        if (Renderer::_target == BOTTOM)
+        if (Renderer::GetContext()->target == BOTTOM)
             ScreenImpl::Bottom->GetPosFromAddress((u32)dst, posX, posY);
         else
             ScreenImpl::Top->GetPosFromAddress((u32)dst, posX, posY);
@@ -252,7 +252,7 @@ namespace CTRPluginFramework
         int posX;
         int posY;
 
-        if (Renderer::_target == BOTTOM)
+        if (Renderer::GetContext()->target == BOTTOM)
             ScreenImpl::Bottom->GetPosFromAddress((u32)dst, posX, posY);
         else
             ScreenImpl::Top->GetPosFromAddress((u32)dst, posX, posY);
@@ -280,7 +280,7 @@ namespace CTRPluginFramework
         int posX;
         int posY;
 
-        if (Renderer::_target == BOTTOM)
+        if (Renderer::GetContext()->target == BOTTOM)
             ScreenImpl::Bottom->GetPosFromAddress((u32)dst, posX, posY);
         else
             ScreenImpl::Top->GetPosFromAddress((u32)dst, posX, posY);
@@ -309,7 +309,7 @@ namespace CTRPluginFramework
         int posX;
         int posY;
 
-        if (Renderer::_target == BOTTOM)
+        if (Renderer::GetContext()->target == BOTTOM)
             ScreenImpl::Bottom->GetPosFromAddress((u32)dst, posX, posY);
         else
             ScreenImpl::Top->GetPosFromAddress((u32)dst, posX, posY);

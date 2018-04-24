@@ -125,6 +125,19 @@ namespace CTRPluginFramework
     bool PluginMenuHome::operator()(EventList& eventList, int& mode, Time& delta)
     {
         //static int note = 0;
+        static Task top([](void *arg)
+        {
+            PluginMenuHome *home = reinterpret_cast<PluginMenuHome *>(arg);
+
+             Renderer::SetTarget(TOP);
+            if (home->_noteTB.IsOpen())
+                home->_noteTB.Draw();
+            else
+                home->_RenderTop();
+
+            return (s32)0;
+
+        }, this);
 
         _mode = mode;
 
@@ -148,19 +161,6 @@ namespace CTRPluginFramework
         _Update(delta);
 
         // Render top
-
-        Task top([](void *arg)
-        {
-            PluginMenuHome *home = reinterpret_cast<PluginMenuHome *>(arg);
-
-             Renderer::SetTarget(TOP);
-            if (home->_noteTB.IsOpen())
-                home->_noteTB.Draw();
-            else
-                home->_RenderTop();
-            return (s32)0;
-        }, this);
-
         top.Start();
 
         // RenderBottom

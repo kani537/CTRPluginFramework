@@ -9,10 +9,11 @@
 #include <cstdio>
 #include <cmath>
 
+#define FPS 1
+
 namespace CTRPluginFramework
 {
-    Target      Renderer::_target = BOTTOM;
-    ScreenImpl* Renderer::_screen = ScreenImpl::Bottom;
+    RendererContext Renderer::hookContext;
 
     inline u32   GetFramebufferOffset(int posX, int posY, int bpp, int rowsize)
     {
@@ -21,21 +22,24 @@ namespace CTRPluginFramework
 
     void        Renderer::SetTarget(Target target)
     {
-        _target = target;
-        if (_target == BOTTOM)
-            _screen = ScreenImpl::Bottom;
-        else
-            _screen = ScreenImpl::Top;
+        RendererContext *ctx = GetContext();
 
-        PrivColor::SetFormat(_screen->GetFormat());
+        ctx->target = target;
+        if (target == BOTTOM)
+            ctx->screen = ScreenImpl::Bottom;
+        else
+            ctx->screen = ScreenImpl::Top;
+
+        PrivColor::SetFormat(ctx->screen->GetFormat());
     }
 
     void        Renderer::EndFrame(bool copy)
     {
         static const IntRect    &background = Window::BottomWindow.GetRect(); // 20, 20, 280, 200);
-        //static Color                    black;
-        //static Clock                    fpsCounter;
-        //static float                    second = Seconds(1.f).AsSeconds();
+
+#if FPS
+        static Clock    fpsCounter;
+#endif
 
         bool isTouchDown = Touch::IsDown();
         IntVector touchPos(Touch::GetPosition());
@@ -54,15 +58,14 @@ namespace CTRPluginFramework
             }
         }
 
-     //   ScreenImpl::Top->Debug();
-     //   ScreenImpl::Bottom->Debug();
+#if FPS
         // Draw fps counter
-        /*char buffer[20] = {0};
+        char buffer[20] = {0};
 
-        sprintf(buffer, "FPS: %.02f",  second / fpsCounter.Restart().AsSeconds());
+        sprintf(buffer, "FPS: %.02f",  1.f / fpsCounter.Restart().AsSeconds());
         int posY = 30;
-        DrawString(buffer, 200, posY, Color::Blank, Color::Black);*/
-
+        DrawString(buffer, 200, posY, Color::Blank, Color::Black);
+#endif
         ScreenImpl::Bottom->SwapBuffer(true, copy);
         ScreenImpl::Top->SwapBuffer(true, copy);
 
@@ -71,17 +74,19 @@ namespace CTRPluginFramework
 
     void    Renderer::MenuSelector(int posX, int posY, int width, int height)
     {
+        ScreenImpl  *screen = GetContext()->screen;
+
         int x = posX;
         int y = posY;
         int w = width;
         int h = height;
 
 
-        u8 *left = _screen->GetLeftFramebuffer(posX, posY + 1);
+        u8 *left = screen->GetLeftFramebuffer(posX, posY + 1);
         int bpp;
         int rowstride;
         GSPGPU_FramebufferFormats fmt;
-        _screen->GetFramebufferInfos(rowstride, bpp, fmt);
+        screen->GetFramebufferInfos(rowstride, bpp, fmt);
 
         float fade = Preferences::Settings.CursorFadeValue;
 
@@ -108,7 +113,7 @@ namespace CTRPluginFramework
 
         Color l(255, 255, 255);
         posY += height;
-        u8 *dst = _screen->GetLeftFramebuffer(posX + (width - tier), posY);
+        u8 *dst = screen->GetLeftFramebuffer(posX + (width - tier), posY);
         u8 *rtier = dst;
         Color black(60, 60, 60);
         // Right tier

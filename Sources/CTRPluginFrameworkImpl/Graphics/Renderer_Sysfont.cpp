@@ -48,7 +48,7 @@ namespace CTRPluginFramework
         if (!text) return (0.0f);
 
         float   w = 0.f;
-        u8      *c = (u8 *)text;        
+        u8      *c = (u8 *)text;
 
         // Skip UTF8 sig
         if (c[0] == 0xEF && c[1] == 0xBB && c[2] == 0xBF)
@@ -140,7 +140,7 @@ namespace CTRPluginFramework
                 w = gSize;
             }
             else
-                w += gSize;            
+                w += gSize;
         }
 
         return (lineCount);
@@ -206,9 +206,6 @@ namespace CTRPluginFramework
             lineMaxWidth = w;
     }
 
-    extern "C" unsigned char *CheckedCheckbox;
-    extern "C" unsigned char *UnCheckedCheckbox;
-
     void Renderer::DrawSysCheckBox(const char *str, int posX, int &posY, int xLimits, Color color, bool isChecked,  float offset)
     {
         Icon::DrawCheckBox(posX, posY, isChecked);
@@ -218,7 +215,6 @@ namespace CTRPluginFramework
 
     }
 
-    extern "C" unsigned char *FolderFilled;
     void Renderer::DrawSysFolder(const char *str, int posX, int &posY, int xLimits, Color color, float offset)
     {
         Icon::DrawFolder(posX, posY);
@@ -229,12 +225,17 @@ namespace CTRPluginFramework
 
     int Renderer::DrawGlyph(Glyph *glyph, int posX, int posY, Color color)
     {
+        DrawGlyph(GetContext()->screen, glyph, posX, posY, color);
+    }
+
+    int Renderer::DrawGlyph(ScreenImpl *screen, Glyph *glyph, int posX, int posY, Color color)
+    {
         posX += glyph->xOffset;
 
-        u32  stride = _screen->_stride;
-        u32  bpp = _screen->_bytesPerPixel;
+        u32  stride = screen->_stride;
+        u32  bpp = screen->_bytesPerPixel;
         u8   *data = glyph->glyph;
-        u8   *left = static_cast<u8 *>(_screen->GetLeftFramebuffer(posX, posY));
+        u8   *left = static_cast<u8 *>(screen->GetLeftFramebuffer(posX, posY));
         u8   *fb = left;
 
         for (int i = 0; i < 208; i++)
@@ -256,14 +257,14 @@ namespace CTRPluginFramework
         return (posX + glyph->xAdvance);
     }
 
-    int Renderer::DrawGlyph(Glyph *glyph, int posX, int posY, float &offset, Color color)
+    int Renderer::DrawGlyph(ScreenImpl *screen, Glyph *glyph, int posX, int posY, float &offset, Color color)
     {
         posX += glyph->xOffset;
 
-        u32  stride = _screen->_stride;
-        u32  bpp = _screen->_bytesPerPixel;
+        u32  stride = screen->_stride;
+        u32  bpp = screen->_bytesPerPixel;
         u8   *data = glyph->glyph;
-        u8   *left = static_cast<u8 *>(_screen->GetLeftFramebuffer(posX, posY));
+        u8   *left = static_cast<u8 *>(screen->GetLeftFramebuffer(posX, posY));
         u8   *fb = left;
 
         for (int i = static_cast<int>(offset); i < 208; i++)
@@ -299,8 +300,9 @@ namespace CTRPluginFramework
         int             lineCount = 1;
         u8              *str = const_cast<u8 *>(stri);
         int             x = posX;
+        ScreenImpl      *screen = GetContext()->screen;
 
-        xLimits = std::min(xLimits, (_target == TOP ? 400 : 320));
+        xLimits = std::min(xLimits, (GetContext()->target == TOP ? 400 : 320));
 
         // Skip UTF8 sig
         if (str[0] == 0xEF && str[1] == 0xBB && str[2] == 0xBF)
@@ -315,7 +317,7 @@ namespace CTRPluginFramework
             if (c == '\n')
             {
                 x = posX;
-                lineCount++;    
+                lineCount++;
                 posY += 16;
                 str++;
                 continue;
@@ -352,7 +354,7 @@ namespace CTRPluginFramework
                 posY += 16;
             }
 
-            x = DrawGlyph(glyph, x, posY, color);
+            x = DrawGlyph(screen, glyph, x, posY, color);
 
         } while (*str);
 
@@ -364,18 +366,19 @@ namespace CTRPluginFramework
     {
         Color   g_customColor;
     }
-    
+
     int Renderer::DrawSysString(const char *stri, int posX, int &posY, int xLimits, Color color, float offset, const char *end)
     {
         Glyph   *glyph;
         int      x = posX;
         //u8      *str = (u8 *)stri.c_str();
         u8 *str = (u8 *)stri;
-        
+        ScreenImpl *screen = GetContext()->screen;
+
         if (!(str && *str))
             return (x);
 
-        xLimits = std::min(xLimits, (_target == TOP ? 400 : 320));
+        xLimits = std::min(xLimits, (GetContext()->target == TOP ? 400 : 320));
 
         // Skip UTF8 sig
         if (str[0] == 0xEF && str[1] == 0xBB && str[2] == 0xBF)
@@ -434,7 +437,7 @@ namespace CTRPluginFramework
                 continue;
             }
 
-            x = DrawGlyph(glyph, x, posY, offset, color);
+            x = DrawGlyph(screen, glyph, x, posY, offset, color);
         } while (*str);
 
         posY += 16;

@@ -22,6 +22,7 @@ typedef struct
     bool detached, finished;
     struct _reent reent;
     void* stacktop;
+    u32   renderCtx[2];
 }   Thread_tag;
 
 /// libctru thread handle type

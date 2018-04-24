@@ -235,37 +235,41 @@ namespace CTRPluginFramework
         if (!_bmpCanBeLoaded)
             return;
 
-        Task    task([](void *arg)
+        Task    task([](void *arg UNUSED)
         {
             // Try to load top background
             if (!EcoMemoryMode && File::Exists("TopBackground.bmp"))
             {
-                topBackgroundImage = new BMPImage("TopBackground.bmp");
+                BMPImage *image = new BMPImage("TopBackground.bmp");
 
-                if (topBackgroundImage->IsLoaded())
-                    topBackgroundImage = PostProcess(topBackgroundImage, 340, 200);
+                if (image->IsLoaded())
+                    image = PostProcess(image, 340, 200);
                 else
                 {
-                    delete topBackgroundImage;
-                    topBackgroundImage = nullptr;
+                    delete image;
+                    image = nullptr;
                 }
+
+                topBackgroundImage = image;
             }
 
             // Try to load top background
             if (!EcoMemoryMode && File::Exists("TopBackground.bmp"))
             {
-                bottomBackgroundImage = new BMPImage("BottomBackground.bmp");
+                BMPImage *image = new BMPImage("BottomBackground.bmp");
 
-                if (bottomBackgroundImage->IsLoaded())
-                    bottomBackgroundImage = PostProcess(bottomBackgroundImage, 280, 200);
+                if (image->IsLoaded())
+                    image = PostProcess(image, 280, 200);
                 else
                 {
-                    delete bottomBackgroundImage;
-                    bottomBackgroundImage = nullptr;
+                    delete image;
+                    image = nullptr;
                 }
+
+                bottomBackgroundImage = image;
             }
 
-            // Update Window
+            // Update Window²
             Window::UpdateBackgrounds();
 
             return (s32)0;

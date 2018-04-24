@@ -13,6 +13,7 @@
 
 #include <vector>
 #include "Font.hpp"
+#include "ctrulib/thread.h"
 
 #define GEOMETRY 0
 
@@ -21,18 +22,22 @@ namespace CTRPluginFramework
 
 #define     RANGE(x, y, z) (y >= x && y <= z)
 
+    class ScreenImpl;
     enum Target
     {
         BOTTOM = 0,
         TOP = 1
     };
 
+    struct RendererContext
+    {
+        Target      target;
+        ScreenImpl  *screen;
+    };
+
     using DrawPixelP = void(*)(int, int, Color&);
     using DrawDataP = void(*)(int, int, u8*, int);
 
-    class Icon;
-    class ScreenImpl;
-    class TextBox;
     class Renderer
     {
     public:
@@ -62,8 +67,8 @@ namespace CTRPluginFramework
         static    void  ComputeRoundedRectangle(std::vector<IntLine> &out, const IntRect &rect, float radius, int max);
         // Menu
         //#############################################################################################
-        static    void        MenuSelector(int posX, int posY, int width, int height);
-        
+        static    void  MenuSelector(int posX, int posY, int width, int height);
+
         // Linux Font
         //#############################################################################################
         // Draw Character without background
@@ -86,32 +91,25 @@ namespace CTRPluginFramework
         static void     DrawSysCheckBox(const char *str, int posX, int &posY, int xLimits, Color color, bool isChecked = false, float offset = 0);
         static void     DrawSysFolder(const char *str, int posX, int &posY, int xLimits, Color color, float offset = 0);
         static int      DrawGlyph(Glyph* glyph, int posX, int posY, Color color);
-        static int      DrawGlyph(Glyph* glyph, int posX, int posY, float& offset, Color color);
+        static int      DrawGlyph(ScreenImpl *screen, Glyph* glyph, int posX, int posY, Color color);
+        static int      DrawGlyph(ScreenImpl *screen, Glyph* glyph, int posX, int posY, float& offset, Color color);
         // Misc
         //#############################################################################################
-    private:
-
-        friend void     Initialize(void);
-        friend class    TouchKey;
-        friend class    Icon;
-        friend class    PrivColor;
-        friend class    Font;
-
-        friend class    TextBox;
-        friend class    BMPImage;
 
         // Calulate sysfont glyph
         static void     FontCalcGlyphPos(fontGlyphPos_s *out, charWidthInfo_s **cwout, int glyphIndex, float scaleX, float scaleY);
 
-        static Target           _target;
-        static ScreenImpl       *_screen;
+        static inline   RendererContext *GetContext(void)
+        {
+            Thread current = threadGetCurrent();
 
-       /* static void         RenderRGBA8(int posX, int posY, Color &color);
-        static void         RenderBGR8(int posX, int posY, Color &color);
-        static void         RenderRGB565(int posX, int posY, Color &color);
-        static void         RenderRGB5A1(int posX, int posY, Color &color);
-        static void         RenderRGBA4(int posX, int posY, Color &color);*/
+            if (current == NULL)
+                return &hookContext;
 
+            return (RendererContext *)&current->renderCtx;
+        }
+
+        static RendererContext  hookContext;
     };
 
 #if GEOMETRY
@@ -173,4 +171,4 @@ namespace CTRPluginFramework
 
 }
 
-#endif 
+#endif

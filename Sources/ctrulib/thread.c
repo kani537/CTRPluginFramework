@@ -18,6 +18,7 @@ struct Thread_tag
 	bool detached, finished;
 	struct _reent reent;
 	void* stacktop;
+    void* renderCtx;
 };
 
 static void __panic(void)
@@ -34,7 +35,7 @@ static void _thread_begin(void  *arg)
 	tv->reent = &t->reent;
 	tv->thread_ptr = t;
 	tv->tls_tp = (u8*)t->stacktop-8; // ARM ELF TLS ABI mandates an 8-byte header
-	t->ep(t->arg);
+    t->ep(t->arg);
 	threadExit(0);
 }
 
@@ -59,6 +60,8 @@ Thread threadCreate(ThreadFunc entrypoint, void *arg, void *stack_pointer, size_
 	t->detached = false;
 	t->finished = false;
 	t->stacktop = (u8*)t + (allocsize - tlssize);
+    t->renderCtx[0] = 0;
+    t->renderCtx[1] = 0;
 
 	if (tlsloadsize)
 		memcpy(t->stacktop, __tdata_lma, tlsloadsize);
@@ -117,8 +120,14 @@ Result threadJoin(Thread thread, u64 timeout_ns)
 Thread threadGetCurrent(void)
 {
 	ThreadVars* tv = getThreadVars();
+
+    // If magic isn't valid, then it's a game's thread
 	if (tv->magic != THREADVARS_MAGIC)
-		__panic();
+    {
+		//__panic();
+        return NULL;
+    }
+
 	return tv->thread_ptr;
 }
 

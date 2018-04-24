@@ -14,7 +14,7 @@ namespace CTRPluginFramework
     }
 
     void        Renderer::DrawLine(int posX, int posY, int width, const Color &color, int height)
-    {  
+    {
         if (posY < 0)
         {
             if (posY + height < 0)
@@ -22,20 +22,23 @@ namespace CTRPluginFramework
             height += posY;
             posY = 0;
         }
+
         while (posY + height > 240)
         {
             if (height <= 0)
                 return;
-            height--;
+            --height;
         }
 
-        u8  *dst = _screen->GetLeftFramebuffer(posX, posY + height - 1);
-        u32 stride = _screen->GetStride();
+        ScreenImpl  *screen = GetContext()->screen;
+        u8          *dst = screen->GetLeftFramebuffer(posX, posY + height - 1);
+        u32         stride = screen->GetStride();
 
         while (width-- > 0)
         {
             u8 *dd = dst;
-            for (int y = 0; y < height; y++)
+
+            for (int y = 0; y < height; ++y)
             {
                 dd = PrivColor::ToFramebuffer(dd, color);
             }
@@ -44,29 +47,32 @@ namespace CTRPluginFramework
     }
 
     void        Renderer::DrawLine(IntVector &start, IntVector &end, const Color &color)
-    {  
+    {
         int posX = start.x;
         int posY = start.y;
         int width = end.x - posX; // 50 - 10 = 40
-        int height = 1 + end.y - posY;// 1 
+        int height = 1 + end.y - posY;// 1
 
         while (posY + height > 240)
         {
             if (height <= 0)
                 return;
-            height--;
+            --height;
         }
 
-        u8  *dst = _screen->GetLeftFramebuffer(posX, posY + height - 1);
-        u32 stride = _screen->GetStride();
+        ScreenImpl  *screen = GetContext()->screen;
+        u8          *dst = screen->GetLeftFramebuffer(posX, posY + height - 1);
+        u32         stride = screen->GetStride();
 
         while (width-- > 0)
         {
             u8 *dd = dst;
-            for (int y = 0; y < height; y++)
+
+            for (u32 y = 0; y < height; ++y)
             {
                 dd = PrivColor::ToFramebuffer(dd, color);
             }
+
             dst += stride;
         }
     }
@@ -84,22 +90,24 @@ namespace CTRPluginFramework
         {
             if (height <= 0)
                 return;
-            height--;
+            --height;
         }
 
-        u8  *dst = _screen->GetLeftFramebuffer(posX, posY + height - 1);
-        u32 stride = _screen->GetStride();
-        int pitch = 5;
+        ScreenImpl  *screen = GetContext()->screen;
+        u8          *dst = screen->GetLeftFramebuffer(posX, posY + height - 1);
+        u32         stride = screen->GetStride();
+        int         pitch = 5;
 
         while (width-- > 0)
         {
             u8 *dd = dst;
             if (pitch > 0)
             {
-                for (int y = 0; y < height; y++)
+                for (int y = 0; y < height; ++y)
                     dd = PrivColor::ToFramebuffer(dd, color);
             }
             --pitch;
+
             if (pitch <= -5)
                 pitch = 5;
 
@@ -115,21 +123,21 @@ namespace CTRPluginFramework
         y = r;
         d = 1 - r;
         _DrawPixel(x,y, color);
-        while ( y > x ) 
+        while ( y > x )
         {
             if ( d < 0 )
                 d += 2 * x + 3 ;
-            else 
+            else
             {
                 d += 2 * (x - y) + 5 ;
-                y--; 
+                y--;
             }
             x++ ;
-            _DrawPixel(x + posX, posY + (r - y), color) ; 
+            _DrawPixel(x + posX, posY + (r - y), color) ;
         }
     }
 
-    void Renderer::Ellipse(int posX, int posY, long a, long b, Color color) 
+    void Renderer::Ellipse(int posX, int posY, long a, long b, Color color)
     {
         int x;
         int y;
@@ -139,40 +147,40 @@ namespace CTRPluginFramework
         y = b;
         d1 = b * b - a * a * b + a * a / 4;
         _DrawPixel(posX, posY, color);
-        while ( a * a * (y - .5) > b * b * (x + 1)) 
+        while ( a * a * (y - .5) > b * b * (x + 1))
         {
-            if ( d1 < 0 ) 
+            if ( d1 < 0 )
             {
                 d1 += b * b * (2 * x + 3);
-                x++; 
+                x++;
             }
-            else 
+            else
             {
                 d1 += b * b * (2 * x + 3) + a * a * (-2 * y + 2);
                 x++;
-                y--; 
+                y--;
             }
-            _DrawPixel(posX + x, posY + (b - y), color); 
+            _DrawPixel(posX + x, posY + (b - y), color);
         }
         d2 = b * b * (x + .5) * (x + .5) + a * a * (y - 1) * (y - 1) - a * a * b * b;
-        while ( y > 0 ) 
+        while ( y > 0 )
         {
-            if ( d2 < 0 ) 
+            if ( d2 < 0 )
             {
                 d2 += b * b * (2 * x + 2) + a * a * (-2 * y + 3);
                 y-- ;
-                x++ ; 
+                x++ ;
             }
-            else 
+            else
             {
                 d2 += a * a * (-2 * y + 3);
-                y--; 
+                y--;
             }
             _DrawPixel(posX + x, posY + (b - y), color);
         }
     }
 
-    void Renderer::EllipseIncomplete(int posX, int posY, float a, float b, int max, int aff, Color color) 
+    void Renderer::EllipseIncomplete(int posX, int posY, float a, float b, int max, int aff, Color color)
     {
         int     x;
         int     y;
@@ -189,19 +197,19 @@ namespace CTRPluginFramework
         _DrawPixel(posX - x, posY + (b - y), color);
         int cpt = 0;
 
-        while ((a * a * (y - .5) > b * b * (x + 1)) && (cpt < max)) 
+        while ((a * a * (y - .5) > b * b * (x + 1)) && (cpt < max))
         {
             cpt++;
-            if (d1 < 0) 
+            if (d1 < 0)
             {
                 d1 += b * b * (2 * x + 3);
                 x++;
             }
-            else 
+            else
             {
                 d1 += b * b * (2 * x + 3) + a * a * (-2 * y + 2);
                 x++;
-                y--; 
+                y--;
             }
             _DrawPixel(posX + x, posY + (b - y), color);
             _DrawPixel(posX + x, posY - (b - y), color);
@@ -209,19 +217,19 @@ namespace CTRPluginFramework
             _DrawPixel(posX - x, posY + (b - y), color);
         }
         d2 =(float)(b * b * (x + .5) * (x + .5) + a * a * (y - 1) * (y - 1) - a * a * b * b);
-        while ((y > 0 ) && (cpt < max )) 
+        while ((y > 0 ) && (cpt < max ))
         {
             cpt++;
-            if (d2 < 0) 
+            if (d2 < 0)
             {
                 d2 += b * b * (2 * x + 2) + a * a * (-2 * y + 3);
                 y--;
-                x++; 
+                x++;
             }
-            else 
+            else
             {
                 d2 += a * a * (-2 * y + 3);
-                y--; 
+                y--;
             }
             _DrawPixel(posX + x, posY + (b - y), color);
             _DrawPixel(posX + x, posY - (b - y), color);
@@ -229,7 +237,7 @@ namespace CTRPluginFramework
             _DrawPixel(posX - x, posY + (b - y), color);        }
     }
 
-    void Renderer::RoundedRectangle(const IntRect &rect, float radius, int max, Color color, bool mustFill, Color fillColor) 
+    void Renderer::RoundedRectangle(const IntRect &rect, float radius, int max, Color color, bool mustFill, Color fillColor)
     {
         int     x;
         int     y;
@@ -237,7 +245,7 @@ namespace CTRPluginFramework
         int     d2;
 
         using Point = IntVector;
-        
+
         std::queue<Point> points;
 
         int     width = rect.size.x;
@@ -245,7 +253,7 @@ namespace CTRPluginFramework
 
         int     posX = rect.leftTop.x;
         int     posY = rect.leftTop.y;
-        
+
         // From negative rectangle to positive
         if (width < 0)
         {
@@ -265,34 +273,34 @@ namespace CTRPluginFramework
 
         float d1Bak = d1;
 
-        while ((radius * radius * (radius - .5) > radius * radius * (x + 1)) && (cpt < max)) 
+        while ((radius * radius * (radius - .5) > radius * radius * (x + 1)) && (cpt < max))
         {
             cpt++;
-            if (d1 < 0) 
+            if (d1 < 0)
             {
                 d1 += radius * radius * (2 * x + 3);
                 x++;
             }
-            else 
+            else
             {
                 d1 += radius * radius * (2 * x + 3) + radius * radius * (-2 * y + 2);
                 x++;
-                y--; 
+                y--;
             }
         }
-        while ((y > 0 ) && (cpt < max )) 
+        while ((y > 0 ) && (cpt < max ))
         {
             cpt++;
-            if (d2 < 0) 
+            if (d2 < 0)
             {
                 d2 += radius * radius * (2 * x + 2) + radius * radius * (-2 * y + 3);
                 y--;
-                x++; 
+                x++;
             }
-            else 
+            else
             {
                 d2 += radius * radius * (-2 * y + 3);
-                y--; 
+                y--;
             }
         }
         d1 = d1Bak;
@@ -300,14 +308,14 @@ namespace CTRPluginFramework
         int rWidth = x;
 
         y = radius;
-        x = 0; 
+        x = 0;
 
         width -= rWidth;
         {
             int posXX;
             int posYY;
 
-            
+
             // Left Top Corner
             posXX = posX - x + rWidth;
             posYY = posY + (radius - y);
@@ -335,24 +343,24 @@ namespace CTRPluginFramework
         }
         cpt = 0;
 
-        while ((radius * radius * (radius - .5) > radius * radius * (x + 1)) && (cpt < max)) 
+        while ((radius * radius * (radius - .5) > radius * radius * (x + 1)) && (cpt < max))
         {
             cpt++;
-            if (d1 < 0) 
+            if (d1 < 0)
             {
                 d1 += radius * radius * (2 * x + 3);
                 x++;
             }
-            else 
+            else
             {
                 d1 += radius * radius * (2 * x + 3) + radius * radius * (-2 * y + 2);
                 x++;
-                y--; 
+                y--;
             }
             int posXX;
             int posYY;
 
-            
+
             // Left Top Corner
             posXX = posX - x + rWidth;
             posYY = posY + (radius - y);
@@ -378,19 +386,19 @@ namespace CTRPluginFramework
             points.push(Point(posXX - 1, posYY));
         }
         d2 =(float)(radius * radius * (x + .5) * (x + .5) + radius * radius * (y - 1) * (y - 1) - radius * radius * radius * radius);
-        while ((y > 0 ) && (cpt < max )) 
+        while ((y > 0 ) && (cpt < max ))
         {
             cpt++;
-            if (d2 < 0) 
+            if (d2 < 0)
             {
                 d2 += radius * radius * (2 * x + 2) + radius * radius * (-2 * y + 3);
                 y--;
-                x++; 
+                x++;
             }
-            else 
+            else
             {
                 d2 += radius * radius * (-2 * y + 3);
-                y--; 
+                y--;
             }
             int posXX;
             int posYY;
@@ -454,7 +462,7 @@ namespace CTRPluginFramework
             start.x += rWidth + 1;
             start.y++;
 
-            FormFiller(start, area, true, fillColor, color);    */       
+            FormFiller(start, area, true, fillColor, color);    */
         }
     }
 #endif
@@ -466,7 +474,7 @@ namespace CTRPluginFramework
         int     d2;
 
         using Point = IntVector;
-        
+
         std::queue<Point> points;
 
         int     width = rect.size.x;
@@ -476,21 +484,25 @@ namespace CTRPluginFramework
         int     posY = rect.leftTop.y;
 
         int     posYBak;
-        
+
 
         if (width < 0)
         {
             width = -width;
             posX -= width;
         }
+
         if (height < 0)
         {
             height = -height;
             posY -= height;
         }
+
         posYBak = posY;
+
         // Correct posY
         //posY += (_rowSize[_target] - 240);
+
         int cpt = 0;
 
         x = 0;
@@ -499,34 +511,34 @@ namespace CTRPluginFramework
 
         float d1Bak = d1;
 
-        while ((radius * radius * (radius - .5) > radius * radius * (x + 1)) && (cpt < max)) 
+        while ((radius * radius * (radius - .5) > radius * radius * (x + 1)) && (cpt < max))
         {
             cpt++;
-            if (d1 < 0) 
+            if (d1 < 0)
             {
                 d1 += radius * radius * (2 * x + 3);
                 x++;
             }
-            else 
+            else
             {
                 d1 += radius * radius * (2 * x + 3) + radius * radius * (-2 * y + 2);
                 x++;
-                y--; 
+                y--;
             }
         }
-        while ((y > 0 ) && (cpt < max )) 
+        while ((y > 0 ) && (cpt < max ))
         {
             cpt++;
-            if (d2 < 0) 
+            if (d2 < 0)
             {
                 d2 += radius * radius * (2 * x + 2) + radius * radius * (-2 * y + 3);
                 y--;
-                x++; 
+                x++;
             }
-            else 
+            else
             {
                 d2 += radius * radius * (-2 * y + 3);
-                y--; 
+                y--;
             }
         }
         d1 = d1Bak;
@@ -534,14 +546,14 @@ namespace CTRPluginFramework
         int rWidth = x;
 
         y = radius;
-        x = 0; 
+        x = 0;
 
         width -= rWidth;
         {
             int posXX;
             int posYY;
 
-            
+
             // Left Top Corner
             posXX = posX - x + rWidth;
             posYY = posY + (radius - y);
@@ -569,24 +581,24 @@ namespace CTRPluginFramework
         }
         cpt = 0;
 
-        while ((radius * radius * (radius - .5) > radius * radius * (x + 1)) && (cpt < max)) 
+        while ((radius * radius * (radius - .5) > radius * radius * (x + 1)) && (cpt < max))
         {
             cpt++;
-            if (d1 < 0) 
+            if (d1 < 0)
             {
                 d1 += radius * radius * (2 * x + 3);
                 x++;
             }
-            else 
+            else
             {
                 d1 += radius * radius * (2 * x + 3) + radius * radius * (-2 * y + 2);
                 x++;
-                y--; 
+                y--;
             }
             int posXX;
             int posYY;
 
-            
+
             // Left Top Corner
             posXX = posX - x + rWidth;
             posYY = posY + (radius - y);
@@ -612,19 +624,19 @@ namespace CTRPluginFramework
             points.push(Point(posXX, posYY));
         }
         d2 =(float)(radius * radius * (x + .5) * (x + .5) + radius * radius * (y - 1) * (y - 1) - radius * radius * radius * radius);
-        while ((y > 0 ) && (cpt < max )) 
+        while ((y > 0 ) && (cpt < max ))
         {
             cpt++;
-            if (d2 < 0) 
+            if (d2 < 0)
             {
                 d2 += radius * radius * (2 * x + 2) + radius * radius * (-2 * y + 3);
                 y--;
-                x++; 
+                x++;
             }
-            else 
+            else
             {
                 d2 += radius * radius * (-2 * y + 3);
-                y--; 
+                y--;
             }
             int posXX;
             int posYY;
@@ -670,7 +682,7 @@ namespace CTRPluginFramework
                 out.push_back(IntLine(left, right));
                 //DrawLine(left, right, fillColor);
         }
-        
+
         // Top Line
         out.push_back(IntLine(posX + rWidth - 1, posYBak, width - rWidth + 3, 1));
         // Bottom Line
@@ -745,7 +757,7 @@ namespace CTRPluginFramework
             const Color &c = height % 2 ? color1 : color2;
             // DrawLine line
             DrawLine(posX, posY, width, c);
-            posY++;    
+            posY++;
         }
 
     }

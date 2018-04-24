@@ -321,6 +321,27 @@ namespace CTRPluginFramework
         return (entry);
     }
 
+    MenuEntry   *EntryWithNotifier(const std::string &name, FuncPointer gameFunc)
+    {
+        auto lambda = [](MenuEntry *entry)
+        {
+            if (entry->WasJustActivated())
+                OSD::Notify(entry->Name() << ": " << Color::LimeGreen <<"ON");
+            else if (!entry->IsActivated())
+                OSD::Notify(entry->Name() << ": " << Color::Red <<"OFF");
+
+            void *arg = entry->GetArg();
+
+            if (arg != nullptr)
+                reinterpret_cast<FuncPointer>(arg)(entry);
+        };
+
+        MenuEntry *entry = new MenuEntry(name, lambda);
+
+        entry->SetArg((void *)gameFunc);
+        return entry;
+    }
+
     int     main(void)
     {
         PluginMenu  *m = new PluginMenu("Action Replay", 1, 2, 0);
