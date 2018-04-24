@@ -12,12 +12,12 @@ int __libctru_gtod(struct _reent *ptr, struct timeval *tp, struct timezone *tz);
 extern const u8 __tdata_lma[];
 extern const u8 __tdata_lma_end[];
 extern u8 __tls_start[];
-u32 _tls_size = 0;
 
 extern Thread  g_mainThread;
 static struct _reent* __ctru_get_reent()
 {
 	ThreadVars* tv = getThreadVars();
+
 	if (tv->magic != THREADVARS_MAGIC)
 	{
         // We're probably hooked from game so get main thread's reent
@@ -27,7 +27,7 @@ static struct _reent* __ctru_get_reent()
 	}
 	return tv->reent;
 }
-extern u32 keepThreadStack[0x1000];
+
 void __system_initSyscalls(void)
 {
 	// Register newlib syscalls
@@ -53,7 +53,6 @@ void __system_initSyscalls(void)
 	tv->tls_tp = __tls_start-8; // ARM ELF TLS ABI mandates an 8-byte header
 
 	u32 tls_size = __tdata_lma_end - __tdata_lma;
-	_tls_size = tls_size;
 	if (tls_size)
 		memcpy(__tls_start, __tdata_lma, tls_size);
 }

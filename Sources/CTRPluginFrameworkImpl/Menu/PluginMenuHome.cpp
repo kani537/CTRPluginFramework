@@ -148,11 +148,20 @@ namespace CTRPluginFramework
         _Update(delta);
 
         // Render top
-        Renderer::SetTarget(TOP);
-        if (_noteTB.IsOpen())
-            _noteTB.Draw();
-        else
-            _RenderTop();
+
+        Task top([](void *arg)
+        {
+            PluginMenuHome *home = reinterpret_cast<PluginMenuHome *>(arg);
+
+             Renderer::SetTarget(TOP);
+            if (home->_noteTB.IsOpen())
+                home->_noteTB.Draw();
+            else
+                home->_RenderTop();
+            return (s32)0;
+        }, this);
+
+        top.Start();
 
         // RenderBottom
         _RenderBottom();
@@ -162,6 +171,7 @@ namespace CTRPluginFramework
 
         mode = _mode;
 
+        top.Wait();
         return (Window::BottomWindow.MustClose());
     }
 

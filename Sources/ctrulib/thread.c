@@ -41,7 +41,7 @@ static void _thread_begin(void  *arg)
 Thread threadCreate(ThreadFunc entrypoint, void *arg, void *stack_pointer, size_t stack_size, int prio, int affinity)
 {
 	size_t stackoffset 	= (sizeof(struct Thread_tag) + 7) &~ 7;
-	size_t allocsize   	= ((stack_size - stackoffset) - 7) &~ 7;
+	size_t allocsize   	= ((stack_size - stackoffset) + 7) &~ 7;
 	size_t tlssize 		= __tls_end - __tls_start;
 	size_t tlsloadsize 	= __tdata_lma_end - __tdata_lma;
 	size_t tbsssize 	= tlssize - tlsloadsize;
@@ -63,7 +63,7 @@ Thread threadCreate(ThreadFunc entrypoint, void *arg, void *stack_pointer, size_
 	if (tlsloadsize)
 		memcpy(t->stacktop, __tdata_lma, tlsloadsize);
 	if (tbsssize)
-		memset((u8*)t->stacktop+tlsloadsize, 0, tbsssize);
+		memset((u8 *)t->stacktop + tlsloadsize, 0, tbsssize);
 
 	// Set up child thread's reent struct, inheriting standard file handles
 	_REENT_INIT_PTR(&t->reent);
