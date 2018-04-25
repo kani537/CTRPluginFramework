@@ -158,6 +158,8 @@ namespace CTRPluginFramework
          */
         u64     GetSize(void) const;
 
+        void    SetPriority(u32 priority);
+
         /**
          * \brief Write the content of the memory to the file
          * \param address Address to start reading the memory from

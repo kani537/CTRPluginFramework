@@ -3,6 +3,7 @@
 #include "CTRPluginFrameworkImpl.hpp"
 #include "CTRPluginFramework.hpp"
 #include "CTRPluginFrameworkImpl/Graphics/Font.hpp"
+#include "CTRPluginFrameworkImpl/System/Screenshot.hpp"
 
 extern "C"
 {
@@ -333,13 +334,14 @@ namespace CTRPluginFramework
                 Directory::Create(dirpath);
 
             // Set default screenshot path
-            Preferences::ScreenshotPath = dirpath;
-            Preferences::ScreenshotPath.append("/");
+            Screenshot::Path = dirpath;
+            Screenshot::Path.append("/");
 
             // Set default screenshot prefix
-            Preferences::ScreenshotPrefix = "[";
-            Process::GetName(Preferences::ScreenshotPrefix);
-            Preferences::ScreenshotPrefix += Utils::Format(" - %08X] - Screenshot", (u32)Process::GetTitleID());
+            Screenshot::Prefix = "[";
+            Process::GetName(Screenshot::Prefix);
+            Screenshot::Prefix += Utils::Format(" - %08X] - Screenshot", (u32)Process::GetTitleID());
+            Screenshot::Initialize();
         }
 
 

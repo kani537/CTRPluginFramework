@@ -275,6 +275,11 @@ namespace CTRPluginFramework
         return (size);
     }
 
+    void    File::SetPriority(u32 priority)
+    {
+        FSFILE_SetPriority(_handle, priority);
+    }
+
     int     File::Dump(u32 address, u32 length)
     {
         Lock    lock(_mutex);

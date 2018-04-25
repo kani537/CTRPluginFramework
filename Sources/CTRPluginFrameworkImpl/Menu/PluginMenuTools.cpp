@@ -3,6 +3,7 @@
 #include "CTRPluginFrameworkImpl/Menu/MenuEntryTools.hpp"
 #include "CTRPluginFrameworkImpl/Preferences.hpp"
 #include "CTRPluginFrameworkImpl/Menu/PluginMenuExecuteLoop.hpp"
+#include "CTRPluginFrameworkImpl/System/Screenshot.hpp"
 
 
 #include "CTRPluginFramework/Graphics/OSD.hpp"
@@ -331,100 +332,7 @@ namespace CTRPluginFramework
         }
     }
 
-    static u32      g_screenshotSuffix;
-    static u32      g_screenshotMode = SCREENSHOT_TOP;
     static MenuEntryTools    *g_screenshotEntry;
-
-    static void     UpdateScreenshotSuffix(void)
-    {
-        Directory dir(Preferences::ScreenshotPath);
-        std::vector<std::string> files;
-
-        dir.ListFiles(files, ".bmp");
-
-        g_screenshotSuffix = 0;
-
-        std::string name = Preferences::ScreenshotPrefix + (!g_screenshotSuffix ? ".bmp" : Utils::Format(" - %d.bmp", g_screenshotSuffix));
-        for (std::string &filename : files)
-        {
-            if (filename == name)
-            {
-                ++g_screenshotSuffix;
-                name = Preferences::ScreenshotPrefix + Utils::Format(" - %d.bmp", g_screenshotSuffix);
-            }
-        }
-    }
-
-    // Called from PluginMenu
-    static void     ScreenshotMenuCallbackBackground(void)
-    {
-        static auto lambda = [](void *arg)
-        {
-            bool error = false;
-
-            // Wait for frame
-            OSDImpl::WaitingForScreenshot = g_screenshotMode;
-
-            // Wait for preparations to be complete
-            LightEvent_Wait(&OSDImpl::OnFramePaused);
-
-            // Create the image
-            BMPImage        *image = ScreenImpl::Screenshot(g_screenshotMode);
-            std::string     name;
-
-            error = !image->IsLoaded();
-
-            // Release the frame
-            if (!System::IsNew3DS())
-                LightEvent_Pulse(&OSDImpl::OnFrameResume);
-
-            if (!error)
-            {
-                name = Preferences::ScreenshotPrefix;
-                name += (!g_screenshotSuffix ? ".bmp" : Utils::Format(" - %d.bmp", g_screenshotSuffix));
-                image->SaveImage(Preferences::ScreenshotPath + name);
-            }
-
-            // Release ressources
-            delete image;
-
-            if (error)
-                OSD::Notify("An error occurred while creating the screenshot");
-            else
-            {
-                ++g_screenshotSuffix;
-                OSD::Notify("Done: " + name);
-            }
-
-            return (s32)0;
-        };
-
-        if (Controller::IsKeysDown(Preferences::ScreenshotKeys))
-        {
-            // On N3DS use a task, not needed on O3DS
-            if (System::IsNew3DS())
-            {
-                Task    task(lambda);
-
-                // Start the task
-                task.Start();
-
-                // And wait it to avoid overlapping
-                task.Wait();
-            }
-            else
-                // Do the screenshot
-                lambda(nullptr);
-        }
-    }
-
-    static void     Screenshot_Enabler(MenuEntryTools *entry)
-    {
-        if (entry->IsActivated())
-            *PluginMenu::GetRunningInstance() += ScreenshotMenuCallbackBackground;
-        else
-            *PluginMenu::GetRunningInstance() -= ScreenshotMenuCallbackBackground;
-    }
 
     static void      GetScreenShotMode(void)
     {
@@ -432,7 +340,7 @@ namespace CTRPluginFramework
 
         int mode = kb.Open();
         if (mode != -1)
-            g_screenshotMode = mode + 1;
+            Screenshot::Screens = mode + 1;
     }
 
     std::string     KeysToString(u32 keys);
@@ -456,12 +364,12 @@ namespace CTRPluginFramework
 
             case 1: ///< Hotkeys
             {
-                u32 keys = Preferences::ScreenshotKeys;
+                u32 keys = Screenshot::Hotkeys;
 
                 (HotkeysModifier(keys, "Select the hotkeys you'd like to use to take a new screenshot."))();
 
                 if (keys != 0)
-                    Preferences::ScreenshotKeys = keys;
+                    Screenshot::Hotkeys = keys;
                 break;
             }
 
@@ -494,7 +402,12 @@ namespace CTRPluginFramework
         } while (choice != -1);
 
         static const char *screens[3] = {"Top screen", "Bottom screen", "Both screens"};
-        g_screenshotEntry->name = "Screenshot: " << Color::LimeGreen << KeysToString(Preferences::ScreenshotKeys) << "\x18, " << Color::Orange << screens[g_screenshotMode - 1];
+        g_screenshotEntry->name = "Screenshot: " << Color::LimeGreen << KeysToString(Preferences::ScreenshotKeys) << "\x18, " << Color::Orange << screens[Screenshot::Screens - 1];
+    }
+
+    static void Screenshot_Enabler(MenuEntryTools *entry)
+    {
+            Screenshot::IsEnabled = !Screenshot::IsEnabled;
     }
 
     void    PluginMenuTools::InitMenu(void)

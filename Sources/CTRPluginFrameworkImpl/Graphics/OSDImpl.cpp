@@ -15,6 +15,7 @@
 #include "CTRPluginFramework/System/Touch.hpp"
 #include "CTRPluginFrameworkImpl/Preferences.hpp"
 #include "CTRPluginFrameworkImpl/Menu/PluginMenuImpl.hpp"
+#include "CTRPluginFrameworkImpl/System/Screenshot.hpp"
 
 namespace CTRPluginFramework
 {
@@ -180,38 +181,8 @@ namespace CTRPluginFramework
 
     void     OSDImpl::CallbackGlobal(u32 isBottom, void* addr, void* addrB, int stride, int format)
     {
-        // If we have to take a screenshot
-        if (WaitingForScreenshot)
-        {
-            // Top screen handling
-            if ((WaitingForScreenshot & SCREENSHOT_TOP) && !isBottom)
-            {
-                // Set screen and backup it (N3DS)
-                ScreenImpl::Top->Acquire((u32)addr, (u32)addrB, stride, format, true);
-
-                WaitingForScreenshot &= ~SCREENSHOT_TOP;
-            }
-
-            if ((WaitingForScreenshot & SCREENSHOT_BOTTOM) && isBottom)
-            {
-                // Set screen and backup it (N3DS)
-                ScreenImpl::Bottom->Acquire((u32)addr, (u32)addrB, stride, format, true);
-
-                WaitingForScreenshot &= ~SCREENSHOT_BOTTOM;
-            }
-
-            // Wake up thread if we're done with all the preparations
-            if (!WaitingForScreenshot)
-            {
-                LightEvent_Pulse(&OnFramePaused);
-
-                // The screenshot can be async on N3DS
-                if (!System::IsNew3DS())
-                    LightEvent_Wait(&OnFrameResume);
-            }
-            else ///< Don't execute OSD if we're still waiting for a screen
-                return;
-        }
+        if (Screenshot::OSDCallback(isBottom, addr, addrB, stride, format))
+            return;
 
         if (!isBottom)
         {

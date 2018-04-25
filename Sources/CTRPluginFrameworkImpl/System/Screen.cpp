@@ -153,7 +153,7 @@ namespace CTRPluginFramework
     {
         _currentBuffer = 1;
 
-        _format = (GSPGPU_FramebufferFormats)format;
+        _format = (GSPGPU_FramebufferFormats)(format & 7);
         _stride = stride;
         _bytesPerPixel = GetBPP(_format);
         _rowSize = _stride / _bytesPerPixel;
@@ -390,27 +390,30 @@ namespace CTRPluginFramework
         return new BMPImage(width, height, false);
     }
 
-    BMPImage *ScreenImpl::Screenshot(int screen)
+    BMPImage *ScreenImpl::Screenshot(int screen, BMPImage *image)
     {
-        BMPImage    *bmp = nullptr;
+        BMPImage    *bmp = image;
 
         // Top screen only
         if (screen == SCREENSHOT_TOP)
         {
-            bmp = CreateBMP(400, 240);
+            if (bmp == nullptr)
+                bmp = CreateBMP(400, 240);
 
             Top->ScreenToBMP(reinterpret_cast<BMPImage::Pixel *>(bmp->data()));
         }
         // Bottom screen only
         else if (screen == SCREENSHOT_BOTTOM)
         {
-            bmp = CreateBMP(320, 240);
+            if (bmp == nullptr)
+                bmp = CreateBMP(320, 240);
             Bottom->ScreenToBMP(reinterpret_cast<BMPImage::Pixel *>(bmp->data()));
         }
         // Both screens
         else
         {
-            bmp = CreateBMP(400, 480);
+            if (bmp == nullptr)
+                bmp = CreateBMP(400, 480);
 
             // Bottom screen comes first in the bmp
             BMPImage::Pixel *dst = reinterpret_cast<BMPImage::Pixel *>(bmp->data());

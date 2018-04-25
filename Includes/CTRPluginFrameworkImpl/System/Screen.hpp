@@ -68,7 +68,7 @@ namespace CTRPluginFramework
         void                        Copy(void);
         void                        Debug(void);
         void                        ScreenToBMP(BMPImage::Pixel *bmp, u32 padding = 0);
-        static BMPImage             *Screenshot(int screen);
+        static BMPImage             *Screenshot(int screen, BMPImage *image = nullptr);
 
     private:
         friend class Renderer;
