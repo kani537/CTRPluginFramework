@@ -149,7 +149,7 @@ namespace CTRPluginFramework
         memcpy32((u32 *)GetLeftFramebuffer(true), (u32 *)GetLeftFramebuffer(), size);
     }
 
-    void    ScreenImpl::Acquire(u32 left, u32 right, u32 stride, u32 format)
+    void    ScreenImpl::Acquire(u32 left, u32 right, u32 stride, u32 format, bool backup)
     {
         _currentBuffer = 1;
 
@@ -164,6 +164,9 @@ namespace CTRPluginFramework
         u32 wh = REG(_LCDSetup + LCDSetup::WidthHeight);
         _height = (u16)(wh & 0xFFFF);
         _width = (u16)(wh >> 16);
+
+        if (backup && _backupFramebuffer != nullptr)
+            memcpy32(_backupFramebuffer, (u32 *)left, stride * _width);
     }
 
     void    ScreenImpl::Flush(void)
@@ -263,6 +266,108 @@ namespace CTRPluginFramework
             bmp += padding;
         }
     }
+
+    void    ScreenToBMP_RGBA8(Pixel *bmp, u32 padding, u8 *src, u32 width, u32 stride)
+    {
+        u32     height = 240;
+
+        stride -= 3;
+
+        while (height--)
+        {
+            u8 *fb = src + 1; //:< Skip first alpha component
+
+            for (u32 w = width; w > 0; --w, ++bmp)
+            {
+                bmp->b = *fb++;
+                bmp->g = *fb++;
+                bmp->r = *fb++;
+                fb += stride;
+            }
+            src += 4;
+            bmp += padding;
+        }
+    }
+
+    void    ScreenToBMP_RGB565(Pixel *bmp, u32 padding, u8 *src, u32 width, u32 stride)
+    {
+        u32     height = 240;
+
+        u16     *src16 = (u16 *)src;
+
+        stride >>= 1;
+
+        while (height--)
+        {
+            u16 *fb = src16;
+
+            for (u32 w = width; w > 0; --w, ++bmp)
+            {
+                const u16 c = *fb;
+
+                bmp->b = (c << 3) & 0xF8;
+                bmp->g = (c >> 3) & 0xFC;
+                bmp->r = (c >> 8) & 0xF8;
+                fb += stride;
+            }
+            ++src16;
+            bmp += padding;
+        }
+    }
+
+    void    ScreenToBMP_RGB5A1(Pixel *bmp, u32 padding, u8 *src, u32 width, u32 stride)
+    {
+        u32     height = 240;
+
+        u16     *src16 = (u16 *)src;
+
+        stride >>= 1;
+
+        while (height--)
+        {
+            u16 *fb = src16;
+
+            for (u32 w = width; w > 0; --w, ++bmp)
+            {
+                const u16 c = *fb;
+
+                bmp->b = (c << 2) & 0xF8;
+                bmp->g = (c >> 3) & 0xF8;
+                bmp->r = (c >> 8) & 0xF8;
+
+                fb += stride;
+            }
+            ++src16;
+            bmp += padding;
+        }
+    }
+
+    void    ScreenToBMP_RGBA4(Pixel *bmp, u32 padding, u8 *src, u32 width, u32 stride)
+    {
+        u32     height = 240;
+
+        u16     *src16 = (u16 *)src;
+
+        stride >>= 1;
+
+        while (height--)
+        {
+            u16 *fb = src16;
+
+            for (u32 w = width; w > 0; --w, ++bmp)
+            {
+                const u16 c = *fb;
+
+                bmp->b = c & 0xF0;
+                bmp->g = (c >> 4) & 0xF0;
+                bmp->r = (c >> 8) & 0xF0;
+                fb += stride;
+            }
+            ++src16;
+            bmp += padding;
+        }
+    }
+
     void    ScreenImpl::ScreenToBMP(Pixel *bmp, u32 padding)
     {
         if (bmp == nullptr)
@@ -273,7 +378,11 @@ namespace CTRPluginFramework
         if (src == nullptr)
             src = GetLeftFramebuffer();
 
-        if (_format == GSP_BGR8_OES) ScreenToBMP_BGR8(bmp, padding, src, _width, _stride);
+        if (_format == GSP_RGBA8_OES) return ScreenToBMP_RGBA8(bmp, padding, src, _width, _stride);
+        if (_format == GSP_BGR8_OES) return ScreenToBMP_BGR8(bmp, padding, src, _width, _stride);
+        if (_format == GSP_RGB565_OES) return ScreenToBMP_RGB565(bmp, padding, src, _width, _stride);
+        if (_format == GSP_RGB5_A1_OES) return ScreenToBMP_RGB5A1(bmp, padding, src, _width, _stride);
+        if (_format == GSP_RGBA4_OES) return ScreenToBMP_RGBA4(bmp, padding, src, _width, _stride);
     }
 
     static inline BMPImage* CreateBMP(u32 width, u32 height)

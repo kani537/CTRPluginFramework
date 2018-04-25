@@ -358,42 +358,63 @@ namespace CTRPluginFramework
     // Called from PluginMenu
     static void     ScreenshotMenuCallbackBackground(void)
     {
-        if (Controller::IsKeysPressed(Preferences::ScreenshotKeys))
+        static auto lambda = [](void *arg)
         {
             bool error = false;
 
             // Wait for frame
-            OSDImpl::WaitingForScreenshot = true;
-            LightEvent_Pulse(&OSDImpl::OnFramePaused);
+            OSDImpl::WaitingForScreenshot = g_screenshotMode;
 
+            // Wait for preparations to be complete
+            LightEvent_Wait(&OSDImpl::OnFramePaused);
+
+            // Create the image
             BMPImage        *image = ScreenImpl::Screenshot(g_screenshotMode);
             std::string     name;
 
-            if (!image->IsLoaded())
-            {
-                error = true;
-                goto exit;
-            }
+            error = !image->IsLoaded();
 
-            name = Preferences::ScreenshotPrefix;
-            name += (!g_screenshotSuffix ? ".bmp" : Utils::Format(" - %d.bmp", g_screenshotSuffix));
-            image->SaveImage(Preferences::ScreenshotPath + name);
-
-        exit:
             // Release the frame
             if (!System::IsNew3DS())
                 LightEvent_Pulse(&OSDImpl::OnFrameResume);
 
+            if (!error)
+            {
+                name = Preferences::ScreenshotPrefix;
+                name += (!g_screenshotSuffix ? ".bmp" : Utils::Format(" - %d.bmp", g_screenshotSuffix));
+                image->SaveImage(Preferences::ScreenshotPath + name);
+            }
+
+            // Release ressources
             delete image;
 
             if (error)
                 OSD::Notify("An error occurred while creating the screenshot");
-
             else
             {
                 ++g_screenshotSuffix;
                 OSD::Notify("Done: " + name);
             }
+
+            return (s32)0;
+        };
+
+        if (Controller::IsKeysDown(Preferences::ScreenshotKeys))
+        {
+            // On N3DS use a task, not needed on O3DS
+            if (System::IsNew3DS())
+            {
+                Task    task(lambda);
+
+                // Start the task
+                task.Start();
+
+                // And wait it to avoid overlapping
+                task.Wait();
+            }
+            else
+                // Do the screenshot
+                lambda(nullptr);
         }
     }
 
@@ -411,7 +432,7 @@ namespace CTRPluginFramework
 
         int mode = kb.Open();
         if (mode != -1)
-            g_screenshotMode = mode;
+            g_screenshotMode = mode + 1;
     }
 
     std::string     KeysToString(u32 keys);
@@ -473,7 +494,7 @@ namespace CTRPluginFramework
         } while (choice != -1);
 
         static const char *screens[3] = {"Top screen", "Bottom screen", "Both screens"};
-        g_screenshotEntry->name = "Screenshot: " << Color::LimeGreen << KeysToString(Preferences::ScreenshotKeys) << "\x18, " << Color::Orange << screens[g_screenshotMode];
+        g_screenshotEntry->name = "Screenshot: " << Color::LimeGreen << KeysToString(Preferences::ScreenshotKeys) << "\x18, " << Color::Orange << screens[g_screenshotMode - 1];
     }
 
     void    PluginMenuTools::InitMenu(void)

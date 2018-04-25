@@ -8,10 +8,11 @@ namespace CTRPluginFramework
 {
     enum
     {
-        SCREENSHOT_TOP,
-        SCREENSHOT_BOTTOM,
-        SCREENSHOT_BOTH
+        SCREENSHOT_TOP = 1,
+        SCREENSHOT_BOTTOM = 2,
+        SCREENSHOT_BOTH = SCREENSHOT_TOP | SCREENSHOT_BOTTOM
     };
+
     class Color;
     class ScreenImpl
     {
@@ -42,7 +43,7 @@ namespace CTRPluginFramework
         static void                 Clean(void);
         static void                 ApplyFading(void);
         void                        Acquire(void);
-        void                        Acquire(u32 left, u32 right, u32 stride, u32 format);
+        void                        Acquire(u32 left, u32 right, u32 stride, u32 format, bool backup = false);
         void                        SwapBuffer(bool flush = false, bool copy = false);
 
         GSPGPU_FramebufferFormats   GetFormat(void);

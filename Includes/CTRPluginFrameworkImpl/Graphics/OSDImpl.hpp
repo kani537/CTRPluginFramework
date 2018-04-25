@@ -46,7 +46,7 @@ namespace CTRPluginFramework
 
         static bool             DrawSaveIcon;
         static bool             MessColors;
-        static bool             WaitingForScreenshot;
+        static u32              WaitingForScreenshot;
         static u32              FramesToPlay;
         static OSDReturn        HookReturn;
 

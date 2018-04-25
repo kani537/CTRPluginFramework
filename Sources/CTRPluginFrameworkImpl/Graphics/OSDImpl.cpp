@@ -20,7 +20,7 @@ namespace CTRPluginFramework
 {
     bool        OSDImpl::DrawSaveIcon = false;
     bool        OSDImpl::MessColors = false;
-    bool        OSDImpl::WaitingForScreenshot = false;
+    u32         OSDImpl::WaitingForScreenshot = 0;
     u32         OSDImpl::FramesToPlay = 0;
     OSDReturn   OSDImpl::HookReturn = nullptr;
     Hook        OSDImpl::OSDHook;
@@ -171,7 +171,8 @@ namespace CTRPluginFramework
         stride = params[3];
         format = params[4] & 0xF;
 
-        CallbackGlobal(isBottom, (void *)addr, (void *)addrB, stride, format);
+        if (addr)
+            CallbackGlobal(isBottom, (void *)addr, (void *)addrB, stride, format);
 
     exit:
         return ((OSDReturn)(OSDImpl::HookReturn))(r0, params, isBottom, arg);
@@ -179,8 +180,38 @@ namespace CTRPluginFramework
 
     void     OSDImpl::CallbackGlobal(u32 isBottom, void* addr, void* addrB, int stride, int format)
     {
-        if (!addr)
-            return;
+        // If we have to take a screenshot
+        if (WaitingForScreenshot)
+        {
+            // Top screen handling
+            if ((WaitingForScreenshot & SCREENSHOT_TOP) && !isBottom)
+            {
+                // Set screen and backup it (N3DS)
+                ScreenImpl::Top->Acquire((u32)addr, (u32)addrB, stride, format, true);
+
+                WaitingForScreenshot &= ~SCREENSHOT_TOP;
+            }
+
+            if ((WaitingForScreenshot & SCREENSHOT_BOTTOM) && isBottom)
+            {
+                // Set screen and backup it (N3DS)
+                ScreenImpl::Bottom->Acquire((u32)addr, (u32)addrB, stride, format, true);
+
+                WaitingForScreenshot &= ~SCREENSHOT_BOTTOM;
+            }
+
+            // Wake up thread if we're done with all the preparations
+            if (!WaitingForScreenshot)
+            {
+                LightEvent_Pulse(&OnFramePaused);
+
+                // The screenshot can be async on N3DS
+                if (!System::IsNew3DS())
+                    LightEvent_Wait(&OnFrameResume);
+            }
+            else ///< Don't execute OSD if we're still waiting for a screen
+                return;
+        }
 
         if (!isBottom)
         {
@@ -189,29 +220,10 @@ namespace CTRPluginFramework
 
             // Signal a new frame to all threads waiting for it
             LightEvent_Pulse(&OnNewFrameEvent);
-
-            // If we have to take a screenshot
-            if (WaitingForScreenshot)
-            {
-                ScreenImpl::Top->Acquire();
-                ScreenImpl::Bottom->Acquire();
-
-                // Wake up thread
-                LightEvent_Pulse(&OnFramePaused);
-
-                // N3DS can be async thanks to vram
-                if (!System::IsNew3DS())
-                {
-                    // Wait until screenshot is done
-                    LightEvent_Wait(&OnFrameResume);
-                }
-
-                WaitingForScreenshot = false;
-            }
         }
 
         // If frame have to be paused
-        if (ProcessImpl::_isPaused && !FramesToPlay)
+        if (!WaitingForScreenshot && !FramesToPlay && ProcessImpl::_isPaused)
         {
             __dsb();
 
