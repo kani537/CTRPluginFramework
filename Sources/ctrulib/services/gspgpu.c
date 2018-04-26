@@ -31,7 +31,8 @@ static void gspEventThreadMain(u32 arg);
 
 Handle gspThreadEventHandle;
 u32     g_gspEventThreadPriority;
-static char gspThreadEventStack[GSP_EVENT_STACK_SIZE] = {0};
+static char gspThreadEventStack[GSP_EVENT_STACK_SIZE] ALIGN(8) = {0};
+Thread gspEventThread;
 
 Handle __sync_get_arbiter(void);
 
@@ -51,7 +52,7 @@ Result gspInit(void)
     GSPGPU_RegisterInterruptRelayQueue(gspEvent, 0x1, &gspSharedMemHandle, &gfxThreadID);
     svcMapMemoryBlock(gspSharedMemHandle, (u32)gfxSharedMemory, 0x3, 0x10000000);
 
-    // Initialize even handler
+    // Initialize event handler
     gspInitEventHandler(gspEvent, (vu8*)gfxSharedMemory, gfxThreadID);
 
 	return res;
@@ -85,15 +86,12 @@ Result gspInitEventHandler(Handle _gspEvent, vu8* _gspSharedMem, u8 gspThreadId)
 	int i;
 	for (i = 0; i < GSPGPU_EVENT_MAX; i ++)
 		LightEvent_Init(&gspEvents[i], RESET_STICKY);
-       // LightEvent_Init(&gspEvents[3], RESET_STICKY);
 
 	// Start event thread
 	gspEvent = _gspEvent;
 	gspEventData = _gspSharedMem + gspThreadId*0x40;
 	gspRunEvents = true;
-	svcCreateThread(&gspThreadEventHandle, gspEventThreadMain, 0, (u32*)&gspThreadEventStack[GSP_EVENT_STACK_SIZE], g_gspEventThreadPriority, -2);
-	//gspEventThread = threadCreate(gspEventThreadMain, gspThreadEventStack, 0x1000, 0x31, -2, true);
-	//gspThreadEventHandle = threadGetHandle(gspEventThread);
+	 gspEventThread = threadCreate(gspEventThreadMain, (void *)0, gspThreadEventStack, GSP_EVENT_STACK_SIZE, g_gspEventThreadPriority, -2);
 	return 0;
 }
 
@@ -102,8 +100,7 @@ void gspExitEventHandler(void)
 	// Stop event thread
 	gspRunEvents = false;
 	svcSignalEvent(gspEvent);
-	svcWaitSynchronization(gspThreadEventHandle, U64_MAX);
-	//threadJoin(gspEventThread, U64_MAX);
+	threadJoin(gspEventThread, U64_MAX);
 }
 
 bool   IsPaused(void); ///< ProcessImpl.cpp
