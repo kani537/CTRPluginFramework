@@ -546,6 +546,15 @@
     <ClInclude Include="Includes\CTRPluginFramework\System\Mutex.hpp">
       <Filter>Fichiers d%27en-tête</Filter>
     </ClInclude>
+    <ClInclude Include="Includes\CTRPluginFrameworkImpl\System\Scheduler.hpp">
+      <Filter>Fichiers d%27en-tête</Filter>
+    </ClInclude>
+    <ClInclude Include="Includes\CTRPluginFramework\System\Task.hpp">
+      <Filter>Fichiers d%27en-tête</Filter>
+    </ClInclude>
+    <ClInclude Include="Includes\CTRPluginFrameworkImpl\System\Screenshot.hpp">
+      <Filter>Fichiers d%27en-tête</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Sources\CTRPluginFramework\Graphics\Color.cpp">
@@ -1131,6 +1140,15 @@
       <Filter>Fichiers sources</Filter>
     </ClCompile>
     <ClCompile Include="Sources\CTRPluginFramework\System\Mutex.cpp">
+      <Filter>Fichiers sources</Filter>
+    </ClCompile>
+    <ClCompile Include="Sources\CTRPluginFrameworkImpl\System\Scheduler.cpp">
+      <Filter>Fichiers sources</Filter>
+    </ClCompile>
+    <ClCompile Include="Sources\CTRPluginFramework\System\Task.cpp">
+      <Filter>Fichiers sources</Filter>
+    </ClCompile>
+    <ClCompile Include="Sources\CTRPluginFrameworkImpl\System\Screenshot.cpp">
       <Filter>Fichiers sources</Filter>
     </ClCompile>
   </ItemGroup>

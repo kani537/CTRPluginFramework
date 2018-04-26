@@ -24,6 +24,7 @@ namespace CTRPluginFramework
         static bool         IsEnabled;
         static u32          Hotkeys;
         static u32          Screens;
+        static Time         Timer;
         static std::string  Path;
         static std::string  Prefix;
 
@@ -33,7 +34,6 @@ namespace CTRPluginFramework
         static u32          _mode;
         static u32          _filecount;
         static u32          _display;
-        static Time         _time;
         static Clock        _timer;
         static Task         _task;
 

@@ -56,6 +56,7 @@ namespace CTRPluginFramework
     extern "C" unsigned char *Star15;
     extern "C" unsigned char *Trash25;
     extern "C" unsigned char *TrashFilled25;
+    extern "C" unsigned char *Unsplash15;
     extern "C" unsigned char *UserManualFilled15;
 
     #define RGBA8 GSP_RGBA8_OES
@@ -522,5 +523,14 @@ namespace CTRPluginFramework
         u8 *img = filled ? TrashFilled25 : Trash25;
 
         return (DrawImg(img, posX, posY, 25, 25));
+    }
+
+    /*
+    ** Unsplash
+    ** 15px * 15 px
+    **************/
+    int     Icon::DrawUnsplash(int posX, int posY)
+    {
+        return (DrawImg(Unsplash15, posX, posY, 15, 15));
     }
 }

@@ -17,6 +17,7 @@ namespace CTRPluginFramework
     bool        Screenshot::IsEnabled = false;
     u32         Screenshot::Hotkeys = Key::Start;
     u32         Screenshot::Screens = SCREENSHOT_BOTH;
+    Time        Screenshot::Timer = Time::Zero;
     std::string Screenshot::Path;// = "/Screenshots";
     std::string Screenshot::Prefix;
 
@@ -24,7 +25,6 @@ namespace CTRPluginFramework
     u32         Screenshot::_mode;
     u32         Screenshot::_filecount;
     u32         Screenshot::_display = 0;
-    Time        Screenshot::_time;
     Clock       Screenshot::_timer;
     Task        Screenshot::_task(Screenshot::TaskCallback);
 
@@ -35,6 +35,7 @@ namespace CTRPluginFramework
     {
         LightEvent_Init(&_readyEvent, RESET_STICKY);
         LightEvent_Init(&_resumeEvent, RESET_STICKY);
+        UpdateFileCount();
     }
 
     bool    Screenshot::OSDCallback(u32 isBottom, void *addr, void *addrB, int stride, int format)
@@ -44,12 +45,6 @@ namespace CTRPluginFramework
 
         if (!_mode && (Controller::GetKeysDown() & Hotkeys) == Hotkeys)
         {
-            // Test code !!
-            Screens |= TIMED;
-            _time = Seconds(30.f);
-            _timer.Restart();
-            // End test code
-
             _mode = Screens;
             if (_task.Status() & (Task::Processing | Task::Scheduled))
                 _task.Wait();
@@ -79,6 +74,7 @@ namespace CTRPluginFramework
             // Wake up thread if we're done with all the preparations
             if ((_mode & SCREENSHOT_BOTH) == 0)
             {
+                _mode |= 8;
                 LightEvent_Pulse(&_readyEvent);
 
                 // The screenshot can be async on N3DS
@@ -94,7 +90,7 @@ namespace CTRPluginFramework
             ScreenImpl::Bottom->Acquire((int)addr, (u32)addrB, stride, format);
             int posY = 0;
             Renderer::SetTarget(BOTTOM);
-            Renderer::DrawString((Prefix + Utils::Format(" - %d.bmp", _filecount -1)).c_str(), 0, posY, Color::Blank, Color::Black);
+            Renderer::DrawString((Prefix + Utils::Format(" - %03d.bmp", _filecount -1)).c_str(), 0, posY, Color::Blank, Color::ForestGreen);
             svcFlushProcessDataCache(Process::GetHandle(), addr, stride * 320);
             ++_display;
         }
@@ -104,7 +100,7 @@ namespace CTRPluginFramework
             ScreenImpl::Bottom->Acquire((int)addr, (u32)addrB, stride, format);
             int posY = 0;
             Renderer::SetTarget(BOTTOM);
-            Renderer::DrawString("Screenshot: An error occured", 0, posY, Color::Blank, Color::Black);
+            Renderer::DrawString("Screenshot: An error occured", 0, posY, Color::Red, Color::Blank);
             ++_display;
         }
 
@@ -115,6 +111,8 @@ namespace CTRPluginFramework
     {
         BMPImage        *image = nullptr;
         std::string     name;
+
+        _timer.Restart();
 
         do
         {
@@ -135,7 +133,7 @@ namespace CTRPluginFramework
             if (!error)
             {
                 name = Prefix;
-                name += (!_filecount ? ".bmp" : Utils::Format(" - %d.bmp", _filecount));
+                name += Utils::Format(" - %03d.bmp", _filecount);
                 image->SaveImage(Path + name);
             }
 
@@ -151,7 +149,7 @@ namespace CTRPluginFramework
             if (_mode & TIMED)
                 _mode = Screens;
 
-        } while (_mode & TIMED && !_timer.HasTimePassed(_time));
+        } while (_mode & TIMED && !_timer.HasTimePassed(Timer));
 
         // Release ressources
         delete image;
@@ -162,21 +160,23 @@ namespace CTRPluginFramework
 
     void    Screenshot::UpdateFileCount(void)
     {
-        Directory dir(Path);
+        std::string path = Path;
+        path.pop_back();
+        Directory dir(path);
         std::vector<std::string> files;
 
         dir.ListFiles(files, ".bmp");
 
         _filecount = 0;
 
-        std::string name = Prefix + (!_filecount ? ".bmp" : Utils::Format(" - %d.bmp", _filecount));
+        std::string name = Prefix + Utils::Format(" - %03d.bmp", _filecount);
 
         for (std::string &filename : files)
         {
             if (filename == name)
             {
                 ++_filecount;
-                name = Prefix + Utils::Format(" - %d.bmp", _filecount);
+                name = Prefix + Utils::Format(" - %03d.bmp", _filecount);
             }
         }
     }

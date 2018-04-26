@@ -2,6 +2,7 @@
 #define CTRPLUGINFRAMEWORK_ICON_HPP
 
 #include "CTRPluginFramework/System/Vector.hpp"
+#include "CTRPluginFrameworkImpl/Menu/MenuEntryTools.hpp"
 
 namespace CTRPluginFramework
 {
@@ -221,6 +222,12 @@ namespace CTRPluginFramework
         ** 25px * 25 px
         **************/
         static int      DrawTrash(int posX, int posY, bool filled);
+
+        /*
+        ** Unsplash
+        ** 15px * 15 px
+        **************/
+        static int      DrawUnsplash(int posX, int posY);
 
     private:
         static int      DrawImg(u8 *img, int posX, int posY, int sizeX, int sizeY);

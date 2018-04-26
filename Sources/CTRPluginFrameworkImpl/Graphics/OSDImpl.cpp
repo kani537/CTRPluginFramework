@@ -181,9 +181,6 @@ namespace CTRPluginFramework
 
     void     OSDImpl::CallbackGlobal(u32 isBottom, void* addr, void* addrB, int stride, int format)
     {
-        if (Screenshot::OSDCallback(isBottom, addr, addrB, stride, format))
-            return;
-
         if (!isBottom)
         {
             if (FramesToPlay)
@@ -192,6 +189,9 @@ namespace CTRPluginFramework
             // Signal a new frame to all threads waiting for it
             LightEvent_Pulse(&OnNewFrameEvent);
         }
+
+        if (Screenshot::OSDCallback(isBottom, addr, addrB, stride, format))
+            return;
 
         // If frame have to be paused
         if (!WaitingForScreenshot && !FramesToPlay && ProcessImpl::_isPaused)

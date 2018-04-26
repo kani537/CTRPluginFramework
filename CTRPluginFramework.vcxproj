@@ -159,7 +159,10 @@
     <ClInclude Include="Includes\CTRPluginFrameworkImpl\System\Heap.hpp" />
     <ClInclude Include="Includes\CTRPluginFrameworkImpl\System\HookManager.hpp" />
     <ClInclude Include="Includes\CTRPluginFrameworkImpl\System\IAllocator.hpp" />
+    <ClInclude Include="Includes\CTRPluginFrameworkImpl\System\Scheduler.hpp" />
+    <ClInclude Include="Includes\CTRPluginFrameworkImpl\System\Screenshot.hpp" />
     <ClInclude Include="Includes\CTRPluginFrameworkImpl\System\Storage.hpp" />
+    <ClInclude Include="Includes\CTRPluginFramework\System\Task.hpp" />
     <ClInclude Include="Includes\CTRPluginFramework\Menu\MenuEntryHotkeys.hpp" />
     <ClInclude Include="Includes\CTRPluginFramework\System\FwkSettings.hpp" />
     <ClInclude Include="Includes\CTRPluginFramework\System\Lock.hpp" />
@@ -406,7 +409,10 @@
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\System\HookManager.cpp" />
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\System\ProcessImpl.cpp" />
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\System\Screen.cpp" />
+    <ClCompile Include="Sources\CTRPluginFrameworkImpl\System\Scheduler.cpp" />
+    <ClCompile Include="Sources\CTRPluginFrameworkImpl\System\Screenshot.cpp" />
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\System\SystemImpl.cpp" />
+    <ClCompile Include="Sources\CTRPluginFramework\System\Task.cpp" />
     <ClCompile Include="Sources\CTRPluginFramework\Graphics\Color.cpp" />
     <ClCompile Include="Sources\CTRPluginFramework\Graphics\OSD.cpp" />
     <ClCompile Include="Sources\CTRPluginFramework\Menu\Keyboard.cpp" />

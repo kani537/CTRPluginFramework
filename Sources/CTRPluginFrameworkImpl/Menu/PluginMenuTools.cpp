@@ -27,7 +27,7 @@
 #define ALPHA 1
 
 #if ALPHA
-#define VersionStr "CTRPluginFramework Alpha V.0.4.4"
+#define VersionStr "CTRPluginFramework Alpha V.0.4.5"
 #else
 #define VersionStr "CTRPluginFramework Beta V.0.4.0"
 #endif
@@ -336,7 +336,7 @@ namespace CTRPluginFramework
 
     static void      GetScreenShotMode(void)
     {
-        Keyboard    kb(Color::LimeGreen << "Screenshot settings\x18\n\nWhich screen(s) would you like to capture ?", {"Top screen", "Bottom screen", "Both screens"});
+        Keyboard    kb(Color::LimeGreen << "Screenshot settings\x18\n\n Which screen(s) would you like to capture ?", {"Top screen", "Bottom screen", "Both screens"});
 
         int mode = kb.Open();
         if (mode != -1)
@@ -344,9 +344,10 @@ namespace CTRPluginFramework
     }
 
     std::string     KeysToString(u32 keys);
+    bool    stou32(std::string &input, u32 &res);
     static void     ScreenshotMenuCallback(void)
     {
-        Keyboard    kb(Color::LimeGreen << "Screenshot settings\x18\n\nWhat do you want to change ?", { "Screens", "Hotkeys", "Name", "Directory" });
+        Keyboard    kb(Color::LimeGreen << "Screenshot settings\x18\n\nWhat do you want to change ?", { "Screens", "Hotkeys", "Timer", "Name", "Directory" });
 
         int choice;
 
@@ -373,17 +374,43 @@ namespace CTRPluginFramework
                 break;
             }
 
-            case 2: ///< Name
+            case 2: ///< Timer
             {
-                Keyboard nameKb(Color::LimeGreen << "Screenshot name\x18\n\nWhich name would you like for the files ?");
-                std::string out;
+                u32         current = static_cast<u32>(Screenshot::Timer.AsSeconds());
+                Keyboard    keyboard(Color::LimeGreen << "Screenshot timer\x18\n\n Enter the amount of seconds you would like\n to continuously take screenshots.\n\n Enter 0 to disable the timer.\n\n"
+                            << Color::Orange << " Note that during that time, you can't\n access the menu.");
 
-                if (nameKb.Open(out, Preferences::ScreenshotPrefix) != -1)
-                    Preferences::ScreenshotPrefix = out;
+                keyboard.IsHexadecimal(false);
+                keyboard.OnInputChange([](Keyboard &kb, InputChangeEvent &event)
+                {
+                    if (event.type == InputChangeEvent::CharacterAdded)
+                    {
+                        std::string &input = kb.GetInput();
+                        u32  value;
+                        stou32(input, value);
+
+                        if (value > 120)
+                            input = "120";
+                    }
+                });
+
+                if (keyboard.Open(current, current) != -1)
+                    Screenshot::Timer = Seconds(static_cast<float>(current));
+
                 break;
             }
 
-            case 3: ///< Directory
+            case 3: ///< Name
+            {
+                Keyboard    nameKb(Color::LimeGreen << "Screenshot name\x18\n\n Which name would you like for the files ?");
+                std::string out;
+
+                if (nameKb.Open(out, Screenshot::Prefix) != -1)
+                     Screenshot::Prefix = out;
+                break;
+            }
+
+            case 4: ///< Directory
             {
                /* Keyboard dirKb(Color::LimeGreen << "Screenshot directory\x1B\n\nIn which directory would you like to save the screenshots ?");
                 std::string out;
@@ -401,8 +428,23 @@ namespace CTRPluginFramework
             }
         } while (choice != -1);
 
-        static const char *screens[3] = {"Top screen", "Bottom screen", "Both screens"};
-        g_screenshotEntry->name = "Screenshot: " << Color::LimeGreen << KeysToString(Preferences::ScreenshotKeys) << "\x18, " << Color::Orange << screens[Screenshot::Screens - 1];
+        // Update entry
+        const char *screens[3] = {"Top screen", "Bottom screen", "Both screens"};
+
+        g_screenshotEntry->name = ("Screenshot: " << Color::LimeGreen).append(KeysToString(Screenshot::Hotkeys));
+        g_screenshotEntry->name += "\x18, " << Color::Orange;
+        g_screenshotEntry->name.append(screens[(Screenshot::Screens & SCREENSHOT_BOTH) - 1]);
+
+        u32 time = static_cast<u32>(Screenshot::Timer.AsSeconds());
+
+        if (time)
+        {
+            g_screenshotEntry->name += ("\x18, " << Color::DeepSkyBlue << time);
+            Screenshot::Screens |= 4; ///< TIMED flags
+        }
+
+        // Update file count
+        Screenshot::UpdateFileCount();
     }
 
     static void Screenshot_Enabler(MenuEntryTools *entry)
@@ -418,15 +460,16 @@ namespace CTRPluginFramework
         _mainMenu.Append(_hexEditorEntry);
 
         _mainMenu.Append(new MenuEntryTools("Gateway RAM Dumper", [] { g_mode = GWRAMDUMP; }, Icon::DrawRAM));
-        _mainMenu.Append(new MenuEntryTools("Screenshots", nullptr, nullptr, new u32(SCREENSHOT)));
+        _mainMenu.Append(new MenuEntryTools("Screenshots", nullptr, Icon::DrawUnsplash, new u32(SCREENSHOT)));
         _mainMenu.Append(new MenuEntryTools("Miscellaneous", nullptr, Icon::DrawMore, new u32(MISCELLANEOUS)));
         _mainMenu.Append(new MenuEntryTools("Settings", nullptr, Icon::DrawSettings, this));
         _mainMenu.Append(new MenuEntryTools("Shutdown the 3DS", Shutdown, Icon::DrawShutdown));
         _mainMenu.Append(new MenuEntryTools("Reboot the 3DS", Reboot, Icon::DrawRestart));
 
         // Screenshots menu
-        _screenshotMenu.Append(new MenuEntryTools("Change screenshot settings", ScreenshotMenuCallback, nullptr, nullptr));
-        _screenshotMenu.Append((g_screenshotEntry = new MenuEntryTools("Enable screenshot", Screenshot_Enabler, true)));
+        _screenshotMenu.Append(new MenuEntryTools("Change screenshot settings", ScreenshotMenuCallback, Icon::DrawSettings));
+        _screenshotMenu.Append((g_screenshotEntry = new MenuEntryTools( "Screenshot: " << Color::LimeGreen << KeysToString(Screenshot::Hotkeys)
+                                << "\x18, " << Color::Orange << "Both screens", Screenshot_Enabler, true)));
 
         // Miscellaneous menu
         _miscellaneousMenu.Append(new MenuEntryTools("Display loaded files", _DisplayLoadedFiles, true));
