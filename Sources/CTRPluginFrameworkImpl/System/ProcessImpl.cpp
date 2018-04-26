@@ -217,17 +217,9 @@ namespace CTRPluginFramework
         arm11kMemcpy((u32)&table, _kProcess + (isNew3DS ? 0xDC : 0xD4), sizeof(KProcessHandleTable));
 
         u32 count = table.handlesCount;
-        u32 size = sizeof(HandleDescriptor) * count;
         u32 start = (u32)table.handleTable;
 
-        while (count-- > 0)
-        {
-            HandleDescriptor desc;
-
-            arm11kMemcpy((u32)&desc, start, sizeof(HandleDescriptor));
-            handleDescriptors.push_back(desc);
-
-            start += sizeof(HandleDescriptor);
-        }
+        handleDescriptors.resize(count);
+        arm11kMemcpy((u32)handleDescriptors.data(), start, count * sizeof(HandleDescriptor));
     }
 }
