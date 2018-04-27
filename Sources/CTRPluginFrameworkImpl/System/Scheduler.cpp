@@ -90,11 +90,14 @@ namespace CTRPluginFramework
 
         if (_singleton._tasks.empty())
         {
-            // Priority to N3DS extra core
-            if (cores[2].flags == Core::Idle)
+            // Priority to N3DS extra cores
+            for (u32 i = 2; i < 4; ++i)
             {
-                cores[2].Assign(task);
-                return 0;
+                if (cores[i].flags == Core::Idle)
+                {
+                    cores[i].Assign(task);
+                    return 0;
+                }
             }
             if (cores[1].flags == Core::Idle)
             {
@@ -125,16 +128,21 @@ namespace CTRPluginFramework
         _cores[1].thread = threadCreate(Scheduler__CoreHandler, &_cores[1], _cores[1].stack, 0x1000, 0x18, 1);
 
 
-        // Create handler on Core2 (N3DS only)
+        // Create handler on Core2 & Core3 (N3DS only)
         if (!System::IsNew3DS())
         {
             _cores[2].flags = Core::Exit;
+            _cores[3].flags = Core::Exit;
         }
         else
         {
             _cores[2].id = 2;
             _cores[2].stack = static_cast<u8 *>(::operator new(0x1000));
             _cores[2].thread = threadCreate(Scheduler__CoreHandler, &_cores[2], _cores[2].stack, 0x1000, 0x18, 2);
+
+            _cores[3].id = 3;
+            _cores[3].stack = static_cast<u8 *>(::operator new(0x1000));
+            _cores[3].thread = threadCreate(Scheduler__CoreHandler, &_cores[3], _cores[3].stack, 0x1000, 0x18, 3);
         }
     }
 

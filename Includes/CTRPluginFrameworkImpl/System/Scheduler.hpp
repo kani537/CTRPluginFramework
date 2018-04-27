@@ -57,7 +57,7 @@ namespace CTRPluginFramework
     private:
         Scheduler(void);
 
-        Core    _cores[3];
+        Core    _cores[4];
         Mutex   _mutex;
         std::queue<TaskContext *>   _tasks{};
 
