@@ -1,4 +1,6 @@
 #include "CTRPluginFrameworkImpl/System/Kernel.hpp"
+#include "CTRPluginFrameworkImpl/System/ProcessImpl.hpp"
+#include "CTRPluginFramework/System/System.hpp"
 #include "ctrulib/svc.h"
 #include "csvc.h"
 
@@ -12,9 +14,9 @@ extern "C"
 namespace Kernel
 {
     static u32          CriticalSectionLock = 0xFFF2F0AC;
-    static KThread  *   CurrentKThread = (KThread *)0xFFFF9000;
-    static KProcess *   CurrentKProcess = (KProcess *)0xFFFF9004;
-    static KScheduler * CurrentScheduler  = (KScheduler *)0xFFFF900C;
+    static KThread  **  CurrentKThread = (KThread **)0xFFFF9000;
+    static KProcess **  CurrentKProcess = (KProcess **)0xFFFF9004;
+    static KScheduler** CurrentScheduler  = (KScheduler **)0xFFFF900C;
 
     static KCoreContext * CoreCtxs = (KCoreContext *)0xFFFC9000;
 
@@ -26,7 +28,7 @@ namespace Kernel
     {
         KCoreObjectContext &ctx = CoreCtxs[thread->coreId].objectContext;
 
-        if (thread == CurrentKThread || thread == ctx.currentThread)
+        if (thread == *CurrentKThread || thread == ctx.currentThread)
             return;
 
         KRecursiveLock__Lock(CriticalSectionLock);
@@ -85,6 +87,52 @@ u32 *   KThread::GetTls(void)
 bool    KThread::IsPluginThread(void)
 {
     return *GetTls() == THREADVARS_MAGIC;
+}
+
+KProcess * KProcess::GetCurrent(void)
+{
+    KProcess *(*K_GetCurrent)(void) = [](void) -> KProcess *
+    {
+        return *Kernel::CurrentKProcess;
+    };
+
+    return (KProcess *)svcCustomBackdoor((void *)K_GetCurrent);
+}
+
+void    KProcess::PatchCore2Access(void)
+{
+    if (!CTRPluginFramework::System::IsNew3DS())
+        return;
+
+    void    (*K_PatchCore2Access)(KProcess *) = [](KProcess *process)
+    {
+        u32 *   kernelFlags = (u32 *)((u32)process + 0xB0);
+
+        *kernelFlags |= 0x2000;
+    };
+
+    svcCustomBackdoor((void *)K_PatchCore2Access, this);
+}
+
+// C function for thread.c
+extern "C" u32  KProcess__PatchCategory(u32 newCatagory)
+{
+    return CTRPluginFramework::ProcessImpl::KProcessPtr->PatchCategory(newCatagory);
+}
+
+u32     KProcess::PatchCategory(u32 newCategory)
+{
+    u32     (*K_PatchCategory)(KProcess *, u32, u32) = [](KProcess *process, u32 newCategory, u32 offset) -> u32
+    {
+        u32 *   category = (u32 *)((u32)process + offset);
+        u32     old = *category & 0xF00;
+
+        *category &= ~0xF00;
+        *category |= newCategory;
+        return old;
+    };
+
+    svcCustomBackdoor((void *)K_PatchCategory, this, CTRPluginFramework::System::IsNew3DS() ? 0xB0 : 0xA8);
 }
 
 void    KScheduler::AdjustThread(KThread *thread, u32 oldSchedulingMask)

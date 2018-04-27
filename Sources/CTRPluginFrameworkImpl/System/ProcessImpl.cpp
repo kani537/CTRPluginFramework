@@ -28,15 +28,15 @@ namespace CTRPluginFramework
 		bool 	isNew3DS = System::IsNew3DS();
 
 		// Get current KProcess
-		KProcessPtr = reinterpret_cast<KProcess *>(arm11kGetCurrentKProcess());
+		KProcessPtr = KProcess::GetCurrent();
 
 		// Copy KProcess data
-		arm11kMemcpy(kproc, KProcessPtr, 0x100);
+		Kernel::Memcpy(kproc, KProcessPtr, 0x100);
 
 		if (isNew3DS)
 		{
 			// Copy KCodeSet
-			arm11kMemcpy(&CodeSet, (void *)*(u32 *)(kproc + 0xB8), sizeof(KCodeSet));
+			Kernel::Memcpy(&CodeSet, (void *)*(u32 *)(kproc + 0xB8), sizeof(KCodeSet));
 
 			// Copy process id
 			ProcessId = *(u32 *)(kproc + 0xBC);
@@ -45,12 +45,12 @@ namespace CTRPluginFramework
             MainThread = (KThread *)*(u32 *)(kproc + 0xC8);
 
             // Patch KProcess to allow creating threads on Core2
-            arm11kAllowCore2();
+            KProcessPtr->PatchCore2Access();
 		}
 		else
 		{
 			// Copy KCodeSet
-			arm11kMemcpy(&CodeSet, (void *)*(u32 *)(kproc + 0xB0), sizeof(KCodeSet));
+			Kernel::Memcpy(&CodeSet, (void *)*(u32 *)(kproc + 0xB0), sizeof(KCodeSet));
 
 			// Copy process id
 			ProcessId = *(u32 *)(kproc + 0xB4);
@@ -61,11 +61,11 @@ namespace CTRPluginFramework
 
 		// Copy title id
 		TitleId = CodeSet.titleId;
+
 		// Create handle for this process
 		svcOpenProcess(&ProcessHandle, ProcessId);
 	}
 
-    extern "C" Handle gspThreadEventHandle;;
     extern "C" Handle gspEvent;
     extern "C" bool   IsPaused(void)
     {
@@ -99,27 +99,6 @@ namespace CTRPluginFramework
         if (!useFading)
             return;
 
-     /*   float fade = 0.03f;
-        Clock t = Clock();
-        Time limit = Seconds(1) / 10.f;
-        Time delta;
-        float pitch = 0.0006f;
-
-        while (fade <= 0.3f)
-        {
-        	delta = t.Restart();
-        	fade += pitch * delta.AsMilliseconds();
-
-        	ScreenImpl::Top->Fade(fade);
-        	ScreenImpl::Bottom->Fade(fade);
-
-        	ScreenImpl::Top->SwapBuffer(true, true);
-        	ScreenImpl::Bottom->SwapBuffer(true, true);
-        	gspWaitForVBlank();
-        	if (System::IsNew3DS())
-        		while (t.GetElapsedTime() < limit);
-        } */
-
         ScreenImpl::ApplyFading();
 	}
 
@@ -128,28 +107,6 @@ namespace CTRPluginFramework
         // If game isn't paused, abort
         if (!IsPaused)
             return;
-
-		/*if (useFading)
-		{
-            Time limit = Seconds(1) / 10.f;
-            Time delta;
-            float pitch = 0.10f;
-            Clock t = Clock();
-	        float fade = -0.1f;
-            while (fade >= -0.9f)
-            {
-                delta = t.Restart();
-                ScreenImpl::Top->Fade(fade);
-                ScreenImpl::Bottom->Fade(fade);
-                fade -= 0.001f * delta.AsMilliseconds();
-                //Sleep(Milliseconds(10));
-                ScreenImpl::Top->SwapBuffer(true, true);
-                ScreenImpl::Bottom->SwapBuffer(true, true);
-                gspWaitForVBlank();
-                if (System::IsNew3DS())
-                    while (t.GetElapsedTime() < limit); //<- On New3DS frequencies, the alpha would be too dense
-            }
-		} */
 
         // Decrease pause counter
         if (IsPaused)

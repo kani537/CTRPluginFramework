@@ -130,6 +130,12 @@ struct KProcess
 {
     void    *vtable;
     u32     refcount;
+
+    static KProcess *   GetCurrent(void);
+
+    void    PatchCore2Access(void);
+    u32     PatchCategory(u32 newCategory);
+
 } PACKED;
 
 struct KScheduler
@@ -173,6 +179,42 @@ struct KCoreContext
     u32     na3[0x400];
     KCoreObjectContext  objectContext;
 } PACKED;
+
+struct KPreemptionTimer
+{
+    u32     maxCpuTime0;
+    u32     currentTimer;
+    u32     lastWatchdogTimer;
+    u32     maxCpuTume1;
+} PACKED;
+
+struct KResourceLimit
+{
+    void    *vtable;
+    u32     refcount;
+    s32     maxPriority;
+    s32     maxCommit;
+    s32     maxThread;
+    s32     maxEvent;
+    s32     maxMutex;
+    s32     maxSemaphore;
+    s32     maxTimer;
+    s32     maxSharedArbiter;
+    s32     maxCpuTime;
+    s32     currentPriority;
+    s32     currentCommit;
+    s32     currentThread;
+    s32     currentEvent;
+    s32     currentMutex;
+    s32     currentSemaphore;
+    s32     currentTimer;
+    s32     currentSharedMemory;
+    s32     currentAddressArbiter;
+    s32     currentCpuTime;
+    KObjectMutex        mutex;
+    KPreemptionTimer    timer;
+} PACKED;
+
 
 namespace Kernel
 {

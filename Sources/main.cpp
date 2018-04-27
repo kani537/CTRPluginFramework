@@ -403,6 +403,20 @@ namespace CTRPluginFramework
 
         menu += new MenuEntry("Hex editor", nullptr, ReadKernelValue);
 
+        menu += new MenuEntry("Task", nullptr, [](MenuEntry *entry)
+        {
+            Task task([](void *arg) -> s32
+            {
+                for (int i = 0; i < 10; ++i)
+                {
+                    OSD::Notify(Utils::Format("Core: %d", arm11kGetCurrentCoreID()));
+                    Sleep(Seconds(4.f));
+                }
+                return 0;
+            });
+
+            task.Start();
+        });
         // Launch menu and mainloop
         int ret = menu.Run();
 
