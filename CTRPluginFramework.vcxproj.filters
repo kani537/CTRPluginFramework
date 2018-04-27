@@ -555,6 +555,9 @@
     <ClInclude Include="Includes\CTRPluginFrameworkImpl\System\Screenshot.hpp">
       <Filter>Fichiers d%27en-tête</Filter>
     </ClInclude>
+    <ClInclude Include="Includes\CTRPluginFrameworkImpl\System\Kernel.hpp">
+      <Filter>Fichiers d%27en-tête</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Sources\CTRPluginFramework\Graphics\Color.cpp">

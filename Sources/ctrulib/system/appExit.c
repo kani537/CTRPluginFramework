@@ -1,12 +1,12 @@
 #include <3DS.h>
 
-void __attribute__((weak)) __appExit(void)
+void    __appExit(void)
 {
 	// Exit services
-	//sdmcExit();
-	fsExit();
-
 	hidExit();
-	//aptExit();
-	srvExit();
+    cfguExit();
+    fsExit();
+    amExit();
+    acExit();
+    srvExit();
 }

@@ -2,13 +2,6 @@
 	.arm
 	.align 2
 
-	.global	initSystem
-	.type	initSystem,	%function
-
-initSystem:
-	bl	__system_initSyscalls
-	bx lr
-
 	.global	initLib
 	.type	initLib,	%function
 initLib:
@@ -35,16 +28,7 @@ __ctru_exit:
 	ldr	sp, [r2]
 	b	__libctru_exit
 
-	.data
-	.align 2
-__stacksize__:
-	.word	4 * 1024
-	.weak	__stacksize__
-
-
 	.bss
 	.align 2
 saved_stack:
 	.space 8
-
-

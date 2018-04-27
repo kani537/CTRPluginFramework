@@ -159,6 +159,7 @@
     <ClInclude Include="Includes\CTRPluginFrameworkImpl\System\Heap.hpp" />
     <ClInclude Include="Includes\CTRPluginFrameworkImpl\System\HookManager.hpp" />
     <ClInclude Include="Includes\CTRPluginFrameworkImpl\System\IAllocator.hpp" />
+    <ClInclude Include="Includes\CTRPluginFrameworkImpl\System\Kernel.hpp" />
     <ClInclude Include="Includes\CTRPluginFrameworkImpl\System\Scheduler.hpp" />
     <ClInclude Include="Includes\CTRPluginFrameworkImpl\System\Screenshot.hpp" />
     <ClInclude Include="Includes\CTRPluginFrameworkImpl\System\Storage.hpp" />

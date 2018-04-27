@@ -79,15 +79,14 @@ Thread threadCreate(ThreadFunc entrypoint, void *arg, void *stack_pointer, size_
 	Result  rc;
 
     // If affinity is meant to be on syscore, patch the application
-    if (affinity == 1)
+    if (affinity == 1 || affinity == 3)
         oldAppType = arm11kChangeProcessType(0x300);
 	rc = svcCreateThread(&t->handle, (ThreadFunc)_thread_begin, (u32)t, (u32*)t->stacktop, prio, affinity);
-	arm11kChangeProcessType(oldAppType);
+
+    arm11kChangeProcessType(oldAppType);
+
     if (R_FAILED(rc))
-	{
-		//free(t);
 		return NULL;
-	}
 
 	return t;
 }
@@ -138,8 +137,6 @@ void threadExit(int rc)
 		__panic();
 
 	t->finished = true;
-	if (!t->detached)
-		threadFree(t);
 	//else
 		t->rc = rc;
 

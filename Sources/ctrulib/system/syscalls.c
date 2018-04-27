@@ -14,6 +14,7 @@ extern const u8 __tdata_lma_end[];
 extern u8 __tls_start[];
 
 extern Thread  g_mainThread;
+
 static struct _reent* __ctru_get_reent()
 {
 	ThreadVars* tv = getThreadVars();
@@ -22,8 +23,6 @@ static struct _reent* __ctru_get_reent()
 	{
         // We're probably hooked from game so get main thread's reent
         return (&g_mainThread->reent);
-		//svcBreak(USERBREAK_PANIC);
-		//for (;;);
 	}
 	return tv->reent;
 }

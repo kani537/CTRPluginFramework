@@ -29,7 +29,7 @@ u32     arm11kGetKProcessFromHandle(Handle processHandle);
 u32     arm11kGetKProcessState(u32 kProcessState);
 
 // Do a memcpy in kernel mode
-void arm11kMemcpy(u32 dst, u32 src, u32 size);
+void    arm11kMemcpy(void  *dst, const void *src, const u32 size);
 
 // Patch KProcess to allow running threads on Core2 (N3DS)
 void    arm11kAllowCore2(void);

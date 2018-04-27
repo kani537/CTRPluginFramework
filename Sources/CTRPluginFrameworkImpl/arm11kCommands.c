@@ -87,7 +87,7 @@ static u32  K_Memcpy(u32 dst_, u32 src_, u32 size)
     return 0;
 }
 
-void    arm11kMemcpy(u32 dst, u32 src, u32 size)
+void    arm11kMemcpy(void *dst, const void *src, const u32 size)
 {
     svcCustomBackdoor(K_Memcpy, dst, src, size);
 }
