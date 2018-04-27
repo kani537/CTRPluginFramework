@@ -20,6 +20,9 @@ namespace CTRPluginFramework
 
         static bool     PatchProcess(u32 addr, u8 *patch, u32 length, u8 *original);
         static void     GetHandleTable(KProcessHandleTable &table, std::vector<HandleDescriptor> &handleDescriptors);
+        static void     GetGameThreads(std::vector<KThread *> &threads);
+        static void     LockGameThreads(void);
+        static void     UnlockGameThreads(void);
 
         static Handle       ProcessHandle;
         static u32          IsPaused;

@@ -37,8 +37,6 @@ namespace CTRPluginFramework
     // This function is called on the plugin starts, before main
     void    PatchProcess(FwkSettings &settings)
     {
-        //g_free = osGetMemRegionFree(MEMREGION_APPLICATION);
-        settings.ThreadPriority = 0x18;
     }
 
     u32     strlen(const char *s)
@@ -352,144 +350,6 @@ namespace CTRPluginFramework
     KProcess* volatile currentProcess = (KProcess *)0xFFFF9004;
     KScheduler* volatile currentScheduler = (KScheduler *)0xFFFF900C;
 
-    u32 v = sizeof(KThread);
-
-    void    (*KRecursiveLock__Lock)(u32 lock) = (void (*)(u32))0xFFF1DC24;
-    void    (*KRecursiveLock__Unlock)(u32 lock) = (void (*)(u32))0xFFF1DD64;
-    void    (*KScheduler__AdjustThread)(u32 kscheduler, KThread *thread, u32 oldSchedulingMask) = (void (*)(u32, KThread*, u32))0xFFF1DD38;
-
-    s32     K_GetKObjectName(u32 kobj, char *out, u32 *tok)
-    {
-        KAutoObject *obj = (KAutoObject *)kobj;
-        KClassToken token;
-
-        obj->vtable->GetClassToken(&token, obj);
-        const char *name = token.name;
-
-        while (*name)
-            *out++ = *name++;
-        *out = 0;
-        *tok = token.flags;
-    }
-
-    void    K_IsKThread(u32 kobj, u32 *isKThread)
-    {
-        KAutoObject *obj = (KAutoObject *)kobj;
-        KClassToken token;
-
-        obj->vtable->GetClassToken(&token, obj);
-
-        *isKThread = token.flags == 0x8D;
-    }
-
-    u32    IsKThread(u32 kobj)
-    {
-        u32 res = 0;
-        svcCustomBackdoor((void *)K_IsKThread, kobj, &res);
-        return res;
-    }
-
-    void   K_GetKThreadTLS(KThread *thread, u32 *tls)
-    {
-        *tls = thread->tls;
-       // u32 ret;
-        //*tls = *(u32 *)((u32)thread + 0x94);
-    }
-
-    u32     GetKThreadTLS(KThread *thread)
-    {
-        u32 tls = 0;
-        svcCustomBackdoor((void *)K_GetKThreadTLS, thread, &tls);
-        return tls;
-    }
-
-    u32 coreID;
-    u32    K_KSchedulerNbThreads(void)
-    {
-        coreID = currentScheduler->coreNumber;
-        return coreID;
-    }
-
-    u32     KScheduler_GetNBThreads(void)
-    {
-        //u32 out;
-         return svcCustomBackdoor((void *)K_KSchedulerNbThreads);
-        //return out;
-    }
-
-    u32     KScheduler_GetNBThreads2(void)
-    {
-        //u32 out;
-         svcBackdoor((s32 (*)())K_KSchedulerNbThreads);
-        return coreID;
-    }
-
-    void    K_KThread_Lock(KThread *thread, u32 lock)
-    {
-        KRecursiveLock__Lock(criticalSectionLock);
-
-        u32 oldSchedulingMask = thread->schedulingMask;
-
-        if (lock)
-            thread->schedulingMask |= 0x40;
-        else
-            thread->schedulingMask &= ~0x40;
-
-        KScheduler__AdjustThread(0xFFFF900C, thread, oldSchedulingMask);
-
-        KRecursiveLock__Unlock(criticalSectionLock);
-    }
-
-    void    KThread_Lock(KThread *thread, u32 lock)
-    {
-        svcCustomBackdoor((void *)K_KThread_Lock, thread, lock);
-    }
-
-    void    ListThreads(std::vector<KThread *> &threads)
-    {
-        KProcessHandleTable table = {0};
-        std::vector<HandleDescriptor> handleDescriptors;
-
-        ProcessImpl::GetHandleTable(table, handleDescriptors);
-
-        for (HandleDescriptor &handle : handleDescriptors)
-        {
-            if (!IsKThread(handle.kObjectPointer))
-                continue;
-
-            KThread *thread = (KThread *)handle.kObjectPointer;
-
-            u32 tls = *(u32 *)GetKThreadTLS(thread);
-
-            if (tls != 0x21545624)
-                threads.push_back(thread);
-        }
-    }
-
-    void    ListHandles(MenuEntry *entry)
-    {
-        KProcessHandleTable table = {0};
-        std::vector<HandleDescriptor> handleDescriptors;
-
-        ProcessImpl::GetHandleTable(table, handleDescriptors);
-
-        std::string  text;
-        char buffer[100] = {0};
-        u32  token = 0;
-
-        for (HandleDescriptor &handle : handleDescriptors)
-        {
-            svcCustomBackdoor((void *)K_GetKObjectName, handle.kObjectPointer, buffer, &token);
-            text += buffer;
-            text += Utils::Format(", %02X", token);
-            if (token == 0x8D)
-                text += Utils::Format(", %08X", *(u32 *) GetKThreadTLS((KThread *)handle.kObjectPointer));
-            text += "\n";
-        }
-
-        (MessageBox(text))();
-    }
-
     void    HexMessageBox(u32 address)
     {
         u32     buffer[18] = {0}; // 3 * 6
@@ -531,38 +391,14 @@ namespace CTRPluginFramework
 
         menu.SynchronizeWithFrame(true);
 
-        menu += new MenuEntry("Test", nullptr, [](MenuEntry *entry)
-        {
-            /*s64 free = osGetMemRegionFree(MEMREGION_APPLICATION);
-            u32 vramPa = svcConvertVAToPA((void *)0x1F000000, false);
-
-            MessageBox(Utils::Format("Appmem free: %llX\nAppmem free: %llX", g_free, free))();
-            MessageBox(Utils::Format("vram pa: %08X", vramPa))();*/
-            u32 nbThread = KScheduler_GetNBThreads();
-            u32 nbThread2 = KScheduler_GetNBThreads2();
-
-            MessageBox(Utils::Format("NB Threads: %08X, %08X", nbThread, nbThread2))();
-        });
-
-        menu += new MenuEntry("List handles", nullptr, ListHandles);
         menu += new MenuEntry("Lock threads", nullptr, [](MenuEntry *entry)
         {
-            std::vector<KThread *> threads;
-
-            ListThreads(threads);
-
-            MessageBox(Utils::Format("Threads! %d", threads.size()))();
-            for (KThread *thread : threads)
-                KThread_Lock(thread, 1);
+            ProcessImpl::LockGameThreads();
         });
 
         menu += new MenuEntry("Unlock threads", nullptr, [](MenuEntry *entry)
         {
-            std::vector<KThread *> threads;
-
-            ListThreads(threads);
-            for (KThread *thread : threads)
-                KThread_Lock(thread, 0);
+            ProcessImpl::UnlockGameThreads();
         });
 
         menu += new MenuEntry("Hex editor", nullptr, ReadKernelValue);

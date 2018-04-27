@@ -89,10 +89,11 @@ namespace CTRPluginFramework
 
         // Wait for the vblank
         gspWaitForVBlank();
+        gspWaitForVBlank1();
 
         // Acquire screens
-        ScreenImpl::Top->Acquire();
         ScreenImpl::Bottom->Acquire();
+        ScreenImpl::Top->Acquire();
         OSDImpl::UpdateScreens();
 
         if (!useFading)
@@ -180,11 +181,54 @@ namespace CTRPluginFramework
         bool 	isNew3DS = System::IsNew3DS();
 
         // Copy KProcessHandleTable
-        arm11kMemcpy(&table, (void *)((u32)KProcessPtr + (isNew3DS ? 0xDC : 0xD4)), sizeof(KProcessHandleTable));
+        Kernel::Memcpy(&table, (void *)((u32)KProcessPtr + (isNew3DS ? 0xDC : 0xD4)), sizeof(KProcessHandleTable));
 
         u32 count = table.handlesCount;
 
         handleDescriptors.resize(count);
-        arm11kMemcpy(handleDescriptors.data(), table.handleTable, count * sizeof(HandleDescriptor));
+        Kernel::Memcpy(handleDescriptors.data(), table.handleTable, count * sizeof(HandleDescriptor));
+    }
+
+    void    ProcessImpl::GetGameThreads(std::vector<KThread *> &threads)
+    {
+        threads.clear();
+
+        KProcessHandleTable             table;
+        std::vector<HandleDescriptor>   handles;
+
+        GetHandleTable(table, handles);
+
+        threads.push_back(MainThread);
+
+        for (HandleDescriptor &handle : handles)
+        {
+            if (!handle.obj->IsKThread())
+                continue;
+
+            KThread *thread = reinterpret_cast<KThread *>(handle.obj);
+
+            if (!thread->IsPluginThread())
+                threads.push_back(thread);
+        }
+    }
+
+    void    ProcessImpl::LockGameThreads(void)
+    {
+        std::vector<KThread *>  threads;
+
+        GetGameThreads(threads);
+
+        for (KThread *thread : threads)
+            thread->Lock();
+    }
+
+    void    ProcessImpl::UnlockGameThreads(void)
+    {
+        std::vector<KThread *>  threads;
+
+        GetGameThreads(threads);
+
+        for (KThread *thread : threads)
+            thread->Unlock();
     }
 }

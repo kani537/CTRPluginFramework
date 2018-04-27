@@ -3,6 +3,29 @@
 
 #include "types.h"
 
+struct KClassToken
+{
+    const char  *name;
+    u8          flags;
+} PACKED;
+
+struct KAutoObject
+{
+    struct Vtable
+    {
+        void    *f;
+        void    *f1;
+        void    *f2;
+        void    *f3;
+        KAutoObject *(*DecrementRefCount)(KAutoObject *obj);
+        void    *f4;
+        KClassToken *(*GetClassToken)(KClassToken *out, KAutoObject *obj);
+    }*      vtable;
+    u32     refcount;
+
+    bool    IsKThread(void);
+} PACKED;
+
 struct KCodeSetMemDescriptor
 {
     u32     startAddress;
@@ -29,8 +52,8 @@ struct KCodeSet
 
 struct HandleDescriptor
 {
-    u32     handleInfo;
-    u32     kObjectPointer;
+    u32             info;
+    KAutoObject     *obj;
 } PACKED;
 
 struct KObjectMutex
@@ -50,27 +73,6 @@ struct KProcessHandleTable
     s16                 handlesCount;
     KObjectMutex        mutex;
     HandleDescriptor    table[0x28];
-} PACKED;
-
-struct KClassToken
-{
-    const char  *name;
-    u8          flags;
-} PACKED;
-
-struct KAutoObject
-{
-    struct Vtable
-    {
-        void    *f;
-        void    *f1;
-        void    *f2;
-        void    *f3;
-        KAutoObject *(*DecrementRefCount)(KAutoObject *obj);
-        void    *f4;
-        KClassToken *(*GetClassToken)(KClassToken *out, KAutoObject *obj);
-    }*      vtable;
-    u32     refcount;
 } PACKED;
 
 struct KThread
@@ -112,10 +114,16 @@ struct KThread
     s32     idealProcessor;
     u32     tls;
     u32     fcramTls;
-    u32     padding1[2];
+    u32     padding1;
     u32     scheduledThreads[2];
     u32     ptrToLinkedList;
     s32     priorityForInheritance;
+
+    void    Lock(void);
+    void    Unlock(void);
+    u32  *  GetTls(void);
+    bool    IsPluginThread(void);
+
 } PACKED;
 
 struct KProcess
@@ -138,7 +146,37 @@ struct KScheduler
     u64     priorityBitfield;
     KThread*schedulerThread;
     u32     threadList[2];
-    // List of threads sorted by priority
+    u32     block[0x80];
+
+    void    AdjustThread(KThread *thread, u32 oldSchedulingMask);
 } PACKED;
+
+struct KCoreObjectContext
+{
+    KThread *       currentThread;
+    KThread *       currentProcess;
+    KScheduler *    currentScheduler;
+    u32             currentKSchedulableInterruptEventLinkedList;
+    KThread *       lastExceptionThread;
+    u32             padding;
+    KThread         schedulerThreadInstance;
+    KScheduler      schedulerInstance;
+    u32             block[0x344];
+} PACKED;
+
+struct KCoreContext
+{
+    u32     na[0x400];
+    u32     l1[0x1000];
+    u32     na2[0x400];
+    u32     kthreadContext[0x400];
+    u32     na3[0x400];
+    KCoreObjectContext  objectContext;
+} PACKED;
+
+namespace Kernel
+{
+    void    Memcpy(void *dst, const void *src, const u32 size);
+}
 
 #endif

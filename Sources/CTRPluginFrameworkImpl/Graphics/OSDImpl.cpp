@@ -17,6 +17,8 @@
 #include "CTRPluginFrameworkImpl/Menu/PluginMenuImpl.hpp"
 #include "CTRPluginFrameworkImpl/System/Screenshot.hpp"
 
+#define THREADVARS_MAGIC  0x21545624 // !TV$
+
 namespace CTRPluginFramework
 {
     bool        OSDImpl::DrawSaveIcon = false;
@@ -194,9 +196,12 @@ namespace CTRPluginFramework
             return;
 
         // If frame have to be paused
-        if (!WaitingForScreenshot && !FramesToPlay && ProcessImpl::IsPaused)
+        if (isBottom && !WaitingForScreenshot && !FramesToPlay && ProcessImpl::IsPaused)
         {
             __dsb();
+
+            // Lock threads
+            ProcessImpl::LockGameThreads();
 
             IsFramePaused = true;
 
@@ -208,6 +213,9 @@ namespace CTRPluginFramework
 
             // Signal that the frame continue
             LightEvent_Pulse(&OnFrameResume);
+
+            // Unlock threads
+            ProcessImpl::UnlockGameThreads();
 
             IsFramePaused = false;
             return;
