@@ -293,7 +293,7 @@ namespace CTRPluginFramework
         Result  res = SUCCESS;
 
         // If game not paused, then pause it
-        if (!ProcessImpl::IsPaused())
+        if (!ProcessImpl::IsPaused)
         {
             ProcessImpl::Pause(false);
             unpause = true;
@@ -335,7 +335,7 @@ namespace CTRPluginFramework
         Result  res = SUCCESS;
 
         // If game not paused, then pause it
-        if (!ProcessImpl::IsPaused())
+        if (!ProcessImpl::IsPaused)
         {
             ProcessImpl::Pause(false);
             unpause = true;

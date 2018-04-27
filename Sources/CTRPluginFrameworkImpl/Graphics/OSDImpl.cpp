@@ -194,7 +194,7 @@ namespace CTRPluginFramework
             return;
 
         // If frame have to be paused
-        if (!WaitingForScreenshot && !FramesToPlay && ProcessImpl::_isPaused)
+        if (!WaitingForScreenshot && !FramesToPlay && ProcessImpl::IsPaused)
         {
             __dsb();
 

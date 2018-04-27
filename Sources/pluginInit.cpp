@@ -174,7 +174,7 @@ namespace CTRPluginFramework
             if (settings.EcoMemoryMode || !settings.AllowSearchEngine)
                 size = 0x50000;
             else
-                size = 0xC0000;
+                size = 0x100000;
         }
         else
         {
@@ -197,7 +197,7 @@ namespace CTRPluginFramework
         // Create plugin's main thread
         svcCreateEvent(&g_keepEvent, RESET_ONESHOT);
 
-        g_mainThread = threadCreate(ThreadInit, nullptr, (void *)threadStack, 0x4000, 0x18, -2);
+        g_mainThread = threadCreate(ThreadInit, nullptr, (void *)threadStack, 0x4000, settings.ThreadPriority, -2);
 
         // Install CRO hook
         {
@@ -229,7 +229,9 @@ namespace CTRPluginFramework
         // Reduce priority
         while (R_FAILED(svcSetThreadPriority(g_keepThreadHandle, settings.ThreadPriority + 1)));
 
+        // Wait until Main Thread finished all it's initializing
         svcWaitSynchronization(g_keepEvent, U64_MAX);
+        svcClearEvent(g_keepEvent);
 
         if (settings.AllowActionReplay)
         {
@@ -254,14 +256,15 @@ namespace CTRPluginFramework
         }
 
         threadJoin(g_mainThread, U64_MAX);
+        threadFree(g_mainThread);
 
     exit:
         svcCloseHandle(g_keepEvent);
-       /* if (g_resumeEvent)
-            svcSignalEvent(g_resumeEvent);*/
-        exit(1);
+
+        exit(0);
     }
 
+    // Initialize most subsystem / Global variables
     void    Initialize(void)
     {
         // Init HID
@@ -343,10 +346,6 @@ namespace CTRPluginFramework
             Screenshot::Prefix += Utils::Format(" - %08X] - Screenshot", (u32)Process::GetTitleID());
             Screenshot::Initialize();
         }
-
-
-        // Init Process info
-        ProcessImpl::UpdateThreadHandle();
     }
 
     // Main thread's start
@@ -369,7 +368,7 @@ namespace CTRPluginFramework
     void  ThreadExit(void)
     {
         // In which thread are we ?
-        if (threadGetCurrent() != nullptr)
+        if (threadGetCurrent() == g_mainThread)
         {
             // ## MainThread ##
 
@@ -377,6 +376,7 @@ namespace CTRPluginFramework
             OSDImpl::OSDHook.Disable();
 
             // Release process in case it's currently paused
+            ProcessImpl::IsPaused = std::min((u32)ProcessImpl::IsPaused, (u32)1);
             ProcessImpl::Play(false);
 
             // Exit services
@@ -387,29 +387,22 @@ namespace CTRPluginFramework
             svcSignalEvent(g_keepEvent);
 
             threadExit(1);
+            return;
         }
-        else
+
+        // ## Primary Thread ##
+        if (g_mainThread != nullptr)
         {
-            // ## KeepThread ##
-
-            if (g_mainThread != nullptr)
-            {
-                ProcessImpl::Play(false);
-                PluginMenuImpl::ForceExit();
-                threadJoin(g_mainThread, U64_MAX);
-            }
-            else
-                svcSignalEvent(g_continueGameEvent);
-
-            // Exit services
-            acExit();
-            amExit();
-            fsExit();
-            cfguExit();
-
-            exit(-1);
+            ProcessImpl::Play(false);
+            PluginMenuImpl::ForceExit();
+            threadJoin(g_mainThread, U64_MAX);
         }
+        else // We aborted in a very early stage, so just release the game and exit
+            svcSignalEvent(g_continueGameEvent);
+
+        exit(-1);
     }
+
     extern "C"
     int   LaunchMainThread(int arg)
     {

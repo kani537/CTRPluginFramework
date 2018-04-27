@@ -1,15 +1,13 @@
 #include "CTRPluginFrameworkImpl/Search/SearchBase.hpp"
+
+#include "CTRPluginFramework/Utils/Utils.hpp"
+#include "CTRPluginFrameworkImpl/System/Heap.hpp"
+#include "CTRPluginFrameworkImpl/System/ProcessImpl.hpp"
+#include "CTRPluginFrameworkImpl/Preferences.hpp"
 #include "CTRPluginFramework/System/Process.hpp"
 #include "CTRPluginFramework/System/Directory.hpp"
 #include "CTRPluginFramework/Menu/MessageBox.hpp"
-#include "CTRPluginFrameworkImpl/System/ProcessImpl.hpp"
-#include "CTRPluginFramework/System/Controller.hpp"
-#include "ctrulib/allocator/linear.h"
-#include <cstdarg>
-#include <cstdio>
-#include "CTRPluginFramework/Utils/Utils.hpp"
-#include "CTRPluginFrameworkImpl/System/Heap.hpp"
-#include "CTRPluginFrameworkImpl/Preferences.hpp"
+
 
 namespace CTRPluginFramework
 {
@@ -370,7 +368,7 @@ namespace CTRPluginFramework
             _header.regions[_indexRegion].fileOffset = _file.Tell();
 
             // Flush memory
-            svcFlushProcessDataCache(ProcessImpl::_processHandle, (void *)_startRegion, _endRegion - _startRegion);
+            svcFlushProcessDataCache(ProcessImpl::ProcessHandle, (void *)_startRegion, _endRegion - _startRegion);
             return (false);
         }
 
@@ -423,7 +421,7 @@ namespace CTRPluginFramework
             _previous->_file.Seek(offset, File::SET);
 
             // Flush memory
-            svcFlushProcessDataCache(ProcessImpl::_processHandle, (void *)_startRegion, _header.regions[_indexRegion].endAddress - _startRegion);
+            svcFlushProcessDataCache(ProcessImpl::ProcessHandle, (void *)_startRegion, _header.regions[_indexRegion].endAddress - _startRegion);
 
             return (false);
         }

@@ -1,14 +1,11 @@
 #include "CTRPluginFrameworkImpl/Search/Search32.hpp"
-#include "CTRPluginFramework/System/Process.hpp"
-#include "CTRPluginFrameworkImpl/System/ProcessImpl.hpp"
 
-#include <cstdio>
-#include <cstring>
-#include "CTRPluginFramework/Menu/MessageBox.hpp"
-#include <algorithm>
-#include "3DS.h"
-#include "CTRPluginFramework/Utils/Utils.hpp"
+#include "CTRPluginFrameworkImpl/System/ProcessImpl.hpp"
 #include "CTRPluginFrameworkImpl/Preferences.hpp"
+#include "CTRPluginFramework/Utils/Utils.hpp"
+#include "CTRPluginFramework/System/Process.hpp"
+
+#include <algorithm>
 
 namespace CTRPluginFramework
 {
@@ -53,7 +50,7 @@ namespace CTRPluginFramework
             _endRegion = parameters.ranges[0].endAddress - 1;
 
             // Flush memory
-            svcFlushProcessDataCache(ProcessImpl::_processHandle, (void *)_startRegion, _endRegion - _startRegion);
+            svcFlushProcessDataCache(ProcessImpl::ProcessHandle, (void *)_startRegion, _endRegion - _startRegion);
         }
         else
         {
@@ -100,7 +97,7 @@ namespace CTRPluginFramework
             _endRegion = _header.regions[0].endAddress - 1;
 
             // Flush memory
-            svcFlushProcessDataCache(ProcessImpl::_processHandle, (void *)_startRegion, _endRegion - _startRegion);
+            svcFlushProcessDataCache(ProcessImpl::ProcessHandle, (void *)_startRegion, _endRegion - _startRegion);
         }
 
         // Set first region's file offset

@@ -84,7 +84,7 @@ namespace CTRPluginFramework
         bool mustReleaseGame = false;
 
         // Check if game is paused
-        if (!ProcessImpl::IsPaused())
+        if (!ProcessImpl::IsPaused)
         {
             mustReleaseGame = true;
             ProcessImpl::Pause(false);

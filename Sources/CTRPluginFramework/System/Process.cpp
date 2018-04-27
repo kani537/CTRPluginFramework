@@ -1,15 +1,10 @@
 
 #include "3DS.h"
-#include "CTRPluginFramework/System.hpp"
 #include "CTRPluginFrameworkImpl/System.hpp"
-#include "CTRPluginFramework/System.hpp"
-#include "CTRPluginFramework/Graphics/OSD.hpp"
-#include "csvc.h"
-#include <cstdio>
-#include <cstring>
 #include "CTRPluginFramework/Utils/Utils.hpp"
-#include "CTRPluginFramework/Menu/MessageBox.hpp"
 #include "CTRPluginFrameworkImpl/Graphics/OSDImpl.hpp"
+
+#include "csvc.h"
 
 extern 		Handle gspThreadEventHandle;
 
@@ -17,33 +12,34 @@ namespace CTRPluginFramework
 {
 	Handle 	Process::GetHandle(void)
 	{
-		return (ProcessImpl::_processHandle);
+		return ProcessImpl::ProcessHandle;
 	}
 
 	u32     Process::GetProcessID(void)
 	{
-		return (ProcessImpl::_processID);
+		return ProcessImpl::ProcessId;
 	}
 
 	u64     Process::GetTitleID(void)
 	{
-		return (ProcessImpl::_titleID);
+		return ProcessImpl::TitleId;
 	}
 
     void    Process::GetTitleID(std::string &output)
     {
         char tid[17] = { 0 };
 
-        sprintf(tid, "%016llX", ProcessImpl::_titleID);
-        for (int i = 0; i < 16; i++)
-            output += tid[i];
+        sprintf(tid, "%016llX", ProcessImpl::TitleId);
+
+        for (int i = 0; i < 16; )
+            output += tid[i++];
     }
 
     void    Process::GetName(std::string &output)
 	{
-	    for (int i = 0; i < 8; i++)
+	    for (int i = 0; i < 8; )
         {
-            char c = ProcessImpl::_processName[i];
+            char c = ProcessImpl::CodeSet.processName[i++];
             if (c)
 		        output += c;
         }
@@ -64,17 +60,17 @@ namespace CTRPluginFramework
         if (R_SUCCEEDED(AM_GetTitleInfo(MEDIATYPE_GAME_CARD, 1, &tid, &entryCard)))
             return (std::max(entryUpd.version, entryCard.version));
 
-        return (std::max(entryUpd.version, entry.version));
+        return std::max(entryUpd.version, entry.version);
     }
 
     u32     Process::GetTextSize(void)
     {
-        return (ProcessImpl::_kCodeSet.textPages * 0x1000);
+        return ProcessImpl::CodeSet.textPages * 0x1000;
     }
 
     bool    Process::IsPaused(void)
 	{
-        return (ProcessImpl::_isPaused > 0);
+        return ProcessImpl::IsPaused > 0;
 	}
 
     void    Process::Pause(void)
@@ -94,12 +90,12 @@ namespace CTRPluginFramework
 
     bool 	Process::Patch(u32 	addr, void *patch, u32 length, void *original)
 	{
-		return (ProcessImpl::PatchProcess(addr, static_cast<u8 *>(patch), length, static_cast<u8 *>(original)));
+		return ProcessImpl::PatchProcess(addr, static_cast<u8 *>(patch), length, static_cast<u8 *>(original));
 	}
 
     bool    Process::Patch(u32 addr, u32 patch, void *original)
     {
-        return (ProcessImpl::PatchProcess(addr, reinterpret_cast<u8 *>(&patch), 4, static_cast<u8 *>(original)));
+        return ProcessImpl::PatchProcess(addr, reinterpret_cast<u8 *>(&patch), 4, static_cast<u8 *>(original));
     }
 
     bool     Process::ProtectMemory(u32 addr, u32 size, int perm)
@@ -110,9 +106,11 @@ namespace CTRPluginFramework
             size  += 0x1000;
             size &= ~0xFFF;
         }
-    	if (R_FAILED(svcControlProcessMemory(ProcessImpl::_processHandle, addr, addr, size, 6, perm)))
-        	return (false);
-        return (true);
+
+    	if (R_FAILED(svcControlProcessMemory(ProcessImpl::ProcessHandle, addr, addr, size, 6, perm)))
+        	return false;
+
+        return true;
     }
 
     bool     Process::ProtectRegion(u32 addr, int perm)
@@ -120,13 +118,13 @@ namespace CTRPluginFramework
     	MemInfo 	minfo;
     	PageInfo 	pinfo;
 
-    	if (R_FAILED(svcQueryProcessMemory(&minfo, &pinfo, ProcessImpl::_processHandle, addr))) goto error;
+    	if (R_FAILED(svcQueryProcessMemory(&minfo, &pinfo, ProcessImpl::ProcessHandle, addr))) goto error;
     	if (minfo.state == MEMSTATE_FREE) goto error;
     	if (addr < minfo.base_addr || addr > minfo.base_addr + minfo.size) goto error;
 
-    	return (ProtectMemory(minfo.base_addr, minfo.size, perm));
+    	return ProtectMemory(minfo.base_addr, minfo.size, perm);
     error:
-        return (false);
+        return false;
     }
 
     void     Process::ProtectRegionInRange(u32 startAddress, u32 endAddress, int perm)
@@ -136,7 +134,7 @@ namespace CTRPluginFramework
 
         while (startAddress < endAddress)
         {
-            if (R_SUCCEEDED(svcQueryProcessMemory(&minfo, &pinfo, ProcessImpl::_processHandle, startAddress)))
+            if (R_SUCCEEDED(svcQueryProcessMemory(&minfo, &pinfo, ProcessImpl::ProcessHandle, startAddress)))
             {
                 if (minfo.state != MEMSTATE_FREE)
                 {
@@ -161,16 +159,16 @@ namespace CTRPluginFramework
         if (!CheckAddress((u32)dst + size)) goto error;
         if (!CheckAddress((u32)src + size)) goto error;
 
-        svcFlushProcessDataCache(ProcessImpl::_processHandle, src, size);
-        svcInvalidateProcessDataCache(ProcessImpl::_processHandle, dst, size);
+        svcFlushProcessDataCache(ProcessImpl::ProcessHandle, src, size);
+        svcInvalidateProcessDataCache(ProcessImpl::ProcessHandle, dst, size);
 
         std::memcpy(dst, src, size);
 
-        svcFlushProcessDataCache(ProcessImpl::_processHandle, dst, size);
+        svcFlushProcessDataCache(ProcessImpl::ProcessHandle, dst, size);
 
-        return (true);
+        return true;
     error:
-        return (false);
+        return false;
     }
 
     bool    Process::CheckAddress(u32 address, u32 perm)
@@ -185,7 +183,7 @@ namespace CTRPluginFramework
             if ((mInfo.perm & perm) != perm)
             {
                 perm |= mInfo.perm;
-                res = svcControlProcessMemory(ProcessImpl::_processHandle, mInfo.base_addr, mInfo.base_addr, mInfo.size, 6, perm);
+                res = svcControlProcessMemory(ProcessImpl::ProcessHandle, mInfo.base_addr, mInfo.base_addr, mInfo.size, 6, perm);
                 if (R_SUCCEEDED(res))
                     return (true);
                 return (false);
@@ -209,7 +207,7 @@ namespace CTRPluginFramework
             if ((mInfo.perm & perm) != perm)
             {
                 perm |= mInfo.perm;
-                res = svcControlProcessMemory(ProcessImpl::_processHandle, mInfo.base_addr, mInfo.base_addr, mInfo.size, 6, perm);
+                res = svcControlProcessMemory(ProcessImpl::ProcessHandle, mInfo.base_addr, mInfo.base_addr, mInfo.size, 6, perm);
                 if (R_SUCCEEDED(res))
                     return (true);
                 return (false);

@@ -219,7 +219,7 @@ namespace CTRPluginFramework
                 _regions.erase(_regions.begin() + i);
             }
         }
-        
+
         return (false);
     }
 
@@ -302,7 +302,7 @@ namespace CTRPluginFramework
             _totalSize += regionSize;
 
             // Flush region
-            svcFlushProcessDataCache(ProcessImpl::_processHandle, (void *)region.startAddress, regionSize);
+            svcFlushProcessDataCache(ProcessImpl::ProcessHandle, (void *)region.startAddress, regionSize);
         }
 
         // Buffer to file

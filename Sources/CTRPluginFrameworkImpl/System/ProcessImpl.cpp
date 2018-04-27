@@ -13,23 +13,14 @@ extern 		Handle gspThreadEventHandle;
 
 namespace CTRPluginFramework
 {
-	u32         ProcessImpl::_processID = 0;
-	u64         ProcessImpl::_titleID = 0;
-	char        ProcessImpl::_processName[8] = {0};
-	u32         ProcessImpl::_kProcess = 0;
-	u32         ProcessImpl::_kProcessState = 0;
-    u32         ProcessImpl::mmuTable = 0;
-    u32         ProcessImpl::mmuTableSize = 0;
-	KCodeSet    ProcessImpl::_kCodeSet = {0};
-	Handle      ProcessImpl::_processHandle = 0;
-	Handle      ProcessImpl::_mainThreadHandle = 0;
-    Handle      ProcessImpl::FrameEvent = 0;
-    RecursiveLock   ProcessImpl::FrameLock;
-	u32         ProcessImpl::_isPaused = 0;
-	bool        ProcessImpl::_isAcquiring = false;
+	Handle      ProcessImpl::ProcessHandle = 0;
+	u32         ProcessImpl::IsPaused = 0;
+    u32         ProcessImpl::ProcessId = 0;
+    u64         ProcessImpl::TitleId = 0;
 
-    // pluginInit.cpp
-    extern      Handle      g_keepEvent;
+    KThread *   ProcessImpl::MainThread;
+    KProcess *  ProcessImpl::KProcessPtr;
+    KCodeSet    ProcessImpl::CodeSet;
 
 	void    ProcessImpl::Initialize(void)
 	{
@@ -37,22 +28,21 @@ namespace CTRPluginFramework
 		bool 	isNew3DS = System::IsNew3DS();
 
 		// Get current KProcess
-		_kProcess = (u32)arm11kGetCurrentKProcess();
+		KProcessPtr = reinterpret_cast<KProcess *>(arm11kGetCurrentKProcess());
 
 		// Copy KProcess data
-		arm11kMemcpy((u32)&kproc, _kProcess, 0x100);
+		arm11kMemcpy(kproc, KProcessPtr, 0x100);
+
 		if (isNew3DS)
 		{
 			// Copy KCodeSet
-			arm11kMemcpy((u32)&_kCodeSet, *(u32 *)(kproc + 0xB8), sizeof(KCodeSet));
+			arm11kMemcpy(&CodeSet, (void *)*(u32 *)(kproc + 0xB8), sizeof(KCodeSet));
 
 			// Copy process id
-			_processID = *(u32 *)(kproc + 0xBC);
-			_kProcessState = _kProcess + 0x88;
+			ProcessId = *(u32 *)(kproc + 0xBC);
 
-            // Get mmutable
-            mmuTableSize = *(u32 *)(kproc + 0x1C + 0x44);
-            mmuTable = *(u32 *)(kproc + 0x1C + 0x48);
+            // Get main thread
+            MainThread = (KThread *)*(u32 *)(kproc + 0xC8);
 
             // Patch KProcess to allow creating threads on Core2
             arm11kAllowCore2();
@@ -60,59 +50,35 @@ namespace CTRPluginFramework
 		else
 		{
 			// Copy KCodeSet
-			arm11kMemcpy((u32)&_kCodeSet, *(u32 *)(kproc + 0xB0), sizeof(KCodeSet));
+			arm11kMemcpy(&CodeSet, (void *)*(u32 *)(kproc + 0xB0), sizeof(KCodeSet));
 
 			// Copy process id
-			_processID = *(u32 *)(kproc + 0xB4);
-			_kProcessState = _kProcess + 0x80;
+			ProcessId = *(u32 *)(kproc + 0xB4);
 
-            // Get mmutable
-            mmuTableSize = *(u32 *)(kproc + 0x1C + 0x3C);
-            mmuTable = *(u32 *)(kproc + 0x1C + 0x40);
+            // Get main thread
+            MainThread = (KThread *)*(u32 *)(kproc + 0xC0);
 		}
 
-		// Copy process name
-		for (int i = 0; i < 8; i++)
-				_processName[i] = _kCodeSet.processName[i];
-
 		// Copy title id
-		_titleID = _kCodeSet.titleId;
+		TitleId = CodeSet.titleId;
 		// Create handle for this process
-		svcOpenProcess(&_processHandle, _processID);
-	}
-
-    void    ProcessImpl::UpdateThreadHandle(void)
-    {
-        _mainThreadHandle = threadGetCurrent()->handle;
-        RecursiveLock_Init(&FrameLock);
-        svcCreateEvent(&FrameEvent, RESET_ONESHOT);
-        while (R_FAILED(svcSetThreadPriority(_mainThreadHandle, Preferences::Settings.ThreadPriority)));
-    }
-
-	bool 	ProcessImpl::IsPaused(void)
-	{
-		return (_isPaused > 0);
-	}
-
-	bool 	ProcessImpl::IsAcquiring(void)
-	{
-		return (_isAcquiring);
+		svcOpenProcess(&ProcessHandle, ProcessId);
 	}
 
     extern "C" Handle gspThreadEventHandle;;
     extern "C" Handle gspEvent;
     extern "C" bool   IsPaused(void)
     {
-        return (ProcessImpl::IsPaused());
+        return (ProcessImpl::IsPaused > 0);
     }
 
 	void 	ProcessImpl::Pause(bool useFading)
 	{
         // Increase pause counter
-        ++_isPaused;
+        ++IsPaused;
 
         // If game is already paused, nothing to do
-        if (_isPaused > 1)
+        if (IsPaused > 1)
             return;
 
         // Wake up gsp event thread
@@ -159,7 +125,7 @@ namespace CTRPluginFramework
 	void 	ProcessImpl::Play(bool useFading)
 	{
         // If game isn't paused, abort
-        if (!_isPaused)
+        if (!IsPaused)
             return;
 
 		/*if (useFading)
@@ -185,11 +151,11 @@ namespace CTRPluginFramework
 		} */
 
         // Decrease pause counter
-        if (_isPaused)
-            --_isPaused;
+        if (IsPaused)
+            --IsPaused;
 
         // Resume frame
-        if (!_isPaused)
+        if (!IsPaused)
             OSDImpl::ResumeFrame();
 	}
 
@@ -214,12 +180,11 @@ namespace CTRPluginFramework
         bool 	isNew3DS = System::IsNew3DS();
 
         // Copy KProcessHandleTable
-        arm11kMemcpy((u32)&table, _kProcess + (isNew3DS ? 0xDC : 0xD4), sizeof(KProcessHandleTable));
+        arm11kMemcpy(&table, (void *)((u32)KProcessPtr + (isNew3DS ? 0xDC : 0xD4)), sizeof(KProcessHandleTable));
 
         u32 count = table.handlesCount;
-        u32 start = (u32)table.handleTable;
 
         handleDescriptors.resize(count);
-        arm11kMemcpy((u32)handleDescriptors.data(), start, count * sizeof(HandleDescriptor));
+        arm11kMemcpy(handleDescriptors.data(), table.handleTable, count * sizeof(HandleDescriptor));
     }
 }

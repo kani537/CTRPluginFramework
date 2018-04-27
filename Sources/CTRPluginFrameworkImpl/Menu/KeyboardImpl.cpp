@@ -253,7 +253,7 @@ namespace CTRPluginFramework
         _askForExit = false;
 
         // Check if Process is paused
-        if (!ProcessImpl::IsPaused())
+        if (!ProcessImpl::IsPaused)
         {
             _mustRelease  = true;
             ProcessImpl::Pause(false);
