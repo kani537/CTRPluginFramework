@@ -75,8 +75,8 @@ namespace CTRPluginFramework
 
     void    ScreenImpl::Initialize(void)
     {
-        ScreenImpl::Top = new (_topBuf) ScreenImpl(SystemImpl::GetIOBasePDC() + 0x400, SystemImpl::GetIOBaseLCD() + 0x204, true);
-        ScreenImpl::Bottom = new (_botBuf) ScreenImpl(SystemImpl::GetIOBasePDC() + 0x500, SystemImpl::GetIOBaseLCD() + 0xA04);
+        ScreenImpl::Top = new (_topBuf) ScreenImpl(SystemImpl::IoBasePDC + 0x400, SystemImpl::IoBaseLCD + 0x204, true);
+        ScreenImpl::Bottom = new (_botBuf) ScreenImpl(SystemImpl::IoBasePDC + 0x500, SystemImpl::IoBaseLCD + 0xA04);
     }
 
     void    ScreenImpl::Fade(float fade, bool copy)

@@ -2,27 +2,20 @@
 #define CTRPLUGINFRAMEWORKIMPL_SYSTEMIMPL_HPP
 
 namespace CTRPluginFramework
-{    
+{
     class SystemImpl
     {
     public:
-        static void    Initialize(void);
+        static void     Initialize(void);
 
-        static u32     GetIOBaseLCD(void);
-        static u32     GetIOBasePAD(void);
-        static u32     GetIOBasePDC(void);
-
-        static u32     RosalinaHotkey;
-        static u32     CFWVersion;
-        static bool    IsLoaderNTR;
-    private:
-        friend class System;
-        static bool     _isInit;
-        static bool     _isNew3DS;
-        static u32      _IOBaseLCD;
-        static u32      _IOBasePAD;
-        static u32      _IOBasePDC;
-        static u8       _language;
+        static bool     IsNew3DS;
+        static bool     IsLoaderNTR;
+        static u32      IoBaseLCD;
+        static u32      IoBasePAD;
+        static u32      IoBasePDC;
+        static u32      CFWVersion;
+        static u32      RosalinaHotkey;
+        static u8       Language;
     };
 }
 

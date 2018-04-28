@@ -9,12 +9,12 @@ namespace CTRPluginFramework
 
     bool    System::IsNew3DS(void)
     {
-        return (SystemImpl::_isNew3DS);
+        return (SystemImpl::IsNew3DS);
     }
 
     LanguageId  System::GetSystemLanguage(void)
     {
-        return (static_cast<LanguageId>(SystemImpl::_language));
+        return (static_cast<LanguageId>(SystemImpl::Language));
     }
 
     bool    System::IsConnectedToInternet(void)
