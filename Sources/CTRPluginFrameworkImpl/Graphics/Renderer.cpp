@@ -9,7 +9,7 @@
 #include <cstdio>
 #include <cmath>
 
-#define FPS 1
+#define FPS 0
 
 namespace CTRPluginFramework
 {

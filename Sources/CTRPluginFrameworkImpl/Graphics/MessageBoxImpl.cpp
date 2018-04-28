@@ -94,8 +94,14 @@ namespace CTRPluginFramework
         EventManager        manager;
 
         // Wait until keys are released
-        while (Controller::GetKeysDown())
+        do
+        {
             Controller::Update();
+        }
+        while (Controller::GetKeysDown());
+
+        // Eat key released events
+        Controller::Update();
 
         // While user didn't close the MessageBox
         while (!_exit)
@@ -115,6 +121,16 @@ namespace CTRPluginFramework
             Renderer::SetTarget(BOTTOM);
             Renderer::EndFrame();
         }
+
+        // Wait until keys are released
+        do
+        {
+            Controller::Update();
+        }
+        while (Controller::GetKeysDown());
+
+        // Eat key released events
+        Controller::Update();
 
         // Release game if we paused it in this function
         PluginMenu *menu = PluginMenu::GetRunningInstance();
