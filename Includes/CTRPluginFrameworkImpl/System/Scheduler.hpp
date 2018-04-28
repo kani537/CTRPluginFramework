@@ -54,6 +54,8 @@ namespace CTRPluginFramework
          */
         static int      Schedule(const Task &task);
 
+        static void     Lock(void);
+        static void     Unlock(void);
     private:
         Scheduler(void);
 
@@ -63,7 +65,7 @@ namespace CTRPluginFramework
 
         static Scheduler _singleton;
 
-        static TaskContext * _PollTask(void);
+        static TaskContext * _PollTask(u32 coreId);
     };
 }
 

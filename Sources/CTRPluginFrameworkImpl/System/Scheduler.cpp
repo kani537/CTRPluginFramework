@@ -3,6 +3,7 @@
 #include "CTRPluginFramework/System/Lock.hpp"
 #include "CTRPluginFramework/Graphics/OSD.hpp"
 #include "CTRPluginFramework/Utils/Utils.hpp"
+#include "CTRPluginFrameworkImpl/System/SystemImpl.hpp"
 
 namespace CTRPluginFramework
 {
@@ -40,7 +41,7 @@ namespace CTRPluginFramework
         while (core.flags != Scheduler::Core::Exit)
         {
             // Fetch a task from the queue
-            core.ctx = Scheduler::_PollTask();
+            core.ctx = Scheduler::_PollTask(core.id);
 
             if (core.ctx == nullptr)
             {
@@ -82,16 +83,24 @@ namespace CTRPluginFramework
 
     int     Scheduler::Schedule(const Task &task)
     {
-        Lock    lock(_singleton._mutex);
+        CTRPluginFramework::Lock    lock(_singleton._mutex);
         Core    *cores = _singleton._cores;
 
         if (task.context == nullptr)
             return -1;
 
-        if (_singleton._tasks.empty())
+        TaskContext *ctx = task.context;
+
+        if (SystemImpl::IsNew3DS && ctx->affinity > 3)
+            ctx->affinity = -1;
+
+        if (!SystemImpl::IsNew3DS && ctx->affinity > 1)
+            ctx->affinity = -1;
+
+        if (_singleton._tasks.empty() && ctx->affinity == -1)
         {
             // Priority to N3DS extra cores
-            for (u32 i = 2; i < 4; ++i)
+            for (s32 i = 3; i >= 0; --i)
             {
                 if (cores[i].flags == Core::Idle)
                 {
@@ -99,15 +108,16 @@ namespace CTRPluginFramework
                     return 0;
                 }
             }
-            if (cores[1].flags == Core::Idle)
-            {
-                cores[1].Assign(task);
-                return 0;
-            }
         }
 
-        TaskContext *ctx = task.context;
+        // Check if the task has a preferred core
+        if (ctx->affinity != -1 && cores[ctx->affinity].flags == Core::Idle)
+        {
+            cores[ctx->affinity].Assign(task);
+            return 0;
+        }
 
+        // Otherwise, enqueue the task
         AtomicIncrement(&ctx->refcount);
         ctx->flags = Task::Scheduled;
         _singleton._tasks.push(ctx);
@@ -115,12 +125,22 @@ namespace CTRPluginFramework
         return 0;
     }
 
+    void    Scheduler::Lock(void)
+    {
+        _singleton._mutex.Lock();
+    }
+
+    void    Scheduler::Unlock(void)
+    {
+        _singleton._mutex.Unlock();
+    }
+
     Scheduler::Scheduler(void)
     {
-        // Create handler on Core0 ??
-        //_cores[0].stack = static_cast<u8 *>(::operator new(0x1000));
-        //_cores[0].thread = threadCreate(CoreHandler, &_cores[0], 0x1000, 0x18, 0, false);
-        _cores[0].flags = Core::Exit;
+        // Create handler on Core0
+        _cores[0].id = 0;
+        _cores[0].stack = static_cast<u8 *>(::operator new(0x1000));
+        _cores[0].thread = threadCreate(Scheduler__CoreHandler, &_cores[0], _cores[0].stack, 0x1000, 0x18, 0);
 
         // Create handler on Core1
         _cores[1].id = 1;
@@ -146,7 +166,7 @@ namespace CTRPluginFramework
         }
     }
 
-    TaskContext *   Scheduler::_PollTask(void)
+    TaskContext *   Scheduler::_PollTask(u32 coreId)
     {
         TaskContext                 *ctx = nullptr;
         std::queue<TaskContext *>   &tasks = _singleton._tasks;
@@ -159,7 +179,12 @@ namespace CTRPluginFramework
         if (!tasks.empty())
         {
             ctx = tasks.front();
-            tasks.pop();
+
+            // TODO: rework this shit
+            if (ctx->affinity != -1 && ctx->affinity != coreId)
+                ctx = nullptr;
+            else
+                tasks.pop();
 
             // No need to decrement TaskContext::refcount, the core takes it
         }

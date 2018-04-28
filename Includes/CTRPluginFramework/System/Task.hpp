@@ -12,6 +12,7 @@ namespace CTRPluginFramework
     {
         int         refcount{0};
         u32         flags{0};
+        s32         affinity{-1};
         s32         result{0};
         void *      arg{nullptr};
         TaskFunc    func{nullptr};
@@ -30,7 +31,7 @@ namespace CTRPluginFramework
 
         TaskContext     *context;
 
-        explicit Task(TaskFunc func, void *arg = nullptr);
+        explicit Task(TaskFunc func, void *arg = nullptr, s32 affinity = -1);
         Task(const Task &task);
         Task(Task &&task) noexcept;
         ~Task(void);

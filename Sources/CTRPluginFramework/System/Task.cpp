@@ -3,11 +3,12 @@
 
 namespace CTRPluginFramework
 {
-    Task::Task(TaskFunc func, void *arg)
+    Task::Task(TaskFunc func, void *arg, s32 affinity)
     {
         context = new TaskContext();
 
         AtomicIncrement(&context->refcount);
+        context->affinity = affinity;
         context->func = func;
         context->arg = arg;
         LightEvent_Init(&context->event, RESET_STICKY);
