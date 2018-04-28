@@ -2,6 +2,7 @@
 #define CTRPLUGINFRAMEWORKIMPL_FONT_HPP
 
 #include "types.h"
+#include "CTRPluginFramework/System/Mutex.hpp"
 
 namespace CTRPluginFramework
 {
@@ -30,6 +31,7 @@ namespace CTRPluginFramework
 
         // Cache a new glyph
         static Glyph    *CacheGlyph(u32 glyphIndex);
+        static Mutex    _mutex;
     };
 }
 

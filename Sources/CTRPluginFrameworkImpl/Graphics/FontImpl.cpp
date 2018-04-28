@@ -1,11 +1,13 @@
 #include "CTRPluginFrameworkImpl/Graphics/Font.hpp"
 #include "CTRPluginFrameworkImpl/Graphics/Renderer.hpp"
+#include "CTRPluginFramework/System/Lock.hpp"
 #include "ctrulib/allocator/linear.h"
 #include "ctrulib/font.h"
 #include "ctrulib/util/utf.h"
 
 #include <cstring>
 #include <cmath>
+
 
 
 namespace CTRPluginFramework
@@ -18,6 +20,7 @@ namespace CTRPluginFramework
     static u32     *defaultSysFont = nullptr;
     static u8      *glyph = nullptr;
     static u8      *tileData = nullptr;
+    Mutex  Font::_mutex;
 
     float Glyph::Width(void) const
     {
@@ -146,7 +149,7 @@ namespace CTRPluginFramework
         int start = std::round(index * w);
         int end = start + w;
         u8  *p = glyph;
-        
+
         for (int y = 0; y < 32; y++)
         {
             for (int x = start; x < end; x++)
@@ -233,6 +236,8 @@ namespace CTRPluginFramework
         // if the glyph already exists
         if (defaultSysFont[glyphIndex] != 0)
             return (reinterpret_cast<Glyph *>(defaultSysFont[glyphIndex]));
+
+        Lock    lock(_mutex);
 
         u8  *originalGlyph = GetOriginalGlyph(glyphIndex);
         // 16px * 14px = 224
