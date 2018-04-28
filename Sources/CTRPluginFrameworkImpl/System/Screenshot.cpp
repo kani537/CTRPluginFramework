@@ -8,6 +8,8 @@
 #include "CTRPluginFramework/System/Directory.hpp"
 
 #include "csvc.h"
+#include "CTRPluginFrameworkImpl/System/SystemImpl.hpp"
+#include "CTRPluginFrameworkImpl/System/ProcessImpl.hpp"
 
 namespace CTRPluginFramework
 {
@@ -26,7 +28,7 @@ namespace CTRPluginFramework
     u32         Screenshot::_filecount;
     u32         Screenshot::_display = 0;
     Clock       Screenshot::_timer;
-    Task        Screenshot::_task(Screenshot::TaskCallback);
+    Task        Screenshot::_task(Screenshot::TaskCallback, nullptr);
 
     LightEvent  Screenshot::_readyEvent;
     LightEvent  Screenshot::_resumeEvent;
@@ -75,11 +77,24 @@ namespace CTRPluginFramework
             if ((_mode & SCREENSHOT_BOTH) == 0)
             {
                 _mode |= 8;
-                LightEvent_Pulse(&_readyEvent);
+                bool isO3DS = !SystemImpl::IsNew3DS;
+
+                if (isO3DS)
+                {
+                    if (isBottom)
+                        ScreenImpl::Top->Acquire();
+                    else
+                        ScreenImpl::Bottom->Acquire();
+                }
+
+                LightEvent_Signal(&_readyEvent);
 
                 // The screenshot can be async on N3DS
-                if (!System::IsNew3DS())
+                if (isO3DS)
+                {
                     LightEvent_Wait(&_resumeEvent);
+                    LightEvent_Clear(&_resumeEvent);
+                }
             }
              ///< Don't execute OSD if we're still waiting for a screen
              return true;
@@ -120,6 +135,7 @@ namespace CTRPluginFramework
 
             // Wait for preparations to be complete
             LightEvent_Wait(&_readyEvent);
+            LightEvent_Clear(&_readyEvent);
 
             // Create the image
             image = ScreenImpl::Screenshot(Screens & SCREENSHOT_BOTH, image);
@@ -128,7 +144,7 @@ namespace CTRPluginFramework
 
             // Release the frame
             if (!System::IsNew3DS())
-                LightEvent_Pulse(&_resumeEvent);
+                LightEvent_Signal(&_resumeEvent);
 
             if (!error)
             {

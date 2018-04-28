@@ -5,6 +5,7 @@
 #include "CTRPluginFramework/System/System.hpp"
 #include "CTRPluginFramework/Utils/Utils.hpp"
 #include "ctrulib/allocator/vram.h"
+#include "CTRPluginFrameworkImpl/Preferences.hpp"
 
 
 namespace CTRPluginFramework
@@ -387,7 +388,18 @@ namespace CTRPluginFramework
 
     static inline BMPImage* CreateBMP(u32 width, u32 height)
     {
-        return new BMPImage(width, height, false);
+        BMPImage *image = new BMPImage(width, height, false);
+
+        if (image->data() == nullptr && !SystemImpl::IsNew3DS)
+        {
+            Preferences::UnloadBackgrounds();
+            delete image;
+            image = new BMPImage(width, height, false);
+            if (image->data() == nullptr)
+                OSD::Notify("An error occured when trying to allocate the BMP");
+        }
+
+        return image;
     }
 
     BMPImage *ScreenImpl::Screenshot(int screen, BMPImage *image)

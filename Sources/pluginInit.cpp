@@ -187,8 +187,10 @@ namespace CTRPluginFramework
         {
             if (settings.EcoMemoryMode || !settings.AllowSearchEngine)
                 size = 0x50000;
-            else
+            else if (System::IsLoaderNTR())
                 size = 0xC0000;
+            else
+                size = 0x120000;
         }
 
         // If heap error, exit

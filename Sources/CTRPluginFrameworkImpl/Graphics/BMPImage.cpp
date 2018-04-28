@@ -146,11 +146,16 @@ namespace CTRPluginFramework
 
     u8  *BMPImage::data(void) const
     {
+        if (_data == nullptr)
+            return nullptr;
+
         return _data + HeaderSize;
     }
 
     u8  *BMPImage::end(void) const
     {
+        if (_data == nullptr)
+            return nullptr;
         return _data + _dataSize + HeaderSize;
     }
 

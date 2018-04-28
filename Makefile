@@ -38,7 +38,7 @@ SOURCES 	:= 	Sources \
 				Sources\ctrulib\util\utf \
 				Sources\ctrulib\util\rbtree
 
-IP			:=  5
+IP			:=  30
 FTP_HOST 	:=	192.168.1.
 FTP_PORT	:=	"5000"
 FTP_PATH	:=	"0004000000033600/" #Zelda OOT
