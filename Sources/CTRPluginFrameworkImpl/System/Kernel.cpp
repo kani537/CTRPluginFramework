@@ -52,6 +52,19 @@ namespace Kernel
     {
         svcCustomBackdoor((void *)memcpy, dst, src, size);
     }
+
+    u32     GetCurrentCoreId(void)
+    {
+        u32    (*K_GetCurrentCoreId)(void) = [](void) -> u32
+        {
+            u32 coreId;
+            __asm__ __volatile__("mrc p15, 0, %0, c0, c0, 5" : "=r"(coreId));
+            return coreId & 3;
+        };
+
+        return svcCustomBackdoor((void *)K_GetCurrentCoreId);
+    }
+
 }
 
 bool    KAutoObject::IsKThread(void)

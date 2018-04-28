@@ -1,5 +1,4 @@
 #include "3DS.h"
-#include "CTRPluginFrameworkImpl/arm11kCommands.h"
 #include "CTRPluginFrameworkImpl.hpp"
 #include "CTRPluginFramework.hpp"
 #include "CTRPluginFrameworkImpl/Graphics/Font.hpp"
@@ -11,8 +10,8 @@ extern "C"
     u32     __ctru_heap_size;
     u32     g_gspEventThreadPriority;
 
-    void    loadCROHooked(void);
-    void    onLoadCro(void);
+    void    LoadCROHooked(void);
+    void    OnLoadCro(void);
     void    abort(void);
     void    initSystem();
     void    initLib();
@@ -21,11 +20,12 @@ extern "C"
 }
 
 using CTRPluginFramework::Hook;
+
 namespace CTRPluginFramework
 {
     // Threads stacks
-    static u32  threadStack[0x4000] ALIGN(8);
-    static u32  keepThreadStack[0x1000] ALIGN(8);
+    static u32  threadStack[4096] ALIGN(8);
+    static u32  keepThreadStack[1024] ALIGN(8);
 
     // Some globals
     FS_Archive  _sdmcArchive;
@@ -47,8 +47,8 @@ namespace CTRPluginFramework
     int     main(void);
 }
 
-static Hook         g_loadCroHook;
-static LightLock    onLoadCroLock;
+static Hook         g_onLoadCroHook;
+static LightLock    g_onLoadCroLock;
 
 void abort(void)
 {
@@ -78,11 +78,11 @@ static void    ExecuteLoopOnEvent(void)
     PluginMenuExecuteLoop::Unlock();
 }
 
-void     onLoadCro(void)
+void     OnLoadCro(void)
 {
-    LightLock_Lock(&onLoadCroLock);
+    LightLock_Lock(&g_onLoadCroLock);
     ExecuteLoopOnEvent();
-    LightLock_Unlock(&onLoadCroLock);
+    LightLock_Unlock(&g_onLoadCroLock);
 }
 
 namespace CTRPluginFramework
@@ -219,10 +219,10 @@ namespace CTRPluginFramework
 
             if (loadCroAddress)
             {
-                LightLock_Init(&onLoadCroLock);
-                g_loadCroHook.Initialize(loadCroAddress, (u32)loadCROHooked);
+                LightLock_Init(&g_onLoadCroLock);
+                g_onLoadCroHook.Initialize(loadCroAddress, (u32)LoadCROHooked);
                 //croReturn = loadCroAddress + 8;
-                g_loadCroHook.Enable();
+                g_onLoadCroHook.Enable();
             }
         }
 

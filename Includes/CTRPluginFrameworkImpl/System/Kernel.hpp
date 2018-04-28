@@ -229,6 +229,7 @@ struct KRecursiveLock
 namespace Kernel
 {
     void    Memcpy(void *dst, const void *src, const u32 size);
+    u32     GetCurrentCoreId(void);
 }
 
 #endif

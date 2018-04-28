@@ -13,9 +13,6 @@ namespace CTRPluginFramework
     u32     SystemImpl::RosalinaHotkey = 0;
     u8      SystemImpl::Language = CFG_LANGUAGE_EN;
 
-    extern "C" u32     g_KProcessPIDOffset;
-    extern "C" u32     g_KProcessKernelFlagsOffset;
-
     void    SystemImpl::Initialize(void)
     {
         bool isNew3DS = false;
@@ -27,16 +24,12 @@ namespace CTRPluginFramework
             IoBaseLCD = 0xFFFC4000;
             IoBasePAD = 0xFFFC2000;
             IoBasePDC = 0xFFFBC000;
-            g_KProcessPIDOffset = 0xBC;
-            g_KProcessKernelFlagsOffset = 0xB0;
         }
         else
         {
             IoBaseLCD = 0xFFFC8000;
             IoBasePAD = 0xFFFC6000;
             IoBasePDC = 0xFFFC0000;
-            g_KProcessPIDOffset = 0xB4;
-            g_KProcessKernelFlagsOffset = 0xA8;
         }
 
         s64 out = 0;

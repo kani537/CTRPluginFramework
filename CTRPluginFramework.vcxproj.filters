@@ -1154,6 +1154,9 @@
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\System\Screenshot.cpp">
       <Filter>Fichiers sources</Filter>
     </ClCompile>
+    <ClCompile Include="Sources\CTRPluginFrameworkImpl\System\Kernel.cpp">
+      <Filter>Fichiers sources</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="Sources\csvc.s" />

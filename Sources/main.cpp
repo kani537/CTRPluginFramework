@@ -29,7 +29,6 @@ typedef unsigned long __PTRDIFF_TYPE__;
 #include "CTRPluginFrameworkImpl/Graphics/BMPImage.hpp"
 #include "OSDManager.hpp"
 #include "CTRPluginFrameworkImpl/System/ProcessImpl.hpp"
-#include "CTRPluginFrameworkImpl/arm11kCommands.h"
 
 namespace CTRPluginFramework
 {
@@ -354,7 +353,7 @@ namespace CTRPluginFramework
     {
         u32     buffer[18] = {0}; // 3 * 6
 
-        arm11kMemcpy(buffer, (void *)address, sizeof(buffer));
+        Kernel::Memcpy(buffer, (void *)address, sizeof(buffer));
 
         std::string text;
 
@@ -415,7 +414,7 @@ namespace CTRPluginFramework
             {
                 for (int i = 0; i < 10; ++i)
                 {
-                    OSD::Notify(Utils::Format("Core: %d", arm11kGetCurrentCoreID()));
+                    OSD::Notify(Utils::Format("Core: %d", Kernel::GetCurrentCoreId()));
                     Sleep(Seconds(4.f));
                 }
                 return 0;

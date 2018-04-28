@@ -1,10 +1,10 @@
 #include "CTRPluginFrameworkImpl/System/HookManager.hpp"
 #include "CTRPluginFramework/System/Process.hpp"
-#include "CTRPluginFrameworkImpl/arm11kCommands.h"
 #include "ctrulib/result.h"
+#include "ctrulib/svc.h"
+#include "csvc.h"
 
 using namespace CTRPluginFramework;
-
 
 HookManager  *HookManager::instance = nullptr;
 
@@ -35,7 +35,7 @@ bool     HookManager::Init(void)
 
     // Allocate the region
     u32     dest = 0x1E80000;
-    if (R_FAILED(arm11kSvcControlMemory(&dest, dest, 0x1000, 0x203u, MEMPERM_READ | MEMPERM_WRITE)))
+    if (R_FAILED(svcControlMemoryEx(&dest, dest, dest, 0x1000, (MemOp)0x203u, (MemPerm)(MEMPERM_READ | MEMPERM_WRITE), true)))
         return false;
 
     // Fix perms

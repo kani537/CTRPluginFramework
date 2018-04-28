@@ -4,12 +4,8 @@
 #include "CTRPluginFramework/System/Vector.hpp"
 #include "CTRPluginFramework/System/Touch.hpp"
 #include "CTRPluginFramework/Utils/Utils.hpp"
-#include "CTRPluginFrameworkImpl/arm11kCommands.h"
-#include "csvc.h"
-#include "CTRPluginFramework/Graphics/OSD.hpp"
-#include "CTRPluginFrameworkImpl/System/Screen.hpp"
 #include "ctrulib/result.h"
-#include "CTRPluginFrameworkImpl/System/ProcessImpl.hpp"
+
 #include <algorithm>
 #include <cmath>
 #include <cfloat>

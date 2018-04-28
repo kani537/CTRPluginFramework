@@ -408,6 +408,7 @@
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\System\EventManager.cpp" />
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\System\Heap.cpp" />
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\System\HookManager.cpp" />
+    <ClCompile Include="Sources\CTRPluginFrameworkImpl\System\Kernel.cpp" />
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\System\ProcessImpl.cpp" />
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\System\Screen.cpp" />
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\System\Scheduler.cpp" />

@@ -2,7 +2,6 @@
 #include <stdlib.h>
 #include <malloc.h>
 #include <string.h>
-#include "CTRPluginFrameworkImpl/arm11kCommands.h"
 
 extern const u8 __tdata_lma[];
 extern const u8 __tdata_lma_end[];

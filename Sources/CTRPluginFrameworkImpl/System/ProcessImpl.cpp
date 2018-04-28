@@ -1,7 +1,6 @@
 #include "3DS.h"
 #include "CTRPluginFramework/System.hpp"
 #include "CTRPluginFrameworkImpl/System.hpp"
-#include "CTRPluginFrameworkImpl/arm11kCommands.h"
 #include "CTRPluginFrameworkImpl/Preferences.hpp"
 
 #include <cstdio>
