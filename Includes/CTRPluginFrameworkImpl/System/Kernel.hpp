@@ -215,6 +215,15 @@ struct KResourceLimit
     KPreemptionTimer    timer;
 } PACKED;
 
+struct KRecursiveLock
+{
+    KThread     *owner;
+    s32         count;
+
+    void    Lock(void);
+    void    Unlock(void);
+};
+
 
 namespace Kernel
 {
