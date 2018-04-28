@@ -138,6 +138,26 @@ u32     KProcess::PatchCategory(u32 newCategory)
     return svcCustomBackdoor((void *)K_PatchCategory, this, newCategory, SystemImpl::IsNew3DS ? 0xB0 : 0xA8);
 }
 
+// C function for thread.c
+extern "C" u32     KProcess__PatchMaxPriority(u32 newPrio)
+{
+    return ProcessImpl::KProcessPtr->PatchMaxPriority(newPrio);
+}
+
+u32     KProcess::PatchMaxPriority(u32 newPrio)
+{
+    u32     (*K_PatchMaxPriority)(KProcess *, u32, u32) = [](KProcess *process, u32 newPrio, u32 offset) -> u32
+    {
+        KResourceLimit  *resLimit = (KResourceLimit *)*(u32 *)((u32)process + offset);
+        u32  oldPrio = resLimit->maxPriority;
+
+        resLimit->maxPriority = newPrio;
+        return oldPrio;
+    };
+
+    return svcCustomBackdoor((void *)K_PatchMaxPriority, this, newPrio, SystemImpl::IsNew3DS ? 0x84 : 0x7C);
+}
+
 void    KScheduler::AdjustThread(KThread *thread, u32 oldSchedulingMask)
 {
     Kernel::KScheduler__AdjustThread(this, thread, oldSchedulingMask);

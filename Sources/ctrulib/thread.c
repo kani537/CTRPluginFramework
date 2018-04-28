@@ -40,6 +40,7 @@ static void _thread_begin(void  *arg)
 }
 
 u32     KProcess__PatchCategory(u32 newCatagory);
+u32     KProcess__PatchMaxPriority(u32 newPrio);
 Thread  threadCreate(ThreadFunc entrypoint, void *arg, void *stack_pointer, size_t stack_size, int prio, int affinity)
 {
 	size_t stackoffset 	= (sizeof(struct Thread_tag) + 7) &~ 7;
@@ -77,16 +78,23 @@ Thread  threadCreate(ThreadFunc entrypoint, void *arg, void *stack_pointer, size
 	t->reent._stderr = cur->_stderr;
 
     u32     oldAppType = -1;
+    u32     oldPrio = -1;
 	Result  rc;
 
     // If affinity is meant to be on syscore, patch the application
     if (affinity & 1)
         oldAppType = KProcess__PatchCategory(0x300);
 
+    if (prio < 0x18)
+        oldPrio = KProcess__PatchMaxPriority(0);
+
 	rc = svcCreateThread(&t->handle, (ThreadFunc)_thread_begin, (u32)t, (u32*)t->stacktop, prio, affinity);
 
     if (oldAppType != -1)
         KProcess__PatchCategory(oldAppType);
+
+    if (oldPrio != -1)
+        KProcess__PatchMaxPriority(oldPrio);
 
     if (R_FAILED(rc))
 		return NULL;

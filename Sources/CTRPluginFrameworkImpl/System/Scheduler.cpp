@@ -125,7 +125,7 @@ namespace CTRPluginFramework
         // Create handler on Core1
         _cores[1].id = 1;
         _cores[1].stack = static_cast<u8 *>(::operator new(0x1000));
-        _cores[1].thread = threadCreate(Scheduler__CoreHandler, &_cores[1], _cores[1].stack, 0x1000, 0x18, 1);
+        _cores[1].thread = threadCreate(Scheduler__CoreHandler, &_cores[1], _cores[1].stack, 0x1000, 10, 1);
 
 
         // Create handler on Core2 & Core3 (N3DS only)
@@ -138,11 +138,11 @@ namespace CTRPluginFramework
         {
             _cores[2].id = 2;
             _cores[2].stack = static_cast<u8 *>(::operator new(0x1000));
-            _cores[2].thread = threadCreate(Scheduler__CoreHandler, &_cores[2], _cores[2].stack, 0x1000, 0x18, 2);
+            _cores[2].thread = threadCreate(Scheduler__CoreHandler, &_cores[2], _cores[2].stack, 0x1000, 10, 2);
 
             _cores[3].id = 3;
             _cores[3].stack = static_cast<u8 *>(::operator new(0x1000));
-            _cores[3].thread = threadCreate(Scheduler__CoreHandler, &_cores[3], _cores[3].stack, 0x1000, 0x18, 3);
+            _cores[3].thread = threadCreate(Scheduler__CoreHandler, &_cores[3], _cores[3].stack, 0x1000, 10, 3);
         }
     }
 

@@ -384,6 +384,12 @@ namespace CTRPluginFramework
         } while (choice != -1);
     }
 
+    static u8 stack[0x1000] ALIGN(8);
+    void    f(void *arg)
+    {
+        svcExitThread();
+    }
+
     int     main(void)
     {
         PluginMenu  *m = new PluginMenu("Action Replay", 1, 2, 0);
@@ -416,6 +422,23 @@ namespace CTRPluginFramework
             });
 
             task.Start();
+        });
+
+        menu += new MenuEntry("Thread prio", nullptr, [](MenuEntry *entry)
+        {
+            Handle out;
+            Result res = svcCreateThread(&out, f, 0, (u32 *)(stack + 0x1000), 0x17, -1);
+
+            MessageBox(Utils::Format("Result: %08X", res))();
+        });
+
+        menu += new MenuEntry("Thread prio", nullptr, [](MenuEntry *entry)
+        {
+            Handle out;
+            u32 oldPrio = ProcessImpl::KProcessPtr->PatchMaxPriority(1);
+            Result res = svcCreateThread(&out, f, 0, (u32 *)(stack + 0x1000), 0x17, -1);
+            ProcessImpl::KProcessPtr->PatchMaxPriority(oldPrio);
+            MessageBox(Utils::Format("Result: %08X", res))();
         });
         // Launch menu and mainloop
         int ret = menu.Run();
