@@ -327,7 +327,7 @@ namespace CTRPluginFramework
         }
 
         // I suppose the lower the better like threads
-        file.SetPriority(0);
+        //  file.SetPriority(0);
 
         BitmapFileHeader *          bfh = (BitmapFileHeader *)_data;
         BitmapInformationHeader *   bih = (BitmapInformationHeader *)(_data + sizeof(BitmapFileHeader));

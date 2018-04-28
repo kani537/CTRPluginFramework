@@ -212,8 +212,6 @@ namespace CTRPluginFramework
                     {
                         ProcessImpl::Play(true);
                         _isOpen = false;
-                        if (Preferences::InjectBOnMenuClose)
-                            Controller::InjectKey(Key::B);
 
                         // Save settings
                         Preferences::WriteSettings();
@@ -306,8 +304,6 @@ namespace CTRPluginFramework
                     ProcessImpl::Play(true);
                     _isOpen = false;
                     shouldClose = false;
-                    if (Preferences::InjectBOnMenuClose)
-                        Controller::InjectKey(Key::B);
 
                     // Save settings
                     Preferences::WriteSettings();

@@ -126,7 +126,6 @@
     <ClInclude Include="Includes\CTRPluginFrameworkImpl\ActionReplay\ARCode.hpp" />
     <ClInclude Include="Includes\CTRPluginFrameworkImpl\ActionReplay\ARCodeEditor.hpp" />
     <ClInclude Include="Includes\CTRPluginFrameworkImpl\ActionReplay\ARHandler.hpp" />
-    <ClInclude Include="Includes\CTRPluginFrameworkImpl\arm11kCommands.h" />
     <ClInclude Include="Includes\CTRPluginFrameworkImpl\Graphics.hpp" />
     <ClInclude Include="Includes\CTRPluginFrameworkImpl\Graphics\BMPImage.hpp" />
     <ClInclude Include="Includes\CTRPluginFrameworkImpl\Graphics\Button.hpp" />
@@ -307,7 +306,6 @@
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\ActionReplay\ARCodeWrite.cpp" />
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\ActionReplay\ARHandler.cpp" />
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\ActionReplay\MenuEntryActionReplay.cpp" />
-    <ClCompile Include="Sources\CTRPluginFrameworkImpl\arm11kCommands.c" />
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\Graphics\BMPImage.cpp" />
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\Graphics\ComboBox.cpp" />
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\Graphics\FloatinButton.cpp" />

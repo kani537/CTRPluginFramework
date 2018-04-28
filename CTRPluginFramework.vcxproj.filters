@@ -168,9 +168,6 @@
     <ClInclude Include="Includes\CTRPluginFrameworkImpl\System\SystemImpl.hpp">
       <Filter>Fichiers d%27en-tête</Filter>
     </ClInclude>
-    <ClInclude Include="Includes\CTRPluginFrameworkImpl\arm11kCommands.h">
-      <Filter>Fichiers d%27en-tête</Filter>
-    </ClInclude>
     <ClInclude Include="Includes\CTRPluginFrameworkImpl\Graphics.hpp">
       <Filter>Fichiers d%27en-tête</Filter>
     </ClInclude>
@@ -759,9 +756,6 @@
       <Filter>Fichiers sources</Filter>
     </ClCompile>
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\System\SystemImpl.cpp">
-      <Filter>Fichiers sources</Filter>
-    </ClCompile>
-    <ClCompile Include="Sources\CTRPluginFrameworkImpl\arm11kCommands.c">
       <Filter>Fichiers sources</Filter>
     </ClCompile>
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\Preferences.cpp">

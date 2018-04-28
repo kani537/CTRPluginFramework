@@ -24,8 +24,8 @@ using CTRPluginFramework::Hook;
 namespace CTRPluginFramework
 {
     // Threads stacks
-    static u32  threadStack[4096] ALIGN(8);
-    static u32  keepThreadStack[1024] ALIGN(8);
+    static u8  threadStack[0x4000] ALIGN(8);
+    static u8  keepThreadStack[0x1000] ALIGN(8);
 
     // Some globals
     FS_Archive  _sdmcArchive;
@@ -409,7 +409,7 @@ namespace CTRPluginFramework
         // Create event
         svcCreateEvent(&g_continueGameEvent, RESET_ONESHOT);
         // Start ctrpf's primary thread
-        svcCreateThread(&g_keepThreadHandle, KeepThreadMain, arg, &keepThreadStack[0x1000], 0x1A, -2);
+        svcCreateThread(&g_keepThreadHandle, KeepThreadMain, arg, (u32 *)&keepThreadStack[0x1000], 0x1A, -2);
         // Wait until basic initialization has been made before returning to game
         svcWaitSynchronization(g_continueGameEvent, U64_MAX);
         // Close the event

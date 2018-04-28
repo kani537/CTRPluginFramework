@@ -64,7 +64,6 @@ namespace Kernel
 
         return svcCustomBackdoor((void *)K_GetCurrentCoreId);
     }
-
 }
 
 bool    KAutoObject::IsKThread(void)
