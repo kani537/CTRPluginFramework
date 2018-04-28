@@ -47,6 +47,11 @@ namespace CTRPluginFramework
     int     main(void);
 }
 
+namespace Kernel
+{
+    void    Initialize(void);
+}
+
 static Hook         g_onLoadCroHook;
 static LightLock    g_onLoadCroLock;
 
@@ -109,6 +114,8 @@ namespace CTRPluginFramework
         amInit();
         fsInit();
         cfguInit();
+
+        Kernel::Initialize();
 
         // Init Framework's system constants
         SystemImpl::Initialize();

@@ -18,16 +18,66 @@ using CTRPluginFramework::ProcessImpl;
 
 namespace Kernel
 {
-    static KRecursiveLock * CriticalSectionLock = (KRecursiveLock *)0xFFF2F0AC;
+    static KRecursiveLock * CriticalSectionLock; // = (KRecursiveLock *)0xFFF2F0AC;
     static KThread  **  CurrentKThread = (KThread **)0xFFFF9000;
     static KProcess **  CurrentKProcess = (KProcess **)0xFFFF9004;
     static KScheduler** CurrentScheduler  = (KScheduler **)0xFFFF900C;
 
-    static KCoreContext * CoreCtxs = (KCoreContext *)0xFFFC9000;
+    static KCoreContext * CoreCtxs; // (KCoreContext *)0xFFFC9000;
 
-    static void    (*KRecursiveLock__Lock)(KRecursiveLock *lock) = (void (*)(KRecursiveLock *))0xFFF1DC24;
-    static void    (*KRecursiveLock__Unlock)(KRecursiveLock *lock) = (void (*)(KRecursiveLock *))0xFFF1DD64;
-    static void    (*KScheduler__AdjustThread)(KScheduler *scheduler, KThread *thread, u32 oldSchedulingMask) = (void (*)(KScheduler *, KThread*, u32))0xFFF1DD38;
+    static void    (*KRecursiveLock__Lock)(KRecursiveLock *lock); // = (void (*)(KRecursiveLock *))0xFFF1DC24;
+    static void    (*KRecursiveLock__Unlock)(KRecursiveLock *lock); // = (void (*)(KRecursiveLock *))0xFFF1DD64;
+    static void    (*KScheduler__AdjustThread)(KScheduler *scheduler, KThread *thread, u32 oldSchedulingMask);// = (void (*)(KScheduler *, KThread*, u32))0xFFF1DD38;
+
+    static inline u32   decodeARMBranch(const u32 *src)
+    {
+        s32 off = (*src & 0xFFFFFF) << 2;
+        off = (off << 6) >> 6; // sign extend
+
+        return (u32)src + 8 + off;
+    }
+
+    static void    K__Initialize(void)
+    {
+        __asm__ volatile("cpsid aif");
+
+        u32 *   offset = (u32 *)0xFFF10000;
+
+        // Search for KScheduler__AdjustThread
+        for (; offset < (u32 *)0xFFF30000; ++offset)
+        {
+            if (offset[0] == 0xE5D13034 && offset[1] == 0xE1530002)
+            {
+                KScheduler__AdjustThread = (void (*)(KScheduler *, KThread*, u32))offset;
+
+                // Get KCoreContext location
+                offset = (u32 *)decodeARMBranch(offset + 7) + 3;
+                CoreCtxs = (KCoreContext *)(offset[2 + ((*offset & 0xFF) >> 2)] - 0x8000);
+                break;
+            }
+        }
+
+        //u32  pattern[3] = { 0xE92D4010, 0xE1A04000, 0xE59F0034 };
+        offset = (u32 *)0xFFF00000;
+        for (; offset < (u32 *)0xFFF30000; ++offset)
+        {
+            if (*offset == 0xE92D4010 && *(offset + 1) == 0xE1A04000 && *(offset + 2) == 0xE59F0034)
+            {
+                offset += 2;
+                CriticalSectionLock = (KRecursiveLock *)(offset[2 + (*offset & 0xFF) >> 2]);
+                ++offset;
+                KRecursiveLock__Lock = (void (*)(KRecursiveLock *))decodeARMBranch(offset);
+                offset += 11;
+                KRecursiveLock__Unlock = (void (*)(KRecursiveLock *))decodeARMBranch(offset);
+                break;
+            }
+        }
+    }
+
+    void    Initialize(void)
+    {
+        svcCustomBackdoor((void *)K__Initialize);
+    }
 
     static void     KThread__Lock(KThread *thread, bool mustLock)
     {
