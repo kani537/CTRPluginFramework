@@ -715,13 +715,7 @@ namespace CTRPluginFramework
         const Color    &textcolor = Preferences::Settings.MainTextColor;
         static IntRect  background(125, 80, 150, 70);
         static IntRect  background2(125, 80, 150, 85);
-        static Clock    timer;
-        static int      phase = 0;
-
-        std::string     waitLogo[] =
-        {
-            "\uE020", "\uE021", "\uE022", "\uE023", "\uE024", "\uE025", "\uE026", "\uE027"
-        };
+        static ProcessingLogo waitLogo;
 
         Renderer::SetTarget(TOP);
 
@@ -738,17 +732,12 @@ namespace CTRPluginFramework
 
         // Draw logo phase
         if (_inSearch)
-            Renderer::DrawSysString(waitLogo[phase].c_str(), 192, posY, 300, skyblue);
+        {
+            waitLogo.Draw(192, posY);
+            posY += 16;
+        }
         else
             Renderer::DrawSysString("Done", 173, posY, 300, skyblue);
-
-        if (timer.HasTimePassed(Seconds(0.125f)))
-        {
-            phase++;
-            timer.Restart();
-        }
-
-        if (phase > 7) phase = 0;
 
         posY += 10;
 

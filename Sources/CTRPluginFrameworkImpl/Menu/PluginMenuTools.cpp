@@ -27,7 +27,7 @@
 #define ALPHA 1
 
 #if ALPHA
-#define VersionStr "CTRPluginFramework Alpha V.0.4.5"
+#define VersionStr "CTRPluginFramework Alpha V.0.4.6"
 #else
 #define VersionStr "CTRPluginFramework Beta V.0.4.0"
 #endif
@@ -493,6 +493,13 @@ namespace CTRPluginFramework
 
     bool    PluginMenuTools::operator()(EventList &eventList, Time &delta)
     {
+        static Task top([](void *arg) -> s32
+        {
+            // Render Top
+            reinterpret_cast<PluginMenuTools *>(arg)->_RenderTop();
+            return 0;
+        }, this);
+
         if (g_mode == HEXEDITOR)
         {
             if (_hexEditor(eventList))
@@ -523,7 +530,7 @@ namespace CTRPluginFramework
         _Update(delta);
 
         // Render Top
-        _RenderTop();
+        top.Start();
 
         // Render Bottom
         _RenderBottom();
@@ -532,6 +539,7 @@ namespace CTRPluginFramework
 
         bool exit = _exit || Window::BottomWindow.MustClose();
         _exit = false;
+        top.Wait();
         return (exit);
     }
 

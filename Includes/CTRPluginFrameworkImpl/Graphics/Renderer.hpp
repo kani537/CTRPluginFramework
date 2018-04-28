@@ -10,10 +10,12 @@
 #include "CTRPluginFramework/System/Vector.hpp"
 #include "CTRPluginFramework/System/Rect.hpp"
 #include "CTRPluginFrameworkImpl/Graphics/Line.hpp"
+#include "CTRPluginFramework/System/Clock.hpp"
 
 #include <vector>
 #include "Font.hpp"
 #include "ctrulib/thread.h"
+
 
 #define GEOMETRY 0
 
@@ -110,6 +112,16 @@ namespace CTRPluginFramework
         }
 
         static RendererContext  hookContext;
+    };
+
+        // Can't find a good name...
+    struct ProcessingLogo
+    {
+        Clock   timer{};
+        u32     step{0};
+
+        void    Reset(void);
+        void    Draw(int posX, int posY);
     };
 
 #if GEOMETRY

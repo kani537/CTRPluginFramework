@@ -17,6 +17,8 @@ namespace CTRPluginFramework
     {
     }
 
+    static volatile bool g_progressLoop;
+
     bool    GatewayRAMDumper::operator()(void)
     {
         // Clear variables
@@ -37,7 +39,7 @@ namespace CTRPluginFramework
 
         if (!buffer)
         {
-            (MessageBox("Error", "An error occured (buffer alloc failed)"))();
+            (MessageBox(Color::Red << "Error", "An error occured (buffer alloc failed)"))();
             return (true);
         }
 
@@ -64,8 +66,20 @@ namespace CTRPluginFramework
         // Write header
         _WriteHeader();
 
-        // Process every region
+        Task    progressTask([](void *arg) -> s32
+        {
+            do
+            {
+                reinterpret_cast<GatewayRAMDumper *>(arg)->_DrawProgress();
+            } while (g_progressLoop);
 
+            return 0;
+        }, this);
+
+        g_progressLoop = true;
+
+        progressTask.Start();
+        // Process every region
         for (Region &region : _regions)
         {
             // Set variables
@@ -101,18 +115,23 @@ namespace CTRPluginFramework
                 // Write pool to file
                 _file.Write(_pool, size);
 
-                // Update UI
-                _DrawProgress();
-
                 // Check abort key (B)
                 Controller::Update();
                 if (Controller::IsKeyPressed(B))
+                {
+                    g_progressLoop = false;
+                    progressTask.Wait();
                     goto abort;
+                }
             }
         }
 
+        // Wait for task to end
+        g_progressLoop = false;
+        progressTask.Wait();
+
         // A little message
-        MessageBox("Info\n\nDump finished !")();
+        MessageBox(Color::LimeGreen << "Info", "Dump finished !")();
 
         _file.Flush();
         _file.Close();
@@ -309,16 +328,23 @@ namespace CTRPluginFramework
         _file.Write(p_buffer, (u32)buffer - (u32)p_buffer);
     }
 
+
+
     void    GatewayRAMDumper::_DrawProgress()
     {
         const Color     &gainsboro = Color::Gainsboro;
         const Color     &limegreen = Color::LimeGreen;
+
+        static ProcessingLogo   logo;
 
         Renderer::SetTarget(TOP);
 
         Window::TopWindow.Draw("Gateway RAM Dumper");
 
         int posY = 116;
+
+        // Draw logo
+        logo.Draw(192, posY - 16);
 
         // Progressbar
         // Draw border

@@ -59,6 +59,7 @@ namespace CTRPluginFramework
         }
 
 #if FPS
+        SetTarget(BOTTOM);
         // Draw fps counter
         char buffer[20] = {0};
 
@@ -156,6 +157,30 @@ namespace CTRPluginFramework
                 fading -= 0.01f;
                 j = 0;
             }
+        }
+    }
+
+    void    ProcessingLogo::Reset(void)
+    {
+        step = 0;
+        timer.Restart();
+    }
+
+    void    ProcessingLogo::Draw(int posX, int posY)
+    {
+        const char * waitLogo[] =
+        {
+            "\uE020", "\uE021", "\uE022", "\uE023", "\uE024", "\uE025", "\uE026", "\uE027"
+        };
+
+        Renderer::DrawSysString(waitLogo[step], posX, posY, 300, Color::SkyBlue);
+
+        if (timer.HasTimePassed(Seconds(0.125f)))
+        {
+            ++step;
+            timer.Restart();
+            if (step >= 8)
+                step = 0;
         }
     }
 }

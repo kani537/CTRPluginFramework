@@ -31,7 +31,7 @@ static void gspEventThreadMain(u32 arg);
 
 Handle gspThreadEventHandle;
 u32     g_gspEventThreadPriority;
-static char gspThreadEventStack[GSP_EVENT_STACK_SIZE] ALIGN(8) = {0};
+static char gspThreadEventStack[GSP_EVENT_STACK_SIZE] ALIGN(8);
 Thread gspEventThread;
 
 Handle __sync_get_arbiter(void);
