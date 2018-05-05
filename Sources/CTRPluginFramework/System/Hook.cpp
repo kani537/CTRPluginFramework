@@ -112,9 +112,9 @@ HookResult    Hook::Enable(void)
     if (flags.useLinkRegisterToReturn)
     {
         /*  Backup LR
-        str     lr, [pc, #36]
+        str     lr, [pc, #32]
         */
-        wrapper->backupAndUpdateLR = 0xE58FE024;
+        wrapper->backupAndUpdateLR = 0xE58FE020;
 
         /* Set LR
         mov     lr, pc
