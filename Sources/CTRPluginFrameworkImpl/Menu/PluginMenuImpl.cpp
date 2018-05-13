@@ -313,7 +313,7 @@ namespace CTRPluginFramework
             }
             else
             {
-                if (SyncOnFrame && !OSDImpl::IsFramePaused)
+                if (SyncOnFrame && !ProcessImpl::IsPaused)
                     LightEvent_Wait(&OSDImpl::OnNewFrameEvent);
 
                 // Execute activated cheats
