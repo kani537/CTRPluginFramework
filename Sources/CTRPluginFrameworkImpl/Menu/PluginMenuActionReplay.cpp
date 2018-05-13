@@ -378,7 +378,7 @@ namespace CTRPluginFramework
 
         std::string newPath;
 
-        if (Utils::SDExplorer(newPath, ".txt") == -1)
+        if (Utils::FilePicker(newPath, ".txt") == -1)
             return;
 
         // Set path

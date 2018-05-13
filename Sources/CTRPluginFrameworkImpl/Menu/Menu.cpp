@@ -116,22 +116,6 @@ namespace CTRPluginFramework
 
     void    Menu::Draw(void) const
     {
-        Task bottom([](void *arg) -> s32
-        {
-            Menu *menu = reinterpret_cast<Menu *>(arg);
-
-            Renderer::SetTarget(BOTTOM);
-            Window::BottomWindow.Draw();
-
-            if (!menu->_folder->GetNote().empty())
-            {
-                int posY = 40;
-                Renderer::DrawSysStringReturn((u8 *)menu->_folder->GetNote().c_str(), 35, posY, 295, Preferences::Settings.MainTextColor, 190);
-            }
-
-            return 0;
-        }, (void *)this);
-
         const Color &title = Preferences::Settings.WindowTitleColor;
         const Color &text = Preferences::Settings.MainTextColor;
         const Color &selected = Preferences::Settings.MenuSelectedItemColor;
@@ -152,8 +136,6 @@ namespace CTRPluginFramework
         int max = _folder->ItemsCount();
         if (max == 0) return;
 
-        if (drawFooter)
-            bottom.Start();
 
         int i = std::max(0, (int)(_selector - 6));
 
@@ -246,7 +228,16 @@ namespace CTRPluginFramework
         }
 
         if (drawFooter)
-            bottom.Wait();
+        {
+            Renderer::SetTarget(BOTTOM);
+            Window::BottomWindow.Draw();
+
+            if (!_folder->GetNote().empty())
+            {
+                int posY = 40;
+                Renderer::DrawSysStringReturn((u8 *)_folder->GetNote().c_str(), 35, posY, 295, Preferences::Settings.MainTextColor, 190);
+            }
+        }
     }
 
     // Return a MenuEvent value

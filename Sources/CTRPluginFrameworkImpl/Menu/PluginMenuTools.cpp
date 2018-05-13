@@ -27,7 +27,7 @@
 #define ALPHA 1
 
 #if ALPHA
-#define VersionStr "CTRPluginFramework Alpha V.0.4.7"
+#define VersionStr "CTRPluginFramework Alpha V.0.4.8"
 #else
 #define VersionStr "CTRPluginFramework Beta V.0.4.0"
 #endif
@@ -344,7 +344,7 @@ namespace CTRPluginFramework
     }
 
     std::string     KeysToString(u32 keys);
-    bool    stou32(std::string &input, u32 &res);
+    bool            stou32(std::string &input, u32 &res);
     static void     ScreenshotMenuCallback(void)
     {
         Keyboard    kb(Color::LimeGreen << "Screenshot settings\x18\n\nWhat do you want to change ?", { "Screens", "Hotkeys", "Timer", "Name", "Directory" });
@@ -412,14 +412,14 @@ namespace CTRPluginFramework
 
             case 4: ///< Directory
             {
-               /* Keyboard dirKb(Color::LimeGreen << "Screenshot directory\x1B\n\nIn which directory would you like to save the screenshots ?");
                 std::string out;
 
-                if (dirKb.Open(out, Preferences::ScreenshotPrefix) != -1)
-                {
+                if (Utils::DirectoryPicker(out) == -1)
+                    break;
 
-                    Preferences::ScreenshotPrefix = out;
-                }*/
+                Screenshot::Path = std::move(out);
+                if (Screenshot::Path[Screenshot::Path.size() - 1] != '/')
+                    Screenshot::Path += '/';
                 break;
             }
 
@@ -493,13 +493,6 @@ namespace CTRPluginFramework
 
     bool    PluginMenuTools::operator()(EventList &eventList, Time &delta)
     {
-        static Task top([](void *arg) -> s32
-        {
-            // Render Top
-            reinterpret_cast<PluginMenuTools *>(arg)->_RenderTop();
-            return 0;
-        }, this);
-
         if (g_mode == HEXEDITOR)
         {
             if (_hexEditor(eventList))
@@ -530,16 +523,14 @@ namespace CTRPluginFramework
         _Update(delta);
 
         // Render Top
-        top.Start();
+        _RenderTop();
 
         // Render Bottom
         _RenderBottom();
 
         // Check buttons
-
         bool exit = _exit || Window::BottomWindow.MustClose();
         _exit = false;
-        top.Wait();
         return (exit);
     }
 
@@ -565,7 +556,7 @@ namespace CTRPluginFramework
         }
 
         MenuItem    *item = nullptr;
-        static int  selector;
+        static int  selector = -1;
 
         int ret = _menu.ProcessEvent(event, &item);
 

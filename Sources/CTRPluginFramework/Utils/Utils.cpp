@@ -110,7 +110,7 @@ namespace CTRPluginFramework
         return (size);
     }
 
-    static void     ListFolders(MenuFolderImpl &folder, const std::string &filter)
+    static void     ListFolders(MenuFolderImpl &folder, const std::string &filter, bool listFiles)
     {
         std::string     path = folder.note;
         Directory       dir;
@@ -127,6 +127,7 @@ namespace CTRPluginFramework
 
         if (path.size() > 1 && path[path.size() - 1] != '/')
             path.append("/");
+
         if (dir.ListDirectories(list) > 0)
         {
             for (std::string &name : list)
@@ -134,6 +135,9 @@ namespace CTRPluginFramework
                 folder.Append(new MenuFolderImpl(name, path + name));
             }
         }
+
+        if (!listFiles)
+            return;
 
         list.clear();
 
@@ -153,14 +157,22 @@ namespace CTRPluginFramework
         return kb.Open(out, out) != -1;
     }
 
-    int Utils::SDExplorer(std::string &out, const std::string &filter)
+    static int     SDExplorerInternal(std::string &out, const std::string &filter, bool selDirectory)
     {
-        const char *    footer =    FONT_A ": Open folder / Select file\n" \
-                                    FONT_B ": Close folder\n" \
+        const char *    opendir =   FONT_A ": Open folder";
+        const char *    selFile =   " / Select file\n";
+        const char *    selDir =    "\nStart : Select directory\n";
+        const char *    commands =  FONT_B ": Close folder\n" \
                                     FONT_X ": Open options";
 
         Menu            menu("/", "", Icon::DrawFile);
         MenuFolderImpl  &root = *menu.GetRootFolder();
+        std::string     footer(opendir);
+        u8  *           footer_cstr;
+
+        footer += selDirectory ? selDir : selFile;
+        footer += commands;
+        footer_cstr = (u8 *)footer.c_str();
 
         // Ensure the process is paused
         Process::Pause();
@@ -169,7 +181,7 @@ namespace CTRPluginFramework
         root.note = "/";
 
         // List root's items
-        ListFolders(root, filter);
+        ListFolders(root, filter, !selDirectory);
 
         // Open menu
         int             menuEvent;
@@ -190,6 +202,15 @@ namespace CTRPluginFramework
                     if ((menuEvent = menu.ProcessEvent(event, &item)) != Nothing)
                         break;
                 submenu.ProcessEvent(event);
+
+                // Check for start
+                if (selDirectory
+                    && event.type == Event::KeyPressed
+                    && event.key.code == Key::Start)
+                {
+                    menuEvent = EntrySelected;
+                    break;
+                }
             }
 
             // If submenu is closed
@@ -202,7 +223,7 @@ namespace CTRPluginFramework
 
                     if (!folder->ItemsCount())
                     {
-                        ListFolders(*folder, filter);
+                        ListFolders(*folder, filter, !selDirectory);
                     }
                 }
             }
@@ -230,7 +251,7 @@ namespace CTRPluginFramework
                             Directory::Create(path + name);
 
                             // Relist folder
-                            ListFolders(*folder, filter);
+                            ListFolders(*folder, filter, !selDirectory);
                         }
                     }
                     if (menuEvent == 1) // Create file
@@ -240,7 +261,7 @@ namespace CTRPluginFramework
                             File::Create(path + name);
 
                             // Relist folder
-                            ListFolders(*folder, filter);
+                            ListFolders(*folder, filter, !selDirectory);
                         }
                     }
                     if (menuEvent == 2) // Rename
@@ -259,7 +280,7 @@ namespace CTRPluginFramework
                                 Directory::Rename(path, name);
 
                             // Relist folder
-                            ListFolders(*folder, filter);
+                            ListFolders(*folder, filter, !selDirectory);
                         }
 
                     }
@@ -292,7 +313,7 @@ namespace CTRPluginFramework
                                     MessageBox(Color::LimeGreen << "Info", "Operation succeeded")();
 
                                     // Relist folder
-                                    ListFolders(*folder, filter);
+                                    ListFolders(*folder, filter, !selDirectory);
                                 }
                                 else
                                     MessageBox(Color::Red << "Error", Utils::Format("Operation failed: %08X", res))();
@@ -316,7 +337,7 @@ namespace CTRPluginFramework
 
             Window::BottomWindow.Draw();
             int posY = 55;
-            Renderer::DrawSysStringReturn((u8 *)footer, 50, posY, 300, Preferences::Settings.MainTextColor);
+            Renderer::DrawSysStringReturn(footer_cstr, 50, posY, 300, Preferences::Settings.MainTextColor);
 
             // Swap buffers
             Renderer::EndFrame();
@@ -337,6 +358,16 @@ namespace CTRPluginFramework
         // Release the process
         Process::Play();
         return 0;
+    }
+
+    int     Utils::FilePicker(std::string &out, const std::string &filter)
+    {
+        return SDExplorerInternal(out, filter, false);
+    }
+
+    int     Utils::DirectoryPicker(std::string &out)
+    {
+        return SDExplorerInternal(out, "", true);
     }
 
     u32     Utils::RemoveLastChar(std::string &str)
