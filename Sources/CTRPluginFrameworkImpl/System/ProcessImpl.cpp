@@ -2,11 +2,12 @@
 #include "CTRPluginFramework/System.hpp"
 #include "CTRPluginFrameworkImpl/System.hpp"
 #include "CTRPluginFrameworkImpl/Preferences.hpp"
+#include "CTRPluginFrameworkImpl/Graphics/OSDImpl.hpp"
 
 #include <cstdio>
 #include <cstring>
 #include "ctrulib/gpu/gpu.h"
-#include "CTRPluginFrameworkImpl/Graphics/OSDImpl.hpp"
+#include "csvc.h"
 
 extern 		Handle gspThreadEventHandle;
 
@@ -101,15 +102,18 @@ namespace CTRPluginFramework
         ScreenImpl::ApplyFading();
 	}
 
-	void 	ProcessImpl::Play(bool useFading)
+	void 	ProcessImpl::Play(bool forced)
 	{
         // If game isn't paused, abort
         if (!IsPaused)
             return;
 
         // Decrease pause counter
-        if (IsPaused)
-            --IsPaused;
+        --IsPaused;
+
+        // Force play (reset counter) if requested
+        if (forced)
+            IsPaused = 0;
 
         // Resume frame
         if (!IsPaused)
@@ -158,7 +162,7 @@ namespace CTRPluginFramework
 
         for (HandleDescriptor &handle : handles)
         {
-            if (!handle.obj->IsKThread())
+            if (!(handle.obj->GetType() == KType::KThread))
                 continue;
 
             KThread *thread = reinterpret_cast<KThread *>(handle.obj);
@@ -170,6 +174,7 @@ namespace CTRPluginFramework
 
     void    ProcessImpl::LockGameThreads(void)
     {
+        // !! NOT WORKING !!
         std::vector<KThread *>  threads;
 
         GetGameThreads(threads);
@@ -180,6 +185,7 @@ namespace CTRPluginFramework
 
     void    ProcessImpl::UnlockGameThreads(void)
     {
+        // !! NOT WORKING !!
         std::vector<KThread *>  threads;
 
         GetGameThreads(threads);

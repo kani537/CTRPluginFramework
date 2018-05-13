@@ -342,13 +342,6 @@ namespace CTRPluginFramework
         return entry;
     }
 
-    u32     criticalSectionLock = 0xFFF2F0AC;
-    u32     currentKCoreContext = 0xFFFF1000;
-    u32     currentKCoreContextObject = 0xFFFF9000;
-    KThread * volatile currentThread = (KThread *)0xFFFF9000;
-    KProcess* volatile currentProcess = (KProcess *)0xFFFF9004;
-    KScheduler* volatile currentScheduler = (KScheduler *)0xFFFF900C;
-
     void    HexMessageBox(u32 address)
     {
         u32     buffer[18] = {0}; // 3 * 6
@@ -381,6 +374,39 @@ namespace CTRPluginFramework
             if (choice == 0) (Keyboard()).Open(address, address);
             if (choice == 1) HexMessageBox(address);
         } while (choice != -1);
+    }
+
+    void    ListROThreads(std::vector<KThread *> &threads)
+    {
+        u32     pid;
+        Handle  handle;
+        KProcess *process;
+
+        svcGetProcessId(&pid, CUR_PROCESS_HANDLE);
+        svcOpenProcess(&handle, pid);
+
+        process = (KProcess *)ProcessImpl::KProcessPtr->GetObjFromHandle(handle);
+    }
+
+    void    ListThreads(MenuEntry *entry)
+    {
+        std::vector<KThread *> threads;
+
+        ProcessImpl::GetGameThreads(threads);
+
+        std::string text;
+
+        for (KThread *thread : threads)
+        {
+            KAutoObject *owner = (KAutoObject *)thread->GetOwner();
+
+            text += Utils::ToHex((u32)thread) + ": ";
+            text += " Owner: " + Utils::ToHex((u32)owner);
+            text += " tls: " + Utils::ToHex(*thread->GetTls());
+            text += /*", " + owner->GetName() +*/ "\n";
+        }
+
+        (MessageBox(text))();
     }
 
     int     main(void)
@@ -416,6 +442,22 @@ namespace CTRPluginFramework
 
             task.Start();
         });
+
+        menu += new MenuEntry("List threads", nullptr, ListThreads);
+
+        auto OSDCb = [](const Screen &screen)
+        {
+            if (screen.IsTop)
+            {
+                static Clock    clock;
+                static Time     delta = Seconds(1.f) / 30.f; ///< Force it at 30 fps
+
+                while (!clock.HasTimePassed(delta));
+
+                clock.Restart();
+            }
+            return false;
+        };
 
         // Launch menu and mainloop
         int ret = menu.Run();

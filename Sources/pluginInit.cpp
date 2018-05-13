@@ -3,6 +3,7 @@
 #include "CTRPluginFramework.hpp"
 #include "CTRPluginFrameworkImpl/Graphics/Font.hpp"
 #include "CTRPluginFrameworkImpl/System/Screenshot.hpp"
+#include "csvc.h"
 
 extern "C"
 {
@@ -115,6 +116,7 @@ namespace CTRPluginFramework
         fsInit();
         cfguInit();
 
+        // Initialize Kernel stuff
         Kernel::Initialize();
 
         // Init Framework's system constants
@@ -150,7 +152,7 @@ namespace CTRPluginFramework
         settings.EcoMemoryMode = false;
         settings.AllowActionReplay = true;
         settings.AllowSearchEngine = true;
-        settings.WaitTimeToBoot = Seconds(5.f);
+        settings.WaitTimeToBoot = Seconds(10.f);
 
         // Patch process before it starts & let the dev init some settings
         PatchProcess(settings);
@@ -203,10 +205,10 @@ namespace CTRPluginFramework
         tst = Heap::Alloc(0x100);
         Heap::Free(tst);
 
-        // Create plugin's main thread
         svcCreateEvent(&g_keepEvent, RESET_ONESHOT);
 
-        g_mainThread = threadCreate(ThreadInit, nullptr, (void *)threadStack, 0x4000, settings.ThreadPriority, -2);
+        // Create plugin's main thread
+        g_mainThread = threadCreate(ThreadInit, nullptr, (void *)threadStack, 0x4000, 0x18, 0);
 
         // Install CRO hook
         {
@@ -230,7 +232,6 @@ namespace CTRPluginFramework
             {
                 LightLock_Init(&g_onLoadCroLock);
                 g_onLoadCroHook.Initialize(loadCroAddress, (u32)LoadCROHooked);
-                //croReturn = loadCroAddress + 8;
                 g_onLoadCroHook.Enable();
             }
         }
@@ -368,6 +369,9 @@ namespace CTRPluginFramework
         // Wake up init thread
         svcSignalEvent(g_keepEvent);
 
+        // Reduce thread priority
+        svcSetThreadPriority(threadGetCurrent()->handle, FwkSettings::Get().ThreadPriority);
+
         // Start plugin
         main();
 
@@ -408,8 +412,6 @@ namespace CTRPluginFramework
         }
         else // We aborted in a very early stage, so just release the game and exit
             svcSignalEvent(g_continueGameEvent);
-
-        exit(-1);
     }
 
     extern "C"
@@ -418,7 +420,7 @@ namespace CTRPluginFramework
         // Create event
         svcCreateEvent(&g_continueGameEvent, RESET_ONESHOT);
         // Start ctrpf's primary thread
-        svcCreateThread(&g_keepThreadHandle, KeepThreadMain, arg, (u32 *)&keepThreadStack[0x1000], 0x1A, -2);
+        svcCreateThread(&g_keepThreadHandle, KeepThreadMain, arg, (u32 *)&keepThreadStack[0x1000], 0x1A, 0);
         // Wait until basic initialization has been made before returning to game
         svcWaitSynchronization(g_continueGameEvent, U64_MAX);
         // Close the event

@@ -2,11 +2,35 @@
 #define CTRPLUGINFRAMEWORKIMPL_SYSTEM_KERNEL_HPP
 
 #include "types.h"
+#include <string>
+
+enum class KType
+{
+    KAutoObject = 0,
+    KSynchronizationObject = 1,
+    KEvent = 0x1F,
+    KSemaphore = 0x2F,
+    KTimer = 0x35,
+    KDebug = 0x4D,
+    KServerPort = 0x55,
+    KDmaObject = 0x59,
+    KClientPort = 0x65,
+    KCodeSet = 0x68,
+    KSession = 0x70,
+    KThread = 0x8D,
+    KServerSession = 0x95,
+    KAddressArbiter = 0x98,
+    KClientSession = 0xA5,
+    KPort = 0xA8,
+    KSharedMemory = 0xB0,
+    KProcess = 0xC5,
+    KResourceLimit = 0xC8
+};
 
 struct KClassToken
 {
     const char  *name;
-    u8          flags;
+    u8          flags; ///< See @enum KType
 } PACKED;
 
 struct KAutoObject
@@ -23,7 +47,8 @@ struct KAutoObject
     }*      vtable;
     u32     refcount;
 
-    bool    IsKThread(void);
+    std::string     GetName(void);
+    KType           GetType(void);
 } PACKED;
 
 struct KCodeSetMemDescriptor
@@ -56,9 +81,10 @@ struct HandleDescriptor
     KAutoObject     *obj;
 } PACKED;
 
+struct KThread;
 struct KObjectMutex
 {
-    u32     kThreadPointer;
+    KThread *owner;
     s16     counter1;
     s16     counter2;
 } PACKED;
@@ -75,6 +101,7 @@ struct KProcessHandleTable
     HandleDescriptor    table[0x28];
 } PACKED;
 
+struct KProcess;
 struct KThread
 {
     u32     vtable;
@@ -107,7 +134,7 @@ struct KThread
     u8      hasBeenTerminated;
     u8      affinityMask;
     u8      padding;
-    u32     ownerKProcess;
+    KProcess* owner;
     u32     threadId;
     u32     svcRegisterStorage;
     u32     endAddress;
@@ -124,6 +151,8 @@ struct KThread
     u32  *  GetTls(void);
     bool    IsPluginThread(void);
 
+    KProcess * GetOwner(void);
+
 } PACKED;
 
 struct KProcess
@@ -136,6 +165,8 @@ struct KProcess
     void    PatchCore2Access(void);
     u32     PatchCategory(u32 newCategory);
     u32     PatchMaxPriority(u32 newPrio);
+    KAutoObject *   GetObjFromHandle(Handle handle);
+    std::string     GetName(void);
 
 } PACKED;
 

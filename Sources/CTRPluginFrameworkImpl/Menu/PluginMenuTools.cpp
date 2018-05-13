@@ -27,7 +27,7 @@
 #define ALPHA 1
 
 #if ALPHA
-#define VersionStr "CTRPluginFramework Alpha V.0.4.6"
+#define VersionStr "CTRPluginFramework Alpha V.0.4.7"
 #else
 #define VersionStr "CTRPluginFramework Beta V.0.4.0"
 #endif

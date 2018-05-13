@@ -198,24 +198,31 @@ namespace CTRPluginFramework
         // If frame have to be paused
         if (isBottom && !WaitingForScreenshot && !FramesToPlay && ProcessImpl::IsPaused)
         {
-            __dsb();
+            u32 *tls = (u32 *)getThreadLocalStorage();
+            u32 bak = *tls;
 
+            *tls = THREADVARS_MAGIC;
+
+            __dsb();
             // Lock threads
-            ProcessImpl::LockGameThreads();
+            //ProcessImpl::LockGameThreads();
 
             IsFramePaused = true;
 
             // Wake up threads waiting for frame to be paused
-            LightEvent_Pulse(&OnFramePaused);
+            LightEvent_Signal(&OnFramePaused);
 
             // Wait until the frame is ready to continue
+            LightEvent_Clear(&OnFrameResume);
             LightEvent_Wait(&OnFrameResume);
 
             // Signal that the frame continue
-            LightEvent_Pulse(&OnFrameResume);
+            LightEvent_Signal(&OnFrameResume);
+
+            *tls = bak;
 
             // Unlock threads
-            ProcessImpl::UnlockGameThreads();
+            //ProcessImpl::UnlockGameThreads();
 
             IsFramePaused = false;
             return;
@@ -360,6 +367,7 @@ namespace CTRPluginFramework
             return;
 
         LightEvent_Wait(&OnFramePaused);
+        LightEvent_Clear(&OnFramePaused);
     }
 
     void    OSDImpl::ResumeFrame(const u32 nbFrames)
@@ -379,6 +387,7 @@ namespace CTRPluginFramework
         {
             // Wait until all our frames are rendered and the process is paused again
             LightEvent_Wait(&OnFramePaused);
+            LightEvent_Clear(&OnFramePaused);
         }
     }
 

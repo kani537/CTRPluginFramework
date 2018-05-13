@@ -80,10 +80,11 @@ Thread  threadCreate(ThreadFunc entrypoint, void *arg, void *stack_pointer, size
     u32     oldPrio = -1;
 	Result  rc;
 
-    // If affinity is meant to be on syscore, patch the application
+    // If affinity is meant to be on syscore or N3DS Core3, patch the application
     if (affinity & 1)
         oldAppType = KProcess__PatchCategory(0x300);
 
+    // Patch max priority allowed if necessary
     if (prio < 0x18)
         oldPrio = KProcess__PatchMaxPriority(0);
 
