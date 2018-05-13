@@ -81,11 +81,11 @@ namespace CTRPluginFramework
         if (IsPaused > 1)
             return;
 
-        // Wait for the frame to be paused
-        OSDImpl::WaitFramePaused();
-
         // Wake up gsp event thread
         svcSignalEvent(gspEvent);
+
+        // Wait for the frame to be paused
+        OSDImpl::WaitFramePaused();
 
         // Acquire screens
         ScreenImpl::Bottom->Acquire();

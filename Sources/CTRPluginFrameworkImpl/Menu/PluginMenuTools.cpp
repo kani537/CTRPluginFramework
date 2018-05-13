@@ -565,7 +565,7 @@ namespace CTRPluginFramework
         }
 
         MenuItem    *item = nullptr;
-        static int mode = 0;
+        static int  selector;
 
         int ret = _menu.ProcessEvent(event, &item);
 
@@ -573,48 +573,26 @@ namespace CTRPluginFramework
         {
             void *arg = ((MenuEntryTools *)item)->GetArg();
 
+            selector = _menu._selector;
             if (arg == this)
-            {
-                mode = SETTINGS;
                 _menu.Open(&_settingsMenu);
-            }
             else if (arg != nullptr && *(u32 *)arg == MISCELLANEOUS)
-            {
-                mode = MISCELLANEOUS;
                 _menu.Open(&_miscellaneousMenu);
-            }
             else if (arg != nullptr &&  *(u32 *)arg == SCREENSHOT)
-            {
-                mode = SCREENSHOT;
                 _menu.Open(&_screenshotMenu);
-            }
+            else
+                selector = -1;
         }
 
         if (ret == MenuClose)
         {
-            if (mode == SETTINGS)
+            if (selector != -1)
             {
-                mode = 0;
-
-                int selector = 4;
-
-                if (!_hexEditorEntry->IsVisible()) selector--;
                 _menu.Open(&_mainMenu, selector);
-            }
-            else if (mode == MISCELLANEOUS)
-            {
-                mode = 0;
-                _menu.Open(&_mainMenu, 4);
-            }
-            else if (mode == SCREENSHOT)
-            {
-                mode = 0;
-                _menu.Open(&_mainMenu, 3);
+                selector = -1;
             }
             else
-            {
                 _exit = true;
-            }
         }
     }
 
