@@ -181,6 +181,13 @@ namespace CTRPluginFramework
         return ((OSDReturn)(OSDImpl::HookReturn))(r0, params, isBottom, arg);
     }
 
+// Thanks to Luma3DS custom mapping, we have a direct access to those
+#define REG32(x)                    *(vu32 *)(x | (1u << 31))
+#define GPU_PSC0_CNT                REG32(0x1040001C)
+#define GPU_PSC1_CNT                REG32(0x1040002C)
+#define GPU_TRANSFER_CNT            REG32(0x10400C18)
+#define GPU_CMDLIST_CNT             REG32(0x104018F0)
+
     void     OSDImpl::CallbackGlobal(u32 isBottom, void* addr, void* addrB, int stride, int format)
     {
         if (!isBottom)
@@ -198,12 +205,16 @@ namespace CTRPluginFramework
         // If frame have to be paused
         if (isBottom && !WaitingForScreenshot && !FramesToPlay && ProcessImpl::IsPaused)
         {
-            u32 *tls = (u32 *)getThreadLocalStorage();
+          /*  u32 *tls = (u32 *)getThreadLocalStorage();
             u32 bak = *tls;
 
-            *tls = THREADVARS_MAGIC;
+            *tls = THREADVARS_MAGIC; */
 
             __dsb();
+
+            // Wait for gpu to finish all stuff
+            while ((GPU_PSC0_CNT | GPU_PSC1_CNT | GPU_TRANSFER_CNT | GPU_CMDLIST_CNT) & 1);
+
             // Lock threads
             //ProcessImpl::LockGameThreads();
 
@@ -219,7 +230,7 @@ namespace CTRPluginFramework
             // Signal that the frame continue
             LightEvent_Signal(&OnFrameResume);
 
-            *tls = bak;
+            //*tls = bak;
 
             // Unlock threads
             //ProcessImpl::UnlockGameThreads();

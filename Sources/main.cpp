@@ -445,20 +445,6 @@ namespace CTRPluginFramework
 
         menu += new MenuEntry("List threads", nullptr, ListThreads);
 
-        auto OSDCb = [](const Screen &screen)
-        {
-            if (screen.IsTop)
-            {
-                static Clock    clock;
-                static Time     delta = Seconds(1.f) / 30.f; ///< Force it at 30 fps
-
-                while (!clock.HasTimePassed(delta));
-
-                clock.Restart();
-            }
-            return false;
-        };
-
         // Launch menu and mainloop
         int ret = menu.Run();
 
