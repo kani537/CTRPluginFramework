@@ -81,6 +81,7 @@ namespace CTRPluginFramework
         u32                        *_currentBufferReg; ///< Addres of this screen current buffer register
         u32                         _leftFramebuffers[2];
         u32                         _rightFramebuffers[2];
+        u32                         _paFramebuffers[2];
         u32                        *_backupFramebuffer;
         u32                         _currentBuffer;
 

@@ -9,6 +9,8 @@
 #include <cstdio>
 #include <cmath>
 
+#include "csvc.h"
+
 #define FPS 0
 
 namespace CTRPluginFramework
@@ -67,8 +69,10 @@ namespace CTRPluginFramework
         int posY = 30;
         DrawString(buffer, 200, posY, Color::Blank, Color::Black);
 #endif
-        ScreenImpl::Bottom->SwapBuffer(true, copy);
+        __dsb();
+        svcFlushEntireDataCache();
         ScreenImpl::Top->SwapBuffer(true, copy);
+        ScreenImpl::Bottom->SwapBuffer(true, copy);
 
         gspWaitForVBlank();
     }

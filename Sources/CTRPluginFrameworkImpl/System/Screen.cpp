@@ -10,7 +10,8 @@
 
 namespace CTRPluginFramework
 {
-    #define REG(x) *(vu32 *)(x)
+    #define REG(x)   *(vu32 *)(x)
+    #define REG32(x) *(vu32 *)((x) | (1u << 31))
 
     // Reserve the place for the Screen objects
     static u8  _topBuf[sizeof(ScreenImpl)];
@@ -76,8 +77,8 @@ namespace CTRPluginFramework
 
     void    ScreenImpl::Initialize(void)
     {
-        ScreenImpl::Top = new (_topBuf) ScreenImpl(SystemImpl::IoBasePDC + 0x400, SystemImpl::IoBaseLCD + 0x204, true);
-        ScreenImpl::Bottom = new (_botBuf) ScreenImpl(SystemImpl::IoBasePDC + 0x500, SystemImpl::IoBaseLCD + 0xA04);
+        ScreenImpl::Top = new (_topBuf) ScreenImpl(0x10400400 | (1u << 31), SystemImpl::IoBaseLCD + 0x204, true);
+        ScreenImpl::Bottom = new (_botBuf) ScreenImpl(0x10400500| (1u << 31), SystemImpl::IoBaseLCD + 0xA04);
     }
 
     void    ScreenImpl::Fade(float fade, bool copy)
@@ -95,8 +96,8 @@ namespace CTRPluginFramework
 
     void    ScreenImpl::Acquire(void)
     {
-        u32     leftFB1 = FromPhysicalToVirtual(REG(_LCDSetup + FramebufferA1));
-        u32     leftFB2 = FromPhysicalToVirtual(REG(_LCDSetup + FramebufferA2));
+        u32     leftFB1 = (_paFramebuffers[0] = REG(_LCDSetup + FramebufferA1)) | (1u << 31);
+        u32     leftFB2 = (_paFramebuffers[1] = REG(_LCDSetup + FramebufferA2)) | (1u << 31);
 
         _currentBuffer = *_currentBufferReg & 1u;
         // Get format
@@ -118,6 +119,9 @@ namespace CTRPluginFramework
 
         _leftFramebuffers[0] = leftFB1;
         _leftFramebuffers[1] = leftFB2;
+
+        if (leftFB1 == leftFB2)
+            Flash((Color&)Color::Cyan);
 
         if (_isTopScreen)
         {
@@ -162,7 +166,7 @@ namespace CTRPluginFramework
         _rightFramebuffers[0] = right;
 
         // Get width & height
-        u32 wh = REG(_LCDSetup + LCDSetup::WidthHeight);
+        u32 wh = REG32(_LCDSetup + LCDSetup::WidthHeight);
         _height = (u16)(wh & 0xFFFF);
         _width = (u16)(wh >> 16);
 
@@ -507,9 +511,8 @@ namespace CTRPluginFramework
 
     void    ScreenImpl::SwapBuffer(bool flush, bool copy)
     {
-        if (flush)
-            Flush();
-
+        //if (flush)
+        //    Flush();
         // Change buffer
         _currentBuffer = !_currentBuffer;
 
@@ -522,6 +525,8 @@ namespace CTRPluginFramework
         // Ensure rights framebuffers
         if (_isTopScreen)
         {
+            REG(_LCDSetup + FramebufferA1) = _paFramebuffers[0];
+            REG(_LCDSetup + FramebufferA2) = _paFramebuffers[1];
             REG(_LCDSetup + FramebufferB1) = REG(_LCDSetup + FramebufferA1);
             REG(_LCDSetup + FramebufferB2) = REG(_LCDSetup + FramebufferA2);
         }

@@ -16,12 +16,12 @@ def checkfolder(ftp):
 
 	try:
 		files = ftp.nlst()
-	except ftplib.error_perm, resp:
+	except ftplib.error_perm as resp:
 		if str(resp) != "550 No files found":
 			printf("Couldn't retrieve file list")
 		else:
 			return
-	
+
 	for f in files:
 		if (".plg" in f or "CTRPFData.bin" in f):
 			parts = f.split()
@@ -43,7 +43,7 @@ def cdTree(ftp, currentDir):
 			ftp.mkd(currentDir)
 			ftp.cwd(currentDir)
 		except:
-			print "Unexpected error:", sys.exc_info()[0]
+			print("Unexpected error:", sys.exc_info()[0])
 			raise
 
 
@@ -56,7 +56,7 @@ def sendPlugin(ftp, path, name, file):
 
 	checkfolder(ftp)
 
-	try:        
+	try:
 		printf("Sending " + name + " to ftp:" + ftp.pwd())
 		ftp.storbinary('STOR '+ name, file);
 		file.seek(0, 0)
@@ -77,7 +77,7 @@ if __name__ == '__main__':
 
 		ftp = FTP()
 		printf("Connecting to " + host + ":" + port);
-		ftp.connect(host, port);
+		ftp.connect(host, int(port));
 		printf("Connected");
 
 		printf("Opening " + filename);
@@ -92,7 +92,7 @@ if __name__ == '__main__':
 	else:
 		lumaname = filename
 	sendPlugin(ftp, lumapath, lumaname, file)
-		
+
 	file.close();
 
 	ftp.quit();

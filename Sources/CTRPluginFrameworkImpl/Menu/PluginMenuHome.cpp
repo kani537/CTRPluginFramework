@@ -161,12 +161,17 @@ namespace CTRPluginFramework
         _Update(delta);
 
         // Render top
-        top.Start();
+        //top.Start();
+        Renderer::SetTarget(TOP);
+        if (_noteTB.IsOpen())
+            _noteTB.Draw();
+        else
+            _RenderTop();
 
         // RenderBottom
         _RenderBottom();
 
-        top.Wait();
+        //top.Wait();
 
         // Execute UIControls
         _uiContainer.ExecuteAll();
