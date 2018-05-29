@@ -74,7 +74,7 @@ namespace CTRPluginFramework
             } while (g_progressLoop);
 
             return 0;
-        }, this);
+        }, this, Task::AppCores);
 
         g_progressLoop = true;
 

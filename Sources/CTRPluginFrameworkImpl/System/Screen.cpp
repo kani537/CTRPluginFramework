@@ -6,6 +6,7 @@
 #include "CTRPluginFramework/Utils/Utils.hpp"
 #include "ctrulib/allocator/vram.h"
 #include "CTRPluginFrameworkImpl/Preferences.hpp"
+#include "csvc.h"
 
 
 namespace CTRPluginFramework
@@ -513,6 +514,7 @@ namespace CTRPluginFramework
     {
         //if (flush)
         //    Flush();
+        svcFlushDataCacheRange(GetLeftFramebuffer(), GetFramebufferSize());
         // Change buffer
         _currentBuffer = !_currentBuffer;
 

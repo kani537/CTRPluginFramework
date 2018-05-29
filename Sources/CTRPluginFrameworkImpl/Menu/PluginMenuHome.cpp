@@ -137,7 +137,7 @@ namespace CTRPluginFramework
 
             return (s32)0;
 
-        }, this);
+        }, this, Task::AppCores);
 
         _mode = mode;
 
@@ -161,17 +161,17 @@ namespace CTRPluginFramework
         _Update(delta);
 
         // Render top
-        //top.Start();
-        Renderer::SetTarget(TOP);
+        top.Start();
+        /*Renderer::SetTarget(TOP);
         if (_noteTB.IsOpen())
             _noteTB.Draw();
         else
-            _RenderTop();
+            _RenderTop();*/
 
         // RenderBottom
         _RenderBottom();
 
-        //top.Wait();
+        top.Wait();
 
         // Execute UIControls
         _uiContainer.ExecuteAll();

@@ -124,7 +124,7 @@ namespace CTRPluginFramework
             static_cast<PluginMenuActionReplay *>(arg)->_topMenu.Draw();
 
             return static_cast<s32>(0);
-        }, this);
+        }, this, Task::AppCores);
 
         // Process events
         _ProcessEvent(eventList);

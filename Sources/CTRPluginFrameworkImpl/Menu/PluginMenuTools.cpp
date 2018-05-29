@@ -522,11 +522,20 @@ namespace CTRPluginFramework
         // Update
         _Update(delta);
 
+        static Task task([](void *arg) -> s32
+        {
+            ((PluginMenuTools *)arg)->_RenderTop();
+            return 0;
+        }, (void *)this, Task::AppCores);
+
         // Render Top
-        _RenderTop();
+        //_RenderTop();
+        task.Start();
 
         // Render Bottom
         _RenderBottom();
+
+        task.Wait();
 
         // Check buttons
         bool exit = _exit || Window::BottomWindow.MustClose();

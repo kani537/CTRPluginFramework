@@ -11,7 +11,7 @@
 
 #include "csvc.h"
 
-#define FPS 0
+#define FPS 1
 
 namespace CTRPluginFramework
 {
@@ -70,7 +70,7 @@ namespace CTRPluginFramework
         DrawString(buffer, 200, posY, Color::Blank, Color::Black);
 #endif
         __dsb();
-        svcFlushEntireDataCache();
+        //svcFlushEntireDataCache();
         ScreenImpl::Top->SwapBuffer(true, copy);
         ScreenImpl::Bottom->SwapBuffer(true, copy);
 
