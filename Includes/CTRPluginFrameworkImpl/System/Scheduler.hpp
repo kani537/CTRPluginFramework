@@ -5,12 +5,26 @@
 #include "CTRPluginFramework/System/Mutex.hpp"
 #include "CTRPluginFramework/System/Task.hpp"
 #include "ctrulib/thread.h"
-#include <queue>
+#include <list>
 
 namespace CTRPluginFramework
 {
     class Scheduler
     {
+        enum
+        {
+            AppCore = 1 << 0,
+            SysCore = 1 << 1,
+            NewAppCore = 1 << 2,
+            NewSysCore = 1 << 3,
+
+            AppCores = AppCore | NewAppCore,
+            SysCores = SysCore | NewSysCore,
+            OldCores = AppCore | SysCore,
+            NewCores = NewAppCore | NewSysCore,
+            AllCores = AppCores | SysCores
+        };
+
         friend void Scheduler__CoreHandler(void *arg);
         struct Core
         {
@@ -61,7 +75,7 @@ namespace CTRPluginFramework
 
         Core    _cores[4];
         Mutex   _mutex;
-        std::queue<TaskContext *>   _tasks{};
+        std::list<TaskContext *>   _tasks{};
 
         static Scheduler _singleton;
 

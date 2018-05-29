@@ -91,36 +91,29 @@ namespace CTRPluginFramework
 
         TaskContext *ctx = task.context;
 
-        if (SystemImpl::IsNew3DS && ctx->affinity > 3)
-            ctx->affinity = -1;
+        if (SystemImpl::IsNew3DS && ctx->affinity > AllCores)
+            ctx->affinity = AllCores;
 
-        if (!SystemImpl::IsNew3DS && ctx->affinity > 1)
-            ctx->affinity = -1;
+        if (!SystemImpl::IsNew3DS && ctx->affinity > OldCores)
+            ctx->affinity = AllCores;
 
-        if (_singleton._tasks.empty() && ctx->affinity == -1)
+        if (ctx->affinity == -1)
+            ctx->affinity = AllCores;
+
+        // Search for an idle core matching the Task affinity
+        for (s32 i = 3; i >= 0; --i)
         {
-            // Priority to N3DS extra cores
-            for (s32 i = 3; i >= 0; --i)
+            if (cores[i].flags == Core::Idle && cores[i].id & ctx->affinity)
             {
-                if (cores[i].flags == Core::Idle)
-                {
-                    cores[i].Assign(task);
-                    return 0;
-                }
+                cores[i].Assign(task);
+                return 0;
             }
         }
 
-        // Check if the task has a preferred core
-        if (ctx->affinity != -1 && cores[ctx->affinity].flags == Core::Idle)
-        {
-            cores[ctx->affinity].Assign(task);
-            return 0;
-        }
-
-        // Otherwise, enqueue the task
+        // Enqueue the task
         AtomicIncrement(&ctx->refcount);
         ctx->flags = Task::Scheduled;
-        _singleton._tasks.push(ctx);
+        _singleton._tasks.push_back(ctx);
 
         return 0;
     }
@@ -138,12 +131,12 @@ namespace CTRPluginFramework
     Scheduler::Scheduler(void)
     {
         // Create handler on Core0
-        _cores[0].id = 0;
+        _cores[0].id = AppCore;
         _cores[0].stack = static_cast<u8 *>(::operator new(0x1000));
-        _cores[0].thread = threadCreate(Scheduler__CoreHandler, &_cores[0], _cores[0].stack, 0x1000, 0x18, 0);
+        _cores[0].thread = threadCreate(Scheduler__CoreHandler, &_cores[0], _cores[0].stack, 0x1000, 0x20, 0);
 
         // Create handler on Core1
-        _cores[1].id = 1;
+        _cores[1].id = SysCore;
         _cores[1].stack = static_cast<u8 *>(::operator new(0x1000));
         _cores[1].thread = threadCreate(Scheduler__CoreHandler, &_cores[1], _cores[1].stack, 0x1000, 10, 1);
 
@@ -156,40 +149,37 @@ namespace CTRPluginFramework
         }
         else
         {
-            _cores[2].id = 2;
+            _cores[2].id = NewAppCore;
             _cores[2].stack = static_cast<u8 *>(::operator new(0x1000));
-            _cores[2].thread = threadCreate(Scheduler__CoreHandler, &_cores[2], _cores[2].stack, 0x1000, 10, 2);
+            _cores[2].thread = threadCreate(Scheduler__CoreHandler, &_cores[2], _cores[2].stack, 0x1000, 0x18, 2);
 
-            _cores[3].id = 3;
+            _cores[3].id = NewSysCore;
             _cores[3].stack = static_cast<u8 *>(::operator new(0x1000));
-            _cores[3].thread = threadCreate(Scheduler__CoreHandler, &_cores[3], _cores[3].stack, 0x1000, 10, 3);
+            _cores[3].thread = threadCreate(Scheduler__CoreHandler, &_cores[3], _cores[3].stack, 0x1000, 0x18, 3);
         }
     }
 
     TaskContext *   Scheduler::_PollTask(u32 coreId)
     {
-        TaskContext                 *ctx = nullptr;
-        std::queue<TaskContext *>   &tasks = _singleton._tasks;
+        std::list<TaskContext *>   &tasks = _singleton._tasks;
 
         // If the Scheduler is in use, then abort
         if (_singleton._mutex.TryLock())
-            return ctx;
+            return nullptr;
 
         // If there's tasks in the queue
-        if (!tasks.empty())
+        for (TaskContext *ctx : tasks)
         {
-            ctx = tasks.front();
-
-            // TODO: rework this shit
-            if (ctx->affinity != -1 && ctx->affinity != coreId)
-                ctx = nullptr;
-            else
-                tasks.pop();
-
-            // No need to decrement TaskContext::refcount, the core takes it
+            // If the task's affinity match this core
+            if (ctx->affinity & coreId)
+            {
+                // No need to decrement TaskContext::refcount, the core takes ownership
+                _singleton._mutex.Unlock();
+                return ctx;
+            }
         }
 
         _singleton._mutex.Unlock();
-        return ctx;
+        return nullptr;
     }
 }

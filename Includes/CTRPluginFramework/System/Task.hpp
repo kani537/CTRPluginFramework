@@ -29,6 +29,18 @@ namespace CTRPluginFramework
             Finished = 4
         };
 
+        enum
+        {
+            AppCore = 1 << 0,
+            SysCore = 1 << 1,
+            NewAppCore = 1 << 2,
+            NewSysCore = 1 << 3,
+
+            AppCores = AppCore | NewAppCore,
+            SysCores = SysCore | NewSysCore,
+            AllCores = AppCores | SysCores
+        };
+
         TaskContext     *context;
 
         explicit Task(TaskFunc func, void *arg = nullptr, s32 affinity = -1);

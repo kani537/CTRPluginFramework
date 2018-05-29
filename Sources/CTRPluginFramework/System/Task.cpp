@@ -46,7 +46,7 @@ namespace CTRPluginFramework
         if (context == nullptr)
             return -1;
 
-        if (context->flags == Task::Finished)
+        if (context->flags == Task::Finished || context->flags == Task::Idle)
             return context->result;
 
         LightEvent_Wait(&context->event);
