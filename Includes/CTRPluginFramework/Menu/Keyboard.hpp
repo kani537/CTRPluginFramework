@@ -18,8 +18,8 @@ namespace CTRPluginFramework
             InputWasCleared
         };
 
-        EventType   type;       ///< Type of the event
-        u32         codepoint;  ///< The codepoint of the character that thrown the event
+        EventType   type{};       ///< Type of the event
+        u32         codepoint{0};  ///< The codepoint of the character that thrown the event
     };
 
     class KeyboardImpl;

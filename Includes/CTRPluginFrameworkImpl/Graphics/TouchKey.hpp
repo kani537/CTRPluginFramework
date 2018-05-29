@@ -11,6 +11,10 @@ namespace CTRPluginFramework
 {
     struct KeyContent
     {
+        KeyContent(const std::string &str) :
+            text{str}, width{Renderer::GetTextSize(str.c_str())}
+        {
+        }
         std::string     text;
         float           width;
     };
@@ -20,6 +24,7 @@ namespace CTRPluginFramework
     public:
         using IconCallback = int (*)(int, int, bool);
 
+        TouchKey(TouchKey &&tk);
         // Key with char
         TouchKey(int character, IntRect ui, bool enabled = true);
         // Key with char
@@ -50,14 +55,14 @@ namespace CTRPluginFramework
 
 
     private:
-        int             _character;
-        KeyContent      *_content;
-        IconCallback    _icon;
+        int             _character{0};
+        KeyContent      *_content{nullptr};
+        IconCallback    _icon{nullptr};
         IntRect         _uiProperties;
 
-        bool            _isPressed;
-        bool            _execute;
-        bool            _enabled;
+        bool            _isPressed{false};
+        bool            _execute{false};
+        bool            _enabled{true};
     };
 }
 
