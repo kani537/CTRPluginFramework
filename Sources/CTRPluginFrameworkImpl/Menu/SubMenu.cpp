@@ -96,7 +96,7 @@ namespace CTRPluginFramework
             switch (event.key.code)
             {
             case Key::DPadUp:
-                _selector = std::max((u32)_selector - 1, (u32)0);
+                _selector = std::max((int)_selector - 1, (int)0);
                 break;
             case Key::DPadDown:
                 _selector = std::min((u32)_selector + 1, (u32)_options.size() - 1);
