@@ -225,11 +225,14 @@ namespace CTRPluginFramework
 
     int Renderer::DrawGlyph(Glyph *glyph, int posX, int posY, Color color)
     {
-        DrawGlyph(GetContext()->screen, glyph, posX, posY, color);
+        return DrawGlyph(GetContext()->screen, glyph, posX, posY, color);
     }
 
     int Renderer::DrawGlyph(ScreenImpl *screen, Glyph *glyph, int posX, int posY, Color color)
     {
+        if (!screen || !glyph)
+            return posY;
+
         posX += glyph->xOffset;
 
         u32  stride = screen->_stride;
@@ -259,6 +262,9 @@ namespace CTRPluginFramework
 
     int Renderer::DrawGlyph(ScreenImpl *screen, Glyph *glyph, int posX, int posY, float &offset, Color color)
     {
+        if (!screen || !glyph)
+            return posY;
+
         posX += glyph->xOffset;
 
         u32  stride = screen->_stride;
@@ -301,6 +307,9 @@ namespace CTRPluginFramework
         u8              *str = const_cast<u8 *>(stri);
         int             x = posX;
         ScreenImpl      *screen = GetContext()->screen;
+
+        if (!screen)
+            return posY;
 
         xLimits = std::min(xLimits, (GetContext()->target == TOP ? 400 : 320));
 
@@ -375,7 +384,7 @@ namespace CTRPluginFramework
         u8 *str = (u8 *)stri;
         ScreenImpl *screen = GetContext()->screen;
 
-        if (!(str && *str))
+        if (!(str && *str) || !screen)
             return (x);
 
         xLimits = std::min(xLimits, (GetContext()->target == TOP ? 400 : 320));

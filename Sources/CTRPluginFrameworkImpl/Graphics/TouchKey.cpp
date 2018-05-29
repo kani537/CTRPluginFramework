@@ -4,6 +4,18 @@
 
 namespace CTRPluginFramework
 {
+    TouchKey::TouchKey(TouchKey &&tk)
+    {
+        _character = tk._character;
+        _content = tk._content;
+        _icon = tk._icon;
+        _uiProperties = tk._uiProperties;
+        _enabled = tk._enabled;
+        _isPressed = tk._isPressed;
+        _execute = tk._execute;
+
+        tk._content = nullptr;
+    }
     TouchKey::TouchKey(int character, IntRect ui, bool isEnabled)
     {
         _character = character;
@@ -19,7 +31,7 @@ namespace CTRPluginFramework
     TouchKey::TouchKey(const std::string &str, IntRect ui, int value, bool isEnabled)
     {
         _character = value;
-        _content = new KeyContent{ str, Renderer::GetTextSize(str.c_str()) };
+        _content = new KeyContent(str);
         _icon = nullptr;
         _uiProperties = ui;
         _enabled = isEnabled;
@@ -42,12 +54,16 @@ namespace CTRPluginFramework
 
     TouchKey::~TouchKey()
     {
+        Clear();
     }
 
     void TouchKey::Clear(void)
     {
         if (_content != nullptr)
+        {
             delete _content;
+            _content = nullptr;
+        }
     }
 
     void    TouchKey::Enable(bool isEnabled)

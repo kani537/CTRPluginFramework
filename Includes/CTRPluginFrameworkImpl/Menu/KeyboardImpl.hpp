@@ -81,56 +81,56 @@ namespace CTRPluginFramework
 
         bool    _CheckButtons(int &ret); //<- for string button
 
-        Keyboard                *_owner;
+        Keyboard                *_owner{nullptr};
 
         std::string             _text;
         std::string             _error;
         std::string             _userInput;
 
-        bool                    _canChangeLayout;
-        bool                    _canAbort;
-        bool                    _isOpen;
-        bool                    _askForExit;
-        bool                    _errorMessage;
-        bool                    _userAbort;
-        bool                    _isHex;
-        bool                    _mustRelease;
-        bool                    _useCaps;
-        bool                    _useSymbols;
-        bool                    _useNintendo;
-        float                   _offset;
-        int                     _max;
-        u8                      _symbolsPage;
-        u8                      _nintendoPage;
-        Layout                  _layout;
+        bool                    _canChangeLayout{false};
+        bool                    _canAbort{true};
+        bool                    _isOpen{false};
+        bool                    _askForExit{false};
+        bool                    _errorMessage{false};
+        bool                    _userAbort{false};
+        bool                    _isHex{true};
+        bool                    _mustRelease{false};
+        bool                    _useCaps{false};
+        bool                    _useSymbols{false};
+        bool                    _useNintendo{false};
+        float                   _offset{0.f};
+        int                     _max{0};
+        u8                      _symbolsPage{0};
+        u8                      _nintendoPage{0};
+        Layout                  _layout{HEXADECIMAL};
         Clock                   _blinkingClock;
-        int                     _cursorPositionInString;
-        int                     _cursorPositionOnScreen;
-        bool                    _showCursor;
+        int                     _cursorPositionInString{0};
+        int                     _cursorPositionOnScreen{0};
+        bool                    _showCursor{true};
 
-        CompareCallback         _compare;
-        ConvertCallback         _convert;
-        OnInputChangeCallback   _onInputChange;
-        InputChangeEvent        _inputChangeEvent;
-        std::vector<TouchKey>    *_keys;
+        CompareCallback         _compare{nullptr};
+        ConvertCallback         _convert{nullptr};
+        OnInputChangeCallback   _onInputChange{nullptr};
+        InputChangeEvent        _inputChangeEvent{};
+        std::vector<TouchKey>    *_keys{nullptr};
 
         static std::vector<TouchKey>    _DecimalKeys;
         static std::vector<TouchKey>    _HexaDecimalKeys;
         static std::vector<TouchKey>    _QwertyKeys;
 
         // Custom keyboard stuff
-        bool                    _customKeyboard;
-        bool                    _displayScrollbar;
-        int                     _currentPosition;
-        u32                     _scrollbarSize;
-        u32                     _scrollCursorSize;
-        float                   _scrollSize;
-        float                   _scrollPosition;
-        float                   _scrollPadding;
-        float                   _scrollJump;
-        float                   _inertialVelocity;
-        float                   _scrollStart;
-        float                   _scrollEnd;
+        bool                    _customKeyboard{false};
+        bool                    _displayScrollbar{false};
+        int                     _currentPosition{0};
+        u32                     _scrollbarSize{0};
+        u32                     _scrollCursorSize{0};
+        float                   _scrollSize{0.f};
+        float                   _scrollPosition{0.f};
+        float                   _scrollPadding{0.f};
+        float                   _scrollJump{0.f};
+        float                   _inertialVelocity{0.f};
+        float                   _scrollStart{0.f};
+        float                   _scrollEnd{0.f};
         IntVector               _lastTouch;
         Clock                   _touchTimer;
 
