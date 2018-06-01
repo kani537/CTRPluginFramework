@@ -33,8 +33,8 @@ namespace CTRPluginFramework
         ARCode(const ARCode &code);
         ARCode(u8 type, u32 left, u32 right);
         ARCode(const std::string &line, bool &error);
-        virtual ~ARCode(void) = default;
-        virtual std::string ToString(void) const;
+        //virtual ~ARCode(void) = default;
+        std::string ToString(void) const;
 
         bool    Update(const std::string &line);
         bool    Update(void);

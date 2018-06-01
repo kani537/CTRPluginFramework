@@ -236,14 +236,14 @@ namespace CTRPluginFramework
     {
         Keyboard    keyboard;
 
-        keyboard.SetCompareCallback([](const void *in, std::string &error)
+        /*keyboard.SetCompareCallback([](const void *in, std::string &error)
         {
             std::string &input = *(std::string *)(in);
             if (input.empty())
                 return false;
             ActionReplay_ProcessString(input, false);
             return true;
-        });
+        });*/
 
         return keyboard.Open(ret, ret) != -1;
     }

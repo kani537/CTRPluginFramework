@@ -841,6 +841,7 @@ namespace CTRPluginFramework
     }
 
     extern HexEditor *__g_hexEditor;
+
     bool    ARCodeEditor::operator()(EventList &eventList)
     {
         static bool isInHexEditor = false;
@@ -1214,7 +1215,7 @@ namespace CTRPluginFramework
 
     void    ARCodeEditor::_RenderBottom(void)
     {
-        Renderer::SetTarget(BOTTOM);
+        //Renderer::SetTarget(BOTTOM);
         _keyboard._RenderBottom();
     }
 

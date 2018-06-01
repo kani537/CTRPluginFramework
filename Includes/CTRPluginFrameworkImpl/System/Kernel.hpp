@@ -165,6 +165,7 @@ struct KProcess
     void    PatchCore2Access(void);
     u32     PatchCategory(u32 newCategory);
     u32     PatchMaxPriority(u32 newPrio);
+    void    PatchMaxCommit(u32 more);
     KAutoObject *   GetObjFromHandle(Handle handle);
     std::string     GetName(void);
 

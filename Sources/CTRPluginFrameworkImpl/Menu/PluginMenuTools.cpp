@@ -27,7 +27,7 @@
 #define ALPHA 1
 
 #if ALPHA
-#define VersionStr "CTRPluginFramework Alpha V.0.4.8"
+#define VersionStr "CTRPluginFramework Alpha V.0.4.9"
 #else
 #define VersionStr "CTRPluginFramework Beta V.0.4.0"
 #endif
@@ -580,19 +580,19 @@ namespace CTRPluginFramework
                 _menu.Open(&_miscellaneousMenu);
             else if (arg != nullptr &&  *(u32 *)arg == SCREENSHOT)
                 _menu.Open(&_screenshotMenu);
-            else
-                selector = -1;
         }
 
         if (ret == MenuClose)
         {
-            if (selector != -1)
+            MenuFolderImpl *cur = _menu.GetFolder();
+
+            if (_menu.GetFolder() == &_mainMenu)
             {
+                _exit = true;
                 _menu.Open(&_mainMenu, selector);
-                selector = -1;
             }
             else
-                _exit = true;
+                _menu.Open(&_mainMenu, selector);
         }
     }
 

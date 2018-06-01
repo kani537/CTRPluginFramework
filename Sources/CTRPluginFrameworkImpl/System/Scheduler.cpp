@@ -118,18 +118,10 @@ namespace CTRPluginFramework
         return 0;
     }
 
-    void    Scheduler::Lock(void)
+    void    Scheduler::Initialize(void)
     {
-        _singleton._mutex.Lock();
-    }
+        Core *_cores = _singleton._cores;
 
-    void    Scheduler::Unlock(void)
-    {
-        _singleton._mutex.Unlock();
-    }
-
-    Scheduler::Scheduler(void)
-    {
         // Create handler on Core0
         _cores[0].id = AppCore;
         _cores[0].stack = static_cast<u8 *>(::operator new(0x1000));
@@ -157,6 +149,20 @@ namespace CTRPluginFramework
             _cores[3].stack = static_cast<u8 *>(::operator new(0x1000));
             _cores[3].thread = threadCreate(Scheduler__CoreHandler, &_cores[3], _cores[3].stack, 0x1000, 0x18, 3);
         }
+    }
+
+    void    Scheduler::Lock(void)
+    {
+        _singleton._mutex.Lock();
+    }
+
+    void    Scheduler::Unlock(void)
+    {
+        _singleton._mutex.Unlock();
+    }
+
+    Scheduler::Scheduler(void)
+    {
     }
 
     TaskContext *   Scheduler::_PollTask(u32 coreId)
