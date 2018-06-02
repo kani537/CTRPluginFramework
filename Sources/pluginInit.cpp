@@ -269,11 +269,11 @@ namespace CTRPluginFramework
         // Init sdmc & paths
         InitFS();
 
-        // Patch process before it starts & let the dev init some settings
-        PatchProcess(settings);
-
         // Init System::Heap
         InitHeap();
+
+        // Patch process before it starts & let the dev init some settings
+        PatchProcess(settings);
 
         // Continue game
         svcSignalEvent(g_continueGameEvent);
