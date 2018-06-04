@@ -38,13 +38,16 @@ namespace CTRPluginFramework
 
     private:
         std::string     _content;
+        std::vector<Glyph *> _glyphs;
         IntRect         _uiProperties;
 
         bool            _isPressed;
         bool            _execute;
         bool            _enabled;
+        u16             _posX;
         float           _contentLength;
         float           _posY;
+
     };
 }
 
