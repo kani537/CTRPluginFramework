@@ -116,8 +116,8 @@ namespace CTRPluginFramework
                 px.g = pix->g;
                 px.b = pix->b;
 
-                // Skip transparent pixels
-                if (px.a > 0)
+                // Skip pixels with less than 10% visibility
+                if (px.a > 25)
                 {
                     Color &&bg = PrivColor::FromFramebuffer(dst);
                     Color &&blended = bg.Blend(px, Color::BlendMode::Alpha);

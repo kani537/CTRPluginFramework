@@ -23,9 +23,12 @@ namespace CTRPluginFramework
         int posXX = posX - 10;
         int posYY = posY;
 
+        c *= 10;
+        const u8 *charInFont = font + c;
+
         for (int yy = 0; yy < 10; ++yy)
         {
-            u8  charPos = font[c * 10 + yy];
+            u8  charPos = *charInFont++;
             u8  *fb = screen->GetLeftFramebuffer(posX, posY++);
 
             for (int xx = 6; xx > 0; --xx)
@@ -38,9 +41,10 @@ namespace CTRPluginFramework
 
         if (screen->Is3DEnabled())
         {
+            charInFont -= 10;
             for (int yy = 0; yy < 10; ++yy)
             {
-                u8  charPos = font[c * 10 + yy];
+                u8  charPos = *charInFont++;
                 u8  *fb = screen->GetRightFramebuffer(posXX, posYY++);
 
                 for (int xx = 6; xx > 0; --xx)
@@ -63,9 +67,12 @@ namespace CTRPluginFramework
         int posXX = posX - 10;
         int posYY = posY;
 
+        c *= 10;
+        const u8 *charInFont = font + c;
+
         for (int yy = 0; yy < 10; ++yy)
         {
-            u8  charPos = font[c * 10 + yy];
+            u8  charPos = *charInFont++;
             u8  *fb = screen->GetLeftFramebuffer(posX, posY++);
 
             for (int xx = 6; xx > 0; --xx)
@@ -77,9 +84,11 @@ namespace CTRPluginFramework
 
         if (screen->Is3DEnabled())
         {
+            charInFont -= 10;
+
             for (int yy = 0; yy < 10; ++yy)
             {
-                u8  charPos = font[c * 10 + yy];
+                u8  charPos = *charInFont++;
                 u8  *fb = screen->GetRightFramebuffer(posXX, posYY++);
 
                 for (int xx = 6; xx > 0; --xx)
