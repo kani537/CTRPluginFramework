@@ -70,18 +70,21 @@ namespace CTRPluginFramework
 
     Color Color::Blend(const Color &color, BlendMode mode) const
     {
+        // This is background, color is foreground
         Color           ret;
         unsigned int    _r;
         unsigned int    _g;
         unsigned int    _b;
         unsigned int    _a;
+        float           forealpha = (float)color.a / 255.f;
+        float           minusForeAlpha = 1.f - forealpha;
 
         switch (mode)
         {
         case BlendMode::Alpha:
-            _r = (color.a * color.r +  (255 - color.a) * r) / 255;
-            _g = (color.a * color.g + (255 - color.a) * g) / 255;
-            _b = (color.a * color.b + (255 - color.a) * b) / 255;
+            _r = (forealpha * (float)color.r) + ((float)r * minusForeAlpha);
+            _g = (forealpha * (float)color.g) + ((float)g * minusForeAlpha);
+            _b = (forealpha * (float)color.b) + ((float)b * minusForeAlpha);
             _a = color.a * a;
             ret.r = std::min(_r, 255u);
             ret.g = std::min(_g, 255u);

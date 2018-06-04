@@ -116,9 +116,15 @@ namespace CTRPluginFramework
                 px.g = pix->g;
                 px.b = pix->b;
 
-                Color &&bg = PrivColor::FromFramebuffer(dst);
-                Color &&blended = bg.Blend(px, Color::BlendMode::Alpha);
-                dst = PrivColor::ToFramebuffer(dst, blended);
+                // Skip transparent pixels
+                if (px.a > 0)
+                {
+                    Color &&bg = PrivColor::FromFramebuffer(dst);
+                    Color &&blended = bg.Blend(px, Color::BlendMode::Alpha);
+                    dst = PrivColor::ToFramebuffer(dst, blended);
+                }
+                else
+                    dst += bpp;
                 img += 4;
             }
         }

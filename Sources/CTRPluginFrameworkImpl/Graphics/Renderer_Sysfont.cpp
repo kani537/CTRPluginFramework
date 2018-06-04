@@ -248,12 +248,17 @@ namespace CTRPluginFramework
                 left -= bpp;
                 fb = left;
             }
-            color.a = data[i];
+            u32 alpha = data[i];
 
-            Color &&l = PrivColor::FromFramebuffer(fb);
-            Color &&c = l.Blend(color, Color::BlendMode::Alpha);
+            // Don't waste time on pixels which are only 10% visible
+            if (alpha > 25)
+            {
+                color.a = data[i];
+                Color &&l = PrivColor::FromFramebuffer(fb);
+                Color &&c = l.Blend(color, Color::BlendMode::Alpha);
 
-            PrivColor::ToFramebuffer(fb, c);
+                PrivColor::ToFramebuffer(fb, c);
+            }
             fb += stride;
         }
 
@@ -282,11 +287,18 @@ namespace CTRPluginFramework
                 left -= bpp;
                 fb = left;
             }
-            color.a = data[i];
-            Color &&l = PrivColor::FromFramebuffer(fb);
-            Color &&c = l.Blend(color, Color::BlendMode::Alpha);
 
-            PrivColor::ToFramebuffer(fb, c);
+            u32 alpha = data[i];
+
+            // Don't waste time on pixels which are only 10% visible
+            if (alpha > 25)
+            {
+                color.a = data[i];
+                Color &&l = PrivColor::FromFramebuffer(fb);
+                Color &&c = l.Blend(color, Color::BlendMode::Alpha);
+
+                PrivColor::ToFramebuffer(fb, c);
+            }
             fb += stride;
         }
         if (offset > 0.f)
