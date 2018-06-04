@@ -35,6 +35,8 @@ namespace CTRPluginFramework
     Handle      g_keepEvent = 0;
     Handle      g_resumeEvent = 0;
     bool        g_keepRunning = true;
+    __attribute__((weak)) u32         ___heap_size = 0;
+    __attribute__((weak)) u32         ___eco_memory_mode = 0;
 
     extern bool     g_heapError; ///< allocateHeaps.cpp
 
@@ -61,7 +63,7 @@ void abort(void)
     if (CTRPluginFramework::System::OnAbort)
         CTRPluginFramework::System::OnAbort();
 
-    CTRPluginFramework::Color c(255, 69, 0); //red(255, 0, 0);
+    CTRPluginFramework::Color c(255, 69, 0);
     CTRPluginFramework::ScreenImpl::Top->Flash(c);
     CTRPluginFramework::ScreenImpl::Bottom->Flash(c);
 
@@ -147,26 +149,15 @@ namespace CTRPluginFramework
     static void     InitHeap(void)
     {
         u32         size;
-        FwkSettings &settings = FwkSettings::Get();
 
-        if (System::IsNew3DS()) ///< This will most likely use the extended vram
-        {
-            if (settings.EcoMemoryMode || !settings.AllowSearchEngine)
-                size = 0x50000;
-            else if (System::IsLoaderNTR())
-                size = 0xC0000;
-            else
-                size = 0x100000;
-        }
+        if (___eco_memory_mode)
+            size = 0x50000;
+        else if (System::IsLoaderNTR())
+            size = 0xC0000;
+        else if (!SystemImpl::IsNew3DS)
+            size = 0x120000;
         else
-        {
-            if (settings.EcoMemoryMode || !settings.AllowSearchEngine)
-                size = 0x50000;
-            else if (System::IsLoaderNTR())
-                size = 0xC0000;
-            else
-                size = 0x120000;
-        }
+            size = 0x100000;
 
         // Init System::Heap
         Heap::__ctrpf_heap_size = size;
@@ -214,6 +205,7 @@ namespace CTRPluginFramework
 
         // Define heap size
         __ctru_heap_size = SystemImpl::IsLoaderNTR ? 0x100000 : 0x200000;
+        __ctru_heap_size = std::max(__ctru_heap_size, ___heap_size);
 
         // Patch KProcess::ResourceLimit
         ProcessImpl::KProcessPtr->PatchMaxCommit(__ctru_heap_size + 0x1000);

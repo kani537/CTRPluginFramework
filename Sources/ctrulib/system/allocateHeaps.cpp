@@ -1,5 +1,7 @@
 #include <3DS.h>
-#include "CTRPluginFramework.hpp"
+#include "CTRPluginFramework/Graphics/Color.hpp"
+#include "CTRPluginFramework/System/Process.hpp"
+#include "CTRPluginFrameworkImpl/System/SystemImpl.hpp"
 #include "CTRPluginFrameworkImpl/System/Screen.hpp"
 #include "csvc.h"
 
@@ -13,13 +15,13 @@ namespace CTRPluginFramework
 
     bool    g_heapError = false;
 
-    extern "C" void             __system_allocateHeaps(void);
+    extern "C" void   __system_allocateHeaps(void);
     void __system_allocateHeaps(void)
     {
         Color red(255, 0, 0);
 
         u32     NTRSize = 0;
-        bool    isLoaderNTR = Process::CheckRegion(0x06000000, NTRSize, 7);
+        bool    isLoaderNTR = SystemImpl::IsLoaderNTR;
 
         if (isLoaderNTR)
         {
