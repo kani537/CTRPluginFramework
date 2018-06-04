@@ -573,13 +573,21 @@ namespace CTRPluginFramework
         {
             void *arg = ((MenuEntryTools *)item)->GetArg();
 
-            selector = _menu._selector;
             if (arg == this)
+            {
+                selector = _menu._selector;
                 _menu.Open(&_settingsMenu);
+            }
             else if (arg != nullptr && *(u32 *)arg == MISCELLANEOUS)
+            {
+                selector = _menu._selector;
                 _menu.Open(&_miscellaneousMenu);
+            }
             else if (arg != nullptr &&  *(u32 *)arg == SCREENSHOT)
+            {
+                selector = _menu._selector;
                 _menu.Open(&_screenshotMenu);
+            }
         }
 
         if (ret == MenuClose)
