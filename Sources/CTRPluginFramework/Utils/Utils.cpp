@@ -161,7 +161,7 @@ namespace CTRPluginFramework
     {
         const char *    opendir =   FONT_A ": Open folder";
         const char *    selFile =   " / Select file\n";
-        const char *    selDir =    "\nStart : Select directory\n";
+        const char *    selDir =    "\nStart : Select the current folder\n";
         const char *    commands =  FONT_B ": Close folder\n" \
                                     FONT_X ": Open options";
 
@@ -352,9 +352,16 @@ namespace CTRPluginFramework
         }
 
         out = menu.GetFolder()->note;
-        if (out != "/")
-            out.append("/");
-        out.append(menu.GetSelectedItem()->name);
+
+        if (!selDirectory)
+        {
+            if (out != "/")
+                out.append("/");
+            MenuItem *entry = menu.GetSelectedItem();
+            if (entry)
+                out.append(entry->name);
+        }
+
         // Release the process
         Process::Play();
         return 0;
