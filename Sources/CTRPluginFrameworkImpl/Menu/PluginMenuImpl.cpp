@@ -177,7 +177,7 @@ namespace CTRPluginFramework
             ar.Initialize();
 
         if (_showMsg)
-            OSD::Notify("Plugin ready!", Color::Blank, Color());
+            OSD::Notify("Plugin ready!", Color::White, Color());
 
         // Main loop
         while (_pluginRun)

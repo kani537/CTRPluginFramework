@@ -350,7 +350,7 @@ namespace CTRPluginFramework
     void    PluginMenuSearch::_RenderTop(void)
     {
         const Color    &black = Color::Black;
-        const Color    &blank = Color::Blank;
+        const Color    &blank = Color::White;
         const Color    &dimGrey = Color::BlackGrey;
         //static IntRect  background(30, 20, 340, 200);
 
@@ -373,7 +373,7 @@ namespace CTRPluginFramework
     void    PluginMenuSearch::_RenderBottom(void)
     {
         const Color    &black = Color::Black;
-        const Color    &blank = Color::Blank;
+        const Color    &blank = Color::White;
         const Color    &dimGrey = Color::BlackGrey;
         //static IntRect  background(20, 20, 280, 200);
 
@@ -707,7 +707,7 @@ namespace CTRPluginFramework
     void    PluginMenuSearch::_ShowProgressWindow(void) const
     {
         const Color    &black = Color::Black;
-        const Color    &blank = Color::Blank;
+        const Color    &blank = Color::White;
         const Color    &gainsboro = Color::Gainsboro;
         const Color    &dimGrey = Color::BlackGrey;
         const Color    &skyblue = Color::SkyBlue;

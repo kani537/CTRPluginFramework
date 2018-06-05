@@ -39,33 +39,49 @@ namespace CTRPluginFramework
         Color   &operator -= (const Color &right);
         Color   &operator *= (const Color &right);
 
-        u8      r;
-        u8      g;
-        u8      b;
-        u8      a;
+        union
+        {
+            u32     raw;
+            struct
+            {
+                u8      r;
+                u8      g;
+                u8      b;
+                u8      a;
+            };
+        };
 
+        // All those colors are from https://www.rapidtables.com/web/color/RGB_Color.html
+        // Some basic colors constants
         static const Color  Black;
-        static const Color  Blank;
-        static const Color  BlackGrey;
+        static const Color  White;
+        static const Color  Red;
+        static const Color  Lime;
         static const Color  Blue;
-        static const Color  Brown;
+        static const Color  Yellow;
         static const Color  Cyan;
+        static const Color  Magenta;
+        static const Color  Silver;
+        static const Color  Gray;
+        static const Color  Maroon;
+        static const Color  Olive;
+        static const Color  Green;
+        static const Color  Purple;
+        static const Color  Teal;
+        static const Color  Navy;
+
+        static const Color  BlackGrey;
+        static const Color  Brown;
         static const Color  DarkGrey;
         static const Color  DeepSkyBlue;
         static const Color  DimGrey;
         static const Color  DodgerBlue;
         static const Color  Gainsboro;
         static const Color  ForestGreen;
-        static const Color  Green;
-        static const Color  Grey;
         static const Color  LimeGreen;
-        static const Color  Magenta;
         static const Color  Orange;
-        static const Color  Red;
-        static const Color  Silver;
         static const Color  SkyBlue;
         static const Color  Turquoise;
-        static const Color  Yellow;
     };
 }
 

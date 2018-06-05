@@ -38,7 +38,7 @@ namespace CTRPluginFramework
          * \param background The color of the background
          * \return posY + 10 (line feed)
          */
-        u32     Draw(const std::string &str, u32 posX, u32 posY, const Color &foreground = Color::Blank, const Color &background = Color::Black) const;
+        u32     Draw(const std::string &str, u32 posX, u32 posY, const Color &foreground = Color::White, const Color &background = Color::Black) const;
 
         /**
          * \brief Draw a string using system font (support utf8 strings with special chars & unicode)
@@ -48,7 +48,7 @@ namespace CTRPluginFramework
          * \param foreground The color of the characters
          * \return posY + 16 (line feed)
          */
-        u32     DrawSysfont(const std::string &str, u32 posX, u32 posY, const Color &foreground = Color::Blank) const;
+        u32     DrawSysfont(const std::string &str, u32 posX, u32 posY, const Color &foreground = Color::White) const;
 
         /**
          * \brief Draw a rectangle
@@ -95,7 +95,7 @@ namespace CTRPluginFramework
          * \param background The color of the background (Default: black)
          * \return 0 if success, -1 if the notification couldn't be added
          */
-        static int      Notify(const std::string &str, const Color &foreground = Color::Blank, const Color &background = Color::Black);
+        static int      Notify(const std::string &str, const Color &foreground = Color::White, const Color &background = Color::Black);
 
         /**
          * \brief Add a callback to the OSD system which will be called at each game's frame

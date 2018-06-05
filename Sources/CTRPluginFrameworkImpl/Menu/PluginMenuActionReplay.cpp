@@ -184,7 +184,7 @@ namespace CTRPluginFramework
         int posX = 30 + 34 + 5;
         int posY = 195;
 
-        Renderer::DrawRect(posX, posY, 220, 15, Color::Grey);
+        Renderer::DrawRect(posX, posY, 220, 15, Color::Gray);
         posY += 3;
         Renderer::DrawString((const char *)_path, posX + 2, posY, Color::Black);
     }

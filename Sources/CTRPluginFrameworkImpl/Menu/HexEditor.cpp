@@ -293,7 +293,7 @@ namespace CTRPluginFramework
         Renderer::SetTarget(TOP);
 
         const Color     &black = Color::Black;
-        const Color     &blank = Color::Blank;
+        const Color     &blank = Color::White;
         const Color     &skyblue = Color::SkyBlue;
         const Color     &deepskyblue = Color::DeepSkyBlue;
         const Color     &maintextcolor = Preferences::Settings.MainTextColor;

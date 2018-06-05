@@ -273,7 +273,7 @@ namespace CTRPluginFramework
 
             if (File::Open(g_hookExportFile, filename, mode) != 0)
             {
-                OSD::Notify(std::string("Error: couldn't open \"").append(filename).append("\""), Color::Red, Color::Blank);
+                OSD::Notify(std::string("Error: couldn't open \"").append(filename).append("\""), Color::Red, Color::White);
                 entry->Disable(); ///< Disable the entry
                 return;
             }
@@ -641,7 +641,7 @@ namespace CTRPluginFramework
     void    PluginMenuTools::_RenderBottom(void)
     {
         const Color    &black = Color::Black;
-        const Color    &blank = Color::Blank;
+        const Color    &blank = Color::White;
         const Color    &dimGrey = Color::BlackGrey;
 
         // Enable renderer

@@ -56,7 +56,7 @@ namespace CTRPluginFramework
             if (background.Contains(touchPos))
             {
                 SetTarget(BOTTOM);
-                DrawSysString("\uE058", posX, posY, 320, Color::Blank);
+                DrawSysString("\uE058", posX, posY, 320, Color::White);
             }
         }
 
@@ -67,7 +67,7 @@ namespace CTRPluginFramework
 
         sprintf(buffer, "FPS: %.02f",  1.f / fpsCounter.Restart().AsSeconds());
         int posY = 30;
-        DrawString(buffer, 200, posY, Color::Blank, Color::Black);
+        DrawString(buffer, 200, posY, Color::White, Color::Black);
 #endif
         __dsb();
         //svcFlushEntireDataCache();

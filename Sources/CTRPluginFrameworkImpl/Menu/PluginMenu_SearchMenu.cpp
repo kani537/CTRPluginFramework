@@ -226,7 +226,7 @@ namespace CTRPluginFramework
     void    SearchMenu::Draw(void)
     {
         const Color    &black = Color::Black;
-        const Color    &blank = Color::Blank;
+        const Color    &blank = Color::White;
         const Color    &darkgrey = Color::DarkGrey;
         const Color    &gainsboro = Color::Gainsboro;
         const Color    &silver = Color::Silver;

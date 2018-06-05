@@ -242,7 +242,7 @@ namespace CTRPluginFramework
         FwkSettings     &settings = Preferences::Settings;
         const Color     &titleColor = settings.WindowTitleColor;
         const Color     &textColor = settings.MainTextColor;
-        const Color     &blank = Color::Blank;
+        const Color     &blank = Color::White;
 
 
         if (_drawBox)

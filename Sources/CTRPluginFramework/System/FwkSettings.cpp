@@ -13,7 +13,7 @@ namespace CTRPluginFramework
         FwkSettings &settings = Get();
 
         // UI Colors
-        settings.MenuSelectedItemColor = settings.BackgroundBorderColor = settings.WindowTitleColor = settings.MainTextColor = Color::Blank;
+        settings.MenuSelectedItemColor = settings.BackgroundBorderColor = settings.WindowTitleColor = settings.MainTextColor = Color::White;
         settings.MenuUnselectedItemColor = Color::Silver;
         settings.BackgroundMainColor = Color::Black;
         settings.BackgroundSecondaryColor = Color::BlackGrey;
@@ -25,7 +25,7 @@ namespace CTRPluginFramework
 
             kb.KeyBackground = kb.Background = Color::Black;
             kb.KeyBackgroundPressed = Color::Silver;
-            kb.Input = kb.Cursor = kb.KeyTextPressed = kb.KeyText = Color::Blank;
+            kb.Input = kb.Cursor = kb.KeyTextPressed = kb.KeyText = Color::White;
         }
 
         // Custom keyboard colors
@@ -34,10 +34,10 @@ namespace CTRPluginFramework
 
             kb.BackgroundMain = Color::Black;
             kb.BackgroundSecondary = Color::BlackGrey;
-            kb.BackgroundBorder = Color::Blank;
+            kb.BackgroundBorder = Color::White;
             kb.KeyBackground = Color(51, 51, 51);
             kb.KeyBackgroundPressed = Color::Gainsboro;
-            kb.KeyText = Color::Blank;
+            kb.KeyText = Color::White;
             kb.KeyTextPressed = Color::Black;
             kb.ScrollBarBackground = Color::Silver;
             kb.ScrollBarThumb = Color::DimGrey;

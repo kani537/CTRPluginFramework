@@ -219,9 +219,9 @@ namespace CTRPluginFramework
 
                 static const std::vector<PColor> colors =
                 {
-                    PColor("white", Color::Blank), PColor("black", Color::Black),
+                    PColor("white", Color::White), PColor("black", Color::Black),
                     PColor("red", Color::Red), PColor("green", Color::Green), PColor("blue", Color::Blue),
-                    PColor("cyan", Color::Cyan), PColor("magenta", Color::Magenta), PColor("yellow", Color::Yellow), PColor("gray", Color::Grey)
+                    PColor("cyan", Color::Cyan), PColor("magenta", Color::Magenta), PColor("yellow", Color::Yellow), PColor("gray", Color::Gray)
                 };
 
                 for (const PColor &color : colors)

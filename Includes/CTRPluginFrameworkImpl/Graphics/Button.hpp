@@ -18,15 +18,14 @@ namespace CTRPluginFramework
     template <class C, class T, class... Args>
     class Button : public Drawable
     {
-        
     public:
         using EventCallback = T (C::*)(Args...);
         using IconCallback = int (*)(int, int);
 
         Button(const std::string &content, C &caller, T(C::*callback)(Args...), IntRect rect, IconCallback icon = nullptr) :
-        _caller(caller), 
-        _callback(callback), 
-        _content(content), 
+        _caller(caller),
+        _callback(callback),
+        _content(content),
         _uiProperty(rect),
         _icon(icon),
         _isReady(true),
@@ -36,7 +35,7 @@ namespace CTRPluginFramework
         IsLocked(false)
         {
             borderColor = Color::DarkGrey;
-            disabledColor = Color::Grey;
+            disabledColor = Color::Gray;
             idleColor   = Color::Gainsboro;
             pressedColor = Color::DimGrey;
             contentColor = Color::Black;
@@ -96,7 +95,7 @@ namespace CTRPluginFramework
 
         std::string             _content;
         IntRect                 _uiProperty;
-        float                   _textSize;        
+        float                   _textSize;
         bool                    _isPressed;
         bool                    _execute;
         bool                    _isReady;
@@ -114,7 +113,7 @@ namespace CTRPluginFramework
 
         if (use)
         {
-            _textSize = Renderer::GetTextSize(_content.c_str());  
+            _textSize = Renderer::GetTextSize(_content.c_str());
         }
         else
         {
@@ -174,7 +173,7 @@ namespace CTRPluginFramework
             Renderer::DrawRect(_uiProperty, fillColor);
             Renderer::DrawRect(_uiProperty, bordColor, false);
         }
-        
+
 
         int posX = _uiProperty.leftTop.x;
         int posY = _uiProperty.leftTop.y;
@@ -202,7 +201,7 @@ namespace CTRPluginFramework
             Renderer::DrawSysString(_content.c_str(), posX, posY, limit, contentColor);
         }
         else
-            Renderer::DrawString((char *)_content.c_str(), posX, posY, contentColor);  
+            Renderer::DrawString((char *)_content.c_str(), posX, posY, contentColor);
     }
 
     /*
