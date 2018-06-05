@@ -1,7 +1,7 @@
 #ifndef CTRPLUGINFRAMEWORKIMPL_PLUGINMENUHOTKEYS_HPP
 #define CTRPLUGINFRAMEWORKIMPL_PLUGINMENUHOTKEYS_HPP
 
-#include "CTRPluginFrameworkImpl/Graphics/CheckBox.hpp"
+#include "CTRPluginFrameworkImpl/Graphics/Button.hpp"
 #include <vector>
 #include <string>
 
@@ -22,7 +22,7 @@ namespace CTRPluginFramework
         void    _Update(void);
 
         u32                     &_keys;
-        std::vector<CheckBox>   _checkboxs;
+        std::vector<Button>     _checkboxs;
         const std::string       _message;
 
 

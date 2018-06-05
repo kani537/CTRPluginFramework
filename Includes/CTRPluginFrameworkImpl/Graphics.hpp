@@ -7,17 +7,13 @@
 
 #include "CTRPluginFrameworkImpl/Graphics/BMPImage.hpp"
 #include "CTRPluginFrameworkImpl/Graphics/Button.hpp"
-#include "CTRPluginFrameworkImpl/Graphics/CheckedButton.hpp"
-#include "CTRPluginFrameworkImpl/Graphics/CheckBox.hpp"
 #include "CTRPluginFrameworkImpl/Graphics/ComboBox.hpp"
 #include "CTRPluginFrameworkImpl/Graphics/Icon.hpp"
-#include "CTRPluginFrameworkImpl/Graphics/IconButton.hpp"
 #include "CTRPluginFrameworkImpl/Graphics/NumericTextBox.hpp"
 #include "CTRPluginFrameworkImpl/Graphics/OSDImpl.hpp"
 #include "CTRPluginFrameworkImpl/Graphics/PrivColor.hpp"
 #include "CTRPluginFrameworkImpl/Graphics/Renderer.hpp"
 #include "CTRPluginFrameworkImpl/Graphics/TextBox.hpp"
-#include "CTRPluginFrameworkImpl/Graphics/ToggleButton.hpp"
 #include "CTRPluginFrameworkImpl/Graphics/Window.hpp"
 
 #include "CTRPluginFrameworkImpl/System/Screen.hpp"

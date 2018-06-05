@@ -3,7 +3,7 @@
 
 #include "CTRPluginFramework/System/Vector.hpp"
 #include "CTRPluginFramework/System/Rect.hpp"
-#include "IconButton.hpp"
+#include "CTRPluginFrameworkImpl/Graphics/Button.hpp"
 #include <string>
 
 namespace CTRPluginFramework
@@ -18,6 +18,7 @@ namespace CTRPluginFramework
 
         void    Draw(void) const;
         void    Draw(const std::string &title) const;
+        void    DrawButton(void) const;
         void    Update(const bool isTouched, const IntVector &touchPos) const;
         bool    MustClose(void) const;
         void    Close(void) const;
@@ -32,8 +33,8 @@ namespace CTRPluginFramework
 
         IntRect     _rect;
         IntRect     _border;
-        IconButton<Window, void>    *_closeBtn;
-        BMPImage    *_image;
+        Button    * _closeBtn;
+        BMPImage  * _image;
     };
 }
 

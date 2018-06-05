@@ -50,7 +50,7 @@ namespace CTRPluginFramework
     };
 
     HexEditor::HexEditor(u32 target) :
-        _closeBtn(*this, nullptr, IntRect(275, 24, 20, 20), Icon::DrawClose),
+        //_closeBtn(*this, nullptr, IntRect(275, 24, 20, 20), Icon::DrawClose),
         _submenu{ { "New cheat", "Jump to", "Jump relative", "Jump to value", "Converter", "Move backward", "Move forward", "Save this address", "Browse history", "Clear history" }}
     {
         // Init variables
@@ -158,7 +158,7 @@ namespace CTRPluginFramework
         // Render Bottom Screen
         _RenderBottom();
 
-        if (_closeBtn())
+        if (Window::BottomWindow.MustClose())
         {
             // Enable clear key
             _keyboard._keys->at(15).Enable(true);
@@ -233,7 +233,7 @@ namespace CTRPluginFramework
                         _DiscardChanges();
                     }
                     else
-                        _closeBtn.SetState(true);
+                        Window::BottomWindow.Close();
                     break;
                 }
                 case Key::L:
@@ -457,7 +457,7 @@ namespace CTRPluginFramework
     {
         _keyboard._RenderBottom();
 
-        _closeBtn.Draw();
+        Window::BottomWindow.DrawButton();
     }
 
     void    HexEditor::_Update(void)
@@ -465,7 +465,7 @@ namespace CTRPluginFramework
         bool        isTouched = Touch::IsDown();
         IntVector   touchPos(Touch::GetPosition());
 
-        _closeBtn.Update(isTouched, touchPos);
+        Window::BottomWindow.Update(isTouched, touchPos);
     }
 
     u32     HexEditor::_GetCursorAddress(void) const

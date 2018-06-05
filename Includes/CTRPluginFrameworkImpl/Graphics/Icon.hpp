@@ -32,7 +32,7 @@ namespace CTRPluginFramework
         ** CheckBox
         ** 15px * 15px
         ************/
-        static int      DrawCheckBox(IntVector &pos, bool isChecked);
+        //static int      DrawCheckBox(IntVector &pos, bool isChecked);
         static int      DrawCheckBox(int posX, int posY, bool isChecked);
 
         /*
@@ -51,7 +51,7 @@ namespace CTRPluginFramework
         ** Close
         ** 20px * 20px
         ************/
-        static int      DrawClose(IntVector &pos, bool filled);
+        //static int      DrawClose(IntVector &pos, bool filled);
         static int      DrawClose(int posX, int posY, bool filled);
 
         /*
@@ -95,9 +95,9 @@ namespace CTRPluginFramework
         ** Favorite
         ** 25px * 25px
         ************/
-        static int      DrawAddFavorite(IntVector &pos, bool filled);
+        //static int      DrawAddFavorite(IntVector &pos, bool filled);
         static int      DrawAddFavorite(int posX, int posY, bool filled);
-        static int      DrawFavorite(IntVector &pos);
+        // static int      DrawFavorite(IntVector &pos);
         static int      DrawFavorite(int posX, int posY);
 
         /*
@@ -110,7 +110,7 @@ namespace CTRPluginFramework
         ** Game Controller
         ** 15px * 15px
         ************/
-        static int      DrawGameController(int posX, int posY);
+        //static int      DrawGameController(int posX, int posY);
 
         /*
         ** Game Controller
@@ -129,14 +129,14 @@ namespace CTRPluginFramework
         ** Info
         ** 25px * 25px
         ***********/
-        static int      DrawInfo(IntVector &pos, bool filled);
+        //static int      DrawInfo(IntVector &pos, bool filled);
         static int      DrawInfo(int posX, int posY, bool filled);
 
         /*
         ** Guide
         ** 15px * 15px
         ***********/
-        static int      DrawGuide(IntVector &pos);
+        //static int      DrawGuide(IntVector &pos);
         static int      DrawGuide(int posX, int posY);
 
         /*

@@ -61,9 +61,6 @@ namespace CTRPluginFramework
         // Keyboard
         KeyboardImpl                        _keyboard;
 
-        // Buttons
-        IconButton<HexEditor, void>         _closeBtn;
-
         std::vector<u32>                    _history;
     };
 }

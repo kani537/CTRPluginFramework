@@ -173,13 +173,13 @@ namespace CTRPluginFramework
     ** CheckBox
     ** 15px * 15px
     ************/
-    int     Icon::DrawCheckBox(IntVector &pos, bool isChecked)
+   /* int     Icon::DrawCheckBox(IntVector &pos, bool isChecked)
     {
         // Define which version to draw
         u8 *img = isChecked ? CheckedCheckbox : UnCheckedCheckbox;
 
         return (DrawImg(img, pos.y, pos.y, 15, 15));
-    }
+    }*/
 
     int     Icon::DrawCheckBox(int posX, int posY, bool isChecked)
     {
@@ -216,13 +216,13 @@ namespace CTRPluginFramework
     ** 20px * 20px
     **********/
 
-    int     Icon::DrawClose(IntVector &pos, bool filled)
+    /*int     Icon::DrawClose(IntVector &pos, bool filled)
     {
         // Define which version to draw
         u8 *img = filled ? CloseWindowFilled20 : CloseWindow20;
 
         return (DrawImg(img, pos.x, pos.y, 20, 20));
-    }
+    } */
 
     int     Icon::DrawClose(int posX, int posY, bool filled)
     {
@@ -305,11 +305,11 @@ namespace CTRPluginFramework
     ** 25px * 25px
     ***************/
 
-    int     Icon::DrawAddFavorite(IntVector &pos, bool filled)
+    /*int     Icon::DrawAddFavorite(IntVector &pos, bool filled)
     {
         u8 *img = filled ? AddFavoriteFilled25 : AddFavorite25;
         return (DrawImg(img, pos.x, pos.y, 25, 25));
-    }
+    }*/
 
     int     Icon::DrawAddFavorite(int posX, int posY, bool filled)
     {
@@ -317,10 +317,10 @@ namespace CTRPluginFramework
         return (DrawImg(img, posX, posY, 25, 25));
     }
 
-    int     Icon::DrawFavorite(IntVector &pos)
+   /* int     Icon::DrawFavorite(IntVector &pos)
     {
         return (DrawImg(Star15, pos.x, pos.y, 15, 15));
-    }
+    } */
 
     int     Icon::DrawFavorite(int posX, int posY)
     {
@@ -340,10 +340,10 @@ namespace CTRPluginFramework
     ** Game Controller
     ** 15px * 15px
     **************/
-    int     Icon::DrawGameController(int posX, int posY)
+    /*int     Icon::DrawGameController(int posX, int posY)
     {
         return (DrawImg(GameController15, posX, posY, 15, 15));
-    }
+    }*/
 
     int Icon::DrawGameController(int posX, int posY, bool filled)
     {
@@ -365,11 +365,11 @@ namespace CTRPluginFramework
     ** 25px * 25px
     ***************/
 
-    int     Icon::DrawInfo(IntVector &pos, bool filled)
+    /*int     Icon::DrawInfo(IntVector &pos, bool filled)
     {
         u8 *img = filled ? InfoFilled25 : Info25;
         return (DrawImg(img, pos.x, pos.y, 25, 25));
-    }
+    }*/
 
     int     Icon::DrawInfo(int posX, int posY, bool filled)
     {
@@ -382,10 +382,10 @@ namespace CTRPluginFramework
     ** 15px * 15px
     ***************/
 
-    int     Icon::DrawGuide(IntVector &pos)
+    /*int     Icon::DrawGuide(IntVector &pos)
     {
         return (DrawImg(UserManualFilled15, pos.x, pos.y, 15, 15));
-    }
+    }*/
 
     int     Icon::DrawGuide(int posX, int posY)
     {

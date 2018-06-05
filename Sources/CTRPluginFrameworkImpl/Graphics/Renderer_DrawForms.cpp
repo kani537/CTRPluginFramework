@@ -702,6 +702,40 @@ namespace CTRPluginFramework
 
     }
 
+    void        Renderer::DrawRoundedRectangle(const IntRect &rect, const Color &border, const Color &fill)
+    {
+        static std::vector<IntLine>     _lines;
+
+        if (_lines.empty())
+            ComputeRoundedRectangle(_lines, IntRect(0, 0, rect.size.x, rect.size.y), 7.f, 50);
+
+        int     bMax = _lines.size() - 5;
+        u32     i;
+        u32     posX = rect.leftTop.x;
+        u32     posY = rect.leftTop.y;
+
+        for (i = 0; i < bMax; ++i)
+        {
+            IntLine &line = _lines[i];
+
+            // Draw border
+            Renderer::DrawPixel(posX + line.start.x, posY + line.start.y, border);
+            Renderer::DrawPixel(posX + line.end.x, posY + line.end.y, border);
+
+            // Fill line
+            Renderer::DrawLine(posX + 1 + line.start.x, posY + line.start.y, line.end.x - line.start.x - 1, fill);
+        }
+
+        for (; i < _lines.size() - 1; ++i)
+        {
+            IntLine &line = _lines[i];
+
+            Renderer::DrawLine(posX + line.start.x, posY + line.start.y, line.end.x, border, line.end.y);
+        }
+
+        IntLine &line = _lines[i];
+        Renderer::DrawLine(posX + line.start.x, posY + line.start.y, line.end.x, fill, line.end.y);
+    }
     void        Renderer::DrawRect(int posX, int posY, int width, int height, const Color &color, bool fill, int thickness)
     {
         if (fill)

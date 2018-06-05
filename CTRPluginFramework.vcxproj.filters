@@ -72,9 +72,6 @@
     <ClInclude Include="Includes\CTRPluginFrameworkImpl\Graphics\Button.hpp">
       <Filter>Fichiers d%27en-tête</Filter>
     </ClInclude>
-    <ClInclude Include="Includes\CTRPluginFrameworkImpl\Graphics\CheckedButton.hpp">
-      <Filter>Fichiers d%27en-tête</Filter>
-    </ClInclude>
     <ClInclude Include="Includes\CTRPluginFrameworkImpl\Graphics\ComboBox.hpp">
       <Filter>Fichiers d%27en-tête</Filter>
     </ClInclude>
@@ -82,9 +79,6 @@
       <Filter>Fichiers d%27en-tête</Filter>
     </ClInclude>
     <ClInclude Include="Includes\CTRPluginFrameworkImpl\Graphics\Icon.hpp">
-      <Filter>Fichiers d%27en-tête</Filter>
-    </ClInclude>
-    <ClInclude Include="Includes\CTRPluginFrameworkImpl\Graphics\IconButton.hpp">
       <Filter>Fichiers d%27en-tête</Filter>
     </ClInclude>
     <ClInclude Include="Includes\CTRPluginFrameworkImpl\Graphics\Line.hpp">
@@ -103,9 +97,6 @@
       <Filter>Fichiers d%27en-tête</Filter>
     </ClInclude>
     <ClInclude Include="Includes\CTRPluginFrameworkImpl\Graphics\TextBox.hpp">
-      <Filter>Fichiers d%27en-tête</Filter>
-    </ClInclude>
-    <ClInclude Include="Includes\CTRPluginFrameworkImpl\Graphics\ToggleButton.hpp">
       <Filter>Fichiers d%27en-tête</Filter>
     </ClInclude>
     <ClInclude Include="Includes\CTRPluginFrameworkImpl\Graphics\TouchKey.hpp">
@@ -415,9 +406,6 @@
       <Filter>Fichiers d%27en-tête</Filter>
     </ClInclude>
     <ClInclude Include="Includes\CTRPluginFrameworkImpl\Graphics\Window.hpp">
-      <Filter>Fichiers d%27en-tête</Filter>
-    </ClInclude>
-    <ClInclude Include="Includes\CTRPluginFrameworkImpl\Graphics\CheckBox.hpp">
       <Filter>Fichiers d%27en-tête</Filter>
     </ClInclude>
     <ClInclude Include="Sources\CTRPluginFrameworkImpl\Graphics\CheckBox.cpp">
@@ -1149,6 +1137,9 @@
       <Filter>Fichiers sources</Filter>
     </ClCompile>
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\System\Kernel.cpp">
+      <Filter>Fichiers sources</Filter>
+    </ClCompile>
+    <ClCompile Include="Sources\CTRPluginFrameworkImpl\Graphics\Button.cpp">
       <Filter>Fichiers sources</Filter>
     </ClCompile>
   </ItemGroup>

@@ -47,10 +47,6 @@ namespace CTRPluginFramework
         int     _currentBMP;
 
         BMPImage        *_image;
-
-        // Button
-        IconButton<GuideReader, void>  _closeBtn;
-
     };
 }
 
