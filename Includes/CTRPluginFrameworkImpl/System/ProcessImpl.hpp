@@ -8,24 +8,34 @@
 
 namespace CTRPluginFramework
 {
-    static inline bool    operator<(const MemInfo& left, const MemInfo &right)
+    static inline bool      operator<(const MemInfo& left, const MemInfo& right)
     {
         return left.base_addr < right.base_addr;
     }
 
-    static inline bool    operator>(const MemInfo& left, const MemInfo &right)
+    static inline bool      operator>(const MemInfo& left, const MemInfo& right)
     {
         return left.base_addr > right.base_addr;
     }
 
-    static inline bool    operator<=(const MemInfo& left, const MemInfo &right)
+    static inline bool      operator<=(const MemInfo& left, const MemInfo& right)
     {
         return left.base_addr <= right.base_addr;
     }
 
-    static inline bool    operator>=(const MemInfo& left, const MemInfo &right)
+    static inline bool      operator>=(const MemInfo& left, const MemInfo& right)
     {
         return left.base_addr >= right.base_addr;
+    }
+
+    static inline bool      operator==(const MemInfo& left, const MemInfo& right)
+    {
+        return left.base_addr == right.base_addr;
+    }
+
+    static inline bool      operator!=(const MemInfo& left, const MemInfo& right)
+    {
+        return left.base_addr != right.base_addr;
     }
 
     class ProcessImpl
