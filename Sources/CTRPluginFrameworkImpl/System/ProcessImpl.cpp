@@ -22,6 +22,8 @@ namespace CTRPluginFramework
     KProcess *  ProcessImpl::KProcessPtr;
     KCodeSet    ProcessImpl::CodeSet;
 
+    std::vector<MemInfo> ProcessImpl::MemRegions;
+
 	void    ProcessImpl::Initialize(void)
 	{
 		char    kproc[0x100] = {0};
@@ -91,6 +93,9 @@ namespace CTRPluginFramework
         ScreenImpl::Bottom->Acquire();
         ScreenImpl::Top->Acquire();
         OSDImpl::UpdateScreens();
+
+        // Update memregions
+        UpdateMemRegions();
 
         if (!useFading)
             return;
@@ -188,5 +193,103 @@ namespace CTRPluginFramework
 
         for (KThread *thread : threads)
             thread->Unlock();
+    }
+
+    static bool     IsInRegion(MemInfo &memInfo, u32 addr)
+    {
+        addr -= memInfo.base_addr;
+        return addr < memInfo.size;
+    }
+
+    extern "C" u32 __ctru_linear_heap;
+
+#define MEMPERM_RW (MEMPERM_READ | MEMPERM_WRITE)
+
+    void    ProcessImpl::UpdateMemRegions(void)
+    {
+        MemRegions.clear();
+
+        bool    regionPatched  = false;
+
+        for (u32 addr = 0x00100000; addr < 0x40000000; )
+        {
+            MemInfo     memInfo;
+            PageInfo    pageInfo;
+
+            if (R_SUCCEEDED(svcQueryProcessMemory(&memInfo, &pageInfo, ProcessHandle, addr)))
+            {
+                // If region is FREE, IO, SHARED or LOCKED, skip it
+                if (memInfo.state == MEMSTATE_FREE || memInfo.state == MEMSTATE_IO
+                    || memInfo.state == MEMSTATE_LOCKED || memInfo.state == MEMSTATE_SHARED)
+                {
+                    addr = memInfo.base_addr + memInfo.size;
+                    continue;
+                }
+
+                // Same if the memregion is part of CTRPF or NTR
+                if (memInfo.base_addr == 0x06000000 || memInfo.base_addr == 0x07000000
+                    || memInfo.base_addr == 0x01E80000 || IsInRegion(memInfo, __ctru_linear_heap))
+                {
+                    addr = memInfo.base_addr + memInfo.size;
+                    continue;
+                }
+
+                // Check if the region needs patching
+                if ((memInfo.perm & MEMPERM_RW) != MEMPERM_RW)
+                {
+                    u32 perm = memInfo.perm | MEMPERM_RW;
+
+                    regionPatched |=
+                        R_SUCCEEDED(svcControlProcessMemory(ProcessImpl::ProcessHandle,
+                            memInfo.base_addr, 0, memInfo.size, MEMOP_PROT, perm));
+                }
+
+                // Add it to the vector if necessary
+                if (!regionPatched)
+                    MemRegions.push_back(memInfo);
+
+                addr = memInfo.base_addr + memInfo.size;
+                continue;
+            }
+
+            addr += 0x1000;
+        }
+
+        if (regionPatched)
+            UpdateMemRegions();
+    }
+
+    MemInfo    ProcessImpl::GetMemRegion(u32 address)
+    {
+        for (MemInfo &memInfo : MemRegions)
+            if (IsInRegion(memInfo, address))
+                return memInfo;
+
+        // Not found return an empty region
+        return MemInfo{0, 0, 0, 0};
+    }
+
+    MemInfo     ProcessImpl::GetNextRegion(const MemInfo &region)
+    {
+        for (MemInfo &memInfo : MemRegions)
+            if (memInfo > region)
+                return memInfo;
+
+        return region;
+    }
+
+    MemInfo     ProcessImpl::GetPreviousRegion(const MemInfo &region)
+    {
+        MemInfo *prev = nullptr;
+
+        for (MemInfo &memInfo : MemRegions)
+        {
+            if (memInfo >= region)
+                return prev != nullptr ? *prev : memInfo;
+
+            prev = &memInfo;
+        }
+
+        return region;
     }
 }
