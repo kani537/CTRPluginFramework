@@ -2,6 +2,8 @@
 #define CTRPLUGINFRAMEWORK_COLOR_HPP
 
 #include "types.h"
+#include <algorithm>
+#include <string>
 
 namespace CTRPluginFramework
 {
@@ -38,6 +40,18 @@ namespace CTRPluginFramework
         Color   &operator += (const Color &right);
         Color   &operator -= (const Color &right);
         Color   &operator *= (const Color &right);
+
+        operator std::string() const
+        {
+            char  strColor[5] = { 0 };
+
+            strColor[0] = 0x1B;
+            strColor[1] = std::max((u8)1, r);
+            strColor[2] = std::max((u8)1, g);
+            strColor[3] = std::max((u8)1, b);
+
+            return strColor;
+        }
 
         union
         {
