@@ -90,8 +90,13 @@ namespace CTRPluginFramework
         OSDImpl::WaitFramePaused();
 
         // Acquire screens
-        ScreenImpl::Bottom->Acquire();
-        ScreenImpl::Top->Acquire();
+        u32 err = ScreenImpl::Bottom->Acquire() | ScreenImpl::Top->Acquire();
+
+        while (err)
+        {
+            OSDImpl::ResumeFrame(1);
+            err = ScreenImpl::Bottom->Acquire() | ScreenImpl::Top->Acquire();
+        };
         OSDImpl::UpdateScreens();
 
         // Update memregions
