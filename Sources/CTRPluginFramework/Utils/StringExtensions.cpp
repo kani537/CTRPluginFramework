@@ -1,5 +1,6 @@
 #include "CTRPluginFramework/Utils/StringExtensions.hpp"
 #include <algorithm>
+#include <string>
 
 namespace CTRPluginFramework
 {
@@ -18,7 +19,7 @@ namespace CTRPluginFramework
         return (left + right);
     }
 
-    std::string operator <<(const std::string &left, const Color &color)
+    /*std::string operator <<(const std::string &left, const Color &color)
     {
         char  strColor[5] = { 0 };
 
@@ -40,5 +41,5 @@ namespace CTRPluginFramework
         strColor[3] = std::max((u8)1, color.b);
 
         return (strColor + right);
-    }
+    } */
 }
