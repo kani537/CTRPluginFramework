@@ -3,6 +3,7 @@
 #include "CTRPluginFrameworkImpl/Graphics.hpp"
 #include "CTRPluginFramework/Graphics.hpp"
 #include "CTRPluginFrameworkImpl/System/Screen.hpp"
+#include "ctrulib/gpu/enums.h"
 #include <algorithm>
 #include <queue>
 
@@ -11,6 +12,203 @@ namespace CTRPluginFramework
     inline u32   GetFramebufferOffset(int posX, int posY, int bpp, int rowsize)
     {
         return ((rowsize - 1 - posY + posX * rowsize) * bpp);
+    }
+
+    static void        DrawLineV(u32 fmt, const Color& color, u8 *dst, u32 height)
+    {
+        switch (fmt)
+        {
+        case GSP_RGBA8_OES:
+        {
+            //u32 *dst32 = (u32 *)dst;
+            while (height--)
+            {
+                *dst++ = color.a;
+                *dst++ = color.b;
+                *dst++ = color.g;
+                *dst++ = color.r;
+
+                //*dst32++ = color.raw;
+            }
+            break;
+        }
+        case GSP_BGR8_OES:
+        {
+            while (height--)
+            {
+                *dst++ = color.b;
+                *dst++ = color.g;
+                *dst++ = color.r;
+            }
+            break;
+        }
+        case GSP_RGB565_OES:
+        {
+            union
+            {
+                u16     u;
+                char    b[2];
+            }           half;
+
+            half.u  = (color.r & 0xF8) << 8;
+            half.u |= (color.g & 0xFC) << 3;
+            half.u |= (color.b & 0xF8) >> 3;
+
+            while (height--)
+            {
+                *(dst++) = half.b[0];
+                *(dst++) = half.b[1];
+            }
+            break;
+        }
+        case GSP_RGB5_A1_OES:
+        {
+            union
+            {
+                u16     u;
+                char    b[2];
+            }           half;
+
+            half.u  = (color.r & 0xF8) << 8;
+            half.u |= (color.g & 0xF8) << 3;
+            half.u |= (color.b & 0xF8) >> 2;
+            half.u |= 1;
+
+            while (height--)
+            {
+                *(dst++) = half.b[0];
+                *(dst++) = half.b[1];
+            }
+
+            break;
+        }
+        case GSP_RGBA4_OES:
+        {
+            union
+            {
+                u16     u;
+                char    b[2];
+            }           half;
+
+            half.u  = (color.r & 0xF0) << 8;
+            half.u |= (color.g & 0xF0) << 4;
+            half.u |= (color.b & 0xF0);
+            half.u |= 0x0F;
+
+            while (height--)
+            {
+                *(dst++) = half.b[0];
+                *(dst++) = half.b[1];
+            }
+            break;
+        }
+        default:
+            break;
+        }
+    }
+
+    static void        DrawLineV2(u32 fmt, const Color& color1, const Color& color2, u8 *dst, u32 height)
+    {
+        union UColor
+        {
+            u16     u;
+            char    b[2];
+        };
+
+        switch (fmt)
+        {
+        case GSP_RGBA8_OES:
+        {
+            u32 *dst32 = (u32 *)dst;
+            while (height--)
+            {
+                const Color& color = height & 1 ? color1 : color2;
+                *dst32++ = color.raw;
+            }
+            break;
+        }
+        case GSP_BGR8_OES:
+        {
+            while (height--)
+            {
+                const Color& color = height & 1 ? color1 : color2;
+                *dst++ = color.b;
+                *dst++ = color.g;
+                *dst++ = color.r;
+            }
+            break;
+        }
+        case GSP_RGB565_OES:
+        {
+            UColor c1;
+            UColor c2;
+
+            c1.u  = (color1.r & 0xF8) << 8;
+            c1.u |= (color1.g & 0xFC) << 3;
+            c1.u |= (color1.b & 0xF8) >> 3;
+
+            c2.u  = (color2.r & 0xF8) << 8;
+            c2.u |= (color2.g & 0xFC) << 3;
+            c2.u |= (color2.b & 0xF8) >> 3;
+
+            while (height--)
+            {
+                const UColor& c = height & 1 ? c1 : c2;
+                *(dst++) = c.b[0];
+                *(dst++) = c.b[1];
+            }
+            break;
+        }
+        case GSP_RGB5_A1_OES:
+        {
+            UColor c1;
+            UColor c2;
+
+            c1.u  = (color1.r & 0xF8) << 8;
+            c1.u |= (color1.g & 0xF8) << 3;
+            c1.u |= (color1.b & 0xF8) >> 2;
+            c1.u |= 1;
+
+            c2.u  = (color2.r & 0xF8) << 8;
+            c2.u |= (color2.g & 0xF8) << 3;
+            c2.u |= (color2.b & 0xF8) >> 2;
+            c2.u |= 1;
+
+            while (height--)
+            {
+                const UColor& c = height & 1 ? c1 : c2;
+                *(dst++) = c.b[0];
+                *(dst++) = c.b[1];
+            }
+
+            break;
+        }
+        case GSP_RGBA4_OES:
+        {
+            UColor c1;
+            UColor c2;
+
+            c1.u  = (color1.r & 0xF0) << 8;
+            c1.u |= (color1.g & 0xF0) << 4;
+            c1.u |= (color1.b & 0xF0);
+            c1.u |= 0x0F;
+
+            c2.u  = (color2.r & 0xF0) << 8;
+            c2.u |= (color2.g & 0xF0) << 4;
+            c2.u |= (color2.b & 0xF0);
+            c2.u |= 0x0F;
+
+            while (height--)
+            {
+                const UColor& c = height & 1 ? c1 : c2;
+                *(dst++) = c.b[0];
+                *(dst++) = c.b[1];
+            }
+            break;
+        }
+        default:
+            break;
+        }
     }
 
     void        Renderer::DrawLine(int posX, int posY, int width, const Color &color, int height)
@@ -33,15 +231,12 @@ namespace CTRPluginFramework
         ScreenImpl  *screen = GetContext()->screen;
         u8          *dst = screen->GetLeftFramebuffer(posX, posY + height - 1);
         u32         stride = screen->GetStride();
+        u32         fmt = screen->GetFormat();
+        //u32         size = screen->GetBytesPerPixel() * height;
 
         while (width-- > 0)
         {
-            u8 *dd = dst;
-
-            for (int y = 0; y < height; ++y)
-            {
-                dd = PrivColor::ToFramebuffer(dd, color);
-            }
+            DrawLineV(fmt, color, dst, height);
             dst += stride;
         }
     }
@@ -63,16 +258,11 @@ namespace CTRPluginFramework
         ScreenImpl  *screen = GetContext()->screen;
         u8          *dst = screen->GetLeftFramebuffer(posX, posY + height - 1);
         u32         stride = screen->GetStride();
+        u32         fmt = screen->GetFormat();
 
         while (width-- > 0)
         {
-            u8 *dd = dst;
-
-            for (u32 y = 0; y < height; ++y)
-            {
-                dd = PrivColor::ToFramebuffer(dd, color);
-            }
-
+            DrawLineV(fmt, color, dst, height);
             dst += stride;
         }
     }
@@ -786,13 +976,15 @@ namespace CTRPluginFramework
         int posY = rect.leftTop.y;
         int width = rect.size.x;
 
-        while (--height >= 0)
-        {
-            const Color &c = height % 2 ? color1 : color2;
-            // DrawLine line
-            DrawLine(posX, posY, width, c);
-            posY++;
-        }
+        ScreenImpl  *screen = GetContext()->screen;
+        u8          *dst = screen->GetLeftFramebuffer(posX, posY + height - 1);
+        u32         stride = screen->GetStride();
+        u32         fmt = screen->GetFormat();
 
+        while (width-- > 0)
+        {
+            DrawLineV2(fmt, color1, color2, dst, height);
+            dst += stride;
+        }
     }
 }
