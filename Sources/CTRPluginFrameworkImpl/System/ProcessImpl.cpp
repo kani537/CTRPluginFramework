@@ -208,8 +208,6 @@ namespace CTRPluginFramework
 
     extern "C" u32 __ctru_linear_heap;
 
-#define MEMPERM_RW (MEMPERM_READ | MEMPERM_WRITE)
-
     void    ProcessImpl::UpdateMemRegions(void)
     {
         MemRegions.clear();
@@ -240,18 +238,18 @@ namespace CTRPluginFramework
                 }
 
                 // Check if the region needs patching
-                if ((memInfo.perm & MEMPERM_RW) != MEMPERM_RW)
+                /*if ((memInfo.perm & MEMPERM_RW) != MEMPERM_RW)
                 {
-                    u32 perm = memInfo.perm | MEMPERM_RW;
+                    u32 perm = MEMPERM_EXECUTE | MEMPERM_RW;
 
                     regionPatched |=
                         R_SUCCEEDED(svcControlProcessMemory(ProcessImpl::ProcessHandle,
                             memInfo.base_addr, 0, memInfo.size, MEMOP_PROT, perm));
-                }
+                }*/
 
                 // Add it to the vector if necessary
-                if (!regionPatched)
-                    MemRegions.push_back(memInfo);
+                //if (!regionPatched)
+                MemRegions.push_back(memInfo);
 
                 addr = memInfo.base_addr + memInfo.size;
                 continue;
@@ -259,9 +257,8 @@ namespace CTRPluginFramework
 
             addr += 0x1000;
         }
-
-        if (regionPatched)
-            UpdateMemRegions();
+        //if (regionPatched)
+        //    UpdateMemRegions();
     }
 
     MemInfo    ProcessImpl::GetMemRegion(u32 address)
@@ -296,5 +293,21 @@ namespace CTRPluginFramework
         }
 
         return region;
+    }
+
+    MemInfo     ProcessImpl::PatchMemRegion(const MemInfo &region)
+    {
+        if ((region.perm & MEMPERM_RW) != MEMPERM_RW)
+        {
+            u32 perm = region.perm | MEMPERM_RW;
+
+            if (R_SUCCEEDED(svcControlProcessMemory(ProcessImpl::ProcessHandle,
+                    region.base_addr, 0, region.size, MEMOP_PROT, perm)))
+            {
+                UpdateMemRegions();
+            }
+        }
+
+        return GetMemRegion(region.base_addr);
     }
 }

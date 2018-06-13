@@ -8,6 +8,9 @@
 
 namespace CTRPluginFramework
 {
+    #define MEMPERM_RW (MEMPERM_READ | MEMPERM_WRITE)
+    #define MEMPERM_RWX (MEMPERM_RW | MEMPERM_EXECUTE)
+
     static inline bool      operator<(const MemInfo& left, const MemInfo& right)
     {
         return left.base_addr < right.base_addr;
@@ -58,6 +61,7 @@ namespace CTRPluginFramework
         static MemInfo  GetMemRegion(const u32 address);
         static MemInfo  GetNextRegion(const MemInfo &region);
         static MemInfo  GetPreviousRegion(const MemInfo &region);
+        static MemInfo  PatchMemRegion(const MemInfo &region);
 
         static Handle       ProcessHandle;
         static u32          IsPaused;
