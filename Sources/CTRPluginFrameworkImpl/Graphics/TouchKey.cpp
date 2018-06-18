@@ -7,11 +7,14 @@ namespace CTRPluginFramework
     TouchKey::TouchKey(TouchKey &&tk)
     {
         _character = tk._character;
+        _glyph = tk._glyph;
         _content = tk._content;
         _icon = tk._icon;
         _uiProperties = tk._uiProperties;
-        _enabled = tk._enabled;
+        _posX = tk._posX;
+        _posY = tk._posY;
         _isPressed = tk._isPressed;
+        _enabled = tk._enabled;
         _execute = tk._execute;
 
         tk._content = nullptr;
@@ -26,6 +29,15 @@ namespace CTRPluginFramework
 
         _isPressed = false;
         _execute = false;
+
+        // Character drawing infos
+        _glyph = Font::GetGlyph((char)character);
+
+        if (_glyph == nullptr)
+            return;
+
+        _posX = ((ui.size.x - static_cast<int>(_glyph->Width())) >> 1) + ui.leftTop.x;
+        _posY = ((ui.size.y - 16) >> 1) + ui.leftTop.y;
     }
 
     TouchKey::TouchKey(const std::string &str, IntRect ui, int value, bool isEnabled)
@@ -38,6 +50,10 @@ namespace CTRPluginFramework
 
         _isPressed = false;
         _execute = false;
+
+        // String drawing infos
+        _posX = ((ui.size.x - static_cast<int>(_content->width)) >> 1) + ui.leftTop.x;
+        _posY = ((ui.size.y - 16) >> 1) + ui.leftTop.y;
     }
 
     TouchKey::TouchKey(int value, IconCallback icon, IntRect ui, bool isEnabled)
@@ -50,6 +66,10 @@ namespace CTRPluginFramework
 
         _isPressed = false;
         _execute = false;
+
+        // Icon drawing infos
+        _posX = ((_uiProperties.size.x - 15) >> 1) + _uiProperties.leftTop.x;
+        _posY = ((_uiProperties.size.y - 15) >> 1) + _uiProperties.leftTop.y;
     }
 
     TouchKey::~TouchKey()
@@ -71,49 +91,26 @@ namespace CTRPluginFramework
         _enabled = isEnabled;
     }
 
-    void    TouchKey::ChangeContent(const std::string &content)
-    {
-        if (_content != nullptr)
-        {
-            _content->text = content;
-            _content->width = Renderer::GetTextSize(content.c_str());
-        }
-    }
-
-    void    TouchKey::DrawCharacter(const IntRect &rect, const Color &color)
+    void    TouchKey::DrawCharacter(const Color &color)
     {
         // If not a string
         if (_content == nullptr)
         {
-            char c = static_cast<char>(_character);
-            Glyph *glyph = Font::GetGlyph(c);
-
-            if (glyph == nullptr)
+            if (_glyph == nullptr)
                 return;
 
-            int posX = ((rect.size.x - static_cast<int>(glyph->Width())) / 2) + rect.leftTop.x;
-            int posY = ((rect.size.y - 16) / 2) + rect.leftTop.y;
-
-            Renderer::DrawGlyph(glyph, posX, posY, color);
+            Renderer::DrawGlyph(_glyph, _posX, _posY, color);
         }
         // String
         else
         {
-            int posX = ((rect.size.x - _content->width) / 2) + rect.leftTop.x;
-            int posY = ((rect.size.y - 16) / 2) + rect.leftTop.y;
+            int posX = _posX;
 
-            u8  *str = reinterpret_cast<u8 *>(const_cast<char *>(_content->text.c_str()));
-            do
+            for (Glyph *glyph : _content->glyphs)
             {
-                Glyph *glyph = Font::GetGlyph(str);
-
-                if (glyph == nullptr)
-                    break;
-
-                posX = Renderer::DrawGlyph(glyph, posX, posY, color);
-            } while (*str);
+                posX = Renderer::DrawGlyph(glyph, posX, _posY, color);
+            }
         }
-
     }
 
     void    TouchKey::Draw(void)
@@ -128,14 +125,11 @@ namespace CTRPluginFramework
         // Icon
         if (_icon != nullptr)
         {
-            int     posX = ((_uiProperties.size.x - 15) / 2) + _uiProperties.leftTop.x;
-            int     posY = ((_uiProperties.size.y - 15) / 2) + _uiProperties.leftTop.y;
-
-            _icon(posX, posY, false);
+            _icon(_posX, _posY, false);
         }
         // Character
         else
-            DrawCharacter(_uiProperties, text);
+            DrawCharacter(text);
     }
 
     void    TouchKey::Update(const bool isTouchDown, const IntVector &touchPos)

@@ -126,17 +126,15 @@
     <ClInclude Include="Includes\CTRPluginFrameworkImpl\ActionReplay\ARCode.hpp" />
     <ClInclude Include="Includes\CTRPluginFrameworkImpl\ActionReplay\ARCodeEditor.hpp" />
     <ClInclude Include="Includes\CTRPluginFrameworkImpl\ActionReplay\ARHandler.hpp" />
+    <ClInclude Include="Includes\CTRPluginFrameworkImpl\Disassembler\arm_disasm.h" />
     <ClInclude Include="Includes\CTRPluginFrameworkImpl\Graphics.hpp" />
     <ClInclude Include="Includes\CTRPluginFrameworkImpl\Graphics\BMPImage.hpp" />
     <ClInclude Include="Includes\CTRPluginFrameworkImpl\Graphics\Button.hpp" />
-    <ClInclude Include="Includes\CTRPluginFrameworkImpl\Graphics\CheckBox.hpp" />
-    <ClInclude Include="Includes\CTRPluginFrameworkImpl\Graphics\CheckedButton.hpp" />
     <ClInclude Include="Includes\CTRPluginFrameworkImpl\Graphics\ComboBox.hpp" />
     <ClInclude Include="Includes\CTRPluginFrameworkImpl\Graphics\Drawable.hpp" />
     <ClInclude Include="Includes\CTRPluginFrameworkImpl\Graphics\FloatingButton.hpp" />
     <ClInclude Include="Includes\CTRPluginFrameworkImpl\Graphics\Font.hpp" />
     <ClInclude Include="Includes\CTRPluginFrameworkImpl\Graphics\Icon.hpp" />
-    <ClInclude Include="Includes\CTRPluginFrameworkImpl\Graphics\IconButton.hpp" />
     <ClInclude Include="Includes\CTRPluginFrameworkImpl\Graphics\Line.hpp" />
     <ClInclude Include="Includes\CTRPluginFrameworkImpl\Graphics\MessageBoxImpl.hpp" />
     <ClInclude Include="Includes\CTRPluginFrameworkImpl\Graphics\NumericTextBox.hpp" />
@@ -170,7 +168,6 @@
     <ClInclude Include="Includes\CTRPluginFramework\System\Rect.hpp" />
     <ClInclude Include="Includes\CTRPluginFrameworkImpl\Graphics\Renderer.hpp" />
     <ClInclude Include="Includes\CTRPluginFrameworkImpl\Graphics\TextBox.hpp" />
-    <ClInclude Include="Includes\CTRPluginFrameworkImpl\Graphics\ToggleButton.hpp" />
     <ClInclude Include="Includes\CTRPluginFrameworkImpl\Graphics\TouchKey.hpp" />
     <ClInclude Include="Includes\CTRPluginFrameworkImpl\Graphics\TouchKeyString.hpp" />
     <ClInclude Include="Includes\CTRPluginFramework\System\Sleep.hpp" />
@@ -287,7 +284,6 @@
     <ClInclude Include="Includes\Unicode.h" />
     <ClInclude Include="Sources\cheats.hpp" />
     <ClInclude Include="Includes\CTRPluginFrameworkImpl\ActionReplay\MenuEntryActionReplay.hpp" />
-    <ClInclude Include="Sources\CTRPluginFrameworkImpl\Graphics\CheckBox.cpp" />
     <ClInclude Include="Sources\ctrulib\allocator\addrmap.h" />
     <ClInclude Include="Sources\ctrulib\allocator\mem_pool.h" />
     <ClInclude Include="Sources\ctrulib\internal.h" />
@@ -306,7 +302,9 @@
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\ActionReplay\ARCodeWrite.cpp" />
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\ActionReplay\ARHandler.cpp" />
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\ActionReplay\MenuEntryActionReplay.cpp" />
+    <ClCompile Include="Sources\CTRPluginFrameworkImpl\Disassembler\arm_disasm.cpp" />
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\Graphics\BMPImage.cpp" />
+    <ClCompile Include="Sources\CTRPluginFrameworkImpl\Graphics\Button.cpp" />
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\Graphics\ComboBox.cpp" />
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\Graphics\FloatinButton.cpp" />
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\Graphics\FontImpl.cpp" />

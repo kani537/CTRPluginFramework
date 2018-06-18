@@ -27,17 +27,17 @@ namespace CTRPluginFramework
         ARCodeEditor    _editor;
         Menu            _topMenu;
 
-        using ToggleBtn = ToggleButton<PluginMenuActionReplay, void>;
-        using IconBtn = IconButton<PluginMenuActionReplay, void>;
+        //using ToggleBtn = ToggleButton<PluginMenuActionReplay, void>;
+        //using IconBtn = IconButton<PluginMenuActionReplay, void>;
 
-        ToggleBtn       _noteBtn;
-        IconBtn         _editorBtn;
-        IconBtn         _newBtn;
-        IconBtn         _cutBtn;
-        IconBtn         _pasteBtn;
-        IconBtn         _duplicateBtn;
-        IconBtn         _trashBtn;
-        Button<PluginMenuActionReplay, void> _openFileBtn;
+        Button          _noteBtn;
+        Button          _editorBtn;
+        Button          _newBtn;
+        Button          _cutBtn;
+        Button          _pasteBtn;
+        Button          _duplicateBtn;
+        Button          _trashBtn;
+        Button          _openFileBtn;
 
         MenuItem        *_clipboard;
         u8              _path[40];

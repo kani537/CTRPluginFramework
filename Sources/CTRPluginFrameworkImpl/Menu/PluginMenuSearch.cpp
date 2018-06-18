@@ -20,17 +20,17 @@ namespace CTRPluginFramework
         _searchType(150, 105, 130, 15),
         _compareType(150, 125, 130, 15),
         _valueTextBox(150, 145, 130, 15),
-        _searchBtn("Search", *this, &PluginMenuSearch::_searchBtn_OnClick, IntRect(35, 195, 80, 15)),
-        _undoBtn("Undo", *this, &PluginMenuSearch::_undoBtn_OnClick, IntRect(120, 195, 80, 15)),
-        _cancelBtn("Cancel", *this, &PluginMenuSearch::_cancelBtn_OnClick, IntRect(120, 195, 80, 15)),
-        _resetBtn("Reset", *this, &PluginMenuSearch::_resetBtn_OnClick, IntRect(205, 195, 80, 15)),
+        _searchBtn(0, "Search", IntRect(35, 195, 80, 15)),
+        _undoBtn(0, "Undo", IntRect(120, 195, 80, 15)),
+        _cancelBtn(0, "Cancel", IntRect(120, 195, 80, 15)),
+        _resetBtn(0, "Reset", IntRect(205, 195, 80, 15)),
         _inSearch(false),
         _firstRegionInit(false),
         _step(0),
         _waitForUser(false),
         _hexInput(false),
         _inEditor(false),
-        _hexBtn("Hex", *this, nullptr, IntRect(110, 145, 38, 15), nullptr)
+        _hexBtn(Button::Toggle, "Hex", IntRect(110, 145, 38, 15))
     {
         _currentSearch = nullptr;
 
@@ -48,14 +48,9 @@ namespace CTRPluginFramework
         _PopulateSearchType(true);
 
         // Init buttons
-        _searchBtn.UseSysFont(false);
-        _undoBtn.UseSysFont(false);
-        _undoBtn.IsEnabled = false;
-        _resetBtn.UseSysFont(false);
-        _resetBtn.IsEnabled = false;
-        _cancelBtn.UseSysFont(false);
-        _cancelBtn.IsEnabled = false;
-        _hexBtn.UseSysFont(false);
+        _undoBtn.Disable();
+        _resetBtn.Disable();
+        _cancelBtn.Disable();
 
         _searchSize.SelectedItem = 2;
 
@@ -148,9 +143,9 @@ namespace CTRPluginFramework
         if (Window::BottomWindow.MustClose())
             return (true);
 
-        _searchBtn();
-        _undoBtn();
-        _resetBtn();
+        if (_searchBtn()) _searchBtn_OnClick();
+        if (_undoBtn()) _undoBtn_OnClick();
+        if (_resetBtn()) _resetBtn_OnClick();
 		if (_hexBtn())
 		{
 			_hexInput = !_hexInput;
@@ -296,9 +291,9 @@ namespace CTRPluginFramework
                 _PopulateSearchType(false);
 
                 // Enable buttons
-                _resetBtn.IsEnabled = true;
+                _resetBtn.Enable();
                 if (_searchHistory.size())
-                    _undoBtn.IsEnabled = true;
+                    _undoBtn.Enable();
 
                 // Lock memory region
                 _memoryRegions.IsEnabled = false;
@@ -336,10 +331,10 @@ namespace CTRPluginFramework
         if (_waitForUser && event.type == Event::KeyDown && event.key.code == Key::A)
         {
             _waitForUser = false;
-            _cancelBtn.IsEnabled = false;
-            _resetBtn.IsEnabled = true;
+            _cancelBtn.Disable();
+            _resetBtn.Disable();
             if (_searchHistory.size())
-                _undoBtn.IsEnabled = true;
+                _undoBtn.Enable();
         }
     }
 
@@ -350,7 +345,7 @@ namespace CTRPluginFramework
     void    PluginMenuSearch::_RenderTop(void)
     {
         const Color    &black = Color::Black;
-        const Color    &blank = Color::Blank;
+        const Color    &blank = Color::White;
         const Color    &dimGrey = Color::BlackGrey;
         //static IntRect  background(30, 20, 340, 200);
 
@@ -373,7 +368,7 @@ namespace CTRPluginFramework
     void    PluginMenuSearch::_RenderBottom(void)
     {
         const Color    &black = Color::Black;
-        const Color    &blank = Color::Blank;
+        const Color    &blank = Color::White;
         const Color    &dimGrey = Color::BlackGrey;
         //static IntRect  background(20, 20, 280, 200);
 
@@ -604,9 +599,9 @@ namespace CTRPluginFramework
         _searchSize.IsEnabled = false;
 
         // Enable Cancel button
-        _cancelBtn.IsEnabled = true;
+        _cancelBtn.Enable();
         // Disable Undo button
-        _undoBtn.IsEnabled = false;
+        _undoBtn.Disable();
 
         _inSearch = true;
 
@@ -619,7 +614,7 @@ namespace CTRPluginFramework
             _inSearch = false;
             _waitForUser = true;
             _compareType.IsEnabled = true;
-            _cancelBtn.IsEnabled = false;
+            _cancelBtn.Disable();
 
             // If we canceled first search
             if (_step == 1)
@@ -664,8 +659,8 @@ namespace CTRPluginFramework
         // Reset step
         _step = 0;
 
-        _resetBtn.IsEnabled = false;
-        _undoBtn.IsEnabled = false;
+        _resetBtn.Disable();
+        _undoBtn.Disable();
         _searchMenu.Update();
 
         // Reset search type available
@@ -700,14 +695,14 @@ namespace CTRPluginFramework
         _step--;
 
         if (!_searchHistory.size())
-            _undoBtn.IsEnabled = false;
+            _undoBtn.Disable();
         _searchMenu.Update();
     }
 
     void    PluginMenuSearch::_ShowProgressWindow(void) const
     {
         const Color    &black = Color::Black;
-        const Color    &blank = Color::Blank;
+        const Color    &blank = Color::White;
         const Color    &gainsboro = Color::Gainsboro;
         const Color    &dimGrey = Color::BlackGrey;
         const Color    &skyblue = Color::SkyBlue;

@@ -110,6 +110,7 @@ namespace Kernel
 
     void    Initialize(void)
     {
+        return;
         svcCustomBackdoor((void *)K__Initialize);
     }
 
@@ -329,6 +330,20 @@ u32     KProcess::PatchMaxPriority(u32 newPrio)
     };
 
     return svcCustomBackdoor((void *)K_PatchMaxPriority, this, newPrio, SystemImpl::IsNew3DS ? 0x84 : 0x7C);
+}
+
+void     KProcess::PatchMaxCommit(u32 more)
+{
+    u32     (*K_PatchMaxCommit)(KProcess *, u32, u32) = [](KProcess *process, u32 more, u32 offset) -> u32
+    {
+        KResourceLimit  *resLimit = (KResourceLimit *)*(u32 *)((u32)process + offset);
+        u32  oldPrio = resLimit->maxPriority;
+
+        resLimit->maxCommit += more;
+        return 0;
+    };
+
+    svcCustomBackdoor((void *)K_PatchMaxCommit, this, more, SystemImpl::IsNew3DS ? 0x84 : 0x7C);
 }
 
 KAutoObject * KProcess::GetObjFromHandle(Handle handle)

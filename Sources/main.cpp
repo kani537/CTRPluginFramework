@@ -411,39 +411,10 @@ namespace CTRPluginFramework
 
     int     main(void)
     {
-        PluginMenu  *m = new PluginMenu("Action Replay", 1, 2, 0);
+        PluginMenu  *m = new PluginMenu("Action Replay Alpha", 0, 4, 9);
         PluginMenu  &menu = *m;
 
         menu.SynchronizeWithFrame(true);
-
-        menu += new MenuEntry("Lock threads", nullptr, [](MenuEntry *entry)
-        {
-            ProcessImpl::LockGameThreads();
-        });
-
-        menu += new MenuEntry("Unlock threads", nullptr, [](MenuEntry *entry)
-        {
-            ProcessImpl::UnlockGameThreads();
-        });
-
-        menu += new MenuEntry("Hex editor", nullptr, ReadKernelValue);
-
-        menu += new MenuEntry("Task", nullptr, [](MenuEntry *entry)
-        {
-            Task task([](void *arg) -> s32
-            {
-                for (int i = 0; i < 10; ++i)
-                {
-                    OSD::Notify(Utils::Format("Core: %d", Kernel::GetCurrentCoreId()));
-                    Sleep(Seconds(4.f));
-                }
-                return 0;
-            });
-
-            task.Start();
-        });
-
-        menu += new MenuEntry("List threads", nullptr, ListThreads);
 
         // Launch menu and mainloop
         int ret = menu.Run();

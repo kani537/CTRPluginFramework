@@ -295,7 +295,7 @@ namespace CTRPluginFramework
                 {
                     std::string &&str = Utils::Format("Touch.x: %d  Touch.y: %d", touchPos.x, touchPos.y);
                     int posY = 20;
-                    Renderer::DrawString(str.c_str(), 10, posY, Color::Blank, Color::Black);
+                    Renderer::DrawString(str.c_str(), 10, posY, Color::White, Color::Black);
                 }
                 mustFlush = true;
             }
@@ -306,7 +306,7 @@ namespace CTRPluginFramework
         {
             std::string &&fps = Utils::Format("FPS: %.02f", g_second / g_fpsClock[isBottom].Restart().AsSeconds());
             int posY = 10;
-            Renderer::DrawString(fps.c_str(), 10, posY, Color::Blank, Color::Black);
+            Renderer::DrawString(fps.c_str(), 10, posY, Color::White, Color::Black);
             mustFlush |= true;
         }
 

@@ -66,7 +66,8 @@ namespace CTRPluginFramework
         static void     RoundedRectangle(const IntRect &rect, float radius, int max, Color color, bool mustFill = false, Color fillColor = Color());
 #endif
 
-        static    void  ComputeRoundedRectangle(std::vector<IntLine> &out, const IntRect &rect, float radius, int max);
+        static void     ComputeRoundedRectangle(std::vector<IntLine> &out, const IntRect &rect, float radius, int max);
+        static void     DrawRoundedRectangle(const IntRect &rect, const Color &border, const Color &fill);
         // Menu
         //#############################################################################################
         static    void  MenuSelector(int posX, int posY, int width, int height);

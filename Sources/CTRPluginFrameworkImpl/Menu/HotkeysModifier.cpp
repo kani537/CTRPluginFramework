@@ -1,4 +1,5 @@
 #include "CTRPluginFrameworkImpl/Menu/HotkeysModifier.hpp"
+#include "CTRPluginFrameworkImpl/Graphics/Icon.hpp"
 #include "CTRPluginFrameworkImpl/Graphics/Renderer.hpp"
 #include "CTRPluginFrameworkImpl/Graphics/Window.hpp"
 #include "CTRPluginFramework/System/Controller.hpp"
@@ -8,7 +9,7 @@
 
 namespace CTRPluginFramework
 {
-    static const Key ktable[14] = 
+    static const Key ktable[14] =
     {
         ZL, L, DPadUp, DPadLeft, DPadRight, DPadDown, Start,
         ZR, R, X, Y, A, B, Select
@@ -33,9 +34,9 @@ namespace CTRPluginFramework
     _keys(keys), _message(message)
     {
         for (int i = 0, posY = 32; i < 7; ++i, posY += 25)
-            _checkboxs.push_back(CheckBox(30, posY));
+            _checkboxs.push_back(Button(Button::Icon, IntRect(30, posY, 20, 20), Icon::DrawCheckBox));
         for (int i = 0, posY = 32; i < 7; ++i, posY += 25)
-            _checkboxs.push_back(CheckBox(200, posY));
+            _checkboxs.push_back(Button(Button::Icon, IntRect(200, posY, 20, 20), Icon::DrawCheckBox));
 
         for (int i = 0; i < 16; ++i)
         {
@@ -50,7 +51,7 @@ namespace CTRPluginFramework
             // Disable ZL & ZR on O3DS
             _checkboxs[0].Enable(false);
             _checkboxs[7].Enable(false);
-        }        
+        }
     }
 
     HotkeysModifier::~HotkeysModifier()
@@ -71,7 +72,7 @@ namespace CTRPluginFramework
 
             for (int i = 0; i < 14; i++)
             {
-                if (_checkboxs[i].IsChecked())
+                if (_checkboxs[i].GetState())
                     _keys |= ktable[i];
             }
         }
@@ -92,7 +93,7 @@ namespace CTRPluginFramework
         Window::BottomWindow.Draw();
 
         // Draw CheckBoxes
-        for (CheckBox &cb : _checkboxs)
+        for (Button &cb : _checkboxs)
             cb.Draw();
 
         int skip = !System::IsNew3DS();
@@ -109,7 +110,7 @@ namespace CTRPluginFramework
         bool        isTouched = Touch::IsDown();
         IntVector   touchPos(Touch::GetPosition());
 
-        for (CheckBox &cb : _checkboxs)
+        for (Button &cb : _checkboxs)
             cb.Update(isTouched, touchPos);
 
         Window::BottomWindow.Update(isTouched, touchPos);

@@ -74,7 +74,7 @@ namespace CTRPluginFramework
     private:
         friend class PluginMenu;
         friend class OSD;
-        friend void  Initialize(void);
+        friend void    KeepThreadMain(void *arg);
 
         static  void    _Initialize(void);
     };

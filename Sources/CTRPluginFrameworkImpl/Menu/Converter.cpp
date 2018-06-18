@@ -30,10 +30,18 @@ namespace CTRPluginFramework
     {
     }
 
-    void    Converter::operator()(void)
+    void    Converter::operator()(u32 v)
     {
         Event   event;
         EventManager eventMgr;
+
+        if (v != 0)
+        {
+            _hexadecimalTB.SetValue(v);
+            _decimalTB.SetValue(v);
+            _floatTB.SetValue(*(float *)&v);
+            _hexfloatTB.SetValue(v);
+        }
 
         do
         {

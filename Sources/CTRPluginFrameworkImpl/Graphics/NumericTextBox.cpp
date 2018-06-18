@@ -57,7 +57,7 @@ namespace CTRPluginFramework
     {
         ValueType = Type::Bits8;
         Bits32 = val;
-        
+
         _UpdateVal();
     }
 
@@ -119,7 +119,7 @@ namespace CTRPluginFramework
        // static Color    blank = Color(255, 255, 255);
         const Color    &black = Color::Black;
         const Color    &gainsboro = Color::Gainsboro;
-        const Color    &grey = Color::Grey;
+        const Color    &grey = Color::Gray;
 
         if (!IsVisible)
             return;
@@ -145,7 +145,7 @@ namespace CTRPluginFramework
 
         if (_isTouched && isTouchDown && !_rectPos.Contains(touchPos))
             _isTouched = false;
-        
+
         if (_isTouched && !isTouchDown)
         {
             _execute = true;

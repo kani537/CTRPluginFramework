@@ -24,12 +24,13 @@ SOURCES 	:= 	Sources \
 				Sources\CTRPluginFramework\System \
 				Sources\CTRPluginFramework\Utils \
 				Sources\CTRPluginFrameworkImpl \
+				Sources\CTRPluginFrameworkImpl\ActionReplay \
+				Sources\CTRPluginFrameworkImpl\Disassembler \
 				Sources\CTRPluginFrameworkImpl\Graphics \
 				Sources\CTRPluginFrameworkImpl\Graphics\Icons \
 				Sources\CTRPluginFrameworkImpl\Menu \
 				Sources\CTRPluginFrameworkImpl\Search \
 				Sources\CTRPluginFrameworkImpl\System \
-				Sources\CTRPluginFrameworkImpl\ActionReplay \
 				Sources\ctrulib \
 				Sources\ctrulib\allocator \
 				Sources\ctrulib\gpu \

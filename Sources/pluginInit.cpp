@@ -35,6 +35,8 @@ namespace CTRPluginFramework
     Handle      g_keepEvent = 0;
     Handle      g_resumeEvent = 0;
     bool        g_keepRunning = true;
+    __attribute__((weak)) u32         ___heap_size = 0;
+    __attribute__((weak)) u32         ___eco_memory_mode = 0;
 
     extern bool     g_heapError; ///< allocateHeaps.cpp
 
@@ -61,7 +63,7 @@ void abort(void)
     if (CTRPluginFramework::System::OnAbort)
         CTRPluginFramework::System::OnAbort();
 
-    CTRPluginFramework::Color c(255, 69, 0); //red(255, 0, 0);
+    CTRPluginFramework::Color c(255, 69, 0);
     CTRPluginFramework::ScreenImpl::Top->Flash(c);
     CTRPluginFramework::ScreenImpl::Bottom->Flash(c);
 
@@ -98,11 +100,72 @@ namespace CTRPluginFramework
         extern u8* __ctrpf_heap;
         extern u32 __ctrpf_heap_size;
     }
+    static void InitFS(void)
+    {
+        // Init sdmcArchive
+        {
+            FS_Path sdmcPath = { PATH_EMPTY, 1, (u8*)"" };
+            FSUSER_OpenArchive(&_sdmcArchive, ARCHIVE_SDMC, sdmcPath);
+        }
+
+        // Set current working directory
+        if (!System::IsLoaderNTR()) // Luma's loader
+        {
+            if (*(vu32 *)0x070000FC)
+            {
+                std::string path = Utils::Format("/luma/plugins/ActionReplay/%016llX", Process::GetTitleID());
+
+                if (!Directory::IsExists(path))
+                    Directory::Create(path);
+
+                Directory::ChangeWorkingDirectory(path + "/");
+            }
+            else
+                Directory::ChangeWorkingDirectory(Utils::Format("/luma/plugins/%016llX/", Process::GetTitleID()));
+        }
+        else
+        {
+            std::string dirpath = Utils::Format("/plugin/%016llX", Process::GetTitleID());
+
+            // Check if game's folder exists
+            if (!Directory::IsExists(dirpath))
+            {
+                // If doesn't exist, so create a temporary folder
+                dirpath = "/plugin/game/ctrpf";
+                if (!Directory::IsExists(dirpath))
+                    Directory::Create(dirpath);
+                dirpath += "/";
+                Process::GetName(dirpath);
+
+                if (!Directory::IsExists(dirpath))
+                    Directory::Create(dirpath);
+            }
+
+            dirpath += "/";
+            Directory::ChangeWorkingDirectory(dirpath);
+        }
+    }
+
+    static void     InitHeap(void)
+    {
+        u32         size;
+
+        if (___eco_memory_mode)
+            size = 0x50000;
+        else if (System::IsLoaderNTR())
+            size = 0xC0000;
+        else if (!SystemImpl::IsNew3DS)
+            size = 0x120000;
+        else
+            size = 0x100000;
+
+        // Init System::Heap
+        Heap::__ctrpf_heap_size = size;
+        Heap::__ctrpf_heap = static_cast<u8 *>(::operator new(size));
+    }
 
     void    KeepThreadMain(void *arg UNUSED)
     {
-        FwkSettings settings;
-
         // Initialize the synchronization subsystem
         __sync_init();
 
@@ -131,12 +194,6 @@ namespace CTRPluginFramework
         // Init locks
         PluginMenuExecuteLoop::InitLocks();
 
-        // Init sdmcArchive
-        {
-            FS_Path sdmcPath = { PATH_EMPTY, 1, (u8*)"" };
-            FSUSER_OpenArchive(&_sdmcArchive, ARCHIVE_SDMC, sdmcPath);
-        }
-
         // Protect code
         Process::CheckAddress(0x00100000, 7);
         Process::CheckAddress(0x00102000, 7); ///< NTR seems to protect the first 0x1000 bytes, which split the region in two
@@ -146,69 +203,38 @@ namespace CTRPluginFramework
         // Check loader
         SystemImpl::IsLoaderNTR = Process::CheckAddress(0x06000000, 3);
 
+        // Define heap size
+        __ctru_heap_size = SystemImpl::IsLoaderNTR ? 0x100000 : 0x200000;
+        __ctru_heap_size = std::max(__ctru_heap_size, ___heap_size);
+
+        // Patch KProcess::ResourceLimit
+        ProcessImpl::KProcessPtr->PatchMaxCommit(__ctru_heap_size + 0x1000);
+        if (*(u32 *)0x1FF80030 == 3)
+            *(u32 *)(PA_FROM_VA(0x1FF80048)) += __ctru_heap_size + 0x1000;
+        else
+            *(u32 *)(PA_FROM_VA(0x1FF80040)) += __ctru_heap_size + 0x1000;
+
+        // Init heap and newlib's syscalls
+        initLib();
+
         // Init default settings
+        FwkSettings &settings = FwkSettings::Get();
+
         settings.ThreadPriority = 0x30;
-        settings.HeapSize = SystemImpl::IsLoaderNTR ? 0x100000 : 0x200000;
         settings.EcoMemoryMode = false;
         settings.AllowActionReplay = true;
         settings.AllowSearchEngine = true;
         settings.WaitTimeToBoot = Seconds(10.f);
 
-        // Patch process before it starts & let the dev init some settings
-        PatchProcess(settings);
-
-        // Continue game
-        svcSignalEvent(g_continueGameEvent);
-
-        // Wait for the game to be fully launched
-        Sleep(settings.WaitTimeToBoot);
-
-        // Init heap and newlib's syscalls
-        __ctru_heap_size = settings.HeapSize;
-        initLib();
-
-        // Copy FwkSettings to the globals (solve initialization issues)
-        settings.ThreadPriority = std::min(settings.ThreadPriority, (u32)0x3E);
-        g_gspEventThreadPriority = settings.ThreadPriority + 1;
-        Preferences::Settings = settings;
-
         // Set default theme
         FwkSettings::SetThemeDefault();
-
-        void *tst;
-        u32 size;
-
-        if (System::IsNew3DS()) ///< This will most likely use the extended vram
-        {
-            if (settings.EcoMemoryMode || !settings.AllowSearchEngine)
-                size = 0x50000;
-            else
-                size = 0x100000;
-        }
-        else
-        {
-            if (settings.EcoMemoryMode || !settings.AllowSearchEngine)
-                size = 0x50000;
-            else if (System::IsLoaderNTR())
-                size = 0xC0000;
-            else
-                size = 0x120000;
-        }
 
         // If heap error, exit
         if (g_heapError)
             goto exit;
 
-        // Init System::Heap
-        Heap::__ctrpf_heap_size = size;
-        Heap::__ctrpf_heap = static_cast<u8*>(::operator new(size));
-        tst = Heap::Alloc(0x100);
-        Heap::Free(tst);
-
-        svcCreateEvent(&g_keepEvent, RESET_ONESHOT);
-
-        // Create plugin's main thread
-        g_mainThread = threadCreate(ThreadInit, nullptr, (void *)threadStack, 0x4000, 0x18, 0);
+        // Init OSD hook
+        OSDImpl::_Initialize();
 
         // Install CRO hook
         {
@@ -235,6 +261,30 @@ namespace CTRPluginFramework
                 g_onLoadCroHook.Enable();
             }
         }
+
+        // Init sdmc & paths
+        InitFS();
+
+        // Init System::Heap
+        InitHeap();
+
+        // Patch process before it starts & let the dev init some settings
+        PatchProcess(settings);
+
+        // Continue game
+        svcSignalEvent(g_continueGameEvent);
+
+        // Check threads priorities
+        settings.ThreadPriority = std::min(settings.ThreadPriority, (u32)0x3E);
+        g_gspEventThreadPriority = settings.ThreadPriority + 1;
+
+        // Wait for the required time
+        Sleep(settings.WaitTimeToBoot);
+
+        svcCreateEvent(&g_keepEvent, RESET_ONESHOT);
+
+        // Create plugin's main thread
+        g_mainThread = threadCreate(ThreadInit, nullptr, (void *)threadStack, 0x4000, 0x18, 0);
 
         // Reduce priority
         while (R_FAILED(svcSetThreadPriority(g_keepThreadHandle, settings.ThreadPriority + 1)));
@@ -286,45 +336,8 @@ namespace CTRPluginFramework
         // Init event thread
         gspInit();
 
-        //Init OSD
-        OSDImpl::_Initialize();
-
-        // Set current working directory
-        if (!System::IsLoaderNTR()) // Luma's loader
-        {
-            if (*(vu32 *)0x070000FC)
-            {
-                std::string path = Utils::Format("/luma/plugins/ActionReplay/%016llX", Process::GetTitleID());
-
-                if (!Directory::IsExists(path))
-                    Directory::Create(path);
-
-                Directory::ChangeWorkingDirectory(path + "/");
-            }
-            else
-                Directory::ChangeWorkingDirectory(Utils::Format("/luma/plugins/%016llX/", Process::GetTitleID()));
-        }
-        else
-        {
-            std::string dirpath = Utils::Format("/plugin/%016llX", Process::GetTitleID());
-
-            // Check if game's folder exists
-            if (!Directory::IsExists(dirpath))
-            {
-                // If doesn't exist, so create a temporary folder
-                dirpath = "/plugin/game/ctrpf";
-                if (!Directory::IsExists(dirpath))
-                    Directory::Create(dirpath);
-                dirpath += "/";
-                Process::GetName(dirpath);
-
-                if (!Directory::IsExists(dirpath))
-                    Directory::Create(dirpath);
-            }
-
-            dirpath += "/";
-            Directory::ChangeWorkingDirectory(dirpath);
-        }
+        // Init scheduler
+        Scheduler::Initialize();
 
         {
             // If /cheats/ doesn't exists, create it

@@ -105,7 +105,7 @@ namespace CTRPluginFramework
             ScreenImpl::Bottom->Acquire((int)addr, (u32)addrB, stride, format);
             int posY = 0;
             Renderer::SetTarget(BOTTOM);
-            Renderer::DrawString((Prefix + Utils::Format(" - %03d.bmp", _filecount - 1)).c_str(), 0, posY, Color::Blank, Color::ForestGreen);
+            Renderer::DrawString((Prefix + Utils::Format(" - %03d.bmp", _filecount - 1)).c_str(), 0, posY, Color::White, Color::ForestGreen);
             svcFlushProcessDataCache(Process::GetHandle(), addr, stride * 320);
             ++_display;
         }
@@ -115,7 +115,7 @@ namespace CTRPluginFramework
             ScreenImpl::Bottom->Acquire((int)addr, (u32)addrB, stride, format);
             int posY = 0;
             Renderer::SetTarget(BOTTOM);
-            Renderer::DrawString("Screenshot: An error occured", 0, posY, Color::Red, Color::Blank);
+            Renderer::DrawString("Screenshot: An error occured", 0, posY, Color::Red, Color::White);
             ++_display;
         }
 

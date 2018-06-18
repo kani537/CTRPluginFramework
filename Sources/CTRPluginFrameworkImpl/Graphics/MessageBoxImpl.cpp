@@ -219,14 +219,14 @@ namespace CTRPluginFramework
 
             // Background
             Renderer::DrawRect(posX, posY, 80, 20, Color::DimGrey);
-            Renderer::DrawRect(posX, posY, 80, 20, Color::Blank, false);
+            Renderer::DrawRect(posX, posY, 80, 20, Color::White, false);
 
             // Text
             float width = Renderer::GetTextSize("Ok");
 
             posX += ((80 - width) / 2);
             posY += 2;
-            Renderer::DrawSysString("Ok", posX, posY, 380, Color::Blank);
+            Renderer::DrawSysString("Ok", posX, posY, 380, Color::White);
         }
         else
         {
@@ -238,7 +238,7 @@ namespace CTRPluginFramework
 
                 // Background
                 Renderer::DrawRect(posX, posY, 80, 20, Color::DimGrey);
-                Renderer::DrawRect(posX, posY, 80, 20, _cursor ? Color::Grey : Color::Blank, false);
+                Renderer::DrawRect(posX, posY, 80, 20, _cursor ? Color::Gray : Color::White, false);
 
                 const char *content = _dialogType == DialogType::DialogOkCancel ? "Ok" : "Yes";
 
@@ -247,7 +247,7 @@ namespace CTRPluginFramework
 
                 posX += ((80 - width) / 2);
                 posY += 2;
-                Renderer::DrawSysString(content, posX, posY, 380, _cursor ? Color::Silver : Color::Blank);
+                Renderer::DrawSysString(content, posX, posY, 380, _cursor ? Color::Silver : Color::White);
             }
 
             posY = posYBak;
@@ -258,7 +258,7 @@ namespace CTRPluginFramework
 
                 // Background
                 Renderer::DrawRect(posX, posY, 80, 20, Color::DimGrey);
-                Renderer::DrawRect(posX, posY, 80, 20, _cursor ? Color::Blank : Color::Grey, false);
+                Renderer::DrawRect(posX, posY, 80, 20, _cursor ? Color::White : Color::Gray, false);
 
                 const char *content = _dialogType == DialogType::DialogOkCancel ? "Cancel" : "No";
                 // Text
@@ -266,7 +266,7 @@ namespace CTRPluginFramework
 
                 posX += ((80 - width) / 2);
                 posY += 2;
-                Renderer::DrawSysString(content, posX, posY, 380, _cursor ? Color::Blank : Color::Silver);
+                Renderer::DrawSysString(content, posX, posY, 380, _cursor ? Color::White : Color::Silver);
             }
         }
     }

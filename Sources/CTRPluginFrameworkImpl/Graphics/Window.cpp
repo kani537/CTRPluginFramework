@@ -16,7 +16,7 @@ namespace CTRPluginFramework
     _image(image)
     {
         if (closeBtn)
-            _closeBtn = new IconButton<Window, void>(*this, nullptr, IntRect(posX + width - 25, posY + 4, 20, 20), Icon::DrawClose);
+            _closeBtn = new Button(Button::Icon, IntRect(posX + width - 25, posY + 4, 20, 20), Icon::DrawClose);
         else
             _closeBtn = nullptr;
     }
@@ -66,6 +66,13 @@ namespace CTRPluginFramework
             _closeBtn->Draw();
     }
 
+    void    Window::DrawButton(void) const
+    {
+        // Close button
+        if (_closeBtn != nullptr)
+            _closeBtn->Draw();
+    }
+
     void    Window::Update(const bool isTouched, const IntVector &touchPos) const
     {
         if (_closeBtn != nullptr)
@@ -83,7 +90,10 @@ namespace CTRPluginFramework
     void    Window::Close(void) const
     {
         if (_closeBtn)
+        {
             _closeBtn->SetState(true);
+            _closeBtn->Execute();
+        }
     }
 
     const   IntRect &Window::GetRect(void) const

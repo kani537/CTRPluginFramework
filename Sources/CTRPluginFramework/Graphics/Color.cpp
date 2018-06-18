@@ -3,28 +3,36 @@
 
 namespace CTRPluginFramework
 {
+
     const Color     Color::Black;
-    const Color     Color::Blank = Color(255, 255, 255);
-    const Color     Color::Blue = Color(0, 0, 255);
+    const Color     Color::White(255, 255, 255);
+    const Color     Color::Red(255, 0, 0);
+    const Color     Color::Lime(0, 255, 0);
+    const Color     Color::Blue(0, 0, 255);
+    const Color     Color::Yellow(255, 255, 0);
+    const Color     Color::Cyan(0, 255, 255);
+    const Color     Color::Magenta(255, 0, 255);
+    const Color     Color::Silver(192, 192, 192);
+    const Color     Color::Gray(128, 128, 128);
+    const Color     Color::Maroon(128, 0, 0);
+    const Color     Color::Olive(128, 128, 0);
+    const Color     Color::Green(0, 128, 0);
+    const Color     Color::Purple(128, 0, 128);
+    const Color     Color::Teal(0, 128, 128);
+    const Color     Color::Navy(0, 0, 128);
+
     const Color     Color::BlackGrey = Color(15, 15, 15);
     const Color     Color::Brown = Color(165, 42, 42);
-    const Color     Color::Cyan = Color(0, 255, 255);
     const Color     Color::DarkGrey = Color(169, 169, 169);
     const Color     Color::DeepSkyBlue = Color(0, 191, 255);
     const Color     Color::DimGrey = Color(105, 105, 105);
     const Color     Color::DodgerBlue = Color(30, 144, 255);
     const Color     Color::Gainsboro = Color(220, 220, 220);
     const Color     Color::ForestGreen = Color(34, 139, 34);
-    const Color     Color::Green = Color(0, 128, 0);
-    const Color     Color::Grey = Color(128, 128, 128);
     const Color     Color::LimeGreen = Color(50, 205, 50);
-    const Color     Color::Magenta = Color(255, 0, 255);
     const Color     Color::Orange = Color(255, 128, 0);
-    const Color     Color::Red = Color(255, 0, 0);
-    const Color     Color::Silver = Color(192, 192, 192);
     const Color     Color::SkyBlue = Color(135, 206, 235);
     const Color     Color::Turquoise = Color(64, 224, 208);
-    const Color     Color::Yellow = Color(255, 255, 0);
 
     Color::Color(u8 red, u8 green, u8 blue, u8 alpha)
     : r(red), g(green), b(blue), a(alpha)
@@ -70,18 +78,21 @@ namespace CTRPluginFramework
 
     Color Color::Blend(const Color &color, BlendMode mode) const
     {
+        // This is background, color is foreground
         Color           ret;
         unsigned int    _r;
         unsigned int    _g;
         unsigned int    _b;
         unsigned int    _a;
+        float           forealpha = (float)color.a / 255.f;
+        float           minusForeAlpha = 1.f - forealpha;
 
         switch (mode)
         {
         case BlendMode::Alpha:
-            _r = (color.a * color.r +  (255 - color.a) * r) / 255;
-            _g = (color.a * color.g + (255 - color.a) * g) / 255;
-            _b = (color.a * color.b + (255 - color.a) * b) / 255;
+            _r = (forealpha * (float)color.r) + ((float)r * minusForeAlpha);
+            _g = (forealpha * (float)color.g) + ((float)g * minusForeAlpha);
+            _b = (forealpha * (float)color.b) + ((float)b * minusForeAlpha);
             _a = color.a * a;
             ret.r = std::min(_r, 255u);
             ret.g = std::min(_g, 255u);

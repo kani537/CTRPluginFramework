@@ -1,14 +1,15 @@
 #include "CTRPluginFrameworkImpl/Menu/HotkeysModifier.hpp"
 #include "CTRPluginFrameworkImpl/Menu/PluginMenuTools.hpp"
 #include "CTRPluginFrameworkImpl/Menu/MenuEntryTools.hpp"
-#include "CTRPluginFrameworkImpl/Preferences.hpp"
 #include "CTRPluginFrameworkImpl/Menu/PluginMenuExecuteLoop.hpp"
 #include "CTRPluginFrameworkImpl/System/Screenshot.hpp"
-
+#include "CTRPluginFrameworkImpl/Preferences.hpp"
 
 #include "CTRPluginFramework/Graphics/OSD.hpp"
 #include "CTRPluginFramework/Menu/MessageBox.hpp"
 #include "CTRPluginFramework/Menu/PluginMenu.hpp"
+#include "CTRPluginFramework/System/Directory.hpp"
+#include "CTRPluginFramework/System/System.hpp"
 #include "CTRPluginFramework/System/Hook.hpp"
 #include "CTRPluginFramework/System/Sleep.hpp"
 #include "CTRPluginFramework/System/Process.hpp"
@@ -21,13 +22,11 @@
 #include <ctime>
 #include <cstring>
 #include <cstdio>
-#include "CTRPluginFramework/System/Directory.hpp"
-#include "CTRPluginFramework/System/System.hpp"
 
 #define ALPHA 1
 
 #if ALPHA
-#define VersionStr "CTRPluginFramework Alpha V.0.4.8"
+#define VersionStr "CTRPluginFramework Alpha V.0.4.9"
 #else
 #define VersionStr "CTRPluginFramework Beta V.0.4.0"
 #endif
@@ -273,7 +272,7 @@ namespace CTRPluginFramework
 
             if (File::Open(g_hookExportFile, filename, mode) != 0)
             {
-                OSD::Notify(std::string("Error: couldn't open \"").append(filename).append("\""), Color::Red, Color::Blank);
+                OSD::Notify(std::string("Error: couldn't open \"").append(filename).append("\""), Color::Red, Color::White);
                 entry->Disable(); ///< Disable the entry
                 return;
             }
@@ -573,26 +572,34 @@ namespace CTRPluginFramework
         {
             void *arg = ((MenuEntryTools *)item)->GetArg();
 
-            selector = _menu._selector;
             if (arg == this)
+            {
+                selector = _menu._selector;
                 _menu.Open(&_settingsMenu);
+            }
             else if (arg != nullptr && *(u32 *)arg == MISCELLANEOUS)
+            {
+                selector = _menu._selector;
                 _menu.Open(&_miscellaneousMenu);
+            }
             else if (arg != nullptr &&  *(u32 *)arg == SCREENSHOT)
+            {
+                selector = _menu._selector;
                 _menu.Open(&_screenshotMenu);
-            else
-                selector = -1;
+            }
         }
 
         if (ret == MenuClose)
         {
-            if (selector != -1)
+            MenuFolderImpl *cur = _menu.GetFolder();
+
+            if (_menu.GetFolder() == &_mainMenu)
             {
+                _exit = true;
                 _menu.Open(&_mainMenu, selector);
-                selector = -1;
             }
             else
-                _exit = true;
+                _menu.Open(&_mainMenu, selector);
         }
     }
 
@@ -633,7 +640,7 @@ namespace CTRPluginFramework
     void    PluginMenuTools::_RenderBottom(void)
     {
         const Color    &black = Color::Black;
-        const Color    &blank = Color::Blank;
+        const Color    &blank = Color::White;
         const Color    &dimGrey = Color::BlackGrey;
 
         // Enable renderer

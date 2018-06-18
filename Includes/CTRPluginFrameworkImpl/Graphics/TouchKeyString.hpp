@@ -43,8 +43,10 @@ namespace CTRPluginFramework
         bool            _isPressed;
         bool            _execute;
         bool            _enabled;
+        u16             _posX;
         float           _contentLength;
         float           _posY;
+
     };
 }
 

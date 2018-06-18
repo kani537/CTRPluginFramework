@@ -14,7 +14,19 @@ namespace CTRPluginFramework
         KeyContent(const std::string &str) :
             text{str}, width{Renderer::GetTextSize(str.c_str())}
         {
+            u8  *s = reinterpret_cast<u8 *>(const_cast<char *>(str.c_str()));
+            do
+            {
+                Glyph *glyph = Font::GetGlyph(s);
+
+                if (glyph == nullptr)
+                    break;
+
+                glyphs.push_back(glyph);
+
+            } while (*s);
         }
+        std::vector<Glyph *> glyphs;
         std::string     text;
         float           width;
     };
@@ -39,10 +51,9 @@ namespace CTRPluginFramework
 
         // Enabler
         void    Enable(bool enable = true);
-        void    ChangeContent(const std::string &content);
 
         // Draw
-        void    DrawCharacter(const IntRect &rect, const Color &color);
+        void    DrawCharacter(const Color &color);
         void    Draw(void) override;
 
         // Update
@@ -56,9 +67,13 @@ namespace CTRPluginFramework
 
     private:
         int             _character{0};
-        KeyContent      *_content{nullptr};
+        Glyph         * _glyph{nullptr};
+        KeyContent    * _content{nullptr};
         IconCallback    _icon{nullptr};
         IntRect         _uiProperties;
+
+        u16             _posX{0};
+        u16             _posY{0};
 
         bool            _isPressed{false};
         bool            _execute{false};

@@ -7,7 +7,7 @@
 #include "CTRPluginFrameworkImpl/Menu/HexEditor.hpp"
 #include "Unicode.h"
 
-#define PATCH_COLOR Color::Grey
+#define PATCH_COLOR Color::Gray
 #define TYPE_COLOR Color::Brown
 #define IMMEDIATE_COLOR Color::Blue
 #define MASK_COLOR Color::Orange
@@ -214,7 +214,7 @@ namespace CTRPluginFramework
                 break;
             }
             ret.insert(0, ColorToString(TYPE_COLOR));
-            ret.insert(6 /* 2 + Color */, ColorToString(Color::Grey));
+            ret.insert(6 /* 2 + Color */, ColorToString(Color::Gray));
             ret.insert(17 /* 9 + Color * 2 */, ColorToString(MASK_COLOR));
             ret.insert(25 /* 13 + Color * 3 */, ColorToString(IMMEDIATE_COLOR));
             break;
@@ -841,6 +841,7 @@ namespace CTRPluginFramework
     }
 
     extern HexEditor *__g_hexEditor;
+
     bool    ARCodeEditor::operator()(EventList &eventList)
     {
         static bool isInHexEditor = false;
@@ -1168,7 +1169,7 @@ namespace CTRPluginFramework
         // Line body
         Renderer::DrawRect(35, posY, 31, 112, Color::DeepSkyBlue);
         // Code body
-        Renderer::DrawRect(67, posY, 112, 112, Color::Blank);
+        Renderer::DrawRect(67, posY, 112, 112, Color::White);
         // Comment body
         Renderer::DrawRect(180, posY, 185, 112, Color::SkyBlue);
 
@@ -1214,7 +1215,7 @@ namespace CTRPluginFramework
 
     void    ARCodeEditor::_RenderBottom(void)
     {
-        Renderer::SetTarget(BOTTOM);
+        //Renderer::SetTarget(BOTTOM);
         _keyboard._RenderBottom();
     }
 

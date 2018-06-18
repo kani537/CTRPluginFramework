@@ -13,7 +13,7 @@ namespace CTRPluginFramework
         ~Converter(void);
 
         // Blocking call
-        void operator()(void);
+        void operator()(u32 val = 0);
 
         static Converter *Instance(void);
 

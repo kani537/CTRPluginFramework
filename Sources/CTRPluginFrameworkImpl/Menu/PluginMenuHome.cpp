@@ -22,21 +22,7 @@ namespace CTRPluginFramework
         0x00000062, 0x00000079, 0x00000080, 0x00000138, 0x00000061, 0x0000006E, 0x000001C4, 0x000001D4, 0x00006900, 0x00007400, 0x00018400, 0x0001CC00,
     };
 
-    /*
-    void    encoder(u32 *out, char *in)
-    {
-    int i = 0;
-    while (*in)
-    {
-    u32 c = (u32)*in++;
-
-    c = (c << (i++ & 0b1010));
-
-    *out++ = c;
-    }
-    }*/
-
-    void decoder(char* out, const u32* in, int size)
+    static void decoder(char* out, const u32* in, int size)
     {
         int i = 0;
         while (size)
@@ -53,19 +39,19 @@ namespace CTRPluginFramework
     }
 
     PluginMenuHome::PluginMenuHome(std::string &name) :
-        _showStarredBtn("Favorite", *this,  &PluginMenuHome::_showStarredBtn_OnClick, IntRect(30, 70, 120, 30), Icon::DrawFavorite),
-        _hidMapperBtn("Mapper", *this, nullptr, IntRect(165, 70, 120, 30), Icon::DrawController),
-        _gameGuideBtn("Game Guide", *this, &PluginMenuHome::_gameGuideBtn_OnClick, IntRect(30, 105, 120, 30), Icon::DrawGuide),
-        _searchBtn("Search", *this, &PluginMenuHome::_searchBtn_OnClick, IntRect(165, 105, 120, 30), Icon::DrawSearch),
-        _arBtn("ActionReplay", *this, &PluginMenuHome::_actionReplayBtn_OnClick, IntRect(30, 140, 120, 30)),
-        _toolsBtn("Tools", *this, &PluginMenuHome::_toolsBtn_OnClick, IntRect(165, 140, 120, 30), Icon::DrawTools),
+        _showStarredBtn(Button::Toggle | Button::Sysfont | Button::Rounded, "Favorite", IntRect(30, 70, 120, 30), Icon::DrawFavorite),
+        _hidMapperBtn(Button::Sysfont | Button::Rounded, "Mapper", IntRect(165, 70, 120, 30), Icon::DrawController),
+        _gameGuideBtn(Button::Sysfont | Button::Rounded, "Game Guide", IntRect(30, 105, 120, 30), Icon::DrawGuide),
+        _searchBtn(Button::Sysfont | Button::Rounded, "Search", IntRect(165, 105, 120, 30), Icon::DrawSearch),
+        _arBtn(Button::Sysfont | Button::Rounded, "ActionReplay", IntRect(30, 140, 120, 30)),
+        _toolsBtn(Button::Sysfont | Button::Rounded, "Tools", IntRect(165, 140, 120, 30), Icon::DrawTools),
 
-        _AddFavoriteBtn(*this, &PluginMenuHome::_StarItem, IntRect(50, 30, 25, 25), Icon::DrawAddFavorite),
-        _InfoBtn(*this, &PluginMenuHome::_InfoBtn_OnClick, IntRect(90, 30, 25, 25), Icon::DrawInfo, false),
+        _AddFavoriteBtn(Button::Icon | Button::Toggle, IntRect(50, 30, 25, 25), Icon::DrawAddFavorite),
+        _InfoBtn(Button::Icon | Button::Toggle, IntRect(90, 30, 25, 25), Icon::DrawInfo),
 
        // _closeBtn(*this, nullptr, IntRect(275, 24, 20, 20), Icon::DrawClose),
-        _keyboardBtn(*this, &PluginMenuHome::_keyboardBtn_OnClick, IntRect(130, 30, 25, 25), Icon::DrawKeyboard, false),
-        _controllerBtn(*this, &PluginMenuHome::_controllerBtn_OnClick, IntRect(170, 30, 25, 25), Icon::DrawGameController, false),
+        _keyboardBtn(Button::Icon, IntRect(130, 30, 25, 25), Icon::DrawKeyboard),
+        _controllerBtn(Button::Icon, IntRect(170, 30, 25, 25), Icon::DrawGameController),
         _noteTB("", "", IntRect(40, 30, 320, 180))
     {
         _root = _folder = new MenuFolderImpl(name);
@@ -82,16 +68,15 @@ namespace CTRPluginFramework
 
         _mode = 0;
 
-        // Set rounding
-        _showStarredBtn.RoundedRatio(7);
-        _hidMapperBtn.RoundedRatio(7);
-        _gameGuideBtn.RoundedRatio(7);
-        _searchBtn.RoundedRatio(7);
-        _arBtn.RoundedRatio(7);
-        _toolsBtn.RoundedRatio(7);
+        // Disable Toggle buttons
+        _AddFavoriteBtn.Disable();
+        _InfoBtn.Disable();
+        _keyboardBtn.Disable();
+        _controllerBtn.Disable();
+
 
         // Temporary disable unused buttons
-        _hidMapperBtn.IsLocked = true;
+        _hidMapperBtn.Lock();
 
         // Decode strings
         g_ctrpfString = new char[19];
@@ -105,26 +90,15 @@ namespace CTRPluginFramework
         g_size[0] = Renderer::LinuxFontSize(g_ctrpfString);
         g_size[1] = Renderer::LinuxFontSize(g_bymeString);
 
-        _uiContainer += &_showStarredBtn;
-        _uiContainer += &_hidMapperBtn;
-        _uiContainer += &_gameGuideBtn;
-        _uiContainer += &_searchBtn;
-        _uiContainer += &_arBtn;
-        _uiContainer += &_toolsBtn;
-       // _uiContainer += &_closeBtn;
-        _uiContainer += &_keyboardBtn;
-        _uiContainer += &_controllerBtn;
-        _uiContainer += &_AddFavoriteBtn;
-        _uiContainer += &_InfoBtn;
-
         // Are the buttons locked ?
-        _arBtn.IsLocked = !Preferences::Settings.AllowActionReplay;
-        _searchBtn.IsLocked = !Preferences::Settings.AllowSearchEngine;
+        if (!Preferences::Settings.AllowActionReplay)
+            _arBtn.Lock();
+        if (!Preferences::Settings.AllowSearchEngine)
+            _searchBtn.Lock();
     }
 
     bool PluginMenuHome::operator()(EventList& eventList, int& mode, Time& delta)
     {
-        //static int note = 0;
         static Task top([](void *arg)
         {
             PluginMenuHome *home = reinterpret_cast<PluginMenuHome *>(arg);
@@ -157,24 +131,28 @@ namespace CTRPluginFramework
                 _ProcessEvent(eventList[i]);
         }
 
+        // Check all buttons
+        if (_showStarredBtn()) _showStarredBtn_OnClick();
+        // _hidMapperBtn();
+        if (_gameGuideBtn()) _gameGuideBtn_OnClick();
+        if (_searchBtn()) _searchBtn_OnClick();
+        if (_arBtn()) _actionReplayBtn_OnClick();
+        if (_toolsBtn()) _toolsBtn_OnClick();
+        if (_AddFavoriteBtn()) _StarItem();
+        if (_InfoBtn()) _InfoBtn_OnClick();
+        if (_keyboardBtn()) _keyboardBtn_OnClick();
+        if (_controllerBtn()) _controllerBtn_OnClick();
+
         // Update UI
         _Update(delta);
 
         // Render top
         top.Start();
-        /*Renderer::SetTarget(TOP);
-        if (_noteTB.IsOpen())
-            _noteTB.Draw();
-        else
-            _RenderTop();*/
 
         // RenderBottom
         _RenderBottom();
 
         top.Wait();
-
-        // Execute UIControls
-        _uiContainer.ExecuteAll();
 
         mode = _mode;
 
@@ -594,7 +572,7 @@ namespace CTRPluginFramework
 
     void PluginMenuHome::_RenderBottom(void)
     {
-        const Color& blank = Color::Blank;
+        const Color& blank = Color::White;
         static Clock creditClock;
         static bool framework = true;
 
@@ -617,8 +595,17 @@ namespace CTRPluginFramework
 
         posY = 35;
 
-        // Draw UIControls
-        _uiContainer.Draw();
+        // Draw buttons
+        _showStarredBtn.Draw();
+        _hidMapperBtn.Draw();
+        _gameGuideBtn.Draw();
+        _searchBtn.Draw();
+        _arBtn.Draw();
+        _toolsBtn.Draw();
+        _AddFavoriteBtn.Draw();
+        _InfoBtn.Draw();
+        _keyboardBtn.Draw();
+        _controllerBtn.Draw();
     }
 
     //###########################################
@@ -720,8 +707,17 @@ namespace CTRPluginFramework
         bool isTouched = Touch::IsDown();
         IntVector touchPos(Touch::GetPosition());
 
-        // Update UIControls
-        _uiContainer.Update(isTouched, touchPos);
+        // Update buttons
+        _showStarredBtn.Update(isTouched, touchPos);
+        //_hidMapperBtn.Update(isTouched, touchPos);
+        _gameGuideBtn.Update(isTouched, touchPos);
+        _searchBtn.Update(isTouched, touchPos);
+        _arBtn.Update(isTouched, touchPos);
+        _toolsBtn.Update(isTouched, touchPos);
+        _AddFavoriteBtn.Update(isTouched, touchPos);
+        _InfoBtn.Update(isTouched, touchPos);
+        _keyboardBtn.Update(isTouched, touchPos);
+        _controllerBtn.Update(isTouched, touchPos);
 
         Window::BottomWindow.Update(isTouched, touchPos);
     }

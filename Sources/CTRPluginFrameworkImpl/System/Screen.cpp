@@ -95,10 +95,16 @@ namespace CTRPluginFramework
         }
     }
 
-    void    ScreenImpl::Acquire(void)
+    u32    ScreenImpl::Acquire(void)
     {
         u32     leftFB1 = (_paFramebuffers[0] = REG(_LCDSetup + FramebufferA1)) | (1u << 31);
         u32     leftFB2 = (_paFramebuffers[1] = REG(_LCDSetup + FramebufferA2)) | (1u << 31);
+
+        if (leftFB1 == leftFB2)
+        {
+            //Flash((Color&)Color::Cyan);
+            return 1;
+        }
 
         _currentBuffer = *_currentBufferReg & 1u;
         // Get format
@@ -121,9 +127,6 @@ namespace CTRPluginFramework
         _leftFramebuffers[0] = leftFB1;
         _leftFramebuffers[1] = leftFB2;
 
-        if (leftFB1 == leftFB2)
-            Flash((Color&)Color::Cyan);
-
         if (_isTopScreen)
         {
             _rightFramebuffers[0] = leftFB1;
@@ -141,7 +144,7 @@ namespace CTRPluginFramework
             if (_backupFramebuffer == nullptr)
             {
                 //OSD::Notify("Failure");
-                return;
+                return 0;
             }
         }
 
@@ -153,6 +156,8 @@ namespace CTRPluginFramework
 
         // Copy the framebuffer to the second framebuffer (avoid the sensation of flickering on buffer swap)
         memcpy32((u32 *)GetLeftFramebuffer(true), (u32 *)GetLeftFramebuffer(), size);
+
+        return 0;
     }
 
     void    ScreenImpl::Acquire(u32 left, u32 right, u32 stride, u32 format, bool backup)

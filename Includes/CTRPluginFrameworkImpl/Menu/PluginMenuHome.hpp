@@ -9,7 +9,6 @@
 #include "CTRPluginFramework/Menu/PluginMenu.hpp"
 
 #include <vector>
-#include "CTRPluginFrameworkImpl/Graphics/UIContainer.hpp"
 
 namespace CTRPluginFramework
 {
@@ -54,42 +53,39 @@ namespace CTRPluginFramework
         void    _InfoBtn_OnClick(void); // note
 
         // Members
-        MenuFolderImpl                  *_root;
-        MenuFolderImpl                  *_folder;
-        MenuFolderImpl                  *_starred;
-        MenuFolderImpl                  *_starredConst;
+        MenuFolderImpl    * _root;
+        MenuFolderImpl    * _folder;
+        MenuFolderImpl    * _starred;
+        MenuFolderImpl    * _starredConst;
 
-        int                         _mode;
-        bool                        _starMode;
-        int                         _selector;
-        int                         _selectedTextSize;
-        float                       _maxScrollOffset;
-        float                       _scrollOffset;
-        Clock                       _scrollClock;
-        bool                        _reverseFlow;
-        bool                        _showVersion;
-        int                         _versionPosX;
-        std::string                 _versionStr;
+        int                 _mode;
+        bool                _starMode;
+        int                 _selector;
+        int                 _selectedTextSize;
+        float               _maxScrollOffset;
+        float               _scrollOffset;
+        Clock               _scrollClock;
+        bool                _reverseFlow;
+        bool                _showVersion;
+        int                 _versionPosX;
+        std::string         _versionStr;
 
-        TextBox                     _noteTB;
+        TextBox             _noteTB;
 
         // Mode buttons
-        CheckedButton<PluginMenuHome, void>   _showStarredBtn;
-        Button<PluginMenuHome, void>          _hidMapperBtn;
-        Button<PluginMenuHome, void>          _gameGuideBtn;
-        Button<PluginMenuHome, void>          _searchBtn;
-        Button<PluginMenuHome, void>          _arBtn;
-        Button<PluginMenuHome, void>          _toolsBtn;
+        Button              _showStarredBtn;
+        Button              _hidMapperBtn;
+        Button              _gameGuideBtn;
+        Button              _searchBtn;
+        Button              _arBtn;
+        Button              _toolsBtn;
 
-       // IconButton<PluginMenuHome, void>     _closeBtn;
-        IconButton<PluginMenuHome, void>     _keyboardBtn;
-        IconButton<PluginMenuHome, void>     _controllerBtn;
+        Button              _keyboardBtn;
+        Button              _controllerBtn;
 
         // Entry button
-        ToggleButton<PluginMenuHome, void>      _AddFavoriteBtn;
-        ToggleButton<PluginMenuHome, void>      _InfoBtn;
-
-        UIContainer                         _uiContainer;
+        Button              _AddFavoriteBtn;
+        Button              _InfoBtn;
     };
 }
 

@@ -67,6 +67,7 @@ namespace CTRPluginFramework
          * \return If the operation is a success
          */
         static int      Schedule(const Task &task);
+        static void     Initialize(void);
 
         static void     Lock(void);
         static void     Unlock(void);

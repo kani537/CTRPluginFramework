@@ -67,12 +67,12 @@ namespace CTRPluginFramework
         // Buttons
         //IconButton<PluginMenuSearch, void>          _closeBtn;
 
-        Button<PluginMenuSearch, void>              _searchBtn;
-        Button<PluginMenuSearch, void>              _cancelBtn;
-        Button<PluginMenuSearch, void>              _undoBtn;
-        Button<PluginMenuSearch, void>              _resetBtn;
+        Button          _searchBtn;
+        Button          _cancelBtn;
+        Button          _undoBtn;
+        Button          _resetBtn;
 
-        CheckedButton<PluginMenuSearch, void>       _hexBtn;
+        Button          _hexBtn;
 
         UIContainer                         _uiContainer;
     };

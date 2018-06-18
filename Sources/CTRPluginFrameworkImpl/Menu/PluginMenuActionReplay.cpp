@@ -79,24 +79,27 @@ namespace CTRPluginFramework
     static PluginMenuActionReplay *__pmARinstance = nullptr;
     PluginMenuActionReplay::PluginMenuActionReplay() :
         _topMenu{ "ActionReplay" },
-        _noteBtn(*this, nullptr, IntRect(90, 30, 25, 25), Icon::DrawInfo, false),
-        _editorBtn(*this, &PluginMenuActionReplay::_EditorBtn_OnClick, IntRect(130, 30, 25, 25), Icon::DrawEdit, false),
-        _newBtn(*this, &PluginMenuActionReplay::_NewBtn_OnClick, IntRect(165, 30, 25, 25), Icon::DrawPlus, false),
-        _cutBtn(*this, &PluginMenuActionReplay::_CutBtn_OnClick, IntRect(200, 30, 25, 25), Icon::DrawCut, false),
-        _pasteBtn(*this, &PluginMenuActionReplay::_PasteBtn_OnClick, IntRect(200, 30, 25, 25), Icon::DrawClipboard, false),
-        _duplicateBtn(*this, &PluginMenuActionReplay::_DuplicateBtn_OnClick, IntRect(235, 30, 25, 25), Icon::DrawDuplicate, false),
-        _trashBtn(*this, &PluginMenuActionReplay::_TrashBtn_OnClick, IntRect(50, 30, 25, 25), Icon::DrawTrash, false),
-        _openFileBtn("Open", *this, &PluginMenuActionReplay::_OpenFileBtn_OnClick, IntRect(30, 195, 34, 15)),
+        _noteBtn(Button::Icon | Button::Toggle, IntRect(90, 30, 25, 25), Icon::DrawInfo),
+        _editorBtn(Button::Icon, IntRect(130, 30, 25, 25), Icon::DrawEdit),
+        _newBtn(Button::Icon, IntRect(165, 30, 25, 25), Icon::DrawPlus),
+        _cutBtn(Button::Icon, IntRect(200, 30, 25, 25), Icon::DrawCut),
+        _pasteBtn(Button::Icon, IntRect(200, 30, 25, 25), Icon::DrawClipboard),
+        _duplicateBtn(Button::Icon, IntRect(235, 30, 25, 25), Icon::DrawDuplicate),
+        _trashBtn(Button::Icon, IntRect(50, 30, 25, 25), Icon::DrawTrash),
+        _openFileBtn(0, "Open", IntRect(30, 195, 34, 15)),
 
         _clipboard{ nullptr },
         _path{0}
     {
-        _newBtn.Enable(true);
         __pmARinstance = this;
-
-        _openFileBtn.UseSysFont(false);
-
         ProcessPathString(_path);
+
+        // Disable buttons
+        _editorBtn.Disable();
+        _cutBtn.Disable();
+        _pasteBtn.Disable();
+        _duplicateBtn.Disable();
+        _trashBtn.Disable();
     }
 
     PluginMenuActionReplay::~PluginMenuActionReplay()
@@ -138,20 +141,20 @@ namespace CTRPluginFramework
             if (!_topMenu.IsNoteOpen())
             {
                 if (!_topMenu.ShowNote())
-                    _noteBtn.Enable(false);
+                    _noteBtn.Disable();
             }
             else
                 _topMenu.CloseNote();
         }
 
-        // Check editor btn
-        _editorBtn();
-        _newBtn();
-        _cutBtn();
-        _pasteBtn();
-        _duplicateBtn();
-        _trashBtn();
-        _openFileBtn();
+        // Check buttons
+        if (_editorBtn()) _EditorBtn_OnClick();
+        if (_newBtn()) _NewBtn_OnClick();
+        if (_cutBtn()) _CutBtn_OnClick();
+        if (_pasteBtn()) _PasteBtn_OnClick();
+        if (_duplicateBtn()) _DuplicateBtn_OnClick();
+        if (_trashBtn()) _TrashBtn_OnClick();
+        if (_openFileBtn()) _OpenFileBtn_OnClick();
 
         // Draw menu on top screen
         top.Start();
@@ -184,7 +187,7 @@ namespace CTRPluginFramework
         int posX = 30 + 34 + 5;
         int posY = 195;
 
-        Renderer::DrawRect(posX, posY, 220, 15, Color::Grey);
+        Renderer::DrawRect(posX, posY, 220, 15, Color::Gray);
         posY += 3;
         Renderer::DrawString((const char *)_path, posX + 2, posY, Color::Black);
     }
@@ -236,14 +239,14 @@ namespace CTRPluginFramework
     {
         Keyboard    keyboard;
 
-        keyboard.SetCompareCallback([](const void *in, std::string &error)
+        /*keyboard.SetCompareCallback([](const void *in, std::string &error)
         {
             std::string &input = *(std::string *)(in);
             if (input.empty())
                 return false;
             ActionReplay_ProcessString(input, false);
             return true;
-        });
+        });*/
 
         return keyboard.Open(ret, ret) != -1;
     }

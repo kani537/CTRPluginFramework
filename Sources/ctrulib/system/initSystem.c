@@ -19,8 +19,9 @@ void __appInit(void);
 
 Result __sync_init(void);
 
-void __attribute__((weak)) __libctru_init(void)
+void __libctru_init(void)
 {
+    return;
 	// Store the return address
 	//__system_retAddr = NULL;//envIsHomebrew() ? retAddr : NULL;
 
