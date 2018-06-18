@@ -27,6 +27,7 @@ extern "C" {
 #include "ctrulib/result.h"
 #include "ctrulib/srv.h"
 #include "ctrulib/svc.h"
+#include "csvc.h"
 #include "ctrulib/synchronization.h"
 #include "ctrulib/thread.h"
 

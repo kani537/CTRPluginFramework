@@ -126,6 +126,7 @@
     <ClInclude Include="Includes\CTRPluginFrameworkImpl\ActionReplay\ARCode.hpp" />
     <ClInclude Include="Includes\CTRPluginFrameworkImpl\ActionReplay\ARCodeEditor.hpp" />
     <ClInclude Include="Includes\CTRPluginFrameworkImpl\ActionReplay\ARHandler.hpp" />
+    <ClInclude Include="Includes\CTRPluginFrameworkImpl\Disassembler\arm_disasm.h" />
     <ClInclude Include="Includes\CTRPluginFrameworkImpl\Graphics.hpp" />
     <ClInclude Include="Includes\CTRPluginFrameworkImpl\Graphics\BMPImage.hpp" />
     <ClInclude Include="Includes\CTRPluginFrameworkImpl\Graphics\Button.hpp" />
@@ -283,7 +284,6 @@
     <ClInclude Include="Includes\Unicode.h" />
     <ClInclude Include="Sources\cheats.hpp" />
     <ClInclude Include="Includes\CTRPluginFrameworkImpl\ActionReplay\MenuEntryActionReplay.hpp" />
-    <ClInclude Include="Sources\CTRPluginFrameworkImpl\Graphics\CheckBox.cpp" />
     <ClInclude Include="Sources\ctrulib\allocator\addrmap.h" />
     <ClInclude Include="Sources\ctrulib\allocator\mem_pool.h" />
     <ClInclude Include="Sources\ctrulib\internal.h" />
@@ -302,6 +302,7 @@
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\ActionReplay\ARCodeWrite.cpp" />
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\ActionReplay\ARHandler.cpp" />
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\ActionReplay\MenuEntryActionReplay.cpp" />
+    <ClCompile Include="Sources\CTRPluginFrameworkImpl\Disassembler\arm_disasm.cpp" />
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\Graphics\BMPImage.cpp" />
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\Graphics\Button.cpp" />
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\Graphics\ComboBox.cpp" />

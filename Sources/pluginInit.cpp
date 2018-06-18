@@ -209,6 +209,10 @@ namespace CTRPluginFramework
 
         // Patch KProcess::ResourceLimit
         ProcessImpl::KProcessPtr->PatchMaxCommit(__ctru_heap_size + 0x1000);
+        if (*(u32 *)0x1FF80030 == 3)
+            *(u32 *)(PA_FROM_VA(0x1FF80048)) += __ctru_heap_size + 0x1000;
+        else
+            *(u32 *)(PA_FROM_VA(0x1FF80040)) += __ctru_heap_size + 0x1000;
 
         // Init heap and newlib's syscalls
         initLib();

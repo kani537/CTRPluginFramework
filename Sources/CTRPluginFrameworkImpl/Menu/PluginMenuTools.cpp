@@ -1,14 +1,15 @@
 #include "CTRPluginFrameworkImpl/Menu/HotkeysModifier.hpp"
 #include "CTRPluginFrameworkImpl/Menu/PluginMenuTools.hpp"
 #include "CTRPluginFrameworkImpl/Menu/MenuEntryTools.hpp"
-#include "CTRPluginFrameworkImpl/Preferences.hpp"
 #include "CTRPluginFrameworkImpl/Menu/PluginMenuExecuteLoop.hpp"
 #include "CTRPluginFrameworkImpl/System/Screenshot.hpp"
-
+#include "CTRPluginFrameworkImpl/Preferences.hpp"
 
 #include "CTRPluginFramework/Graphics/OSD.hpp"
 #include "CTRPluginFramework/Menu/MessageBox.hpp"
 #include "CTRPluginFramework/Menu/PluginMenu.hpp"
+#include "CTRPluginFramework/System/Directory.hpp"
+#include "CTRPluginFramework/System/System.hpp"
 #include "CTRPluginFramework/System/Hook.hpp"
 #include "CTRPluginFramework/System/Sleep.hpp"
 #include "CTRPluginFramework/System/Process.hpp"
@@ -21,8 +22,6 @@
 #include <ctime>
 #include <cstring>
 #include <cstdio>
-#include "CTRPluginFramework/System/Directory.hpp"
-#include "CTRPluginFramework/System/System.hpp"
 
 #define ALPHA 1
 

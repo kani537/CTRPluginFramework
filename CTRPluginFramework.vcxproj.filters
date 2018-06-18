@@ -408,9 +408,6 @@
     <ClInclude Include="Includes\CTRPluginFrameworkImpl\Graphics\Window.hpp">
       <Filter>Fichiers d%27en-tête</Filter>
     </ClInclude>
-    <ClInclude Include="Sources\CTRPluginFrameworkImpl\Graphics\CheckBox.cpp">
-      <Filter>Fichiers d%27en-tête</Filter>
-    </ClInclude>
     <ClInclude Include="Includes\CTRPluginFrameworkImpl\Menu\HotkeysModifier.hpp">
       <Filter>Fichiers d%27en-tête</Filter>
     </ClInclude>
@@ -541,6 +538,9 @@
       <Filter>Fichiers d%27en-tête</Filter>
     </ClInclude>
     <ClInclude Include="Includes\CTRPluginFrameworkImpl\System\Kernel.hpp">
+      <Filter>Fichiers d%27en-tête</Filter>
+    </ClInclude>
+    <ClInclude Include="Includes\CTRPluginFrameworkImpl\Disassembler\arm_disasm.h">
       <Filter>Fichiers d%27en-tête</Filter>
     </ClInclude>
   </ItemGroup>
@@ -1140,6 +1140,9 @@
       <Filter>Fichiers sources</Filter>
     </ClCompile>
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\Graphics\Button.cpp">
+      <Filter>Fichiers sources</Filter>
+    </ClCompile>
+    <ClCompile Include="Sources\CTRPluginFrameworkImpl\Disassembler\arm_disasm.cpp">
       <Filter>Fichiers sources</Filter>
     </ClCompile>
   </ItemGroup>
