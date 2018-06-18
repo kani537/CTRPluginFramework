@@ -190,6 +190,13 @@ namespace CTRPluginFramework
                     while (_ctx._cursorAddress >= _ctx._address + viewSizeInBytes)
                         _ctx._address += _viewCurrent->Stride;
 
+                    // Clear items cache
+                    for (Item& item :_ctx._items)
+                    {
+                        item.addrCache[0] = 0;
+                        item.valueCache.clear();
+                        item.dataCache.clear();
+                    }
                     // Set flags to refresh view
                     flags |= DirtySrc | DirtyCursor;
 
@@ -207,6 +214,14 @@ namespace CTRPluginFramework
                     u32     viewSizeInBytes = _viewCurrent->TotalItems << 2;
                     while (_ctx._cursorAddress >= _ctx._address + viewSizeInBytes)
                         _ctx._address += _viewCurrent->Stride;
+
+                    // Clear items cache
+                    for (Item& item :_ctx._items)
+                    {
+                        item.addrCache[0] = 0;
+                        item.valueCache.clear();
+                        item.dataCache.clear();
+                    }
 
                     // Set flags to refresh view
                     flags |= DirtySrc | DirtyCursor;
