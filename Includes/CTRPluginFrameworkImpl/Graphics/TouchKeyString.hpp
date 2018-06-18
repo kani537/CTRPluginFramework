@@ -38,7 +38,6 @@ namespace CTRPluginFramework
 
     private:
         std::string     _content;
-        std::vector<Glyph *> _glyphs;
         IntRect         _uiProperties;
 
         bool            _isPressed;

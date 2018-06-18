@@ -23,18 +23,6 @@ namespace CTRPluginFramework
             _contentLength = Renderer::GetTextSize(_content.c_str());
         }
 
-        u8  *s = reinterpret_cast<u8 *>(const_cast<char *>(_content.c_str()));
-        do
-        {
-            Glyph *glyph = Font::GetGlyph(s);
-
-            if (glyph == nullptr)
-                break;
-
-            _glyphs.push_back(glyph);
-
-        } while (*s);
-
         _posX = ((_uiProperties.size.x - (int)_contentLength) >> 1) + _uiProperties.leftTop.x;
     }
 
@@ -55,15 +43,13 @@ namespace CTRPluginFramework
 
         int     posX = _posX;
         int     posY = ((_uiProperties.size.y - 16) >> 1) + _uiProperties.leftTop.y;
+        int     maxX = _uiProperties.leftTop.x + _uiProperties.size.x - 1;
 
         // Background
         Renderer::DrawRect(_uiProperties, background);
 
         // Text
-        for (Glyph *glyph : _glyphs)
-        {
-            posX = Renderer::DrawGlyph(glyph, posX, posY, text);
-        }
+        Renderer::DrawSysString(_content.c_str(), posX, posY,  maxX, text);
     }
 
     void    TouchKeyString::Update(const bool isTouchDown, const IntVector &touchPos)
