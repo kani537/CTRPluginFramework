@@ -16,6 +16,11 @@ namespace CTRPluginFramework
         return (_keysDown | _keysHeld);
     }
 
+    u32     Controller::GetKeysReleased(void)
+    {
+        return _keysReleased;
+    }
+
     bool    Controller::IsKeyDown(Key key)
     {
         return (_keysHeld & (u32)key) != 0;
