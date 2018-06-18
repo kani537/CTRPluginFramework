@@ -3,13 +3,13 @@
 
 namespace CTRPluginFramework
 {
-    MessageBox::MessageBox(const std::string &title, const std::string &message, DialogType dialogType) :
-        _messageBox(new MessageBoxImpl(title, message, dialogType))
+    MessageBox::MessageBox(const std::string &title, const std::string &message, DialogType dialogType, ClearScreen clear) :
+        _messageBox(new MessageBoxImpl(title, message, dialogType, clear))
     {
     }
 
-    MessageBox::MessageBox(const std::string &message, DialogType dialogType) :
-        _messageBox(new MessageBoxImpl(message, dialogType))
+    MessageBox::MessageBox(const std::string &message, DialogType dialogType, ClearScreen clear) :
+        _messageBox(new MessageBoxImpl(message, dialogType, clear))
     {
 
     }
@@ -17,6 +17,12 @@ namespace CTRPluginFramework
     MessageBox::~MessageBox(void)
     {
 
+    }
+
+    MessageBox&     MessageBox::SetClear(ClearScreen screen)
+    {
+        _messageBox->_clearScreen = screen;
+        return *this;
     }
 
     bool MessageBox::operator()(void) const

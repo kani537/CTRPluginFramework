@@ -14,8 +14,8 @@ namespace CTRPluginFramework
     class MessageBoxImpl
     {
     public:
-        MessageBoxImpl(const std::string &title, const std::string &message, DialogType dtype = DialogType::DialogOk);
-        MessageBoxImpl(const std::string &message, DialogType dtype = DialogType::DialogOk);
+        MessageBoxImpl(const std::string &title, const std::string &message, DialogType dtype, ClearScreen clear);
+        MessageBoxImpl(const std::string &message, DialogType dtype, ClearScreen clear);
         ~MessageBoxImpl() {};
 
         /*
@@ -24,13 +24,14 @@ namespace CTRPluginFramework
         */
         bool    operator()(void);
     private:
-
+        friend MessageBox;
         void    _ProcessEvent(Event &event);
         void    _Draw(void);
 
         std::string     _title;
         std::string     _message;
         DialogType      _dialogType;
+        ClearScreen     _clearScreen;
         TextBox         _textbox;
         bool            _exit;
         int             _cursor;

@@ -10,8 +10,8 @@
 
 namespace CTRPluginFramework
 {
-    MessageBoxImpl::MessageBoxImpl(const std::string &title, const std::string &message, DialogType dType) :
-        _title(title), _message(message), _dialogType(dType), _exit(false), _cursor(0)
+    MessageBoxImpl::MessageBoxImpl(const std::string &title, const std::string &message, DialogType dType, ClearScreen clear) :
+        _title(title), _message(message), _dialogType(dType), _clearScreen(clear), _exit(false), _cursor(0)
     {
         /*
         * line = 16px
@@ -52,8 +52,8 @@ namespace CTRPluginFramework
         _textbox.Open();
         _textbox._fastscroll = _textbox._drawBox = false;
     }
-    MessageBoxImpl::MessageBoxImpl(const std::string &message, const DialogType dType) :
-        _message(message), _dialogType(dType), _exit(false), _cursor(0)
+    MessageBoxImpl::MessageBoxImpl(const std::string &message, const DialogType dType, ClearScreen clear) :
+        _message(message), _dialogType(dType), _clearScreen(clear), _exit(false), _cursor(0)
     {
         int     minWidth = dType == DialogType::DialogOk ? 100 : 200;
         int     lineCount;
@@ -102,6 +102,19 @@ namespace CTRPluginFramework
 
         // Eat key released events
         Controller::Update();
+        while (manager.PollEvent(event));
+
+        // Clear screens
+        for (int i = 0; i < 2; ++i)
+        {
+            Renderer::SetTarget(TOP);
+            if ((u32)_clearScreen & (u32)ClearScreen::Top)
+                Window::TopWindow.Draw();
+            Renderer::SetTarget(BOTTOM);
+            if ((u32)_clearScreen & (u32)ClearScreen::Bottom)
+                Window::BottomWindow.Draw();
+            Renderer::EndFrame();
+        }
 
         // While user didn't close the MessageBox
         while (!_exit)
@@ -131,9 +144,11 @@ namespace CTRPluginFramework
 
         // Eat key released events
         Controller::Update();
+        while (manager.PollEvent(event));
 
         // Release game if we paused it in this function
         PluginMenu *menu = PluginMenu::GetRunningInstance();
+
         if (menu && !menu->IsOpen())
             ScreenImpl::Clean();
         if (mustReleaseGame)
@@ -160,14 +175,6 @@ namespace CTRPluginFramework
                         _cursor = 1;
                     break;
                 }
-                default:
-                    break;
-            }
-        }
-        if (event.type == Event::KeyReleased)
-        {
-            switch (event.key.code)
-            {
                 case Key::A:
                 {
                     _exit = true;
