@@ -2,6 +2,7 @@
 #include "CTRPluginFramework/System/Lock.hpp"
 #include "CTRPluginFramework/System/Process.hpp"
 #include "CTRPluginFrameworkImpl/System/ProcessImpl.hpp"
+#include "CTRPluginFrameworkImpl/System/FSPath.hpp"
 #include "ctrulib/services/fs.h"
 #include "ctrulib/util/utf.h"
 #include "ctrulib/result.h"
@@ -13,16 +14,11 @@ namespace CTRPluginFramework
 {
     extern FS_Archive   _sdmcArchive;
 
-    namespace _Path {
-        int     SdmcFixPath(std::string &path);
-        FS_Path SdmcUtf16Path(std::string path);
-    }
-
     int     File::Create(const std::string &path)
     {
-        FS_Path fsPath = _Path::SdmcUtf16Path(path);
+        FSPath fsPath(path);
 
-        if (fsPath.data == nullptr)
+        if (fsPath.Error)
             return (INVALID_PATH);
 
         Result res;
@@ -35,18 +31,10 @@ namespace CTRPluginFramework
 
     int     File::Rename(const std::string &oldPath, const std::string &newPath)
     {
-        FS_Path oldFsPath = _Path::SdmcUtf16Path(oldPath);
-        FS_Path newFsPath;
-        uint16_t    path[PATH_MAX + 1] = {0};
+        FSPath oldFsPath(oldPath);
+        FSPath newFsPath(newPath);
 
-        if (oldFsPath.data == nullptr)
-            return (INVALID_PATH);
-
-        std::memcpy(path, oldFsPath.data, PATH_MAX);
-        oldFsPath.data = (u8 *)path;
-
-        newFsPath = _Path::SdmcUtf16Path(newPath);
-        if (newFsPath.data == nullptr)
+        if (oldFsPath.Error || newFsPath.Error)
             return (INVALID_PATH);
 
         Result res;
@@ -60,9 +48,9 @@ namespace CTRPluginFramework
 
     int     File::Remove(const std::string &path)
     {
-        FS_Path fsPath = _Path::SdmcUtf16Path(path);
+        FSPath fsPath(path);
 
-        if (fsPath.data == nullptr)
+        if (fsPath.Error)
             return (INVALID_PATH);
 
         Result res;
@@ -76,9 +64,9 @@ namespace CTRPluginFramework
 
     int     File::Exists(const std::string &path)
     {
-        FS_Path fsPath = _Path::SdmcUtf16Path(path);
+        FSPath fsPath(path);
 
-        if (fsPath.data == nullptr)
+        if (fsPath.Error)
             return (INVALID_PATH);
 
         Result res;
@@ -100,9 +88,9 @@ namespace CTRPluginFramework
         if (output._isOpen)
             output.Close();
 
-        FS_Path fsPath = _Path::SdmcUtf16Path(path);
+        FSPath fsPath(path);
 
-        if (fsPath.data == nullptr)
+        if (fsPath.Error)
             return (INVALID_PATH);
 
         int fsmode = mode & 0b111;
@@ -111,7 +99,7 @@ namespace CTRPluginFramework
 
         // So we can get path even if the opening failed
         output._path = path;
-        _Path::SdmcFixPath(output._path);
+        FSPath::SdmcFixPath(output._path);
 
         res = FSUSER_OpenFile(&handle, _sdmcArchive, fsPath, fsmode, 0);
 

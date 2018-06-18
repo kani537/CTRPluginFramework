@@ -1,11 +1,11 @@
 #include "CTRPluginFramework/System/Directory.hpp"
+#include "CTRPluginFrameworkImpl/System/FSPath.hpp"
 #include "CTRPluginFrameworkImpl/System/Heap.hpp"
 #include "CTRPluginFramework/System/Mutex.hpp"
 #include "CTRPluginFramework/System/Lock.hpp"
 
-
-#include "ctrulib/services/fs.h"
 #include "ctrulib/util/utf.h"
+#include "ctrulib/services/fs.h"
 #include "ctrulib/result.h"
 
 #include <algorithm>
@@ -16,139 +16,21 @@
 namespace CTRPluginFramework
 {
     extern FS_Archive   _sdmcArchive;
-    static std::string  _workingDirectory = "";
-
-    namespace   _Path
-    {
-        static Mutex    _mutex;
-        int     SdmcFixPath(std::string &path)
-        {
-            Lock            lock(_mutex);
-
-            ssize_t         units;
-            uint32_t        code;
-            std::string     fixPath;
-
-            const uint8_t *p = (const uint8_t *)path.c_str();
-
-            // Move the path pointer to the start of the actual path
-            int     offset = 0;
-            do
-            {
-                units = decode_utf8(&code, p);
-                if (units < 0)
-                {
-                    //r->_errno = EILSEQ;
-                    return (-1);
-                }
-                p += units;
-                offset += units;
-            } while (code != ':' && code != 0);
-
-            // We found a colon; p points to the actual path
-            if (code == ':')
-                path = path.substr(offset);
-
-            // Make sure there are no more colons and that the
-            // remainder of the filename is valid UTF-8
-            p = (const uint8_t*)path.c_str();
-            do
-            {
-                units = decode_utf8(&code, p);
-                if (units < 0)
-                {
-                    //r->_errno = EILSEQ;
-                    return (-1);
-                }
-
-                if (code == ':')
-                {
-                    //r->_errno = EINVAL;
-                    return (-1);
-                }
-
-                p += units;
-            } while (code != 0);
-
-            if (path[0] == '/')
-                return (0);
-            else
-            {
-                fixPath = _workingDirectory;
-                fixPath += path;
-                path = fixPath;
-            }
-
-            if (path.size() >= PATH_MAX)
-            {
-                //__fixedpath[PATH_MAX] = 0;
-                //r->_errno = ENAMETOOLONG;
-                return (-1);
-            }
-            return (0);
-        }
-
-        FS_Path     SdmcUtf16Path(std::string path)
-        {
-            Lock            lock(_mutex);
-
-            ssize_t     units;
-            FS_Path     fspath = { PATH_EMPTY, 0, nullptr };
-            static      uint16_t    utf16Path[PATH_MAX + 1] = { 0 };
-
-            if (_Path::SdmcFixPath(path) == -1)
-                return (fspath);
-
-            units = utf8_to_utf16(utf16Path, (const uint8_t*)path.c_str(), PATH_MAX);
-            if (units < 0)
-            {
-                //r->_errno = EILSEQ;
-                return (fspath);
-            }
-            if (units >= PATH_MAX)
-            {
-                //r->_errno = ENAMETOOLONG;
-                return (fspath);
-            }
-
-            utf16Path[units] = 0;
-
-            fspath.type = PATH_UTF16;
-            fspath.size = (units + 1) * sizeof(uint16_t);
-            fspath.data = (const u8 *)utf16Path;
-
-            return (fspath);
-        }
-    }
-
-    /*
-    ** Static methods
-    ******************/
-
-    /*
-    ** CWD
-    ******************/
 
     int     Directory::ChangeWorkingDirectory(const std::string &path)
     {
-        FS_Path fsPath = _Path::SdmcUtf16Path(path);
+        FSPath fspath(path);
 
-        if (fsPath.data == nullptr)
-            return (INVALID_PATH);
+        if (fspath.Error)
+            return INVALID_PATH;
 
-        Handle file;
-        Result res;
+        Lock    lock(FSPath::FSMutex);
 
-        res = FSUSER_OpenDirectory(&file, _sdmcArchive, fsPath);
-        if (R_SUCCEEDED(res))
-        {
-            FSDIR_Close(file);
-            _workingDirectory = path;
-            return (SUCCESS);
-        }
+        FSPath::CurrentWorkingDirectory = path;
+        if (path[path.size() - 1] != '/')
+            FSPath::CurrentWorkingDirectory += '/';
 
-        return (INVALID_PATH);
-
+        return SUCCESS;
     }
 
     /*
@@ -156,9 +38,9 @@ namespace CTRPluginFramework
     ***********/
     int     Directory::Create(const std::string &path)
     {
-        FS_Path fsPath = _Path::SdmcUtf16Path(path);
+        FSPath  fsPath(path);
 
-        if (fsPath.data == nullptr)
+        if (fsPath.Error)
             return (INVALID_PATH);
 
         Result res;
@@ -180,9 +62,9 @@ namespace CTRPluginFramework
         if (path == "/")
             return INVALID_PATH;
 
-        FS_Path fsPath = _Path::SdmcUtf16Path(path);
+        FSPath fsPath(path);
 
-        if (fsPath.data == nullptr)
+        if (fsPath.Error)
             return (INVALID_PATH);
 
         Result res;
@@ -199,20 +81,10 @@ namespace CTRPluginFramework
     ***********/
     int     Directory::Rename(const std::string &oldPath, const std::string &newPath)
     {
-        uint16_t    oldpath[PATH_MAX + 1] = {0};
+        FSPath     fsOldPath(oldPath);
+        FSPath     fsNewPath(newPath);
 
-        FS_Path     fsOldPath;
-        FS_Path     fsNewPath;
-
-        fsOldPath = _Path::SdmcUtf16Path(oldPath);
-        if (fsOldPath.data == nullptr)
-            return (INVALID_PATH);
-
-        std::memcpy(oldpath, fsOldPath.data, sizeof(oldpath));
-        fsOldPath.data = (const u8 *)oldpath;
-
-        fsNewPath = _Path::SdmcUtf16Path(newPath);
-        if (fsNewPath.data == nullptr)
+        if (fsNewPath.Error || fsOldPath.Error)
             return (INVALID_PATH);
 
         Result res;
@@ -229,10 +101,9 @@ namespace CTRPluginFramework
     ************/
     int    Directory::IsExists(const std::string &path)
     {
-        FS_Path     fsPath;
+        FSPath     fsPath(path);
 
-        fsPath = _Path::SdmcUtf16Path(path);
-        if (fsPath.data == nullptr)
+        if (fsPath.Error)
             return (INVALID_PATH);
 
         Result res;
@@ -261,9 +132,9 @@ namespace CTRPluginFramework
         output._isOpen = false;
         output._list.clear();
 
-        FS_Path fsPath = _Path::SdmcUtf16Path(path);
+        FSPath fsPath(path);
 
-        if (fsPath.data == nullptr)
+        if (fsPath.Error)
             return (INVALID_PATH);
 
         Result res;
@@ -285,7 +156,7 @@ namespace CTRPluginFramework
         }
 
         output._path = path;
-        _Path::SdmcFixPath(output._path);
+        FSPath::SdmcFixPath(output._path);
         output._handle = handle;
         output._isOpen = true;
 
@@ -321,16 +192,11 @@ namespace CTRPluginFramework
         if (!_isOpen) return (NOT_OPEN);
 
         std::string fullPath;
-        FS_Path fsPath;
 
         if (path[0] != '/')
             fullPath = _path + "/" + path;
         else
             fullPath = _path + path;
-
-        fsPath = _Path::SdmcUtf16Path(fullPath);
-        if (fsPath.data == nullptr)
-            return (INVALID_PATH);
 
         return (File::Open(output, fullPath, mode));
     }
