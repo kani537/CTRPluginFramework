@@ -206,7 +206,7 @@ namespace CTRPluginFramework
         return addr < memInfo.size;
     }
 
-    extern "C" u32 __ctru_linear_heap;
+    extern "C" u32 __ctru_heap;
 
     void    ProcessImpl::UpdateMemRegions(void)
     {
@@ -231,7 +231,7 @@ namespace CTRPluginFramework
 
                 // Same if the memregion is part of CTRPF or NTR
                 if (memInfo.base_addr == 0x06000000 || memInfo.base_addr == 0x07000000
-                    || memInfo.base_addr == 0x01E80000 || IsInRegion(memInfo, __ctru_linear_heap))
+                    || memInfo.base_addr == 0x01E80000 || IsInRegion(memInfo, __ctru_heap))
                 {
                     addr = memInfo.base_addr + memInfo.size;
                     continue;
@@ -249,7 +249,8 @@ namespace CTRPluginFramework
 
                 // Add it to the vector if necessary
                 //if (!regionPatched)
-                MemRegions.push_back(memInfo);
+                if (memInfo.perm & MEMPERM_READ)
+                    MemRegions.push_back(memInfo);
 
                 addr = memInfo.base_addr + memInfo.size;
                 continue;
