@@ -153,6 +153,7 @@
     <ClInclude Include="Includes\CTRPluginFrameworkImpl\Search\Search.hpp" />
     <ClInclude Include="Includes\CTRPluginFrameworkImpl\Search\Search32.hpp" />
     <ClInclude Include="Includes\CTRPluginFrameworkImpl\Search\SearchBase.hpp" />
+    <ClInclude Include="Includes\CTRPluginFrameworkImpl\System\FSPath.hpp" />
     <ClInclude Include="Includes\CTRPluginFrameworkImpl\System\Heap.hpp" />
     <ClInclude Include="Includes\CTRPluginFrameworkImpl\System\HookManager.hpp" />
     <ClInclude Include="Includes\CTRPluginFrameworkImpl\System\IAllocator.hpp" />
@@ -402,6 +403,7 @@
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\Search\Search32_SubsidiarySearchUnknown.cpp" />
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\Search\SearchBase.cpp" />
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\System\EventManager.cpp" />
+    <ClCompile Include="Sources\CTRPluginFrameworkImpl\System\FSPath.cpp" />
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\System\Heap.cpp" />
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\System\HookManager.cpp" />
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\System\Kernel.cpp" />

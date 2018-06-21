@@ -191,12 +191,7 @@ namespace CTRPluginFramework
                         _ctx._address += _viewCurrent->Stride;
 
                     // Clear items cache
-                    for (Item& item :_ctx._items)
-                    {
-                        item.addrCache[0] = 0;
-                        item.valueCache.clear();
-                        item.dataCache.clear();
-                    }
+                    _ctx._items.clear();
                     // Set flags to refresh view
                     flags |= DirtySrc | DirtyCursor;
 
@@ -216,12 +211,7 @@ namespace CTRPluginFramework
                         _ctx._address += _viewCurrent->Stride;
 
                     // Clear items cache
-                    for (Item& item :_ctx._items)
-                    {
-                        item.addrCache[0] = 0;
-                        item.valueCache.clear();
-                        item.dataCache.clear();
-                    }
+                    _ctx._items.clear();
 
                     // Set flags to refresh view
                     flags |= DirtySrc | DirtyCursor;
@@ -476,6 +466,7 @@ namespace CTRPluginFramework
             *(vu32 *)PA_FROM_VA(item.address) = item.origin32 = item.value32;
 
         _ctx._flags &= ~DirtyMemory;
+        _ctx._flags |= DirtyViewCache;
     }
 
     void    HexEditor::_DiscardChanges(void)
