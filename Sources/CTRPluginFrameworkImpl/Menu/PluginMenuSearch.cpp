@@ -332,7 +332,7 @@ namespace CTRPluginFramework
         {
             _waitForUser = false;
             _cancelBtn.Disable();
-            _resetBtn.Disable();
+            _resetBtn.Enable();
             if (_searchHistory.size())
                 _undoBtn.Enable();
         }
