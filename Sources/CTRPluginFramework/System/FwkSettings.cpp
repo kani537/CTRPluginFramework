@@ -3,6 +3,7 @@
 
 namespace CTRPluginFramework
 {
+    PluginHeader *FwkSettings::Header = reinterpret_cast<PluginHeader *>(0x07000000);
     FwkSettings & FwkSettings::Get(void)
     {
         return Preferences::Settings;

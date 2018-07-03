@@ -4,6 +4,7 @@
 #include "ctrulib/svc.h"
 #include "ctrulib/synchronization.h"
 #include "CTRPluginFrameworkImpl/System/Kernel.hpp"
+#include "CTRPluginFramework/System/Mutex.hpp"
 #include <vector>
 
 namespace CTRPluginFramework
@@ -13,32 +14,36 @@ namespace CTRPluginFramework
 
     static inline bool      operator<(const MemInfo& left, const MemInfo& right)
     {
-        return left.base_addr < right.base_addr;
+        return left.base_addr < right.base_addr
+            || (left.base_addr == right.base_addr && left.size < right.size);
     }
 
     static inline bool      operator>(const MemInfo& left, const MemInfo& right)
     {
-        return left.base_addr > right.base_addr;
+        return left.base_addr > right.base_addr
+            || (left.base_addr == right.base_addr && left.size > right.size);
     }
 
     static inline bool      operator<=(const MemInfo& left, const MemInfo& right)
     {
-        return left.base_addr <= right.base_addr;
+        return left.base_addr < right.base_addr
+            || (left.base_addr == right.base_addr && left.size <= right.size);
     }
 
     static inline bool      operator>=(const MemInfo& left, const MemInfo& right)
     {
-        return left.base_addr >= right.base_addr;
+        return left.base_addr > right.base_addr
+            || (left.base_addr == right.base_addr && left.size >= right.size);
     }
 
     static inline bool      operator==(const MemInfo& left, const MemInfo& right)
     {
-        return left.base_addr == right.base_addr;
+        return left.base_addr == right.base_addr && left.size == right.size;
     }
 
     static inline bool      operator!=(const MemInfo& left, const MemInfo& right)
     {
-        return left.base_addr != right.base_addr;
+        return left.base_addr != right.base_addr || left.size != right.size;
     }
 
     class ProcessImpl
@@ -58,10 +63,11 @@ namespace CTRPluginFramework
         static void     UnlockGameThreads(void);
 
         static void     UpdateMemRegions(void);
+        static bool     IsValidAddress(const u32 address);
+        static u32      GetPAFromVA(const u32 address);
         static MemInfo  GetMemRegion(const u32 address);
         static MemInfo  GetNextRegion(const MemInfo &region);
         static MemInfo  GetPreviousRegion(const MemInfo &region);
-        static MemInfo  PatchMemRegion(const MemInfo &region);
 
         static Handle       ProcessHandle;
         static u32          IsPaused;
@@ -72,6 +78,8 @@ namespace CTRPluginFramework
         static KProcess *   KProcessPtr;
         static KCodeSet     CodeSet;
 
+        static MemInfo      InvalidRegion;
+        static Mutex        MemoryMutex;
         static std::vector<MemInfo>     MemRegions;
     };
 }

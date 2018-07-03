@@ -43,7 +43,7 @@ IP			:=  5
 FTP_HOST 	:=	192.168.1.
 FTP_PORT	:=	"5000"
 FTP_PATH	:=	"0004000000033600/" #Zelda OOT
-ACTIONREPLAY := ActionReplay.plg
+ACTIONREPLAY := ActionReplay.3dsgx
 ifneq ("$(wildcard $(ACTIONREPLAY))","")
 FILE_EXISTS = 1
 else
@@ -65,7 +65,8 @@ CFLAGS		+=	$(INCLUDE) -DARM11 -D_3DS
 CXXFLAGS	:= $(CFLAGS) -fno-rtti -fno-exceptions -std=gnu++11
 
 ASFLAGS		:= -g $(ARCH)
-LDFLAGS		:= -pie -T $(TOPDIR)/3ds.ld $(ARCH) -Os -Wl,-Map,$(notdir $*.map),--gc-sections,--strip-discarded,--strip-debug
+LDFLAGS		:= -T $(TOPDIR)/3ds.ld $(ARCH) -Os -Wl,-Map,$(notdir $*.map),--gc-sections,--strip-discarded,--strip-debug
+#LDFLAGS := -pie -specs=3dsx.specs -g $(ARCH) -mtp=soft -Wl,--section-start,.text=0x14000000 -Wl,--gc-sections
 
 LIBS 		:= 	-lctru -lm
 LIBDIRS		:= 	$(CTRULIB)
@@ -124,8 +125,7 @@ ACNL:
 FL:
 	make send FTP_PATH="0004000000113100/"
 AR:
-	rm $(ACTIONREPLAY)
-	mv $(OUTPUT).plg $(ACTIONREPLAY)
+	3dsgxtool.exe $(OUTPUT).plg $(CURDIR)/ActionReplay.yaml $(CURDIR)/ActionReplay.3dsgx
 	@$(TOPDIR)/sendfile.py $(ACTIONREPLAY) "ActionReplay/" "$(FTP_HOST)$(IP)" $(FTP_PORT)
 
 #---------------------------------------------------------------------------------

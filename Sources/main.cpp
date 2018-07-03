@@ -32,7 +32,6 @@ typedef unsigned long __PTRDIFF_TYPE__;
 
 namespace CTRPluginFramework
 {
-    s64 g_free;
     // This function is called on the plugin starts, before main
     void    PatchProcess(FwkSettings &settings)
     {
@@ -415,10 +414,8 @@ namespace CTRPluginFramework
         PluginMenu  &menu = *m;
 
         menu.SynchronizeWithFrame(true);
-
         // Launch menu and mainloop
         int ret = menu.Run();
-
         delete m;
         // Exit plugin
         return (0);

@@ -50,68 +50,9 @@ namespace Kernel
         return (u32)src + 8 + off;
     }
 
-    static void    K__Initialize(void)
-    {
-        // Disable interrupt
-        __asm__ volatile("cpsid aif");
-
-        // Find svctable
-        u32 *   offset = (u32 *)0xFFF00000;
-        u32 *   svcTable;
-
-        while (*offset)
-            ++offset;
-
-        svcTable = offset;
-
-        // Get SynchronizationMutex
-        for(offset = (u32 *)svcTable[0x19]; *offset != 0xE1A04005; offset++);
-        u32 *KEvent__Clear = (u32 *)decodeARMBranch(offset + 1);
-        for(offset = (u32 *)KEvent__Clear; *offset != 0xE8BD8070; offset++);
-
-        SynchronizationMutex = *(KObjectMutex **)(offset + 1);
-
-
-        offset = (u32 *)0xFFF10000;
-
-        // Search for KScheduler__AdjustThread
-        for (; offset < (u32 *)0xFFF30000; ++offset)
-        {
-            if (offset[0] == 0xE5D13034 && offset[1] == 0xE1530002)
-            {
-                KScheduler__AdjustThread = (void (*)(KScheduler *, KThread*, u32))offset;
-
-                // Get KCoreContext location
-                offset = (u32 *)decodeARMBranch(offset + 7) + 3;
-                CoreCtxs = (KCoreContext *)(offset[2 + ((*offset & 0xFF) >> 2)] - 0x8000);
-                break;
-            }
-        }
-
-        //u32  pattern[3] = { 0xE92D4010, 0xE1A04000, 0xE59F0034 };
-        offset = (u32 *)0xFFF00000;
-        for (; offset < (u32 *)0xFFF30000; ++offset)
-        {
-            if (*offset == 0xE92D4010 && *(offset + 1) == 0xE1A04000 && *(offset + 2) == 0xE59F0034)
-            {
-                offset += 2;
-                CriticalSectionLock = (KRecursiveLock *)(offset[2 + (*offset & 0xFF) >> 2]);
-                ++offset;
-                KRecursiveLock__Lock = (void (*)(KRecursiveLock *))decodeARMBranch(offset);
-                offset += 11;
-                KRecursiveLock__Unlock = (void (*)(KRecursiveLock *))decodeARMBranch(offset);
-                break;
-            }
-        }
-
-        // Enable interrupt
-        __asm__ __volatile__("cpsie aif");
-    }
-
     void    Initialize(void)
     {
         return;
-        svcCustomBackdoor((void *)K__Initialize);
     }
 
     #define MPCORE_REGS_BASE        (0x17E00000 | (1u << 31))
@@ -143,25 +84,6 @@ namespace Kernel
                 MPCORE_GID_SGI = (1 << (16 + i)) | 8;
         }
     } */
-
-    static void     KThread__Lock(KThread *thread, bool mustLock)
-    {
-        KCoreObjectContext  &ctx = CoreCtxs[thread->coreId].objectContext;
-
-        if (thread == *CurrentKThread || thread == ctx.currentThread || thread == SynchronizationMutex->owner)
-            return;
-
-        Lock    lock(CriticalSectionLock);
-
-        u32     oldSchedulingMask = thread->schedulingMask;
-
-        if (mustLock)
-            thread->schedulingMask |= 0x40;
-        else
-            thread->schedulingMask &= ~0x40;
-
-        (*CurrentScheduler)->AdjustThread(thread, oldSchedulingMask);
-    }
 
     void    Memcpy(void *dst, const void *src, const u32 size)
     {
@@ -223,22 +145,6 @@ KType   KAutoObject::GetType(void)
         return K_GetType(this);
     else
         return (KType)svcCustomBackdoor((void *)K_GetType, this);
-}
-
-void    KThread::Lock(void)
-{
-    if (__is_svmode())
-        Kernel::KThread__Lock(this, true);
-    else
-        svcCustomBackdoor((void *)Kernel::KThread__Lock, this, true);
-}
-
-void    KThread::Unlock(void)
-{
-    if (__is_svmode())
-        Kernel::KThread__Lock(this, false);
-    else
-        svcCustomBackdoor((void *)Kernel::KThread__Lock, this, false);
 }
 
 u32 *   KThread::GetTls(void)
@@ -332,20 +238,6 @@ u32     KProcess::PatchMaxPriority(u32 newPrio)
     return svcCustomBackdoor((void *)K_PatchMaxPriority, this, newPrio, SystemImpl::IsNew3DS ? 0x84 : 0x7C);
 }
 
-void     KProcess::PatchMaxCommit(u32 more)
-{
-    u32     (*K_PatchMaxCommit)(KProcess *, u32, u32) = [](KProcess *process, u32 more, u32 offset) -> u32
-    {
-        KResourceLimit  *resLimit = (KResourceLimit *)*(u32 *)((u32)process + offset);
-        u32  oldPrio = resLimit->maxPriority;
-
-        resLimit->maxCommit += more;
-        return 0;
-    };
-
-    svcCustomBackdoor((void *)K_PatchMaxCommit, this, more, SystemImpl::IsNew3DS ? 0x84 : 0x7C);
-}
-
 KAutoObject * KProcess::GetObjFromHandle(Handle handle)
 {
     KAutoObject *(*K_GetObjFromHandle)(KProcess *, Handle) = [](KProcess *process, Handle handle)
@@ -379,19 +271,4 @@ std::string     KProcess::GetName(void)
         svcCustomBackdoor((void *)K_GetName, this, buffer);
 
     return buffer;
-}
-
-void    KScheduler::AdjustThread(KThread *thread, u32 oldSchedulingMask)
-{
-    Kernel::KScheduler__AdjustThread(this, thread, oldSchedulingMask);
-}
-
-void    KRecursiveLock::Lock(void)
-{
-    Kernel::KRecursiveLock__Lock(this);
-}
-
-void    KRecursiveLock::Unlock(void)
-{
-    Kernel::KRecursiveLock__Unlock(this);
 }

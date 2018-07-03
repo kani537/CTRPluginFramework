@@ -34,15 +34,16 @@ bool     HookManager::Init(void)
     }
 
     // Allocate the region
-    u32     dest = 0x1E80000;
-    if (R_FAILED(svcControlMemoryEx(&dest, dest, dest, 0x1000, (MemOp)0x203u, (MemPerm)(MEMPERM_READ | MEMPERM_WRITE), true)))
-        return false;
+    //u32     dest = 0x1E80000;
+    //if (R_FAILED(svcControlMemoryEx(&dest, dest, dest, 0x1000, (MemOp)0x203u, (MemPerm)(MEMPERM_READ | MEMPERM_WRITE), true)))
+    //    return false;
 
     // Fix perms
-    CTRPluginFramework::Process::CheckRegion(dest, dest, 7);
+    //CTRPluginFramework::Process::CheckRegion(dest, dest, 7);
 
     // Call this function once again
-    return Init();
+    //return Init();
+    svcBreak(USERBREAK_ASSERT);
 }
 
 Mutex&  HookManager::Lock(void)

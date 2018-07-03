@@ -7,7 +7,6 @@ namespace CTRPluginFramework
 #define LIGHTLOCK   1
 #define RECLOCK     2
 #define MUTEX       3
-#define KRECLOCK    4
 
     Lock::Lock(LightLock &llock) :
         _type{LIGHTLOCK}, _llock{&llock}
@@ -19,12 +18,6 @@ namespace CTRPluginFramework
         _type{RECLOCK}, _rlock{&rlock}
     {
         RecursiveLock_Lock(_rlock);
-    }
-
-    Lock::Lock(KRecursiveLock *krlock) :
-        _type{KRECLOCK}, _krlock{krlock}
-    {
-        krlock->Lock();
     }
 
     Lock::Lock(Mutex &mutex) :
@@ -41,7 +34,5 @@ namespace CTRPluginFramework
             RecursiveLock_Unlock(_rlock);
         else if (_type == MUTEX)
             _mutex->Unlock();
-        else if (_type == KRECLOCK)
-            _krlock->Unlock();
     }
 }

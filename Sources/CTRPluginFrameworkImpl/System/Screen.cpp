@@ -8,7 +8,6 @@
 #include "CTRPluginFrameworkImpl/Preferences.hpp"
 #include "csvc.h"
 
-
 namespace CTRPluginFramework
 {
     #define REG(x)   *(vu32 *)(x)
@@ -78,8 +77,8 @@ namespace CTRPluginFramework
 
     void    ScreenImpl::Initialize(void)
     {
-        ScreenImpl::Top = new (_topBuf) ScreenImpl(0x10400400 | (1u << 31), SystemImpl::IoBaseLCD + 0x204, true);
-        ScreenImpl::Bottom = new (_botBuf) ScreenImpl(0x10400500| (1u << 31), SystemImpl::IoBaseLCD + 0xA04);
+        ScreenImpl::Top = new (_topBuf) ScreenImpl(0x10400400 | (1u << 31), ((0x10202000) | (1u << 31)) + 0x204, true);
+        ScreenImpl::Bottom = new (_botBuf) ScreenImpl(0x10400500| (1u << 31), ((0x10202000) | (1u << 31)) + 0xA04);
     }
 
     void    ScreenImpl::Fade(float fade, bool copy)
@@ -101,10 +100,7 @@ namespace CTRPluginFramework
         u32     leftFB2 = (_paFramebuffers[1] = REG(_LCDSetup + FramebufferA2)) | (1u << 31);
 
         if (leftFB1 == leftFB2)
-        {
-            //Flash((Color&)Color::Cyan);
             return 1;
-        }
 
         _currentBuffer = *_currentBufferReg & 1u;
         // Get format
@@ -136,23 +132,17 @@ namespace CTRPluginFramework
             REG(_LCDSetup + FramebufferB2) = REG(_LCDSetup + FramebufferA2);
         }
 
-        // Alloc framebuffer
+        // Alloc framebuffer backup
         u32 size = GetFramebufferSize();
         if (_backupFramebuffer == nullptr)
         {
             _backupFramebuffer = static_cast<u32 *>(vramAlloc(size));
-            if (_backupFramebuffer == nullptr)
+            if (_backupFramebuffer != nullptr)
             {
-                //OSD::Notify("Failure");
-                return 0;
+                // Backup the framebuffer
+                memcpy32(_backupFramebuffer, (u32 *)GetLeftFramebuffer(), size);
             }
         }
-
-        // Invalidate cache
-        //Invalidate();
-
-        // Backup the framebuffer
-        memcpy32(_backupFramebuffer, (u32 *)GetLeftFramebuffer(), size);
 
         // Copy the framebuffer to the second framebuffer (avoid the sensation of flickering on buffer swap)
         memcpy32((u32 *)GetLeftFramebuffer(true), (u32 *)GetLeftFramebuffer(), size);
@@ -517,8 +507,6 @@ namespace CTRPluginFramework
 
     void    ScreenImpl::SwapBuffer(bool flush, bool copy)
     {
-        //if (flush)
-        //    Flush();
         svcFlushDataCacheRange(GetLeftFramebuffer(), GetFramebufferSize());
         // Change buffer
         _currentBuffer = !_currentBuffer;

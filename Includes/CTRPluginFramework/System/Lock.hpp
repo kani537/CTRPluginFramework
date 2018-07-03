@@ -3,8 +3,6 @@
 
 #include "ctrulib/synchronization.h"
 
-struct KRecursiveLock;
-
 namespace CTRPluginFramework
 {
     class Mutex;
@@ -13,7 +11,6 @@ namespace CTRPluginFramework
     public:
         explicit Lock(LightLock &llock);
         explicit Lock(RecursiveLock &rlock);
-        explicit Lock(KRecursiveLock *krlock);
         explicit Lock(Mutex &mutex);
 
         ~Lock(void);
@@ -24,7 +21,6 @@ namespace CTRPluginFramework
         {
             LightLock       *_llock;
             RecursiveLock   *_rlock;
-            KRecursiveLock  *_krlock;
             Mutex           *_mutex;
         };
     };

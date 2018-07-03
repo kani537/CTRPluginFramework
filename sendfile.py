@@ -23,7 +23,7 @@ def checkfolder(ftp):
 			return
 
 	for f in files:
-		if (".plg" in f or "CTRPFData.bin" in f):
+		if (".3dsgx" in f or "CTRPFData.bin" in f):
 			parts = f.split()
 			name = parts[len(parts) - 1]
 			printf("Deleting " + name)
@@ -69,7 +69,7 @@ if __name__ == '__main__':
 	printf("FTP File Sender\n")
 	try:
 		filename = sys.argv[1]
-		lumaname = 'plugin.plg'
+		lumaname = 'plugin.3dsgx'
 		lumapath = '/luma/plugins/' + sys.argv[2]
 		ntrpath = '/plugin/' + sys.argv[2]
 		host = sys.argv[3]
@@ -87,7 +87,7 @@ if __name__ == '__main__':
 	except IOError as e:
 		printf("/!\ An error occured. /!\ ");
 
-	if filename != "ActionReplay.plg":
+	if filename != "ActionReplay.3dsgx":
 		sendPlugin(ftp, ntrpath, filename, file)
 	else:
 		lumaname = filename

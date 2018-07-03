@@ -1,4 +1,11 @@
 #include "3DS.h"
+
+// Fix std::vector<MemInfo> == operator
+static bool      operator==(const MemInfo left, const MemInfo right)
+{
+    return left.base_addr == right.base_addr && left.size == right.size;
+}
+
 #include "CTRPluginFramework/System.hpp"
 #include "CTRPluginFrameworkImpl/System.hpp"
 #include "CTRPluginFrameworkImpl/Preferences.hpp"
@@ -21,7 +28,8 @@ namespace CTRPluginFramework
     KThread *   ProcessImpl::MainThread;
     KProcess *  ProcessImpl::KProcessPtr;
     KCodeSet    ProcessImpl::CodeSet;
-
+    MemInfo     ProcessImpl::InvalidRegion = MemInfo{0, 0, 0, 0};
+    Mutex       ProcessImpl::MemoryMutex;
     std::vector<MemInfo> ProcessImpl::MemRegions;
 
 	void    ProcessImpl::Initialize(void)
@@ -66,6 +74,8 @@ namespace CTRPluginFramework
 
 		// Create handle for this process
 		svcOpenProcess(&ProcessHandle, ProcessId);
+
+
 	}
 
     extern "C" Handle gspEvent;
@@ -180,24 +190,10 @@ namespace CTRPluginFramework
 
     void    ProcessImpl::LockGameThreads(void)
     {
-        // !! NOT WORKING !!
-        std::vector<KThread *>  threads;
-
-        GetGameThreads(threads);
-
-        for (KThread *thread : threads)
-            thread->Lock();
     }
 
     void    ProcessImpl::UnlockGameThreads(void)
     {
-        // !! NOT WORKING !!
-        std::vector<KThread *>  threads;
-
-        GetGameThreads(threads);
-
-        for (KThread *thread : threads)
-            thread->Unlock();
     }
 
     static bool     IsInRegion(MemInfo &memInfo, u32 addr)
@@ -210,6 +206,8 @@ namespace CTRPluginFramework
 
     void    ProcessImpl::UpdateMemRegions(void)
     {
+        Lock lock(MemoryMutex);
+
         MemRegions.clear();
 
         bool    regionPatched  = false;
@@ -222,33 +220,22 @@ namespace CTRPluginFramework
             if (R_SUCCEEDED(svcQueryProcessMemory(&memInfo, &pageInfo, ProcessHandle, addr)))
             {
                 // If region is FREE, IO, SHARED or LOCKED, skip it
-                if (memInfo.state == MEMSTATE_FREE || memInfo.state == MEMSTATE_IO
-                    || memInfo.state == MEMSTATE_LOCKED || memInfo.state == MEMSTATE_SHARED)
+                if (memInfo.state == MEMSTATE_FREE || memInfo.state == MEMSTATE_IO)
+                   // || memInfo.state == MEMSTATE_LOCKED || memInfo.state == MEMSTATE_SHARED)
                 {
                     addr = memInfo.base_addr + memInfo.size;
                     continue;
                 }
 
                 // Same if the memregion is part of CTRPF or NTR
-                if (memInfo.base_addr == 0x06000000 || memInfo.base_addr == 0x07000000
+                /*if (memInfo.base_addr == 0x06000000 || memInfo.base_addr == 0x07000000
                     || memInfo.base_addr == 0x01E80000 || IsInRegion(memInfo, __ctru_heap))
                 {
                     addr = memInfo.base_addr + memInfo.size;
                     continue;
-                }
-
-                // Check if the region needs patching
-                /*if ((memInfo.perm & MEMPERM_RW) != MEMPERM_RW)
-                {
-                    u32 perm = MEMPERM_EXECUTE | MEMPERM_RW;
-
-                    regionPatched |=
-                        R_SUCCEEDED(svcControlProcessMemory(ProcessImpl::ProcessHandle,
-                            memInfo.base_addr, 0, memInfo.size, MEMOP_PROT, perm));
                 }*/
 
                 // Add it to the vector if necessary
-                //if (!regionPatched)
                 if (memInfo.perm & MEMPERM_READ)
                     MemRegions.push_back(memInfo);
 
@@ -258,12 +245,46 @@ namespace CTRPluginFramework
 
             addr += 0x1000;
         }
-        //if (regionPatched)
-        //    UpdateMemRegions();
     }
 
-    MemInfo    ProcessImpl::GetMemRegion(u32 address)
+    static bool     IsRegionProhibited(const MemInfo& memInfo)
     {
+        // Yes if the memregion is part of CTRPF
+        if (memInfo.base_addr == 0x06000000 || memInfo.base_addr == 0x07000000
+            || memInfo.base_addr == 0x01E80000)
+            return true;
+
+        // Same if the memory is shared
+        if (memInfo.state == MEMSTATE_SHARED)
+            return true;
+
+        return false;
+    }
+
+    bool        ProcessImpl::IsValidAddress(const u32 address)
+    {
+        Lock lock(MemoryMutex);
+
+        for (MemInfo &memInfo : MemRegions)
+            if (IsInRegion(memInfo, address))
+                return true;
+
+        return false;
+    }
+
+    u32        ProcessImpl::GetPAFromVA(const u32 address)
+    {
+        u32 pa = 0;
+
+        svcControlProcess(ProcessImpl::ProcessHandle, PROCESSOP_GET_PA_FROM_VA, (u32)&pa, address);
+
+        return pa;
+    }
+
+    MemInfo     ProcessImpl::GetMemRegion(u32 address)
+    {
+        Lock lock(MemoryMutex);
+
         for (MemInfo &memInfo : MemRegions)
             if (IsInRegion(memInfo, address))
                 return memInfo;
@@ -274,8 +295,10 @@ namespace CTRPluginFramework
 
     MemInfo     ProcessImpl::GetNextRegion(const MemInfo &region)
     {
+        Lock lock(MemoryMutex);
+
         for (MemInfo &memInfo : MemRegions)
-            if (memInfo > region)
+            if (memInfo > region && !IsRegionProhibited(memInfo))
                 return memInfo;
 
         return region;
@@ -283,32 +306,18 @@ namespace CTRPluginFramework
 
     MemInfo     ProcessImpl::GetPreviousRegion(const MemInfo &region)
     {
+        Lock lock(MemoryMutex);
+
         MemInfo *prev = nullptr;
 
         for (MemInfo &memInfo : MemRegions)
         {
-            if (memInfo >= region)
+            if (memInfo >= region && !IsRegionProhibited(memInfo))
                 return prev != nullptr ? *prev : memInfo;
 
             prev = &memInfo;
         }
 
         return region;
-    }
-
-    MemInfo     ProcessImpl::PatchMemRegion(const MemInfo &region)
-    {
-        if ((region.perm & MEMPERM_RW) != MEMPERM_RW)
-        {
-            u32 perm = region.perm | MEMPERM_RW;
-
-            if (R_SUCCEEDED(svcControlProcessMemory(ProcessImpl::ProcessHandle,
-                    region.base_addr, 0, region.size, MEMOP_PROT, perm)))
-            {
-                UpdateMemRegions();
-            }
-        }
-
-        return GetMemRegion(region.base_addr);
     }
 }

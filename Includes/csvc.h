@@ -143,6 +143,23 @@ Result svcCopyHandle(Handle *out, Handle outProcess, Handle in, Handle inProcess
 Result svcTranslateHandle(u32 *outKAddr, char *outClassName, Handle in);
 ///@}
 
+/// Operations for svcControlProcess
+typedef enum ProcessOp
+{
+    PROCESSOP_MAP_MEMBLOCK,     ///< Map a shared memory block handle into the process at the specified va (like svcMapMemoryBlock, except it makes no checks)
+                                ///< svcControlMemory(handle, PROCESSOP_MAP_MEMBLOCK, vaToMapTheBlockTo, handleOfTheMemoryBlock)
+    PROCESSOP_GET_ALL_HANDLES,  ///< List all handles of the process, varg3 can be either 0 to fetch all handles, or token of the type to fetch
+                                ///< svcControlProcess(handle, PROCESSOP_GET_ALL_HANDLES, (u32)&outBuf, 0)
+    PROCESSOP_SET_MMU_TO_RWX,   ///< Set the whole memory of the process with rwx access
+                                ///< svcControlProcess(handle, PROCESSOP_SET_MMU_TO_RWX, 0, 0)
+    PROCESSOP_GET_ON_MEMORY_CHANGE_EVENT,
+    PROCESSOP_GET_ON_EXIT_EVENT,
+    PROCESSOP_GET_PA_FROM_VA,   ///< Get the physical address of the va within the process
+                                ///< svcControlProcess(handle, PROCESSOP_GET_PA_FROM_VA, (u32)&outPa, va)
+} ProcessOp;
+
+Result  svcControlProcess(Handle process, ProcessOp op, u32 varg2, u32 varg3);
+
 #ifdef __cplusplus
 }
 #endif

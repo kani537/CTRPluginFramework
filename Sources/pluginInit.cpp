@@ -5,6 +5,9 @@
 #include "CTRPluginFrameworkImpl/System/Screenshot.hpp"
 #include "csvc.h"
 
+#define PA_PTR(addr)            (void *)((u32)(addr) | 1 << 31)
+#define REG32(addr)             (*(vu32 *)(PA_PTR(addr)))
+
 extern "C"
 {
     Thread  g_mainThread = nullptr; ///< Used in syscalls.c for __ctru_get_reent
@@ -35,10 +38,6 @@ namespace CTRPluginFramework
     Handle      g_keepEvent = 0;
     Handle      g_resumeEvent = 0;
     bool        g_keepRunning = true;
-    __attribute__((weak)) u32         ___heap_size = 0;
-    __attribute__((weak)) u32         ___eco_memory_mode = 0;
-
-    extern bool     g_heapError; ///< allocateHeaps.cpp
 
     void    ThreadInit(void *arg);
     void    ThreadExit(void);
@@ -46,7 +45,6 @@ namespace CTRPluginFramework
     void    InitializeRandomEngine(void);
 
     // From main.cpp
-    void    PatchProcess(FwkSettings &settings);
     int     main(void);
 }
 
@@ -95,6 +93,14 @@ void     OnLoadCro(void)
 
 namespace CTRPluginFramework
 {
+    void __attribute__((weak))  PatchProcess(FwkSettings& settings)
+    {
+    }
+
+    void __attribute__((weak))  OnProcessExit(void)
+    {
+    }
+
     namespace Heap
     {
         extern u8* __ctrpf_heap;
@@ -109,52 +115,29 @@ namespace CTRPluginFramework
         }
 
         // Set current working directory
-        if (!System::IsLoaderNTR()) // Luma's loader
+        if (FwkSettings::Header->isDefaultPlugin)
         {
-            if (*(vu32 *)0x070000FC)
-            {
-                std::string path = Utils::Format("/luma/plugins/ActionReplay/%016llX", Process::GetTitleID());
+            std::string path = "/luma/plugins/ActionReplay";
 
-                if (!Directory::IsExists(path))
-                    Directory::Create(path);
+            if (!Directory::IsExists(path))
+                Directory::Create(path);
 
-                Directory::ChangeWorkingDirectory(path + "/");
-            }
-            else
-                Directory::ChangeWorkingDirectory(Utils::Format("/luma/plugins/%016llX/", Process::GetTitleID()));
+            path += Utils::Format("/%016llX", Process::GetTitleID());
+
+            if (!Directory::IsExists(path))
+                Directory::Create(path);
+
+            Directory::ChangeWorkingDirectory(path + "/");
         }
         else
-        {
-            std::string dirpath = Utils::Format("/plugin/%016llX", Process::GetTitleID());
-
-            // Check if game's folder exists
-            if (!Directory::IsExists(dirpath))
-            {
-                // If doesn't exist, so create a temporary folder
-                dirpath = "/plugin/game/ctrpf";
-                if (!Directory::IsExists(dirpath))
-                    Directory::Create(dirpath);
-                dirpath += "/";
-                Process::GetName(dirpath);
-
-                if (!Directory::IsExists(dirpath))
-                    Directory::Create(dirpath);
-            }
-
-            dirpath += "/";
-            Directory::ChangeWorkingDirectory(dirpath);
-        }
+            Directory::ChangeWorkingDirectory(Utils::Format("/luma/plugins/%016llX/", Process::GetTitleID()));
     }
 
     static void     InitHeap(void)
     {
         u32         size;
 
-        if (___eco_memory_mode)
-            size = 0x50000;
-        else if (System::IsLoaderNTR())
-            size = 0xC0000;
-        else if (!SystemImpl::IsNew3DS)
+        if (!SystemImpl::IsNew3DS)
             size = 0x120000;
         else
             size = 0x100000;
@@ -194,44 +177,21 @@ namespace CTRPluginFramework
         // Init locks
         PluginMenuExecuteLoop::InitLocks();
 
-        // Protect code
-        Process::CheckAddress(0x00100000, 7);
-        Process::CheckAddress(0x00102000, 7); ///< NTR seems to protect the first 0x1000 bytes, which split the region in two
-        // Protect VRAM
-        Process::ProtectRegion(0x1F000000, 3);
-
-        // Check loader
-        SystemImpl::IsLoaderNTR = Process::CheckAddress(0x06000000, 3);
-
-        // Define heap size
-        __ctru_heap_size = SystemImpl::IsLoaderNTR ? 0x100000 : 0x200000;
-        __ctru_heap_size = std::max(__ctru_heap_size, ___heap_size);
-
-        // Patch KProcess::ResourceLimit
-        ProcessImpl::KProcessPtr->PatchMaxCommit(__ctru_heap_size + 0x1000);
-        /*if (*(u32 *)0x1FF80030 == 3)
-            *(u32 *)(PA_FROM_VA(0x1FF80048)) += __ctru_heap_size + 0x1000;
-        else
-            *(u32 *)(PA_FROM_VA(0x1FF80040)) += __ctru_heap_size + 0x1000;*/
-
         // Init heap and newlib's syscalls
         initLib();
+
+        ProcessImpl::UpdateMemRegions();
 
         // Init default settings
         FwkSettings &settings = FwkSettings::Get();
 
         settings.ThreadPriority = 0x30;
-        settings.EcoMemoryMode = false;
         settings.AllowActionReplay = true;
         settings.AllowSearchEngine = true;
-        settings.WaitTimeToBoot = Seconds(10.f);
+        settings.WaitTimeToBoot = Seconds(5.f);
 
         // Set default theme
         FwkSettings::SetThemeDefault();
-
-        // If heap error, exit
-        if (g_heapError)
-            goto exit;
 
         // Init OSD hook
         OSDImpl::_Initialize();
@@ -279,7 +239,7 @@ namespace CTRPluginFramework
         g_gspEventThreadPriority = settings.ThreadPriority + 1;
 
         // Wait for the required time
-        Sleep(settings.WaitTimeToBoot);
+        //Sleep(settings.WaitTimeToBoot);
 
         svcCreateEvent(&g_keepEvent, RESET_ONESHOT);
 
@@ -293,35 +253,46 @@ namespace CTRPluginFramework
         svcWaitSynchronization(g_keepEvent, U64_MAX);
         svcClearEvent(g_keepEvent);
 
-        if (settings.AllowActionReplay)
-        {
-            while (g_keepRunning)
-            {
-                // Wait for a new frame
-                LightEvent_Wait(&OSDImpl::OnNewFrameEvent);
+        Handle memLayoutChanged;
+        Handle onProcessExit;
+        Handle resumeProcessExit;
 
-                // Lock the AR & execute codes before releasing it
-                PluginMenuExecuteLoop::LockAR();
-                PluginMenuExecuteLoop::ExecuteAR();
-                PluginMenuExecuteLoop::UnlockAR();
-            }
-        }
-        else
-        {
-            while (g_keepRunning)
-            {
-                svcWaitSynchronization(g_keepEvent, U64_MAX);
-                svcClearEvent(g_keepEvent);
-            }
-        }
+        svcControlProcess(CUR_PROCESS_HANDLE, PROCESSOP_GET_ON_MEMORY_CHANGE_EVENT, (u32)&memLayoutChanged, 0);
+        svcControlProcess(CUR_PROCESS_HANDLE, PROCESSOP_GET_ON_EXIT_EVENT, (u32)&onProcessExit, (u32)&resumeProcessExit);
 
-        threadJoin(g_mainThread, U64_MAX);
-        threadFree(g_mainThread);
+       while (true)
+       {
+            u32 handles[2] = { memLayoutChanged, onProcessExit};
+            s32 idx = 0;
+
+            svcWaitSynchronizationN(&idx, handles, 2, false, U64_MAX);
+
+            if (idx == 0)
+            {
+                // Memory layout changed, update memory
+                ProcessImpl::UpdateMemRegions();
+            }
+            else
+            {
+                SystemImpl::AptStatus |= BIT(3);
+                Scheduler::Exit();
+                OnProcessExit();
+                svcSignalEvent(resumeProcessExit);
+            }
+       }
 
     exit:
         svcCloseHandle(g_keepEvent);
 
-        exit(0);
+        // Close some handles
+        gspExit();
+        hidExit();
+        cfguExit();
+        fsExit();
+        amExit();
+        acExit();
+        srvExit();
+        svcExitThread();
     }
 
     // Initialize most subsystem / Global variables
@@ -394,7 +365,7 @@ namespace CTRPluginFramework
     void  ThreadExit(void)
     {
         // In which thread are we ?
-        if (threadGetCurrent() == g_mainThread)
+        if (g_mainThread && threadGetCurrent() == g_mainThread)
         {
             // ## MainThread ##
 
@@ -407,6 +378,7 @@ namespace CTRPluginFramework
 
             // Exit services
             gspExit();
+            aptExit();
 
             // Exit loop in keep thread
             g_keepRunning = false;

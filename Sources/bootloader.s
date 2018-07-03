@@ -7,6 +7,8 @@ stmfd   sp!, {r0-r12, lr}
 mrs     r0, cpsr
 stmfd   sp!, {r0}
 
+b 		skip
+
 ldr     r6, =_start
 adr     r5, _start
 sub     r5, r5, r6      /* r5 = realAddress - baseAddress */

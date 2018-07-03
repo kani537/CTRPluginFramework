@@ -107,9 +107,9 @@ namespace CTRPluginFramework
             size &= ~0xFFF;
         }
 
-    	if (R_FAILED(svcControlProcessMemory(ProcessImpl::ProcessHandle, addr, addr, size, 6, perm)))
-        	return false;
-
+    	//if (R_FAILED(svcControlProcessMemory(ProcessImpl::ProcessHandle, addr, addr, size, 6, perm)))
+        //	return false;
+        svcControlProcess(ProcessImpl::ProcessHandle, PROCESSOP_SET_MMU_TO_RWX, 0, 0);
         return true;
     }
 
@@ -129,7 +129,7 @@ namespace CTRPluginFramework
 
     void     Process::ProtectRegionInRange(u32 startAddress, u32 endAddress, int perm)
     {
-        MemInfo     minfo;
+        /*MemInfo     minfo;
         PageInfo    pinfo;
 
         while (startAddress < endAddress)
@@ -149,7 +149,7 @@ namespace CTRPluginFramework
                 }
             }
             startAddress += 0x1000;
-        }
+        }*/
     }
 
     bool     Process::CopyMemory(void *dst, const void *src, u32 size)
@@ -173,14 +173,17 @@ namespace CTRPluginFramework
 
     bool    Process::CheckAddress(u32 address, u32 perm)
     {
+        return ProcessImpl::IsValidAddress(address);
+        /*
         Result         res;
         PageInfo       pInfo = {0};
         MemInfo        mInfo = {0};
 
-        res = svcQueryMemory(&mInfo, &pInfo, address);
+        //mInfo = ProcessImpl::GetMemRegion(address);
+        //res = svcQueryMemory(&mInfo, &pInfo, address);
         if (R_SUCCEEDED(res) && mInfo.base_addr <= address && mInfo.base_addr + mInfo.size > address)
         {
-            if ((mInfo.perm & perm) != perm)
+            /*if ((mInfo.perm & perm) != perm)
             {
                 perm |= mInfo.perm;
                 res = svcControlProcessMemory(ProcessImpl::ProcessHandle, mInfo.base_addr, mInfo.base_addr, mInfo.size, 6, perm);
@@ -190,16 +193,17 @@ namespace CTRPluginFramework
             }
             return (true);
         }
-        return (false);
+        return (false);*/
     }
 
     bool    Process::CheckRegion(u32 address, u32 &size, u32 perm)
     {
-        Result         res;
-        PageInfo       pInfo = { 0 };
-        MemInfo        mInfo = { 0 };
+        //Result         res;
+        //PageInfo       pInfo = { 0 };
+        MemInfo        mInfo = ProcessImpl::GetMemRegion(address);
 
-        res = svcQueryMemory(&mInfo, &pInfo, address);
+        size = mInfo.size;
+        /*res = svcQueryMemory(&mInfo, &pInfo, address);
         if (R_SUCCEEDED(res) && mInfo.base_addr <= address && mInfo.base_addr + mInfo.size > address)
         {
             size = mInfo.size;
@@ -214,7 +218,8 @@ namespace CTRPluginFramework
             }
             return (true);
         }
-        return (false);
+        return (false);*/
+        return mInfo != ProcessImpl::InvalidRegion;
     }
 
     union Type32

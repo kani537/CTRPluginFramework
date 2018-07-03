@@ -10,7 +10,6 @@ initLib:
 	str	lr, [r2,#4]
 	bl	__system_allocateHeaps
 	bl	__libc_init_array
-	bl	_init
 	ldr	r2, =saved_stack
 	ldr	lr, [r2,#4]
  	bx	lr
@@ -20,12 +19,11 @@ initLib:
 	.type	__ctru_exit,	%function
 
 __ctru_exit:
-	bl	__libc_fini_array
-	bl	_fini
+	@bl	__libc_fini_array
 	bl	__appExit
 
-	ldr	r2, =saved_stack
-	ldr	sp, [r2]
+	@ldr	r2, =saved_stack
+	@ldr	sp, [r2]
 	b	__libctru_exit
 
 	.bss

@@ -190,6 +190,9 @@ namespace CTRPluginFramework
 
     void     OSDImpl::CallbackGlobal(u32 isBottom, void* addr, void* addrB, int stride, int format)
     {
+        if (SystemImpl::Status())
+            return;
+
         if (!isBottom)
         {
             if (FramesToPlay)

@@ -48,7 +48,12 @@ namespace CTRPluginFramework
                 core.flags = Scheduler::Core::Idle;
                 LightEvent_Wait(&core.newTaskEvent);
                 LightEvent_Clear(&core.newTaskEvent);
+
+                if (SystemImpl::Status())
+                    return;
             }
+            else if (SystemImpl::Status())
+                return;
 
 #if DEBUG
             OSD::Notify(Utils::Format("New task on core: %d", core.id));
@@ -77,8 +82,6 @@ namespace CTRPluginFramework
             OSD::Notify(Utils::Format("Task ended on core: %d", core.id));
 #endif
         }
-
-        svcExitThread();
     }
 
     int     Scheduler::Schedule(const Task &task)
@@ -151,14 +154,12 @@ namespace CTRPluginFramework
         }
     }
 
-    void    Scheduler::Lock(void)
+    void    Scheduler::Exit(void)
     {
-        _singleton._mutex.Lock();
-    }
+        Lock lock(_singleton._mutex);
 
-    void    Scheduler::Unlock(void)
-    {
-        _singleton._mutex.Unlock();
+        for (Core &core : _singleton._cores)
+            LightEvent_Signal(&core.newTaskEvent);
     }
 
     Scheduler::Scheduler(void)

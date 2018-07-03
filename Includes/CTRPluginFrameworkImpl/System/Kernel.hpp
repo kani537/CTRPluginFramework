@@ -146,8 +146,6 @@ struct KThread
     u32     ptrToLinkedList;
     s32     priorityForInheritance;
 
-    void    Lock(void);
-    void    Unlock(void);
     u32  *  GetTls(void);
     bool    IsPluginThread(void);
 
@@ -165,7 +163,6 @@ struct KProcess
     void    PatchCore2Access(void);
     u32     PatchCategory(u32 newCategory);
     u32     PatchMaxPriority(u32 newPrio);
-    void    PatchMaxCommit(u32 more);
     KAutoObject *   GetObjFromHandle(Handle handle);
     std::string     GetName(void);
 
@@ -186,8 +183,6 @@ struct KScheduler
     KThread*schedulerThread;
     u32     threadList[2];
     u32     block[0x80];
-
-    void    AdjustThread(KThread *thread, u32 oldSchedulingMask);
 } PACKED;
 
 struct KCoreObjectContext

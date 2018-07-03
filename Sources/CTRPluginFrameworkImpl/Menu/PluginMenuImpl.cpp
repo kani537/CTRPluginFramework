@@ -316,6 +316,20 @@ namespace CTRPluginFramework
                 if (SyncOnFrame && !ProcessImpl::IsPaused)
                     LightEvent_Wait(&OSDImpl::OnNewFrameEvent);
 
+                if (SystemImpl::Status())
+                {
+                    _runningInstance = nullptr;
+                    return 0;
+                }
+
+                if (FwkSettings::Get().AllowActionReplay)
+                {
+                    // Lock the AR & execute codes before releasing it
+                    PluginMenuExecuteLoop::LockAR();
+                    PluginMenuExecuteLoop::ExecuteAR();
+                    PluginMenuExecuteLoop::UnlockAR();
+                }
+
                 // Execute activated cheats
                 PluginMenuExecuteLoop::Lock();
                 executer();

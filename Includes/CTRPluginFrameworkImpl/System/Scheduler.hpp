@@ -68,9 +68,8 @@ namespace CTRPluginFramework
          */
         static int      Schedule(const Task &task);
         static void     Initialize(void);
+        static void     Exit(void);
 
-        static void     Lock(void);
-        static void     Unlock(void);
     private:
         Scheduler(void);
 

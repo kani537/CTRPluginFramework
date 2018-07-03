@@ -1,38 +1,40 @@
 #include "types.h"
 #include "3DS.h"
 #include "CTRPluginFrameworkImpl/System/SystemImpl.hpp"
+#include "CTRPluginFrameworkImpl/System/Scheduler.hpp"
+#include "CTRPluginFrameworkImpl/Graphics/OSDImpl.hpp"
 
 namespace CTRPluginFramework
 {
     bool    SystemImpl::IsNew3DS = false;
-    bool    SystemImpl::IsLoaderNTR = false;
-    u32     SystemImpl::IoBaseLCD = 0;
-    u32     SystemImpl::IoBasePAD = 0;
-    u32     SystemImpl::IoBasePDC = 0;
     u32     SystemImpl::CFWVersion = 0;
     u32     SystemImpl::RosalinaHotkey = 0;
+    u32     SystemImpl::AptStatus = 0;
     u8      SystemImpl::Language = CFG_LANGUAGE_EN;
+
+    static  aptHookCookie   g_hookCookie;
+    static  LightEvent      g_sleepEvent;
+
+    enum
+    {
+	    FLAG_ACTIVE       = BIT(0),
+	    FLAG_ALLOWSLEEP   = BIT(1),
+	    FLAG_ORDERTOCLOSE = BIT(2),
+	    FLAG_SHUTDOWN     = BIT(3),
+	    FLAG_POWERBUTTON  = BIT(4),
+	    FLAG_WKUPBYCANCEL = BIT(5),
+	    FLAG_WANTSTOSLEEP = BIT(6),
+	    FLAG_SLEEPING     = BIT(7),
+	    FLAG_EXITED       = BIT(31),
+    };
 
     void    SystemImpl::Initialize(void)
     {
-        bool isNew3DS = false;
+        s64 out;
 
-        APT_CheckNew3DS(&isNew3DS);
-        IsNew3DS = isNew3DS;
-        if (isNew3DS)
-        {
-            IoBaseLCD = 0xFFFC4000;
-            IoBasePAD = 0xFFFC2000;
-            IoBasePDC = 0xFFFBC000;
-        }
-        else
-        {
-            IoBaseLCD = 0xFFFC8000;
-            IoBasePAD = 0xFFFC6000;
-            IoBasePDC = 0xFFFC0000;
-        }
+        LightEvent_Init(&g_sleepEvent, RESET_STICKY);
 
-        s64 out = 0;
+        IsNew3DS = R_SUCCEEDED(svcGetSystemInfo(&out, 0x10001, 1));
 
         if (R_SUCCEEDED(svcGetSystemInfo(&out, 0x10000, 0)))
         {
@@ -45,5 +47,18 @@ namespace CTRPluginFramework
 
         // Get System's language
         CFGU_GetSystemLanguage(&Language);
+    }
+
+    bool    SystemImpl::Status(void)
+    {
+        if (AptStatus & FLAG_SHUTDOWN)
+        {
+            return true;
+        }
+
+        if (AptStatus & FLAG_SLEEPING)
+            LightEvent_Wait(&g_sleepEvent);
+
+        return false;
     }
 }
