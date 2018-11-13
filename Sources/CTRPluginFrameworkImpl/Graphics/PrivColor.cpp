@@ -13,7 +13,13 @@ namespace CTRPluginFramework
     IntRect     PrivColor::_clampArea;
     GSPGPU_FramebufferFormats PrivColor::_format = GSP_BGR8_OES;
 
-    void    PrivColor::UseClamp(bool willUse, IntRect rect)
+    void    PrivColor::UseClamp(bool willUse)
+    {
+        _useClamp = willUse;
+        SetFormat(_format);
+    }
+
+    void    PrivColor::UseClamp(bool willUse, const IntRect& rect)
     {
         _useClamp = willUse;
         _clampArea = rect;
@@ -213,10 +219,7 @@ namespace CTRPluginFramework
         int posX;
         int posY;
 
-        if (Renderer::GetContext()->target == BOTTOM)
-            ScreenImpl::Bottom->GetPosFromAddress((u32)dst, posX, posY);
-        else
-            ScreenImpl::Top->GetPosFromAddress((u32)dst, posX, posY);
+        Renderer::GetContext()->screen->GetPosFromAddress((u32)dst, posX, posY);
 
         if (!_clampArea.Contains(posX, posY))
             return (dst + 4);
@@ -233,10 +236,7 @@ namespace CTRPluginFramework
         int posX;
         int posY;
 
-        if (Renderer::GetContext()->target == BOTTOM)
-            ScreenImpl::Bottom->GetPosFromAddress((u32)dst, posX, posY);
-        else
-            ScreenImpl::Top->GetPosFromAddress((u32)dst, posX, posY);
+        Renderer::GetContext()->screen->GetPosFromAddress((u32)dst, posX, posY);
 
         if (!_clampArea.Contains(posX, posY))
             return (dst + 3);
@@ -252,10 +252,7 @@ namespace CTRPluginFramework
         int posX;
         int posY;
 
-        if (Renderer::GetContext()->target == BOTTOM)
-            ScreenImpl::Bottom->GetPosFromAddress((u32)dst, posX, posY);
-        else
-            ScreenImpl::Top->GetPosFromAddress((u32)dst, posX, posY);
+        Renderer::GetContext()->screen->GetPosFromAddress((u32)dst, posX, posY);
 
         if (!_clampArea.Contains(posX, posY))
             return (dst + 2);
@@ -280,10 +277,7 @@ namespace CTRPluginFramework
         int posX;
         int posY;
 
-        if (Renderer::GetContext()->target == BOTTOM)
-            ScreenImpl::Bottom->GetPosFromAddress((u32)dst, posX, posY);
-        else
-            ScreenImpl::Top->GetPosFromAddress((u32)dst, posX, posY);
+        Renderer::GetContext()->screen->GetPosFromAddress((u32)dst, posX, posY);
 
         if (!_clampArea.Contains(posX, posY))
             return (dst + 2);
@@ -309,10 +303,7 @@ namespace CTRPluginFramework
         int posX;
         int posY;
 
-        if (Renderer::GetContext()->target == BOTTOM)
-            ScreenImpl::Bottom->GetPosFromAddress((u32)dst, posX, posY);
-        else
-            ScreenImpl::Top->GetPosFromAddress((u32)dst, posX, posY);
+        Renderer::GetContext()->screen->GetPosFromAddress((u32)dst, posX, posY);
 
         if (!_clampArea.Contains(posX, posY))
             return (dst + 2);

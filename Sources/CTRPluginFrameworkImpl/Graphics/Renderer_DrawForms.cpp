@@ -228,6 +228,50 @@ namespace CTRPluginFramework
             --height;
         }
 
+        // Clamp check
+        if (PrivColor::_useClamp)
+        {
+            const IntRect& clampArea = PrivColor::_clampArea;
+
+            // Top
+            if (posY < clampArea.leftTop.y)
+            {
+                int diff = clampArea.leftTop.y - posY;
+
+                posY += diff;
+                height -= diff;
+
+                if (height <= 0)
+                    return;
+            }
+
+            // Bottom
+            int borderY = clampArea.leftTop.y + clampArea.size.y;
+            if (posY + height > borderY)
+            {
+                height = borderY - posY;
+            }
+
+            // Left
+            if (posX < clampArea.leftTop.x)
+            {
+                int diff = clampArea.leftTop.x - posX;
+
+                posX += diff;
+                width -= diff;
+
+                if (diff <= 0)
+                    return;
+            }
+
+            // Right
+            int borderX = clampArea.leftTop.x + clampArea.size.x;
+            if (posX + width > borderX)
+            {
+                width = borderX - posX;
+            }
+        }
+
         ScreenImpl  *screen = GetContext()->screen;
         u8          *dst = screen->GetLeftFramebuffer(posX, posY + height - 1);
         u32         stride = screen->GetStride();
@@ -253,6 +297,50 @@ namespace CTRPluginFramework
             if (height <= 0)
                 return;
             --height;
+        }
+
+        // Clamp check
+        if (PrivColor::_useClamp)
+        {
+            const IntRect& clampArea = PrivColor::_clampArea;
+
+            // Top
+            if (posY < clampArea.leftTop.y)
+            {
+                int diff = clampArea.leftTop.y - posY;
+
+                posY += diff;
+                height -= diff;
+
+                if (height <= 0)
+                    return;
+            }
+
+            // Bottom
+            int borderY = clampArea.leftTop.y + clampArea.size.y;
+            if (posY + height > borderY)
+            {
+                height = borderY - posY;
+            }
+
+            // Left
+            if (posX < clampArea.leftTop.x)
+            {
+                int diff = clampArea.leftTop.x - posX;
+
+                posX += diff;
+                width -= diff;
+
+                if (diff <= 0)
+                    return;
+            }
+
+            // Right
+            int borderX = clampArea.leftTop.x + clampArea.size.x;
+            if (posX + width > borderX)
+            {
+                width = borderX - posX;
+            }
         }
 
         ScreenImpl  *screen = GetContext()->screen;

@@ -17,7 +17,11 @@ namespace CTRPluginFramework
         static FCPointer FromFramebuffer;
         static F8Pointer ToFramebuffer;
 
-        static void    UseClamp(bool willUse, IntRect rect = IntRect());
+        static bool     _useClamp;
+        static IntRect  _clampArea;
+
+        static void     UseClamp(bool willUse);
+        static void     UseClamp(bool willUse, const IntRect& rect);
 
         static GSPGPU_FramebufferFormats GetFormat(void);
         static void     SetFormat(GSPGPU_FramebufferFormats format);
@@ -25,7 +29,7 @@ namespace CTRPluginFramework
     private:
         friend class ScreenImpl;
 
-        
+
 
         static Color    _ReadRGBA8(u8 *src);
         static Color    _ReadBGR8(u8 *src);
@@ -45,8 +49,7 @@ namespace CTRPluginFramework
         static u8       *_WriteRGB5A1Clamp(u8 *dst, const Color &color);
         static u8       *_WriteRGBA4Clamp(u8 *dst, const Color &color);
 
-        static bool     _useClamp;
-        static IntRect  _clampArea;
+
         static GSPGPU_FramebufferFormats _format;
     };
 }
