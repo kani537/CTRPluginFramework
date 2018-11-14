@@ -170,15 +170,15 @@ namespace CTRPluginFramework
         void    _GotoNextRegion(void);
         Item&   _GetSelectedItem(void);
 
-        u32                 _viewId;
+        u32                 _viewId{0};
         IView            *  _viewCurrent;
-        IView            *  _views[4];
+        IView            *  _views[4]{nullptr};
         Context             _ctx;
         SubMenu             _submenu;
         KeyboardImpl        _keyboard;
         Task                _renderTask;
         int                 _indexHistory;
-        std::vector<u32>    _history;
+        std::vector<u32>    _history{};
     };
 }
 
