@@ -1,5 +1,7 @@
 #include <3DS.h>
 #include "CTRPluginFramework/System/FwkSettings.hpp"
+#include "CTRPluginFrameworkImpl/System/ProcessImpl.hpp"
+#include "CTRPluginFrameworkImpl/System/MMU.hpp"
 
 namespace CTRPluginFramework
 {
@@ -11,20 +13,23 @@ namespace CTRPluginFramework
 
     #define MEMPERM_RW ((MemPerm)(MEMPERM_READ | MEMPERM_WRITE))
 
+    static u32 Fail(u32 res)
+    {
+        return *(u32 *)0xDEADC0DE = res;
+    }
+
     extern "C" void   __system_allocateHeaps(void);
     void __system_allocateHeaps(void)
     {
         // Heap params
         __ctru_heap = FwkSettings::Header->heapVA;
-        __ctru_heap_size = FwkSettings::Header->heapSize - 0x1000;
+        __ctru_heap_size = FwkSettings::Header->heapSize - 0x2000;
 
-        // Map Hook memory
-        Handle handle;
-        svcCreateMemoryBlock(&handle, __ctru_heap + __ctru_heap_size - 0x1000, 0x1000, MEMPERM_RW, MEMPERM_RW);
-        svcControlProcess(CUR_PROCESS_HANDLE, PROCESSOP_MAP_MEMBLOCK, 0x01E80000, handle);
-        svcCloseHandle(handle);
+        // Map Hook memory + shared page
+        Result res = svcMapProcessMemoryEx(CUR_PROCESS_HANDLE, 0x1E80000, CUR_PROCESS_HANDLE, __ctru_heap + __ctru_heap_size, 0x2000);
 
-        svcControlProcess(CUR_PROCESS_HANDLE, PROCESSOP_SET_MMU_TO_RWX, 0, 0);
+        if (R_FAILED(res))
+            Fail(res);
 
         // Set up newlib heap
         fake_heap_start = reinterpret_cast<char*>(__ctru_heap);

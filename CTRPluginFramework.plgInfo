@@ -6,6 +6,9 @@ Version: # Plugin version
     Revision: 0
 
 Targets: # Low TitleId of games which are compatibles with this plugin (0 for all)
+    #- 0x00113100
+    #- 0x00113200
+    
 
 Title: CTRPF - Action Replay
 

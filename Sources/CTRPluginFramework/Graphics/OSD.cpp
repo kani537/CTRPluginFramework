@@ -14,13 +14,18 @@ namespace CTRPluginFramework
             return (nullptr);
 
         u8  *fb = useRightFb ? (u8 *)RightFramebuffer : (u8 *)LeftFramebuffer;
+
+        // FB Row size in bytes / sizeof(u16) for RGB565
         u32 rowsize = Stride / BytesPerPixel;
 
+        // Ensure that the position is within pos(0, 0) - pos(SCREEN_WIDTH, 240)
         posX = std::min(posX, (IsTop ? (u32)400 : (u32)320));
         posY = std::min(posY, (u32)240);
 
-        // Correct posY
+        // Correct posY to include format gap if any
         posY += rowsize - 240;
+
+        // posY is reversed, hence the rowsize - posY part
         u32 offset = (rowsize - 1 - posY + posX * rowsize) * BytesPerPixel;
 
         return (fb + offset);

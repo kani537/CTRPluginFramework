@@ -86,10 +86,11 @@ namespace CTRPluginFramework
         //#############################################################################################
         static int      DrawSysString(const char *str, int posX, int &posY, int max, Color color, float offset = 0.f, const char *end = nullptr);
         static int      DrawSysStringReturn(const unsigned char* stri, int posX, int& posY, int xLimits, Color color, int maxY = 200);
+
         static float    GetTextSize(const char *text);
         static int      GetLineCount(const char *text, float maxWidth);
-        static void     GetTextInfos(const char* text, int& lineCount, float& lineMaxWidth, float maxWidth);
-        static  u32     LinuxFontSize(const char *str);
+        static void     GetTextInfos(const char *text, int& lineCount, float& lineMaxWidth, float maxWidth);
+        static u32      LinuxFontSize(const char *str);
 
         static void     DrawSysCheckBox(const char *str, int posX, int &posY, int xLimits, Color color, bool isChecked = false, float offset = 0);
         static void     DrawSysFolder(const char *str, int posX, int &posY, int xLimits, Color color, float offset = 0);

@@ -43,7 +43,8 @@ IP			:=  5
 FTP_HOST 	:=	192.168.1.
 FTP_PORT	:=	"5000"
 FTP_PATH	:=	"0004000000033600/" #Zelda OOT
-ACTIONREPLAY := ActionReplay.3dsgx
+PSF 		:= 	$(notdir $(TOPDIR)).plgInfo
+ACTIONREPLAY := ActionReplay.3gx
 ifneq ("$(wildcard $(ACTIONREPLAY))","")
 FILE_EXISTS = 1
 else
@@ -125,8 +126,11 @@ ACNL:
 FL:
 	make send FTP_PATH="0004000000113100/"
 AR:
-	3dsgxtool.exe $(OUTPUT).plg $(CURDIR)/ActionReplay.yaml $(CURDIR)/ActionReplay.3dsgx
+	3gxtool.exe -s $(OUTPUT).plg $(CURDIR)/CTRPluginFramework.plgInfo $(CURDIR)/ActionReplay.3gx
 	@$(TOPDIR)/sendfile.py $(ACTIONREPLAY) "ActionReplay/" "$(FTP_HOST)$(IP)" $(FTP_PORT)
+
+install:
+	@mv $(OUTPUT).3gx g:/luma/plugins/default.3gx
 
 #---------------------------------------------------------------------------------
 
@@ -140,7 +144,7 @@ DEPENDS	:=	$(OFILES:.o=.d)
 EXCLUDE := main.o cheats.o ActionReplayTest.o OSDManager.o PointerTesting.o Speedometer.o
 
 
-$(OUTPUT).plg : $(OFILES) $(LIBOUT)
+$(OUTPUT).3gx : $(OFILES) $(LIBOUT)
 $(LIBOUT):	$(filter-out $(EXCLUDE), $(OFILES))
 
 #---------------------------------------------------------------------------------
@@ -152,12 +156,11 @@ $(LIBOUT):	$(filter-out $(EXCLUDE), $(OFILES))
 	@$(bin2o)
 
 #---------------------------------------------------------------------------------
-%.plg: %.elf
-#---------------------------------------------------------------------------------
+%.3gx: %.elf
 	@echo creating $(notdir $@)
-	@$(OBJCOPY) -O binary $(OUTPUT).elf $(TOPDIR)/$(notdir $@) -S
-	@echo Done !
-
+	@$(OBJCOPY) -O binary $(OUTPUT).elf $(TOPDIR)/objdump -S
+	@3gxtool.exe -s $(TOPDIR)/objdump $(TOPDIR)/$(PSF) $@
+	@- rm $(TOPDIR)/objdump
 
 -include $(DEPENDS)
 

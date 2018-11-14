@@ -285,6 +285,7 @@
     <ClInclude Include="Includes\Unicode.h" />
     <ClInclude Include="Sources\cheats.hpp" />
     <ClInclude Include="Includes\CTRPluginFrameworkImpl\ActionReplay\MenuEntryActionReplay.hpp" />
+    <ClInclude Include="Includes\CTRPluginFrameworkImpl\System\MMU.hpp" />
     <ClInclude Include="Sources\ctrulib\allocator\addrmap.h" />
     <ClInclude Include="Sources\ctrulib\allocator\mem_pool.h" />
     <ClInclude Include="Sources\ctrulib\internal.h" />
@@ -407,6 +408,7 @@
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\System\Heap.cpp" />
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\System\HookManager.cpp" />
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\System\Kernel.cpp" />
+    <ClCompile Include="Sources\CTRPluginFrameworkImpl\System\MMU.cpp" />
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\System\ProcessImpl.cpp" />
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\System\Screen.cpp" />
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\System\Scheduler.cpp" />

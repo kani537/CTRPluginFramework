@@ -83,7 +83,7 @@ void svcInvalidateEntireInstructionCache(void);
  * @param srcAddress Address of the mapped block in the source process.
  * @param size Size of the block of the memory to map (truncated to a multiple of 0x1000 bytes).
 */
-Result svcMapProcessMemoryEx(Handle process, u32 destAddr, u32 srcAddr, u32 size);
+Result svcMapProcessMemoryEx(Handle dstProcessHandle, u32 vaDst, Handle srcProcessHandle, u32 vaSrc, u32 size);
 
 /**
  * @brief Unmaps a block of process memory.
@@ -146,8 +146,6 @@ Result svcTranslateHandle(u32 *outKAddr, char *outClassName, Handle in);
 /// Operations for svcControlProcess
 typedef enum ProcessOp
 {
-    PROCESSOP_MAP_MEMBLOCK,     ///< Map a shared memory block handle into the process at the specified va (like svcMapMemoryBlock, except it makes no checks)
-                                ///< svcControlMemory(handle, PROCESSOP_MAP_MEMBLOCK, vaToMapTheBlockTo, handleOfTheMemoryBlock)
     PROCESSOP_GET_ALL_HANDLES,  ///< List all handles of the process, varg3 can be either 0 to fetch all handles, or token of the type to fetch
                                 ///< svcControlProcess(handle, PROCESSOP_GET_ALL_HANDLES, (u32)&outBuf, 0)
     PROCESSOP_SET_MMU_TO_RWX,   ///< Set the whole memory of the process with rwx access
@@ -156,6 +154,7 @@ typedef enum ProcessOp
     PROCESSOP_GET_ON_EXIT_EVENT,
     PROCESSOP_GET_PA_FROM_VA,   ///< Get the physical address of the va within the process
                                 ///< svcControlProcess(handle, PROCESSOP_GET_PA_FROM_VA, (u32)&outPa, va)
+    PROCESSOP_SCHEDULE_THREADS,
 } ProcessOp;
 
 Result  svcControlProcess(Handle process, ProcessOp op, u32 varg2, u32 varg3);

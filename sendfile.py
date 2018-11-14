@@ -69,8 +69,8 @@ if __name__ == '__main__':
 	printf("FTP File Sender\n")
 	try:
 		filename = sys.argv[1]
-		lumaname = 'plugin.3dsgx'
-		lumapath = '/luma/plugins/' + sys.argv[2]
+		lumaname = 'plugin.3gx'
+		lumapath = '/luma/plugins/' #+ sys.argv[2]
 		ntrpath = '/plugin/' + sys.argv[2]
 		host = sys.argv[3]
 		port = sys.argv[4]
@@ -87,11 +87,11 @@ if __name__ == '__main__':
 	except IOError as e:
 		printf("/!\ An error occured. /!\ ");
 
-	if filename != "ActionReplay.3dsgx":
+	if filename != "ActionReplay.3gx":
 		sendPlugin(ftp, ntrpath, filename, file)
 	else:
 		lumaname = filename
-	sendPlugin(ftp, lumapath, lumaname, file)
+	sendPlugin(ftp, lumapath, 'default.3gx', file)
 
 	file.close();
 

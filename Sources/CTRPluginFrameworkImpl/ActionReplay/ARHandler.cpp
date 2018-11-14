@@ -18,15 +18,20 @@
 #define Notify(str, ...)
 #endif
 
+extern "C"
+void AR__ExecuteRoutine(u32 **args, const u32 *routine);
+
 namespace CTRPluginFramework
 {
     using Register = ARHandler::Register;
 
+    static u32 arStack[1000] ALIGN(8);
     u32     ARHandler::Offset[2] = { 0 };
     Register    ARHandler::Data[2];
     u32     ARHandler::Storage[2] = { 0 };
     u32     ARHandler::ActiveOffset = 0;
     u32     ARHandler::ActiveData = 0;
+    u32     ARHandler::ActiveStorage = 0;
     bool    ARHandler::ExitCodeImmediately = false;
     static bool ToggleFloat = false;
     static ARCodeContext *g_context;
@@ -52,8 +57,7 @@ namespace CTRPluginFramework
         Data[1].Clear();
         Storage[0] = ctx.storage[0];
         Storage[1] = ctx.storage[1];
-        ActiveOffset = 0;
-        ActiveData = 0;
+        ActiveStorage = ActiveData = ActiveOffset = 0;
         ExitCodeImmediately = false;
         ToggleFloat = false;
         _Execute(ctx.codes);
@@ -63,14 +67,6 @@ namespace CTRPluginFramework
 
     bool    Write32(u32 address, u32 value)
     {
-        /*u32 pa = svcConvertVAToPA((void *)address, false);
-
-        if (pa == 0 || pa > 0x30000000)
-        {
-            Notify("AR Write32 Failure: va: %08X, pa: %08X", address, pa);
-            return (false);
-        }
-        *(vu32 *)(pa | (1 << 31)) = value; //arm11kWrite32(pa, value);*/
         if (CheckAddress(address, true))
             *(vu32 *)address = value;
         return (true);
@@ -78,14 +74,6 @@ namespace CTRPluginFramework
 
     bool    Write16(u32 address, u16 value)
     {
-       /* u32 pa = svcConvertVAToPA((void *)address, false);
-
-        if (pa == 0 || pa > 0x30000000)
-        {
-            Notify("AR Write16 Failure: va: %08X, pa: %08X", address, pa);
-            return (false);
-        }
-        *(vu16 *)(pa | (1 << 31)) = value; //arm11kWrite32(pa, value); */
         if (CheckAddress(address, true))
             *(vu16 *)address = value;
         return (true);
@@ -93,15 +81,6 @@ namespace CTRPluginFramework
 
     bool    Write8(u32 address, u8 value)
     {
-       /* u32 pa = svcConvertVAToPA((void *)address, false);
-
-        if (pa == 0 || pa > 0x30000000)
-        {
-            Notify("AR Write8 Failure: va: %08X, pa: %08X", address, pa);
-            return (false);
-        }
-
-        *(vu8 *)(pa | (1 << 31)) = value; //arm11kWrite32(pa, value); */
         if (CheckAddress(address, true))
             *(vu8 *)address = value;
         return (true);
@@ -109,15 +88,6 @@ namespace CTRPluginFramework
 
     bool    Read32(u32 address, u32 &value)
     {
-       /* u32 pa = svcConvertVAToPA((void *)address, false);
-
-        if (pa == 0 || pa > 0x30000000)
-        {
-            Notify("AR Read32 Failure: va: %08X, pa: %08X", address, pa);
-            return (false);
-        }
-
-        value = *(vu32 *)(pa | (1 << 31));//arm11kRead32(pa);*/
         if (CheckAddress(address, false))
             value = *(vu32 *)address;
         return (true);
@@ -125,15 +95,6 @@ namespace CTRPluginFramework
 
     bool    Read16(u32 address, u16 &value)
     {
-        /*u32 pa = svcConvertVAToPA((void *)address, false);
-
-        if (pa == 0 || pa > 0x30000000)
-        {
-            Notify("AR Read16 Failure: va: %08X, pa: %08X", address, pa);
-            return (false);
-        }
-
-        value = *(vu16 *)(pa | (1 << 31));//arm11kRead32(pa);*/
         if (CheckAddress(address, false))
             value = *(vu16 *)address;
         return (true);
@@ -141,15 +102,6 @@ namespace CTRPluginFramework
 
     bool    Read8(u32 address, u8 &value)
     {
-        /*u32 pa = svcConvertVAToPA((void *)address, false);
-
-        if (pa == 0 || pa > 0x30000000)
-        {
-            Notify("AR Read8 Failure: va: %08X, pa: %08X", address, pa);
-            return (false);
-        }
-
-        value = *(vu8 *)(pa | (1 << 31));//arm11kRead32(pa);*/
         if (CheckAddress(address, false))
             value = *(vu8 *)address;
         return (true);
@@ -157,12 +109,6 @@ namespace CTRPluginFramework
 
     static bool    Memcpy(u32 address, u8 *pattern, u32 size)
     {
-        /*u32 pa = svcConvertVAToPA((void *)address, false);
-
-        if (pa == 0 || pa > 0x30000000)
-            return (false);
-
-        pa |= (1 << 31);*/
         if (CheckAddress((u32)pattern, false) && CheckAddress(address, true))
             while (size--)
                 *(vu8 *)address++ = *pattern++;
@@ -187,6 +133,11 @@ bool AlmostEqualRelative(float A, float B, float maxRelDiff = FLT_EPSILON);
         else if (code.Right operator currentData.value) \
             continue; \
     } \
+    else if (conditionalMode == CondMode::ImmAgainstStorage) \
+    { \
+        if (code.Right operator Storage[ActiveStorage]) \
+            continue; \
+    } \
     else if (conditionalMode == CondMode::DataAgainstVal) \
     { \
         if (currentData.isVFP) \
@@ -195,6 +146,17 @@ bool AlmostEqualRelative(float A, float B, float maxRelDiff = FLT_EPSILON);
                 continue; \
         } \
         else if (currentData.value operator value) \
+            continue; \
+    } \
+    else if (conditionalMode == CondMode::DataAgainstStorage) \
+    { \
+        if (currentData.isVFP) \
+        { \
+            value = Storage[ActiveStorage]; \
+            if (flcmp(currentData.vfp, vfpval)) \
+                continue; \
+        } \
+        else if (currentData.value operator Storage[ActiveStorage]) \
             continue; \
     } \
     else if (code.Right operator value) \
@@ -206,9 +168,19 @@ bool AlmostEqualRelative(float A, float B, float maxRelDiff = FLT_EPSILON);
         if ((code.Right & 0xFFFF) operator (currentData.value & 0xFFFF) & mask) \
             continue; \
     } \
+    else if (conditionalMode == CondMode::ImmAgainstStorage) \
+    { \
+        if ((code.Right & 0xFFFF) operator (Storage[ActiveStorage] & 0xFFFF) & mask) \
+            continue; \
+    } \
     else if (conditionalMode == CondMode::DataAgainstVal) \
     { \
         if ((currentData.value & 0xFFFF) operator value16) \
+            continue; \
+    } \
+    else if (conditionalMode == CondMode::DataAgainstStorage) \
+    { \
+        if ((currentData.value & 0xFFFF) operator (Storage[ActiveStorage] & 0xFFFF)) \
             continue; \
     } \
     else if ((code.Right & 0xFFFF) operator value16) \
@@ -220,7 +192,9 @@ bool AlmostEqualRelative(float A, float B, float maxRelDiff = FLT_EPSILON);
         {
             ImmAgainstVal,  // YYYYYYYY > [XXXXXXX + offset]
             DataAgainstVal, // data > [XXXXXXX + offset]
-            ImmAgainstData  // YYYYYYYY > data
+            ImmAgainstData,  // YYYYYYYY > data
+            ImmAgainstStorage, //
+            DataAgainstStorage
         };
 
         union
@@ -280,10 +254,15 @@ bool AlmostEqualRelative(float A, float B, float maxRelDiff = FLT_EPSILON);
             {
                 if (code.Type == 0xD0 && code.Right == 0) ///< Terminator code
                 {
-                    conditionCount--;
+                    --conditionCount;
                     if (conditionCount == 0)
                         waitForExitCode = false;
                 }
+
+                // Check for embricked conditions
+                if (code.Type >= 0x30 && code.Type <= 0xA0)
+                    ++conditionCount;
+
                 continue;
             }
 
@@ -330,20 +309,6 @@ bool AlmostEqualRelative(float A, float B, float maxRelDiff = FLT_EPSILON);
             {
                 if (conditionalMode == CondMode::ImmAgainstData || !((ExitCodeImmediately = !Read32(code.Left + Offset[ActiveOffset], value))))
                 {
-                    // If we must compare with data register
-                  /*  if (conditionalMode)
-                    {
-                        // If current data is in vfp mode
-                        if (currentData.isVFP)
-                        {
-                            if (currentData.vfp > vfpval)
-                                continue;
-                        }
-                        else if (currentData.value > value)
-                            continue;
-                    }
-                    else if (code.Right > value)
-                        continue; */
                     Cond32(>, std::isgreater);
                 }
                 conditionCount++;
@@ -354,20 +319,6 @@ bool AlmostEqualRelative(float A, float B, float maxRelDiff = FLT_EPSILON);
             {
                 if (conditionalMode == CondMode::ImmAgainstData || !((ExitCodeImmediately = !Read32(code.Left + Offset[ActiveOffset], value))))
                 {
-                    // If we must compare with data register
-                    /*if (conditionalMode)
-                    {
-                        // If current data is in vfp mode
-                        if (currentData.isVFP)
-                        {
-                            if (currentData.vfp < vfpval)
-                                continue;
-                        }
-                        else if (currentData.value < value)
-                            continue;
-                    }
-                    else if (code.Right < value)
-                        continue;*/
                     Cond32(<, std::isless);
                 }
                 conditionCount++;
@@ -376,25 +327,12 @@ bool AlmostEqualRelative(float A, float B, float maxRelDiff = FLT_EPSILON);
             }
             case 0x50: ///< EqualTo 32Bits
             {
-                if (conditionalMode == CondMode::ImmAgainstData || !((ExitCodeImmediately = !Read32(code.Left + Offset[ActiveOffset], value))))
+                if (conditionalMode == CondMode::ImmAgainstData
+                   || !((ExitCodeImmediately = !Read32(code.Left + Offset[ActiveOffset], value))))
                 {
-                    // If we must compare with data register
-                   /* if (conditionalMode)
-                    {
-                        // If current data is in vfp mode
-                        if (currentData.isVFP)
-                        {
-                            if (currentData.vfp == vfpval)
-                                continue;
-                        }
-                        else if (currentData.value == value)
-                            continue;
-                    }
-                    else if (code.Right == value)
-                        continue; */
                     Cond32(==, FP_EQ);
                 }
-                conditionCount++;
+                ++conditionCount;
                 waitForExitCode = true;
                 break;
             }
@@ -402,20 +340,6 @@ bool AlmostEqualRelative(float A, float B, float maxRelDiff = FLT_EPSILON);
             {
                 if (conditionalMode == CondMode::ImmAgainstData || !((ExitCodeImmediately = !Read32(code.Left + Offset[ActiveOffset], value))))
                 {
-                    // If we must compare with data register
-                    /*if (conditionalMode)
-                    {
-                        // If current data is in vfp mode
-                        if (currentData.isVFP)
-                        {
-                            if (currentData.vfp != vfpval)
-                                continue;
-                        }
-                        else if (currentData.value != value)
-                            continue;
-                    }
-                    else if (code.Right != value)
-                        continue;*/
                     Cond32(!=, !FP_EQ);
                 }
                 conditionCount++;
@@ -556,45 +480,54 @@ bool AlmostEqualRelative(float A, float B, float maxRelDiff = FLT_EPSILON);
             }
             case 0xD5: ///< Set Data[ActiveData]
             {
-                Data[code.Left & 1].value = code.Right;
+                if (!code.Left)
+                    currentData.value = code.Right;
+                else
+                    Data[(code.Left - 1) & 1].value = code.Right;
                 break;
             }
             case 0xD6: ///< Write 32bits Data[ActiveData]
             {
-                ExitCodeImmediately = !Write32(code.Right + Offset[ActiveOffset], currentData.value);
+                u32 v = code.Left == 0 ? currentData.value : Data[(code.Left - 1) & 1].value;
+
+                ExitCodeImmediately = !Write32(code.Right + Offset[ActiveOffset], v);
                 Offset[ActiveOffset] += 4;
                 break;
             }
             case 0xD7: ///< Write 16Bits Data[ActiveData]
             {
-                value16 = currentData.value;
+                value16 = code.Left == 0 ? currentData.value : Data[(code.Left - 1) & 1].value;
                 ExitCodeImmediately = !Write16(code.Right + Offset[ActiveOffset], value16);
                 Offset[ActiveOffset] += 2;
                 break;
             }
             case 0xD8: ///< Write 8Bits Data[ActiveData]
             {
-                u8 value8 = currentData.value;
+                u8 value8 = code.Left == 0 ? currentData.value : Data[(code.Left - 1) & 1].value;
                 ExitCodeImmediately = !Write8(code.Right + Offset[ActiveOffset], value8);
                 Offset[ActiveOffset]++;
                 break;
             }
             case 0xD9: ///< Read 32bits to Data[ActiveData]
             {
-                ExitCodeImmediately = !Read32(code.Right + Offset[ActiveOffset], currentData.value);
+                Register& data = code.Left == 0 ? currentData : Data[(code.Left - 1) & 1];
+                ExitCodeImmediately = !Read32(code.Right + Offset[ActiveOffset], data.value);
                 break;
             }
             case 0xDA: ///< Read 16Bits to Data[ActiveData]
             {
+                Register& data = code.Left == 0 ? currentData : Data[(code.Left - 1) & 1];
+
                 ExitCodeImmediately = !Read16(code.Right + Offset[ActiveOffset], value16);
-                currentData.value = value16;
+                data.value = value16;
                 break;
             }
             case 0xDB: ///< Read 8Bits to Data[ActiveData]
             {
                 u8 value8 = 0;
+                Register& data = code.Left == 0 ? currentData : Data[(code.Left - 1) & 1];
                 ExitCodeImmediately = !Read8(code.Right + Offset[ActiveOffset], value8);
-                currentData.value = value8;
+                data.value = value8;
                 break;
             }
             case 0xDD: ///< Keypad code
@@ -647,7 +580,7 @@ bool AlmostEqualRelative(float A, float B, float maxRelDiff = FLT_EPSILON);
                 }
                 if (code.Left == 0x00FFFFFF) ///< Conditional mode switch
                 {
-                    conditionalMode = static_cast<CondMode>(parameter & 3);
+                    conditionalMode = static_cast<CondMode>(parameter & 7);
                     break;
                 }
 
@@ -657,8 +590,10 @@ bool AlmostEqualRelative(float A, float B, float maxRelDiff = FLT_EPSILON);
                 {
                     if (code.Left == 0) ///< Offset
                         ActiveOffset = parameter;
-                    else ///< Data
+                    else if (code.Left == 1)///< Data
                         ActiveData = parameter;
+                    else if (code.Left == 2)///< Storage
+                        ActiveStorage = parameter;
                     break;
                 }
                 case 0x1: ///< Register copy
@@ -703,6 +638,18 @@ bool AlmostEqualRelative(float A, float B, float maxRelDiff = FLT_EPSILON);
                 case 1: ///< Float toggle
                     ToggleFloat = code.Right & 1;
                     break;
+                case 0xF00000: ///< Asm routine
+                {
+                    u32 *   args[] = {&Offset[0], &Offset[1], &Data[0].value, &Data[1].value, &Storage[0], &Storage[1], (u32 *)0x01E81000, arStack};
+                    u32 *   data = (u32 *)code.Data.data();
+
+                    if (data == nullptr)
+                        break;
+
+                    // Execute routine
+                    AR__ExecuteRoutine(args, data);
+                    break;
+                }
                 default:
                     break;
                 }

@@ -188,12 +188,26 @@ namespace CTRPluginFramework
         }
     }
 
+    #define THREADVARS_MAGIC  0x21545624 // !TV$
+
+    // Ensure that only game threads are locked
+    static bool    ThreadPredicate(KThread *thread)
+    {
+        u32 *tls = (u32 *)thread->tls;
+
+        if (*tls != THREADVARS_MAGIC)
+            return true;
+        return false;
+    }
+
     void    ProcessImpl::LockGameThreads(void)
     {
+        svcControlProcess(CUR_PROCESS_HANDLE, PROCESSOP_SCHEDULE_THREADS, 1, (u32)ThreadPredicate);
     }
 
     void    ProcessImpl::UnlockGameThreads(void)
     {
+        svcControlProcess(CUR_PROCESS_HANDLE, PROCESSOP_SCHEDULE_THREADS, 0, (u32)ThreadPredicate);
     }
 
     static bool     IsInRegion(MemInfo &memInfo, u32 addr)

@@ -81,6 +81,14 @@ namespace CTRPluginFramework
         error = HasError = false;
     }
 
+    bool ARCode::IsCodeWithData(void) const
+    {
+        if (Type == 0xE0 || Type == 0xFD || Type == 0xFE
+            || (Type == 0xF0 && Left == 0x00F00000))
+            return true;
+        return false;
+    }
+
     bool    ARCode::Update(const std::string &line)
     {
         if (line.size() < 17)

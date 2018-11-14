@@ -375,47 +375,16 @@ namespace CTRPluginFramework
         } while (choice != -1);
     }
 
-    void    ListROThreads(std::vector<KThread *> &threads)
-    {
-        u32     pid;
-        Handle  handle;
-        KProcess *process;
-
-        svcGetProcessId(&pid, CUR_PROCESS_HANDLE);
-        svcOpenProcess(&handle, pid);
-
-        process = (KProcess *)ProcessImpl::KProcessPtr->GetObjFromHandle(handle);
-    }
-
-    void    ListThreads(MenuEntry *entry)
-    {
-        std::vector<KThread *> threads;
-
-        ProcessImpl::GetGameThreads(threads);
-
-        std::string text;
-
-        for (KThread *thread : threads)
-        {
-            KAutoObject *owner = (KAutoObject *)thread->GetOwner();
-
-            text += Utils::ToHex((u32)thread) + ": ";
-            text += " Owner: " + Utils::ToHex((u32)owner);
-            text += " tls: " + Utils::ToHex(*thread->GetTls());
-            text += /*", " + owner->GetName() +*/ "\n";
-        }
-
-        (MessageBox(text))();
-    }
-
     int     main(void)
     {
-        PluginMenu  *m = new PluginMenu("Action Replay Alpha", 0, 4, 9);
+        PluginMenu  *m = new PluginMenu("Action Replay Alpha", 0, 4, 10);
         PluginMenu  &menu = *m;
 
         menu.SynchronizeWithFrame(true);
+
         // Launch menu and mainloop
         int ret = menu.Run();
+
         delete m;
         // Exit plugin
         return (0);

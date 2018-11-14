@@ -37,6 +37,7 @@ namespace CTRPluginFramework
         static u32  Storage[2];
         static u32  ActiveOffset;
         static u32  ActiveData;
+        static u32  ActiveStorage;
         static bool ExitCodeImmediately;
 
         static void Execute(ARCodeContext &ctx);

@@ -410,14 +410,21 @@ namespace CTRPluginFramework
             if (error)
                 XTRACE4("Error: %s", line.c_str());
             // If the code is a E code (data)
-            ecode = !error && IsCodeWithData(code.Type);
+            ecode = !error && code.IsCodeWithData();
             if (ecode)
             {
-                u32 bytes = code.Type == 0xE0 || code.Type == 0xFD ? code.Right : code.Left;
+                u32 bytes = code.Type == 0xFE ? code.Left : code.Right;
 
-                count = bytes / 8 + (bytes % 8 > 0 ? 1 : 0);
-                code.Data.resize(count * 2);
-                index = 0;
+                if (bytes)
+                {
+                    count = bytes / 8 + (bytes % 8 > 0 ? 1 : 0);
+                    code.Data.resize(count * 2);
+                    index = 0;
+                }
+                else
+                {
+                    ecode = false;
+                }
             }
 
             // Add ARCode to context

@@ -36,6 +36,7 @@ namespace CTRPluginFramework
         //virtual ~ARCode(void) = default;
         std::string ToString(void) const;
 
+        bool    IsCodeWithData(void) const;
         bool    Update(const std::string &line);
         bool    Update(void);
     };
@@ -79,11 +80,6 @@ namespace CTRPluginFramework
     void    ActionReplay_ProcessString(std::string &str, bool canNewLine = true);
     void    ActionReplay_LoadCodes(MenuFolderImpl *dst);
     bool    ActionReplay_WriteToFile(LineWriter &file, MenuItem *item);
-
-    static inline bool IsCodeWithData(u32 type)
-    {
-        return type == 0xE0 || type == 0xFD || type == 0xFE;
-    }
 }
 
 #endif

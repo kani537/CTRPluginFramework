@@ -6,6 +6,7 @@
 #include "CTRPluginFrameworkImpl/Preferences.hpp"
 #include "CTRPluginFrameworkImpl/Menu/HexEditor.hpp"
 #include "Unicode.h"
+#include "CTRPluginFrameworkImpl/Disassembler/arm_disasm.h"
 
 #define PATCH_COLOR Color::Gray
 #define TYPE_COLOR Color::Brown
@@ -21,7 +22,9 @@ namespace CTRPluginFramework
     {
         ImmAgainstVal,  // YYYYYYYY > [XXXXXXX + offset]
         DataAgainstVal, // data > [XXXXXXX + offset]
-        ImmAgainstData  // YYYYYYYY > data
+        ImmAgainstData,  // YYYYYYYY > data
+        ImmAgainstStorage, // YYYYYYYY > storage
+        DataAgainstStorage, // storage > data
     };
     static const char       *__emptyCode = "00000000 00000000";
     static ARCodeEditor     *__arCodeEditor = nullptr;
@@ -30,11 +33,12 @@ namespace CTRPluginFramework
     static bool g_newCondDataToggle = false;
 
 #define IsEmpty (flags & ARCodeEditor::CodeLine::Empty)
-#define IsError (flags & ARCodeEditor::CodeLine::Empty)
+#define IsError (flags & ARCodeEditor::CodeLine::Error)
 #define IsModified (flags & ARCodeEditor::CodeLine::Modified)
 #define IsPatch (flags & ARCodeEditor::CodeLine::PatchData)
 #define IsPattern (flags & ARCodeEditor::CodeLine::PatternData)
-#define IsData (flags & (u32)(ARCodeEditor::CodeLine::PatchData | ARCodeEditor::CodeLine::PatternData))
+#define IsAsm (flags & ARCodeEditor::CodeLine::Asm)
+#define IsData (flags & (u32)(ARCodeEditor::CodeLine::PatchData | ARCodeEditor::CodeLine::PatternData | ARCodeEditor::CodeLine::Asm))
 #define Clear(bit) (flags &= ~bit)
 #define Set(bit) (flags |= bit)
 
@@ -226,6 +230,12 @@ namespace CTRPluginFramework
                 ret.insert(17 /* 9 + Color * 2 */, ColorToString(UNUSED_COLOR));
                 ret.insert(28 /* 16 + Color * 3 */, ColorToString(IMMEDIATE_COLOR));
             }
+            else if (code.Left == 0x00F00000)
+            {
+                ret.insert(0, ColorToString(TYPE_COLOR));
+                ret.insert(6 /* 2 + Color */, ColorToString(MASK_COLOR));
+                ret.insert(17 /* 9 + Color * 2 */, ColorToString(IMMEDIATE_COLOR));
+            }
             else
                 ret.insert(0, ColorToString(Color::Red));
             break;
@@ -252,7 +262,11 @@ namespace CTRPluginFramework
             return Utils::Format("if %08X %s [%07X+off]:", right, ope, left);
         else if (g_condAgainstData == CondMode::DataAgainstVal)
             return Utils::Format("if data %s [%07X+offs]:", ope, left);
-        else
+        else if (g_condAgainstData == CondMode::ImmAgainstStorage)
+            return Utils::Format("if %08X %s storage:", right, ope);
+        else if (g_condAgainstData == CondMode::DataAgainstStorage)
+            return Utils::Format("if data %s storage:", ope);
+        else // CondMode::ImmAgainstData
             return Utils::Format("if %08X %s data:", right, ope);
     }
 
@@ -277,7 +291,18 @@ namespace CTRPluginFramework
             else
                 return Utils::Format("if data %s [%07X+offs]:", value, ope, left);
         }
-        else
+        else if (g_condAgainstData == CondMode::ImmAgainstStorage)
+        {
+            if (mask)
+                return Utils::Format("if %04X %s stor. & %04X:", value, ope, mask);
+            else
+                return Utils::Format("if %04X %s storage:", value, ope);
+        }
+        else if (g_condAgainstData == CondMode::DataAgainstStorage)
+        {
+                return Utils::Format("if data %s storage:", ope);
+        }
+        else // CondMode::ImmAgainstData
         {
             if (mask)
                 return Utils::Format("if %04X %s data & %04X:", value, ope, mask);
@@ -290,6 +315,8 @@ namespace CTRPluginFramework
     {
         const char  *reg;
         std::string ret;
+
+        static const char *_data[3] = {"data", "data#1", "data#2"};
 
         switch (code.Type)
         {
@@ -377,27 +404,33 @@ namespace CTRPluginFramework
                 ret == Utils::Format("data#2 += data#1 + %08X", code.Right);
             break;
         case 0xD5: ///< Set register
-            reg = code.Left & 1 ? "Data#2" : "Data#1";
+            reg = _data[code.Left & 3];
             ret = Utils::Format("%s = %08X", reg, code.Right);
             break;
         case 0xD6: ///< Write32
-            ret = Utils::Format("[%08X+off] = data, off+=4", code.Right);
+            reg = _data[code.Left & 3];
+            ret = Utils::Format("[%08X+off] = %s, off+=4", code.Right, reg);
             break;
         case 0xD7: ///< Write16
-            ret = Utils::Format("[%08X+off] = data, off+=2", code.Right);
+            reg = _data[code.Left & 3];
+            ret = Utils::Format("[%08X+off] = %s, off+=2", code.Right, reg);
             break;
         case 0xD8: ///< Write8
-            ret = Utils::Format("[%08X+off] = data, off+=1", code.Right);
+            reg = _data[code.Left & 3];
+            ret = Utils::Format("[%08X+off] = %s, off+=1", code.Right, reg);
             break;
 
         case 0xD9: ///< Set data 32
-            ret = Utils::Format("data = [%08X+offs]", code.Right);
+            reg = _data[code.Left & 3];
+            ret = Utils::Format("%s = [%08X+offs]", reg, code.Right);
             break;
         case 0xDA: ///< Set data 16
-            ret = Utils::Format("data = [%08X+offs] & FFFF", code.Right);
+            reg = _data[code.Left & 3];
+            ret = Utils::Format("%s = [%08X+offs] & FFFF", reg, code.Right);
             break;
         case 0xDB: ///< Set data 8
-            ret = Utils::Format("data = [%08X+offs] & FF", code.Right);
+            reg = _data[code.Left & 3];
+            ret = Utils::Format("%s = [%08X+offs] & FF", reg, code.Right);
             break;
 
         case 0xE0: ///< E code
@@ -444,13 +477,15 @@ namespace CTRPluginFramework
             // Condition toggle
             if (code.Left == 0xFFFFFF)
             {
-                static const char * condstr[3] =
+                static const char * condstr[5] =
                 {
                     "cond: immediate against value",
-                    "cond. data against to value",
-                    "cond. immediate against data"
+                    "cond. data against value",
+                    "cond. immediate against data",
+                    "cond. immediate against storage",
+                    "cond. data against storage"
                 };
-                ret = condstr[code.Right & 3];
+                ret = condstr[code.Right & 7];
                 break;
             }
 
@@ -468,9 +503,11 @@ namespace CTRPluginFramework
             case 0: ///< Toggle active register
             {
                 if (code.Left == 0) ///< change active offset
-                    reg =  offsets[control > 0];
-                else if (code.Left == 1) ///> change active data
-                    reg =  data[control > 0];
+                    reg = offsets[control > 0];
+                else if (code.Left == 1) ///< change active data
+                    reg = data[control > 0];
+                else if (code.Left == 2) ///< change active storage
+                    reg = storage[control > 0];
                 else break;
                 ret = Utils::Format("Set %s as active", reg);
                 break;
@@ -523,10 +560,14 @@ namespace CTRPluginFramework
             break;
         }
         case 0xF0:
-            if (code.Left == 1)
+            if (code.Left == 1) ///< VFP Toggle
             {
                 ret = (code.Right & 1) > 0 ? "Enable " : "Disable ";
                 ret += "vfp mode for F1,F2,F3";
+            }
+            if (code.Left == 0x00F00000) ///< Custom ASM routine
+            {
+                ret = "ASM code";
             }
             break;
 
@@ -656,16 +697,54 @@ namespace CTRPluginFramework
             else
                 return;
 
+            // If we write the same char, do nothing
+            if (base.Text[cursor] == value)
+                return;
+
             std::string     currentCodeType = base.Text.substr(0, 2);
             std::string     nextCodeType = currentCodeType;
 
             if (cursor < 2)
                 nextCodeType[cursor] = value;
 
-            if (currentCodeType[0] == 'E') currentCodeType.erase(currentCodeType.begin() + 1);
-            if (nextCodeType[0] == 'E') nextCodeType.erase(nextCodeType.begin() + 1);
+            if (currentCodeType[0] == 'E') currentCodeType.pop_back();
+            if (nextCodeType[0] == 'E') nextCodeType.pop_back();
 
-            const bool    ctDiffer = nextCodeType != currentCodeType;
+            bool    ctDiffer = nextCodeType != currentCodeType;
+
+            // Handle F0F00000 special case
+            {
+                static const char *asmcode = "F0F00000 00000000";
+
+                if (ctDiffer && nextCodeType == "F0" && base.Left == 0x00F00000)
+                {
+                    base.Text = asmcode;
+                    Set(Modified);
+                    return;
+                }
+
+                if (!ctDiffer && currentCodeType == "F0" && cursor < 8)
+                {
+                    std::string left = base.Text.substr(0, 8);
+
+                    left[cursor] = value;
+
+                    if (left == std::string(asmcode).substr(0, 8))
+                    {
+                        base.Text = asmcode;
+                        Set(Modified);
+                        return;
+                    }
+                }
+
+                if (std::string(asmcode).substr(0, 8) == base.Text.substr(0, 8))
+                {
+                    if (cursor > 8)
+                        goto _changeDataSize;
+                    else
+                        goto _changeCodeType;
+                }
+            }
 
             // If the codetype change for E or FE or FD
             if (ctDiffer && (nextCodeType == "E" || nextCodeType == "FE" || nextCodeType == "FD"))
@@ -681,6 +760,7 @@ namespace CTRPluginFramework
             // If the code type changes from E or FE to something else, ask before pursue
             else if (ctDiffer && !base.Data.empty() && (currentCodeType == "E" || currentCodeType == "FE" || currentCodeType == "FD"))
             {
+            _changeCodeType:
                 if (!MessageBox(Color::Orange << "Warning", "You're about to delete a code with all it's data, continue ?", DialogType::DialogYesNo)())
                     return;
 
@@ -697,7 +777,8 @@ namespace CTRPluginFramework
             // If what changes is the size to patch for E or FE code
             else if ((cursor >= 8 && (base.Type == 0xE0 || base.Type == 0xFD) || (IsInRange(cursor, 2, 7) && base.Type == 0xFE)))
             {
-                u32             size = base.Type == 0xE0 || base.Type == 0xFD ? base.Right : base.Left;
+            _changeDataSize:
+                u32             size = base.Type == 0xFE ? base.Left : base.Right;
                 bool            error;
                 int             currentLines = size / 8 + (size % 8 > 0 ? 1 : 0);
                 int             newLines = 0;
@@ -724,7 +805,7 @@ namespace CTRPluginFramework
                 base.Text[cursor] = value;
                 if (!base.Update(base.Text))
                 {
-                    size = base.Type == 0xE0 || base.Type == 0xFD ? base.Right : base.Left;
+                    size = base.Type == 0xFE ? base.Left : base.Right;
                     if (size > 0)
                         base.Data.resize((size / 8 + ((size % 8) > 0 ? 1 : 0)) * 2);
                     else
@@ -746,8 +827,17 @@ namespace CTRPluginFramework
         // If current line is E code data
         if (IsData && IsModified)
         {
-            display = ColorToString(PATCH_COLOR) + Utils::Format("%08X %08X", parent->Data[index], parent->Data[index + 1]);
-            comment = IsPatch ? "patch data" : "pattern data";
+            u32 left = parent->Data[index];
+            u32 right = parent->Data[index + 1];
+
+            display = ColorToString(PATCH_COLOR) + Utils::Format("%08X %08X", left, right);
+            if (IsPattern)
+                comment = "pattern data";
+            else if (IsPatch)
+                comment = "patch data";
+            else
+                comment = "asm data";
+
             Clear(Modified);
             return;
         }
@@ -783,7 +873,7 @@ namespace CTRPluginFramework
 
         if (IsCondModeToggle(base))
         {
-            g_condAgainstData = static_cast<CondMode>(base.Right & 3);
+            g_condAgainstData = static_cast<CondMode>(base.Right & 7);
         }
     }
 
@@ -1035,7 +1125,7 @@ namespace CTRPluginFramework
                 bool error;
                 ARCodeVector &codes = _context->codes;
 
-                // If code is empty or we'reat the end, simply push something
+                // If code is empty or we're at the end, simply push something
                 if (_codes.empty())
                 {
                     if (!_clipboard)
@@ -1251,9 +1341,11 @@ namespace CTRPluginFramework
             _codes.back().index = index++;
 
             // If the code is E or FD, FE type, add all its data
-            if (IsCodeWithData(code.Type) && !code.Data.empty())
+            if (code.IsCodeWithData() && !code.Data.empty())
             {
-                u32 flags = code.Type == 0xE0 || code.Type == 0xFD ? CodeLine::PatchData : CodeLine::PatternData;
+                u32 flags = code.Type == 0xFE ? CodeLine::PatternData :
+                            (code.Type == 0xF0 && code.Left == 0x00F00000 ? CodeLine::Asm : CodeLine::PatchData);
+
 
                 for (int i = 0; i < code.Data.size() - 1; i += 2)
                 {

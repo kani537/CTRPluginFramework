@@ -13,37 +13,21 @@ bool     HookManager::Init(void)
     if (instance != nullptr)
         return true;
 
-    // Check if region exists
-    if (CTRPluginFramework::Process::CheckAddress(0x1E80000))
-    {
-        // Clear the memory
-        u32     *mem = reinterpret_cast<u32 *>(0x1E80000);
-        for (u32 i = 0; i < 1024; ++i)
-            mem[i] = 0;
+    // Clear the memory
+    u32     *mem = reinterpret_cast<u32 *>(0x1E80000);
+    for (u32 i = 0; i < 1024; ++i)
+        mem[i] = 0;
 
-        // Create the manager
-        instance = new HookManager;
+    // Create the manager
+    instance = new HookManager;
 
-        // Initialize all wrappers (ctor take care of other variables initialization)
-        HookWrapper *wrapper = reinterpret_cast<HookWrapper *>(0x1E80000);
+    // Initialize all wrappers (ctor take care of other variables initialization)
+    HookWrapper *wrapper = reinterpret_cast<HookWrapper *>(0x1E80000);
 
-        for (HookWrapperStatus &wps : instance->hws)
-            wps.wrapper = wrapper++;
+    for (HookWrapperStatus &wps : instance->hws)
+        wps.wrapper = wrapper++;
 
-        return true;
-    }
-
-    // Allocate the region
-    //u32     dest = 0x1E80000;
-    //if (R_FAILED(svcControlMemoryEx(&dest, dest, dest, 0x1000, (MemOp)0x203u, (MemPerm)(MEMPERM_READ | MEMPERM_WRITE), true)))
-    //    return false;
-
-    // Fix perms
-    //CTRPluginFramework::Process::CheckRegion(dest, dest, 7);
-
-    // Call this function once again
-    //return Init();
-    svcBreak(USERBREAK_ASSERT);
+    return true;
 }
 
 Mutex&  HookManager::Lock(void)

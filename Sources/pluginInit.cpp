@@ -17,8 +17,8 @@ extern "C"
     void    LoadCROHooked(void);
     void    OnLoadCro(void);
     void    abort(void);
-    void    initSystem();
-    void    initLib();
+    void    initSystem(void);
+    void    initLib(void);
     Result  __sync_init(void);
     void    __system_initSyscalls(void);
 }
@@ -239,7 +239,7 @@ namespace CTRPluginFramework
         g_gspEventThreadPriority = settings.ThreadPriority + 1;
 
         // Wait for the required time
-        //Sleep(settings.WaitTimeToBoot);
+        Sleep(settings.WaitTimeToBoot);
 
         svcCreateEvent(&g_keepEvent, RESET_ONESHOT);
 
@@ -276,22 +276,28 @@ namespace CTRPluginFramework
             {
                 SystemImpl::AptStatus |= BIT(3);
                 Scheduler::Exit();
+
                 OnProcessExit();
+
+                // Close some handles
+                gspExit();
+                hidExit();
+                cfguExit();
+                fsExit();
+                amExit();
+                acExit();
+                srvExit();
+
+                // Unmap hook wrapper memory
+                svcUnmapProcessMemoryEx(CUR_PROCESS_HANDLE, 0x01E80000, 0x2000);
+
                 svcSignalEvent(resumeProcessExit);
+                goto exit;
             }
        }
 
     exit:
         svcCloseHandle(g_keepEvent);
-
-        // Close some handles
-        gspExit();
-        hidExit();
-        cfguExit();
-        fsExit();
-        amExit();
-        acExit();
-        srvExit();
         svcExitThread();
     }
 
@@ -374,11 +380,10 @@ namespace CTRPluginFramework
 
             // Release process in case it's currently paused
             ProcessImpl::IsPaused = std::min((u32)ProcessImpl::IsPaused, (u32)1);
-            ProcessImpl::Play(false);
+            ProcessImpl::Play(true);
 
             // Exit services
             gspExit();
-            aptExit();
 
             // Exit loop in keep thread
             g_keepRunning = false;
@@ -391,17 +396,23 @@ namespace CTRPluginFramework
         // ## Primary Thread ##
         if (g_mainThread != nullptr)
         {
-            ProcessImpl::Play(false);
+            ProcessImpl::Play(true);
             PluginMenuImpl::ForceExit();
             threadJoin(g_mainThread, U64_MAX);
         }
         else // We aborted in a very early stage, so just release the game and exit
             svcSignalEvent(g_continueGameEvent);
+        svcExitThread();
     }
+
+    static ERRF_ExceptionData exception_data ALIGN(8);
 
     extern "C"
     int   LaunchMainThread(int arg)
     {
+        // Install exception handler
+        threadOnException(ERRF_ExceptionHandler, RUN_HANDLER_ON_FAULTING_STACK, &exception_data);
+
         // Create event
         svcCreateEvent(&g_continueGameEvent, RESET_ONESHOT);
         // Start ctrpf's primary thread

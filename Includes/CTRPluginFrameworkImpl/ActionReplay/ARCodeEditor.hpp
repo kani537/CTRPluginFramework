@@ -22,7 +22,8 @@ namespace CTRPluginFramework
                 Error = 1 << 2,
                 Modified = 1 << 3,
                 PatchData = 1 << 4,
-                PatternData = 1 << 5
+                PatternData = 1 << 5,
+                Asm = 1 << 6
             };
 
             explicit CodeLine(ARCode &code);

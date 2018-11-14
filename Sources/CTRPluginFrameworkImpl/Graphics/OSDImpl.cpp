@@ -208,11 +208,15 @@ namespace CTRPluginFramework
         // If frame have to be paused
         if (isBottom && !WaitingForScreenshot && !FramesToPlay && ProcessImpl::IsPaused)
         {
-            // Wait for gpu to finish all stuff
-            while ((GPU_PSC0_CNT | GPU_PSC1_CNT | GPU_TRANSFER_CNT | GPU_CMDLIST_CNT) & 1);
+            u32 *tls = (u32 *)getThreadLocalStorage();
+            u32 bak = *tls;
 
             // Lock threads
-            //ProcessImpl::LockGameThreads();
+            *tls = THREADVARS_MAGIC;
+            ProcessImpl::LockGameThreads();
+
+            // Wait for gpu to finish all stuff
+            while ((GPU_PSC0_CNT | GPU_PSC1_CNT | GPU_TRANSFER_CNT | GPU_CMDLIST_CNT) & 1);
 
             IsFramePaused = true;
 
@@ -227,7 +231,8 @@ namespace CTRPluginFramework
             LightEvent_Signal(&OnFrameResume);
 
             // Unlock threads
-            //ProcessImpl::UnlockGameThreads();
+            ProcessImpl::UnlockGameThreads();
+            *tls = bak;
 
             IsFramePaused = false;
             return;
