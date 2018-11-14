@@ -109,6 +109,14 @@ namespace CTRPluginFramework
          */
         static void     Stop(OSDCallback cb);
 
+        /**
+         * \brief Returns the width in pixels of the specified string
+         * \param sysfont Which font will be used to compute the width
+         * \param text
+         * \return The width in pixels
+         */
+        static float    GetTextWidth(bool sysfont, const std::string& text);
+
         /* Those are to be used only when the process is paused */
         static const Screen&    GetTopScreen(void);
         static const Screen&    GetBottomScreen(void);

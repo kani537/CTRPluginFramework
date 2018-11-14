@@ -97,6 +97,13 @@ namespace CTRPluginFramework
         OSDImpl::Unlock();
     }
 
+    float   OSD::GetTextWidth(bool sysfont, const std::string &text)
+    {
+        if (sysfont)
+            return Renderer::GetTextSize(text.c_str());
+        return Renderer::LinuxFontSize(text.c_str());
+    }
+
     const Screen & OSD::GetTopScreen(void)
     {
         return OSDImpl::TopScreen;
