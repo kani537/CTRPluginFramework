@@ -26,7 +26,7 @@ static void __panic(void)
 	for (;;);
 }
 
-static void _thread_begin(void  *arg)
+static void _thread_begin(void* arg)
 {
 	Thread t = (Thread)arg;
 	ThreadVars* tv = getThreadVars();
@@ -34,40 +34,39 @@ static void _thread_begin(void  *arg)
 	tv->reent = &t->reent;
 	tv->thread_ptr = t;
 	tv->tls_tp = (u8*)t->stacktop-8; // ARM ELF TLS ABI mandates an 8-byte header
-    t->ep(t->arg);
+	t->ep(t->arg);
 	threadExit(0);
 }
 
 u32     KProcess__PatchCategory(u32 newCatagory);
 u32     KProcess__PatchMaxPriority(u32 newPrio);
-Thread  threadCreate(ThreadFunc entrypoint, void *arg, void *stack_pointer, size_t stack_size, int prio, int affinity)
+
+Thread threadCreate(ThreadFunc entrypoint, void* arg, size_t stack_size, int prio, int affinity, bool detached)
 {
-	size_t stackoffset 	= (sizeof(struct Thread_tag) + 7) &~ 7;
-	size_t allocsize   	= ((stack_size - stackoffset) + 7) &~ 7;
-	size_t tlssize 		= __tls_end - __tls_start;
-	size_t tlsloadsize 	= __tdata_lma_end - __tdata_lma;
-	size_t tbsssize 	= tlssize - tlsloadsize;
+	size_t stackoffset = (sizeof(struct Thread_tag)+7)&~7;
+	size_t allocsize   = stackoffset + ((stack_size+7)&~7);
+	size_t tlssize = __tls_end-__tls_start;
+	size_t tlsloadsize = __tdata_lma_end-__tdata_lma;
+	size_t tbsssize = tlssize-tlsloadsize;
 
 	// Guard against overflow
 	if (allocsize < stackoffset) return NULL;
-	//if ((allocsize - stackoffset) < stack_size) return NULL;
-	//if ((allocsize+tlssize) < allocsize) return NULL;
+	if ((allocsize-stackoffset) < stack_size) return NULL;
+	if ((allocsize+tlssize) < allocsize) return NULL;
 
-	Thread t = (Thread)stack_pointer;//memalign(8,allocsize+tlssize);
+	Thread t = (Thread)memalign(8, allocsize+tlssize);
 	if (!t) return NULL;
 
 	t->ep       = entrypoint;
 	t->arg      = arg;
-	t->detached = false;
+	t->detached = detached;
 	t->finished = false;
-	t->stacktop = (u8*)t + (allocsize - tlssize);
-    t->renderCtx[0] = 0;
-    t->renderCtx[1] = 0;
+	t->stacktop = (u8*)t + allocsize;
 
 	if (tlsloadsize)
 		memcpy(t->stacktop, __tdata_lma, tlsloadsize);
 	if (tbsssize)
-		memset((u8 *)t->stacktop + tlsloadsize, 0, tbsssize);
+		memset((u8*)t->stacktop+tlsloadsize, 0, tbsssize);
 
 	// Set up child thread's reent struct, inheriting standard file handles
 	_REENT_INIT_PTR(&t->reent);
@@ -88,7 +87,7 @@ Thread  threadCreate(ThreadFunc entrypoint, void *arg, void *stack_pointer, size
     if (prio < 0x18)
         oldPrio = KProcess__PatchMaxPriority(0);
 
-	rc = svcCreateThread(&t->handle, (ThreadFunc)_thread_begin, (u32)t, (u32*)t->stacktop, prio, affinity);
+	rc = svcCreateThread(&t->handle, _thread_begin, (u32)t, (u32*)t->stacktop, prio, affinity);
 
     if (oldAppType != -1)
         KProcess__PatchCategory(oldAppType);
@@ -96,11 +95,15 @@ Thread  threadCreate(ThreadFunc entrypoint, void *arg, void *stack_pointer, size
     if (oldPrio != -1)
         KProcess__PatchMaxPriority(oldPrio);
 
-    if (R_FAILED(rc))
+	if (R_FAILED(rc))
+	{
+		free(t);
 		return NULL;
+	}
 
 	return t;
 }
+
 
 Handle threadGetHandle(Thread thread)
 {
@@ -118,7 +121,7 @@ void threadFree(Thread thread)
 {
 	if (!thread || !thread->finished) return;
 	svcCloseHandle(thread->handle);
-	//free(thread);
+	free(thread);
 }
 
 Result threadJoin(Thread thread, u64 timeout_ns)
@@ -126,6 +129,23 @@ Result threadJoin(Thread thread, u64 timeout_ns)
 	if (!thread || thread->finished) return 0;
 	return svcWaitSynchronization(thread->handle, timeout_ns);
 }
+
+
+void threadDetach(Thread thread)
+{
+	if (!thread || thread->detached)
+		return;
+
+	if (thread->finished)
+	{
+		threadFree(thread);
+		return;
+	}
+
+	thread->detached = true;
+	return;
+}
+
 
 Thread threadGetCurrent(void)
 {
@@ -148,7 +168,9 @@ void threadExit(int rc)
 		__panic();
 
 	t->finished = true;
-	//else
+	if (t->detached)
+		threadFree(t);
+	else
 		t->rc = rc;
 
 	svcExitThread();

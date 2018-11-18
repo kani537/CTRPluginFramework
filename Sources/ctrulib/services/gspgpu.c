@@ -31,7 +31,7 @@ static void gspEventThreadMain(u32 arg);
 
 Handle gspThreadEventHandle;
 u32     g_gspEventThreadPriority;
-static char gspThreadEventStack[GSP_EVENT_STACK_SIZE] ALIGN(8);
+//static char gspThreadEventStack[GSP_EVENT_STACK_SIZE] ALIGN(8);
 Thread gspEventThread;
 
 Handle __sync_get_arbiter(void);
@@ -91,7 +91,7 @@ Result gspInitEventHandler(Handle _gspEvent, vu8* _gspSharedMem, u8 gspThreadId)
 	gspEvent = _gspEvent;
 	gspEventData = _gspSharedMem + gspThreadId*0x40;
 	gspRunEvents = true;
-	 gspEventThread = threadCreate(gspEventThreadMain, (void *)0, gspThreadEventStack, GSP_EVENT_STACK_SIZE, g_gspEventThreadPriority, -2);
+	 gspEventThread = threadCreate(gspEventThreadMain, (void *)0, GSP_EVENT_STACK_SIZE, g_gspEventThreadPriority, -2, true);
 	return 0;
 }
 

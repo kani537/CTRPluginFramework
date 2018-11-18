@@ -32,9 +32,62 @@ typedef unsigned long __PTRDIFF_TYPE__;
 
 namespace CTRPluginFramework
 {
+    // Must be executed in PatchProcess
+    void    AllowTheTouchscreenToStayOn(void)
+    {
+        static u32 original = 0;
+        static u32 *patchAddress = nullptr;
+
+        if (patchAddress && original)
+        {
+            *patchAddress = original;
+            return;
+        }
+
+        const std::vector<u32> pattern =
+        {
+            0xE59F10C0, 0xE5840004, 0xE5841000, 0xE5DD0000,
+            0xE5C40008, 0xE28DD03C, 0xE8BD80F0, 0xE5D51001,
+            0xE1D400D4, 0xE3510003, 0x159F0034, 0x1A000003
+        };
+
+        Result  res;
+        Handle  processHandle;
+        s64     textTotalRoundedSize = 0;
+        s64     startAddress = 0;
+        u32 *   found;
+
+        if (R_FAILED(svcOpenProcess(&processHandle, 16)))
+            return;
+
+        svcGetProcessInfo(&textTotalRoundedSize, processHandle, 0x10002);
+        svcGetProcessInfo(&startAddress, processHandle, 0x10005);
+        if(R_FAILED(svcMapProcessMemoryEx(CUR_PROCESS_HANDLE, 0x14000000, processHandle, (u32)startAddress, textTotalRoundedSize)))
+            goto exit;
+
+        found = (u32 *)Utils::Search<u32>(0x14000000, (u32)textTotalRoundedSize, pattern);
+
+        if (found != nullptr)
+        {
+            original = found[13];
+            patchAddress = (u32 *)PA_FROM_VA((found + 13));
+            found[13] = 0xE1A00000;
+        }
+
+        svcUnmapProcessMemoryEx(CUR_PROCESS_HANDLE, 0x14000000, textTotalRoundedSize);
+exit:
+        svcCloseHandle(processHandle);
+    }
+
     // This function is called on the plugin starts, before main
     void    PatchProcess(FwkSettings &settings)
     {
+        AllowTheTouchscreenToStayOn();
+    }
+
+    void    OnExitProcess(void)
+    {
+        AllowTheTouchscreenToStayOn();
     }
 
     u32     strlen(const char *s)
@@ -375,13 +428,22 @@ namespace CTRPluginFramework
         } while (choice != -1);
     }
 
+    void    CheckScreenFormat(MenuEntry *entry)
+    {
+        u32 fmt =  (u32)ScreenImpl::Bottom->GetFormat();
+        u32 fmt2 =  (u32)ScreenImpl::Top->GetFormat();
+
+        MessageBox("Screen fmt", Utils::Format("Top: %d\nBottom: %d", fmt2, fmt))();
+    }
+
     int     main(void)
     {
-        PluginMenu  *m = new PluginMenu("Action Replay Alpha", 0, 4, 10);
+        PluginMenu  *m = new PluginMenu("Action Replay", 0, 5, 1);
         PluginMenu  &menu = *m;
 
         menu.SynchronizeWithFrame(true);
 
+        //menu += new MenuEntry("Check screen fmt", nullptr, CheckScreenFormat);
         // Launch menu and mainloop
         int ret = menu.Run();
 

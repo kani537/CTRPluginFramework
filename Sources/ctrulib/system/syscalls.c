@@ -27,6 +27,19 @@ static struct _reent* __ctru_get_reent()
 	return tv->reent;
 }
 
+void*     __getThreadLocalStorage(void)
+{
+	ThreadVars* tv = getThreadVars();
+
+	if (tv->magic != THREADVARS_MAGIC)
+	{
+        // We're probably hooked from game so get main thread's tls
+        return g_mainThreadVars->tls_tp;
+	}
+
+	return tv->tls_tp;
+}
+
 void __system_initSyscalls(void)
 {
 	// Register newlib syscalls

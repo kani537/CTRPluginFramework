@@ -14,11 +14,11 @@ namespace CTRPluginFramework
     class PrivColor
     {
     public:
-        static FCPointer FromFramebuffer;
-        static F8Pointer ToFramebuffer;
+        static thread_local FCPointer FromFramebuffer;
+        static thread_local F8Pointer ToFramebuffer;
 
-        static bool     _useClamp;
-        static IntRect  _clampArea;
+        static thread_local bool     _useClamp;
+        static thread_local IntRect  _clampArea;
 
         static void     UseClamp(bool willUse);
         static void     UseClamp(bool willUse, const IntRect& rect);
@@ -50,7 +50,7 @@ namespace CTRPluginFramework
         static u8       *_WriteRGBA4Clamp(u8 *dst, const Color &color);
 
 
-        static GSPGPU_FramebufferFormats _format;
+        static thread_local GSPGPU_FramebufferFormats _format;
     };
 }
 

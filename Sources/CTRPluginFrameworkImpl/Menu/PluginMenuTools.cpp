@@ -23,12 +23,12 @@
 #include <cstring>
 #include <cstdio>
 
-#define ALPHA 1
+#define ALPHA 0
 
 #if ALPHA
 #define VersionStr "CTRPluginFramework Alpha V.0.4.10"
 #else
-#define VersionStr "CTRPluginFramework Beta V.0.4.0"
+#define VersionStr "CTRPluginFramework Beta V.0.5.1"
 #endif
 
 namespace CTRPluginFramework

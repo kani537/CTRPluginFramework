@@ -237,10 +237,15 @@ namespace CTRPluginFramework
 
         Task    task([](void *arg UNUSED)
         {
+            std::string source;
+
+            if (FwkSettings::Header->isDefaultPlugin)
+                source = "/luma/plugins/ActionReplay/";
+
             // Try to load top background
-            if (!EcoMemoryMode && File::Exists("TopBackground.bmp"))
+            if (!EcoMemoryMode && File::Exists(source + "TopBackground.bmp"))
             {
-                BMPImage *image = new BMPImage("TopBackground.bmp");
+                BMPImage *image = new BMPImage(source + "TopBackground.bmp");
 
                 if (image->IsLoaded())
                     image = PostProcess(image, 340, 200);
@@ -253,10 +258,10 @@ namespace CTRPluginFramework
                 topBackgroundImage = image;
             }
 
-            // Try to load top background
-            if (!EcoMemoryMode && File::Exists("TopBackground.bmp"))
+            // Try to load bottom background
+            if (!EcoMemoryMode && File::Exists(source + "BottomBackground.bmp"))
             {
-                BMPImage *image = new BMPImage("BottomBackground.bmp");
+                BMPImage *image = new BMPImage(source + "BottomBackground.bmp");
 
                 if (image->IsLoaded())
                     image = PostProcess(image, 280, 200);

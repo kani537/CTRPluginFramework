@@ -127,13 +127,11 @@ namespace CTRPluginFramework
 
         // Create handler on Core0
         _cores[0].id = AppCore;
-        _cores[0].stack = static_cast<u8 *>(::operator new(0x1000));
-        _cores[0].thread = threadCreate(Scheduler__CoreHandler, &_cores[0], _cores[0].stack, 0x1000, 0x20, 0);
+        _cores[0].thread = threadCreate(Scheduler__CoreHandler, &_cores[0], 0x1000, 0x20, 0, true);
 
         // Create handler on Core1
         _cores[1].id = SysCore;
-        _cores[1].stack = static_cast<u8 *>(::operator new(0x1000));
-        _cores[1].thread = threadCreate(Scheduler__CoreHandler, &_cores[1], _cores[1].stack, 0x1000, 10, 1);
+        _cores[1].thread = threadCreate(Scheduler__CoreHandler, &_cores[1], 0x1000, 10, 1, true);
 
 
         // Create handler on Core2 & Core3 (N3DS only)
@@ -145,12 +143,10 @@ namespace CTRPluginFramework
         else
         {
             _cores[2].id = NewAppCore;
-            _cores[2].stack = static_cast<u8 *>(::operator new(0x1000));
-            _cores[2].thread = threadCreate(Scheduler__CoreHandler, &_cores[2], _cores[2].stack, 0x1000, 0x18, 2);
+            _cores[2].thread = threadCreate(Scheduler__CoreHandler, &_cores[2], 0x1000, 0x18, 2, true);
 
             _cores[3].id = NewSysCore;
-            _cores[3].stack = static_cast<u8 *>(::operator new(0x1000));
-            _cores[3].thread = threadCreate(Scheduler__CoreHandler, &_cores[3], _cores[3].stack, 0x1000, 0x18, 3);
+            _cores[3].thread = threadCreate(Scheduler__CoreHandler, &_cores[3], 0x1000, 0x18, 3, true);
         }
     }
 
@@ -159,7 +155,10 @@ namespace CTRPluginFramework
         Lock lock(_singleton._mutex);
 
         for (Core &core : _singleton._cores)
+        {
+            core.flags |= Core::Exit;
             LightEvent_Signal(&core.newTaskEvent);
+        }
     }
 
     Scheduler::Scheduler(void)

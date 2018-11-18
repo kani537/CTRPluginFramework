@@ -7,11 +7,11 @@
 
 namespace CTRPluginFramework
 {
-    FCPointer   PrivColor::FromFramebuffer = _ReadBGR8;
-    F8Pointer   PrivColor::ToFramebuffer = _WriteBGR8;
-    bool        PrivColor::_useClamp = false;
-    IntRect     PrivColor::_clampArea;
-    GSPGPU_FramebufferFormats PrivColor::_format = GSP_BGR8_OES;
+    thread_local FCPointer   PrivColor::FromFramebuffer = _ReadBGR8;
+    thread_local F8Pointer   PrivColor::ToFramebuffer = _WriteBGR8;
+    thread_local bool        PrivColor::_useClamp = false;
+    thread_local IntRect     PrivColor::_clampArea;
+    thread_local GSPGPU_FramebufferFormats PrivColor::_format = GSP_BGR8_OES;
 
     void    PrivColor::UseClamp(bool willUse)
     {

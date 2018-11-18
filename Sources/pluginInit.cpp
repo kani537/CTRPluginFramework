@@ -28,7 +28,6 @@ using CTRPluginFramework::Hook;
 namespace CTRPluginFramework
 {
     // Threads stacks
-    static u8  threadStack[0x4000] ALIGN(8);
     static u8  keepThreadStack[0x1000] ALIGN(8);
 
     // Some globals
@@ -244,7 +243,7 @@ namespace CTRPluginFramework
         svcCreateEvent(&g_keepEvent, RESET_ONESHOT);
 
         // Create plugin's main thread
-        g_mainThread = threadCreate(ThreadInit, nullptr, (void *)threadStack, 0x4000, 0x18, 0);
+        g_mainThread = threadCreate(ThreadInit, nullptr, 0x4000, 0x18, 0, false);
 
         // Reduce priority
         while (R_FAILED(svcSetThreadPriority(g_keepThreadHandle, settings.ThreadPriority + 1)));
@@ -274,10 +273,13 @@ namespace CTRPluginFramework
             }
             else
             {
+                OnProcessExit();
+
                 SystemImpl::AptStatus |= BIT(3);
                 Scheduler::Exit();
 
-                OnProcessExit();
+                // Close PluginMenu to quit main thread
+                PluginMenuImpl::ForceExit();
 
                 // Close some handles
                 gspExit();
