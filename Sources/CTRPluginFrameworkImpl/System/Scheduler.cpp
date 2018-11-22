@@ -9,8 +9,9 @@ namespace CTRPluginFramework
 {
 #define DEBUG 0
     Scheduler   Scheduler::_singleton;
-
-    Scheduler::Core::Core(void)
+    void Scheduler__CoreHandler(void *arg);
+    Scheduler::Core::Core(void) :
+        thread(Scheduler__CoreHandler, 0x1000, 1 , 1)
     {
         LightEvent_Init(&newTaskEvent, RESET_STICKY);
     }
@@ -127,11 +128,15 @@ namespace CTRPluginFramework
 
         // Create handler on Core0
         _cores[0].id = AppCore;
-        _cores[0].thread = threadCreate(Scheduler__CoreHandler, &_cores[0], 0x1000, 0x20, 0, true);
+        _cores[0].thread.affinity = 0;
+        _cores[0].thread.priority = 20;
+        _cores[0].thread.Start(&_cores[0]);
 
         // Create handler on Core1
         _cores[1].id = SysCore;
-        _cores[1].thread = threadCreate(Scheduler__CoreHandler, &_cores[1], 0x1000, 10, 1, true);
+        _cores[1].thread.affinity = 1;
+        _cores[1].thread.priority = 10;
+        _cores[1].thread.Start(&_cores[1]);
 
 
         // Create handler on Core2 & Core3 (N3DS only)
@@ -143,10 +148,14 @@ namespace CTRPluginFramework
         else
         {
             _cores[2].id = NewAppCore;
-            _cores[2].thread = threadCreate(Scheduler__CoreHandler, &_cores[2], 0x1000, 0x18, 2, true);
+            _cores[2].thread.affinity = 2;
+            _cores[2].thread.priority = 0x18;
+            _cores[2].thread.Start(&_cores[2]);
 
             _cores[3].id = NewSysCore;
-            _cores[3].thread = threadCreate(Scheduler__CoreHandler, &_cores[3], 0x1000, 0x18, 3, true);
+            _cores[3].thread.affinity = 3;
+            _cores[3].thread.priority = 0x18;
+            _cores[3].thread.Start(&_cores[3]);
         }
     }
 

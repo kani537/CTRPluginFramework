@@ -54,9 +54,9 @@ endif
 #---------------------------------------------------------------------------------
 # options for code generation
 #---------------------------------------------------------------------------------
-ARCH	:=	-march=armv6k -mlittle-endian -mtune=mpcore -mfloat-abi=hard
+ARCH	:=	-march=armv6k -mlittle-endian -mtune=mpcore -mfloat-abi=hard -mtp=soft
 
-CFLAGS	:=	-g -Os -mword-relocations \
+CFLAGS	:=	-Os -mword-relocations \
  			-fomit-frame-pointer -ffunction-sections -fno-strict-aliasing \
 			$(ARCH)
 
@@ -65,9 +65,8 @@ CFLAGS		+=	$(INCLUDE) -DARM11 -D_3DS
 
 CXXFLAGS	:= $(CFLAGS) -fno-rtti -fno-exceptions -std=gnu++11
 
-ASFLAGS		:= -g $(ARCH)
+ASFLAGS		:= $(ARCH)
 LDFLAGS		:= -T $(TOPDIR)/3ds.ld $(ARCH) -Os -Wl,-Map,$(notdir $*.map),--gc-sections,--strip-discarded,--strip-debug
-#LDFLAGS := -pie -specs=3dsx.specs -g $(ARCH) -mtp=soft -Wl,--section-start,.text=0x14000000 -Wl,--gc-sections
 
 LIBS 		:= 	-lctru -lm
 LIBDIRS		:= 	$(CTRULIB)
@@ -160,7 +159,7 @@ $(LIBOUT):	$(filter-out $(EXCLUDE), $(OFILES))
 	@echo creating $(notdir $@)
 	@$(OBJCOPY) -O binary $(OUTPUT).elf $(TOPDIR)/objdump -S
 	@3gxtool.exe -s $(TOPDIR)/objdump $(TOPDIR)/$(PSF) $@
-	@- rm $(TOPDIR)/objdump
+	#@- rm $(TOPDIR)/objdump
 
 -include $(DEPENDS)
 

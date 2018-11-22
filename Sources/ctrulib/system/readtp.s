@@ -4,4 +4,6 @@
 .type __aeabi_read_tp, %function
 .align 2
 __aeabi_read_tp:
-	b	__getThreadLocalStorage
+	stmfd sp!, {r1-r3, lr}
+	bl	__getThreadLocalStorage
+	ldmfd sp!, {r1-r3, pc}

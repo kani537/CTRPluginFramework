@@ -14,7 +14,7 @@ extern const u8 __tdata_lma_end[];
 extern u8 __tls_start[];
 
 static ThreadVars * g_mainThreadVars;
-
+    ThreadVars* __ctrpf_getThreadVars(ThreadVars * mainThreadVars);
 static struct _reent* __ctru_get_reent()
 {
 	ThreadVars* tv = getThreadVars();
@@ -22,7 +22,7 @@ static struct _reent* __ctru_get_reent()
 	if (tv->magic != THREADVARS_MAGIC)
 	{
         // We're probably hooked from game so get main thread's reent
-        return (g_mainThreadVars->reent);
+        return (__ctrpf_getThreadVars(g_mainThreadVars)->reent);
 	}
 	return tv->reent;
 }
@@ -34,7 +34,7 @@ void*     __getThreadLocalStorage(void)
 	if (tv->magic != THREADVARS_MAGIC)
 	{
         // We're probably hooked from game so get main thread's tls
-        return g_mainThreadVars->tls_tp;
+        return __ctrpf_getThreadVars(g_mainThreadVars)->tls_tp;
 	}
 
 	return tv->tls_tp;

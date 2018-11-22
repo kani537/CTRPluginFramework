@@ -15,7 +15,7 @@
 
 namespace CTRPluginFramework
 {
-    RendererContext Renderer::hookContext;
+    thread_local RendererContext Renderer::_rendererContext;
 
     inline u32   GetFramebufferOffset(int posX, int posY, int bpp, int rowsize)
     {

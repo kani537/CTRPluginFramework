@@ -4,7 +4,7 @@
 #include "types.h"
 #include "CTRPluginFramework/System/Mutex.hpp"
 #include "CTRPluginFramework/System/Task.hpp"
-#include "ctrulib/thread.h"
+#include "CTRPluginFramework/System/Thread.hpp"
 #include <list>
 
 namespace CTRPluginFramework
@@ -37,7 +37,7 @@ namespace CTRPluginFramework
 
             u32         id{0};
             u32         flags{Idle};
-            Thread      thread{nullptr};
+            ThreadEx    thread;
             TaskContext *ctx{nullptr};
             LightEvent  newTaskEvent{};
 

@@ -10,8 +10,6 @@
 
 extern "C"
 {
-    Thread  g_mainThread = nullptr; ///< Used in syscalls.c for __ctru_get_reent
-    u32     __ctru_heap_size;
     u32     g_gspEventThreadPriority;
 
     void    LoadCROHooked(void);
@@ -42,6 +40,7 @@ namespace CTRPluginFramework
     void    ThreadExit(void);
     void    InstallOSD(void); ///< OSDImpl
     void    InitializeRandomEngine(void);
+    static ThreadEx g_mainThread(ThreadInit, 0x4000, 0x18, -1);
 
     // From main.cpp
     int     main(void);
@@ -154,6 +153,9 @@ namespace CTRPluginFramework
         // Initialize newlib's syscalls
         __system_initSyscalls();
 
+        // Init heap and newlib's syscalls
+        initLib();
+
         // Initialize services
         srvInit();
         acInit();
@@ -175,9 +177,6 @@ namespace CTRPluginFramework
 
         // Init locks
         PluginMenuExecuteLoop::InitLocks();
-
-        // Init heap and newlib's syscalls
-        initLib();
 
         ProcessImpl::UpdateMemRegions();
 
@@ -243,7 +242,7 @@ namespace CTRPluginFramework
         svcCreateEvent(&g_keepEvent, RESET_ONESHOT);
 
         // Create plugin's main thread
-        g_mainThread = threadCreate(ThreadInit, nullptr, 0x4000, 0x18, 0, false);
+        g_mainThread.Start(nullptr);
 
         // Reduce priority
         while (R_FAILED(svcSetThreadPriority(g_keepThreadHandle, settings.ThreadPriority + 1)));
@@ -373,7 +372,7 @@ namespace CTRPluginFramework
     void  ThreadExit(void)
     {
         // In which thread are we ?
-        if (g_mainThread && threadGetCurrent() == g_mainThread)
+        if (reinterpret_cast<u32>(threadGetCurrent()->stacktop) < 0x07000000)
         {
             // ## MainThread ##
 
@@ -396,11 +395,11 @@ namespace CTRPluginFramework
         }
 
         // ## Primary Thread ##
-        if (g_mainThread != nullptr)
+        if (g_mainThread.GetStatus() == ThreadEx::RUNNING)
         {
             ProcessImpl::Play(true);
             PluginMenuImpl::ForceExit();
-            threadJoin(g_mainThread, U64_MAX);
+            g_mainThread.Join(false);
         }
         else // We aborted in a very early stage, so just release the game and exit
             svcSignalEvent(g_continueGameEvent);
@@ -413,7 +412,7 @@ namespace CTRPluginFramework
     int   LaunchMainThread(int arg)
     {
         // Install exception handler
-        threadOnException(ERRF_ExceptionHandler, RUN_HANDLER_ON_FAULTING_STACK, &exception_data);
+        //threadOnException(ERRF_ExceptionHandler, RUN_HANDLER_ON_FAULTING_STACK, &exception_data);
 
         // Create event
         svcCreateEvent(&g_continueGameEvent, RESET_ONESHOT);

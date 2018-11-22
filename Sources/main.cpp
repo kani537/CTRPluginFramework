@@ -32,8 +32,7 @@ typedef unsigned long __PTRDIFF_TYPE__;
 
 namespace CTRPluginFramework
 {
-    // Must be executed in PatchProcess
-    void    AllowTheTouchscreenToStayOn(void)
+    static void    ToggleTouchscreenForceOn(void)
     {
         static u32 original = 0;
         static u32 *patchAddress = nullptr;
@@ -44,7 +43,7 @@ namespace CTRPluginFramework
             return;
         }
 
-        const std::vector<u32> pattern =
+        static const std::vector<u32> pattern =
         {
             0xE59F10C0, 0xE5840004, 0xE5841000, 0xE5DD0000,
             0xE5C40008, 0xE28DD03C, 0xE8BD80F0, 0xE5D51001,
@@ -82,12 +81,12 @@ exit:
     // This function is called on the plugin starts, before main
     void    PatchProcess(FwkSettings &settings)
     {
-        AllowTheTouchscreenToStayOn();
+        ToggleTouchscreenForceOn();
     }
 
     void    OnExitProcess(void)
     {
-        AllowTheTouchscreenToStayOn();
+        ToggleTouchscreenForceOn();
     }
 
     u32     strlen(const char *s)

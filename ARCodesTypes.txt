@@ -90,24 +90,31 @@ Data Register Codes:
 D4000000 XXXXXXXX – Adds XXXXXXXX to the active data register
 D4000001 XXXXXXXX – data#1 = data#1 + data#2 + XXXXXXXX
 D4000002 XXXXXXXX - data#2 = data#2 + data#1 + XXXXXXXX
+
 D5000000 XXXXXXXX – data = XXXXXXXX
 D5000001 XXXXXXXX - data#1 = XXXXXXXX
 D5000002 XXXXXXXX - data#2 = XXXXXXXX
+
 D6000000 XXXXXXXX – (32bit) [XXXXXXXX+offset] = data ; offset += 4
 D6000001 XXXXXXXX – (32bit) [XXXXXXXX+offset] = data#1 ; offset += 4
 D6000002 XXXXXXXX – (32bit) [XXXXXXXX+offset] = data#2 ; offset += 4
+
 D7000000 XXXXXXXX – (16bit) [XXXXXXXX+offset] = data & 0xffff ; offset += 2
 D7000001 XXXXXXXX – (16bit) [XXXXXXXX+offset] = data#1 & 0xffff ; offset += 2
 D7000002 XXXXXXXX – (16bit) [XXXXXXXX+offset] = data#2 & 0xffff ; offset += 2
+
 D8000000 XXXXXXXX – (8bit) [XXXXXXXX+offset] = data & 0xff ; offset++
 D8000001 XXXXXXXX – (8bit) [XXXXXXXX+offset] = data#1 & 0xff ; offset++
 D8000002 XXXXXXXX – (8bit) [XXXXXXXX+offset] = data#2 & 0xff ; offset++
+
 D9000000 XXXXXXXX – (32bit) sets data to [XXXXXXXX+offset]
 D9000001 XXXXXXXX – (32bit) sets data#1 to [XXXXXXXX+offset]
 D9000002 XXXXXXXX – (32bit) sets data#2 to [XXXXXXXX+offset]
+
 DA000000 XXXXXXXX – (16bit) sets data to [XXXXXXXX+offset] & 0xFFFF
 DA000001 XXXXXXXX – (16bit) sets data#1 to [XXXXXXXX+offset] & 0xFFFF
 DA000002 XXXXXXXX – (16bit) sets data#2 to [XXXXXXXX+offset] & 0xFFFF
+
 DB000000 XXXXXXXX – (8bit) sets data to [XXXXXXXX+offset] & 0xFF
 DB000001 XXXXXXXX – (8bit) sets data#1 to [XXXXXXXX+offset] & 0xFF
 DB000002 XXXXXXXX – (8bit) sets data#2 to [XXXXXXXX+offset] & 0xFF

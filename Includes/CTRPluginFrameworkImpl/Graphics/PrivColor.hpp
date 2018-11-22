@@ -29,8 +29,6 @@ namespace CTRPluginFramework
     private:
         friend class ScreenImpl;
 
-
-
         static Color    _ReadRGBA8(u8 *src);
         static Color    _ReadBGR8(u8 *src);
         static Color    _ReadRGB565(u8 *src);

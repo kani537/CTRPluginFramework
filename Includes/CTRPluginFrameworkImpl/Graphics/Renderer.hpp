@@ -105,15 +105,10 @@ namespace CTRPluginFramework
 
         static inline   RendererContext *GetContext(void)
         {
-            Thread current = threadGetCurrent();
-
-            if (current == NULL)
-                return &hookContext;
-
-            return (RendererContext *)&current->renderCtx;
+            return &_rendererContext;
         }
 
-        static RendererContext  hookContext;
+        static thread_local RendererContext  _rendererContext;
     };
 
         // Can't find a good name...

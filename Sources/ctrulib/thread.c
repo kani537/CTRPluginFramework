@@ -17,7 +17,6 @@ struct Thread_tag
 	bool detached, finished;
 	struct _reent reent;
 	void* stacktop;
-    void* renderCtx;
 };
 
 static void __panic(void)
@@ -41,24 +40,25 @@ static void _thread_begin(void* arg)
 u32     KProcess__PatchCategory(u32 newCatagory);
 u32     KProcess__PatchMaxPriority(u32 newPrio);
 
-Thread threadCreate(ThreadFunc entrypoint, void* arg, size_t stack_size, int prio, int affinity, bool detached)
+Thread __createThread(ThreadFunc entrypoint, u32 stackSize, bool detached)
 {
-	size_t stackoffset = (sizeof(struct Thread_tag)+7)&~7;
-	size_t allocsize   = stackoffset + ((stack_size+7)&~7);
+    size_t stackoffset = (sizeof(struct Thread_tag)+7)&~7;
+	size_t allocsize   = stackoffset + ((stackSize+7)&~7);
 	size_t tlssize = __tls_end-__tls_start;
 	size_t tlsloadsize = __tdata_lma_end-__tdata_lma;
 	size_t tbsssize = tlssize-tlsloadsize;
 
 	// Guard against overflow
 	if (allocsize < stackoffset) return NULL;
-	if ((allocsize-stackoffset) < stack_size) return NULL;
+	if ((allocsize-stackoffset) < stackSize) return NULL;
 	if ((allocsize+tlssize) < allocsize) return NULL;
 
-	Thread t = (Thread)memalign(8, allocsize+tlssize);
-	if (!t) return NULL;
+    Thread t = (Thread)memalign(8, allocsize+tlssize);
+    if (!t) return NULL;
 
-	t->ep       = entrypoint;
-	t->arg      = arg;
+    t->ep       = entrypoint;
+    t->ep       = entrypoint;
+	t->arg      = NULL;
 	t->detached = detached;
 	t->finished = false;
 	t->stacktop = (u8*)t + allocsize;
@@ -75,6 +75,11 @@ Thread threadCreate(ThreadFunc entrypoint, void* arg, size_t stack_size, int pri
 	t->reent._stdout = cur->_stdout;
 	t->reent._stderr = cur->_stderr;
 
+    return t;
+}
+
+Result __startThread(Thread t, int prio, int affinity)
+{
     u32     oldAppType = -1;
     u32     oldPrio = -1;
 	Result  rc;
@@ -87,7 +92,7 @@ Thread threadCreate(ThreadFunc entrypoint, void* arg, size_t stack_size, int pri
     if (prio < 0x18)
         oldPrio = KProcess__PatchMaxPriority(0);
 
-	rc = svcCreateThread(&t->handle, _thread_begin, (u32)t, (u32*)t->stacktop, prio, affinity);
+	rc = svcCreateThread(&t->handle, _thread_begin, (u32)t, (u32 *)t->stacktop, prio, affinity);
 
     if (oldAppType != -1)
         KProcess__PatchCategory(oldAppType);
@@ -95,7 +100,20 @@ Thread threadCreate(ThreadFunc entrypoint, void* arg, size_t stack_size, int pri
     if (oldPrio != -1)
         KProcess__PatchMaxPriority(oldPrio);
 
-	if (R_FAILED(rc))
+    return rc;
+}
+
+Thread threadCreate(ThreadFunc entrypoint, void* arg, size_t stack_size, int prio, int affinity, bool detached)
+{
+	Thread t = __createThread(entrypoint, stack_size, detached);
+	if (!t) return NULL;
+
+    u32     oldAppType = -1;
+    u32     oldPrio = -1;
+	Result  rc;
+
+    t->arg = arg;
+	if (R_FAILED(__startThread(t, prio, affinity)))
 	{
 		free(t);
 		return NULL;
