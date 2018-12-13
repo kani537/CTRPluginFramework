@@ -66,7 +66,7 @@ CFLAGS		+=	$(INCLUDE) -DARM11 -D_3DS
 CXXFLAGS	:= $(CFLAGS) -fno-rtti -fno-exceptions -std=gnu++11
 
 ASFLAGS		:= $(ARCH)
-LDFLAGS		:= -T $(TOPDIR)/3ds.ld $(ARCH) -Os -Wl,-Map,$(notdir $*.map),--gc-sections,--strip-discarded,--strip-debug
+LDFLAGS		:= -T $(TOPDIR)/3gx.ld $(ARCH) -Os -Wl,--gc-sections,--strip-discarded,--strip-debug
 
 LIBS 		:= 	-lctru -lm
 LIBDIRS		:= 	$(CTRULIB)
@@ -157,8 +157,8 @@ $(LIBOUT):	$(filter-out $(EXCLUDE), $(OFILES))
 #---------------------------------------------------------------------------------
 %.3gx: %.elf
 	@echo creating $(notdir $@)
-	@$(OBJCOPY) -O binary $(OUTPUT).elf $(TOPDIR)/objdump -S
-	@3gxtool.exe -s $(TOPDIR)/objdump $(TOPDIR)/$(PSF) $@
+	#@$(OBJCOPY) -O binary $(OUTPUT).elf $(TOPDIR)/objdump -S
+	@3gxtool.exe -s $(OUTPUT).elf $(TOPDIR)/$(PSF) $@
 	#@- rm $(TOPDIR)/objdump
 
 -include $(DEPENDS)

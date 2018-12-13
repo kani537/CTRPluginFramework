@@ -43,10 +43,11 @@ namespace CTRPluginFramework
 
         static _OSDManager  *GetInstance(void);
 
-        OSDMI   operator[](const std::string &key);
-        void    Remove(const std::string &key);
+        OSDMI   operator[](const u32 key);
+        void    Remove(const u32 key);
         void    Lock(void);
         void    Unlock(void);
+        u32     Size(void);
     private:
 
         _OSDManager(void);
@@ -55,8 +56,8 @@ namespace CTRPluginFramework
 
         static _OSDManager *_singleton;
 
-        LightLock   _lock;
-        std::map<std::string, std::tuple<bool, std::string, u32, u32, bool>> _items;
+        Mutex   _mutex;
+        std::map<u32, std::tuple<bool, std::string, u32, u32, bool>> _items{};
     };
 }
 

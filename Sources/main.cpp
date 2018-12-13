@@ -29,6 +29,7 @@ typedef unsigned long __PTRDIFF_TYPE__;
 #include "CTRPluginFrameworkImpl/Graphics/BMPImage.hpp"
 #include "OSDManager.hpp"
 #include "CTRPluginFrameworkImpl/System/ProcessImpl.hpp"
+#include <list>
 
 namespace CTRPluginFramework
 {
@@ -435,12 +436,32 @@ exit:
         MessageBox("Screen fmt", Utils::Format("Top: %d\nBottom: %d", fmt2, fmt))();
     }
 
+    struct ITrace
+    {
+        u32     address{0};
+        u32     value{0};
+        ITrace *offset{nullptr};
+        ~ITrace(void)
+        {
+            OSDManager.Remove(address);
+            if (offset)
+                delete offset;
+        }
+    };
+
+    std::vector<ITrace> _itraces;
+
     int     main(void)
     {
         PluginMenu  *m = new PluginMenu("Action Replay", 0, 5, 1);
         PluginMenu  &menu = *m;
 
         menu.SynchronizeWithFrame(true);
+        /*menu.SynchronizeWithFrame(false);
+        menu += [](void)
+        {
+            Sleep(Milliseconds(1));
+        };*/
 
         //menu += new MenuEntry("Check screen fmt", nullptr, CheckScreenFormat);
         // Launch menu and mainloop

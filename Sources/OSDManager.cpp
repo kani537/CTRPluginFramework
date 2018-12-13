@@ -74,15 +74,20 @@ namespace CTRPluginFramework
 
     void    _OSDManager::Lock(void)
     {
-        LightLock_Lock(&_lock);
+        _mutex.Lock();
     }
 
     void    _OSDManager::Unlock(void)
     {
-        LightLock_Unlock(&_lock);
+        _mutex.Unlock();
     }
 
-    OSDMI   _OSDManager::operator[](const std::string &key)
+    u32     _OSDManager::Size(void)
+    {
+        return _items.size();
+    }
+
+    OSDMI   _OSDManager::operator[](const u32 key)
     {
         Lock();
         OSDMI i(_items[key]);
@@ -90,7 +95,7 @@ namespace CTRPluginFramework
         return (i);
     }
 
-    void    _OSDManager::Remove(const std::string& key)
+    void    _OSDManager::Remove(const u32 key)
     {
         Lock();
         _items.erase(key);
@@ -99,7 +104,6 @@ namespace CTRPluginFramework
 
     _OSDManager::_OSDManager(void)
     {
-        LightLock_Init(&_lock);
         OSD::Run(OSDCallback);
     }
 

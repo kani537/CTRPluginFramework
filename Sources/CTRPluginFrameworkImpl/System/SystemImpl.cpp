@@ -12,8 +12,7 @@ namespace CTRPluginFramework
     u32     SystemImpl::AptStatus = 0;
     u8      SystemImpl::Language = CFG_LANGUAGE_EN;
 
-    static  aptHookCookie   g_hookCookie;
-    static  LightEvent      g_sleepEvent;
+   static  LightEvent      g_sleepEvent;
 
     enum
     {

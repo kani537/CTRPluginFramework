@@ -4,6 +4,7 @@
 #include "CTRPluginFrameworkImpl/Graphics/Font.hpp"
 #include "CTRPluginFrameworkImpl/System/Screenshot.hpp"
 #include "csvc.h"
+#include "plgldr.h"
 
 #define PA_PTR(addr)            (void *)((u32)(addr) | 1 << 31)
 #define REG32(addr)             (*(vu32 *)(PA_PTR(addr)))
@@ -19,6 +20,12 @@ extern "C"
     void    initLib(void);
     Result  __sync_init(void);
     void    __system_initSyscalls(void);
+
+    s32     PLGLDR__FetchEvent(void);
+    void    PLGLDR__Reply(s32 event);
+
+    u32 __ctru_heap;
+    u32 __ctru_heap_size;
 }
 
 using CTRPluginFramework::Hook;
@@ -91,19 +98,16 @@ void     OnLoadCro(void)
 
 namespace CTRPluginFramework
 {
-    void __attribute__((weak))  PatchProcess(FwkSettings& settings)
-    {
-    }
-
-    void __attribute__((weak))  OnProcessExit(void)
-    {
-    }
+    void __attribute__((weak))  PatchProcess(FwkSettings& settings) {}
+    void __attribute__((weak))  OnProcessExit(void) {}
+    void __attribute__((weak))  OnPluginSwap(void) {}
 
     namespace Heap
     {
         extern u8* __ctrpf_heap;
         extern u32 __ctrpf_heap_size;
     }
+
     static void InitFS(void)
     {
         // Init sdmcArchive
@@ -162,12 +166,15 @@ namespace CTRPluginFramework
         amInit();
         fsInit();
         cfguInit();
-
+        plgLdrInit();
         // Initialize Kernel stuff
         Kernel::Initialize();
 
         // Init Framework's system constants
         SystemImpl::Initialize();
+
+        // Initialize Globals settings
+        InitializeRandomEngine();
 
         // Init Process info
         ProcessImpl::Initialize();
@@ -252,50 +259,58 @@ namespace CTRPluginFramework
         svcClearEvent(g_keepEvent);
 
         Handle memLayoutChanged;
-        Handle onProcessExit;
-        Handle resumeProcessExit;
 
         svcControlProcess(CUR_PROCESS_HANDLE, PROCESSOP_GET_ON_MEMORY_CHANGE_EVENT, (u32)&memLayoutChanged, 0);
-        svcControlProcess(CUR_PROCESS_HANDLE, PROCESSOP_GET_ON_EXIT_EVENT, (u32)&onProcessExit, (u32)&resumeProcessExit);
-
-       while (true)
-       {
-            u32 handles[2] = { memLayoutChanged, onProcessExit};
-            s32 idx = 0;
-
-            svcWaitSynchronizationN(&idx, handles, 2, false, U64_MAX);
-
-            if (idx == 0)
+        while (true)
+        {
+            if (svcWaitSynchronization(memLayoutChanged, 100000000ULL) == 0x09401BFE)
             {
-                // Memory layout changed, update memory
-                ProcessImpl::UpdateMemRegions();
+                s32 event = PLGLDR__FetchEvent();
+
+                if (event == PLG_ABOUT_TO_SWAP)
+                {
+                    OnPluginSwap();
+
+                    // Unmap hook memory
+                    svcUnmapProcessMemoryEx(CUR_PROCESS_HANDLE, 0x01E80000, 0x2000);
+
+                    // Replay and wait
+                    PLGLDR__Reply(event);
+
+                    // Remap hook memory
+                    svcMapProcessMemoryEx(CUR_PROCESS_HANDLE, 0x1E80000, CUR_PROCESS_HANDLE,
+                        __ctru_heap + __ctru_heap_size, 0x2000);
+                }
+                else if (event == PLG_ABOUT_TO_EXIT)
+                {
+                    OnProcessExit();
+
+                    SystemImpl::AptStatus |= BIT(3);
+                    Scheduler::Exit();
+
+                    // Close PluginMenu to quit main thread
+                    PluginMenuImpl::ForceExit();
+
+                    // Close some handles
+                    gspExit();
+                    hidExit();
+                    cfguExit();
+                    fsExit();
+                    amExit();
+                    acExit();
+                    srvExit();
+
+                    // Unmap hook wrapper memory
+                    svcUnmapProcessMemoryEx(CUR_PROCESS_HANDLE, 0x01E80000, 0x2000);
+
+                    // This function do not return and close the thread
+                    PLGLDR__Reply(event);
+                }
             }
-            else
-            {
-                OnProcessExit();
 
-                SystemImpl::AptStatus |= BIT(3);
-                Scheduler::Exit();
-
-                // Close PluginMenu to quit main thread
-                PluginMenuImpl::ForceExit();
-
-                // Close some handles
-                gspExit();
-                hidExit();
-                cfguExit();
-                fsExit();
-                amExit();
-                acExit();
-                srvExit();
-
-                // Unmap hook wrapper memory
-                svcUnmapProcessMemoryEx(CUR_PROCESS_HANDLE, 0x01E80000, 0x2000);
-
-                svcSignalEvent(resumeProcessExit);
-                goto exit;
-            }
-       }
+            // Memory layout changed, update memory
+            ProcessImpl::UpdateMemRegions();
+        }
 
     exit:
         svcCloseHandle(g_keepEvent);
@@ -354,9 +369,6 @@ namespace CTRPluginFramework
     {
         Initialize();
 
-        // Initialize Globals settings
-        InitializeRandomEngine();
-
         // Wake up init thread
         svcSignalEvent(g_keepEvent);
 
@@ -406,14 +418,9 @@ namespace CTRPluginFramework
         svcExitThread();
     }
 
-    static ERRF_ExceptionData exception_data ALIGN(8);
-
     extern "C"
-    int   LaunchMainThread(int arg)
+    int   __entrypoint(int arg)
     {
-        // Install exception handler
-        //threadOnException(ERRF_ExceptionHandler, RUN_HANDLER_ON_FAULTING_STACK, &exception_data);
-
         // Create event
         svcCreateEvent(&g_continueGameEvent, RESET_ONESHOT);
         // Start ctrpf's primary thread

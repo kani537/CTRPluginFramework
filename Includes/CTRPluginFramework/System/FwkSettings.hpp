@@ -9,15 +9,16 @@ namespace CTRPluginFramework
 {
     struct PluginHeader
     {
-        u32             magic;
-        u32             version;
-        u32             heapVA;
-        u32             heapSize;
-        u32             pluginSize;
-        const char*     pluginPathPA;
-        u32             isDefaultPlugin;
-        u32             reserved[25];
-        u32             config[32];
+        u32     magic;
+        u32     version;
+        u32     heapVA;
+        u32     heapSize;
+        u32     exeSize; // Include sizeof(PluginHeader) + .text + .rodata + .data + .bss (0x1000 aligned too)
+        u32     isDefaultPlugin;
+        s32*    plgldrEvent; ///< Used for synchronization
+        s32*    plgldrReply; ///< Used for synchronization
+        u32     reserved[24];
+        u32     config[32];
     };
 
     struct FwkSettings

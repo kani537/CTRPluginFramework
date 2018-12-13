@@ -549,6 +549,12 @@
     <ClInclude Include="Includes\CTRPluginFrameworkImpl\System\MMU.hpp">
       <Filter>Fichiers d%27en-tête</Filter>
     </ClInclude>
+    <ClInclude Include="Includes\CTRPluginFramework\System\Thread.hpp">
+      <Filter>Fichiers d%27en-tête</Filter>
+    </ClInclude>
+    <ClInclude Include="Includes\plgldr.h">
+      <Filter>Fichiers d%27en-tête</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Sources\CTRPluginFramework\Graphics\Color.cpp">
@@ -1157,8 +1163,16 @@
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\System\MMU.cpp">
       <Filter>Fichiers sources</Filter>
     </ClCompile>
+    <ClCompile Include="Sources\CTRPluginFramework\System\ThreadEx.cpp">
+      <Filter>Fichiers sources</Filter>
+    </ClCompile>
+    <ClCompile Include="Sources\plgldr.c">
+      <Filter>Fichiers sources</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="Sources\csvc.s" />
+    <None Include="Sources\3gx_crt0.s" />
+    <None Include="Sources\LoadCROHooked.s" />
   </ItemGroup>
 </Project>
