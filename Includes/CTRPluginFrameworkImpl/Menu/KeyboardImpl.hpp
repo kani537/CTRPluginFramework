@@ -48,6 +48,7 @@ namespace CTRPluginFramework
         void        SetCompareCallback(CompareCallback callback);
         void        OnInputChange(OnInputChangeCallback callback);
         void        Populate(const std::vector<std::string> &input);
+        void        Clear(void);
 
         int         Run(void);
         void        Close(void);

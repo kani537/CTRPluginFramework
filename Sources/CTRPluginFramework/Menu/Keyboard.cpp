@@ -278,6 +278,12 @@ namespace CTRPluginFramework
 
     int     Keyboard::Open(u8 &output) const
     {
+        if (_isPopulated)
+        {
+            _keyboard->Clear();
+            _isPopulated = false;
+        }
+
         _keyboard->SetLayout(_hexadecimal ? Layout::HEXADECIMAL : Layout::DECIMAL);
         if (_hexadecimal)
         {
@@ -299,6 +305,12 @@ namespace CTRPluginFramework
 
     int     Keyboard::Open(u8 &output, u8 start) const
     {
+        if (_isPopulated)
+        {
+            _keyboard->Clear();
+            _isPopulated = false;
+        }
+
         _keyboard->SetLayout(_hexadecimal ? Layout::HEXADECIMAL : Layout::DECIMAL);
         std::string &input = _keyboard->GetInput();
         if (_hexadecimal)
@@ -327,6 +339,12 @@ namespace CTRPluginFramework
 
     int     Keyboard::Open(u16 &output) const
     {
+        if (_isPopulated)
+        {
+            _keyboard->Clear();
+            _isPopulated = false;
+        }
+
         _keyboard->SetLayout(_hexadecimal ? Layout::HEXADECIMAL : Layout::DECIMAL);
         if (_hexadecimal)
         {
@@ -348,6 +366,12 @@ namespace CTRPluginFramework
 
     int     Keyboard::Open(u16 &output, u16 start) const
     {
+        if (_isPopulated)
+        {
+            _keyboard->Clear();
+            _isPopulated = false;
+        }
+
         _keyboard->SetLayout(_hexadecimal ? Layout::HEXADECIMAL : Layout::DECIMAL);
         std::string &input = _keyboard->GetInput();
         if (_hexadecimal)
@@ -376,6 +400,12 @@ namespace CTRPluginFramework
 
     int     Keyboard::Open(u32 &output) const
     {
+        if (_isPopulated)
+        {
+            _keyboard->Clear();
+            _isPopulated = false;
+        }
+
         _keyboard->SetLayout(_hexadecimal ? Layout::HEXADECIMAL : Layout::DECIMAL);
         if (_hexadecimal)
         {
@@ -397,6 +427,12 @@ namespace CTRPluginFramework
 
     int     Keyboard::Open(u32 &output, u32 start) const
     {
+        if (_isPopulated)
+        {
+            _keyboard->Clear();
+            _isPopulated = false;
+        }
+
         _keyboard->SetLayout(_hexadecimal ? Layout::HEXADECIMAL : Layout::DECIMAL);
         std::string &input = _keyboard->GetInput();
         if (_hexadecimal)
@@ -425,6 +461,12 @@ namespace CTRPluginFramework
 
     int     Keyboard::Open(u64 &output) const
     {
+        if (_isPopulated)
+        {
+            _keyboard->Clear();
+            _isPopulated = false;
+        }
+
         _keyboard->SetLayout(_hexadecimal ? Layout::HEXADECIMAL : Layout::DECIMAL);
         if (_hexadecimal)
         {
@@ -446,6 +488,12 @@ namespace CTRPluginFramework
 
     int     Keyboard::Open(u64 &output, u64 start) const
     {
+        if (_isPopulated)
+        {
+            _keyboard->Clear();
+            _isPopulated = false;
+        }
+
         _keyboard->SetLayout(_hexadecimal ? Layout::HEXADECIMAL : Layout::DECIMAL);
         std::string &input = _keyboard->GetInput();
         if (_hexadecimal)
@@ -474,6 +522,12 @@ namespace CTRPluginFramework
 
     int     Keyboard::Open(float &output) const
     {
+        if (_isPopulated)
+        {
+            _keyboard->Clear();
+            _isPopulated = false;
+        }
+
         _keyboard->SetLayout(DECIMAL);
         _keyboard->SetConvertCallback(ConvertToFloat);
         _keyboard->DisplayTopScreen = DisplayTopScreen;
@@ -490,6 +544,12 @@ namespace CTRPluginFramework
 
     int     Keyboard::Open(float &output, float start) const
     {
+        if (_isPopulated)
+        {
+            _keyboard->Clear();
+            _isPopulated = false;
+        }
+
         _keyboard->SetLayout(DECIMAL);
         _keyboard->SetConvertCallback(ConvertToFloat);
         _keyboard->DisplayTopScreen = DisplayTopScreen;
@@ -512,6 +572,11 @@ namespace CTRPluginFramework
 
     int     Keyboard::Open(double &output) const
     {
+        if (_isPopulated)
+        {
+            _keyboard->Clear();
+            _isPopulated = false;
+        }
         _keyboard->SetLayout(DECIMAL);
         _keyboard->SetConvertCallback(ConvertToDouble);
         _keyboard->DisplayTopScreen = DisplayTopScreen;
@@ -528,6 +593,12 @@ namespace CTRPluginFramework
 
     int     Keyboard::Open(double &output, double start) const
     {
+        if (_isPopulated)
+        {
+            _keyboard->Clear();
+            _isPopulated = false;
+        }
+
         _keyboard->SetLayout(DECIMAL);
         _keyboard->SetConvertCallback(ConvertToDouble);
         _keyboard->DisplayTopScreen = DisplayTopScreen;
@@ -550,6 +621,12 @@ namespace CTRPluginFramework
 
     int     Keyboard::Open(std::string &output) const
     {
+        if (_isPopulated)
+        {
+            _keyboard->Clear();
+            _isPopulated = false;
+        }
+
         _keyboard->SetLayout(QWERTY);
         _keyboard->DisplayTopScreen = DisplayTopScreen;
 
@@ -564,6 +641,12 @@ namespace CTRPluginFramework
 
     int     Keyboard::Open(std::string &output, const std::string &start) const
     {
+        if (_isPopulated)
+        {
+            _keyboard->Clear();
+            _isPopulated = false;
+        }
+
         _keyboard->SetLayout(QWERTY);
         _keyboard->DisplayTopScreen = DisplayTopScreen;
 

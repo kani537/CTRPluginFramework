@@ -246,6 +246,15 @@ namespace CTRPluginFramework
         }
     }
 
+    void    KeyboardImpl::Clear(void)
+    {
+        _customKeyboard = false;
+        _currentPosition = 0;
+        for (TouchKeyString *tks : _strKeys)
+            delete tks;
+        _strKeys.clear();
+    }
+
     int     KeyboardImpl::Run(void)
     {
         _isOpen = true;
