@@ -1,4 +1,3 @@
-
 #include "3DS.h"
 #include "CTRPluginFrameworkImpl/System.hpp"
 #include "CTRPluginFramework/Utils/Utils.hpp"
@@ -129,27 +128,7 @@ namespace CTRPluginFramework
 
     void     Process::ProtectRegionInRange(u32 startAddress, u32 endAddress, int perm)
     {
-        /*MemInfo     minfo;
-        PageInfo    pinfo;
-
-        while (startAddress < endAddress)
-        {
-            if (R_SUCCEEDED(svcQueryProcessMemory(&minfo, &pinfo, ProcessImpl::ProcessHandle, startAddress)))
-            {
-                if (minfo.state != MEMSTATE_FREE)
-                {
-                    if (startAddress >= minfo.base_addr && startAddress <= minfo.base_addr + minfo.size)
-                    {
-                        if (ProtectMemory(minfo.base_addr, minfo.size, perm))
-                        {
-                            startAddress += minfo.size;
-                            continue;
-                        }
-                    }
-                }
-            }
-            startAddress += 0x1000;
-        }*/
+        // This should be removed in a future update
     }
 
     bool     Process::CopyMemory(void *dst, const void *src, u32 size)
@@ -174,26 +153,6 @@ namespace CTRPluginFramework
     bool    Process::CheckAddress(u32 address, u32 perm)
     {
         return ProcessImpl::IsValidAddress(address);
-        /*
-        Result         res;
-        PageInfo       pInfo = {0};
-        MemInfo        mInfo = {0};
-
-        //mInfo = ProcessImpl::GetMemRegion(address);
-        //res = svcQueryMemory(&mInfo, &pInfo, address);
-        if (R_SUCCEEDED(res) && mInfo.base_addr <= address && mInfo.base_addr + mInfo.size > address)
-        {
-            /*if ((mInfo.perm & perm) != perm)
-            {
-                perm |= mInfo.perm;
-                res = svcControlProcessMemory(ProcessImpl::ProcessHandle, mInfo.base_addr, mInfo.base_addr, mInfo.size, 6, perm);
-                if (R_SUCCEEDED(res))
-                    return (true);
-                return (false);
-            }
-            return (true);
-        }
-        return (false);*/
     }
 
     bool    Process::CheckRegion(u32 address, u32 &size, u32 perm)
@@ -203,43 +162,14 @@ namespace CTRPluginFramework
         MemInfo        mInfo = ProcessImpl::GetMemRegion(address);
 
         size = mInfo.size;
-        /*res = svcQueryMemory(&mInfo, &pInfo, address);
-        if (R_SUCCEEDED(res) && mInfo.base_addr <= address && mInfo.base_addr + mInfo.size > address)
-        {
-            size = mInfo.size;
-
-            if ((mInfo.perm & perm) != perm)
-            {
-                perm |= mInfo.perm;
-                res = svcControlProcessMemory(ProcessImpl::ProcessHandle, mInfo.base_addr, mInfo.base_addr, mInfo.size, 6, perm);
-                if (R_SUCCEEDED(res))
-                    return (true);
-                return (false);
-            }
-            return (true);
-        }
-        return (false);*/
         return mInfo != ProcessImpl::InvalidRegion;
     }
-
-    union Type32
-	{
-        u32     bits32;
-        u8      bytes[4];
-	};
-
-    struct Type64
-    {
-        Type32  low;
-        Type32  high;
-    };
 
     bool    Process::Write64(u32 address, u64 value)
     {
         if (CheckAddress(address, MEMPERM_WRITE))
-        //if ((address = PA_FROM_VA(address)) != 0)
         {
-            *(u64 *)address = value;
+            *reinterpret_cast<u64 *>(address) = value;
             return (true);
         }
         return (false);
@@ -248,22 +178,8 @@ namespace CTRPluginFramework
     bool    Process::Write32(u32 address, u32 value)
     {
         if (CheckAddress(address, MEMPERM_WRITE))
-        //if ((address = PA_FROM_VA(address)) != 0)
         {
-            // Address is aligned
-            if (address & 3 == 0)
-                *reinterpret_cast<u32 *>(address) = value;
-            else
-            {
-                // Unaligned address
-                Type32  type;
-
-                type.bits32 = value;
-                *reinterpret_cast<u8 *>(address++) = type.bytes[0];
-                *reinterpret_cast<u8 *>(address++) = type.bytes[1];
-                *reinterpret_cast<u8 *>(address++) = type.bytes[2];
-                *reinterpret_cast<u8 *>(address) = type.bytes[3];
-            }
+           *reinterpret_cast<u32 *>(address) = value;
             return (true);
         }
         return (false);
@@ -272,20 +188,8 @@ namespace CTRPluginFramework
     bool    Process::Write16(u32 address, u16 value)
     {
         if (CheckAddress(address, MEMPERM_WRITE))
-        //if ((address = PA_FROM_VA(address)) != 0)
         {
-            // Aligned address
-            if (address & 1 == 0)
-                *reinterpret_cast<u16 *>(address) = value;
-            else
-            {
-                // Unaligned address
-                Type32  type;
-
-                type.bits32 = value;
-                *reinterpret_cast<u8 *>(address++) = type.bytes[0];
-                *reinterpret_cast<u8 *>(address) = type.bytes[1];
-            }
+            *reinterpret_cast<u16 *>(address) = value;
             return (true);
         }
         return (false);
@@ -294,7 +198,6 @@ namespace CTRPluginFramework
     bool    Process::Write8(u32 address, u8 value)
     {
         if (CheckAddress(address, MEMPERM_WRITE))
-        //if ((address = PA_FROM_VA(address)) != 0)
         {
             *reinterpret_cast<u8 *>(address) = value;
             return (true);
@@ -305,7 +208,6 @@ namespace CTRPluginFramework
     bool    Process::WriteFloat(u32 address, float value)
     {
         if (CheckAddress(address, MEMPERM_WRITE))
-        //if ((address = PA_FROM_VA(address)) != 0)
         {
             *reinterpret_cast<float *>(address) = value;
             return (true);
@@ -316,9 +218,8 @@ namespace CTRPluginFramework
     bool    Process::WriteDouble(u32 address, double value)
     {
         if (CheckAddress(address, MEMPERM_WRITE))
-        //if ((address = PA_FROM_VA(address)) != 0)
         {
-            *(double *)address = value;
+            *reinterpret_cast<double *>(address) = value;
             return (true);
         }
         return (false);
@@ -327,9 +228,8 @@ namespace CTRPluginFramework
     bool    Process::Read64(u32 address, u64 &value)
     {
         if (CheckAddress(address, MEMPERM_READ))
-        //if ((address = PA_FROM_VA(address)) != 0)
         {
-            value = *(u64 *)address;
+            value = *reinterpret_cast<u64 *>(address);
             return (true);
         }
         return (false);
@@ -338,22 +238,8 @@ namespace CTRPluginFramework
     bool    Process::Read32(u32 address, u32 &value)
     {
         if (CheckAddress(address, MEMPERM_READ))
-        //if ((address = PA_FROM_VA(address)) != 0)
         {
-            // Aligned address
-            if (address & 3 == 0)
-                value = *reinterpret_cast<vu32 *>(address);
-            else
-            {
-                // Unaligned address
-                Type32  type;
-
-                type.bytes[0] = *reinterpret_cast<vu8 *>(address++);
-                type.bytes[1] = *reinterpret_cast<vu8 *>(address++);
-                type.bytes[2] = *reinterpret_cast<vu8 *>(address++);
-                type.bytes[3] = *reinterpret_cast<vu8 *>(address);
-                value = type.bits32;
-            }
+            value = *reinterpret_cast<vu32 *>(address);
             return (true);
         }
         return (false);
@@ -362,20 +248,8 @@ namespace CTRPluginFramework
     bool    Process::Read16(u32 address, u16 &value)
     {
         if (CheckAddress(address, MEMPERM_READ))
-        //if ((address = PA_FROM_VA(address)) != 0)
         {
-            // Aligned address
-            if (address & 1 == 0)
-                value = *reinterpret_cast<vu16 *>(address);
-            else
-            {
-                // Unaligned address
-                Type32  type = { 0 };
-
-                type.bytes[0] = *reinterpret_cast<vu8 *>(address++);
-                type.bytes[1] = *reinterpret_cast<vu8 *>(address);
-                value = static_cast<u16>(type.bits32);
-            }
+            value = *reinterpret_cast<vu16 *>(address);
             return (true);
         }
         return (false);
@@ -384,7 +258,6 @@ namespace CTRPluginFramework
     bool    Process::Read8(u32 address, u8 &value)
     {
         if (CheckAddress(address, MEMPERM_READ))
-        //if ((address = PA_FROM_VA(address)) != 0)
         {
             value = *reinterpret_cast<vu8 *>(address);
             return (true);
@@ -395,7 +268,6 @@ namespace CTRPluginFramework
     bool    Process::ReadFloat(u32 address, float &value)
     {
         if (CheckAddress(address, MEMPERM_READ))
-        //if ((address = PA_FROM_VA(address)) != 0)
         {
             value = *reinterpret_cast<volatile float *>(address);
             return (true);
@@ -406,7 +278,6 @@ namespace CTRPluginFramework
     bool    Process::ReadDouble(u32 address, double& value)
     {
         if (CheckAddress(address, MEMPERM_READ))
-        //if ((address = PA_FROM_VA(address)) != 0)
         {
             value = *reinterpret_cast<volatile double *>(address);
             return (true);

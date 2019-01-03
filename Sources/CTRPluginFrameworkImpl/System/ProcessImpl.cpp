@@ -304,7 +304,7 @@ namespace CTRPluginFramework
                 return memInfo;
 
         // Not found return an empty region
-        return MemInfo{0, 0, 0, 0};
+        return ProcessImpl::InvalidRegion;
     }
 
     MemInfo     ProcessImpl::GetNextRegion(const MemInfo &region)

@@ -129,7 +129,7 @@ AR:
 	@$(TOPDIR)/sendfile.py $(ACTIONREPLAY) "ActionReplay/" "$(FTP_HOST)$(IP)" $(FTP_PORT)
 
 install:
-	@mv $(OUTPUT).3gx g:/luma/plugins/default.3gx
+	@mv $(OUTPUT).3gx d:/luma/plugins/default.3gx
 
 #---------------------------------------------------------------------------------
 

@@ -99,6 +99,7 @@ void     OnLoadCro(void)
 namespace CTRPluginFramework
 {
     void __attribute__((weak))  PatchProcess(FwkSettings& settings) {}
+    void __attribute__((weak))  DebugFromStart(void);
     void __attribute__((weak))  OnProcessExit(void) {}
     void __attribute__((weak))  OnPluginSwap(void) {}
 
@@ -306,6 +307,7 @@ namespace CTRPluginFramework
                     // This function do not return and close the thread
                     PLGLDR__Reply(event);
                 }
+                continue;
             }
 
             // Memory layout changed, update memory
@@ -375,6 +377,9 @@ namespace CTRPluginFramework
         // Reduce thread priority
         svcSetThreadPriority(threadGetCurrent()->handle, FwkSettings::Get().ThreadPriority);
 
+        // Update memory layout
+        ProcessImpl::UpdateMemRegions();
+
         // Start plugin
         main();
 
@@ -418,9 +423,22 @@ namespace CTRPluginFramework
         svcExitThread();
     }
 
+    #define HID_PAD           (REG32(0x10146000) ^ 0xFFF)
+    #define BUTTON_Y          (1 << 11)
     extern "C"
     int   __entrypoint(int arg)
     {
+        // A little debug routine to wait for debugger to connect
+        if (DebugFromStart)
+        {
+            u32 stall = 0;
+            do
+            {
+                Sleep(Milliseconds(1000));
+                stall = HID_PAD & BUTTON_Y;
+            } while (!stall);
+        }
+
         // Create event
         svcCreateEvent(&g_continueGameEvent, RESET_ONESHOT);
         // Start ctrpf's primary thread
