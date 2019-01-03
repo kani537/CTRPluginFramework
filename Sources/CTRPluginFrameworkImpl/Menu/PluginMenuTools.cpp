@@ -73,6 +73,7 @@ namespace CTRPluginFramework
 
     void    PluginMenuTools::UpdateSettings(void)
     {
+        // Settings
         if (Preferences::UseFloatingBtn) _settingsMenu[1]->AsMenuEntryImpl().Enable();
         else _settingsMenu[1]->AsMenuEntryImpl().Disable();
 
@@ -88,14 +89,15 @@ namespace CTRPluginFramework
         if (Preferences::AutoLoadFavorites) _settingsMenu[5]->AsMenuEntryImpl().Enable();
         else _settingsMenu[5]->AsMenuEntryImpl().Disable();
 
+        // Misc.
         if (Preferences::DrawTouchCursor) _miscellaneousMenu[2]->AsMenuEntryTools().Enable();
         else _miscellaneousMenu[2]->AsMenuEntryTools().Disable();
 
-        if (Preferences::ShowTopFps) _miscellaneousMenu[3]->AsMenuEntryTools().Enable();
-        else _miscellaneousMenu[3]->AsMenuEntryTools().Disable();
-
-        if (Preferences::ShowBottomFps) _miscellaneousMenu[4]->AsMenuEntryTools().Enable();
+        if (Preferences::ShowTopFps) _miscellaneousMenu[4]->AsMenuEntryTools().Enable();
         else _miscellaneousMenu[4]->AsMenuEntryTools().Disable();
+
+        if (Preferences::ShowBottomFps) _miscellaneousMenu[5]->AsMenuEntryTools().Enable();
+        else _miscellaneousMenu[5]->AsMenuEntryTools().Disable();
     }
 
     using   FsTryOpenFileType = u32(*)(u32, u16*, u32);
