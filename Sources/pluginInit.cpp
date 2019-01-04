@@ -185,7 +185,6 @@ namespace CTRPluginFramework
 
         // Init locks
         PluginMenuExecuteLoop::InitLocks();
-
         ProcessImpl::UpdateMemRegions();
 
         // Init default settings
@@ -236,6 +235,9 @@ namespace CTRPluginFramework
 
         // Patch process before it starts & let the dev init some settings
         PatchProcess(settings);
+
+        // Load settings
+        Preferences::LoadSettings();
 
         // Continue game
         svcSignalEvent(g_continueGameEvent);

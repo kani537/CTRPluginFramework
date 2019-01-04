@@ -68,7 +68,7 @@ namespace CTRPluginFramework
 
     void    OSDImpl::Update(void)
     {
-        if (Preferences::UseFloatingBtn)
+        if (Preferences::IsEnabled(Preferences::UseFloatingBtn))
         {
             FloatingBtn.Update(Touch::IsDown(), IntVector(Touch::GetPosition()));
             if (FloatingBtn())
@@ -193,6 +193,8 @@ namespace CTRPluginFramework
         if (SystemImpl::Status())
             return;
 
+        Preferences::ApplyBacklight();
+
         if (!isBottom)
         {
             if (FramesToPlay)
@@ -238,9 +240,9 @@ namespace CTRPluginFramework
             return;
         }
 
-        bool drawRocket = Preferences::UseFloatingBtn && isBottom;
-        bool drawTouch =  (Preferences::DrawTouchCursor || Preferences::DrawTouchCoord) && Touch::IsDown() && isBottom;
-        bool drawFps = (Preferences::ShowBottomFps && isBottom) || (Preferences::ShowTopFps && !isBottom);
+        bool drawRocket = isBottom && Preferences::IsEnabled(Preferences::UseFloatingBtn);
+        bool drawTouch =  isBottom && Preferences::IsEnabled(Preferences::DrawTouchCursor | Preferences::DrawTouchPosition) && Touch::IsDown();
+        bool drawFps = (Preferences::IsEnabled(Preferences::ShowBottomFps) && isBottom) || (Preferences::IsEnabled(Preferences::ShowTopFps) && !isBottom);
 
         if (!drawRocket && !drawTouch && !drawFps && !DrawSaveIcon && !MessColors
             && Callbacks.empty() && Notifications.empty())
@@ -293,13 +295,13 @@ namespace CTRPluginFramework
             {
                 IntVector touchPos(Touch::GetPosition());
 
-                if (Preferences::DrawTouchCursor)
+                if (Preferences::IsEnabled(Preferences::DrawTouchCursor))
                 {
                     int posX = touchPos.x - 2;
                     int posY = touchPos.y - 1;
                     Icon::DrawHandCursor(posX, posY);
                 }
-                if (Preferences::DrawTouchCoord)
+                if (Preferences::IsEnabled(Preferences::DrawTouchPosition))
                 {
                     std::string &&str = Utils::Format("Touch.x: %d  Touch.y: %d", touchPos.x, touchPos.y);
                     int posY = 20;

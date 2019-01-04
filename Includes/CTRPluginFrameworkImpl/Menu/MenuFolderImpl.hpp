@@ -33,6 +33,17 @@ namespace CTRPluginFramework
         void        Remove(u32 start, u32 count = 1, bool destroy = false);
         void        Clear(void);
 
+        using MenuItemIter = std::vector<MenuItem *>::iterator;
+
+        MenuItemIter    begin(void)
+        {
+            return _items.begin();
+        }
+        MenuItemIter    end(void)
+        {
+            return _items.end();
+        }
+
     private:
         friend class MenuItem;
         friend class PluginMenuImpl;

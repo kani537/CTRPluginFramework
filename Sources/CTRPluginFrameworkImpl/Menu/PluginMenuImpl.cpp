@@ -150,16 +150,16 @@ namespace CTRPluginFramework
 
         // If Start is pressed, don't auto enable the cheats
         if (Controller::IsKeyPressed(Key::Start) || Controller::IsKeyDown(Key::Start))
-            Preferences::AutoLoadCheats = false;
+            Preferences::Clear(Preferences::AutoLoadCheats);
 
         _tools->UpdateSettings();
 
         // Load favorites
-        if (Preferences::AutoLoadFavorites)
+        if (Preferences::IsEnabled(Preferences::AutoLoadFavorites))
             Preferences::LoadSavedFavorites();
 
          // Enable cheats
-        if (Preferences::AutoLoadCheats)
+        if (Preferences::IsEnabled(Preferences::AutoLoadCheats))
             Preferences::LoadSavedEnabledCheats();
 
         // Load custom hotkeys
@@ -190,7 +190,7 @@ namespace CTRPluginFramework
 
                 // If it's a KeyPressed event
                 if (event.type == Event::KeyPressed && inputClock.HasTimePassed(Milliseconds(500))
-                    && (!Preferences::UseFloatingBtn || _isOpen) && Controller::GetKeysDown() != SystemImpl::RosalinaHotkey)
+                    && (!Preferences::IsEnabled(Preferences::UseFloatingBtn) || _isOpen) && Controller::GetKeysDown() != SystemImpl::RosalinaHotkey)
                 {
                     // Check that MenuHotkeys are pressed
                     for (int i = 0; i < 16; i++)
@@ -208,7 +208,7 @@ namespace CTRPluginFramework
                 // If MenuHotkeys are pressed
                 if (_forceOpen || isHotkeysDown)
                 {
-                    if (_isOpen)
+                    if (_isOpen) ///< Close menu
                     {
                         ProcessImpl::Play(true);
                         _isOpen = false;
@@ -218,7 +218,7 @@ namespace CTRPluginFramework
                         PluginMenuExecuteLoop::Unlock();
                         PluginMenuExecuteLoop::UnlockAR();
                     }
-                    else
+                    else ///< Open menu
                     {
                         PluginMenuExecuteLoop::Lock();
                         PluginMenuExecuteLoop::LockAR();

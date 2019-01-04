@@ -175,6 +175,11 @@ namespace CTRPluginFramework
         return (_text);
     }
 
+    std::string& KeyboardImpl::GetTitle(void)
+    {
+        return _title;
+    }
+
     void    KeyboardImpl::SetError(std::string &error)
     {
         _errorMessage = true;

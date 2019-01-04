@@ -1,35 +1,28 @@
 #include "CTRPluginFramework/System/Controller.hpp"
 #include "CTRPluginFrameworkImpl/Preferences.hpp"
-#include <cmath>
-#include "ctrulib/result.h"
-#include <cstring>
 #include "CTRPluginFrameworkImpl/Menu/PluginMenuImpl.hpp"
+#include "ctrulib/result.h"
+#include <cmath>
 
 namespace CTRPluginFramework
 {
-    BMPImage    *Preferences::topBackgroundImage = nullptr;
-    BMPImage    *Preferences::bottomBackgroundImage = nullptr;
+    using LCDBacklight = Preferences::LCDBacklight;
+
+    BMPImage *  Preferences::topBackgroundImage = nullptr;
+    BMPImage *  Preferences::bottomBackgroundImage = nullptr;
+
     u32         Preferences::MenuHotkeys = static_cast<u32>(Key::Select);
-    u32         Preferences::ScreenshotKeys = static_cast<u32>(Key::Start);
-    bool        Preferences::InjectBOnMenuClose = false;
-    bool        Preferences::DrawTouchCursor = false;
-    bool        Preferences::DrawTouchCoord = false;
-    bool        Preferences::EcoMemoryMode = false;
-    bool        Preferences::DisplayFilesLoading = false;
-    bool        Preferences::AutoSaveCheats = false;
-    bool        Preferences::AutoSaveFavorites = false;
-    bool        Preferences::AutoLoadCheats = false;
-    bool        Preferences::AutoLoadFavorites = false;
-    bool        Preferences::_cheatsAlreadyLoaded = false;
-    bool        Preferences::_favoritesAlreadyLoaded = false;
-    bool        Preferences::_bmpCanBeLoaded = true;
-    bool        Preferences::ShowBottomFps = false;
-    bool        Preferences::ShowTopFps = false;
-    bool        Preferences::UseFloatingBtn = false;
+    u64         Preferences::Flags = 0;
+    LCDBacklight Preferences::Backlights[2];
     FwkSettings Preferences::Settings;
+
     std::string Preferences::CheatsFile;
     std::string Preferences::ScreenshotPath;
     std::string Preferences::ScreenshotPrefix;
+
+    bool        Preferences::_cheatsAlreadyLoaded = false;
+    bool        Preferences::_favoritesAlreadyLoaded = false;
+    bool        Preferences::_bmpCanBeLoaded = true;
 
     static const char *g_signature = "CTRPF\0\0";
 
@@ -111,7 +104,6 @@ namespace CTRPluginFramework
 
     int     Preferences::OpenConfigFile(File &settings, Header &header)
     {
-
         if (File::Open(settings, "CTRPFData.bin") == 0 && settings.GetSize() > 0)
         {
              // Check version
@@ -120,30 +112,15 @@ namespace CTRPluginFramework
             if (settings.Read(&header, sizeof(u32) * 6)) return (-2);
 
             // Check file
-            if (header.size != settings.GetSize() || memcmp(g_signature, header.sig, 8))
-                return (-1);
+            if (header.size != settings.GetSize()
+               || !std::equal(g_signature, g_signature + 8, header.sig))
+                return -1;
 
             if (header.version != SETTINGS_VERSION)
             {
-                ProcessImpl::Pause(false);
-
-                MessageBox msgBox(Color::Yellow << "Warning\n\n" << ResetColor()
-                    << "CTRPFData.bin version mismatch.\n"
-                    << "Do you want to save it as CTRPFData.bin.bak to retrieve some data ?", DialogType::DialogYesNo);
-
-                if (msgBox())
-                {
-                    settings.Close();
-                    if (File::Rename("CTRPFData.bin", "CTRPFData.bin.bak") == File::OPResult::SUCCESS)
-                    {
-                        MessageBox("Operation succeeded")();
-                    }
-                    else
-                        MessageBox("Operation failed")();
-                }
-
-                ProcessImpl::Play(false);
-                return (-1);
+                OSD::Notify(Color::Orange << "Config file version mismatch!");
+                OSD::Notify("Default settings applied");
+                return -1;
             }
 
             // Rewind file
@@ -151,10 +128,10 @@ namespace CTRPluginFramework
 
             res = settings.Read(&header, sizeof(Header));
 
-            return (res);
+            return res;
         }
 
-        return (-1);
+        return -1;
     }
 
     void    Preferences::LoadSettings(void)
@@ -165,17 +142,11 @@ namespace CTRPluginFramework
         if (OpenConfigFile(settings, header) == 0)
         {
             MenuHotkeys = header.hotkeys;
-            AutoLoadCheats = (header.flags & (u64)SettingsFlags::AutoLoadCheats) != 0;
-            AutoLoadFavorites = (header.flags & (u64)SettingsFlags::AutoLoadFavorites) != 0;
-            AutoSaveCheats = (header.flags & (u64)SettingsFlags::AutoSaveCheats) != 0;
-            AutoSaveFavorites = (header.flags & (u64)SettingsFlags::AutoSaveFavorites) != 0;
-            DrawTouchCursor = (header.flags & (u64)SettingsFlags::DrawTouchCursor) != 0;
-            ShowBottomFps = (header.flags & (u64)SettingsFlags::ShowBottomFps) != 0;
-            ShowTopFps = (header.flags & (u64)SettingsFlags::ShowTopFps) != 0;
-            UseFloatingBtn = (header.flags & (u64)SettingsFlags::UseFloatingButton) != 0;
+            Flags = header.flags;
+            *reinterpret_cast<u64 *>(Backlights) = header.lcdbacklights;
         }
 
-        // Check that hotkeys aren't 0
+        // Check for hotkeys to be valid
         if (MenuHotkeys == 0)
             MenuHotkeys = Key::Select;
     }
@@ -243,7 +214,7 @@ namespace CTRPluginFramework
                 source = "/luma/plugins/ActionReplay/";
 
             // Try to load top background
-            if (!EcoMemoryMode && File::Exists(source + "TopBackground.bmp"))
+            if (File::Exists(source + "TopBackground.bmp"))
             {
                 BMPImage *image = new BMPImage(source + "TopBackground.bmp");
 
@@ -259,7 +230,7 @@ namespace CTRPluginFramework
             }
 
             // Try to load bottom background
-            if (!EcoMemoryMode && File::Exists(source + "BottomBackground.bmp"))
+            if (File::Exists(source + "BottomBackground.bmp"))
             {
                 BMPImage *image = new BMPImage(source + "BottomBackground.bmp");
 
@@ -314,26 +285,21 @@ namespace CTRPluginFramework
         int     mode = File::READ | File::WRITE | File::CREATE | File::TRUNCATE | File::SYNC;
         Header  header = { 0 };
 
-        memcpy(header.sig, g_signature, 8);
+        std::copy(g_signature, g_signature + 8, header.sig);
         header.version = SETTINGS_VERSION;
-
-        if (AutoSaveCheats) header.flags |= (u64)SettingsFlags::AutoSaveCheats;
-        if (AutoLoadCheats) header.flags |= (u64)SettingsFlags::AutoLoadCheats;
-        if (AutoSaveFavorites) header.flags |= (u64)SettingsFlags::AutoSaveFavorites;
-        if (AutoLoadFavorites) header.flags |= (u64)SettingsFlags::AutoLoadFavorites;
-        if (DrawTouchCursor) header.flags |= (u64)SettingsFlags::DrawTouchCursor;
-        if (ShowBottomFps) header.flags |= (u64)SettingsFlags::ShowBottomFps;
-        if (ShowTopFps) header.flags |= (u64)SettingsFlags::ShowTopFps;
-        if (UseFloatingBtn) header.flags |= (u64)SettingsFlags::UseFloatingButton;
-
         header.hotkeys = MenuHotkeys;
+        header.flags = Flags;
+        header.lcdbacklights = *reinterpret_cast<u64 *>(Backlights);
 
         if (File::Open(settings, "CTRPFData.bin", mode) == 0)
         {
             if (settings.Write(&header, sizeof(Header)) != 0) goto error;
 
-            if (AutoSaveCheats) PluginMenuExecuteLoop::WriteEnabledCheatsToFile(header, settings);///PluginMenuImpl::WriteEnabledCheatsToFile(header, settings);
-            if (AutoSaveFavorites) PluginMenuImpl::WriteFavoritesToFile(header, settings);
+            if (IsEnabled(AutoSaveCheats))
+                PluginMenuExecuteLoop::WriteEnabledCheatsToFile(header, settings);
+            if (IsEnabled(AutoSaveFavorites))
+                PluginMenuImpl::WriteFavoritesToFile(header, settings);
+
             PluginMenuImpl::WriteHotkeysToFile(header, settings);
 
             header.size = settings.Tell();
@@ -346,7 +312,14 @@ namespace CTRPluginFramework
 
         PluginMenuActionReplay::SaveCodes();
         OSDImpl::DrawSaveIcon = false;
-        return;
+    }
+
+    void    Preferences::ApplyBacklight(void)
+    {
+        if (Backlights[0].isEnabled && Backlights[0].value > 0)
+            ScreenImpl::Top->SetBacklight(Backlights[0].value);
+        if (Backlights[1].isEnabled && Backlights[1].value > 0)
+            ScreenImpl::Bottom->SetBacklight(Backlights[1].value);
     }
 
     void    Preferences::Initialize(void)

@@ -328,16 +328,11 @@ namespace CTRPluginFramework
                         MenuEntryTools *e = reinterpret_cast<MenuEntryTools *>(item);
 
                         if (e->UseCheckBox)
-                        {
                             e->TriggerState();
-                            if (e->Func != nullptr)
-                                e->Func();
-                            if (e->FuncArg != nullptr)
-                                e->FuncArg(e);
-                        }
-
-                        else if (e->Func != nullptr)
+                        if (e->Func != nullptr)
                             e->Func();
+                        if (e->FuncArg != nullptr)
+                            e->FuncArg(e);
 
                         return (MenuEvent::EntrySelected);
                     }

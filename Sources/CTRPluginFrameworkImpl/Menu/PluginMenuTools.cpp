@@ -28,7 +28,7 @@
 #if ALPHA
 #define VersionStr "CTRPluginFramework Alpha V.0.4.10"
 #else
-#define VersionStr "CTRPluginFramework Beta V.0.5.1"
+#define VersionStr "CTRPluginFramework Beta V.0.5.2"
 #endif
 
 namespace CTRPluginFramework
@@ -73,31 +73,46 @@ namespace CTRPluginFramework
 
     void    PluginMenuTools::UpdateSettings(void)
     {
+        using MenuItemIter =  MenuFolderImpl::MenuItemIter;
+
         // Settings
-        if (Preferences::UseFloatingBtn) _settingsMenu[1]->AsMenuEntryImpl().Enable();
-        else _settingsMenu[1]->AsMenuEntryImpl().Disable();
+        auto item = _settingsMenu.begin() + 2;
 
-        if (Preferences::AutoSaveCheats) _settingsMenu[2]->AsMenuEntryImpl().Enable();
-        else _settingsMenu[2]->AsMenuEntryImpl().Disable();
+        if (Preferences::IsEnabled(Preferences::UseFloatingBtn)) (*item++)->AsMenuEntryImpl().Enable();
+        else (*item++)->AsMenuEntryImpl().Disable();
 
-        if (Preferences::AutoSaveFavorites) _settingsMenu[3]->AsMenuEntryImpl().Enable();
-        else _settingsMenu[3]->AsMenuEntryImpl().Disable();
+        if (Preferences::IsEnabled(Preferences::AutoSaveCheats)) (*item++)->AsMenuEntryImpl().Enable();
+        else (*item++)->AsMenuEntryImpl().Disable();
 
-        if (Preferences::AutoLoadCheats) _settingsMenu[4]->AsMenuEntryImpl().Enable();
-        else _settingsMenu[4]->AsMenuEntryImpl().Disable();
+        if (Preferences::IsEnabled(Preferences::AutoSaveFavorites)) (*item++)->AsMenuEntryImpl().Enable();
+        else (*item++)->AsMenuEntryImpl().Disable();
 
-        if (Preferences::AutoLoadFavorites) _settingsMenu[5]->AsMenuEntryImpl().Enable();
-        else _settingsMenu[5]->AsMenuEntryImpl().Disable();
+        if (Preferences::IsEnabled(Preferences::AutoLoadCheats)) (*item++)->AsMenuEntryImpl().Enable();
+        else (*item++)->AsMenuEntryImpl().Disable();
+
+        if (Preferences::IsEnabled(Preferences::AutoLoadFavorites)) (*item)->AsMenuEntryImpl().Enable();
+        else (*item)->AsMenuEntryImpl().Disable();
 
         // Misc.
-        if (Preferences::DrawTouchCursor) _miscellaneousMenu[2]->AsMenuEntryTools().Enable();
-        else _miscellaneousMenu[2]->AsMenuEntryTools().Disable();
+        item = _miscellaneousMenu.begin();
 
-        if (Preferences::ShowTopFps) _miscellaneousMenu[4]->AsMenuEntryTools().Enable();
-        else _miscellaneousMenu[4]->AsMenuEntryTools().Disable();
+        if (Preferences::IsEnabled(Preferences::DisplayLoadedFiles)) (*item++)->AsMenuEntryTools().Enable();
+        else (*item++)->AsMenuEntryTools().Disable();
 
-        if (Preferences::ShowBottomFps) _miscellaneousMenu[5]->AsMenuEntryTools().Enable();
-        else _miscellaneousMenu[5]->AsMenuEntryTools().Disable();
+        if (Preferences::IsEnabled(Preferences::WriteLoadedFiles)) (*item++)->AsMenuEntryTools().Enable();
+        else (*item++)->AsMenuEntryTools().Disable();
+
+        if (Preferences::IsEnabled(Preferences::DrawTouchCursor)) (*item++)->AsMenuEntryTools().Enable();
+        else (*item++)->AsMenuEntryTools().Disable();
+
+        if (Preferences::IsEnabled(Preferences::DrawTouchPosition)) (*item++)->AsMenuEntryTools().Enable();
+        else (*item++)->AsMenuEntryTools().Disable();
+
+        if (Preferences::IsEnabled(Preferences::ShowTopFps)) (*item++)->AsMenuEntryTools().Enable();
+        else (*item++)->AsMenuEntryTools().Disable();
+
+        if (Preferences::IsEnabled(Preferences::ShowBottomFps)) (*item)->AsMenuEntryTools().Enable();
+        else (*item)->AsMenuEntryTools().Disable();
     }
 
     using   FsTryOpenFileType = u32(*)(u32, u16*, u32);
@@ -184,7 +199,7 @@ namespace CTRPluginFramework
         {
             OSD::Notify("Error: couldn't find OpenFile function");
             // Disable the option
-            Preferences::DisplayFilesLoading = false;
+            Preferences::Clear(Preferences::DisplayLoadedFiles);
         }
 
         return isInitialized;
@@ -242,7 +257,7 @@ namespace CTRPluginFramework
                 entry->Disable(); ///< Hook failed
 
             // Enable the hook
-            Preferences::DisplayFilesLoading = true;
+            Preferences::Set(Preferences::DisplayLoadedFiles);
             g_HookMode |= OSD;
             g_FsTryOpenFileHook.Enable();
             return;
@@ -250,7 +265,7 @@ namespace CTRPluginFramework
         if (!entry->IsActivated())
         {
             // Disable OSD
-            Preferences::DisplayFilesLoading = false;
+            Preferences::Clear(Preferences::DisplayLoadedFiles);
             g_HookMode &= ~OSD;
 
             // If there's no task to do on the hook, disable it
@@ -320,7 +335,8 @@ namespace CTRPluginFramework
         if (ConfirmBeforeProceed("shutdown"))
         {
             srvPublishToSubscriber(0x203, 0);
-            Sleep(Seconds(10));
+            ProcessImpl::UnlockGameThreads();
+            svcExitThread();
         }
     }
 
@@ -329,7 +345,7 @@ namespace CTRPluginFramework
         if (ConfirmBeforeProceed("reboot"))
         {
             svcKernelSetState(7);
-            Sleep(Seconds(10));
+            svcExitThread();
         }
     }
 
@@ -453,6 +469,68 @@ namespace CTRPluginFramework
             Screenshot::IsEnabled = !Screenshot::IsEnabled;
     }
 
+    static void EditBacklight(MenuEntryTools *entry)
+    {
+        using LCDBacklight = Preferences::LCDBacklight;
+
+        int             userchoice;
+        u16             backlight;
+        ScreenImpl *    screen;
+        Keyboard        kb;
+        std::string     triggerTop;
+        std::string     triggerBottom;
+        std::string&    message = kb.GetMessage();
+
+        kb.DisplayTopScreen = true;
+        while (true)
+        {
+            triggerTop = Preferences::Backlights[0].isEnabled ?
+                            Color::Red << "Disable for Top"
+                          : Color::LimeGreen << "Enable for Top";
+            triggerBottom = Preferences::Backlights[1].isEnabled ?
+                            Color::Red << "Disable for Bottom"
+                          : Color::LimeGreen << "Enable for Bottom";
+
+            message = "Backlight Setter\n\n" \
+                      " Select which screen to configure\n\n" \
+                      "  - Top screen: " + std::to_string(Preferences::Backlights[0].value) + ", " + (Preferences::Backlights[0].isEnabled ?
+                            (std::string)Color::LimeGreen + "Enabled\n"
+                          : (std::string)Color::Red + "Disabled\n") + ResetColor();
+
+            message += "  - Bottom screen: " + std::to_string(Preferences::Backlights[1].value) + ", " + (Preferences::Backlights[1].isEnabled ?
+                            (std::string)Color::LimeGreen + "Enabled\n"
+                          : (std::string)Color::Red + "Disabled\n") + ResetColor();
+            message += "\n\n Remember to put the 'Auto-Brightness'\n on OFF in the menu Home.";
+
+            kb.Populate({triggerTop, "Top screen", triggerBottom, "Bottom screen"});
+            userchoice = kb.Open();
+            if (userchoice == -1)
+                return;
+
+            if (userchoice == 0 || userchoice == 2)
+            {
+                LCDBacklight *  backlights = Preferences::Backlights;
+
+                backlights += userchoice == 2;
+                backlights->isEnabled = !backlights->isEnabled;
+                continue;
+            }
+
+            screen = userchoice == 3 ? ScreenImpl::Bottom : ScreenImpl::Top;
+            backlight = screen->GetBacklight();
+            kb.IsHexadecimal(false);
+            message = "Backlight Setter\n\nSet a value between 2 - 1023\n\nCurrent value: ";
+            message += Color::LimeGreen << backlight;
+
+            if (kb.Open(backlight, backlight) != -1)
+            {
+                backlight = std::max(backlight, static_cast<u16>(2));
+                backlight = std::min(backlight, static_cast<u16>(0x3FF));
+                Preferences::Backlights[userchoice == 3].value = backlight;
+            }
+        }
+    }
+
     void    PluginMenuTools::InitMenu(void)
     {
         // Main menu
@@ -475,21 +553,21 @@ namespace CTRPluginFramework
         // Miscellaneous menu
         _miscellaneousMenu.Append(new MenuEntryTools("Display loaded files", _DisplayLoadedFiles, true));
         _miscellaneousMenu.Append(new MenuEntryTools("Write loaded files to file", _WriteLoadedFiles, true));
-        _miscellaneousMenu.Append(new MenuEntryTools("Display touch cursor", [] { Preferences::DrawTouchCursor = !Preferences::DrawTouchCursor; }, true, Preferences::DrawTouchCursor));
-        _miscellaneousMenu.Append(new MenuEntryTools("Display touch coord", []{ Preferences::DrawTouchCoord = !Preferences::DrawTouchCoord; }, true, false));
-        _miscellaneousMenu.Append(new MenuEntryTools("Display top screen's fps", [] {Preferences::ShowTopFps = !Preferences::ShowTopFps; }, true, Preferences::ShowTopFps));
-        _miscellaneousMenu.Append(new MenuEntryTools("Display bottom screen's fps", [] {Preferences::ShowBottomFps = !Preferences::ShowBottomFps; }, true, Preferences::ShowBottomFps));
+        _miscellaneousMenu.Append(new MenuEntryTools("Display touch cursor", [] { Preferences::Toggle(Preferences::DrawTouchCursor); }, true, Preferences::IsEnabled(Preferences::DrawTouchCursor)));
+        _miscellaneousMenu.Append(new MenuEntryTools("Display touch coordinates", []{ Preferences::Toggle(Preferences::DrawTouchPosition); }, true, Preferences::IsEnabled(Preferences::DrawTouchPosition)));
+        _miscellaneousMenu.Append(new MenuEntryTools("Display top screen's fps", [] { Preferences::Toggle(Preferences::ShowTopFps); }, true, Preferences::IsEnabled(Preferences::ShowTopFps)));
+        _miscellaneousMenu.Append(new MenuEntryTools("Display bottom screen's fps", [] { Preferences::Toggle(Preferences::ShowBottomFps); }, true, Preferences::IsEnabled(Preferences::ShowBottomFps)));
 
         // Settings menu
         _settingsMenu.Append(new MenuEntryTools("Change menu hotkeys", MenuHotkeyModifier, Icon::DrawGameController));
-        _settingsMenu.Append(new MenuEntryTools("Use floating button", [] { Preferences::UseFloatingBtn = !Preferences::UseFloatingBtn; }, true, Preferences::UseFloatingBtn));
-        _settingsMenu.Append(new MenuEntryTools("Auto save enabled cheats", [] { Preferences::AutoSaveCheats = !Preferences::AutoSaveCheats; }, true, Preferences::AutoSaveCheats));
-        _settingsMenu.Append(new MenuEntryTools("Auto save favorites", [] { Preferences::AutoSaveFavorites = !Preferences::AutoSaveFavorites; }, true, Preferences::AutoSaveFavorites));
-        _settingsMenu.Append(new MenuEntryTools("Auto load enabled cheats at starts", [] { Preferences::AutoLoadCheats = !Preferences::AutoLoadCheats; }, true, Preferences::AutoLoadCheats));
-        _settingsMenu.Append(new MenuEntryTools("Auto load favorites at starts", [] { Preferences::AutoLoadFavorites = !Preferences::AutoLoadFavorites; }, true, Preferences::AutoSaveFavorites));
+        _settingsMenu.Append(new MenuEntryTools("Set backlight", EditBacklight, false, false));
+        _settingsMenu.Append(new MenuEntryTools("Use floating button", [] { Preferences::Toggle(Preferences::UseFloatingBtn); }, true, Preferences::IsEnabled(Preferences::UseFloatingBtn)));
+        _settingsMenu.Append(new MenuEntryTools("Auto save enabled cheats", [] { Preferences::Toggle(Preferences::AutoSaveCheats); }, true, Preferences::IsEnabled(Preferences::AutoSaveCheats)));
+        _settingsMenu.Append(new MenuEntryTools("Auto save favorites", [] { Preferences::Toggle(Preferences::AutoSaveFavorites); }, true, Preferences::IsEnabled(Preferences::AutoSaveFavorites)));
+        _settingsMenu.Append(new MenuEntryTools("Auto load enabled cheats at starts", [] { Preferences::Toggle(Preferences::AutoLoadCheats); }, true, Preferences::IsEnabled(Preferences::AutoLoadCheats)));
+        _settingsMenu.Append(new MenuEntryTools("Auto load favorites at starts", [] { Preferences::Toggle(Preferences::AutoLoadFavorites); }, true, Preferences::IsEnabled(Preferences::AutoSaveFavorites)));
         _settingsMenu.Append(new MenuEntryTools("Load enabled cheats now", [] { Preferences::LoadSavedEnabledCheats(); }, nullptr));
         _settingsMenu.Append(new MenuEntryTools("Load favorites now", [] { Preferences::LoadSavedFavorites(); }, nullptr));
-
     }
 
     bool    PluginMenuTools::operator()(EventList &eventList, Time &delta)
@@ -500,7 +578,7 @@ namespace CTRPluginFramework
                 g_mode = NORMAL;
             return (false);
         }
-
+        u32 i = Preferences::IsEnabled(Preferences::UseFloatingBtn);
         if (g_mode == ABOUT)
         {
             if (!_abouttb.IsOpen())
@@ -525,9 +603,9 @@ namespace CTRPluginFramework
 
         static Task task([](void *arg) -> s32
         {
-            ((PluginMenuTools *)arg)->_RenderTop();
+            static_cast<PluginMenuTools *>(arg)->_RenderTop();
             return 0;
-        }, (void *)this, Task::AppCores);
+        }, static_cast<void *>(this), Task::AppCores);
 
         // Render Top
         //_RenderTop();

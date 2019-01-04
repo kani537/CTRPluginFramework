@@ -340,12 +340,12 @@ namespace CTRPluginFramework
     ** Game Controller
     ** 15px * 15px
     **************/
-    /*int     Icon::DrawGameController(int posX, int posY)
+    int     Icon::DrawGameController(int posX, int posY)
     {
         return (DrawImg(GameController15, posX, posY, 15, 15));
-    }*/
+    }
 
-    int Icon::DrawGameController(int posX, int posY, bool filled)
+    int Icon::DrawGameController25(int posX, int posY, bool filled)
     {
         u8 *img = filled ? GameControllerFilled25 : GameController25;
         return (DrawImg(img, posX, posY, 25, 25));

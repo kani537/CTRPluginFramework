@@ -1,5 +1,5 @@
 #include "CTRPluginFrameworkImpl/Menu/MenuEntryTools.hpp"
-
+#include "CTRPluginFrameworkImpl/Menu/PluginMenuExecuteLoop.hpp"
 namespace CTRPluginFramework
 {
     MenuEntryTools::MenuEntryTools(const std::string& text, FuncPointer func, IconCallback icon, void *arg) :
@@ -45,6 +45,31 @@ namespace CTRPluginFramework
         _type = EntryTools;
         if (isEnabled)
             _TriggerState();
+    }
+
+    void MenuEntryTools::Enable(void)
+    {
+        if (IsActivated())
+            return;
+
+        // Change the state
+        _TriggerState();
+
+        // If the entry has a valid funcpointer
+        if (GameFunc != nullptr)
+            PluginMenuExecuteLoop::Add(reinterpret_cast<MenuEntryImpl *>(this));
+        if (Func != nullptr)
+            Func();
+        if (FuncArg != nullptr)
+            FuncArg(this);
+    }
+
+    void MenuEntryTools::Disable(void)
+    {
+        _flags.state = 0;
+        _flags.justChanged = 1;
+        if (FuncArg != nullptr)
+            FuncArg(this);
     }
 
     void    MenuEntryTools::TriggerState(void)

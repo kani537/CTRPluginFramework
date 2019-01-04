@@ -45,7 +45,8 @@ namespace CTRPluginFramework
         u32                         Acquire(void);
         void                        Acquire(u32 left, u32 right, u32 stride, u32 format, bool backup = false);
         void                        SwapBuffer(bool flush = false, bool copy = false);
-
+        u32                         GetBacklight(void);
+        void                        SetBacklight(u32 value);
         GSPGPU_FramebufferFormats   GetFormat(void);
         u16                         GetWidth(void);
         u16                         GetHeight(void);
@@ -79,6 +80,7 @@ namespace CTRPluginFramework
         u32                         _LCDSetup;  ///< Address of this screen LCD configuration
         u32                         _FillColor; ///< Address of this screen fill color register
         u32                        *_currentBufferReg; ///< Addres of this screen current buffer register
+        u32                         _backlightOffset;
         u32                         _leftFramebuffers[2];
         u32                         _rightFramebuffers[2];
         u32                         _paFramebuffers[2];

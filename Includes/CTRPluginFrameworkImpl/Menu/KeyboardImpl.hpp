@@ -42,6 +42,7 @@ namespace CTRPluginFramework
         void        CanChangeLayout(bool canChange);
         std::string &GetInput(void);
         std::string &GetMessage(void);
+        std::string &GetTitle(void);
         void        SetError(std::string &error);
 
         void        SetConvertCallback(ConvertCallback callback);
@@ -55,6 +56,7 @@ namespace CTRPluginFramework
         bool        operator()(int &out);
 
         bool        DisplayTopScreen;
+
     private:
         friend class HexEditor;
         friend class ARCodeEditor;
@@ -84,6 +86,7 @@ namespace CTRPluginFramework
 
         Keyboard                *_owner{nullptr};
 
+        std::string             _title;
         std::string             _text;
         std::string             _error;
         std::string             _userInput;

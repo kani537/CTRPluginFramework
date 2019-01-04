@@ -7,6 +7,8 @@
 #include "ctrulib/allocator/vram.h"
 #include "CTRPluginFrameworkImpl/Preferences.hpp"
 #include "csvc.h"
+#include "ctrulib/ipc.h"
+#include "ctrulib/srv.h"
 
 namespace CTRPluginFramework
 {
@@ -65,6 +67,7 @@ namespace CTRPluginFramework
         _LCDSetup(lcdSetupInfo),
         _FillColor(fillColorAddress),
         _currentBufferReg((u32 *)(lcdSetupInfo + Select)),
+        _backlightOffset{isTopScreen ? 0x40 : 0x840},
         _leftFramebuffers{},
         _rightFramebuffers{},
         _backupFramebuffer{ nullptr },
@@ -534,6 +537,38 @@ namespace CTRPluginFramework
                 gspWaitForVBlank();
             Copy();
         }
+    }
+
+    u32     ScreenImpl::GetBacklight(void)
+    {
+        return REG32(0x10202200 + _backlightOffset);
+    }
+
+
+    static Result GSPLCD_SetBrightnessRaw(u32 screen, u32 brightness)
+    {
+	    u32 *cmdbuf = getThreadCommandBuffer();
+        Handle gspLcdHandle;
+        Result res;
+
+        if (R_FAILED((res = srvGetServiceHandle(&gspLcdHandle, "gsp::Lcd"))))
+            return res;
+
+	    cmdbuf[0] = IPC_MakeHeader(0x0A,2,0); // 0xA0080
+	    cmdbuf[1] = screen;
+	    cmdbuf[2] = brightness;
+
+	    if (R_SUCCEEDED(res = svcSendSyncRequest(gspLcdHandle)))
+            res = cmdbuf[1];
+
+        svcCloseHandle(gspLcdHandle);
+	    return res;
+    }
+
+    void    ScreenImpl::SetBacklight(u32 value)
+    {
+        REG32(0x10202200 + _backlightOffset) = value;
+        //GSPLCD_SetBrightnessRaw(2 - IsTopScreen(), value);
     }
 
     GSPGPU_FramebufferFormats   ScreenImpl::GetFormat(void)

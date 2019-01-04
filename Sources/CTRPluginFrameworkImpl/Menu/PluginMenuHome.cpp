@@ -51,7 +51,7 @@ namespace CTRPluginFramework
 
        // _closeBtn(*this, nullptr, IntRect(275, 24, 20, 20), Icon::DrawClose),
         _keyboardBtn(Button::Icon, IntRect(130, 30, 25, 25), Icon::DrawKeyboard),
-        _controllerBtn(Button::Icon, IntRect(170, 30, 25, 25), Icon::DrawGameController),
+        _controllerBtn(Button::Icon, IntRect(170, 30, 25, 25), Icon::DrawGameController25),
         _noteTB("", "", IntRect(40, 30, 320, 180))
     {
         _root = _folder = new MenuFolderImpl(name);

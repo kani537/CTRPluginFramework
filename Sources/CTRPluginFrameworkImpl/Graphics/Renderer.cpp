@@ -43,6 +43,8 @@ namespace CTRPluginFramework
         static Clock    fpsCounter;
 #endif
 
+        Preferences::ApplyBacklight();
+
         bool isTouchDown = Touch::IsDown();
         IntVector touchPos(Touch::GetPosition());
 

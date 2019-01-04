@@ -207,7 +207,7 @@ exit:
         MessageBox("Screen fmt", Utils::Format("Top: %d\nBottom: %d", fmt2, fmt))();
     }
 
-    void    DebugFromStart(void){}
+    //void    DebugFromStart(void){}
 
     int     main(void)
     {
@@ -220,7 +220,15 @@ exit:
         {
             Sleep(Milliseconds(1));
         };*/
+        menu += new MenuEntry("Backlight stuff", nullptr,
+            [](MenuEntry *entry)
+            {
+                u32 backlight = ScreenImpl::Top->GetBacklight();
+                Keyboard kb(std::string("Current value :") << backlight);
 
+                kb.Open(backlight);
+                ScreenImpl::Top->SetBacklight(backlight);
+            });
         //menu += new MenuEntry("Check screen fmt", nullptr, CheckScreenFormat);
         // Launch menu and mainloop
         int ret = menu.Run();
