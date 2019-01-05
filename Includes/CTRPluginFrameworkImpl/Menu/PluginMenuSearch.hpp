@@ -38,18 +38,18 @@ namespace CTRPluginFramework
         void    _undoBtn_OnClick(void);
         void    _cancelBtn_OnClick(void);
 
-        void    _ShowProgressWindow(void) const;
+        static s32     _ShowProgressWindow(void *arg);
 
         // Members
-        std::vector<Region>                 _regionsList;
-        std::list<Search *>                 _searchHistory;
+        std::vector<Region>                 _regionsList{};
+        std::list<Search *>                 _searchHistory{};
         Search                              *_currentSearch;
         HexEditor                           &_hexEditor;
+        Task                    _progressTask{_ShowProgressWindow, nullptr, Task::AppCores};
 
         bool                                _inSearch;
         bool                                _inEditor;
         bool                                _firstRegionInit;
-        bool                                _waitForUser;
 		bool								_hexInput;
         int                                 _step;
 

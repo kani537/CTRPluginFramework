@@ -27,7 +27,6 @@ namespace CTRPluginFramework
         _inSearch(false),
         _firstRegionInit(false),
         _step(0),
-        _waitForUser(false),
         _hexInput(false),
         _inEditor(false),
         _hexBtn(Button::Toggle, "Hex", IntRect(110, 145, 38, 15))
@@ -107,23 +106,17 @@ namespace CTRPluginFramework
         // Update
         _Update(delta);
 
-        // Render Top
-        _RenderTop();
-
-        // Render Bottom
-        _RenderBottom();
-
         // Do search
         if (_inSearch)
         {
             if (_cancelBtn())
-                return (false);
+                _cancelBtn_OnClick();
 
             bool finish = _currentSearch->ExecuteSearch();
             _inSearch = !finish;
             if (finish)
             {
-                _waitForUser = true;
+                //_waitForUser = true;
                 _compareType.IsEnabled = true;
                 // If we just finished first search
                 if (_step == 1)
@@ -131,15 +124,25 @@ namespace CTRPluginFramework
 
                 // Update hits list
                 _searchMenu.Update();
-            }
+                _progressTask.Wait();
+
+                _cancelBtn.Disable();
+                _resetBtn.Enable();
+                if (_searchHistory.size())
+                    _undoBtn.Enable();
+                }
             return (false);
         }
 
-        if (_waitForUser)
-            return (false);
+        // Render Top
+        _RenderTop();
+
+        // Render Bottom
+        _RenderBottom();
+
+        Renderer::EndFrame();
 
         // Check buttons
-
         if (Window::BottomWindow.MustClose())
             return (true);
 
@@ -327,15 +330,6 @@ namespace CTRPluginFramework
     *****************/
     void    PluginMenuSearch::_ProcessEvent(Event &event)
     {
-        // Close result window
-        if (_waitForUser && event.type == Event::KeyDown && event.key.code == Key::A)
-        {
-            _waitForUser = false;
-            _cancelBtn.Disable();
-            _resetBtn.Enable();
-            if (_searchHistory.size())
-                _undoBtn.Enable();
-        }
     }
 
     /*
@@ -352,11 +346,8 @@ namespace CTRPluginFramework
         // Enable renderer
         Renderer::SetTarget(TOP);
 
-        if (_inSearch || _waitForUser)
-        {
-            _ShowProgressWindow();
+        if (_inSearch)
             return;
-        }
 
         Window::TopWindow.Draw("Search");
         _searchMenu.Draw();
@@ -410,27 +401,6 @@ namespace CTRPluginFramework
 
         // Draw UIControls
         _uiContainer.Draw();
-
-        /*
-        // Draw ComboBoxes
-        _memoryRegions.Draw();
-        _searchSize.Draw();
-        _searchType.Draw();
-        _compareType.Draw();
-
-        // Draw NumericTextBoxes
-        _valueTextBox.Draw();
-        _startRangeTextBox.Draw();
-        _endRangeTextBox.Draw();
-
-
-        // Draw buttons
-        //_closeBtn.Draw();
-        _searchBtn.Draw();
-        _cancelBtn.Draw();
-        _undoBtn.Draw();
-        _resetBtn.Draw();
-		_hexBtn.Draw();*/
     }
 
     /*
@@ -438,9 +408,6 @@ namespace CTRPluginFramework
     ************/
     void    PluginMenuSearch::_Update(Time delta)
     {
-        if (_waitForUser)
-            return;
-
         /*
         ** Buttons
         *************/
@@ -606,22 +573,13 @@ namespace CTRPluginFramework
         _inSearch = true;
 
         _step++;
+
+        _progressTask.Start(this);
     }
 
     void    PluginMenuSearch::_cancelBtn_OnClick(void)
     {
             _currentSearch->Cancel();
-            _inSearch = false;
-            _waitForUser = true;
-            _compareType.IsEnabled = true;
-            _cancelBtn.Disable();
-
-            // If we canceled first search
-            if (_step == 1)
-                _PopulateSearchType(false);
-
-            // Update hits list
-            _searchMenu.Update();
     }
 
     void    PluginMenuSearch::_resetBtn_OnClick(void)
@@ -699,7 +657,7 @@ namespace CTRPluginFramework
         _searchMenu.Update();
     }
 
-    void    PluginMenuSearch::_ShowProgressWindow(void) const
+    s32    PluginMenuSearch::_ShowProgressWindow(void *arg)
     {
         const Color    &black = Color::Black;
         const Color    &blank = Color::White;
@@ -710,63 +668,87 @@ namespace CTRPluginFramework
         const Color    &textcolor = Preferences::Settings.MainTextColor;
         static IntRect  background(125, 80, 150, 70);
         static IntRect  background2(125, 80, 150, 85);
-        static ProcessingLogo waitLogo;
 
-        Renderer::SetTarget(TOP);
+        char            buf[100] = { 0 };
+        float           percent = 138.f / 100.f;
+        PluginMenuSearch *_this = reinterpret_cast<PluginMenuSearch *>(arg);
+        Search        * currentSearch = _this->_currentSearch;
+        IntRect         progBarBorder = IntRect(130, 90 + 26, 140, 15);
+        IntRect         progBarFill = IntRect(131, 90 + 27, 138, 13);
+        ProcessingLogo  waitLogo;
 
-        // Draw "window" background
-        Renderer::DrawRect2(_inSearch ? background : background2, black, dimGrey);
-
-        int posY = 90;
-
-        // Draw logobackground
-       // Renderer::DrawSysString("\uE021", 192, posY, 300, silver); //Top
-       // posY = 85;
-       // Renderer::DrawSysString("\uE025", 192, posY, 300, silver); //Bottom
-       // posY = 85;
-
-        // Draw logo phase
-        if (_inSearch)
+        while (currentSearch->IsInProgress)
         {
+            Renderer::SetTarget(TOP);
+
+            // Draw "window" background
+            Renderer::DrawRect2(background, black, dimGrey);
+
+            int posY = 90;
+
+            // Draw logo phase
             waitLogo.Draw(192, posY);
-            posY += 16;
-        }
-        else
-            Renderer::DrawSysString("Done", 173, posY, 300, skyblue);
+            posY += 26;
 
-        posY += 10;
+            // Progressbar
+            // Draw border
+            Renderer::DrawRect(progBarBorder, gainsboro, false);
+            float prog = currentSearch->Progress * percent;
 
-        // Progressbar
-        // Draw border
-        IntRect progBarBorder = IntRect(130, posY, 140, 15);
-        Renderer::DrawRect(progBarBorder, gainsboro, false);
+            // Draw progress fill
+            progBarFill.size.x = std::min((u32)prog, (u32)138);
+            Renderer::DrawRect(progBarFill, limegreen);
+            posY += 20;
 
-        float percent = 138.f / 100.f;
-        float prog = _inSearch ? _currentSearch->Progress * percent : 138.f;
 
-        // Draw progress fill
-        IntRect progBarFill = IntRect(131, posY + 1, std::min((u32)prog, (u32)138), 13);
-        Renderer::DrawRect(progBarFill, limegreen);
-        posY += 20;
-
-        if (_inSearch)
-        {
             // Draw Result count
-            //std::string res = "Hit(s): " + std::to_string(_currentSearch->ResultsCount);
-            char buf[100] = { 0 };
-
-            sprintf(buf, "Hit(s): %u", _currentSearch->ResultsCount);
+            sprintf(buf, "Hit(s): %u", currentSearch->ResultsCount);
             Renderer::DrawString(buf, 131, posY, textcolor);
+
+            // Render bottom screen
+            _this->_RenderBottom();
+            Renderer::EndFrame();
         }
-        if (!_inSearch)
+
+        while (true)
         {
-            std::string res = std::to_string(_currentSearch->ResultsCount) + " hit(s)";
-            std::string res2 =  "in " + std::to_string(_currentSearch->SearchTime.AsSeconds()) + "s";
+            Renderer::SetTarget(TOP);
+
+            // Draw finish screen
+            Renderer::DrawRect2(background2, black, dimGrey);
+
+            int     posY = 90;
+
+            Renderer::DrawSysString("Done", 173, posY, 300, skyblue);
+            posY += 10;
+
+            // Progressbar
+            // Draw border
+            Renderer::DrawRect(progBarBorder, gainsboro, false);
+
+            // Draw progress fill
+            progBarFill.size.x = 138;
+            Renderer::DrawRect(progBarFill, limegreen);
+
+            posY += 20;
+            std::string res = std::to_string(currentSearch->ResultsCount) + " hit(s)";
+            std::string res2 =  "in " + std::to_string(currentSearch->SearchTime.AsSeconds()) + "s";
             Renderer::DrawString((char *)res.c_str(), 131, posY, blank);
             Renderer::DrawString((char *)res2.c_str(), 131, posY, blank);
             posY -= 10;
             Renderer::DrawSysString("\uE000", 255, posY, 300, skyblue);
+
+            // Render bottom screen
+            _this->_RenderBottom();
+
+            Renderer::EndFrame();
+
+            Controller::Update();
+            if (Controller::IsKeyPressed(Key::A))
+                break;
         }
+
+        return 0;
     }
 
     extern "C" u32 __ctru_linear_heap;

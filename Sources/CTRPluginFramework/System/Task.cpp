@@ -41,6 +41,16 @@ namespace CTRPluginFramework
         return Scheduler::Schedule(*this);
     }
 
+    int     Task::Start(void *arg) const
+    {
+        if (context == nullptr)
+            return -1;
+
+        context->arg = arg;
+        LightEvent_Clear(&context->event);
+        return Scheduler::Schedule(*this);
+    }
+
     s32     Task::Wait(void) const
     {
         if (context == nullptr)

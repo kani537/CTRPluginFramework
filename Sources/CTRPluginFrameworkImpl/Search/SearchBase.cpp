@@ -103,38 +103,21 @@ namespace CTRPluginFramework
 
     void    Search::Cancel(void)
     {
-        // Write results in pool to file
-        WriteResults();
-
+        Canceled = true;
         // Correct header
         _header.regions[_indexRegion].endAddress = _currentAddress;
         _header.nbRegions = _indexRegion + 1;
 
-        // Update Header
-        WriteHeader();
-
         // Set search time
         SearchTime = clock.Restart();
-
-        // Release pool
-        Heap::Free(_pool);
-        _pool = nullptr;
-
-        // Set index to 0 so it's available to read results
-        _indexRegion = 0;
-        if (_previous != nullptr)
-            _previous->_indexRegion = 0;
-
-        // Construct index table
-        CreateIndexTable();
-
-        // Reload bmps if needed
-        Preferences::LoadBackgrounds();
     }
 
     bool    Search::ExecuteSearch(void)
     {
-        bool isRegionFinished;
+        bool isRegionFinished = false;
+
+        if (Canceled)
+            goto cancel;
 
         // If it's the first search
         if (IsFirstSearch(_flags))
@@ -166,19 +149,20 @@ namespace CTRPluginFramework
 
         // Update progress
         UpdateProgress();
-
+    cancel:
         // If we finished to search the current region,
-        if (isRegionFinished)
+        if (isRegionFinished || Canceled)
         {
             // Write all results in pool to file
             WriteResults();
 
             // Check if there's another region to search in
-            if (CheckNextRegion())
+            if (CheckNextRegion() || Canceled)
             {
                 // Set search time
                 SearchTime = clock.Restart();
 
+                IsInProgress = false;
                 // Update Header
                 WriteHeader();
 

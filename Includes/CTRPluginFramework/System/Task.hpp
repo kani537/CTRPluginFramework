@@ -55,6 +55,7 @@ namespace CTRPluginFramework
          * \return 0 on operation success
          */
         int     Start(void) const;
+        int     Start(void *arg) const;
 
         /**
          * \brief Wait for the Task to be completed

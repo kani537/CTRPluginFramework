@@ -268,6 +268,7 @@ namespace CTRPluginFramework
                 { /* Search */
                     if (search(eventList, delta))
                         mode = 0;
+                    goto __skip;
                 }
                 else if (mode == 4)
                 { /* ActionReplay  */
@@ -282,7 +283,7 @@ namespace CTRPluginFramework
 
                 // End frame
                 Renderer::EndFrame(shouldClose);
-
+            __skip:
                 if (OnFirstOpening != nullptr)
                 {
                     static u32 count = 0;

@@ -18,6 +18,8 @@ namespace CTRPluginFramework
             u32 endIndex;
         };
 
+        bool            IsInProgress{true};
+        bool            Canceled{false};
         SearchError     Error;
         u32             ResultsCount;
         float           Progress;
