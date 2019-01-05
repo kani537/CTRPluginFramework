@@ -229,6 +229,17 @@ exit:
                 kb.Open(backlight);
                 ScreenImpl::Top->SetBacklight(backlight);
             });
+
+        menu += new MenuEntry("Spam notifications", [](MenuEntry *entry)
+        {
+            if (Controller::IsKeyDown(Key::ZL))
+            {
+                for (int i = 0; i < 50; ++i)
+                {
+                    OSD::Notify(Utils::Format("Notif: %d", i));
+                }
+            }
+        });
         //menu += new MenuEntry("Check screen fmt", nullptr, CheckScreenFormat);
         // Launch menu and mainloop
         int ret = menu.Run();

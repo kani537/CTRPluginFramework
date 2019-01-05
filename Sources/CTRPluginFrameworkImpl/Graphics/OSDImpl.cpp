@@ -31,13 +31,15 @@ namespace CTRPluginFramework
     Screen      OSDImpl::BottomScreen;
     RecursiveLock OSDImpl::RecLock;
     FloatingButton OSDImpl::FloatingBtn(IntRect(0, 0, 40, 40), Icon::DrawRocket);
-    std::list<OSDImpl::OSDMessage*> OSDImpl::Notifications;
+    std::vector<OSDImpl::OSDMessage*> OSDImpl::Notifications;
     std::vector<OSDCallback> OSDImpl::Callbacks;
 
     bool        OSDImpl::IsFramePaused = false;
     LightEvent  OSDImpl::OnNewFrameEvent;
     LightEvent  OSDImpl::OnFramePaused;
     LightEvent  OSDImpl::OnFrameResume;
+    Task        OSDImpl::DrawNotifTask1(OSDImpl::DrawNotif1_TaskFunc, nullptr, Task::AppCores);
+    Task        OSDImpl::DrawNotifTask2(OSDImpl::DrawNotif2_TaskFunc, nullptr, Task::AppCores);
 
     void    InstallOSD(void);
 
@@ -78,31 +80,24 @@ namespace CTRPluginFramework
         if (TryLock())
             return;
 
-        while (Notifications.size() && Notifications.front()->drawn)
-        {
-            OSDMessage *message = Notifications.front();
-
-            if (message->time.HasTimePassed(Seconds(5.f)))
-            {
-                delete message;
-                Notifications.pop_front();
-            }
-            else
-                break;
-        }
+        if (Notifications.size() && Notifications.front()->drawn)
+            Notifications.erase(std::remove_if(Notifications.begin(), Notifications.end(),
+                [](OSDMessage *message)
+                {
+                    bool remove = message->drawn && message->time.HasTimePassed(Seconds(5.f));
+                    if (remove)
+                        delete message;
+                    return remove;
+                }),
+                Notifications.end());
 
         Unlock();
     }
 
     bool    OSDImpl::Draw(void)
     {
-        Lock();
-
         if (Notifications.empty())
-        {
-            Unlock();
-            return (false);
-        }
+            return false;
 
         int posX;
         int posY = std::min((u32)15, (u32)Notifications.size());
@@ -124,8 +119,65 @@ namespace CTRPluginFramework
                 break;
         }
 
-        Unlock();
         return (true);
+    }
+
+    s32     OSDImpl::DrawNotif1_TaskFunc(void *arg UNUSED)
+    {
+        Renderer::SetTarget(TOP);
+
+        // Render first half of notifications
+        int posX;
+        int nbOfMessage = std::min((u32)15, (u32)Notifications.size());
+        int posY = 230 - 15 * nbOfMessage;
+
+        int count = nbOfMessage / 2 + (nbOfMessage & 1);
+
+        auto messIter = Notifications.begin();
+        auto endIter = std::next(messIter, count);
+
+        for (; messIter != endIter; ++messIter)
+        {
+            OSDMessage *message = *messIter;
+
+            posX = XEND - message->width;
+            Renderer::DrawString(message->text.c_str(), posX, posY, message->foreground, message->background);
+            posY += 5;
+            if (!message->drawn)
+                message->time.Restart();
+
+            message->drawn = true;
+        }
+
+        return 0;
+    }
+
+    s32     OSDImpl::DrawNotif2_TaskFunc(void *arg UNUSED)
+    {
+        Renderer::SetTarget(TOP);
+
+        // Render second half of notifications
+        int posX;
+        int nbOfMessage = std::min((u32)15, (u32)Notifications.size());
+        int posY = 230 - 15 * (nbOfMessage / 2);
+
+        auto messIter = std::next(Notifications.begin(), nbOfMessage / 2 + (nbOfMessage & 1));
+        auto endIter = std::next(messIter, nbOfMessage / 2);
+
+        for (; messIter != endIter; ++messIter)
+        {
+            OSDMessage *message = *messIter;
+
+            posX = XEND - message->width;
+            Renderer::DrawString(message->text.c_str(), posX, posY, message->foreground, message->background);
+            posY += 5;
+            if (!message->drawn)
+                message->time.Restart();
+
+            message->drawn = true;
+        }
+
+        return 0;
     }
 
     void    OSDImpl::Lock(void)
@@ -274,13 +326,21 @@ namespace CTRPluginFramework
             MessColor((u32)addr, stride, format);
         }
 
+        // Lock for notification & callbacks
+        Lock();
+
         // Draw notifications & icon
         if (!isBottom)
         {
-            mustFlush |= OSDImpl::Draw() | DrawSaveIcon;
-
+            if (Notifications.size())
+            {
+                DrawNotifTask1.Start();
+                DrawNotifTask2.Start();
+                //Draw();
+                mustFlush = true;
+            }
             if (DrawSaveIcon)
-                Icon::DrawSave(10, 10);
+                mustFlush = Icon::DrawSave(10, 10);
         }
         // Draw touch cursor
         else
@@ -311,16 +371,6 @@ namespace CTRPluginFramework
             }
         }
 
-        // Draw fps
-        if (drawFps)
-        {
-            std::string &&fps = Utils::Format("FPS: %.02f", g_second / g_fpsClock[isBottom].Restart().AsSeconds());
-            int posY = 10;
-            Renderer::DrawString(fps.c_str(), 10, posY, Color::White, Color::Black);
-            mustFlush |= true;
-        }
-
-        OSDImpl::Lock();
         // Call OSD Callbacks
         if (Callbacks.size())
         {
@@ -337,7 +387,18 @@ namespace CTRPluginFramework
             for (OSDCallback cb : Callbacks)
                 mustFlush |= cb(screen);
         }
+        DrawNotifTask1.Wait();
+        DrawNotifTask2.Wait();
         OSDImpl::Unlock();
+
+        // Draw fps
+        if (drawFps)
+        {
+            std::string &&fps = Utils::Format("FPS: %.02f", g_second / g_fpsClock[isBottom].Restart().AsSeconds());
+            int posY = 10;
+            Renderer::DrawString(fps.c_str(), 10, posY, Color::White, Color::Black);
+            mustFlush |= true;
+        }
 
         if (mustFlush)
         {

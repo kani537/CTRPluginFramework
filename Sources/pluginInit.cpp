@@ -198,6 +198,9 @@ namespace CTRPluginFramework
         // Set default theme
         FwkSettings::SetThemeDefault();
 
+        // Init scheduler
+        Scheduler::Initialize();
+
         // Init OSD hook
         OSDImpl::_Initialize();
 
@@ -332,9 +335,6 @@ namespace CTRPluginFramework
 
         // Init event thread
         gspInit();
-
-        // Init scheduler
-        Scheduler::Initialize();
 
         {
             // If /cheats/ doesn't exists, create it
