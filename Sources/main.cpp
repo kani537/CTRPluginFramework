@@ -240,6 +240,15 @@ exit:
                 }
             }
         });
+
+        menu += new MenuEntry("Test keyboard", nullptr, [](MenuEntry *entry)
+        {
+            u32 v = 0;
+            Keyboard kb("Test");
+
+            kb.IsHexadecimal(false);
+            kb.Open(v);
+        });
         //menu += new MenuEntry("Check screen fmt", nullptr, CheckScreenFormat);
         // Launch menu and mainloop
         int ret = menu.Run();

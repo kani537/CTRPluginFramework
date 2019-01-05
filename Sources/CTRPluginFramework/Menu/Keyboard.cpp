@@ -2,7 +2,8 @@
 #include "CTRPluginFramework/Menu/Keyboard.hpp"
 
 #include <string>
-#include <limits.h>
+#include <climits>
+#include <cstdlib>
 #include "CTRPluginFramework/Utils/Utils.hpp"
 
 namespace CTRPluginFramework
@@ -116,7 +117,11 @@ namespace CTRPluginFramework
             }
             else
             {
-                temp = static_cast<u8>(std::stoul(input, nullptr, 16));
+                const char *cstr = input.c_str();
+                char *cstro = nullptr;
+                temp = static_cast<u8>(strtoul(cstr, &cstro, 16));
+                if (cstro == cstr)
+                    temp = UINT8_MAX;
             }
 
         }
@@ -139,7 +144,13 @@ namespace CTRPluginFramework
                 temp = static_cast<u16>(n);
             }
             else
-                temp = static_cast<u16>(std::stoul(input, nullptr, 16));
+            {
+                const char *cstr = input.c_str();
+                char *cstro = nullptr;
+                temp = static_cast<u16>(strtoul(cstr, &cstro, 16));
+                if (cstro == cstr)
+                    temp = UINT16_MAX;
+            }
         }
         else
             temp = 0;
@@ -158,7 +169,13 @@ namespace CTRPluginFramework
                 stou32(input, temp);
             }
             else
-                temp = static_cast<u32>(std::stoul(input, nullptr, 16));
+            {
+                const char *cstr = input.c_str();
+                char *cstro = nullptr;
+                temp = static_cast<u32>(strtoul(cstr, &cstro, 16));
+                if (cstro == cstr)
+                    temp = UINT32_MAX;
+            }
         }
         else
             temp = 0;
@@ -177,7 +194,13 @@ namespace CTRPluginFramework
                 stou64(input, temp);
             }
             else
-                temp = static_cast<u64>(std::stoull(input, nullptr, 16));
+            {
+                const char *cstr = input.c_str();
+                char *cstro = nullptr;
+                temp = static_cast<u64>(strtoul(cstr, &cstro, 16));
+                if (cstro == cstr)
+                    temp = UINT64_MAX;
+            }
         }
         else
             temp = 0;
