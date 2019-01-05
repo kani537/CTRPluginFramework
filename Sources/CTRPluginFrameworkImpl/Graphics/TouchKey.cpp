@@ -129,7 +129,7 @@ namespace CTRPluginFramework
         }
         // Character
         else
-            DrawCharacter(text);
+            DrawCharacter(_enabled ? text : theme.KeyTextDisabled);
     }
 
     void    TouchKey::Update(const bool isTouchDown, const IntVector &touchPos)

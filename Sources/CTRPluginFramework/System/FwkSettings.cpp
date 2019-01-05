@@ -27,6 +27,7 @@ namespace CTRPluginFramework
             kb.KeyBackground = kb.Background = Color::Black;
             kb.KeyBackgroundPressed = Color::Silver;
             kb.Input = kb.Cursor = kb.KeyTextPressed = kb.KeyText = Color::White;
+            kb.KeyTextDisabled = Color::DimGrey;
         }
 
         // Custom keyboard colors

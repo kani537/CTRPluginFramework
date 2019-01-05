@@ -7,7 +7,7 @@
 
 namespace CTRPluginFramework
 {
-    struct PluginHeader
+    struct PluginHeader ///< Defined by Luma3DS plugin loader
     {
         u32     magic;
         u32     version;
@@ -47,6 +47,7 @@ namespace CTRPluginFramework
             Color   KeyBackgroundPressed; ///< Color of the key's background while pressed | Default: Silver
             Color   KeyText; ///< Color of the key's text | Default: Blank
             Color   KeyTextPressed; ///< Color of the key's text while pressed | Default: Blank
+            Color   KeyTextDisabled; ///< Color of the key's text when disabled | Default: DimGrey
             Color   Cursor; ///< Color of the cursor | Default: Blank
             Color   Input; ///< Color of the input | Default: Blank
         } Keyboard;
