@@ -66,8 +66,9 @@ namespace CTRPluginFramework
        } PACKED;
 
         BMPImage(void);
+        BMPImage(void *data);
         BMPImage(const std::string &filename);
-        BMPImage(const u32 width, const u32 height, bool canUseVram = true);
+        BMPImage(const u32 width, const u32 height);
         BMPImage(const BMPImage &src, const u32 width, const u32 height);
 
         ~BMPImage();
@@ -131,10 +132,11 @@ namespace CTRPluginFramework
     private:
 
         // Create a new buffer according to size
-        int      _CreateBitmap(void);
+        int     _CreateBitmap(void);
 
         // Load a bmp from _filename
-        void     _LoadBitmap(void);
+        void    _LoadBitmap(void);
+        void    _LoadBitmapFromMemory(void *data);
 
         u8 *             _data{nullptr};
         u32              _dataSize{};

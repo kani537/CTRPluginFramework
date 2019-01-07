@@ -20,7 +20,7 @@ namespace CTRPluginFramework
         if (Heap::SpaceFree() < 0xB0000) /// 0x60000 (for pool) + 0x50000 (for Storage)
         {
             // Unload bmp
-            Preferences::UnloadBackgrounds();
+            //Preferences::UnloadBackgrounds();
             // Recheck
             if (Heap::SpaceFree() < 0xB0000)
             {
@@ -65,15 +65,6 @@ namespace CTRPluginFramework
                     // If size mismatch
                     if (size < regionSize)
                     {
-                      /*  std::string msg("Error: region mismatch\n\nAddress: ");
-
-                        msg += ToHex(region.startAddress) + "\n";
-                        msg += "Expected size: " + ToHex(regionSize) + "\n";
-                        msg += "Region size: " + ToHex(size) + "\n\n";
-                     //   msg += "Action: region skipped";
-
-                     //   (MessageBox(msg))();
-                     */
                         // Region is okay, add it to header
                         _header.regions[_header.nbRegions] = { region.startAddress, region.startAddress + size, 0, 0 };
                         _header.nbRegions++;

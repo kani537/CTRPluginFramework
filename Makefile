@@ -157,9 +157,7 @@ $(LIBOUT):	$(filter-out $(EXCLUDE), $(OFILES))
 #---------------------------------------------------------------------------------
 %.3gx: %.elf
 	@echo creating $(notdir $@)
-	#@$(OBJCOPY) -O binary $(OUTPUT).elf $(TOPDIR)/objdump -S
-	@3gxtool.exe -s $(OUTPUT).elf $(TOPDIR)/$(PSF) $@
-	#@- rm $(TOPDIR)/objdump
+	@3gxtool.exe -s -d $(OUTPUT).elf $(TOPDIR)/$(PSF) $@
 
 -include $(DEPENDS)
 

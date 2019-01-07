@@ -179,7 +179,7 @@ namespace CTRPluginFramework
                 CreateIndexTable();
 
                 // Reload bmps if needed
-                Preferences::LoadBackgrounds();
+                //Preferences::LoadBackgrounds();
 
                 return (true);
             }

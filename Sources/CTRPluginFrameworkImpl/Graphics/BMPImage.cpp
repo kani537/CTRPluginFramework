@@ -4,51 +4,15 @@
 #include "CTRPluginFrameworkImpl/Graphics/PrivColor.hpp"
 #include "CTRPluginFramework/Graphics/OSD.hpp"
 #include "CTRPluginFrameworkImpl/Graphics/Renderer.hpp"
-#include "CTRPluginFrameworkImpl/System/Heap.hpp"
 #include "CTRPluginFrameworkImpl/System/Screen.hpp"
 #include "CTRPluginFramework/Utils/Utils.hpp"
-#include "ctrulib/allocator/vram.h"
+#include "CTRPluginFrameworkImpl/System/IAllocator.hpp"
 
 namespace CTRPluginFramework
 {
-    static void memset32(void *dst, u8 c, u32 size)
-    {
-        u8 *dst8 = (u8 *)dst;
-
-        // Get an aligned address first
-        while ((u32)dst8 & 3 && size)
-        {
-            *dst8++ = c;
-            --size;
-        }
-
-        if (!size || !dst8)
-            return;
-
-        // Do a 4 bytes memset
-        u32     *dst32 = (u32 *)dst8;
-        u32     *end32 = dst32 + (size >> 2);
-        u32     v32 = c | (c << 8);
-
-        v32 |= v32 << 16;
-
-        while (dst32 != end32)
-            *dst32++ = v32;
-
-        if (!size || !dst32)
-            return;
-
-        // Do the last bytes
-        dst8 = (u8 *)dst32;
-        size &= 3;
-
-        while (size--)
-            *dst8++ = c;
-    }
-
     void    BMPImage::BitmapFileHeader::Clear(void)
     {
-        memset32(this, 0, sizeof(BitmapFileHeader));
+        std::fill((u8 *)this, (u8 *)this + sizeof(BitmapFileHeader), 0);
     }
 
     bool    BMPImage::BitmapFileHeader::Read(File &file)
@@ -58,7 +22,7 @@ namespace CTRPluginFramework
 
     void    BMPImage::BitmapInformationHeader::Clear(void)
     {
-        memset32(this, 0, sizeof(BitmapInformationHeader));
+        std::fill((u8 *)this, (u8 *)this + sizeof(BitmapInformationHeader), 0);
     }
 
     bool    BMPImage::BitmapInformationHeader::Read(File &file)
@@ -71,6 +35,13 @@ namespace CTRPluginFramework
     // Default CTOR
     BMPImage::BMPImage() = default;
 
+    BMPImage::BMPImage(void *data)
+    {
+        // Load the file
+        _LoadBitmapFromMemory(data);
+        RGBtoBGR();
+    }
+
     BMPImage::BMPImage(const std::string &filename) :
         _filename{ filename }
     {
@@ -80,19 +51,14 @@ namespace CTRPluginFramework
         RGBtoBGR();
     }
 
-    BMPImage::BMPImage(const u32 width, const u32 height, bool canUseVram) :
+    BMPImage::BMPImage(const u32 width, const u32 height) :
         _width{ width }, _height{ height }
     {
         _rowIncrement = _width * _bytesPerPixel;
         _dataSize = height * _rowIncrement;
 
         // Create buffer
-        if (canUseVram)
-            _data = static_cast<u8 *>(vramAlloc(_dataSize + HeaderSize));
-
-        if (_data == nullptr)
-            _data = static_cast<u8 *>(Heap::Alloc(_dataSize + HeaderSize));
-
+        _data = static_cast<u8 *>(::operator new(_dataSize + HeaderSize, std::nothrow));
         if (_data == nullptr)
             return;
 
@@ -110,11 +76,7 @@ namespace CTRPluginFramework
     {
         if (_data != nullptr)
         {
-            if (((u32)_data >> 24) < 0x10)
-                Heap::Free(_data);
-            else
-                vramFree(_data);
-
+            ::operator delete(_data, std::nothrow);
             _data = nullptr;
         }
     }
@@ -166,7 +128,7 @@ namespace CTRPluginFramework
 
     void    BMPImage::DataClear(void)
     {
-        memset32(_data + HeaderSize, 0, _dataSize);
+        std::fill(_data + HeaderSize, _data + HeaderSize + _dataSize, 0);
     }
 
     void    BMPImage::SetWidthHeight(const u32 width, const u32 height)
@@ -183,12 +145,7 @@ namespace CTRPluginFramework
     void    BMPImage::Unload(void)
     {
         if (_data)
-        {
-            if (((u32)_data >> 24) < 0x10)
-                Heap::Free(_data);
-            else
-                vramFree(_data);
-        }
+            ::operator delete(_data, std::nothrow);
         _data = nullptr;
         _dataSize = 0;
         _loaded = false;
@@ -318,21 +275,15 @@ namespace CTRPluginFramework
         }
     }
 
-    extern Handle __fileHandle;
     void    BMPImage::SaveImage(const std::string &fileName) const
     {
         File file(fileName, File::RWC | File::TRUNCATE);
-
-        //u32 priority = 0xFFFFFFF0;
 
         if (!file.IsOpen())
         {
             OSD::Notify("BMP Error: couldn't open the file");
             return;
         }
-
-        // I suppose the lower the better like threads
-        //  file.SetPriority(0);
 
         BitmapFileHeader *          bfh = (BitmapFileHeader *)_data;
         BitmapInformationHeader *   bih = (BitmapInformationHeader *)(_data + sizeof(BitmapFileHeader));
@@ -355,8 +306,6 @@ namespace CTRPluginFramework
         bfh->reserved2        = 0;
         bfh->off_bits         = sizeof(BitmapInformationHeader) + sizeof(BitmapFileHeader);
 
-
-        // Data have to be on Heap and not in vram
         file.Write(_data, _dataSize + HeaderSize);
     }
 
@@ -673,8 +622,7 @@ namespace CTRPluginFramework
         _dataSize = _height * _rowIncrement;
 
         // Try to alloc in vram first
-        if ((_data = static_cast<u8 *>(vramAlloc(_dataSize + HeaderSize))) == nullptr)
-            _data = static_cast<u8 *>(Heap::Alloc(_dataSize + HeaderSize));
+        _data = static_cast<u8 *>(::operator new(_dataSize + HeaderSize, std::nothrow));
 
         // If allocation failed
         if (_data == nullptr)
@@ -781,7 +729,7 @@ namespace CTRPluginFramework
                 u8  *dataPtr = Row(_height - i++ - 1); // read in inverted row order
                 u8  *bufPtr = buf + j * rowWidth;
 
-                std::memcpy(dataPtr, bufPtr, _rowIncrement);
+                std::copy(bufPtr, bufPtr + _rowIncrement, dataPtr);
             }
         }
 
@@ -793,7 +741,99 @@ namespace CTRPluginFramework
             unsigned char *dataPtr = Row(_height - i++ - 1);
             unsigned char *bufPtr = buf + k * rowWidth;
 
-            std::memcpy(dataPtr, bufPtr, _rowIncrement);
+            std::copy(bufPtr, bufPtr + _rowIncrement, dataPtr);
+        }
+
+        // Release our temporary buffer
+        Heap::Free(buf);
+        _loaded = true;
+    }
+
+    void     BMPImage::_LoadBitmapFromMemory(void *data)
+    {
+        Unload();
+        _width  = 0;
+        _height = 0;
+
+        BitmapFileHeader        bfh = {};
+        BitmapInformationHeader bih = {};
+
+        std::copy((u8 *)data, (u8 *)data + sizeof(BitmapFileHeader), (u8 *)&bfh);
+        std::copy((u8 *)data + sizeof(BitmapFileHeader), (u8 *)data + sizeof(BitmapFileHeader) + sizeof(BitmapInformationHeader), (u8 *)&bih);
+
+        if (bfh.type != 19778)
+        {
+            OSD::Notify(Utils::Format("BMP Error: Unexpected type value: %d", bfh.type), Color::Red);
+            return;
+        }
+
+        if (bih.bit_count != 24)
+        {
+            OSD::Notify(Utils::Format("BMP Error: Unexpected bit depth: %d", bih.bit_count), Color::Red);
+            return;
+        }
+
+        _width  = bih.width;
+        _height = bih.height;
+
+        // Temporary limit ?
+        if (_width > 340 || _height > 200)
+        {
+            OSD::Notify("BMP Error: file should not be higher than 340px * 200px", Color::Red);
+            return;
+        }
+
+        _dimensions = IntVector(_width, _height);
+        _bytesPerPixel = bih.bit_count >> 3;
+
+        // Try to alloc the buffer
+        if (_CreateBitmap())
+        {
+            OSD::Notify("BMP Error: Error while allocating required space.", Color::Red);
+            return;
+        }
+
+        u32   padding = (4 - ((3 * _width) % 4)) % 4;
+        int   rows = _height / 5;
+        int   rowWidth = _rowIncrement + padding;
+        int   totalwidth = rows * rowWidth;
+        int   oddRows = rows * 5;
+
+        // Temporary buffer
+        u8    *buf = (u8 *)Heap::Alloc(totalwidth);
+
+        if (buf == nullptr)
+        {
+            OSD::Notify("BMP Error: temp buffer allocation failed");
+            return;
+        }
+
+        // Go to the data position in file
+        u8 *pdata = (u8 *)data + bfh.off_bits;
+        int i;
+        for (i = 0; i < oddRows; )
+        {
+            std::copy(pdata, pdata + totalwidth, buf);
+            pdata += totalwidth;
+
+            for (int j = 0; j < rows && i < oddRows; ++j)
+            {
+                u8  *dataPtr = Row(_height - i++ - 1); // read in inverted row order
+                u8  *bufPtr = buf + j * rowWidth;
+
+                std::copy(bufPtr, bufPtr + _rowIncrement, dataPtr);
+            }
+        }
+
+        std::copy(pdata, pdata + totalwidth, buf);
+
+        int rest = _height % 5;
+        for (int k = 0; k < rest; ++k)
+        {
+            unsigned char *dataPtr = Row(_height - i++ - 1);
+            unsigned char *bufPtr = buf + k * rowWidth;
+
+            std::copy(bufPtr, bufPtr + _rowIncrement, dataPtr);
         }
 
         // Release our temporary buffer

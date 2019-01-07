@@ -21,7 +21,7 @@ static bool vramInit()
 {
     Lock    lock(_mutex);
 
-    if (CTRPluginFramework::System::IsNew3DS())
+    if (false && CTRPluginFramework::System::IsNew3DS())
     {
         // Take advantage of the extra vram and Luma's mapping
         auto blk = MemBlock::Create((u8*)(0x1F000000 | (1u << 31)), 0x00200000);

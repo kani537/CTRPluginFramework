@@ -207,10 +207,15 @@ exit:
         MessageBox("Screen fmt", Utils::Format("Top: %d\nBottom: %d", fmt2, fmt))();
     }
 
-    //void    DebugFromStart(void){}
+    // Uncomment to stall process at the beginning until Y is pressed
+    // void    DebugFromStart(void){}
+
+    //extern "C" const u8 BottomBackground_bmp[];
 
     int     main(void)
     {
+        //FwkSettings::SetBottomScreenBackground((void *)&BottomBackground_bmp);
+
         PluginMenu  *m = new PluginMenu("Action Replay", 0, 5, 1);
         PluginMenu  &menu = *m;
 
@@ -248,6 +253,12 @@ exit:
 
             kb.IsHexadecimal(false);
             kb.Open(v);
+        });
+
+        menu += new MenuEntry(Utils::Format("Available memory: %08X", getMemFree()), nullptr,
+            [](MenuEntry *entry)
+        {
+            entry->Name() = Utils::Format("Available memory: %08X", getMemFree());
         });
         //menu += new MenuEntry("Check screen fmt", nullptr, CheckScreenFormat);
         // Launch menu and mainloop

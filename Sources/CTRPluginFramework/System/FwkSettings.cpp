@@ -1,5 +1,6 @@
 #include "CTRPluginFramework/System/FwkSettings.hpp"
 #include "CTRPluginFrameworkImpl/Preferences.hpp"
+#include "CTRPluginFrameworkImpl/Graphics/Window.hpp"
 
 namespace CTRPluginFramework
 {
@@ -44,5 +45,35 @@ namespace CTRPluginFramework
             kb.ScrollBarBackground = Color::Silver;
             kb.ScrollBarThumb = Color::DimGrey;
         }
+    }
+
+    Result  FwkSettings::SetTopScreenBackground(void *bmpData)
+    {
+        BMPImage *image = new BMPImage(bmpData);
+
+        if (!image->IsLoaded())
+        {
+            delete image;
+            return -1;
+        }
+
+        Preferences::topBackgroundImage = image;
+        Window::UpdateBackgrounds();
+        return 0;
+    }
+
+    Result  FwkSettings::SetBottomScreenBackground(void *bmpData)
+    {
+        BMPImage *image = new BMPImage(bmpData);
+
+        if (!image->IsLoaded())
+        {
+            delete image;
+            return -1;
+        }
+
+        Preferences::bottomBackgroundImage = image;
+        Window::UpdateBackgrounds();
+        return 0;
     }
 }

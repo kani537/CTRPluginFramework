@@ -391,13 +391,13 @@ namespace CTRPluginFramework
 
     static inline BMPImage* CreateBMP(u32 width, u32 height)
     {
-        BMPImage *image = new BMPImage(width, height, false);
+        BMPImage *image = new BMPImage(width, height);
 
         if (image->data() == nullptr && !SystemImpl::IsNew3DS)
         {
             Preferences::UnloadBackgrounds();
             delete image;
-            image = new BMPImage(width, height, false);
+            image = new BMPImage(width, height);
             if (image->data() == nullptr)
                 OSD::Notify("An error occured when trying to allocate the BMP");
         }

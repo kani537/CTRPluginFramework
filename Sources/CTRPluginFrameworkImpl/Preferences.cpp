@@ -214,7 +214,7 @@ namespace CTRPluginFramework
                 source = "/luma/plugins/ActionReplay/";
 
             // Try to load top background
-            if (File::Exists(source + "TopBackground.bmp"))
+            if (topBackgroundImage == nullptr && File::Exists(source + "TopBackground.bmp"))
             {
                 BMPImage *image = new BMPImage(source + "TopBackground.bmp");
 
@@ -230,7 +230,7 @@ namespace CTRPluginFramework
             }
 
             // Try to load bottom background
-            if (File::Exists(source + "BottomBackground.bmp"))
+            if (bottomBackgroundImage == nullptr && File::Exists(source + "BottomBackground.bmp"))
             {
                 BMPImage *image = new BMPImage(source + "BottomBackground.bmp");
 

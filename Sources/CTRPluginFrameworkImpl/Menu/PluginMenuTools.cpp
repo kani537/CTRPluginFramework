@@ -23,10 +23,10 @@
 #include <cstring>
 #include <cstdio>
 
-#define ALPHA 0
+#define ALPHA 1
 
 #if ALPHA
-#define VersionStr "CTRPluginFramework Alpha V.0.4.10"
+#define VersionStr "CTRPluginFramework Alpha V.0.5.2"
 #else
 #define VersionStr "CTRPluginFramework Beta V.0.5.2"
 #endif
