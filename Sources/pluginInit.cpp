@@ -47,7 +47,7 @@ namespace CTRPluginFramework
     void    ThreadExit(void);
     void    InstallOSD(void); ///< OSDImpl
     void    InitializeRandomEngine(void);
-    static ThreadEx g_mainThread(ThreadInit, 0x4000, 0x18, -1);
+    static ThreadEx g_mainThread(ThreadInit, 0x4000, 0x19, -1);
 
     // From main.cpp
     int     main(void);
@@ -96,12 +96,18 @@ void     OnLoadCro(void)
     LightLock_Unlock(&g_onLoadCroLock);
 }
 
+#ifdef _MSC_VER
+#define WEAK_SYMBOL
+#else
+#define WEAK_SYMBOL __attribute__((weak))
+#endif
+
 namespace CTRPluginFramework
 {
-    void __attribute__((weak))  PatchProcess(FwkSettings& settings) {}
-    void __attribute__((weak))  DebugFromStart(void);
-    void __attribute__((weak))  OnProcessExit(void) {}
-    void __attribute__((weak))  OnPluginSwap(void) {}
+    void WEAK_SYMBOL PatchProcess(FwkSettings& settings) {}
+    void WEAK_SYMBOL  DebugFromStart(void);
+    void WEAK_SYMBOL  OnProcessExit(void) {}
+    void WEAK_SYMBOL  OnPluginSwap(void) {}
 
     namespace Heap
     {
@@ -138,12 +144,7 @@ namespace CTRPluginFramework
 
     static void     InitHeap(void)
     {
-        u32         size;
-
-        if (!SystemImpl::IsNew3DS)
-            size = 0x120000;
-        else
-            size = 0x100000;
+        u32         size = 0x100000; ///< Mostly used for Search
 
         // Init System::Heap
         Heap::__ctrpf_heap_size = size;
@@ -185,7 +186,6 @@ namespace CTRPluginFramework
 
         // Init locks
         PluginMenuExecuteLoop::InitLocks();
-        ProcessImpl::UpdateMemRegions();
 
         // Init default settings
         FwkSettings &settings = FwkSettings::Get();
@@ -220,6 +220,7 @@ namespace CTRPluginFramework
                 0xE886100E, 0xE5900000, 0xEF000032, 0xE2001102
             };*/
 
+            // TODO: the new plugin system make this useless
             u32     loadCroAddress = Utils::Search<u32>(0x00100000, Process::GetTextSize(), LoadCroPattern);
 
             if (loadCroAddress)
@@ -247,7 +248,12 @@ namespace CTRPluginFramework
 
         // Check threads priorities
         settings.ThreadPriority = std::min(settings.ThreadPriority, (u32)0x3E);
-        g_gspEventThreadPriority = settings.ThreadPriority + 1;
+        GSP::InterruptReceiverThreadPriority = settings.ThreadPriority + 1;
+        if (GSP::Initialize())
+        {
+            ScreenImpl::Top->Flash((Color&)Color::Yellow);
+            abort();
+        }
 
         // Wait for the required time
         Sleep(settings.WaitTimeToBoot);
@@ -258,7 +264,7 @@ namespace CTRPluginFramework
         g_mainThread.Start(nullptr);
 
         // Reduce priority
-        while (R_FAILED(svcSetThreadPriority(g_keepThreadHandle, settings.ThreadPriority + 1)));
+        while (R_FAILED(svcSetThreadPriority(g_keepThreadHandle, settings.ThreadPriority + 2)));
 
         // Wait until Main Thread finished all it's initializing
         svcWaitSynchronization(g_keepEvent, U64_MAX);
@@ -269,7 +275,7 @@ namespace CTRPluginFramework
         svcControlProcess(CUR_PROCESS_HANDLE, PROCESSOP_GET_ON_MEMORY_CHANGE_EVENT, (u32)&memLayoutChanged, 0);
         while (true)
         {
-            if (svcWaitSynchronization(memLayoutChanged, 100000000ULL) == 0x09401BFE)
+            if (svcWaitSynchronization(memLayoutChanged, 500000000ULL) == 0x09401BFE)
             {
                 s32 event = PLGLDR__FetchEvent();
 
@@ -298,7 +304,6 @@ namespace CTRPluginFramework
                     PluginMenuImpl::ForceExit();
 
                     // Close some handles
-                    gspExit();
                     hidExit();
                     cfguExit();
                     fsExit();
@@ -334,7 +339,7 @@ namespace CTRPluginFramework
         Font::Initialize();
 
         // Init event thread
-        gspInit();
+        //gspInit();
 
         {
             // If /cheats/ doesn't exists, create it
@@ -378,6 +383,9 @@ namespace CTRPluginFramework
 
         // Reduce thread priority
         svcSetThreadPriority(threadGetCurrent()->handle, FwkSettings::Get().ThreadPriority);
+
+        // Continue game
+        //svcSignalEvent(g_continueGameEvent);
 
         // Update memory layout
         ProcessImpl::UpdateMemRegions();
@@ -450,6 +458,14 @@ namespace CTRPluginFramework
         // Close the event
         svcCloseHandle(g_continueGameEvent);
 
+       /* Color c(0xFF, 0, 0);
+        ScreenImpl::Top->Flash(c);
+            u32 stall = 0;
+            do
+            {
+                Sleep(Milliseconds(1000));
+                stall = HID_PAD & BUTTON_Y;
+            } while (!stall); */
         return (0);
     }
 }

@@ -6,6 +6,61 @@
 
 namespace CTRPluginFramework
 {
+    namespace GSP
+    {
+        enum
+        {
+            TOP_SCREEN = 0,
+            BOTTOM_SCREEN = 1
+        };
+
+        union  FrameBufferInfoHeader
+        {
+            s32     header;
+            struct
+            {
+                u8  screen;
+                u8  update;
+            };
+        };
+
+        struct FrameBufferInfo
+        {
+	        u32 active_framebuf;        ///< Active framebuffer. (0 = first, 1 = second)
+	        u32 *framebuf0_vaddr;       ///< Framebuffer virtual address, for the main screen this is the 3D left framebuffer.
+	        u32 *framebuf1_vaddr;       ///< For the main screen: 3D right framebuffer address.
+	        u32 framebuf_widthbytesize; ///< Value for 0x1EF00X90, controls framebuffer width.
+	        u32 format;                 ///< Framebuffer format, this u16 is written to the low u16 for LCD register 0x1EF00X70.
+	        u32 framebuf_dispselect;    ///< Value for 0x1EF00X78, controls which framebuffer is displayed.
+	        u32 unk;                    ///< Unknown.
+
+            void    FillFrameBufferFrom(FrameBufferInfo& src);
+        };
+
+        struct FrameBufferInfoShared
+        {
+            FrameBufferInfoHeader     header;
+            FrameBufferInfo           fbInfo[2];
+
+            void    FillFrameBuffersFrom(FrameBufferInfoShared& src);
+        };
+
+        extern u32  InterruptReceiverThreadPriority;
+
+        Result  Initialize(void);
+        void    Update(u32 threadId, Handle eventHandle, Handle sharedMemHandle);
+        void    PauseInterruptReceiver(void);
+        void    ResumeInterruptReceiver(void);
+        void    WaitForVBlank(void);
+        void    WaitForVBlank1(void);
+        void    SwapBuffer(int screen);
+        // 0: Top, 1: Bottom, 3: Both
+        void    WaitBufferSwapped(int screen);
+
+        void    ImportFrameBufferInfo(FrameBufferInfoShared& dest, int screen);
+        void    SetFrameBufferInfo(FrameBufferInfoShared& src, int screen, bool convert);
+    }
+
     enum
     {
         SCREENSHOT_TOP = 1,
@@ -40,36 +95,53 @@ namespace CTRPluginFramework
 
         void                        Flash(Color &color);
 
+        // TODO: remove ?
         static void                 Clean(void);
+        // Switch displayed fb game <=> ctrpf
+        static void                 SwitchFrameBuffers(bool game);
         static void                 ApplyFading(void);
-        u32                         Acquire(void);
-        void                        Acquire(u32 left, u32 right, u32 stride, u32 format, bool backup = false);
-        void                        SwapBuffer(bool flush = false, bool copy = false);
-        u32                         GetBacklight(void);
-        void                        SetBacklight(u32 value);
-        GSPGPU_FramebufferFormats   GetFormat(void);
-        u16                         GetWidth(void);
-        u16                         GetHeight(void);
-        u32                         GetStride(void);
-        u32                         GetRowSize(void);
-        u32                         GetBytesPerPixel(void);
-        u32                         GetFramebufferSize(void);
 
-        void                        GetFramebufferInfos(int &rowstride, int &bpp, GSPGPU_FramebufferFormats &format);
-
-        u8                          *GetLeftFramebuffer(bool current = false);
-        u8                          *GetLeftFramebuffer(int posX, int posY);
-        u8                          *GetRightFramebuffer(bool current = false);
-        u8                          *GetRightFramebuffer(int posX, int posY);
-        void                        GetPosFromAddress(u32 address, int &posX, int &posY);
-
-        void                        Fade(float fade, bool copy = false);
+        void                        Fade(const float fade);
         void                        Flush(void);
 		void						Invalidate(void);
+
+        // Clear Framebuffer + apply fade effect
+        void                        Clear(bool applyFlagForCurrent);
+        // Copy currently displayed image to second frame buffer
         void                        Copy(void);
         void                        Debug(void);
+
+        // Fetch Game's FrameBufferInfo and swap to CTRPF FrameBufferInfo
+        u32                         Acquire(void);
+
+        // Rewrite Game's FrameBufferInfo
+        void                        Release(void);
+
+        // For OSD usage
+        void                        Acquire(u32 left, u32 right, u32 stride, u32 format, bool backup = false);
+        void                        SwapBuffer(void);
+        // Arbitrary buffer swapping, do not reflect changes on screen
+        void                        SwapBufferInternal(void);
+        u32                         GetBacklight(void);
+        void                        SetBacklight(u32 value);
+
+        GSPGPU_FramebufferFormats   GetFormat(void) const;
+        u16                         GetWidth(void) const;
+        u32                         GetStride(void) const;
+        u32                         GetRowSize(void) const;
+        u32                         GetBytesPerPixel(void) const;
+        u32                         GetFrameBufferSize(void) const;
+
+        void                        GetFrameBufferInfos(int &rowstride, int &bpp, GSPGPU_FramebufferFormats &format) const;
+
+        u8                          *GetLeftFrameBuffer(bool current = false);
+        u8                          *GetLeftFrameBuffer(int posX, int posY);
+        u8                          *GetRightFrameBuffer(bool current = false);
+        u8                          *GetRightFrameBuffer(int posX, int posY);
+        void                        GetPosFromAddress(u32 address, int &posX, int &posY);
+
         void                        ScreenToBMP(BMPImage::Pixel *bmp, u32 padding = 0);
-        static BMPImage             *Screenshot(int screen, BMPImage *image = nullptr);
+        static BMPImage             *ScreenShot(int screen, BMPImage *image = nullptr);
 
     private:
         friend class Renderer;
@@ -79,21 +151,20 @@ namespace CTRPluginFramework
 
         u32                         _LCDSetup;  ///< Address of this screen LCD configuration
         u32                         _FillColor; ///< Address of this screen fill color register
-        u32                        *_currentBufferReg; ///< Addres of this screen current buffer register
         u32                         _backlightOffset;
-        u32                         _leftFramebuffers[2];
-        u32                         _rightFramebuffers[2];
-        u32                         _paFramebuffers[2];
-        u32                        *_backupFramebuffer;
         u32                         _currentBuffer;
+        u32                         _leftFrameBuffers[2];
+        u32                         _rightFrameBuffers[2];
 
-        u16                         _width;
-        u16                         _height;
+
+        const u16                   _width;
         u32                         _stride;
         u32                         _rowSize;
         u32                         _bytesPerPixel;
         bool                        _isTopScreen;
         GSPGPU_FramebufferFormats   _format;
+        GSP::FrameBufferInfoShared  _frameBufferInfo{};
+        GSP::FrameBufferInfoShared  _gameFrameBufferInfo{};
     };
 }
 

@@ -48,7 +48,8 @@ namespace CTRPluginFramework
         enum ChannelMode
         {
             RGB_Mode = 0,
-            BGR_Mode = 1
+            BGR_Mode = 1,
+            RGB565_Mode = 2,
         };
 
         enum ColorPlane
@@ -106,6 +107,7 @@ namespace CTRPluginFramework
         // Channels manipulation
         void    BGRtoRGB(void);
         void    RGBtoBGR(void);
+        void    OptimiseForRendering(void);
         void    ReverseChannels(void);
 
         // Copy image from another one (and center it if necessary)

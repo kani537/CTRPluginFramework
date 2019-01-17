@@ -86,14 +86,14 @@ namespace CTRPluginFramework
         {
             case Target::TOP:
             {
-                framebuf = ScreenImpl::Top->GetLeftFramebuffer(posX, posY);
-                ScreenImpl::Top->GetFramebufferInfos(rowstride, bpp, fmt);
+                framebuf = ScreenImpl::Top->GetLeftFrameBuffer(posX, posY);
+                ScreenImpl::Top->GetFrameBufferInfos(rowstride, bpp, fmt);
                 break;
             }
             case Target::BOTTOM:
             {
-                framebuf = ScreenImpl::Bottom->GetLeftFramebuffer(posX, posY);
-                ScreenImpl::Bottom->GetFramebufferInfos(rowstride, bpp, fmt);
+                framebuf = ScreenImpl::Bottom->GetLeftFrameBuffer(posX, posY);
+                ScreenImpl::Bottom->GetFrameBufferInfos(rowstride, bpp, fmt);
                 break;
             }
             default:
@@ -131,7 +131,7 @@ namespace CTRPluginFramework
 
         if (!is3d && target == Target::TOP && ScreenImpl::Top->Is3DEnabled())
         {
-            framebuf = ScreenImpl::Top->GetRightFramebuffer(posX, posY);
+            framebuf = ScreenImpl::Top->GetRightFrameBuffer(posX, posY);
             img = imgb;
             is3d = true;
             goto again3D;

@@ -150,11 +150,12 @@ namespace CTRPluginFramework
         PluginMenu *menu = PluginMenu::GetRunningInstance();
 
         if (menu && !menu->IsOpen())
-            ScreenImpl::Clean();
+            ScreenImpl::Top->Clear(true);
+
         if (mustReleaseGame)
             ProcessImpl::Play(false);
 
-        return (_cursor ? false : true);
+        return _cursor == 0;
     }
 
     void    MessageBoxImpl::_ProcessEvent(Event &event)

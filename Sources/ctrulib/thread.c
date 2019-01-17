@@ -85,7 +85,7 @@ Result __startThread(Thread t, int prio, int affinity)
 	Result  rc;
 
     // If affinity is meant to be on syscore or N3DS Core3, patch the application
-    if (affinity & 1)
+    if (affinity != -1 && affinity & 1)
         oldAppType = KProcess__PatchCategory(0x300);
 
     // Patch max priority allowed if necessary
@@ -108,10 +108,6 @@ Thread threadCreate(ThreadFunc entrypoint, void* arg, size_t stack_size, int pri
 	Thread t = __createThread(entrypoint, stack_size, detached);
 	if (!t) return NULL;
 
-    u32     oldAppType = -1;
-    u32     oldPrio = -1;
-	Result  rc;
-
     t->arg = arg;
 	if (R_FAILED(__startThread(t, prio, affinity)))
 	{
@@ -121,7 +117,6 @@ Thread threadCreate(ThreadFunc entrypoint, void* arg, size_t stack_size, int pri
 
 	return t;
 }
-
 
 Handle threadGetHandle(Thread thread)
 {

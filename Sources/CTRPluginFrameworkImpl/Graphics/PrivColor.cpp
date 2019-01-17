@@ -93,8 +93,10 @@ namespace CTRPluginFramework
         }           half;
         Color       color;
 
-        half.b[0] = *src++;
-        half.b[1] = *src;
+
+        //half.b[0] = *src++;
+        //half.b[1] = *src;
+        half.u = *reinterpret_cast<u16 *>(src);
 
         color.a = 255;
         color.r = (half.u >> 8) & 0xF8;
@@ -170,9 +172,10 @@ namespace CTRPluginFramework
         half.u |= (color.g & 0xFC) << 3;
         half.u |= (color.b & 0xF8) >> 3;
 
-        *(dst++) = half.b[0];
-        *(dst++) = half.b[1];
-        return (dst);
+        /**(dst++) = half.b[0];
+        *(dst++) = half.b[1];*/
+        *reinterpret_cast<u16 *>(dst) = half.u;
+        return dst + 2;
     }
 
     u8      *PrivColor::_WriteRGB5A1(u8 *dst, const Color &color)

@@ -6,7 +6,6 @@
 #include "CTRPluginFrameworkImpl/Graphics/Renderer.hpp"
 #include "CTRPluginFramework/System/Clock.hpp"
 #include <cmath>
-#include "../../OSDManager.hpp"
 
 namespace CTRPluginFramework
 {
@@ -325,7 +324,6 @@ namespace CTRPluginFramework
 
     u8   *TextBox::_GetWordWidth(u8 *str, float &width)
     {
-        TRACE;
         width = 0;
 
         if (!str || !(*str))
@@ -333,7 +331,6 @@ namespace CTRPluginFramework
 
         while (*str != '\n')
         {
-            TRACE;
             if (*str == 0x18)
             {
                 str++;
@@ -350,7 +347,6 @@ namespace CTRPluginFramework
 
             if (glyph == nullptr)
             {
-                TRACE;
                 return (nullptr);
             }
 
@@ -360,13 +356,11 @@ namespace CTRPluginFramework
             if (isSpace)
                 break;
         }
-        TRACE;
         return (str);
     }
 
     u8   *CutWordWidth(u8 *str, float &width, float maxWidth)
     {
-        TRACE;
         width = 0;
 
         if (!str || !(*str))
@@ -374,8 +368,6 @@ namespace CTRPluginFramework
 
         while (*str != '\n')
         {
-            TRACE;
-            XTRACE("%s", str);
             if (*str == 0x18)
             {
                 str++;
@@ -394,7 +386,6 @@ namespace CTRPluginFramework
 
             if (glyph == nullptr)
             {
-                TRACE;
                 return (nullptr);
             }
 
@@ -409,7 +400,6 @@ namespace CTRPluginFramework
                 break;
             }
         }
-        TRACE;
         return (str);
     }
 
@@ -418,7 +408,6 @@ namespace CTRPluginFramework
     ******************/
     void     TextBox::_GetTextInfos(void)
     {
-        TRACE;
         _newline.clear();
 
         u8      *str = const_cast<u8 *>(reinterpret_cast<const u8*>(_text->c_str()));
@@ -441,7 +430,6 @@ namespace CTRPluginFramework
 
         while (str && *str)
         {
-            XTRACE("%s", str);
             if (*str == '\n')// || *str == 0x18)
             {
                 str++;
@@ -460,7 +448,6 @@ namespace CTRPluginFramework
                 float wordWidth;
 
                 s = _GetWordWidth(s, wordWidth);
-                TRACE;
                 // If word's width is greater than line's width
                 if (wordWidth > maxWidth)
                 {
@@ -494,14 +481,11 @@ namespace CTRPluginFramework
                 {
                     break;
                 }
-                XTRACE("End: %d", s);
-                TRACE;
             }
             _newline.push_back(str);
         }
     exit:
         if (!_newline.empty() && _newline.back() != nullptr)
             _newline.push_back(nullptr);
-        TRACE;
     }
 }

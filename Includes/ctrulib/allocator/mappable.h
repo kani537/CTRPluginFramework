@@ -3,7 +3,9 @@
  * @brief Mappable memory allocator.
  */
 #pragma once
-
+#ifdef __cplusplus
+extern "C" {
+#endif
 /**
  * @brief Allocates a page-aligned buffer.
  * @param size Size of the buffer to allocate.
@@ -22,3 +24,6 @@ void mappableFree(void* mem);
  * @return The current mappable free space.
  */
 u32 mappableSpaceFree(void);
+#ifdef __cplusplus
+}
+#endif

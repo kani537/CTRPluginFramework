@@ -1,7 +1,6 @@
 #include <3DS.h>
 #include "CTRPluginFramework/System/FwkSettings.hpp"
 #include "CTRPluginFrameworkImpl/System/ProcessImpl.hpp"
-#include "CTRPluginFrameworkImpl/System/MMU.hpp"
 
 namespace CTRPluginFramework
 {
@@ -11,19 +10,34 @@ namespace CTRPluginFramework
     extern "C" u32 __ctru_heap;
     extern "C" u32 __ctru_heap_size;
 
-    #define MEMPERM_RW ((MemPerm)(MEMPERM_READ | MEMPERM_WRITE))
-
     static u32 Fail(u32 res)
     {
         return *(u32 *)0xDEADC0DE = res;
     }
 
+    struct ScreensFramebuffers
+    {
+        u8  topFramebuffer0[400 * 240 * 2];
+        u8  topFramebuffer1[400 * 240 * 2];
+        u8  bottomFramebuffer0[320 * 240 * 2];
+        u8  bottomFramebuffer1[320 * 240 * 2];
+    } PACKED;
+
+    // Heap layout
+    /*
+    ** ScreensFramebuffer
+    ** Newlib heap
+    ** hook page
+    ** ar shared page
+    */
     extern "C" void   __system_allocateHeaps(void);
     void __system_allocateHeaps(void)
     {
+        u32 fbSize = (sizeof(ScreensFramebuffers) + 0x1000) & ~0xFFF;
+
         // Heap params
-        __ctru_heap = FwkSettings::Header->heapVA;
-        __ctru_heap_size = FwkSettings::Header->heapSize - 0x2000;
+        __ctru_heap = FwkSettings::Header->heapVA + fbSize;
+        __ctru_heap_size = FwkSettings::Header->heapSize - 0x2000 - fbSize;
 
         // Map Hook memory + shared page
         Result res = svcMapProcessMemoryEx(CUR_PROCESS_HANDLE, 0x1E80000, CUR_PROCESS_HANDLE, __ctru_heap + __ctru_heap_size, 0x2000);

@@ -846,7 +846,11 @@ bool AlmostEqualRelative(float A, float B, float maxRelDiff = FLT_EPSILON);
             {
                 u32 min = code.Left;
                 u32 max = code.Right;
-                currentData.value = Utils::Random(min, max);
+
+                if (!currentData.isVFP)
+                    currentData.value = Utils::Random(min, max);
+                else
+                    currentData.vfp = (float)Utils::Random(min, max);
                 break;
             }
             default:

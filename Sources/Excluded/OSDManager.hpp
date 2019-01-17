@@ -53,10 +53,12 @@ namespace CTRPluginFramework
         _OSDManager(void);
 
         static bool     OSDCallback(const Screen &screen);
-
+        static s32      RenderTaskFunc(void *arg);
         static _OSDManager *_singleton;
 
         Mutex   _mutex;
+        Task    _renderTask1;
+        Task    _renderTask2;
         std::map<u32, std::tuple<bool, std::string, u32, u32, bool>> _items{};
     };
 }

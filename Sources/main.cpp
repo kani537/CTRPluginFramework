@@ -27,7 +27,7 @@ typedef unsigned long __PTRDIFF_TYPE__;
 #include "csvc.h"
 #include "CTRPluginFrameworkImpl/System/Screen.hpp"
 #include "CTRPluginFrameworkImpl/Graphics/BMPImage.hpp"
-#include "OSDManager.hpp"
+//#include "OSDManager.hpp"
 #include "CTRPluginFrameworkImpl/System/ProcessImpl.hpp"
 #include <list>
 
@@ -79,7 +79,7 @@ exit:
         svcCloseHandle(processHandle);
     }
 
-    // This function is called on the plugin starts, before main
+    // This function is called on the plugin start, before main
     void    PatchProcess(FwkSettings &settings)
     {
         ToggleTouchscreenForceOn();
@@ -208,9 +208,12 @@ exit:
     }
 
     // Uncomment to stall process at the beginning until Y is pressed
-    // void    DebugFromStart(void){}
+    //void    DebugFromStart(void){}
 
     //extern "C" const u8 BottomBackground_bmp[];
+
+    #define REG32(x) *(vu32 *)((x) | (1u << 31))
+    u32     cfgProt = REG32(0x10140140);
 
     int     main(void)
     {
@@ -260,6 +263,29 @@ exit:
         {
             entry->Name() = Utils::Format("Available memory: %08X", getMemFree());
         });
+
+        menu += new MenuEntry("Thread piorrity", nullptr,
+            [](MenuEntry *entry)
+        {
+            Keyboard kb;
+
+            kb.Open(FwkSettings::Get().ThreadPriority, FwkSettings::Get().ThreadPriority);
+            svcSetThreadPriority(threadGetCurrent()->handle, FwkSettings::Get().ThreadPriority);
+        });
+
+        // REG32(0x10140140) = 0;
+       /* menu += []
+        {
+            int i = 0;
+            OSDManager[1].SetScreen(true).SetPos(0, i++ * 10) = Utils::Format("468: 0x%08X", REG32(0x10400468));
+            OSDManager[2].SetScreen(true).SetPos(0, i++ * 10) = Utils::Format("46C: 0x%08X", REG32(0x1040046C));
+            OSDManager[3].SetScreen(true).SetPos(0, i++ * 10) = Utils::Format("470: 0x%08X", REG32(0x10400470));
+            OSDManager[4].SetScreen(true).SetPos(0, i++ * 10) = Utils::Format("478: 0x%08X", REG32(0x10400478));
+            OSDManager[5].SetScreen(true).SetPos(0, i++ * 10) = Utils::Format("490: 0x%08X", REG32(0x10400490));
+            OSDManager[6].SetScreen(true).SetPos(0, i++ * 10) = Utils::Format("%08X: 0x%08X", 0x06000000, svcConvertVAToPA((void *)0x06000000, false));
+            OSDManager[7].SetScreen(true).SetPos(0, i++ * 10) = Utils::Format("gpuprot: 0x%08X", cfgProt);
+            OSDManager[8].SetScreen(true).SetPos(0, i++ * 10) = Utils::Format("gpuprot: 0x%08X", REG32(0x10140140));
+        };*/
         //menu += new MenuEntry("Check screen fmt", nullptr, CheckScreenFormat);
         // Launch menu and mainloop
         int ret = menu.Run();

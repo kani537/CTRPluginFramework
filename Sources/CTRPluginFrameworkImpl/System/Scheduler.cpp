@@ -129,15 +129,14 @@ namespace CTRPluginFramework
         // Create handler on Core0
         _cores[0].id = AppCore;
         _cores[0].thread.affinity = 0;
-        _cores[0].thread.priority = 20;
+        _cores[0].thread.priority = 0x20;
         _cores[0].thread.Start(&_cores[0]);
 
         // Create handler on Core1
         _cores[1].id = SysCore;
-        _cores[1].thread.affinity = 1;
-        _cores[1].thread.priority = 10;
+        _cores[1].thread.affinity = 0;
+        _cores[1].thread.priority = 0x21;
         _cores[1].thread.Start(&_cores[1]);
-
 
         // Create handler on Core2 & Core3 (N3DS only)
         if (!System::IsNew3DS())

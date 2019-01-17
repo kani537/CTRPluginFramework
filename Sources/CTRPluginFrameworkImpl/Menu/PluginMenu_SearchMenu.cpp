@@ -577,7 +577,13 @@ namespace CTRPluginFramework
     {
         MessageBox(Color::Green << "Info", "Press " FONT_B " to return to the menu.")();
 
-        ScreenImpl::Clean();
+        ScreenImpl::SwitchFrameBuffers(true);
+
+        // Clear the textbox from frame buffer
+        Renderer::SetTarget(TOP);
+        ScreenImpl::Top->SwapBufferInternal();
+        Draw();
+        ScreenImpl::Top->SwapBufferInternal();
 
         while (true)
         {
@@ -586,6 +592,6 @@ namespace CTRPluginFramework
                 break;
         }
 
-        ScreenImpl::ApplyFading();
+        ScreenImpl::SwitchFrameBuffers(false);
     }
 }

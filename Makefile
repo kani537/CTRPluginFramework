@@ -157,7 +157,7 @@ $(LIBOUT):	$(filter-out $(EXCLUDE), $(OFILES))
 #---------------------------------------------------------------------------------
 %.3gx: %.elf
 	@echo creating $(notdir $@)
-	@3gxtool.exe -s -d $(OUTPUT).elf $(TOPDIR)/$(PSF) $@
+	@3gxtool.exe -s $(OUTPUT).elf $(TOPDIR)/$(PSF) $@
 
 -include $(DEPENDS)
 

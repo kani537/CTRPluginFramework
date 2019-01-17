@@ -39,8 +39,8 @@ namespace CTRPluginFramework
 #define IsPattern (flags & ARCodeEditor::CodeLine::PatternData)
 #define IsAsm (flags & ARCodeEditor::CodeLine::Asm)
 #define IsData (flags & (u32)(ARCodeEditor::CodeLine::PatchData | ARCodeEditor::CodeLine::PatternData | ARCodeEditor::CodeLine::Asm))
-#define Clear(bit) (flags &= ~bit)
-#define Set(bit) (flags |= bit)
+#define BClear(bit) (flags &= ~bit)
+#define BSet(bit) (flags |= bit)
 
     static std::string      ColorToString(const Color &color)
     {
@@ -636,7 +636,7 @@ namespace CTRPluginFramework
     {
         if (code.Text.empty())
             code.Text = code.ToString();
-        Set(Modified);
+        BSet(Modified);
     }
 
     ARCodeEditor::CodeLine::CodeLine(const CodeLine &right) :
@@ -645,7 +645,7 @@ namespace CTRPluginFramework
         parent = right.parent;
         flags = right.flags;
         index = right.index;
-        Set(Modified);
+        BSet(Modified);
     }
 
     ARCodeEditor::CodeLine::CodeLine(CodeLine &&right) :
@@ -654,7 +654,7 @@ namespace CTRPluginFramework
         parent = right.parent;
         flags = right.flags;
         index = right.index;
-        Set(Modified);
+        BSet(Modified);
     }
 
     #define IsInRange(val, min, max) (val >= min && val <= max)
@@ -665,7 +665,7 @@ namespace CTRPluginFramework
         parent = right.parent;
         flags = right.flags;
         index = right.index;
-        Set(Modified);
+        BSet(Modified);
         return *this;
     }
 
@@ -719,7 +719,7 @@ namespace CTRPluginFramework
                 if (ctDiffer && nextCodeType == "F0" && base.Left == 0x00F00000)
                 {
                     base.Text = asmcode;
-                    Set(Modified);
+                    BSet(Modified);
                     return;
                 }
 
@@ -732,7 +732,7 @@ namespace CTRPluginFramework
                     if (left == std::string(asmcode).substr(0, 8))
                     {
                         base.Text = asmcode;
-                        Set(Modified);
+                        BSet(Modified);
                         return;
                     }
                 }
@@ -819,7 +819,7 @@ namespace CTRPluginFramework
                 base.Text[cursor] = value;
         }
 
-        Set(Modified);
+        BSet(Modified);
     }
 
     void    ARCodeEditor::CodeLine::Update(void)
@@ -838,13 +838,13 @@ namespace CTRPluginFramework
             else
                 comment = "asm data";
 
-            Clear(Modified);
+            BClear(Modified);
             return;
         }
 
         if (g_newCondDataToggle && IsInRange(base.Type, 0x30, 0xA0))
         {
-            Set(Modified);
+            BSet(Modified);
         }
 
         #define IsCondModeToggle(code) (code.Type == 0xDF && code.Left == 0x00FFFFFF)
@@ -868,7 +868,7 @@ namespace CTRPluginFramework
                 comment = CommentCodeLine(base);
             }
 
-            Clear(Modified);
+            BClear(Modified);
         }
 
         if (IsCondModeToggle(base))
@@ -891,28 +891,7 @@ namespace CTRPluginFramework
 
         MessageBox(Color::LimeGreen << "Action Replay Code Editor Help",  body)();
 
-        ScreenImpl::Clean();
-
-        float fade = 0.03f;
-        Clock t = Clock();
-        Time limit = Seconds(1) / 10.f;
-        Time delta;
-        float pitch = 0.0006f;
-
-        while (fade <= 0.3f)
-        {
-            delta = t.Restart();
-            fade += pitch * delta.AsMilliseconds();
-
-            ScreenImpl::Top->Fade(fade);
-            ScreenImpl::Bottom->Fade(fade);
-
-            ScreenImpl::Top->SwapBuffer(true, true);
-            ScreenImpl::Bottom->SwapBuffer(true, true);
-            gspWaitForVBlank();
-            if (System::IsNew3DS())
-                while (t.GetElapsedTime() < limit);
-        }
+        ScreenImpl::Top->Clear(true);
     }
 
     /*

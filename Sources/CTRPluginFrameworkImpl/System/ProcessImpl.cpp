@@ -75,7 +75,7 @@ namespace CTRPluginFramework
 		// Create handle for this process
 		svcOpenProcess(&ProcessHandle, ProcessId);
 
-
+        UpdateMemRegions();
 	}
 
     extern "C" Handle gspEvent;
@@ -93,29 +93,17 @@ namespace CTRPluginFramework
         if (IsPaused > 1)
             return;
 
-        // Wake up gsp event thread
-        svcSignalEvent(gspEvent);
-
         // Wait for the frame to be paused
         OSDImpl::WaitFramePaused();
 
         // Acquire screens
-        u32 err = ScreenImpl::Bottom->Acquire() | ScreenImpl::Top->Acquire();
+        ScreenImpl::Top->Acquire();
+        ScreenImpl::Bottom->Acquire();
 
-        while (err)
-        {
-            OSDImpl::ResumeFrame(1);
-            err = ScreenImpl::Bottom->Acquire() | ScreenImpl::Top->Acquire();
-        };
         OSDImpl::UpdateScreens();
 
         // Update memregions
         UpdateMemRegions();
-
-        if (!useFading)
-            return;
-
-        ScreenImpl::ApplyFading();
 	}
 
 	void 	ProcessImpl::Play(bool forced)
@@ -133,7 +121,11 @@ namespace CTRPluginFramework
 
         // Resume frame
         if (!IsPaused)
+        {
+            ScreenImpl::Top->Release();
+            ScreenImpl::Bottom->Release();
             OSDImpl::ResumeFrame();
+        }
 	}
 
     bool     ProcessImpl::PatchProcess(u32 addr, u8 *patch, u32 length, u8 *original)

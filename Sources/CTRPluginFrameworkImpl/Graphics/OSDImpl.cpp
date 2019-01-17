@@ -269,6 +269,9 @@ namespace CTRPluginFramework
             *tls = THREADVARS_MAGIC;
             ProcessImpl::LockGameThreads();
 
+            // Wake up gsp event thread
+            GSP::ResumeInterruptReceiver();
+
             // Wait for gpu to finish all stuff
             while ((GPU_PSC0_CNT | GPU_PSC1_CNT | GPU_TRANSFER_CNT | GPU_CMDLIST_CNT) & 1);
 
@@ -284,6 +287,7 @@ namespace CTRPluginFramework
             // Signal that the frame continue
             LightEvent_Signal(&OnFrameResume);
 
+            GSP::PauseInterruptReceiver();
             // Unlock threads
             ProcessImpl::UnlockGameThreads();
             *tls = bak;
@@ -416,8 +420,8 @@ namespace CTRPluginFramework
         // Top screen
         TopScreen.IsTop = true;
         TopScreen.Is3DEnabled = screen->Is3DEnabled();
-        TopScreen.LeftFramebuffer = (u32)screen->GetLeftFramebuffer(false);
-        TopScreen.RightFramebuffer = (u32)screen->GetRightFramebuffer(false);
+        TopScreen.LeftFramebuffer = (u32)screen->GetLeftFrameBuffer(false);
+        TopScreen.RightFramebuffer = (u32)screen->GetRightFrameBuffer(false);
         TopScreen.Stride = (u32)screen->GetStride();
         TopScreen.BytesPerPixel = screen->GetBytesPerPixel();
         TopScreen.Format = screen->GetFormat();
@@ -427,8 +431,8 @@ namespace CTRPluginFramework
         // Bottom screen
         BottomScreen.IsTop = false;
         BottomScreen.Is3DEnabled = screen->Is3DEnabled();
-        BottomScreen.LeftFramebuffer = (u32)screen->GetLeftFramebuffer(false);
-        BottomScreen.RightFramebuffer = (u32)screen->GetRightFramebuffer(false);
+        BottomScreen.LeftFramebuffer = (u32)screen->GetLeftFrameBuffer(false);
+        BottomScreen.RightFramebuffer = (u32)screen->GetRightFrameBuffer(false);
         BottomScreen.Stride = (u32)screen->GetStride();
         BottomScreen.BytesPerPixel = screen->GetBytesPerPixel();
         BottomScreen.Format = screen->GetFormat();
@@ -449,9 +453,6 @@ namespace CTRPluginFramework
             return;
 
         FramesToPlay = nbFrames;
-
-        // Restore framebuffer if possible
-        ScreenImpl::Clean();
 
         // Wake up game's thread
         LightEvent_Pulse(&OnFrameResume);

@@ -7,7 +7,7 @@
 
 #include <cstring>
 #include <cmath>
-
+#include "CTRPluginFramework/Utils/Utils.hpp"
 
 
 namespace CTRPluginFramework
@@ -27,17 +27,35 @@ namespace CTRPluginFramework
         return (xOffset + xAdvance);
     }
 
+    static void     PatchGameFontMapping(void)
+    {
+        std::vector<u32> pattern =
+        {
+            0xE3A03201, // mov r3, #0x10000000
+            0xE3A02001, // mov r2, #1
+            0xE3A01000, // mov r1, #0
+            0xE5940004, // ldr r0, [r4, #4]
+            0xEF00001F  // svc 0x1F
+        };
+
+        u32 addr = Utils::Search<u32>(0x00100000, Process::GetTextSize(), pattern);
+
+        if (addr)
+            *reinterpret_cast<vu32 *>(addr + 16) = 0xE3A00000; ///< mov r0, #0
+    }
+
     void    Font::Initialize(void)
     {
         fontEnsureMapped();
+        PatchGameFontMapping();
         // Sysfont has 7505 glyph
         if (defaultSysFont != nullptr)
             delete [] defaultSysFont;
 
-        defaultSysFont = new u32[7505];//static_cast<u32 *>(linearAlloc(sizeof(u32) * 7505));
+        defaultSysFont = new u32[7505];
         g_fontAllocated = sizeof(u32) * 7505;
-        tileData = (u8 *)new u8[4096];//linearAlloc(4096);
-        glyph = (u8 *)new u8[1000];//linearAlloc(1000);
+        tileData = (u8 *)new u8[4096];
+        glyph = (u8 *)new u8[1000];
         std::memset(defaultSysFont, 0, sizeof(u32) * 7505);
     }
 

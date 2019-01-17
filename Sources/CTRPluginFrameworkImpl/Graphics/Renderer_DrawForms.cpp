@@ -273,7 +273,7 @@ namespace CTRPluginFramework
         }
 
         ScreenImpl  *screen = GetContext()->screen;
-        u8          *dst = screen->GetLeftFramebuffer(posX, posY + height - 1);
+        u8          *dst = screen->GetLeftFrameBuffer(posX, posY + height - 1);
         u32         stride = screen->GetStride();
         u32         fmt = screen->GetFormat();
         //u32         size = screen->GetBytesPerPixel() * height;
@@ -344,7 +344,7 @@ namespace CTRPluginFramework
         }
 
         ScreenImpl  *screen = GetContext()->screen;
-        u8          *dst = screen->GetLeftFramebuffer(posX, posY + height - 1);
+        u8          *dst = screen->GetLeftFrameBuffer(posX, posY + height - 1);
         u32         stride = screen->GetStride();
         u32         fmt = screen->GetFormat();
 
@@ -372,7 +372,7 @@ namespace CTRPluginFramework
         }
 
         ScreenImpl  *screen = GetContext()->screen;
-        u8          *dst = screen->GetLeftFramebuffer(posX, posY + height - 1);
+        u8          *dst = screen->GetLeftFrameBuffer(posX, posY + height - 1);
         u32         stride = screen->GetStride();
         int         pitch = 5;
 
@@ -1065,7 +1065,7 @@ namespace CTRPluginFramework
         int width = rect.size.x;
 
         ScreenImpl  *screen = GetContext()->screen;
-        u8          *dst = screen->GetLeftFramebuffer(posX, posY + height - 1);
+        u8          *dst = screen->GetLeftFrameBuffer(posX, posY + height - 1);
         u32         stride = screen->GetStride();
         u32         fmt = screen->GetFormat();
 

@@ -245,7 +245,7 @@ namespace CTRPluginFramework
                 bottomBackgroundImage = image;
             }
 
-            // Update Window²
+            // Update Window
             Window::UpdateBackgrounds();
 
             return (s32)0;

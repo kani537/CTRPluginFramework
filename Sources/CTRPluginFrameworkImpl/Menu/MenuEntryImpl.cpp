@@ -3,7 +3,6 @@
 #include "CTRPluginFrameworkImpl/Menu/MenuItem.hpp"
 #include "CTRPluginFrameworkImpl/Menu/MenuEntryImpl.hpp"
 #include "CTRPluginFrameworkImpl/Menu/PluginMenuExecuteLoop.hpp"
-#include "../../OSDManager.hpp"
 
 namespace CTRPluginFramework
 {
@@ -102,7 +101,6 @@ namespace CTRPluginFramework
         if (_owner == nullptr || _owner->Hotkeys.Count() == 0)
             return (note);
 
-        TRACE;
         if (Note2.empty() || HasNoteChanged())
             Note2 = note + "\n\n" + _owner->Hotkeys.ToString();
         return (Note2);
@@ -138,7 +136,7 @@ namespace CTRPluginFramework
 
         if (GameFunc != nullptr)
             GameFunc(_owner);
-        
+
         if (_flags.state && _flags.justChanged)
             _flags.justChanged = false;
         else if (!_flags.state && fl.justChanged && !fl.state)

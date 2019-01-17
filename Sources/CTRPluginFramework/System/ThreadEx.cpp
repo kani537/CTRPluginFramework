@@ -103,6 +103,7 @@ extern "C"
 	    return tv;
     }
 }
+
 namespace CTRPluginFramework
 {
     ThreadEx::ThreadEx(ThreadFunc entrypoint, u32 stackSize, u32 priority, int affinity) :

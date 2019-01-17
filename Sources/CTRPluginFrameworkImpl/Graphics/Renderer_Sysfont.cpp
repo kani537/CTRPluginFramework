@@ -238,7 +238,7 @@ namespace CTRPluginFramework
         u32  stride = screen->_stride;
         u32  bpp = screen->_bytesPerPixel;
         u8   *data = glyph->glyph;
-        u8   *left = static_cast<u8 *>(screen->GetLeftFramebuffer(posX, posY));
+        u8   *left = static_cast<u8 *>(screen->GetLeftFrameBuffer(posX, posY));
         u8   *fb = left;
 
         for (int i = 0; i < 208; i++)
@@ -275,7 +275,7 @@ namespace CTRPluginFramework
         u32  stride = screen->_stride;
         u32  bpp = screen->_bytesPerPixel;
         u8   *data = glyph->glyph;
-        u8   *left = static_cast<u8 *>(screen->GetLeftFramebuffer(posX, posY));
+        u8   *left = static_cast<u8 *>(screen->GetLeftFrameBuffer(posX, posY));
         u8   *fb = left;
 
         for (int i = static_cast<int>(offset); i < 208; i++)

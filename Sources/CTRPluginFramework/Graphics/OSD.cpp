@@ -116,11 +116,10 @@ namespace CTRPluginFramework
 
     void    OSD::SwapBuffers(void)
     {
-        ScreenImpl::Bottom->SwapBuffer(true, false);
-        ScreenImpl::Top->SwapBuffer(true, false);
+        ScreenImpl::Bottom->SwapBuffer();
+        ScreenImpl::Top->SwapBuffer();
 
-        gspWaitForVBlank();
-
+        GSP::WaitBufferSwapped(3);
         OSDImpl::UpdateScreens();
     }
 

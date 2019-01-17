@@ -107,6 +107,7 @@ bool   IsPaused(void); ///< ProcessImpl.cpp
 
 void gspWaitForEvent(GSPGPU_Event id, bool nextEvent)
 {
+    return;
     if (!IsPaused())
         return;
 	if(id>= GSPGPU_EVENT_MAX)return;

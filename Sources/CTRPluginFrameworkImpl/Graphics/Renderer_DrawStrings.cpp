@@ -10,7 +10,7 @@ namespace CTRPluginFramework
     {
         ScreenImpl  *screen = GetContext()->screen;
 
-        PrivColor::ToFramebuffer(screen->GetLeftFramebuffer(posX, posY), color);
+        PrivColor::ToFramebuffer(screen->GetLeftFrameBuffer(posX, posY), color);
     }
 
     // Draw Character without background
@@ -29,7 +29,7 @@ namespace CTRPluginFramework
         for (int yy = 0; yy < 10; ++yy)
         {
             u8  charPos = *charInFont++;
-            u8  *fb = screen->GetLeftFramebuffer(posX, posY++);
+            u8  *fb = screen->GetLeftFrameBuffer(posX, posY++);
 
             for (int xx = 6; xx > 0; --xx)
             {
@@ -45,7 +45,7 @@ namespace CTRPluginFramework
             for (int yy = 0; yy < 10; ++yy)
             {
                 u8  charPos = *charInFont++;
-                u8  *fb = screen->GetRightFramebuffer(posXX, posYY++);
+                u8  *fb = screen->GetRightFrameBuffer(posXX, posYY++);
 
                 for (int xx = 6; xx > 0; --xx)
                 {
@@ -73,7 +73,7 @@ namespace CTRPluginFramework
         for (int yy = 0; yy < 10; ++yy)
         {
             u8  charPos = *charInFont++;
-            u8  *fb = screen->GetLeftFramebuffer(posX, posY++);
+            u8  *fb = screen->GetLeftFrameBuffer(posX, posY++);
 
             for (int xx = 6; xx > 0; --xx)
             {
@@ -89,7 +89,7 @@ namespace CTRPluginFramework
             for (int yy = 0; yy < 10; ++yy)
             {
                 u8  charPos = *charInFont++;
-                u8  *fb = screen->GetRightFramebuffer(posXX, posYY++);
+                u8  *fb = screen->GetRightFrameBuffer(posXX, posYY++);
 
                 for (int xx = 6; xx > 0; --xx)
                 {
@@ -140,7 +140,7 @@ namespace CTRPluginFramework
 
         for (int i = 0; i < 2; i++)
         {
-            u8 *fb = screen->GetLeftFramebuffer(posX + i, posY);
+            u8 *fb = screen->GetLeftFrameBuffer(posX + i, posY);
             for (int y = 0; y < 10; y++)
             {
                 PrivColor::ToFramebuffer(fb, bg);
@@ -152,7 +152,7 @@ namespace CTRPluginFramework
         {
             for (int i = 0; i < 2; i++)
             {
-                u8 *fb = screen->GetRightFramebuffer(posX - 10 + i, posY);
+                u8 *fb = screen->GetRightFrameBuffer(posX - 10 + i, posY);
                 for (int y = 0; y < 10; y++)
                 {
                     PrivColor::ToFramebuffer(fb, bg);

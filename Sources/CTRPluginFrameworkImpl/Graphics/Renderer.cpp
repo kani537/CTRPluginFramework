@@ -11,7 +11,7 @@
 
 #include "csvc.h"
 
-#define FPS 0
+#define FPS 1
 
 namespace CTRPluginFramework
 {
@@ -71,12 +71,17 @@ namespace CTRPluginFramework
         int posY = 30;
         DrawString(buffer, 200, posY, Color::White, Color::Black);
 #endif
-        __dsb();
-        //svcFlushEntireDataCache();
-        ScreenImpl::Top->SwapBuffer(true, copy);
-        ScreenImpl::Bottom->SwapBuffer(true, copy);
 
-        gspWaitForVBlank();
+        ScreenImpl::Top->SwapBuffer();
+        ScreenImpl::Bottom->SwapBuffer();
+
+        GSP::WaitBufferSwapped(3);
+        if (copy)
+        {
+            ScreenImpl::Top->Copy();
+            ScreenImpl::Bottom->Copy();
+        }
+
     }
 
     void    Renderer::MenuSelector(int posX, int posY, int width, int height)
@@ -89,11 +94,11 @@ namespace CTRPluginFramework
         int h = height;
 
 
-        u8 *left = screen->GetLeftFramebuffer(posX, posY + 1);
+        u8 *left = screen->GetLeftFrameBuffer(posX, posY + 1);
         int bpp;
         int rowstride;
         GSPGPU_FramebufferFormats fmt;
-        screen->GetFramebufferInfos(rowstride, bpp, fmt);
+        screen->GetFrameBufferInfos(rowstride, bpp, fmt);
 
         float fade = Preferences::Settings.CursorFadeValue;
 
@@ -120,7 +125,7 @@ namespace CTRPluginFramework
 
         Color l(255, 255, 255);
         posY += height;
-        u8 *dst = screen->GetLeftFramebuffer(posX + (width - tier), posY);
+        u8 *dst = screen->GetLeftFrameBuffer(posX + (width - tier), posY);
         u8 *rtier = dst;
         Color black(60, 60, 60);
         // Right tier

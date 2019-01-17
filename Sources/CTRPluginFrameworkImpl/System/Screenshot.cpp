@@ -138,7 +138,7 @@ namespace CTRPluginFramework
             LightEvent_Clear(&_readyEvent);
 
             // Create the image
-            image = ScreenImpl::Screenshot(Screens & SCREENSHOT_BOTH, image);
+            image = ScreenImpl::ScreenShot(Screens & SCREENSHOT_BOTH, image);
 
             error = !image->IsLoaded();
 

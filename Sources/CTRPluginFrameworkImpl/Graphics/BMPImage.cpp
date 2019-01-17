@@ -153,34 +153,25 @@ namespace CTRPluginFramework
 
     void     BMPImage::Draw(int x, int y)
     {
+        OptimiseForRendering();
+
         ScreenImpl *scr = Renderer::GetContext()->screen;
 
         int posX = scr->IsTopScreen() ? x + (340 - _width) / 2 : x + (280 - _width) / 2;
         int posY = y + (200 - _height) / 2;
 
 
-        u8      *img = (u8 *)data();
-        u8      *left = scr->GetLeftFramebuffer(posX, posY);
-        int     bpp = scr->GetBytesPerPixel();
-        int     width = _width;
-        int     height = _height;
-        int     stride = scr->GetStride();
-        Color   imgc;
+        u16      *img = reinterpret_cast<u16 *>(data());
+        u16      *left = reinterpret_cast<u16 *>(scr->GetLeftFrameBuffer(posX, posY));
+        u32      rowsize = _height;
+        u32      screenheight = 240; //scr->IsTopScreen() ? 400 : 320;
 
-        while (height--)
+        left -= _height;
+        for (u32 w = _width; w > 0; --w)
         {
-            u8 *framebuf = left;
-            for (x = 0; x < width; x++)
-            {
-                Pixel *pix = (Pixel *)img;
-                imgc.r = pix->r;
-                imgc.g = pix->g;
-                imgc.b = pix->b;
-                PrivColor::ToFramebuffer(framebuf, imgc);
-                framebuf += stride;
-                img += 3;
-            }
-            left -= bpp;
+            std::copy(img, img + rowsize, left);
+            left += screenheight;
+            img += rowsize;
         }
     }
 
@@ -189,8 +180,11 @@ namespace CTRPluginFramework
         Draw(point.x, point.y);
     }
 
-    void     BMPImage::Draw(const IntRect &area, float fade)
+    void     BMPImage::Draw(const IntRect &area, float fade UNUSED)
     {
+        // TODO: re-implement fading ?
+        OptimiseForRendering();
+
         ScreenImpl *scr = Renderer::GetContext()->screen;
 
         int posX = area.leftTop.x;
@@ -221,57 +215,17 @@ namespace CTRPluginFramework
         if (xOffset < 0)
           xOffset = 0;
 
-        Color   imgc;
-        u32     bpp = scr->GetBytesPerPixel();
-        u32     stride = scr->GetStride();
+        u16      *img = reinterpret_cast<u16 *>(data());
+        u16      *left = reinterpret_cast<u16 *>(scr->GetLeftFrameBuffer(posX, posY));
+        u32      rowsize = height;
 
-        if (fade == 0.f)
+        left -= height;
+        img += _height * xOffset + startY;
+        for (u32 w = width; w > 0; --w)
         {
-            u8 *left = scr->GetLeftFramebuffer(posX, posY);
-
-            while (height--)
-            {
-                u8 *img = Row(startY++) + xOffset;
-                u8 *framebuf = left;
-                for (int x = 0; x < width; x++)
-                {
-                    Pixel *pix = (Pixel *)img;
-
-                    imgc.r = pix->r;
-                    imgc.g = pix->g;
-                    imgc.b = pix->b;
-
-                    PrivColor::ToFramebuffer(framebuf, imgc);
-
-                    framebuf += stride;
-                    img += 3;
-                }
-                left -= bpp;
-            }
-        }
-        else
-        {
-            u8 *left = scr->GetLeftFramebuffer(posX, posY);
-
-            while (height--)
-            {
-                u8 *framebuf = left;
-                u8 *img = Row(startY++) + xOffset;
-
-                for (int x = 0; x < width; x++)
-                {
-                    Pixel *pix = (Pixel *)img;
-
-                    imgc.r = pix->r;
-                    imgc.g = pix->g;
-                    imgc.b = pix->b;
-
-                    PrivColor::ToFramebuffer(framebuf, imgc.Fade(fade));
-                    framebuf += stride;
-                    img += 3;
-                }
-                left -= bpp;
-            }
+            std::copy(img, img + rowsize, left);
+            left += 240;
+            img += _height;
         }
     }
 
@@ -325,6 +279,56 @@ namespace CTRPluginFramework
             ReverseChannels();
             _channelMode = BGR_Mode;
         }
+    }
+
+    void    BMPImage::OptimiseForRendering(void)
+    {
+        // If already converted, nothing to do
+        if (_channelMode == RGB565_Mode)
+            return;
+
+        // Ensure we're dealing with BGR8 color format
+        RGBtoBGR();
+
+        Pixel   *img = reinterpret_cast<Pixel *>(data());
+        u16     *rgb565Image = static_cast<u16 *>(::operator new(_width * _height * 2 + HeaderSize, std::nothrow));
+
+        u16     *dst = reinterpret_cast<u16 *>(reinterpret_cast<u32>(rgb565Image) + HeaderSize);
+
+        if (rgb565Image == nullptr)
+        {
+            OSD::Notify("Error: rgb565 buffer alloc failed", Color::Red);
+            Unload();
+            return;
+        }
+
+        dst += _height;
+
+        for (u32 w = _width; w > 0; --w)
+        {
+            Pixel *row = img;
+            for (u32 h = _height; h > 0; --h)
+            {
+                union
+                {
+                    u16     u{0};
+                    u8      b[2];
+                }           c;
+
+                c.u = (row->b & 0xF8) >> 3;
+                c.u |= (row->g & 0xFC) << 3;
+                c.u |= (row->r & 0xF8) << 8;
+
+                *dst-- = c.u;
+                row += _width;
+            }
+            dst += _height << 1;
+            ++img;
+        }
+
+        ::operator delete(_data);
+        _data = reinterpret_cast<u8 *>(rgb565Image);
+        _channelMode = RGB565_Mode;
     }
 
     void    BMPImage::ReverseChannels(void)

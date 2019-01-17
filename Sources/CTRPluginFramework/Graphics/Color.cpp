@@ -53,27 +53,27 @@ namespace CTRPluginFramework
         return ((a << 24) | (b << 16) | (g << 8) | r);
     }
 
-    Color&   Color::Fade(double fading)
+    Color&   Color::Fade(float fading)
     {
         if (fading > 1.0f || fading < -1.0f)
-            return (*this);
+            return *this;
 
         if (fading > 0.0f)
         {
-            double tint = 1.f - fading;
+            float tint = 1.f - fading;
             r = std::min((int)(255 - (255 - r) * tint), 255);
             g = std::min((int)(255 - (255 - g) * tint), 255);
             b = std::min((int)(255 - (255 - b) * tint), 255);
         }
         else
         {
-            double shade = 1.f + fading;
+            float shade = 1.f + fading;
 
             r *= shade;
             g *= shade;
             b *= shade;
         }
-        return (*this);
+        return *this;
     }
 
     Color Color::Blend(const Color &color, BlendMode mode) const

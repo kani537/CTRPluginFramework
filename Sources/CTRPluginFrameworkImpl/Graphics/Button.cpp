@@ -89,7 +89,7 @@ namespace CTRPluginFramework
 
         if (_isIconBtn && _icon != nullptr)
         {
-            reinterpret_cast<IconCallbackState>(_icon)(_posX, _posY, _state);
+            reinterpret_cast<IconCallbackState>(_icon)(_posX, _posY, _isToggleBtn ? _state : _isPressed);
             return;
         }
 
