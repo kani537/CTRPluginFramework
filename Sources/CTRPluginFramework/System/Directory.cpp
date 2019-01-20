@@ -46,9 +46,8 @@ namespace CTRPluginFramework
         Result res;
 
         res = FSUSER_CreateDirectory(_sdmcArchive, fsPath, 0);
-        if(res == 0xC82044BE)
-            return (1);
-        if (R_SUCCEEDED(res))
+
+        if (res == 0xC82044BE || R_SUCCEEDED(res))
             return (SUCCESS);
         return (res);
     }

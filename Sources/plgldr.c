@@ -1,6 +1,7 @@
 #include <3ds.h>
 #include "plgldr.h"
 #include <string.h>
+#include <ctrulib/result.h>
 
 static Handle   plgLdrHandle;
 static Handle   plgLdrArbiter;
@@ -195,6 +196,26 @@ Result  PLGLDR__GetVersion(u32 *version)
         res = cmdbuf[1];
         if (version)
             *version = cmdbuf[2];
+    }
+    return res;
+}
+
+Result  PLGLDR__GetPluginPath(char *path)
+{
+    if (path == NULL)
+        return MAKERESULT(28, 7, 254, 1014); ///< Usage, App, Invalid argument
+
+    Result res = 0;
+
+    u32 *cmdbuf = getThreadCommandBuffer();
+
+    cmdbuf[0] = IPC_MakeHeader(10, 0, 2);
+    cmdbuf[1] = IPC_Desc_Buffer(255, IPC_BUFFER_RW);
+    cmdbuf[2] = (u32)path;
+
+    if (R_SUCCEEDED((res = svcSendSyncRequest(plgLdrHandle))))
+    {
+        res = cmdbuf[1];
     }
     return res;
 }

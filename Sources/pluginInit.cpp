@@ -139,7 +139,12 @@ namespace CTRPluginFramework
             Directory::ChangeWorkingDirectory(path + "/");
         }
         else
-            Directory::ChangeWorkingDirectory(Utils::Format("/luma/plugins/%016llX/", Process::GetTitleID()));
+        {
+            char path[255] = {0};
+
+            PLGLDR__GetPluginPath(path);
+            Directory::ChangeWorkingDirectory(path);
+        }
     }
 
     static void     InitHeap(void)

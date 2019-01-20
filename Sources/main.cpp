@@ -30,6 +30,8 @@ typedef unsigned long __PTRDIFF_TYPE__;
 //#include "OSDManager.hpp"
 #include "CTRPluginFrameworkImpl/System/ProcessImpl.hpp"
 #include <list>
+#include "CTRPluginFrameworkImpl/Graphics/TextBox.hpp"
+#include "plgldr.h"
 
 namespace CTRPluginFramework
 {
@@ -272,7 +274,13 @@ exit:
             kb.Open(FwkSettings::Get().ThreadPriority, FwkSettings::Get().ThreadPriority);
             svcSetThreadPriority(threadGetCurrent()->handle, FwkSettings::Get().ThreadPriority);
         });
+        char path[255] = {0};
 
+        Result res = PLGLDR__GetPluginPath(path);
+        OSD::Notify(path);
+        (MessageBox("Path", std::string(path)))();
+        if (R_FAILED(res))
+            (MessageBox("Path", Utils::ToHex(res)))();
         // REG32(0x10140140) = 0;
        /* menu += []
         {
