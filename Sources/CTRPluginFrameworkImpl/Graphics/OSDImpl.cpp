@@ -262,6 +262,10 @@ namespace CTRPluginFramework
         // If frame have to be paused
         if (isBottom && !WaitingForScreenshot && !FramesToPlay && ProcessImpl::IsPaused)
         {
+            // Check frame buffers validity before pausing
+            if (ScreenImpl::CheckGspFrameBuffersInfo())
+                return;
+
             u32 *tls = (u32 *)getThreadLocalStorage();
             u32 bak = *tls;
 

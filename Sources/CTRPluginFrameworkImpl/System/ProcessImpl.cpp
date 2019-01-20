@@ -97,8 +97,8 @@ namespace CTRPluginFramework
         OSDImpl::WaitFramePaused();
 
         // Acquire screens
-        ScreenImpl::Top->Acquire();
-        ScreenImpl::Bottom->Acquire();
+        // TODO: error handling
+        ScreenImpl::AcquireFromGsp();
 
         OSDImpl::UpdateScreens();
 

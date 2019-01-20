@@ -100,6 +100,8 @@ namespace CTRPluginFramework
         // Switch displayed fb game <=> ctrpf
         static void                 SwitchFrameBuffers(bool game);
         static void                 ApplyFading(void);
+        static u32                  AcquireFromGsp(void);
+        static u32                  CheckGspFrameBuffersInfo(void);
 
         void                        Fade(const float fade);
         void                        Flush(void);
@@ -113,6 +115,7 @@ namespace CTRPluginFramework
 
         // Fetch Game's FrameBufferInfo and swap to CTRPF FrameBufferInfo
         u32                         Acquire(void);
+        u32                         ImportFromGsp(void);
 
         // Rewrite Game's FrameBufferInfo
         void                        Release(void);

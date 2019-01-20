@@ -637,8 +637,9 @@ namespace CTRPluginFramework
 
     u32     ScreenImpl::Acquire(void)
     {
-        // Fetch game frame buffers
-        GSP::ImportFrameBufferInfo(_gameFrameBufferInfo, !_isTopScreen);
+        // Fetch game frame buffers & check validity
+        if (ImportFromGsp())
+            return -1;
 
         // Copy images and convert to RGB565 to ctrpf's frame buffer (0)
         _frameBufferInfo.FillFrameBuffersFrom(_gameFrameBufferInfo);
@@ -668,6 +669,19 @@ namespace CTRPluginFramework
 
         // Apply current frame buffers
         GSP::SetFrameBufferInfo(_frameBufferInfo, !_isTopScreen, true);
+
+        return 0;
+    }
+
+    u32     ScreenImpl::ImportFromGsp(void)
+    {
+        // Fetch game frame buffers
+        GSP::ImportFrameBufferInfo(_gameFrameBufferInfo, !_isTopScreen);
+
+        // Check frame buffers validity
+        const u32 displayed = _gameFrameBufferInfo.header.screen;
+        if (!Process::CheckAddress(reinterpret_cast<u32>(_gameFrameBufferInfo.fbInfo[displayed].framebuf0_vaddr)))
+            return -1;
 
         return 0;
     }
@@ -1013,6 +1027,16 @@ namespace CTRPluginFramework
 
         Top->Copy();
         Bottom->Copy();
+    }
+
+    u32     ScreenImpl::AcquireFromGsp(void)
+    {
+        return Top->Acquire() | Bottom->Acquire();
+    }
+
+    u32     ScreenImpl::CheckGspFrameBuffersInfo()
+    {
+        return Top->ImportFromGsp() | Bottom->ImportFromGsp();
     }
 
     /*
