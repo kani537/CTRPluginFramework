@@ -260,7 +260,7 @@ namespace CTRPluginFramework
             return;
 
         // If frame have to be paused
-        if (isBottom && !WaitingForScreenshot && !FramesToPlay && ProcessImpl::IsPaused)
+        if (!isBottom && !WaitingForScreenshot && !FramesToPlay && ProcessImpl::IsPaused)
         {
             // Check frame buffers validity before pausing
             if (ScreenImpl::CheckGspFrameBuffersInfo())
@@ -592,8 +592,8 @@ namespace CTRPluginFramework
             buf[3] = address + 8;
         };
 
-        const u32   stmfd2 = 0xE92D47F0; // STMFD SP!, {R4-R10,LR}
         const u32   stmfd1 = 0xE92D5FF0; // STMFD SP!, {R4-R12, LR}
+        const u32   stmfd2 = 0xE92D47F0; // STMFD SP!, {R4-R10, LR}
         const u32   stmfd3 = 0xE92D4070; // STMFD SP!, {R4-R6, LR}
 
         bool        isHook = false;
