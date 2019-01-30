@@ -34,9 +34,9 @@ namespace CTRPluginFramework
     _keys(keys), _message(message)
     {
         for (int i = 0, posY = 32; i < 7; ++i, posY += 25)
-            _checkboxs.push_back(Button(Button::Icon, IntRect(30, posY, 20, 20), Icon::DrawCheckBox));
+            _checkboxs.push_back(Button(Button::Icon | Button::Toggle, IntRect(30, posY, 20, 20), Icon::DrawCheckBox));
         for (int i = 0, posY = 32; i < 7; ++i, posY += 25)
-            _checkboxs.push_back(Button(Button::Icon, IntRect(200, posY, 20, 20), Icon::DrawCheckBox));
+            _checkboxs.push_back(Button(Button::Icon | Button::Toggle, IntRect(200, posY, 20, 20), Icon::DrawCheckBox));
 
         for (int i = 0; i < 16; ++i)
         {
