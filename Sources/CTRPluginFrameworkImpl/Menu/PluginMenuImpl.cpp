@@ -300,7 +300,7 @@ namespace CTRPluginFramework
                 delta = clock.Restart();
 
                 // Close menu
-                if (shouldClose)
+                if (shouldClose || SystemImpl::WantsToSleep())
                 {
                     ProcessImpl::Play(true);
                     _isOpen = false;
@@ -310,6 +310,8 @@ namespace CTRPluginFramework
                     Preferences::WriteSettings();
                     PluginMenuExecuteLoop::Unlock();
                     PluginMenuExecuteLoop::UnlockAR();
+
+                    SystemImpl::ReadyToSleep();
                 }
             }
             else

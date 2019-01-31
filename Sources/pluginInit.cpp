@@ -172,8 +172,10 @@ namespace CTRPluginFramework
         acInit();
         amInit();
         fsInit();
+        hidInit();
         cfguInit();
         plgLdrInit();
+
         // Initialize Kernel stuff
         Kernel::Initialize();
 
@@ -269,29 +271,39 @@ namespace CTRPluginFramework
         g_mainThread.Start(nullptr);
 
         // Reduce priority
-        while (R_FAILED(svcSetThreadPriority(g_keepThreadHandle, settings.ThreadPriority + 2)));
+        while (R_FAILED(svcSetThreadPriority(g_keepThreadHandle, settings.ThreadPriority - 1)));
 
         // Wait until Main Thread finished all it's initializing
         svcWaitSynchronization(g_keepEvent, U64_MAX);
-        svcClearEvent(g_keepEvent);
+        svcCloseHandle(g_keepEvent);
 
         Handle memLayoutChanged;
 
         svcControlProcess(CUR_PROCESS_HANDLE, PROCESSOP_GET_ON_MEMORY_CHANGE_EVENT, (u32)&memLayoutChanged, 0);
         while (true)
         {
-            if (svcWaitSynchronization(memLayoutChanged, 500000000ULL) == 0x09401BFE)
+            if (svcWaitSynchronization(memLayoutChanged, 100000000ULL) == 0x09401BFE) // 0.1s
             {
                 s32 event = PLGLDR__FetchEvent();
 
-                if (event == PLG_ABOUT_TO_SWAP)
+                if (event == PLG_SLEEP_ENTRY)
+                {
+                    SystemImpl::AptStatus |= BIT(6);
+                    PLGLDR__Reply(event);
+                }
+                else if (event == PLG_SLEEP_EXIT)
+                {
+                    SystemImpl::WakeUpFromSleep();
+                    PLGLDR__Reply(event);
+                }
+                else if (event == PLG_ABOUT_TO_SWAP)
                 {
                     OnPluginSwap();
 
                     // Unmap hook memory
                     svcUnmapProcessMemoryEx(CUR_PROCESS_HANDLE, 0x01E80000, 0x2000);
 
-                    // Replay and wait
+                    // Reply and wait
                     PLGLDR__Reply(event);
 
                     // Remap hook memory
@@ -324,7 +336,6 @@ namespace CTRPluginFramework
                 }
                 continue;
             }
-
             // Memory layout changed, update memory
             ProcessImpl::UpdateMemRegions();
         }
@@ -337,15 +348,8 @@ namespace CTRPluginFramework
     // Initialize most subsystem / Global variables
     void    Initialize(void)
     {
-        // Init HID
-        hidInit();
-
-        // Init classes
+        // Init sysfont
         Font::Initialize();
-
-        // Init event thread
-        //gspInit();
-
         {
             // If /cheats/ doesn't exists, create it
             const char *dirpath = "/cheats";
@@ -406,7 +410,7 @@ namespace CTRPluginFramework
         // In which thread are we ?
         if (reinterpret_cast<u32>(threadGetCurrent()->stacktop) < 0x07000000)
         {
-            // ## MainThread ##
+            // ## Main Thread ##
 
             // Remove the OSD Hook
             OSDImpl::OSDHook.Disable();
@@ -426,7 +430,7 @@ namespace CTRPluginFramework
             return;
         }
 
-        // ## Primary Thread ##
+        // ## Keep Thread ##
         if (g_mainThread.GetStatus() == ThreadEx::RUNNING)
         {
             ProcessImpl::Play(true);
@@ -439,18 +443,20 @@ namespace CTRPluginFramework
     }
 
     #define HID_PAD           (REG32(0x10146000) ^ 0xFFF)
+    #define BUTTON_X          (1 << 10)
     #define BUTTON_Y          (1 << 11)
+
     extern "C"
     int   __entrypoint(int arg)
     {
         // A little debug routine to wait for debugger to connect
-        if (DebugFromStart)
+        if (DebugFromStart || HID_PAD & BUTTON_Y)
         {
             u32 stall = 0;
             do
             {
                 Sleep(Milliseconds(1000));
-                stall = HID_PAD & BUTTON_Y;
+                stall = HID_PAD & BUTTON_X;
             } while (!stall);
         }
 
@@ -462,15 +468,6 @@ namespace CTRPluginFramework
         svcWaitSynchronization(g_continueGameEvent, U64_MAX);
         // Close the event
         svcCloseHandle(g_continueGameEvent);
-
-       /* Color c(0xFF, 0, 0);
-        ScreenImpl::Top->Flash(c);
-            u32 stall = 0;
-            do
-            {
-                Sleep(Milliseconds(1000));
-                stall = HID_PAD & BUTTON_Y;
-            } while (!stall); */
         return (0);
     }
 }

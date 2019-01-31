@@ -29,8 +29,10 @@ typedef enum
 {
     PLG_WAIT = -1,
     PLG_OK = 0,
-    PLG_ABOUT_TO_SWAP = 1,
-    PLG_ABOUT_TO_EXIT = 2,
+    PLG_SLEEP_ENTRY = 1,
+    PLG_SLEEP_EXIT = 2,
+    PLG_ABOUT_TO_SWAP = 3,
+    PLG_ABOUT_TO_EXIT = 4,
 }   PLG_Event;
 
 typedef struct

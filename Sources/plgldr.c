@@ -258,6 +258,9 @@ void    PLGLDR__Reply(s32 event)
 {
     __strex__(plgReply, PLG_OK);
     __strex__(plgEvent, PLG_WAIT);
+    if (event < PLG_ABOUT_TO_SWAP)
+        return;
+
     svcArbitrateAddress(plgLdrArbiter, (u32)plgReply, ARBITRATION_SIGNAL, 1, 0);
     if (event == PLG_ABOUT_TO_SWAP)
         svcArbitrateAddress(plgLdrArbiter, (u32)plgEvent, ARBITRATION_WAIT_IF_LESS_THAN, PLG_OK, 0);

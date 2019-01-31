@@ -7,6 +7,9 @@ namespace CTRPluginFramework
     {
     public:
         static void     Initialize(void);
+        static bool     WantsToSleep(void);
+        static void     ReadyToSleep(void);
+        static void     WakeUpFromSleep(void);
         // Thread must exit if this function returns true
         static bool     Status(void);
 

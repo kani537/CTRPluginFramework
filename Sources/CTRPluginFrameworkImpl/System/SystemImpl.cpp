@@ -48,6 +48,28 @@ namespace CTRPluginFramework
         CFGU_GetSystemLanguage(&Language);
     }
 
+    bool    SystemImpl::WantsToSleep(void)
+    {
+        return AptStatus & FLAG_WANTSTOSLEEP;
+    }
+
+    void    SystemImpl::ReadyToSleep(void)
+    {
+        if (AptStatus & FLAG_WANTSTOSLEEP)
+        {
+            AptStatus &= ~FLAG_WANTSTOSLEEP;
+            LightEvent_Clear(&g_sleepEvent);
+            AptStatus |= FLAG_SLEEPING;
+        }
+    }
+
+    void    SystemImpl::WakeUpFromSleep(void)
+    {
+        AptStatus &= ~FLAG_WANTSTOSLEEP;
+        AptStatus &= ~FLAG_SLEEPING;
+        LightEvent_Signal(&g_sleepEvent);
+    }
+
     bool    SystemImpl::Status(void)
     {
         if (AptStatus & FLAG_SHUTDOWN)

@@ -15,7 +15,7 @@ namespace CTRPluginFramework
         Storage(u32 capacity) :
             _itemCount(0)
         {
-            _pool = new T[capacity];
+            _pool = ::operator new (sizeof(T) * capacity);
             if (_pool != nullptr)
                 _capacity = capacity;
             else
@@ -26,7 +26,7 @@ namespace CTRPluginFramework
         {
             if (_pool != nullptr)
             {
-                delete[] _pool;
+                ::operator delete(_pool);
             }
         }
 
@@ -51,7 +51,7 @@ namespace CTRPluginFramework
             return ((void *)_pool);
         }
 
-        // Force item count, memory isn't initilized
+        // Force item count, memory isn't initialized
         void    resize(u32 size)
         {
             if (size > _capacity)
