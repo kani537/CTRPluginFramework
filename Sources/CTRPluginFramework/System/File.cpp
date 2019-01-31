@@ -81,6 +81,13 @@ namespace CTRPluginFramework
         return (0);
     }
 
+    enum PriorityForApplication
+{
+    PRIORITY_APP_REALTIME   = -16, //!< Specifies that file accesses have real-time priority.
+    PRIORITY_APP_NORMAL     =  -8, //!< Specifies that file accesses have normal priority.
+    PRIORITY_APP_LOW        =   8  //!< Specifies that file accesses have low priority.
+};
+
     int     File::Open(File &output, const std::string &path, int mode)
     {
         Lock    lock(output._mutex);
@@ -113,6 +120,10 @@ namespace CTRPluginFramework
 
         if (mode & TRUNCATE)
             FSFILE_SetSize(handle, 0);
+
+        // Do that automatically ?
+        FSFILE_SetPriority(handle, PRIORITY_APP_REALTIME);
+
         return (res);
     }
 
