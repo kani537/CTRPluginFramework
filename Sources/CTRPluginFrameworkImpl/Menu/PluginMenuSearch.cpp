@@ -81,6 +81,7 @@ namespace CTRPluginFramework
         {
             if (_hexEditor(eventList))
                 _inEditor = false;
+            Renderer::EndFrame();
             return (false);
         }
 
