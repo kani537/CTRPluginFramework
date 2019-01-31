@@ -238,6 +238,19 @@ u32     KProcess::PatchMaxPriority(u32 newPrio)
     return svcCustomBackdoor((void *)K_PatchMaxPriority, this, newPrio, SystemImpl::IsNew3DS ? 0x84 : 0x7C);
 }
 
+void    KProcess::PatchMaxThreads(void)
+{
+    void (*K_PatchMaxThreads)(KProcess *, u32) = [](KProcess *process, u32 offset)
+    {
+        KResourceLimit *resLimit = (KResourceLimit *)*(u32 *)((u32)process + offset);
+
+        resLimit->maxThread += 4;
+        //resLimit->IncreaseMaxThreadLimit();
+    };
+
+    svcCustomBackdoor((void *)K_PatchMaxThreads, this, SystemImpl::IsNew3DS ? 0x84 : 0x7C);
+}
+
 KAutoObject * KProcess::GetObjFromHandle(Handle handle)
 {
     KAutoObject *(*K_GetObjFromHandle)(KProcess *, Handle) = [](KProcess *process, Handle handle)
@@ -271,4 +284,17 @@ std::string     KProcess::GetName(void)
         svcCustomBackdoor((void *)K_GetName, this, buffer);
 
     return buffer;
+}
+
+void    KResourceLimit::IncreaseMaxThreadLimit(void)
+{
+    void    (*K_IncreaseMaxThreadLimit)(KResourceLimit *) = [](KResourceLimit *resLimit)
+    {
+        resLimit->maxThread += 4;
+    };
+
+    if (__is_svmode())
+        K_IncreaseMaxThreadLimit(this);
+    else
+        svcCustomBackdoor((void *)K_IncreaseMaxThreadLimit, this);
 }

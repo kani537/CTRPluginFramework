@@ -67,6 +67,17 @@ namespace CTRPluginFramework
         return ProcessImpl::CodeSet.textPages * 0x1000;
     }
 
+    u32     Process::GetRoDataSize(void)
+    {
+        return ProcessImpl::CodeSet.rodataPages * 0x1000;
+    }
+
+    u32     Process::GetRwDataSize(void)
+    {
+        return ProcessImpl::CodeSet.rwPages * 0x1000;
+    }
+
+
     bool    Process::IsPaused(void)
 	{
         return ProcessImpl::IsPaused > 0;

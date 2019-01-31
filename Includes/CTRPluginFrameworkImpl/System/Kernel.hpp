@@ -163,6 +163,7 @@ struct KProcess
     void    PatchCore2Access(void);
     u32     PatchCategory(u32 newCategory);
     u32     PatchMaxPriority(u32 newPrio);
+    void    PatchMaxThreads(void);
     KAutoObject *   GetObjFromHandle(Handle handle);
     std::string     GetName(void);
 
@@ -241,6 +242,8 @@ struct KResourceLimit
     s32     currentCpuTime;
     KObjectMutex        mutex;
     KPreemptionTimer    timer;
+
+    void    IncreaseMaxThreadLimit(void);
 } PACKED;
 
 struct KRecursiveLock

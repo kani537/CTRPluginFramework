@@ -16,12 +16,12 @@ static bool      operator==(const MemInfo left, const MemInfo right)
 #include "ctrulib/gpu/gpu.h"
 #include "csvc.h"
 
-extern 		Handle gspThreadEventHandle;
+extern      Handle gspThreadEventHandle;
 
 namespace CTRPluginFramework
 {
-	Handle      ProcessImpl::ProcessHandle = 0;
-	u32         ProcessImpl::IsPaused = 0;
+    Handle      ProcessImpl::ProcessHandle = 0;
+    u32         ProcessImpl::IsPaused = 0;
     u32         ProcessImpl::ProcessId = 0;
     u64         ProcessImpl::TitleId = 0;
 
@@ -32,51 +32,52 @@ namespace CTRPluginFramework
     Mutex       ProcessImpl::MemoryMutex;
     std::vector<MemInfo> ProcessImpl::MemRegions;
 
-	void    ProcessImpl::Initialize(void)
-	{
-		char    kproc[0x100] = {0};
-		bool 	isNew3DS = System::IsNew3DS();
+    void    ProcessImpl::Initialize(void)
+    {
+        char    kproc[0x100] = {0};
+        bool    isNew3DS = System::IsNew3DS();
 
-		// Get current KProcess
-		KProcessPtr = KProcess::GetCurrent();
+        // Get current KProcess
+        KProcessPtr = KProcess::GetCurrent();
+        KProcessPtr->PatchMaxThreads();
 
-		// Copy KProcess data
-		Kernel::Memcpy(kproc, KProcessPtr, 0x100);
+        // Copy KProcess data
+        Kernel::Memcpy(kproc, KProcessPtr, 0x100);
 
-		if (isNew3DS)
-		{
-			// Copy KCodeSet
-			Kernel::Memcpy(&CodeSet, (void *)*(u32 *)(kproc + 0xB8), sizeof(KCodeSet));
+        if (isNew3DS)
+        {
+            // Copy KCodeSet
+            Kernel::Memcpy(&CodeSet, (void *)*(u32 *)(kproc + 0xB8), sizeof(KCodeSet));
 
-			// Copy process id
-			ProcessId = *(u32 *)(kproc + 0xBC);
+            // Copy process id
+            ProcessId = *(u32 *)(kproc + 0xBC);
 
             // Get main thread
             MainThread = (KThread *)*(u32 *)(kproc + 0xC8);
 
             // Patch KProcess to allow creating threads on Core2
             KProcessPtr->PatchCore2Access();
-		}
-		else
-		{
-			// Copy KCodeSet
-			Kernel::Memcpy(&CodeSet, (void *)*(u32 *)(kproc + 0xB0), sizeof(KCodeSet));
+        }
+        else
+        {
+            // Copy KCodeSet
+            Kernel::Memcpy(&CodeSet, (void *)*(u32 *)(kproc + 0xB0), sizeof(KCodeSet));
 
-			// Copy process id
-			ProcessId = *(u32 *)(kproc + 0xB4);
+            // Copy process id
+            ProcessId = *(u32 *)(kproc + 0xB4);
 
             // Get main thread
             MainThread = (KThread *)*(u32 *)(kproc + 0xC0);
-		}
+        }
 
-		// Copy title id
-		TitleId = CodeSet.titleId;
+        // Copy title id
+        TitleId = CodeSet.titleId;
 
-		// Create handle for this process
-		svcOpenProcess(&ProcessHandle, ProcessId);
+        // Create handle for this process
+        svcOpenProcess(&ProcessHandle, ProcessId);
 
         UpdateMemRegions();
-	}
+    }
 
     extern "C" Handle gspEvent;
     extern "C" bool   IsPaused(void)
@@ -84,8 +85,8 @@ namespace CTRPluginFramework
         return (ProcessImpl::IsPaused > 0);
     }
 
-	void 	ProcessImpl::Pause(bool useFading)
-	{
+    void    ProcessImpl::Pause(bool useFading)
+    {
         // Increase pause counter
         ++IsPaused;
 
@@ -104,10 +105,10 @@ namespace CTRPluginFramework
 
         // Update memregions
         UpdateMemRegions();
-	}
+    }
 
-	void 	ProcessImpl::Play(bool forced)
-	{
+    void    ProcessImpl::Play(bool forced)
+    {
         // If game isn't paused, abort
         if (!IsPaused)
             return;
@@ -126,18 +127,18 @@ namespace CTRPluginFramework
             ScreenImpl::Bottom->Release();
             OSDImpl::ResumeFrame();
         }
-	}
+    }
 
     bool     ProcessImpl::PatchProcess(u32 addr, u8 *patch, u32 length, u8 *original)
     {
- 		if (original != nullptr)
- 		{
- 			if (!Process::CopyMemory((void *)original, (void *)addr, length))
- 				goto error;
- 		}
+        if (original != nullptr)
+        {
+            if (!Process::CopyMemory((void *)original, (void *)addr, length))
+                goto error;
+        }
 
- 		if (!Process::CopyMemory((void *)addr, (void *)patch, length))
- 			goto error;
+        if (!Process::CopyMemory((void *)addr, (void *)patch, length))
+            goto error;
 
         return (true);
     error:
@@ -146,7 +147,7 @@ namespace CTRPluginFramework
 
     void    ProcessImpl::GetHandleTable(KProcessHandleTable& table, std::vector<HandleDescriptor>& handleDescriptors)
     {
-        bool 	isNew3DS = System::IsNew3DS();
+        bool    isNew3DS = System::IsNew3DS();
 
         // Copy KProcessHandleTable
         Kernel::Memcpy(&table, (void *)((u32)KProcessPtr + (isNew3DS ? 0xDC : 0xD4)), sizeof(KProcessHandleTable));
