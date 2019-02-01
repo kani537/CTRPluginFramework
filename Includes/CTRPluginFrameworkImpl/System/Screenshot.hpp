@@ -15,6 +15,16 @@ namespace CTRPluginFramework
     {
     public:
 
+        struct ImageBuffer
+        {
+            u8  top[400 * 240 * 4];
+            u32 topFormat;
+            u32 topStride;
+            u8  bottom[320 * 240 * 4];
+            u32 bottomFormat;
+            u32 bottomStride;
+        };
+
         // Return true if the OSD must exit
         static void     Initialize(void);
         static bool     OSDCallback(u32 isBottom, void* addr, void* addrB, int stride, int format);
@@ -27,6 +37,7 @@ namespace CTRPluginFramework
         static Time         Timer;
         static std::string  Path;
         static std::string  Prefix;
+        static ImageBuffer *ImgBuffer;
 
     private:
 

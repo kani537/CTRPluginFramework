@@ -34,7 +34,7 @@ namespace CTRPluginFramework
 
     int     Task::Start(void) const
     {
-        if (context == nullptr)
+        if (context == nullptr || context->flags & (Scheduled | Processing))
             return -1;
 
         LightEvent_Clear(&context->event);

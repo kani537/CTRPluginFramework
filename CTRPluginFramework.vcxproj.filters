@@ -471,9 +471,6 @@
     <ClInclude Include="Includes\CTRPluginFramework\Utils\StringExtensions.hpp">
       <Filter>Fichiers d%27en-tête</Filter>
     </ClInclude>
-    <ClInclude Include="Sources\OSDManager.hpp">
-      <Filter>Fichiers d%27en-tête</Filter>
-    </ClInclude>
     <ClInclude Include="Sources\Speedometer.hpp">
       <Filter>Fichiers d%27en-tête</Filter>
     </ClInclude>
@@ -553,6 +550,12 @@
       <Filter>Fichiers d%27en-tête</Filter>
     </ClInclude>
     <ClInclude Include="Includes\plgldr.h">
+      <Filter>Fichiers d%27en-tête</Filter>
+    </ClInclude>
+    <ClInclude Include="Sources\Excluded\OSDManager.hpp">
+      <Filter>Fichiers d%27en-tête</Filter>
+    </ClInclude>
+    <ClInclude Include="Includes\lodepng\lodepng.h">
       <Filter>Fichiers d%27en-tête</Filter>
     </ClInclude>
   </ItemGroup>
@@ -1037,9 +1040,6 @@
     <ClCompile Include="Sources\CTRPluginFramework\Utils\StringExtensions.cpp">
       <Filter>Fichiers sources</Filter>
     </ClCompile>
-    <ClCompile Include="Sources\OSDManager.cpp">
-      <Filter>Fichiers sources</Filter>
-    </ClCompile>
     <ClCompile Include="Sources\Speedometer.cpp">
       <Filter>Fichiers sources</Filter>
     </ClCompile>
@@ -1167,6 +1167,12 @@
       <Filter>Fichiers sources</Filter>
     </ClCompile>
     <ClCompile Include="Sources\plgldr.c">
+      <Filter>Fichiers sources</Filter>
+    </ClCompile>
+    <ClCompile Include="Sources\Excluded\OSDManager.cpp">
+      <Filter>Fichiers sources</Filter>
+    </ClCompile>
+    <ClCompile Include="Sources\lodepng\lodepng.cpp">
       <Filter>Fichiers sources</Filter>
     </ClCompile>
   </ItemGroup>

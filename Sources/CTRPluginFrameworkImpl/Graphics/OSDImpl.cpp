@@ -38,8 +38,8 @@ namespace CTRPluginFramework
     LightEvent  OSDImpl::OnNewFrameEvent;
     LightEvent  OSDImpl::OnFramePaused;
     LightEvent  OSDImpl::OnFrameResume;
-    Task        OSDImpl::DrawNotifTask1(OSDImpl::DrawNotif1_TaskFunc, nullptr, Task::AppCores);
-    Task        OSDImpl::DrawNotifTask2(OSDImpl::DrawNotif2_TaskFunc, nullptr, Task::AppCores);
+    Task        OSDImpl::DrawNotifTask1(OSDImpl::DrawNotif_TaskFunc, nullptr, Task::AppCores);
+    Task        OSDImpl::DrawNotifTask2(OSDImpl::DrawNotif_TaskFunc, nullptr, Task::AppCores);
 
     void    InstallOSD(void);
 
@@ -122,53 +122,20 @@ namespace CTRPluginFramework
         return (true);
     }
 
-    s32     OSDImpl::DrawNotif1_TaskFunc(void *arg UNUSED)
+    s32     OSDImpl::DrawNotif_TaskFunc(void *arg)
     {
         Renderer::SetTarget(TOP);
 
-        // Render first half of notifications
-        int posX;
-        int nbOfMessage = std::min((u32)15, (u32)Notifications.size());
-        int posY = 230 - 15 * nbOfMessage;
-
-        int count = nbOfMessage / 2 + (nbOfMessage & 1);
-
-        auto messIter = Notifications.begin();
-        auto endIter = std::next(messIter, count);
+        DrawNotifArgs * args = reinterpret_cast<DrawNotifArgs *>(arg);
+        OSDIter         messIter = args->begin;
+        OSDIter         endIter = args->end;
+        int             posY = args->posY;
 
         for (; messIter != endIter; ++messIter)
         {
             OSDMessage *message = *messIter;
 
-            posX = XEND - message->width;
-            Renderer::DrawString(message->text.c_str(), posX, posY, message->foreground, message->background);
-            posY += 5;
-            if (!message->drawn)
-                message->time.Restart();
-
-            message->drawn = true;
-        }
-
-        return 0;
-    }
-
-    s32     OSDImpl::DrawNotif2_TaskFunc(void *arg UNUSED)
-    {
-        Renderer::SetTarget(TOP);
-
-        // Render second half of notifications
-        int posX;
-        int nbOfMessage = std::min((u32)15, (u32)Notifications.size());
-        int posY = 230 - 15 * (nbOfMessage / 2);
-
-        auto messIter = std::next(Notifications.begin(), nbOfMessage / 2 + (nbOfMessage & 1));
-        auto endIter = std::next(messIter, nbOfMessage / 2);
-
-        for (; messIter != endIter; ++messIter)
-        {
-            OSDMessage *message = *messIter;
-
-            posX = XEND - message->width;
+            int posX = XEND - message->width;
             Renderer::DrawString(message->text.c_str(), posX, posY, message->foreground, message->background);
             posY += 5;
             if (!message->drawn)
@@ -337,14 +304,26 @@ namespace CTRPluginFramework
         // Lock for notification & callbacks
         Lock();
 
+        DrawNotifArgs   args[2]; ///< Careful with the scope of that var
+
         // Draw notifications & icon
         if (!isBottom)
         {
             if (Notifications.size())
             {
-                DrawNotifTask1.Start();
-                DrawNotifTask2.Start();
-                //Draw();
+                int nbOfMessage = std::min((u32)15, (u32)Notifications.size());
+                int posY = 230 - 15 * nbOfMessage;
+
+                args[0].begin = Notifications.begin();
+                args[0].end = std::next(Notifications.begin(), nbOfMessage / 2);
+                args[0].posY = posY;
+                args[1].begin = args[0].end;
+                args[1].end = std::next(Notifications.begin(), nbOfMessage);
+                args[1].posY = posY + 15 * (nbOfMessage / 2);
+
+                DrawNotifTask1.Start((void *)&args[0]);
+                DrawNotifTask2.Start((void *)&args[1]);
+
                 mustFlush = true;
             }
             if (DrawSaveIcon)

@@ -4,7 +4,6 @@
 #include "CTRPluginFrameworkImpl/System.hpp"
 #include "CTRPluginFramework/System/System.hpp"
 #include "CTRPluginFramework/Utils/Utils.hpp"
-#include "ctrulib/allocator/vram.h"
 #include "ctrulib/allocator/mappable.h"
 #include "CTRPluginFrameworkImpl/Preferences.hpp"
 #include "csvc.h"
@@ -529,8 +528,11 @@ namespace CTRPluginFramework
                 __ldrex(addr);
             } while (__strex(addr, src.header.header));
 
-            if (screen) WaitForVBlank();
-            else WaitForVBlank1();
+            if (!SystemImpl::WantsToSleep())
+            {
+                if (screen) WaitForVBlank();
+                else WaitForVBlank1();
+            }
         }
     } ///< GSP
 
@@ -701,6 +703,16 @@ namespace CTRPluginFramework
         _rowSize = _stride / _bytesPerPixel;
         _leftFrameBuffers[0] = left;
         _rightFrameBuffers[0] = right;
+
+        _gameFrameBufferInfo.header.screen = 0;
+        GSP::FrameBufferInfo& fbInfo = _gameFrameBufferInfo.fbInfo[0];
+
+        fbInfo.active_framebuf = 0;
+        fbInfo.framebuf0_vaddr = reinterpret_cast<u32 *>(left);
+        fbInfo.framebuf1_vaddr = reinterpret_cast<u32 *>(right);
+        fbInfo.framebuf_widthbytesize = stride;
+        fbInfo.format = format;
+        fbInfo.framebuf_dispselect = 0;
     }
 
     void    ScreenImpl::Flush(void)
@@ -726,6 +738,7 @@ namespace CTRPluginFramework
         _frameBufferInfo.fbInfo[!_currentBuffer].FillFrameBufferFrom(_gameFrameBufferInfo.fbInfo[displayed]);
 
         Fade(0.3f);
+
         if (!applyFlagForCurrent)
             return;
 
@@ -741,7 +754,6 @@ namespace CTRPluginFramework
         u8 *dst = GetLeftFrameBuffer();
         u8 *src = GetLeftFrameBuffer(true);
 
-        // Copy the framebuffer to the second framebuffer (avoid the sensation of flickering on buffer swap)
         std::copy(src, src + size, dst);
     }
 
@@ -769,202 +781,6 @@ namespace CTRPluginFramework
     bool    ScreenImpl::IsTopScreen(void)
     {
         return _isTopScreen;
-    }
-
-    using Pixel = BMPImage::Pixel;
-
-    static void    ScreenToBMP_BGR8(Pixel *bmp, u32 padding, u8 *src, u32 width, u32 stride)
-    {
-        u32     height = 240;
-
-        stride -= 3;
-
-        while (height--)
-        {
-            u8 *fb = src;
-
-            for (u32 w = width; w > 0; --w, ++bmp)
-            {
-                bmp->b = *fb++;
-                bmp->g = *fb++;
-                bmp->r = *fb++;
-                fb += stride;
-            }
-            src += 3;
-            bmp += padding;
-        }
-    }
-
-    static void    ScreenToBMP_RGBA8(Pixel *bmp, u32 padding, u8 *src, u32 width, u32 stride)
-    {
-        u32     height = 240;
-
-        stride -= 3;
-
-        while (height--)
-        {
-            u8 *fb = src + 1; //:< Skip first alpha component
-
-            for (u32 w = width; w > 0; --w, ++bmp)
-            {
-                bmp->b = *fb++;
-                bmp->g = *fb++;
-                bmp->r = *fb++;
-                fb += stride;
-            }
-            src += 4;
-            bmp += padding;
-        }
-    }
-
-    static void    ScreenToBMP_RGB565(Pixel *bmp, u32 padding, u8 *src, u32 width, u32 stride)
-    {
-        u32     height = 240;
-
-        u16     *src16 = (u16 *)src;
-
-        stride >>= 1;
-
-        while (height--)
-        {
-            u16 *fb = src16;
-
-            for (u32 w = width; w > 0; --w, ++bmp)
-            {
-                const u16 c = *fb;
-
-                bmp->b = (c << 3) & 0xF8;
-                bmp->g = (c >> 3) & 0xFC;
-                bmp->r = (c >> 8) & 0xF8;
-                fb += stride;
-            }
-            ++src16;
-            bmp += padding;
-        }
-    }
-
-    static void    ScreenToBMP_RGB5A1(Pixel *bmp, u32 padding, u8 *src, u32 width, u32 stride)
-    {
-        u32     height = 240;
-
-        u16     *src16 = (u16 *)src;
-
-        stride >>= 1;
-
-        while (height--)
-        {
-            u16 *fb = src16;
-
-            for (u32 w = width; w > 0; --w, ++bmp)
-            {
-                const u16 c = *fb;
-
-                bmp->b = (c << 2) & 0xF8;
-                bmp->g = (c >> 3) & 0xF8;
-                bmp->r = (c >> 8) & 0xF8;
-
-                fb += stride;
-            }
-            ++src16;
-            bmp += padding;
-        }
-    }
-
-    static void    ScreenToBMP_RGBA4(Pixel *bmp, u32 padding, u8 *src, u32 width, u32 stride)
-    {
-        u32     height = 240;
-
-        u16     *src16 = (u16 *)src;
-
-        stride >>= 1;
-
-        while (height--)
-        {
-            u16 *fb = src16;
-
-            for (u32 w = width; w > 0; --w, ++bmp)
-            {
-                const u16 c = *fb;
-
-                bmp->b = c & 0xF0;
-                bmp->g = (c >> 4) & 0xF0;
-                bmp->r = (c >> 8) & 0xF0;
-                fb += stride;
-            }
-            ++src16;
-            bmp += padding;
-        }
-    }
-
-    void    ScreenImpl::ScreenToBMP(Pixel *bmp, const u32 padding)
-    {
-        if (bmp == nullptr)
-            return;
-
-        u8      *src = nullptr;
-
-        if (src == nullptr)
-            src = GetLeftFrameBuffer();
-
-        if (_format == GSP_RGBA8_OES) return ScreenToBMP_RGBA8(bmp, padding, src, _width, _stride);
-        if (_format == GSP_BGR8_OES) return ScreenToBMP_BGR8(bmp, padding, src, _width, _stride);
-        if (_format == GSP_RGB565_OES) return ScreenToBMP_RGB565(bmp, padding, src, _width, _stride);
-        if (_format == GSP_RGB5_A1_OES) return ScreenToBMP_RGB5A1(bmp, padding, src, _width, _stride);
-        if (_format == GSP_RGBA4_OES) return ScreenToBMP_RGBA4(bmp, padding, src, _width, _stride);
-    }
-
-    static inline BMPImage* CreateBMP(u32 width, u32 height)
-    {
-        BMPImage *image = new BMPImage(width, height);
-
-        if (image->data() == nullptr && !SystemImpl::IsNew3DS)
-        {
-            Preferences::UnloadBackgrounds();
-            delete image;
-            image = new BMPImage(width, height);
-            if (image->data() == nullptr)
-                OSD::Notify("An error occured when trying to allocate the BMP");
-        }
-
-        return image;
-    }
-
-    BMPImage *ScreenImpl::ScreenShot(int screen, BMPImage *image)
-    {
-        BMPImage    *bmp = image;
-
-        // Top screen only
-        if (screen == SCREENSHOT_TOP)
-        {
-            if (bmp == nullptr)
-                bmp = CreateBMP(400, 240);
-
-            Top->ScreenToBMP(reinterpret_cast<BMPImage::Pixel *>(bmp->data()));
-        }
-        // Bottom screen only
-        else if (screen == SCREENSHOT_BOTTOM)
-        {
-            if (bmp == nullptr)
-                bmp = CreateBMP(320, 240);
-            Bottom->ScreenToBMP(reinterpret_cast<BMPImage::Pixel *>(bmp->data()));
-        }
-        // Both screens
-        else
-        {
-            if (bmp == nullptr)
-                bmp = CreateBMP(400, 480);
-
-            // Bottom screen comes first in the bmp
-            BMPImage::Pixel *dst = reinterpret_cast<BMPImage::Pixel *>(bmp->data());
-
-            Bottom->ScreenToBMP(dst + 40, 80);
-
-            // Then the top screen
-            dst += 400 * 240;
-            Top->ScreenToBMP(dst);
-        }
-
-        return bmp;
     }
 
     bool    ScreenImpl::Is3DEnabled(void)

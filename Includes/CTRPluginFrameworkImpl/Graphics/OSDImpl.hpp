@@ -33,14 +33,20 @@ namespace CTRPluginFramework
             OSDMessage(const std::string &str, const Color &fg, const Color &bg);
         };
 
-        using OSDIter = std::vector<OSDMessage>::iterator;
+        using OSDIter = std::vector<OSDMessage *>::iterator;
+
+        struct DrawNotifArgs
+        {
+            OSDIter     begin;
+            OSDIter     end;
+            int         posY;
+        };
 
     public:
 
         static void    Update(void);
         static bool    Draw(void);
-        static s32      DrawNotif1_TaskFunc(void *arg);
-        static s32      DrawNotif2_TaskFunc(void *arg);
+        static s32      DrawNotif_TaskFunc(void *arg);
 
         static void    Lock(void);
         static bool    TryLock(void);

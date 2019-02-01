@@ -85,6 +85,7 @@ exit:
     void    PatchProcess(FwkSettings &settings)
     {
         ToggleTouchscreenForceOn();
+        settings.WaitTimeToBoot = Seconds(8);
     }
 
     void    OnExitProcess(void)
@@ -209,94 +210,88 @@ exit:
         MessageBox("Screen fmt", Utils::Format("Top: %d\nBottom: %d", fmt2, fmt))();
     }
 
+    u32     FindBasePtr(u32 pbw)
+    {
+        u32 *addr = (u32 *)0x00100000;
+        u32 totalSize = Process::GetTextSize() + Process::GetRoDataSize() + Process::GetRwDataSize();
+
+        totalSize /= 4;
+
+        u32 *addrEnd = (u32 *)0x00100000 + totalSize;
+
+        while (addr != addrEnd)
+        {
+            u32 val = *addr++;
+
+            if (Process::CheckAddress(val + 0xE30))
+            {
+
+                if (*(vu32 *)(val + 0xE30) == pbw)
+                {
+                    return (u32)addr;
+                }
+            }
+        }
+        return 0;
+    }
+
+    extern "C"
+    {
+        void dbgReturnFromExceptionDirectly(CpuRegisters *regs);
+    }
+
     // Uncomment to stall process at the beginning until Y is pressed
     //void    DebugFromStart(void){}
 
     //extern "C" const u8 BottomBackground_bmp[];
 
+    MenuEntry *g_entry = new MenuEntry("Please use Find Base PTR first");
+
     #define REG32(x) *(vu32 *)((x) | (1u << 31))
     u32     cfgProt = REG32(0x10140140);
 
+    // Uncomment to stall process at the beginning until Y is pressed
+    //void    DebugFromStart(void){}
+
+    void __ExceptionHandler(ERRF_ExceptionInfo* excep, CpuRegisters* regs)
+    {
+        std::string str = Color::Red << "Exception: ";
+
+        if (excep->type == ERRF_EXCEPTION_DATA_ABORT)
+            str += Color::Orange << "Data Abort" << Color::White;
+
+        str += Utils::Format(", pc: %08X", regs->pc);
+        OSD::Notify(str);
+        regs->pc += 4;
+        OSD::Notify("Return from exception: " << Color::LimeGreen << "SUCCESS");
+        dbgReturnFromExceptionDirectly(regs);
+    }
+
+    void    HookedOnError(u32 r0, const char *errStr, u32 r2, u32 r3)
+    {
+        u32 errorCode;
+        __asm__ __volatile__("mov %[val], r5" : [val] "=r" (errorCode));
+        std::string err = Utils::Format(errStr, r2, r3);
+        PLGLDR__DisplayErrMessage("Error", err.c_str(), errorCode);
+    }
+
+
     int     main(void)
     {
-        //FwkSettings::SetBottomScreenBackground((void *)&BottomBackground_bmp);
+        //threadOnException(__ExceptionHandler, exceptionStack + 0x1000, WRITE_DATA_TO_HANDLER_STACK);
 
-        PluginMenu  *m = new PluginMenu("Action Replay", 0, 5, 1);
+        PluginMenu  *m = new PluginMenu("Action Replay", 0, 5, 2);
         PluginMenu  &menu = *m;
 
+        Hook hook;
+
+        /*hook.Initialize(0x0011FD0C, (u32)&HookedOnError);
+
+        hook.Enable();*/
         menu.SynchronizeWithFrame(true);
-        /*menu.SynchronizeWithFrame(false);
-        menu += [](void)
-        {
-            Sleep(Milliseconds(1));
-        };*/
-        menu += new MenuEntry("Backlight stuff", nullptr,
-            [](MenuEntry *entry)
-            {
-                u32 backlight = ScreenImpl::Top->GetBacklight();
-                Keyboard kb(std::string("Current value :") << backlight);
 
-                kb.Open(backlight);
-                ScreenImpl::Top->SetBacklight(backlight);
-            });
-
-        menu += new MenuEntry("Spam notifications", [](MenuEntry *entry)
-        {
-            if (Controller::IsKeyDown(Key::ZL))
-            {
-                for (int i = 0; i < 50; ++i)
-                {
-                    OSD::Notify(Utils::Format("Notif: %d", i));
-                }
-            }
-        });
-
-        menu += new MenuEntry("Test keyboard", nullptr, [](MenuEntry *entry)
-        {
-            u32 v = 0;
-            Keyboard kb("Test");
-
-            kb.IsHexadecimal(false);
-            kb.Open(v);
-        });
-
-        menu += new MenuEntry(Utils::Format("Available memory: %08X", getMemFree()), nullptr,
-            [](MenuEntry *entry)
-        {
-            entry->Name() = Utils::Format("Available memory: %08X", getMemFree());
-        });
-
-        menu += new MenuEntry("Thread piorrity", nullptr,
-            [](MenuEntry *entry)
-        {
-            Keyboard kb;
-
-            kb.Open(FwkSettings::Get().ThreadPriority, FwkSettings::Get().ThreadPriority);
-            svcSetThreadPriority(threadGetCurrent()->handle, FwkSettings::Get().ThreadPriority);
-        });
-        char path[255] = {0};
-
-        Result res = PLGLDR__GetPluginPath(path);
-        OSD::Notify(path);
-        (MessageBox("Path", std::string(path)))();
-        if (R_FAILED(res))
-            (MessageBox("Path", Utils::ToHex(res)))();
-        // REG32(0x10140140) = 0;
-       /* menu += []
-        {
-            int i = 0;
-            OSDManager[1].SetScreen(true).SetPos(0, i++ * 10) = Utils::Format("468: 0x%08X", REG32(0x10400468));
-            OSDManager[2].SetScreen(true).SetPos(0, i++ * 10) = Utils::Format("46C: 0x%08X", REG32(0x1040046C));
-            OSDManager[3].SetScreen(true).SetPos(0, i++ * 10) = Utils::Format("470: 0x%08X", REG32(0x10400470));
-            OSDManager[4].SetScreen(true).SetPos(0, i++ * 10) = Utils::Format("478: 0x%08X", REG32(0x10400478));
-            OSDManager[5].SetScreen(true).SetPos(0, i++ * 10) = Utils::Format("490: 0x%08X", REG32(0x10400490));
-            OSDManager[6].SetScreen(true).SetPos(0, i++ * 10) = Utils::Format("%08X: 0x%08X", 0x06000000, svcConvertVAToPA((void *)0x06000000, false));
-            OSDManager[7].SetScreen(true).SetPos(0, i++ * 10) = Utils::Format("gpuprot: 0x%08X", cfgProt);
-            OSDManager[8].SetScreen(true).SetPos(0, i++ * 10) = Utils::Format("gpuprot: 0x%08X", REG32(0x10140140));
-        };*/
-        //menu += new MenuEntry("Check screen fmt", nullptr, CheckScreenFormat);
-        // Launch menu and mainloop
         int ret = menu.Run();
+
 
         delete m;
         // Exit plugin

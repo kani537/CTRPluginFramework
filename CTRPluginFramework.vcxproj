@@ -73,8 +73,11 @@
     <SourcePath>$(SolutionDir)Sources;$(SourcePath)</SourcePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);$(SolutionDir)Includes</IncludePath>
+    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);$(ProjectDir)Includes;C:\devkitPro\portlibs\3ds\include</IncludePath>
     <ExcludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);$(MSBuild_ExecutablePath);$(VC_LibraryPath_x86);$(SolutionDir)Sources</ExcludePath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);$(ProjectDir)Includes;C:\devkitPro\portlibs\3ds\include</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -282,6 +285,7 @@
     <ClInclude Include="Includes\libntrplg\sharedfunc.h" />
     <ClInclude Include="Includes\libntrplg\ui.h" />
     <ClInclude Include="Includes\libntrplg\xprintf.h" />
+    <ClInclude Include="Includes\lodepng\lodepng.h" />
     <ClInclude Include="Includes\plgldr.h" />
     <ClInclude Include="Includes\types.h" />
     <ClInclude Include="Includes\Unicode.h" />
@@ -294,7 +298,7 @@
     <ClInclude Include="Sources\ctrulib\util\rbtree\rbtree_internal.h" />
     <ClInclude Include="Sources\Excluded\OSDMenu.hpp" />
     <ClInclude Include="Sources\OSDMenu.hpp" />
-    <ClInclude Include="Sources\OSDManager.hpp" />
+    <ClInclude Include="Sources\Excluded\OSDManager.hpp" />
     <ClInclude Include="Sources\Excluded\PointerSearcher.hpp" />
     <ClInclude Include="Sources\Speedometer.hpp" />
   </ItemGroup>
@@ -494,10 +498,11 @@
     <ClCompile Include="Sources\ctrulib\util\utf\utf8_to_utf16.c" />
     <ClCompile Include="Sources\ctrulib\util\utf\utf8_to_utf32.c" />
     <ClCompile Include="Sources\Excluded\OSDMenu.cpp" />
+    <ClCompile Include="Sources\lodepng\lodepng.cpp" />
     <ClCompile Include="Sources\OSDMenu.cpp" />
     <ClCompile Include="Sources\CTRPluginFramework\System\Hook.cpp" />
     <ClCompile Include="Sources\main.cpp" />
-    <ClCompile Include="Sources\OSDManager.cpp" />
+    <ClCompile Include="Sources\Excluded\OSDManager.cpp" />
     <ClCompile Include="Sources\plgldr.c" />
     <ClCompile Include="Sources\pluginInit.cpp" />
     <ClCompile Include="Sources\Excluded\PointerSearcher.cpp" />

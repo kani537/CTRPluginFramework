@@ -16,7 +16,9 @@ INCLUDES	:= 	Includes \
 				Includes\ctrulib\allocator \
 				Includes\ctrulib\gpu \
 				Includes\ctrulib\services \
-				Includes\ctrulib\util
+				Includes\ctrulib\util \
+				Includes\lodepng
+
 SOURCES 	:= 	Sources \
 				Sources\CTRPluginFramework \
 				Sources\CTRPluginFramework\Graphics \
@@ -37,7 +39,8 @@ SOURCES 	:= 	Sources \
 				Sources\ctrulib\services \
 				Sources\ctrulib\system \
 				Sources\ctrulib\util\utf \
-				Sources\ctrulib\util\rbtree
+				Sources\ctrulib\util\rbtree \
+				Sources\lodepng
 
 IP			:=  5
 FTP_HOST 	:=	192.168.1.
@@ -68,8 +71,8 @@ CXXFLAGS	:= $(CFLAGS) -fno-rtti -fno-exceptions -std=gnu++11
 ASFLAGS		:= $(ARCH)
 LDFLAGS		:= -T $(TOPDIR)/3gx.ld $(ARCH) -Os -Wl,--gc-sections,--strip-discarded,--strip-debug
 
-LIBS 		:= 	-lctru -lm
-LIBDIRS		:= 	$(CTRULIB)
+LIBS 		:= 	-lctru -lm -lpng -lz
+LIBDIRS		:= 	$(CTRULIB) $(PORTLIBS)
 
 #---------------------------------------------------------------------------------
 # no real need to edit anything past this point unless you need to add additional

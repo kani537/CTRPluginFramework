@@ -143,9 +143,6 @@ namespace CTRPluginFramework
         u8                          *GetRightFrameBuffer(int posX, int posY);
         void                        GetPosFromAddress(u32 address, int &posX, int &posY);
 
-        void                        ScreenToBMP(BMPImage::Pixel *bmp, u32 padding = 0);
-        static BMPImage             *ScreenShot(int screen, BMPImage *image = nullptr);
-
     private:
         friend class Renderer;
         friend void                 KeepThreadMain(void *);
