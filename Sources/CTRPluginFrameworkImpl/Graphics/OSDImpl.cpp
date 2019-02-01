@@ -358,6 +358,10 @@ namespace CTRPluginFramework
             }
         }
 
+        // We need to ensure that notifications are handled before running callbacks
+        DrawNotifTask1.Wait();
+        DrawNotifTask2.Wait();
+
         // Call OSD Callbacks
         if (Callbacks.size())
         {
@@ -371,11 +375,14 @@ namespace CTRPluginFramework
             screen.BytesPerPixel = GetBPP((GSPFormat)format);
             screen.Format = (GSPFormat)format;
 
+            // WARNING: this is not totally safe despite of the lock
+            // OSDCallbacks can remove / add themselves from a callback
+            // Luckily it shouldn't be that problematic as it's funcptrs
+            // TODO: devise a fix ?
             for (OSDCallback cb : Callbacks)
                 mustFlush |= cb(screen);
         }
-        DrawNotifTask1.Wait();
-        DrawNotifTask2.Wait();
+
         OSDImpl::Unlock();
 
         // Draw fps
