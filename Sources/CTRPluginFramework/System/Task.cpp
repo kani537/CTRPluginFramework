@@ -43,7 +43,7 @@ namespace CTRPluginFramework
 
     int     Task::Start(void *arg) const
     {
-        if (context == nullptr)
+        if (context == nullptr || context->flags & (Scheduled | Processing))
             return -1;
 
         context->arg = arg;

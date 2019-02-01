@@ -291,7 +291,23 @@ namespace CTRPluginFramework
         u32             res = 0;
         std::string     name;
         ImageBuffer*    imgBuf = ImgBuffer;
+        u32 width = 0, height = 0;
+        u32 screens = Screens & SCREENSHOT_BOTH;
 
+        if (screens & SCREENSHOT_BOTTOM)
+        {
+            width = 320;
+            height = 240;
+        }
+
+        if (screens & SCREENSHOT_TOP)
+        {
+            width = 400;
+            height += 240;
+        }
+
+        // Create BMP
+        BMPImage image(width, height);
         _timer.Restart();
 
         do
@@ -300,26 +316,12 @@ namespace CTRPluginFramework
             //LightEvent_Wait(&_readyEvent);
             //LightEvent_Clear(&_readyEvent);
 
-            while(!__ldrex__(&isReady));
+            while(!__ldrex__(&isReady))
+            {
+                ((void)0); ((void)0); ((void)0); ((void)0); ///< 4 NOP
+            }
             __strex__(&isReady, 0);
 
-            u32 width = 0, height = 0;
-            u32 screens = Screens & SCREENSHOT_BOTH;
-
-            if (screens & SCREENSHOT_BOTTOM)
-            {
-                width = 320;
-                height = 240;
-            }
-
-            if (screens & SCREENSHOT_TOP)
-            {
-                width = 400;
-                height += 240;
-            }
-
-            // Create BMP
-            BMPImage image(width, height);
             Pixel*   bmp = reinterpret_cast<Pixel *>(image.data());
 
             // Convert screens to bmp
@@ -348,7 +350,7 @@ namespace CTRPluginFramework
                 name = Prefix;
                 name += Utils::Format(" - %03d.bmp", _filecount);
 
-                // Redo
+                // Fetch next image
                 if (_mode & TIMED)
                     _mode = Screens;
 

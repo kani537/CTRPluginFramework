@@ -104,6 +104,10 @@ namespace CTRPluginFramework
         if (ctx->affinity == -1)
             ctx->affinity = AllCores;
 
+        // 2 threads on AppCore
+        if (ctx->affinity == AppCore)
+            ctx->affinity |= AppCore1;
+
         // Search for an idle core matching the Task affinity
         for (s32 i = 3; i >= 0; --i)
         {
@@ -132,8 +136,8 @@ namespace CTRPluginFramework
         _cores[0].thread.priority = 0x20;
         _cores[0].thread.Start(&_cores[0]);
 
-        // Create handler on Core1
-        _cores[1].id = SysCore;
+        // Create handler on Core0
+        _cores[1].id = AppCore1;
         _cores[1].thread.affinity = 0;
         _cores[1].thread.priority = 0x21;
         _cores[1].thread.Start(&_cores[1]);

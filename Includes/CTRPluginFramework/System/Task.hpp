@@ -32,12 +32,11 @@ namespace CTRPluginFramework
         enum
         {
             AppCore = 1 << 0,
-            SysCore = 1 << 1,
             NewAppCore = 1 << 2,
             NewSysCore = 1 << 3,
 
             AppCores = AppCore | NewAppCore,
-            SysCores = SysCore | NewSysCore,
+            SysCores = NewSysCore,
             AllCores = AppCores | SysCores
         };
 
@@ -52,7 +51,7 @@ namespace CTRPluginFramework
 
         /**
          * \brief Schedule a Task and starts it
-         * \return 0 on operation success
+         * \return 0 on operation success, -1 if the task is already running (check Status)
          */
         int     Start(void) const;
         int     Start(void *arg) const;
