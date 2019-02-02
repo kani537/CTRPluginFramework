@@ -75,7 +75,7 @@ extern "C"
 
         return (ThreadVars*)tv;
     }
-    //TODO: hook on svcExitthread to clean this
+    //TODO: hook on svcExitThread to clean this
     ThreadVars* __ctrpf_getThreadVars(ThreadVars * mainThreadVars)
     {
         Lock    lock(__mutex);

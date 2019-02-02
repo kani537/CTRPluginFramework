@@ -14,7 +14,9 @@ extern const u8 __tdata_lma_end[];
 extern u8 __tls_start[];
 
 static ThreadVars * g_mainThreadVars;
-    ThreadVars* __ctrpf_getThreadVars(ThreadVars * mainThreadVars);
+
+ThreadVars* __ctrpf_getThreadVars(ThreadVars * mainThreadVars);
+
 static struct _reent* __ctru_get_reent()
 {
 	ThreadVars* tv = getThreadVars();
