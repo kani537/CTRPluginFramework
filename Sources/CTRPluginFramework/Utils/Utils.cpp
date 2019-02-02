@@ -8,6 +8,7 @@
 #include "CTRPluginFrameworkImpl/Menu/Menu.hpp"
 #include "CTRPluginFrameworkImpl/Menu/SubMenu.hpp"
 #include "CTRPluginFrameworkImpl/Preferences.hpp"
+#include "CTRPluginFrameworkImpl/Menu/HexEditor.hpp"
 
 #include <cstdarg>
 #include <cstdio>
@@ -375,6 +376,46 @@ namespace CTRPluginFramework
     int     Utils::DirectoryPicker(std::string &out)
     {
         return SDExplorerInternal(out, "", true);
+    }
+
+    u32     Utils::OpenInHexEditor(u32 address, HexEditorView view)
+    {
+        extern HexEditor *__g_hexEditor;
+
+        Event           event;
+        EventManager    manager;
+        std::vector<Event>  eventList;
+        HexEditor& hexEditor = *__g_hexEditor;
+
+        ProcessImpl::Pause(false);
+        if (!hexEditor.Goto(address, true))
+        {
+            Process::Play();
+            return address; ///< Invalid address
+        }
+
+        hexEditor.SetView(static_cast<u32>(view));
+
+        while (true)
+        {
+            if (SystemImpl::WantsToSleep())
+                break;
+            eventList.clear();
+            while (manager.PollEvent(event))
+                eventList.push_back(event);
+
+            bool exit = hexEditor(eventList);
+            Renderer::EndFrame(false);
+
+            if (exit)
+                break;
+        }
+
+        ProcessImpl::Play(false);
+        if (SystemImpl::WantsToSleep())
+            SystemImpl::ReadyToSleep();
+
+        return hexEditor.GetCursorAddress();
     }
 
     u32     Utils::RemoveLastChar(std::string &str)

@@ -152,6 +152,11 @@ namespace CTRPluginFramework
         return (false);
     }
 
+    u32     HexEditor::GetCursorAddress(void)
+    {
+        return _ctx._cursorAddress;
+    }
+
     void    HexEditor::_ProcessEvent(Event &event)
     {
         _viewCurrent->ProcessEvent(event);
@@ -179,42 +184,14 @@ namespace CTRPluginFramework
                 }
                 case Key::L:
                 {
-                    if (flags & DirtyMemory)
-                        break;
-
-                    _viewId = _viewId == ByteV ? AsmV : _viewId - 1;
-                    _viewCurrent = _views[_viewId];
-
-                    // Check view boundaries
-                    u32     viewSizeInBytes = _viewCurrent->TotalItems << 2;
-                    while (_ctx._cursorAddress >= _ctx._address + viewSizeInBytes)
-                        _ctx._address += _viewCurrent->Stride;
-
-                    // Clear items cache
-                    _ctx._items.clear();
-                    // Set flags to refresh view
-                    flags |= DirtySrc | DirtyCursor;
-
+                    if (!(flags & DirtyMemory))
+                        SetView(_viewId == ByteV ? AsmV : _viewId - 1);
                     break;
                 }
                 case Key::R:
                 {
-                    if (flags & DirtyMemory)
-                        break;
-
-                    _viewId = _viewId == AsmV ? ByteV : _viewId + 1;
-                    _viewCurrent = _views[_viewId];
-
-                    // Check view boundaries
-                    u32     viewSizeInBytes = _viewCurrent->TotalItems << 2;
-                    while (_ctx._cursorAddress >= _ctx._address + viewSizeInBytes)
-                        _ctx._address += _viewCurrent->Stride;
-
-                    // Clear items cache
-                    _ctx._items.clear();
-
-                    // Set flags to refresh view
-                    flags |= DirtySrc | DirtyCursor;
+                    if (!(flags & DirtyMemory))
+                        SetView(_viewId == AsmV ? ByteV : _viewId + 1);
                     break;
                 }
                 default: break;
@@ -455,6 +432,27 @@ namespace CTRPluginFramework
         _ctx._flags |= DirtySrc;
 
         return true;
+    }
+
+    void    HexEditor::SetView(u32 view)
+    {
+        u32& flags = _ctx._flags;
+
+        if (flags & DirtyMemory)
+            return;
+
+        _viewId = view;
+        _viewCurrent = _views[_viewId];
+
+        // Check view boundaries
+        u32     viewSizeInBytes = _viewCurrent->TotalItems << 2;
+        while (_ctx._cursorAddress >= _ctx._address + viewSizeInBytes)
+            _ctx._address += _viewCurrent->Stride;
+
+        // Clear items cache
+        _ctx._items.clear();
+        // Set flags to refresh view
+        flags |= DirtySrc | DirtyCursor;
     }
 
     void    HexEditor::_ApplyChanges(void)
@@ -726,7 +724,7 @@ namespace CTRPluginFramework
 
                 flags |= DirtyCursorAddress | DirtyCursorPos;
             }
-
+            // Scroll right
             if (key == Key::DPadRight)
             {
                 s16 cursor = _cursorX;
