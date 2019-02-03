@@ -162,6 +162,7 @@ namespace CTRPluginFramework
         u32                         _rowSize;
         u32                         _bytesPerPixel;
         bool                        _isTopScreen;
+        bool                        _isGspAcquired{false};
         GSPGPU_FramebufferFormats   _format;
         GSP::FrameBufferInfoShared  _frameBufferInfo{};
         GSP::FrameBufferInfoShared  _gameFrameBufferInfo{};

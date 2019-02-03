@@ -174,7 +174,10 @@ namespace CTRPluginFramework
         if (leftFb)
             CallbackCommon(isBottom, leftFb, rightFb, stride, format);
 
-        return HookContext::GetCurrent().OriginalFunction<u32>(isBottom, arg2, leftFb, rightFb, stride, format, arg7);
+        if (!ProcessImpl::IsPaused)
+            return HookContext::GetCurrent().OriginalFunction<u32>(isBottom, arg2, leftFb, rightFb, stride, format, arg7);
+
+        return 0;
     }
 
     // TODO: more research on this pattern ?
@@ -193,7 +196,10 @@ namespace CTRPluginFramework
                 CallbackCommon(isBottom, leftFb, nullptr, stride, format);
         }
 
-        return HookContext::GetCurrent().OriginalFunction<u32>(r0, params, isBottom, arg);
+        if (!ProcessImpl::IsPaused)
+            return HookContext::GetCurrent().OriginalFunction<u32>(r0, params, isBottom, arg);
+
+        return 0;
     }
 
 // Thanks to Luma3DS custom mapping, we have a direct access to those
@@ -262,6 +268,9 @@ namespace CTRPluginFramework
             IsFramePaused = false;
             return;
         }
+
+        if (ProcessImpl::IsPaused)
+            return;
 
         bool drawRocket = isBottom && Preferences::IsEnabled(Preferences::UseFloatingBtn);
         bool drawTouch =  isBottom && Preferences::IsEnabled(Preferences::DrawTouchCursor | Preferences::DrawTouchPosition) && Touch::IsDown();

@@ -436,6 +436,7 @@ namespace CTRPluginFramework
         {
             svcClearEvent(WakeEvent);
             CatchInterrupt = false;
+            ClearInterrupts();
         }
 
         void    ResumeInterruptReceiver(void)
@@ -682,11 +683,17 @@ namespace CTRPluginFramework
         // Apply current frame buffers
         GSP::SetFrameBufferInfo(_frameBufferInfo, !_isTopScreen, true);
 
+        _isGspAcquired = true;
+
         return 0;
     }
 
     u32     ScreenImpl::ImportFromGsp(void)
     {
+        // GSP screens are plugin screens, so don't fetch
+        if (_isGspAcquired)
+            return 0;
+
         // Fetch game frame buffers
         GSP::ImportFrameBufferInfo(_gameFrameBufferInfo, !_isTopScreen);
 
@@ -701,6 +708,7 @@ namespace CTRPluginFramework
     void    ScreenImpl::Release(void)
     {
         GSP::SetFrameBufferInfo(_gameFrameBufferInfo, !_isTopScreen, false);
+        _isGspAcquired = false;
     }
 
     void    ScreenImpl::Acquire(u32 left, u32 right, u32 stride, u32 format, bool backup)
@@ -838,6 +846,8 @@ namespace CTRPluginFramework
             Bottom->_frameBufferInfo.header.screen = Bottom->_currentBuffer;
             GSP::SetFrameBufferInfo(Top->_frameBufferInfo, 0, true);
             GSP::SetFrameBufferInfo(Bottom->_frameBufferInfo, 1, true);
+            Top->_isGspAcquired = true;
+            Bottom->_isGspAcquired = true;
         }
     }
 
