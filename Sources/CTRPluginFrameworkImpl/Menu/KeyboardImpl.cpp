@@ -133,6 +133,7 @@ namespace CTRPluginFramework
 
     void    KeyboardImpl::SetLayout(Layout layout)
     {
+        _canChangeLayout = false; ///< Reset state
         _layout = layout;
         _isHex = false;
         _userInput.clear();
@@ -590,6 +591,7 @@ namespace CTRPluginFramework
                 if (_onInputChange != nullptr && _owner != nullptr)
                     _onInputChange(*_owner, _inputChangeEvent);
                 SetLayout(_layout == DECIMAL ? HEXADECIMAL : DECIMAL);
+                _canChangeLayout = true;
             }
         }
 
