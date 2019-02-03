@@ -3,30 +3,107 @@
 #include "CTRPluginFrameworkImpl/System/HookManager.hpp"
 #include "CTRPluginFramework/System/Lock.hpp"
 
-
 using namespace CTRPluginFramework;
+
+HookContext&    HookContext::GetCurrent(void)
+{
+    return *reinterpret_cast<HookContext *>(
+        reinterpret_cast<u32 *>(getThreadLocalStorage())[15]);
+}
+
+extern "C" void *__ctrpfHookCtx__GetCallerCode(HookContext *ctx)
+{
+    if (ctx->flags & MITM_MODE)
+    {
+        AsmWrapper& wrapper = HookManager::_singleton.GetAsmWrapper(ctx);
+
+        return static_cast<void *>(&wrapper.code[6]);
+    }
+
+    return nullptr; ///< mitm mode only
+}
+
+void *  HookContext::GetCallCode(void)
+{
+    if (flags & MITM_MODE)
+    {
+        AsmWrapper& wrapper = HookManager::_singleton.GetAsmWrapper(this);
+
+        return static_cast<void *>(&wrapper.code[6]);
+    }
+
+    return nullptr; ///< mitm mode only
+}
 
 Hook::Hook(void)
 {
-    flags.isEnabled = false;
-    flags.useLinkRegisterToReturn = true;
-    flags.ExecuteOverwrittenInstructionBeforeCallback = true;
-    flags.ExecuteOverwrittenInstructionAfterCallback = false;
-    targetAddress = 0;
-    returnAddress = 0;
-    callbackAddress = 0;
-    overwrittenInstr = 0;
-    index = -1;
+    _ctx = new HookContext;
+
+    _ctx->refcount = 1;
+    _ctx->flags = HOOK_DEFAULT_PARAMS;
+    _ctx->targetAddress = 0;
+    _ctx->returnAddress = 0;
+    _ctx->callbackAddress = 0;
+    _ctx->overwrittenInstr = 0;
+    _ctx->index = -1;
 }
 
-void    Hook::Initialize(u32 targetAddr, u32 callbackAddr, u32 returnAddr)
+Hook::~Hook(void)
 {
-    targetAddress = targetAddr;
-    callbackAddress = callbackAddr;
-    if (returnAddr == 0)
-        returnAddr = targetAddr + 4;
-    returnAddress = returnAddr;
+    if (!_ctx)
+        return;
+
+    AtomicDecrement(&_ctx->refcount);
+    if (_ctx->refcount == 0)
+        delete _ctx;
 }
+
+Hook&   Hook::Initialize(u32 targetAddr, u32 callbackAddr)
+{
+    if (!_ctx)
+        goto exit;
+
+    _ctx->targetAddress = targetAddr;
+    _ctx->callbackAddress = callbackAddr;
+    _ctx->returnAddress = targetAddr + 4;
+exit:
+    return *this;
+}
+
+Hook&   Hook::InitializeForMitm(u32 targetAddr, u32 callbackAddr)
+{
+    if (!_ctx)
+        goto exit;
+
+    _ctx->targetAddress = targetAddr;
+    _ctx->callbackAddress = callbackAddr;
+    _ctx->returnAddress = targetAddr + 4;
+    _ctx->flags = MITM_MODE;
+exit:
+
+
+    return *this;
+}
+
+Hook&   Hook::SetFlags(u32 flags)
+{
+    if (_ctx)
+        _ctx->flags = flags;
+    return *this;
+}
+
+Hook&   Hook::SetReturnAddress(u32 returnAddr)
+{
+    if (_ctx)
+        _ctx->returnAddress = returnAddr;
+    return *this;
+}
+
+bool    Hook::IsEnabled(void)
+{
+    return _ctx && _ctx->index != -1;
+}
+
 
 static bool  IsTargetAlreadyHooked(u32 target, u32 instruction)
 {
@@ -64,126 +141,81 @@ static bool  IsInstructionPCDependant(u32 instruction)
 
 HookResult    Hook::Enable(void)
 {
-    if (flags.isEnabled)
+    if (!_ctx)
+        return HookResult::InvalidContext;
+
+    if (IsEnabled())
         return HookResult::Success;
 
     // Only 1 thread at a time please
-    Lock    lock(HookManager::Lock());
+    Lock    lock(HookManager::GetLock());
+
+    u32 flags = _ctx->flags;
 
     // Check hook parameters
-    if (flags.ExecuteOverwrittenInstructionBeforeCallback && flags.ExecuteOverwrittenInstructionAfterCallback)
+    if (flags & EXECUTE_OI_BEFORE_CB && flags & EXECUTE_OI_AFTER_CB)
         return HookResult::HookParamsError;
 
-    // Check that the target is writable
-    if (!CTRPluginFramework::Process::CheckAddress(targetAddress, 7))
+    // Check that the target is valid
+    if (!Process::CheckAddress(_ctx->targetAddress))
         return HookResult::InvalidAddress;
 
     // Get the current instruction
-    overwrittenInstr = *reinterpret_cast<u32 *>(targetAddress);
+    _ctx->overwrittenInstr = *reinterpret_cast<u32 *>(_ctx->targetAddress);
 
     // Check if the target is already hooked
-    if (IsTargetAlreadyHooked(targetAddress, overwrittenInstr))
+    if (IsTargetAlreadyHooked(_ctx->targetAddress, _ctx->overwrittenInstr))
         return HookResult::AddressAlreadyHooked;
 
-    // Try to get a free slot in the HookManager
-    int i = HookManager::AllocNewHook();
-
-    if (i >= 0)
-        index = i;
-    else if (i == -1)
-        return HookResult::HookParamsError; ///< Technically the plugin will crash since OSD's hook will fail
-    else if (i == -2)
-        return HookResult::AddressAlreadyHooked;
-    else if (i == -3)
-        return HookResult::TooManyHooks;
-
-    // Check if the instruction is PC dependant
-    if (flags.ExecuteOverwrittenInstructionBeforeCallback || flags.ExecuteOverwrittenInstructionAfterCallback)
-        if (IsInstructionPCDependant(overwrittenInstr))
+    // Check if the instruction is PC dependent
+    if (flags & EXECUTE_OI_BEFORE_CB || flags & EXECUTE_OI_AFTER_CB)
+        if (IsInstructionPCDependant(_ctx->overwrittenInstr))
             return HookResult::TargetInstructionCannotBeHandledAutomatically;
 
-    // Time to configure the wrapper
-    u32         nop = 0xE320F000;
-    u32         jmpAddr = 0xE51FF004;
-    HookWrapperStatus &hws = HookManager::instance->hws[index];
-    HookWrapper *wrapper = hws.wrapper;
-
-    // Use BX LR option
-    if (flags.useLinkRegisterToReturn)
-    {
-        /*  Backup LR
-        str     lr, [pc, #32]
-        */
-        wrapper->backupAndUpdateLR = 0xE58FE020;
-
-        /* Set LR
-        mov     lr, pc
-        add     lr, lr, #8
-        */
-        wrapper->setLR[0] = 0xE1A0E00F;
-        wrapper->setLR[1] = 0xE28EE008;
-
-        /* Restore LR
-        ldr     lr, [pc, #8]
-        */
-        wrapper->restoreLR = 0xE59FE008;
-    }
-    else
-    {
-        wrapper->backupAndUpdateLR = nop;
-        wrapper->setLR[0] = nop;
-        wrapper->setLR[1] = nop;
-        wrapper->restoreLR = nop;
-    }
-
-    // Execute overwritten instruction before callback
-    if (flags.ExecuteOverwrittenInstructionBeforeCallback)
-    {
-        wrapper->overwrittenInstr = overwrittenInstr;
-    }
-    else
-        wrapper->overwrittenInstr = nop;
-
-    // Jump code to callback
-    wrapper->jumpToCallback = jmpAddr;
-    wrapper->callbackAddress = callbackAddress;
-
-    // Execute overwritten instruction after callback
-    if (flags.ExecuteOverwrittenInstructionAfterCallback)
-    {
-        wrapper->overwrittenInstr2 = overwrittenInstr;
-    }
-    else
-        wrapper->overwrittenInstr2 = nop;
-
-    // Return to game
-    wrapper->jumpBackToGame = jmpAddr;
-    wrapper->returnAddress = returnAddress;
-
-    // Set hook status
-    hws.isEnabled = true;
-    hws.target = targetAddress;
-
-    // Now set the branch
-    u32 off = reinterpret_cast<u32>(wrapper) - (targetAddress + 8);
-    *reinterpret_cast<u32 *>(targetAddress) = 0xEA000000 | ((off >> 2) & 0xFFFFFF);
-
-    // We're done
-    flags.isEnabled = true;
-    return HookResult::Success;
+    // Apply the hook
+    return HookManager::ApplyHook(*_ctx);
 }
 
-void    Hook::Disable(void)
+HookResult  Hook::Disable(void)
 {
-    if (!flags.isEnabled)
-        return;
+    if (!_ctx)
+        return HookResult::InvalidContext;
 
-    // Only 1 thread at a time please
-    Lock    lock(HookManager::Lock());
+    if (!IsEnabled())
+        return HookResult::Success;
 
-    if (CTRPluginFramework::Process::Write32(targetAddress, overwrittenInstr))
+    return HookManager::DisableHook(*_ctx);
+}
+
+extern "C"
+{
+    void * NAKED    CTRPluginFramework::ctrpfHook__GetCurrent(void)
     {
-        flags.isEnabled = false;
-        HookManager::FreeHook(index);
+#ifndef _MSC_VER
+    __asm__ __volatile__
+    (
+        "mrc    p15, 0, r0, c13, c0, 3  @ get tls \n"
+        "ldr    r0, [r0, #0x3C]         @ get HookContext\n"
+        "bx     lr                      \n"
+    );
+#endif
+    }
+
+    void * NAKED    CTRPluginFramework::ctrpfHook__ExecuteOriginalFunction(void)
+    {
+#ifndef _MSC_VER
+    __asm__ __volatile__
+    (
+        "stmfd sp!, {r0-r3, lr, pc}     \n"
+        "mrc    p15, 0, r0, c13, c0, 3  @ get tls \n"
+        "ldr    r0, [r0, #0x3C]         @ get HookContext \n"
+        "bl     __ctrpfHookCtx__GetCallerCode \n"
+        "cmp   r0, #0                   \n"
+        "strne r0, [sp, #20]            @ sp[pc] = callerCode\n"
+        "ldreq r0, [sp, #16]            @ sp[pc] = sp[lr] if caller code is null \n"
+        "streq r0, [sp, #20]            \n"
+        "ldmfd sp!, {r0-r3, lr, pc}     \n"
+    );
+#endif
     }
 }

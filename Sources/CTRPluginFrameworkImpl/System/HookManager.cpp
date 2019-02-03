@@ -3,78 +3,273 @@
 #include "ctrulib/result.h"
 #include "ctrulib/svc.h"
 #include "csvc.h"
+#include "CTRPluginFramework/Menu/MessageBox.hpp"
+#include "CTRPluginFrameworkImpl/System/Screen.hpp"
+#include "CTRPluginFramework/System/Lock.hpp"
 
 using namespace CTRPluginFramework;
 
-HookManager  *HookManager::instance = nullptr;
+HookManager  HookManager::_singleton;
 
-bool     HookManager::Init(void)
+HookManager::HookManager(void)
 {
-    if (instance != nullptr)
-        return true;
-
-    // Clear the memory
-    u32     *mem = reinterpret_cast<u32 *>(0x1E80000);
-    for (u32 i = 0; i < 1024; ++i)
-        mem[i] = 0;
-
-    // Create the manager
-    instance = new HookManager;
-
-    // Initialize all wrappers (ctor take care of other variables initialization)
-    HookWrapper *wrapper = reinterpret_cast<HookWrapper *>(0x1E80000);
-
-    for (HookWrapperStatus &wps : instance->hws)
-        wps.wrapper = wrapper++;
-
-    return true;
+    HookWrapper zero;
+    std::fill(_hookWrappers, _hookWrappers + MAX_HOOKS, zero);
+    _asmWrappers.reserve(MAX_HOOKS);
 }
+#define PA_PTR(addr)            (void *)((u32)(addr) | 1 << 31)
+#define REG32(addr)             (*(vu32 *)(PA_PTR(addr)))
 
-Mutex&  HookManager::Lock(void)
+extern "C"  void    __hook__CheckTlsValue(u32 value)
 {
-    Init();
-
-    return instance->lock;
-}
-
-int     HookManager::AllocNewHook(u32 address)
-{
-    if (!Init())
-        return -1;
-
-    int index = -1;
-    for (HookWrapperStatus &hws : instance->hws)
+    if (value && (value < 0x06000000 || value > 0x07000000))
     {
-        ++index;
+        // A little flash to notify the user that there's an error
+        for (u32 i = 0; i < 64; i++)
+        {
+            REG32(0x10202204) = 0x01FF00FF;
+            svcSleepThread(5000000);
+        }
+        REG32(0x10202204) = 0;
 
-        // Wait 5 seconds after a hook is disabled before reusing its wrapper
-        // to be sure that all threads have exited the hook
-        if (hws.isEnabled || !hws.disabledSince.HasTimePassed(CTRPluginFramework::Seconds(5.f)))
-            continue;
+        const char * str = "Hi there! You found a game which do not match tls expected value.\n" \
+                         "Contact Nanquitas on discord.gg/z4ZMh27 to fix this asap.\n" \
+                         "Thanks a lot and sorry for the crash.";
+        MessageBox("Error",  str)();
+        svcBreak(USERBREAK_ASSERT);
 
-        // If the target is already hooked
-        if (address != 0 && hws.target == address)
-            return -2;
+    }
+    return;
+}
 
-        // We found a free entry in the list
-        return index;
+static NAKED void   SetHookContextInTLS(HookContext *ctx)
+{
+#ifndef _MSC_VER ///< Intellisense fix
+    __asm__ __volatile__
+    (
+        "stmfd  sp!, {r4-r5, lr}        \n"
+        "mov    r4, r0                  \n"
+        "mrc    p15, 0, r5, c13, c0, 3  @ get tls \n"
+        "add    r5, r5, #0x3C           @ r5 = &tls[15] \n"
+        "ldr    r0, [r5]                \n"
+        "bl     __hook__CheckTlsValue   @ Check tls value is expected \n"
+        "str    r4, [r5]                @ tls[15] = ctx \n"
+        "ldmfd  sp!, {r4-r5, pc}        \n"
+    );
+#endif
+}
+
+static inline u32 ARMBranchLink(const void *src, const void *dst)
+{
+    u32 instrBase = 0xEB000000;
+    u32 off = (u32)((const u8 *)dst - ((const u8 *)src + 8));
+
+    return instrBase | ((off >> 2) & 0xFFFFFF);
+}
+
+static inline u32 ARM__LDR_LR_PC(u32 offset)
+{
+    return 0xE59FE000 | offset;
+}
+
+static inline u32 ARM__STR_LR_PC(u32 offset)
+{
+    return 0xE58FE000 | offset;
+}
+
+static __attribute__((noinline)) void     GenerateAsm(AsmWrapper& asmWrapper, HookContext& ctx)
+{
+    u32     flags = ctx.flags;
+    vu32 *  code = &asmWrapper.code[0];
+    vu32 *  ldrLrCb;
+    vu32 *  ldrLr;
+    vu32 *  strLr;
+
+    // Set common code
+    *code++ = 0xE92D400F; ///< stmfd sp!, {r0-r3, lr}
+    *code++ = 0xE51F0010; ///< ldr r0, [pc, #-16]
+    *code++ = ARMBranchLink(&asmWrapper.code[2], (void *)SetHookContextInTLS); ///< bl SetHookContextInTLS
+    *code++ = 0xE8BD400F; ///< ldmfd sp!, {r0-r3, lr}
+
+    if (flags & MITM_MODE)
+    {
+        // Jump to callback
+        *code++ = 0xE51FF004; ///< ldr pc, [pc, #-4]
+        *code++ = ctx.callbackAddress;
+        // Jump to original function - code[6]
+        *code++ = ctx.overwrittenInstr;
+        *code++ = 0xE51FF004;///< ldr pc, [pc, #-4]
+        *code = ctx.returnAddress;
+
+        return;
     }
 
-    return -3;
+    if (flags & USE_LR_TO_RETURN)
+        strLr = code++;
+
+    if (flags & EXECUTE_OI_BEFORE_CB)
+        *code++ = ctx.overwrittenInstr;
+
+    if (flags & USE_LR_TO_RETURN)
+    {
+        ldrLrCb = code++;
+        //*code++ = 0xE59FE000; ///< ldr lr, [pc]
+        *code++ = 0xE12FFF3E; ///< blx lr
+        ldrLr = code++;
+    }
+    else
+    {
+        *code++ = 0xE51FF004; ///< ldr pc, [pc -4]
+        *code++ = ctx.callbackAddress;
+        return; ///< there's no no way to go there without assisted bx lr
+    }
+
+    if (flags & EXECUTE_OI_AFTER_CB)
+        *code++ = ctx.overwrittenInstr;
+
+    *code++ = 0xE51FF004; ///< ldr pc, [pc -4]
+    *code++ = ctx.returnAddress;
+    *code++ = ctx.callbackAddress;
+
+    *strLr = ARM__STR_LR_PC(u32(code) - u32(strLr) - 8);
+    *ldrLrCb = ARM__LDR_LR_PC(u32(code) - u32(ldrLrCb) - 12);
+    *ldrLr = ARM__LDR_LR_PC(u32(code) - u32(ldrLr) - 8);
 }
 
-void    HookManager::FreeHook(u32 &index)
+static inline u32 ARMBranch(const void *src, const void *dst)
 {
-    if (!Init() || index >= MAX_HOOK_WRAPPERS)
-        return;
+    u32 instrBase = 0xEA000000;
+    u32 off = (u32)((const u8 *)dst - ((const u8 *)src + 8));
 
-    HookWrapperStatus &hws = instance->hws[index];
+    return instrBase | ((off >> 2) & 0xFFFFFF);
+}
 
-    // Disable the wrapper
-    hws.isEnabled = false;
-    hws.disabledSince.Restart();
-    hws.target = 0;
+HookResult  HookManager::ApplyHook(HookContext &ctx)
+{
+    HookManager&    manager = _singleton;
+    Lock            lock(manager._mutex);
 
-    // Update Hook::index to be invalid
-    index = -1;
+    // Check if we have enough hooks unused
+    if (manager._asmWrappers.size() >= MAX_HOOKS)
+    {
+        auto iter = manager._asmWrappers.begin();
+        for (; iter != manager._asmWrappers.end(); ++iter)
+            if (iter->ctx == nullptr)
+                break;
+
+        if (iter == manager._asmWrappers.end())
+            return HookResult::TooManyHooks;
+    }
+
+    // Check if the target is already hooked
+    for (const AsmWrapper& asmWrapper : manager._asmWrappers)
+        if (asmWrapper.ctx && asmWrapper.ctx->targetAddress == ctx.targetAddress)
+            return HookResult::AddressAlreadyHooked;
+
+    // Everything is set, apply the hook
+    s32             index;
+    AsmWrapper&     asmWrapper =  manager.GetFreeAsmWrapper();
+    HookWrapper&    hookWrapper = manager.GetFreeHookWrapper(index);
+
+    // Generate asm based on hook params
+    GenerateAsm(asmWrapper, ctx);
+
+    // Update HookContext
+    AtomicIncrement(&ctx.refcount);
+    ctx.index = index;
+
+    // Update AsmWrapper
+    asmWrapper.ctx = &ctx;
+    svcFlushProcessDataCache(Process::GetHandle(), &asmWrapper, sizeof(AsmWrapper));
+    //svcFlushDataCacheRange(&asmWrapper, sizeof(AsmWrapper));
+
+    // Update HookWrapper
+    hookWrapper.jumpCode = 0xE51FF004; ///< ldr pc, [pc, #-4]
+    hookWrapper.callback = (u32)&asmWrapper.code[0];
+    hookWrapper.ctx = &ctx;
+    svcFlushProcessDataCache(Process::GetHandle(), (void *)&hookWrapper, sizeof(HookWrapper));
+    //svcFlushDataCacheRange(&hookWrapper, sizeof(HookWrapper));
+
+    // Apply hook
+    svcInvalidateEntireInstructionCache();
+    *(vu32 *)ctx.targetAddress = ARMBranch((void *)ctx.targetAddress, &hookWrapper.jumpCode);
+    svcFlushProcessDataCache(Process::GetHandle(), (void *)ctx.targetAddress, 4);
+    //svcFlushDataCacheRange((void *)ctx.targetAddress, 4);
+
+    return HookResult::Success;
+}
+
+HookResult    HookManager::DisableHook(HookContext &ctx)
+{
+    HookManager&    manager = _singleton;
+    Lock            lock(manager._mutex);
+
+    if (ctx.index > MAX_HOOKS)
+        return HookResult::Success;
+
+    HookWrapper&    hookWrapper = manager._hookWrappers[ctx.index];
+    AsmWrapper&     asmWrapper = manager.GetAsmWrapper(hookWrapper.ctx);
+
+    // First disable hook
+    svcInvalidateEntireInstructionCache();
+    *(vu32 *)ctx.targetAddress = ctx.overwrittenInstr;
+    //svcFlushDataCacheRange((void *)ctx.targetAddress, 4);
+    svcFlushProcessDataCache(Process::GetHandle(), (void *)ctx.targetAddress, 4);
+
+    // Free HookWrapper
+    hookWrapper.ctx = nullptr;
+
+    // Free AsmWrapper
+    asmWrapper.ctx = nullptr;
+
+    // Update HookContext
+    ctx.index = -1;
+    AtomicDecrement(&ctx.refcount);
+
+    if (ctx.refcount == 0)
+        delete &ctx;
+
+    return HookResult::Success;
+}
+
+AsmWrapper&    HookManager::GetFreeAsmWrapper(void)
+{
+    Lock    lock(_mutex);
+
+    for (AsmWrapper& asmWrapper : _asmWrappers)
+        if (asmWrapper.ctx == nullptr)
+            return asmWrapper;
+
+    _asmWrappers.emplace_back();
+    return _asmWrappers.back();
+}
+
+HookWrapper&    HookManager::GetFreeHookWrapper(s32& index)
+{
+    Lock    lock(_mutex);
+
+    HookWrapper *begin = _hookWrappers;
+    HookWrapper *end = begin + MAX_HOOKS;
+
+    index = 0;
+    for (; begin != end; ++begin, ++index)
+        if (begin->ctx == nullptr)
+            return *begin;
+
+    // We didn't found a free hook
+    svcBreak(USERBREAK_ASSERT);
+    return *begin;
+}
+
+AsmWrapper&     HookManager::GetAsmWrapper(HookContext *ctx)
+{
+    Lock    lock(_mutex);
+
+    for (AsmWrapper& asmWrapper : _asmWrappers)
+        if (asmWrapper.ctx == ctx)
+            return asmWrapper;
+
+    // We didn't found the specified AsmWrapper
+    svcBreak(USERBREAK_ASSERT);
+    return _asmWrappers.back();
 }

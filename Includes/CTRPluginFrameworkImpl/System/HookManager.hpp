@@ -4,12 +4,27 @@
 #include "types.h"
 #include "CTRPluginFramework/System/Clock.hpp"
 #include "CTRPluginFramework/System/Mutex.hpp"
+#include "CTRPluginFramework/System/Hook.hpp"
+#include <vector>
 
 namespace CTRPluginFramework
 {
-    #define MAX_HOOK_WRAPPERS 93
+    #define MAX_HOOKS (0x1000 / sizeof(HookWrapper))
 
     struct HookWrapper
+    {
+        u32             jumpCode{0};   // ldr pc, [pc, #-4]
+        u32             callback{0};   // Asm wrapper
+        HookContext *   ctx{nullptr};  // to be set in tls[15]
+    };
+
+    struct  AsmWrapper
+    {
+        HookContext *   ctx{nullptr};
+        u32             code[13]{0};
+    };
+
+    /*struct HookWrapper
     {
         u32     backupAndUpdateLR;  ///< Default: nop
         u32     overwrittenInstr;   ///< Default: nop
@@ -21,31 +36,29 @@ namespace CTRPluginFramework
         u32     jumpBackToGame;     ///< ldr pc, [pc, #-4]
         u32     returnAddress;
         u32     lrBackup;
-    };
-
-    struct HookWrapperStatus
-    {
-        bool            isEnabled{false};
-        u32             target{0};
-        Clock           disabledSince{ CTRPluginFramework::Microseconds(0)};
-        HookWrapper     *wrapper{nullptr};
-    };
+    }; */
 
     struct HookManager
     {
-        static bool     Init(void);
-        static Mutex&   Lock(void);
+        HookManager(void);
 
-        // Return index free or -1 if error
-        static int      AllocNewHook(u32 address = 0);
+        static Mutex&   GetLock(void)
+        {
+            return _singleton._mutex;
+        }
 
-        // Free a hook
-        static void     FreeHook(u32 &index);
+        static HookResult   ApplyHook(HookContext& ctx);
+        static HookResult   DisableHook(HookContext& ctx);
 
-        Mutex               lock;
-        HookWrapperStatus   hws[MAX_HOOK_WRAPPERS];
+        AsmWrapper&     GetFreeAsmWrapper(void);
+        HookWrapper&    GetFreeHookWrapper(s32& index);
+        AsmWrapper&     GetAsmWrapper(HookContext *ctx);
 
-        static HookManager *instance;
+        Mutex                       _mutex{};
+        HookWrapper *               _hookWrappers{reinterpret_cast<HookWrapper *>(0x1E80000)};
+        std::vector<AsmWrapper>     _asmWrappers{};
+
+        static HookManager          _singleton;
     };
 }
 
