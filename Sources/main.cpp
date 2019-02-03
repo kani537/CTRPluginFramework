@@ -81,9 +81,11 @@ exit:
         svcCloseHandle(processHandle);
     }
 
+   u32 mainTls;
     // This function is called on the plugin start, before main
     void    PatchProcess(FwkSettings &settings)
     {
+
         ToggleTouchscreenForceOn();
         settings.WaitTimeToBoot = Seconds(8);
     }
@@ -267,28 +269,27 @@ exit:
         dbgReturnFromExceptionDirectly(regs);
     }
 
-    void    HookedOnError(u32 r0, const char *errStr, u32 r2, u32 r3)
+    Result  MyHookedCode(u32 a1, u32 a2)
     {
-        u32 errorCode;
-        __asm__ __volatile__("mov %[val], r5" : [val] "=r" (errorCode));
-        std::string err = Utils::Format(errStr, r2, r3);
-        PLGLDR__DisplayErrMessage("Error", err.c_str(), errorCode);
-    }
+        // Get the current hook context without the need for a global
+        HookContext& ctx = HookContext::GetCurrent();
 
+        Result res = ctx.OriginalFunction<Result>(a1, a2);
+
+        return res;
+    }
 
     int     main(void)
     {
-        //threadOnException(__ExceptionHandler, exceptionStack + 0x1000, WRITE_DATA_TO_HANDLER_STACK);
-
         PluginMenu  *m = new PluginMenu("Action Replay", 0, 5, 2);
         PluginMenu  &menu = *m;
 
-        Hook hook;
-
-        /*hook.Initialize(0x0011FD0C, (u32)&HookedOnError);
-
-        hook.Enable();*/
         menu.SynchronizeWithFrame(true);
+
+        menu += new MenuEntry("View TLS", nullptr, [](MenuEntry *entry)
+        {
+            Utils::OpenInHexEditor(mainTls, HexEditorView::Integer);
+        });
 
         int ret = menu.Run();
 

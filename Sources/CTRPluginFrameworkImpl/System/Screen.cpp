@@ -47,12 +47,29 @@ namespace CTRPluginFramework
         static FrameBufferInfoShared *  SharedFrameBuffers[2]{nullptr};
         u32    InterruptReceiverThreadPriority;
 
-        extern "C" void GSPGPU__RegisterInterruptHook(void);
         extern "C" void __gsp__Update(u32 threadId, Handle eventHandle, Handle sharedMemHandle)
         {
             Update(threadId, eventHandle, sharedMemHandle);
         }
 
+        static void NAKED GSPGPU__RegisterInterruptHook(void)
+        {
+#ifndef _MSC_VER
+            __asm__ __volatile__
+            (
+                "ldr    r2, [r4, #0xC] @event handle    \n"
+                "svc    0x32                           \n"
+                "ands   r1, r0, #0x80000000            \n"
+                "bxmi	lr                             \n"
+	            "stmfd	sp!, {r0, lr}                  \n"
+                "ldr    r0, [r4, #8] @ thread id       \n"
+	            "mov	r2, r1                         \n"
+                "ldr    r2, [r4, #0x10] @ shared mem handle \n"
+                "bl     __gsp__Update                  \n"
+	            "ldmfd	sp!, {r0, pc}                  \n"
+            );
+#endif
+        }
         Result  Initialize(void)
         {
             const std::vector<u32> gspgpuRegisterInterruptPattern =
@@ -104,14 +121,12 @@ namespace CTRPluginFramework
                 0x00130042
             };
 
-
             u32 addr = Utils::Search(0x00100000, Process::GetTextSize(), gspgpuRegisterInterruptPattern);
             Hook& hook = GSPRegisterInterruptReceiverHook;
 
             if (addr)
             {
-                hook.Initialize(addr + 0x2C, (u32)GSPGPU__RegisterInterruptHook);
-                hook.flags.ExecuteOverwrittenInstructionBeforeCallback = false;
+                hook.Initialize(addr + 0x2C, (u32)GSPGPU__RegisterInterruptHook).SetFlags(USE_LR_TO_RETURN);
                 hook.Enable();
             }
             else
@@ -119,8 +134,7 @@ namespace CTRPluginFramework
                 addr = Utils::Search(0x00100000, Process::GetTextSize(), gspgpuRegisterInterruptPattern2);
                 if (addr)
                 {
-                    hook.Initialize(addr + 0x28, (u32)GSPGPU__RegisterInterruptHook);
-                    hook.flags.ExecuteOverwrittenInstructionBeforeCallback = false;
+                    hook.Initialize(addr + 0x28, (u32)GSPGPU__RegisterInterruptHook).SetFlags(USE_LR_TO_RETURN);
                     hook.Enable();
                 }
                 else
@@ -298,12 +312,8 @@ namespace CTRPluginFramework
         void    FrameBufferInfoShared::FillFrameBuffersFrom(FrameBufferInfoShared &src)
         {
             const u32 displayed = src.header.screen;
-            //const u32 size = 240 * 2 * (src.fbInfo[displayed].framebuf1_vaddr == nullptr ? 320 : 400);
 
             fbInfo[0].FillFrameBufferFrom(src.fbInfo[displayed]);
-            //std::copy(fbInfo[0].framebuf0_vaddr, fbInfo[0].framebuf0_vaddr + (size >> 2), \
-                      fbInfo[1].framebuf0_vaddr);
-            //svcFlushProcessDataCache(CUR_PROCESS_HANDLE, fbInfo[1].framebuf0_vaddr, size);
         }
 
         static void  ClearInterrupts(void)

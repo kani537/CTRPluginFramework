@@ -159,6 +159,7 @@ namespace CTRPluginFramework
             addr++;
         }
     }
+    // TODO: clean this whole code
     static u32      FsTryOpenFileCallback(u32 a1, u16 *fileName, u32 mode);
     static bool     InitFsTryOpenFileHook(void)
     {
@@ -186,12 +187,10 @@ namespace CTRPluginFramework
             LightLock_Init(&g_OpenFileLock);
 
             // Initialize the return code
-            createReturncode(FsTryOpenFileAddress, g_returncode);
+            //createReturncode(FsTryOpenFileAddress, g_returncode);
 
             // Initialize the hook
-            g_FsTryOpenFileHook.flags.useLinkRegisterToReturn = false;
-            g_FsTryOpenFileHook.flags.ExecuteOverwrittenInstructionBeforeCallback = false;
-            g_FsTryOpenFileHook.Initialize(FsTryOpenFileAddress, (u32)FsTryOpenFileCallback);
+            g_FsTryOpenFileHook.InitializeForMitm(FsTryOpenFileAddress, (u32)FsTryOpenFileCallback);
             g_FsTryOpenFileAddress = FsTryOpenFileAddress;
             isInitialized = true;
         }
@@ -244,7 +243,7 @@ namespace CTRPluginFramework
 
         LightLock_Unlock(&g_OpenFileLock);
 
-        return (((FsTryOpenFileType)g_returncode)(a1, fileName, mode));
+        return HookContext::GetCurrent().OriginalFunction<u32>(a1, fileName, mode);
     }
 
     static void    _DisplayLoadedFiles(MenuEntryTools *entry)

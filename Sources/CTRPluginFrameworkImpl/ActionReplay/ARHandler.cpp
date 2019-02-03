@@ -780,9 +780,9 @@ bool AlmostEqualRelative(float A, float B, float maxRelDiff = FLT_EPSILON);
                     if (hooks != nullptr)
                     {
                         int index = 0;
-                        for (Hook &hook : *hooks)
+                        for (Hook& hook : *hooks)
                         {
-                            if (hook.targetAddress == code.Right)
+                            if (hook.GetContext().targetAddress == code.Right)
                             {
                                 hook.Disable();
                                 hooks->erase(hooks->begin() + index);
@@ -798,15 +798,16 @@ bool AlmostEqualRelative(float A, float B, float maxRelDiff = FLT_EPSILON);
                 if (hooks == nullptr) g_context->hooks = hooks = new HookVector;
 
                 Hook    hook;
+                u32     flags = (code.Left & 0x10) != 0x10 ? USE_LR_TO_RETURN : 0;
 
-                hook.flags.useLinkRegisterToReturn = (code.Left & 0x10) != 0x10;
-                hook.flags.ExecuteOverwrittenInstructionBeforeCallback = (code.Left & 1) != 1;
+                flags |= (code.Left & 1) != 1 ? EXECUTE_OI_BEFORE_CB : 0;
+
                 hook.Initialize(Offset[ActiveOffset], (u32)code.Data.data());
+                hook.SetFlags(flags);
 
                 if (hook.Enable() == HookResult::Success)
-                {
                     hooks->push_back(hook);
-                }
+
                 break;
             }
             case 0xFE: ///< Memsearch

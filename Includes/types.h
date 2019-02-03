@@ -55,6 +55,7 @@ typedef void (*voidfn)(void);
     #define USED
     #define UNUSED
     #define DEPRECATED
+    #define NAKED
 
 #else
 
@@ -63,7 +64,7 @@ typedef void (*voidfn)(void);
     /// Packs a struct (and other types?) so it won't include padding bytes.
     #define PACKED     __attribute__((packed))
 
-    #define USED        __attribute__((used))
+    #define USED       __attribute__((used))
     #define UNUSED     __attribute__((unused))
 
     #ifndef LIBCTRU_NO_DEPRECATION
@@ -73,6 +74,7 @@ typedef void (*voidfn)(void);
         /// Flags a function as deprecated.
         #define DEPRECATED
     #endif
+    #define NAKED __attribute__((naked))
 
 #endif
 

@@ -56,7 +56,6 @@ namespace CTRPluginFramework
         static bool             MessColors;
         static u32              WaitingForScreenshot;
         static u32              FramesToPlay;
-        static OSDReturn        HookReturn;
 
         static Hook             OSDHook;
         static RecursiveLock    RecLock;
@@ -73,9 +72,9 @@ namespace CTRPluginFramework
         static Task             DrawNotifTask1;
         static Task             DrawNotifTask2;
 
-        static  int     MainCallback(u32 isBottom, int arg2, void *addr, void *addrB, int stride, int format, int arg7);
-        static  int     MainCallback2(u32 r0, u32 *params, u32 isBottom, u32 arg);
-        static  void    CallbackGlobal(u32 isBottom, void *addr, void *addrB, int stride, int format);
+        static  u32     MainCallback(u32 isBottom, int arg2, void *leftFb, void *rightFb, int stride, int format, int arg7);
+        static  u32     MainCallback2(u32 r0, u32 *params, u32 isBottom, u32 arg);
+        static  void    CallbackCommon(u32 isBottom, void *leftFb, void *rightFb, int stride, int format);
         static  void    UpdateScreens(void);
 
         static void     WaitFramePaused(void);

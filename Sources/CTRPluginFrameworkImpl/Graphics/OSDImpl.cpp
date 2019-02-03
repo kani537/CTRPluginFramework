@@ -25,7 +25,6 @@ namespace CTRPluginFramework
     bool        OSDImpl::MessColors = false;
     u32         OSDImpl::WaitingForScreenshot = 0;
     u32         OSDImpl::FramesToPlay = 0;
-    OSDReturn   OSDImpl::HookReturn = nullptr;
     Hook        OSDImpl::OSDHook;
     Screen      OSDImpl::TopScreen;
     Screen      OSDImpl::BottomScreen;
@@ -169,35 +168,32 @@ namespace CTRPluginFramework
 
     static void    MessColor(u32 startAddr, u32 stride, u32 format);
 
-    int     OSDImpl::MainCallback(u32 isBottom, int arg2, void *addr, void *addrB, int stride, int format, int arg7)
+    u32     OSDImpl::MainCallback(u32 isBottom, int arg2, void *leftFb, void *rightFb, int stride, int format, int arg7)
     {
-        if (addr)
-        {
-            CallbackGlobal(isBottom, addr, addrB, stride, format);
-        }
-        return (HookReturn(isBottom, arg2, addr, addrB, stride, format, arg7));
+        // Only call our OSD callback if left frame buffer is valid
+        if (leftFb)
+            CallbackCommon(isBottom, leftFb, rightFb, stride, format);
+
+        return HookContext::GetCurrent().OriginalFunction<u32>(isBottom, arg2, leftFb, rightFb, stride, format, arg7);
     }
 
-    int     OSDImpl::MainCallback2(u32 r0, u32 *params, u32 isBottom, u32 arg)
+    // TODO: more research on this pattern ?
+    u32     OSDImpl::MainCallback2(u32 r0, u32 *params, u32 isBottom, u32 arg)
     {
-        using OSDReturn = int(*)(u32, u32 *, u32, u32);
+        // It appears that sometimes that ptr is nullptr ???
+        if (params)
+        {
+            // u32 isBottom = params[0];
+            void    *leftFb = (void *)params[1];
+            // void *addrB = params[2]; possible, not confirmed
+            u32 stride = params[3];
+            u32 format = params[4] & 0xF;
 
-        u32 addr, addrB, stride, format;
+            if (leftFb)
+                CallbackCommon(isBottom, leftFb, nullptr, stride, format);
+        }
 
-        if (!params)
-            goto exit;
-       // isBottom = params[0];
-        addr = params[1];
-        addrB = 0;
-        //addrB = params[2];
-        stride = params[3];
-        format = params[4] & 0xF;
-
-        if (addr)
-            CallbackGlobal(isBottom, (void *)addr, (void *)addrB, stride, format);
-
-    exit:
-        return ((OSDReturn)(OSDImpl::HookReturn))(r0, params, isBottom, arg);
+        return HookContext::GetCurrent().OriginalFunction<u32>(r0, params, isBottom, arg);
     }
 
 // Thanks to Luma3DS custom mapping, we have a direct access to those
@@ -207,7 +203,7 @@ namespace CTRPluginFramework
 #define GPU_TRANSFER_CNT            REG32(0x10400C18)
 #define GPU_CMDLIST_CNT             REG32(0x104018F0)
 
-    void     OSDImpl::CallbackGlobal(u32 isBottom, void* addr, void* addrB, int stride, int format)
+    void     OSDImpl::CallbackCommon(u32 isBottom, void* addr, void* addrB, int stride, int format)
     {
         if (SystemImpl::Status())
             return;
@@ -509,33 +505,23 @@ namespace CTRPluginFramework
         return nullptr;
     }
 
-    static u32     SearchStmfd(u32 start, u32 size, u32 stmfd, bool &jump)
+    static u32     SearchStmfd(u32 start, u32 size, u32 stmfd)
     {
         if (!start || !size || !stmfd)
             return (0);
 
-        const u32   ntrhook = 0xE51FF004; // LDR PC, [PC, #-4]
         u32     result = 0;
         u32     *end = (u32 *)(start - size);
 
         for (u32 *addr = (u32 *)start; addr > end; addr--)
         {
-            u32 val = *addr;
-
-            if (val == stmfd)
+            if (*addr == stmfd)
             {
                 result = (u32)addr;
-                break;
-            }
-
-            if (val == ntrhook && (*(addr + 1) >> 24 == 0x06))
-            {
-                result = (u32)addr;
-                jump = true;
                 break;
             }
         }
-        return (result);
+        return result;
     }
 
     static u32     SearchOSD(u32 pattern)
@@ -567,66 +553,38 @@ namespace CTRPluginFramework
         return (u32)address;
     }
 
+    // TODO: clean
     void    InstallOSD(void)
     {
-        static u32  returnCode[4];
-
-        auto  createReturncode = [](u32 address, u32 *buf)
-        {
-            Process::CopyMemory(buf, (void *)address, 8);
-            buf[2] = 0xE51FF004;
-            buf[3] = address + 8;
-        };
-
         const u32   stmfd1 = 0xE92D5FF0; // STMFD SP!, {R4-R12, LR}
         const u32   stmfd2 = 0xE92D47F0; // STMFD SP!, {R4-R10, LR}
         const u32   stmfd3 = 0xE92D4070; // STMFD SP!, {R4-R6, LR}
 
-        bool        isHook = false;
         u32         found = SearchOSD(0);
         u32         found2 = 0;
 
-        found = SearchStmfd(found, 0x400, stmfd1, isHook);
+        found = SearchStmfd(found, 0x400, stmfd1);
         if (!found)
         {
             found = SearchOSD(3);
-            found = SearchStmfd(found, 0x400, stmfd2, isHook);
+            found = SearchStmfd(found, 0x400, stmfd2);
             if (!found)
             {
                 found2 = SearchOSD(4);
-                found2 = SearchStmfd(found2, 0x400, stmfd3, isHook);
+                found2 = SearchStmfd(found2, 0x400, stmfd3);
                 if (!found2)
                 {
-                    MessageBox("OSD couldn't be installed: #1 !")();
+                    //MessageBox("OSD couldn't be installed: #1 !")();
                     return;
                 }
+                OSDImpl::OSDHook.InitializeForMitm(found2, u32(OSDImpl::MainCallback2)).Enable();
+                return;
             }
         }
-
-        OSDImpl::OSDHook.flags.useLinkRegisterToReturn = false;
-        OSDImpl::OSDHook.flags.ExecuteOverwrittenInstructionBeforeCallback = false;
-
-        if (found2)
-        {
-            createReturncode(found2, returnCode);
-            OSDImpl::OSDHook.Initialize(found2, (u32)OSDImpl::MainCallback2);
-            OSDImpl::OSDHook.Enable();
-            if (!isHook)
-                OSDImpl::HookReturn = (OSDReturn)returnCode;
-            else
-                OSDImpl::HookReturn = (OSDReturn)*((u32 *)found2 + 1);
-            return;
-        }
-
-        createReturncode(found, returnCode);
-        OSDImpl::OSDHook.Initialize(found, (u32)OSDImpl::MainCallback);
-        OSDImpl::OSDHook.Enable();
-        if (!isHook)
-            OSDImpl::HookReturn = (OSDReturn)returnCode;
-        else
-            OSDImpl::HookReturn = (OSDReturn)*((u32 *)found + 1);
+        OSDImpl::OSDHook.InitializeForMitm(found, u32(OSDImpl::MainCallback)).Enable();
     }
 
+    // TODO: remove this
     static void    MessColor(u32 startAddr, u32 stride, u32 format)
     {
         u32 endBuffer = startAddr + (stride * 400);

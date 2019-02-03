@@ -300,13 +300,13 @@ namespace CTRPluginFramework
                 {
                     OnPluginSwap();
 
-                    // Unmap hook memory
+                    // Un-map hook memory
                     svcUnmapProcessMemoryEx(CUR_PROCESS_HANDLE, 0x01E80000, 0x2000);
 
                     // Reply and wait
                     PLGLDR__Reply(event);
 
-                    // Remap hook memory
+                    // Re-map hook memory
                     svcMapProcessMemoryEx(CUR_PROCESS_HANDLE, 0x1E80000, CUR_PROCESS_HANDLE,
                         __ctru_heap + __ctru_heap_size, 0x2000);
                 }
@@ -328,10 +328,10 @@ namespace CTRPluginFramework
                     acExit();
                     srvExit();
 
-                    // Unmap hook wrapper memory
+                    // Un-map hook wrapper memory
                     svcUnmapProcessMemoryEx(CUR_PROCESS_HANDLE, 0x01E80000, 0x2000);
 
-                    // This function do not return and close the thread
+                    // This function do not return and exit the thread
                     PLGLDR__Reply(event);
                 }
                 continue;
@@ -446,16 +446,37 @@ namespace CTRPluginFramework
     #define BUTTON_X          (1 << 10)
     #define BUTTON_Y          (1 << 11)
 
+
+    static void flash(u32 color)
+    {
+        color |= 0x01000000;
+        for (u32 i = 0; i < 64; i++)
+        {
+            REG32(0x10202204) = color;
+            svcSleepThread(5000000);
+        }
+        REG32(0x10202204) = 0;
+    }
+
     extern "C"
     int   __entrypoint(int arg)
     {
         // A little debug routine to wait for debugger to connect
-        if (DebugFromStart || HID_PAD & BUTTON_Y)
+        u32 debug = 0;
+
+        for (u32 i = 0; i < 200; ++i)
         {
+            debug |= HID_PAD & BUTTON_Y;
+            Sleep(Milliseconds(1));
+        }
+
+        if (DebugFromStart || debug)
+        {
+            flash(0xFF0000);
             u32 stall = 0;
             do
             {
-                Sleep(Milliseconds(1000));
+                Sleep(Milliseconds(100));
                 stall = HID_PAD & BUTTON_X;
             } while (!stall);
         }
@@ -468,6 +489,7 @@ namespace CTRPluginFramework
         svcWaitSynchronization(g_continueGameEvent, U64_MAX);
         // Close the event
         svcCloseHandle(g_continueGameEvent);
+
         return (0);
     }
 }

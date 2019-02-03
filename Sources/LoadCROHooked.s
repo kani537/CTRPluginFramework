@@ -38,19 +38,6 @@ FUNCTION    AR__ExecuteRoutine
 stackBak:
     .word 0
 
-FUNCTION	GSPGPU__RegisterInterruptHook
-    ldr     r2, [r4, 0xC] @event handle
-    svc     0x32
-    ands    r1, r0, #0x80000000
-    bxmi	lr
-	stmfd	sp!, {r0, lr}
-    ldr     r0, [r4, #8] @ thread id
-	mov		r2, r1
-    ldr     r2, [r4, 0x10] @ shared mem handle
-    bl      __gsp__Update
-	ldmfd	sp!, {r0, pc}
-
-
 FUNCTION dbgReturnFromExceptionDirectly
 	ldr sp, [r0,#0x34] @sp
 	ldr r1, [r0, #0x3c] @pc
