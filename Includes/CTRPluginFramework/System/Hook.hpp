@@ -74,6 +74,11 @@ namespace CTRPluginFramework
     struct  Hook
     {
         Hook(void);
+        // Warning: copies share the same HookContext
+        Hook(const Hook& hook);
+        Hook(Hook&& hook) noexcept;
+        Hook& operator=(const Hook& hook);
+        Hook& operator=(Hook&& hook) noexcept;
         ~Hook(void);
 
         /**
@@ -124,6 +129,8 @@ namespace CTRPluginFramework
          * \return Return the result of the operation (see HookResult for more infos)
          */
         HookResult  Disable(void);
+
+        const HookContext&    GetContext(void) const;
 
     private:
         HookContext     *_ctx;

@@ -48,6 +48,46 @@ Hook::Hook(void)
     _ctx->index = -1;
 }
 
+Hook::Hook(const Hook &hook)
+{
+    _ctx = hook._ctx;
+    AtomicIncrement(&_ctx->refcount);
+}
+
+Hook::Hook(Hook&& hook) noexcept
+{
+    _ctx = hook._ctx;
+    hook._ctx = nullptr;
+}
+
+Hook& Hook::operator=(const Hook &hook)
+{
+    if (_ctx)
+    {
+        AtomicDecrement(&_ctx->refcount);
+        if (_ctx->refcount == 0)
+            delete _ctx;
+    }
+    _ctx = hook._ctx;
+    AtomicIncrement(&_ctx->refcount);
+
+    return *this;
+}
+
+Hook&   Hook::operator=(Hook &&hook) noexcept
+{
+    if (_ctx)
+    {
+        AtomicDecrement(&_ctx->refcount);
+        if (_ctx->refcount == 0)
+            delete _ctx;
+    }
+    _ctx = hook._ctx;
+    hook._ctx = nullptr;
+
+    return *this;
+}
+
 Hook::~Hook(void)
 {
     if (!_ctx)
@@ -185,6 +225,11 @@ HookResult  Hook::Disable(void)
         return HookResult::Success;
 
     return HookManager::DisableHook(*_ctx);
+}
+
+const HookContext&  Hook::GetContext(void) const
+{
+    return *_ctx;
 }
 
 extern "C"
