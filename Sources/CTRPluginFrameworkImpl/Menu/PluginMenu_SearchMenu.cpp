@@ -18,7 +18,7 @@ namespace CTRPluginFramework
 {
     SearchMenu::SearchMenu(Search* &curSearch, HexEditor &hexEditor, bool &inEditor, bool &useHexInput) :
         _currentSearch(curSearch),
-        _submenu{ { "Show game" }},
+        _submenu{ { "Show game", "Play 1 frame", "Play 2 frames", "Play 5 frames" }},
         _hexEditor(hexEditor),
         _inEditor(inEditor),
 	    _useHexInput(useHexInput)
@@ -182,41 +182,30 @@ namespace CTRPluginFramework
 
         if (_submenu.IsOpen())
         {
-            switch (_submenu())
-            {
-            case 0:
-                if (_submenu.OptionsCount() == 1)
-                    _ShowGame();
-                else
-                    _Edit();
-                break;
-            case 1:
-                _JumpInEditor();
-                break;
-            case 2:
-                _NewCheat();
-                break;
-            case 3:
-                _Export();
-                break;
-            case 4:
-                _ExportAll();
-                break;
-            case 5:
-            {
-                Converter *inst = Converter::Instance();
+            int subchoice = _submenu();
 
-                if (inst)
-                    (*inst)();
-                break;
+            if (_submenu.OptionsCount() > 4)
+            {
+                if (!subchoice--) _Edit();
+                else if (!subchoice--) _JumpInEditor();
+                else if (!subchoice--) _NewCheat();
+                else if (!subchoice--) _Export();
+                else if (!subchoice--) _ExportAll();
+                else if (!subchoice--)
+                {
+                    Converter *inst = Converter::Instance();
+
+                    if (inst)
+                        (*inst)();
+                }
             }
-            case 6:
-                _ShowGame();
-                break;
-            default:
-                break;
-            }
+
+            if (!subchoice--) _ShowGame();
+            else if (!subchoice--) Process::Play(1);
+            else if (!subchoice--) Process::Play(2);
+            else if (!subchoice--) Process::Play(5);
         }
+
         return (false);
     }
 
@@ -351,14 +340,15 @@ namespace CTRPluginFramework
         {
             _selector = 0;
             _index = 0;
-            if (_submenu.OptionsCount() > 1)
-                _submenu.ChangeOptions({ "Show game" });
+            if (_submenu.OptionsCount() > 4)
+                _submenu.ChangeOptions({ "Show game", "Play 1 frame", "Play 2 frames", "Play 5 frames" });
             return;
         }
 
-        if (_submenu.OptionsCount() == 1 && !_currentSearch->IsFirstUnknownSearch())
+        if (_submenu.OptionsCount() < 5 && !_currentSearch->IsFirstUnknownSearch())
         {
-            _submenu.ChangeOptions({ "Edit", "Jump in editor", "New cheat", "Export", "Export all", "Converter", "Show Game" });
+            _submenu.ChangeOptions({ "Edit", "Jump in editor", "New cheat", "Export", "Export all",
+                                     "Converter", "Show Game", "Play 1 frame", "Play 2 frames", "Play 5 frames" });
         }
 
         if (_index + _selector >= _currentSearch->ResultsCount)

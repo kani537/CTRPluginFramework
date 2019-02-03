@@ -148,6 +148,7 @@ namespace CTRPluginFramework
         bool    operator()(EventList &eventList);
         bool    Goto(u32 address, bool updateCursor = false);
         void    SetView(u32 view);
+        void    Refresh(void);
         u32     GetCursorAddress(void);
 
     private:

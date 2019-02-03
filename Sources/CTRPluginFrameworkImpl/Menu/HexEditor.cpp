@@ -31,7 +31,9 @@ namespace CTRPluginFramework
     };
 
     HexEditor::HexEditor(u32 target) :
-        _submenu{ { "New cheat", "Jump to", "Jump relative", "Jump to value", "Converter", "Move backward", "Move forward", "Save this address", "Browse history", "Clear history" }},
+        _submenu{ { "New cheat", "Jump to", "Jump relative", "Jump to value",
+                    "Converter", "Move backward", "Move forward", "Save this address",
+                    "Browse history", "Clear history", "Play 1 Frame", "Play 2 frames", "Play 5 frames" }},
         _renderTask(_RenderTop, (void *)this, Task::AppCores)
     {
         // Init context
@@ -125,6 +127,9 @@ namespace CTRPluginFramework
             else if (!subchoice--)  _SaveThisAddress();
             else if (!subchoice--)  _BrowseHistory();
             else if (!subchoice--)  _ClearHistory();
+            else if (!subchoice--)  { Process::Play(1);  _ctx._flags |= DirtySrc; return false; }
+            else if (!subchoice--)  { Process::Play(2);  _ctx._flags |= DirtySrc; return false; }
+            else if (!subchoice--)  { Process::Play(5);  _ctx._flags |= DirtySrc; return false; }
         }
 
         // Update components
@@ -453,6 +458,11 @@ namespace CTRPluginFramework
         _ctx._items.clear();
         // Set flags to refresh view
         flags |= DirtySrc | DirtyCursor;
+    }
+
+    void    HexEditor::Refresh(void)
+    {
+        _ctx._flags |= DirtySrc;
     }
 
     void    HexEditor::_ApplyChanges(void)

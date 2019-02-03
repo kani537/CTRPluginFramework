@@ -231,6 +231,9 @@ namespace CTRPluginFramework
                         eventList.clear();
                         _forceOpen = false;
 
+                        // Refresh HexEditor data
+                        _hexEditor.Refresh();
+
                         if (OnOpening != nullptr)
                             OnOpening();
 
