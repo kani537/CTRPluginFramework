@@ -6,11 +6,18 @@
 
 namespace CTRPluginFramework
 {
-    #define TICKS_PER_SEC 268123480
+    #define TICKS_PER_SEC       268123480
+    #define SYSCLOCK_SOC       (16756991)
+    #define SYSCLOCK_ARM9      (SYSCLOCK_SOC * 8)
+    #define SYSCLOCK_ARM11     (SYSCLOCK_ARM9 * 2)
+    #define SYSCLOCK_ARM11_NEW (SYSCLOCK_ARM11 * 3)
+
+    #define CPU_TICKS_PER_MSEC (SYSCLOCK_ARM11 / 1000.0)
+    #define CPU_TICKS_PER_USEC (SYSCLOCK_ARM11 / 1000000.0)
 
     static Time GetCurrentTime(void)
     {
-        return (Seconds(static_cast<float>(svcGetSystemTick())/TICKS_PER_SEC));
+        return Microseconds(svcGetSystemTick() / CPU_TICKS_PER_USEC);
     }
 
     Clock::Clock(void) : _startTime(GetCurrentTime())
