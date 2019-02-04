@@ -40,6 +40,42 @@ namespace CTRPluginFramework
     Task        OSDImpl::DrawNotifTask1(OSDImpl::DrawNotif_TaskFunc, nullptr, Task::AppCores);
     Task        OSDImpl::DrawNotifTask2(OSDImpl::DrawNotif_TaskFunc, nullptr, Task::AppCores);
 
+    static const Time  g_second = Seconds(1.f);
+
+    struct FpsCounter
+    {
+        u32     nbFrames{0};
+        Clock   clock;
+        Time    last;
+
+        std::string text;
+
+        Time    Update(void)
+        {
+            Time elapsedTime = clock.GetElapsedTime();
+            Time delta = elapsedTime - last;
+
+            last = elapsedTime;
+            ++nbFrames;
+            if (elapsedTime > g_second)
+            {
+                text = Utils::Format("FPS: %d", nbFrames);
+                nbFrames = 0;
+                clock.Restart();
+            }
+
+            return delta;
+        }
+
+        void    Display(void)
+        {
+            int posY = 10;
+            Renderer::DrawString(text.c_str(), 10, posY, Color::White, Color::Black);
+        }
+    };
+
+    static FpsCounter g_fpsCounter[2];
+
     void    InstallOSD(void);
 
     void    OSDImpl::_Initialize(void)
@@ -163,16 +199,15 @@ namespace CTRPluginFramework
 
     u32 GetBPP(GSPFormat format);
 
-    static const float  g_second = Seconds(1.f).AsSeconds();
-    static Clock        g_fpsClock[2];
-
     static void    MessColor(u32 startAddr, u32 stride, u32 format);
 
     u32     OSDImpl::MainCallback(u32 isBottom, int arg2, void *leftFb, void *rightFb, int stride, int format, int arg7)
     {
         // Only call our OSD callback if left frame buffer is valid
         if (leftFb)
+        {
             CallbackCommon(isBottom, leftFb, rightFb, stride, format);
+        }
 
         if (!ProcessImpl::IsPaused)
             return HookContext::GetCurrent().OriginalFunction<u32>(isBottom, arg2, leftFb, rightFb, stride, format, arg7);
@@ -216,6 +251,8 @@ namespace CTRPluginFramework
 
         Preferences::ApplyBacklight();
 
+        g_fpsCounter[isBottom].Update();
+
         if (!isBottom)
         {
             if (FramesToPlay)
@@ -223,6 +260,7 @@ namespace CTRPluginFramework
 
             // Signal a new frame to all threads waiting for it
             LightEvent_Pulse(&OnNewFrameEvent);
+            ThreadEx::Yield();
         }
 
         if (Screenshot::OSDCallback(isBottom, addr, addrB, stride, format))
@@ -280,9 +318,10 @@ namespace CTRPluginFramework
             && Callbacks.empty() && Notifications.empty())
             return;
 
-        u32     size = isBottom ? stride * 320 : stride * 400;
-        bool    mustFlush = drawFps;
-        Handle  handle = Process::GetHandle();
+        // Convert for un-cached memory access
+        addr = (void *)PA_FROM_VA(addr);
+        if (addrB)
+            addrB = (void *)PA_FROM_VA(addrB);
 
         if (!isBottom)
         {
@@ -295,16 +334,8 @@ namespace CTRPluginFramework
             Renderer::SetTarget(BOTTOM);
         }
 
-        svcInvalidateProcessDataCache(handle, addr, size);
-
-        if (!isBottom && addrB && addrB != addr)
-            svcInvalidateProcessDataCache(handle, addrB, size);
-
         if (MessColors)
-        {
-            mustFlush = true;
             MessColor((u32)addr, stride, format);
-        }
 
         // Lock for notification & callbacks
         Lock();
@@ -328,20 +359,15 @@ namespace CTRPluginFramework
 
                 DrawNotifTask1.Start((void *)&args[0]);
                 DrawNotifTask2.Start((void *)&args[1]);
-
-                mustFlush = true;
             }
             if (DrawSaveIcon)
-                mustFlush = Icon::DrawSave(10, 10);
+                Icon::DrawSave(10, 10);
         }
         // Draw touch cursor
         else
         {
             if (drawRocket)
-            {
                 FloatingBtn.Draw();
-                mustFlush = true;
-            }
 
             if (drawTouch)
             {
@@ -353,13 +379,13 @@ namespace CTRPluginFramework
                     int posY = touchPos.y - 1;
                     Icon::DrawHandCursor(posX, posY);
                 }
+
                 if (Preferences::IsEnabled(Preferences::DrawTouchPosition))
                 {
                     std::string &&str = Utils::Format("Touch.x: %d  Touch.y: %d", touchPos.x, touchPos.y);
                     int posY = 20;
                     Renderer::DrawString(str.c_str(), 10, posY, Color::White, Color::Black);
                 }
-                mustFlush = true;
             }
         }
 
@@ -385,27 +411,14 @@ namespace CTRPluginFramework
             // Luckily it shouldn't be that problematic as it's funcptrs
             // TODO: devise a fix ?
             for (OSDCallback cb : Callbacks)
-                mustFlush |= cb(screen);
+                cb(screen);
         }
 
-        OSDImpl::Unlock();
+        Unlock();
 
         // Draw fps
         if (drawFps)
-        {
-            std::string &&fps = Utils::Format("FPS: %.02f", g_second / g_fpsClock[isBottom].Restart().AsSeconds());
-            int posY = 10;
-            Renderer::DrawString(fps.c_str(), 10, posY, Color::White, Color::Black);
-            mustFlush |= true;
-        }
-
-        if (mustFlush)
-        {
-            svcFlushProcessDataCache(handle, addr, size);
-
-            if (!isBottom && addrB && addrB != addr)
-                svcFlushProcessDataCache(handle, addrB, size);
-        }
+            g_fpsCounter[isBottom].Display();
     }
 
     void    OSDImpl::UpdateScreens(void)
@@ -590,6 +603,7 @@ namespace CTRPluginFramework
                 return;
             }
         }
+
         OSDImpl::OSDHook.InitializeForMitm(found, u32(OSDImpl::MainCallback)).Enable();
     }
 
