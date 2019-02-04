@@ -27,6 +27,8 @@ namespace CTRPluginFramework
         u8          priority{0x3F};
         s8          affinity{-1};
 
+        static void     Yield(void);
+
     private:
         u8          _state{IDLE};
         Thread_tag *_thread{nullptr};
