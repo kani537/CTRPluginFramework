@@ -22,23 +22,17 @@ namespace CTRPluginFramework
         static void     Add(MenuEntryImpl *entry);
         static void     Remove(MenuEntryImpl *entry);
         static void     ExecuteBuiltin(void);
-        static void     Lock(void);
-        static void     Unlock(void);
 
         static void     AddAR(MenuEntryActionReplay *entry);
         static void     RemoveAR(MenuEntryActionReplay *entry);
         static void     ExecuteAR(void);
-        static void     LockAR(void);
-        static void     UnlockAR(void);
 
         bool    operator()(void);
 
-        static void InitLocks(void);
-
     private:
         static PluginMenuExecuteLoop          * _firstInstance;
-        static LightLock                        _arLock;
-        static LightLock                        _builtinLock;
+
+        Mutex   _mutex;
 
         std::vector<MenuEntryImpl *>            _builtinEnabledList{};
         std::vector<MenuEntryActionReplay *>    _arEnabledList{};

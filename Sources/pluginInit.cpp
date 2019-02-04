@@ -79,14 +79,10 @@ static void    ExecuteLoopOnEvent(void)
     using CTRPluginFramework::PluginMenuExecuteLoop;
 
     // Execute AR codes
-    PluginMenuExecuteLoop::LockAR();
     PluginMenuExecuteLoop::ExecuteAR();
-    PluginMenuExecuteLoop::UnlockAR();
 
     // Execute builtin codes
-    PluginMenuExecuteLoop::Lock();
     PluginMenuExecuteLoop::ExecuteBuiltin();
-    PluginMenuExecuteLoop::Unlock();
 }
 
 void     OnLoadCro(void)
@@ -190,9 +186,6 @@ namespace CTRPluginFramework
 
         // Init Screen
         ScreenImpl::Initialize();
-
-        // Init locks
-        PluginMenuExecuteLoop::InitLocks();
 
         // Init default settings
         FwkSettings &settings = FwkSettings::Get();

@@ -3,14 +3,14 @@
 #include "CTRPluginFrameworkImpl/ActionReplay/MenuEntryActionReplay.hpp"
 
 #include <queue>
+#include "CTRPluginFramework/System/Lock.hpp"
 
 namespace CTRPluginFramework
 {
     using ExecuteIterator = std::vector<MenuEntryImpl *>::iterator;
 
     PluginMenuExecuteLoop *PluginMenuExecuteLoop::_firstInstance = nullptr;
-    LightLock PluginMenuExecuteLoop::_arLock;
-    LightLock PluginMenuExecuteLoop::_builtinLock;
+
 
     PluginMenuExecuteLoop::PluginMenuExecuteLoop(void)
     {
@@ -21,6 +21,8 @@ namespace CTRPluginFramework
     {
         if (_firstInstance == nullptr)
             return;
+
+        Lock    lock(_firstInstance->_mutex);
 
         std::vector<u32>    uids;
         std::vector<MenuEntryImpl *>  &items = _firstInstance->_builtinEnabledList;
@@ -60,6 +62,8 @@ namespace CTRPluginFramework
     {
         if (_firstInstance == nullptr || entry == nullptr)
             return;
+
+        Lock    lock(_firstInstance->_mutex);
 
         std::vector<MenuEntryImpl*> &vector = _firstInstance->_builtinEnabledList;
 
@@ -103,6 +107,8 @@ namespace CTRPluginFramework
         if (_firstInstance == nullptr || entry == nullptr)
             return;
 
+        Lock    lock(_firstInstance->_mutex);
+
         if (_firstInstance->_builtinEnabledList.empty())
             return;
 
@@ -125,20 +131,12 @@ namespace CTRPluginFramework
         (*_firstInstance)();
     }
 
-    void    PluginMenuExecuteLoop::Lock(void)
-    {
-        LightLock_Lock(&_builtinLock);
-    }
-
-    void    PluginMenuExecuteLoop::Unlock(void)
-    {
-        LightLock_Unlock(&_builtinLock);
-    }
-
     void    PluginMenuExecuteLoop::AddAR(MenuEntryActionReplay *entry)
     {
         if (_firstInstance == nullptr || entry == nullptr)
             return;
+
+        Lock    lock(_firstInstance->_mutex);
 
         std::vector<MenuEntryActionReplay *> &list = _firstInstance->_arEnabledList;
 
@@ -154,6 +152,8 @@ namespace CTRPluginFramework
     {
         if (_firstInstance == nullptr || entry == nullptr)
             return;
+
+        Lock    lock(_firstInstance->_mutex);
 
         std::vector<MenuEntryActionReplay *> &list = _firstInstance->_arEnabledList;
 
@@ -178,6 +178,8 @@ namespace CTRPluginFramework
         if (_firstInstance == nullptr)
             return;
 
+        Lock    lock(_firstInstance->_mutex);
+
         for (MenuEntryActionReplay *ar : _firstInstance->_arEnabledList)
         {
             if (ar->GameFunc != nullptr)
@@ -185,18 +187,10 @@ namespace CTRPluginFramework
         }
     }
 
-    void    PluginMenuExecuteLoop::LockAR(void)
-    {
-        LightLock_Lock(&_arLock);
-    }
-
-    void    PluginMenuExecuteLoop::UnlockAR(void)
-    {
-        LightLock_Unlock(&_arLock);
-    }
-
     bool    PluginMenuExecuteLoop::operator()(void)
     {
+        Lock    lock(_mutex);
+
         if (_builtinEnabledList.empty())
             return false;
 
@@ -237,11 +231,5 @@ namespace CTRPluginFramework
         }
 
         return (false);
-    }
-
-    void    PluginMenuExecuteLoop::InitLocks(void)
-    {
-        LightLock_Init(&_arLock);
-        LightLock_Init(&_builtinLock);
     }
 }

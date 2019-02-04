@@ -215,13 +215,9 @@ namespace CTRPluginFramework
 
                         // Save settings
                         Preferences::WriteSettings();
-                        PluginMenuExecuteLoop::Unlock();
-                        PluginMenuExecuteLoop::UnlockAR();
                     }
                     else ///< Open menu
                     {
-                        PluginMenuExecuteLoop::Lock();
-                        PluginMenuExecuteLoop::LockAR();
                         ProcessImpl::Pause(true);
                         _isOpen = true;
                         _wasOpened = true;
@@ -311,8 +307,6 @@ namespace CTRPluginFramework
 
                     // Save settings
                     Preferences::WriteSettings();
-                    PluginMenuExecuteLoop::Unlock();
-                    PluginMenuExecuteLoop::UnlockAR();
 
                     SystemImpl::ReadyToSleep();
                 }
@@ -331,15 +325,11 @@ namespace CTRPluginFramework
                 if (FwkSettings::Get().AllowActionReplay)
                 {
                     // Lock the AR & execute codes before releasing it
-                    PluginMenuExecuteLoop::LockAR();
                     PluginMenuExecuteLoop::ExecuteAR();
-                    PluginMenuExecuteLoop::UnlockAR();
                 }
 
                 // Execute activated cheats
-                PluginMenuExecuteLoop::Lock();
-                executer();
-                PluginMenuExecuteLoop::Unlock();
+                PluginMenuExecuteLoop::ExecuteBuiltin();
 
                 // Execute callbacks
                 for (int i = 0; i < _callbacks.size(); i++)
