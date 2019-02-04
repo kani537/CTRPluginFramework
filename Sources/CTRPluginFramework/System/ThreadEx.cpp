@@ -162,4 +162,9 @@ namespace CTRPluginFramework
     {
         return _state;
     }
+
+    void    ThreadEx::Yield(void)
+    {
+        svcSleepThread(0);
+    }
 }
