@@ -5,31 +5,34 @@ namespace CTRPluginFramework
 {
     Task::Task(TaskFunc func, void *arg, s32 affinity)
     {
-        context = new TaskContext();
+        context = std::make_shared<TaskContext>();
 
-        AtomicIncrement(&context->refcount);
         context->affinity = affinity;
         context->func = func;
         context->arg = arg;
         LightEvent_Init(&context->event, RESET_STICKY);
     }
 
-    Task::Task(const Task &task)
+    Task::Task(const Task& task)
     {
         context = task.context;
-        AtomicIncrement(&context->refcount);
     }
 
-    Task::Task(Task &&task) noexcept
+    Task::Task(Task&& task) noexcept
     {
-        context = task.context;
-        task.context = nullptr;
+        context = std::move(task.context);
     }
 
-    Task::~Task(void)
+    Task&   Task::operator=(const Task& right)
     {
-        if (context != nullptr && AtomicDecrement(&context->refcount) == 0)
-            delete context;
+        context = right.context;
+        return *this;
+    }
+
+    Task&   Task::operator=(Task&& right) noexcept
+    {
+        context = std::move(right.context);
+        return *this;
     }
 
     int     Task::Start(void) const

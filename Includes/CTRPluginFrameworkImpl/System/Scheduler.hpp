@@ -5,7 +5,8 @@
 #include "CTRPluginFramework/System/Mutex.hpp"
 #include "CTRPluginFramework/System/Task.hpp"
 #include "CTRPluginFramework/System/Thread.hpp"
-#include <list>
+#include <vector>
+#include <atomic>
 
 namespace CTRPluginFramework
 {
@@ -35,11 +36,12 @@ namespace CTRPluginFramework
                 Exit = 2
             };
 
-            u32         id{0};
-            u32         flags{Idle};
-            ThreadEx    thread;
-            TaskContext *ctx{nullptr};
-            LightEvent  newTaskEvent{};
+            u32                 id{0};
+            std::atomic<u32>    state{Idle};
+            void *              tlsPtr{nullptr};
+            ThreadEx            thread;
+            TaskContextPtr      taskCtx;
+            LightEvent          newTaskEvent{};
 
             Core(void);
             ~Core(void) = default;
@@ -48,17 +50,19 @@ namespace CTRPluginFramework
             Core(const Core &core) = delete;
             Core(Core &&core) = delete;
             Core& operator=(const Core &core) = delete;
+            Core& operator=(Core&& core) = delete;
 
             void    Assign(const Task &task);
         };
 
     public:
-        ~Scheduler(void);
+        ~Scheduler(void) = default;
 
         // Non copyable
         Scheduler(const Scheduler &scheduler) = delete;
         Scheduler(Scheduler &&scheduler) = delete;
         Scheduler& operator=(const Scheduler &scheduler) = delete;
+        Scheduler& operator=(Scheduler&& scheduler) = delete;
 
         /**
          * \brief Schedule a new Task to be executed
@@ -69,16 +73,18 @@ namespace CTRPluginFramework
         static void     Initialize(void);
         static void     Exit(void);
 
+        static bool     CurrentThreadIsTaskHandler(void);
+
     private:
-        Scheduler(void);
+        Scheduler(void) = default;
 
         Core    _cores[4];
         Mutex   _mutex;
-        std::list<TaskContext *>   _tasks{};
+        std::vector<TaskContextPtr>     _tasks{};
 
-        static Scheduler _singleton;
+        static Scheduler    _singleton;
 
-        static TaskContext * _PollTask(u32 coreId);
+        static void     _PollTask(Core& core);
     };
 }
 

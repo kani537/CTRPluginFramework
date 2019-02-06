@@ -8,8 +8,10 @@
 namespace CTRPluginFramework
 {
 #define DEBUG 0
+
     Scheduler   Scheduler::_singleton;
     void Scheduler__CoreHandler(void *arg);
+
     Scheduler::Core::Core(void) :
         thread(Scheduler__CoreHandler, 0x1000, 1 , 1)
     {
@@ -18,50 +20,44 @@ namespace CTRPluginFramework
 
     void    Scheduler::Core::Assign(const Task &task)
     {
-        if (flags != Core::Idle)
+        if (state != Core::Idle)
             return;
 
-        flags = Core::Busy;
-        ctx = task.context;
-        ctx->flags = Task::Scheduled;
-        AtomicIncrement(&ctx->refcount);
+        state = Core::Busy;
+        taskCtx = task.context;
+        taskCtx->flags = Task::Scheduled;
         LightEvent_Signal(&newTaskEvent);
-    }
-
-    Scheduler::~Scheduler(void)
-    {
-        // TODO: signal core threads to exit (technically this code is never reached)
     }
 
     void     Scheduler__CoreHandler(void *arg)
     {
         Scheduler::Core &core = *reinterpret_cast<Scheduler::Core *>(arg);
 
-        core.flags = Scheduler::Core::Idle;
+        core.tlsPtr = getThreadLocalStorage();
 
-        while (core.flags != Scheduler::Core::Exit)
+        while (core.state != Scheduler::Core::Exit)
         {
-            // Fetch a task from the queue
-            core.ctx = Scheduler::_PollTask(core.id);
+            // Reset core state
+            core.state = Scheduler::Core::Idle;
 
-            if (core.ctx == nullptr)
+            // Fetch a task from the queue
+            Scheduler::_PollTask(core);
+
+            if (core.taskCtx == nullptr)
             {
-                core.flags = Scheduler::Core::Idle;
                 LightEvent_Wait(&core.newTaskEvent);
                 LightEvent_Clear(&core.newTaskEvent);
-
-                if (SystemImpl::Status())
-                    return;
             }
-            else if (SystemImpl::Status())
-                return;
 
+            if (SystemImpl::Status())
+                return;
 #if DEBUG
             OSD::Notify(Utils::Format("New task on core: %d", core.id));
 #endif
-            core.flags = Scheduler::Core::Busy;
+            core.state = Scheduler::Core::Busy;
 
-            TaskContext *ctx = core.ctx;
+            auto&       taskCtx = core.taskCtx;
+            TaskContext *ctx = taskCtx.get();
 
             if (ctx != nullptr && ctx->func != nullptr)
             {
@@ -70,30 +66,30 @@ namespace CTRPluginFramework
                 ctx->result = ctx->func(ctx->arg);
             }
 
-            // If TaskContext::refcount is 0 then free the resources as it's an alone obj
-            if (!AtomicDecrement(&ctx->refcount))
-                delete ctx;
-            // Else, signal it's done
-            else
+            // Signal the task is done if the TaskContext isn't detached
+            if (taskCtx.use_count() > 1)
             {
                 ctx->flags = Task::Finished;
                 LightEvent_Signal(&ctx->event);
             }
+
+            // Release Core::taskContext ownership
+            taskCtx.reset();
 #if DEBUG
             OSD::Notify(Utils::Format("Task ended on core: %d", core.id));
 #endif
         }
     }
 
-    int     Scheduler::Schedule(const Task &task)
+    int     Scheduler::Schedule(const Task& task)
     {
-        CTRPluginFramework::Lock    lock(_singleton._mutex);
+        Lock    lock(_singleton._mutex);
         Core    *cores = _singleton._cores;
 
         if (task.context == nullptr)
             return -1;
 
-        TaskContext *ctx = task.context;
+        TaskContext *ctx = task.context.get();
 
         if (SystemImpl::IsNew3DS && ctx->affinity > AllCores)
             ctx->affinity = AllCores;
@@ -108,7 +104,7 @@ namespace CTRPluginFramework
         if (ctx->affinity & AppCore)
             ctx->affinity |= AppCore1;
 
-        // Ensure memory cache coherence
+        // Ensure memory is updated
         svcFlushProcessDataCache(Process::GetHandle(), (void *)ctx, sizeof(TaskContext));
         if (ctx->arg)
             svcFlushProcessDataCache(Process::GetHandle(), ctx->arg, 0x1000);
@@ -116,7 +112,7 @@ namespace CTRPluginFramework
         // Search for an idle core matching the Task affinity
         for (s32 i = 3; i >= 0; --i)
         {
-            if (cores[i].flags == Core::Idle && cores[i].id & ctx->affinity)
+            if (cores[i].state == Core::Idle && cores[i].id & ctx->affinity)
             {
                 cores[i].Assign(task);
                 return 0;
@@ -124,9 +120,8 @@ namespace CTRPluginFramework
         }
 
         // Enqueue the task
-        AtomicIncrement(&ctx->refcount);
         ctx->flags = Task::Scheduled;
-        _singleton._tasks.push_back(ctx);
+        _singleton._tasks.push_back(task.context);
 
         return 0;
     }
@@ -150,8 +145,8 @@ namespace CTRPluginFramework
         // Create handler on Core2 & Core3 (N3DS only)
         if (!System::IsNew3DS())
         {
-            _cores[2].flags = Core::Exit;
-            _cores[3].flags = Core::Exit;
+            _cores[2].state = Core::Exit;
+            _cores[3].state = Core::Exit;
         }
         else
         {
@@ -171,38 +166,44 @@ namespace CTRPluginFramework
     {
         Lock lock(_singleton._mutex);
 
-        for (Core &core : _singleton._cores)
+        for (Core& core : _singleton._cores)
         {
-            core.flags |= Core::Exit;
+            core.state = Core::Exit;
             LightEvent_Signal(&core.newTaskEvent);
         }
     }
 
-    Scheduler::Scheduler(void)
+    bool    Scheduler::CurrentThreadIsTaskHandler(void)
     {
+        void *current = getThreadLocalStorage();
+
+        for (const Core& core : _singleton._cores)
+            if (core.tlsPtr == current)
+                return true;
+
+        return false;
     }
 
-    TaskContext *   Scheduler::_PollTask(u32 coreId)
+    // Function only called from a Scheduler::Core obj
+    void    Scheduler::_PollTask(Core& core)
     {
-        std::list<TaskContext *>   &tasks = _singleton._tasks;
+        Lock    lock(_singleton._mutex);
+        auto&   tasks = _singleton._tasks;
 
-        // If the Scheduler is in use, then abort
-        if (_singleton._mutex.TryLock())
-            return nullptr;
+        // Check current core flags after lock is acquired
+        if (core.state == Core::Busy)
+            return; ///< We were assigned a task by the Scheduler
 
-        // If there's tasks in the queue
-        for (TaskContext *ctx : tasks)
+        // If there are tasks in the queue
+        for (auto& task : tasks)
         {
             // If the task's affinity match this core
-            if (ctx->affinity & coreId)
+            if (task->affinity & core.id)
             {
-                // No need to decrement TaskContext::refcount, the core takes ownership
-                _singleton._mutex.Unlock();
-                return ctx;
+                core.taskCtx = task;
+                tasks.erase(std::remove(tasks.begin(), tasks.end(), task), tasks.end());
+                return;
             }
         }
-
-        _singleton._mutex.Unlock();
-        return nullptr;
     }
 }

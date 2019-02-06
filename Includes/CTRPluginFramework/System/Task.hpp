@@ -3,6 +3,8 @@
 
 #include "types.h"
 #include "ctrulib/synchronization.h"
+#include <atomic>
+#include <memory>
 
 namespace CTRPluginFramework
 {
@@ -10,18 +12,18 @@ namespace CTRPluginFramework
 
     struct TaskContext
     {
-        int         refcount{0};
-        u32         flags{0};
-        s32         affinity{-1};
-        s32         result{0};
-        void *      arg{nullptr};
-        TaskFunc    func{nullptr};
-        LightEvent  event{};
+        std::atomic<u32>    flags{0};
+        s32                 affinity{-1};
+        s32                 result{0};
+        void *              arg{nullptr};
+        TaskFunc            func{nullptr};
+        LightEvent          event{};
     };
 
+    using TaskContextPtr = std::shared_ptr<TaskContext>;
     struct Task
     {
-        enum
+        enum Status
         {
             Idle = 0,
             Scheduled = 1,
@@ -29,7 +31,7 @@ namespace CTRPluginFramework
             Finished = 4
         };
 
-        enum
+        enum Affinity
         {
             AppCore = 1 << 0,
             NewAppCore = 1 << 2,
@@ -40,14 +42,15 @@ namespace CTRPluginFramework
             AllCores = AppCores | SysCores
         };
 
-        TaskContext     *context;
+        TaskContextPtr    context;
 
         explicit Task(TaskFunc func, void *arg = nullptr, s32 affinity = -1);
-        Task(const Task &task);
-        Task(Task &&task) noexcept;
-        ~Task(void);
+        Task(const Task& task);
+        Task(Task&& task) noexcept;
+        ~Task(void) = default;
 
-        Task &operator=(const Task &right) = delete;
+        Task&   operator=(const Task& right);
+        Task&   operator=(Task&& right) noexcept;
 
         /**
          * \brief Schedule a Task and starts it
