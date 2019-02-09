@@ -81,7 +81,6 @@ namespace CTRPluginFramework
             ScreenImpl::Top->Copy();
             ScreenImpl::Bottom->Copy();
         }
-
     }
 
     void    Renderer::MenuSelector(int posX, int posY, int width, int height)

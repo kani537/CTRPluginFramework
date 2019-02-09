@@ -174,14 +174,14 @@ namespace CTRPluginFramework
             {
                 case Key::A:
                 {
-                    if (flags & DirtyMemory)
+                    if (flags & DirtyMemoryCache)
                         _ApplyChanges();
                     break;
                 }
 
                 case Key::B:
                 {
-                    if (flags & DirtyMemory)
+                    if (flags & DirtyMemoryCache)
                         _DiscardChanges();
                     else
                         Window::BottomWindow.Close();
@@ -189,13 +189,13 @@ namespace CTRPluginFramework
                 }
                 case Key::L:
                 {
-                    if (!(flags & DirtyMemory))
+                    if (!(flags & DirtyMemoryCache))
                         SetView(_viewId == ByteV ? AsmV : _viewId - 1);
                     break;
                 }
                 case Key::R:
                 {
-                    if (!(flags & DirtyMemory))
+                    if (!(flags & DirtyMemoryCache))
                         SetView(_viewId == AsmV ? ByteV : _viewId + 1);
                     break;
                 }
@@ -239,7 +239,7 @@ namespace CTRPluginFramework
         // Render view
         obj->_viewCurrent->Draw();
 
-        if (_ctx._flags & DirtyMemory)
+        if (_ctx._flags & DirtyMemoryCache)
         {
             posY += 5;
             Renderer::DrawString("Apply changes: ", 44, posY, maintextcolor);
@@ -285,35 +285,42 @@ namespace CTRPluginFramework
         if (flags & DirtySrc)
         {
             MemInfo     memregion = ProcessImpl::GetMemRegion(_ctx._address);
-            u32         endRegion = memregion.base_addr + memregion.size;
-            u32         address = _ctx._address;
 
             // Check for invalid src
             if (memregion.base_addr == 0)
                 flags |= InvalidSrc;
             else
-            {
                 flags &= ~InvalidSrc;
-                _ctx._items.resize(_viewCurrent->TotalItems);
-
-                for (Item& item: _ctx._items)
-                {
-                    // If address is outside the region, get next region
-                    if (address >= endRegion)
-                    {
-                        memregion = ProcessImpl::GetNextRegion(memregion);
-                        endRegion = memregion.base_addr + memregion.size;
-                        address = memregion.base_addr;
-                    }
-
-                    item.address =  address;
-                    item.value32 = item.origin32 = *(u32 *)address;
-                    snprintf(item.addrCache, 9, "%08X", address);
-                    address += 4;
-                }
-            }
 
             flags &= ~DirtySrc;
+            flags |= DirtyViewCache;
+        }
+
+        if (flags & DirtyMemory && !(flags & InvalidSrc))
+        {
+            MemInfo     memregion = ProcessImpl::GetMemRegion(_ctx._address);
+            u32         endRegion = memregion.base_addr + memregion.size;
+            u32         address = _ctx._address;
+
+            _ctx._items.resize(_viewCurrent->TotalItems);
+
+            for (Item& item: _ctx._items)
+            {
+                // If address is outside the region, get next region
+                if (address >= endRegion)
+                {
+                    memregion = ProcessImpl::GetNextRegion(memregion);
+                    endRegion = memregion.base_addr + memregion.size;
+                    address = memregion.base_addr;
+                }
+
+                item.address =  address;
+                item.value32 = *(vu32 *)address;
+                snprintf(item.addrCache, 9, "%08X", address);
+                address += 4;
+            }
+
+            flags &= ~(DirtyMemory | DirtyMemoryCache);
             flags |= DirtyViewCache;
         }
 
@@ -430,11 +437,11 @@ namespace CTRPluginFramework
             _ctx._flags |= DirtyCursorAddress;
 
         // Make the address stride aligned
-        u32 stride = 31 - __builtin_clz(_viewCurrent->Stride);
+        u32 stride = __builtin_ctz(_viewCurrent->Stride);
         address = (address >> stride) << stride;
 
         _ctx._address = address;
-        _ctx._flags |= DirtySrc;
+        _ctx._flags |= DirtySrc | DirtyMemory;
 
         return true;
     }
@@ -443,7 +450,7 @@ namespace CTRPluginFramework
     {
         u32& flags = _ctx._flags;
 
-        if (flags & DirtyMemory)
+        if (flags & DirtyMemoryCache)
             return;
 
         _viewId = view;
@@ -457,7 +464,7 @@ namespace CTRPluginFramework
         // Clear items cache
         _ctx._items.clear();
         // Set flags to refresh view
-        flags |= DirtySrc | DirtyCursor;
+        flags |= UpdateView | DirtyCursor;
     }
 
     void    HexEditor::Refresh(void)
@@ -467,22 +474,22 @@ namespace CTRPluginFramework
 
     void    HexEditor::_ApplyChanges(void)
     {
-        if (!(_ctx._flags & DirtyMemory) || _ctx._flags & InvalidSrc)
+        if (!(_ctx._flags & DirtyMemoryCache) || _ctx._flags & InvalidSrc)
             return;
 
         for (Item &item : _ctx._items)
-            *(vu32 *)PA_FROM_VA(item.address) = item.origin32 = item.value32;
+            *(vu32 *)item.address = item.value32;
 
-        _ctx._flags &= ~DirtyMemory;
+        _ctx._flags &= ~DirtyMemoryCache;
         _ctx._flags |= DirtyViewCache;
     }
 
     void    HexEditor::_DiscardChanges(void)
     {
         for (Item& item : _ctx._items)
-            item.value32 = item.origin32;
+            item.value32 = *(vu32 *)item.address;
 
-        _ctx._flags &= ~DirtyMemory;
+        _ctx._flags &= ~DirtyMemoryCache;
         _ctx._flags |= DirtyViewCache;
     }
 
@@ -568,7 +575,7 @@ namespace CTRPluginFramework
 
     void    HexEditor::_GotoPreviousRegion(void)
     {
-        if (_ctx._flags & DirtyMemory || _submenu.IsOpen())
+        if (_ctx._flags & DirtyMemoryCache || _submenu.IsOpen())
             return;
 
         MemInfo     currentRegion = ProcessImpl::GetMemRegion(_ctx._items.front().address);
@@ -579,7 +586,7 @@ namespace CTRPluginFramework
 
     void    HexEditor::_GotoNextRegion(void)
     {
-        if (_ctx._flags & DirtyMemory || _submenu.IsOpen())
+        if (_ctx._flags & DirtyMemoryCache || _submenu.IsOpen())
             return;
 
         MemInfo     currentRegion = ProcessImpl::GetMemRegion(_ctx._items.front().address);
@@ -676,7 +683,7 @@ namespace CTRPluginFramework
             u32     key = event.key.code;
             s16 &   _cursorX = _ctx._cursorX;
             s16 &   _cursorY = _ctx._cursorY;
-            bool    canScroll = !(_ctx._flags & DirtyMemory);
+            bool    canScroll = !(_ctx._flags & DirtyMemoryCache);
 
             // Scroll up
             if (key == Key::DPadUp)
@@ -685,7 +692,7 @@ namespace CTRPluginFramework
                 if (_cursorY == 0)
                 {
                     if (canScroll)
-                        _ctx.ScrollUp(Stride, true);
+                        _ctx.ScrollUp(Stride, false);
                 }
                 // Otherwise, just move cursor
                 else
@@ -725,8 +732,10 @@ namespace CTRPluginFramework
                     if (_cursorY == 0)
                     {
                         // If we can't scroll up, abort
-                        if (!canScroll || !_ctx.ScrollUp(Stride, true))
+                        if (!canScroll || !_ctx.ScrollUp(Stride, false))
                             _cursorX = cursor;
+                        else
+                            _cursorX = maxX;
                     }
                     else
                         --_cursorY;
@@ -750,6 +759,8 @@ namespace CTRPluginFramework
                         // If we can't scroll down, abort
                         if (!canScroll || !_ctx.ScrollDown(Stride, false))
                             _cursorX = cursor;
+                        else
+                            _cursorX = 0;
                     }
                     else
                         ++_cursorY;
@@ -838,8 +849,9 @@ namespace CTRPluginFramework
             u32     start = _ctx._address;
             u32     target = _ctx._cursorAddress - start;
 
-            u32     shiftY = 31 - __builtin_clz(Stride);
-            _ctx._cursorX = (target % Stride) << 1;
+            u32     shiftY = __builtin_ctz(Stride);
+            u32     shiftX = __builtin_clz(Stride);
+            _ctx._cursorX = target << shiftX >> shiftX << 1;
             _ctx._cursorY = target >> shiftY;           /// _ctx._cursorY = target / _viewCurrent->Stride
         }
 
@@ -858,9 +870,17 @@ namespace CTRPluginFramework
                 value.clear();
                 data.clear();
 
+                union
+                {
+                    u32     origin32;
+                    u8      ob[4];
+                };
+
+                origin32 = *(vu32 *)item.address;
+
                 for (u32 i = 0; i < 4; ++i)
                 {
-                    if (item.b[i] != item.ob[i] && !red)
+                    if (item.b[i] != ob[i] && !red)
                     {
                         value += Color::Red;
                         red = true;
@@ -869,6 +889,7 @@ namespace CTRPluginFramework
                     {
                         value += Color::Black;
                         red = false;
+                        flags |= DirtyMemoryCache;
                     }
 
                     value += Utils::Format("%02X ", b[i]);
@@ -894,7 +915,7 @@ namespace CTRPluginFramework
 
             // posX
             {
-                u32     startX = 125;
+                u32     startX = 124;
                 u32     byteWidth = 3 * 6;
                 u32     bytes = _ctx._cursorX >> 1;
 
@@ -942,14 +963,14 @@ namespace CTRPluginFramework
             if (_cursorY == 9)
             {
                 // If we can't scroll down, abort
-                if (_ctx._flags & DirtyMemory || !_ctx.ScrollDown(Stride, false))
+                if (_ctx._flags & DirtyMemoryCache || !_ctx.ScrollDown(Stride, false))
                     _cursorX = cursor;
             }
             else
                 ++_cursorY;
         }
 
-        _ctx._flags |= DirtyMemory | DirtyViewCache | DirtyCursorAddress | DirtyCursorPos;
+        _ctx._flags |= DirtyMemoryCache | DirtyViewCache | DirtyCursorAddress | DirtyCursorPos;
     }
 
     /*
@@ -1036,8 +1057,13 @@ namespace CTRPluginFramework
                 value.clear();
                 data.clear();
 
-                if (item.value32 != item.origin32)
+                u32 origin = *(vu32 *)item.address;
+
+                if (item.value32 != origin)
+                {
                     value += Color::Red;
+                    flags |= DirtyMemoryCache;
+                }
                 value += Utils::Format("%08X", item.value32);
             }
         }
@@ -1109,14 +1135,14 @@ namespace CTRPluginFramework
             if (_cursorY == 9)
             {
                 // If we can't scroll down, abort
-                if (_ctx._flags & DirtyMemory || !_ctx.ScrollDown(Stride, false))
+                if (_ctx._flags & DirtyMemoryCache || !_ctx.ScrollDown(Stride, false))
                     _cursorX = cursor;
             }
             else
                 ++_cursorY;
         }
 
-        _ctx._flags |= DirtyMemory | DirtyViewCache | DirtyCursorAddress | DirtyCursorPos;
+        _ctx._flags |= DirtyMemoryCache | DirtyViewCache | DirtyCursorAddress | DirtyCursorPos;
     }
 
 
@@ -1232,8 +1258,14 @@ namespace CTRPluginFramework
                 value.clear();
                 data.clear();
 
-                if (item.value32 != item.origin32)
+                u32 origin = *(vu32 *)item.address;
+
+                if (item.value32 != origin)
+                {
                     value += Color::Red;
+                    flags |= DirtyMemoryCache;
+                }
+
                 value += Utils::Format("%08X", item.value32);
                 data = ARM_Disasm::Disassemble(item.address, item.value32);
             }
@@ -1302,13 +1334,13 @@ namespace CTRPluginFramework
             if (_cursorY == 9)
             {
                 // If we can't scroll down, abort
-                if (_ctx._flags & DirtyMemory || !_ctx.ScrollDown(Stride, false))
+                if (_ctx._flags & DirtyMemoryCache || !_ctx.ScrollDown(Stride, false))
                     _cursorX = cursor;
             }
             else
                 ++_cursorY;
         }
 
-        _ctx._flags |= DirtyMemory | DirtyViewCache | DirtyCursorAddress | DirtyCursorPos;
+        _ctx._flags |= DirtyMemoryCache | DirtyViewCache | DirtyCursorAddress | DirtyCursorPos;
     }
 }

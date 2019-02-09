@@ -163,6 +163,7 @@ namespace CTRPluginFramework
     static u32      FsTryOpenFileCallback(u32 a1, u16 *fileName, u32 mode);
     static bool     InitFsTryOpenFileHook(void)
     {
+        return false;
         static bool isInitialized = false;
 
         if (isInitialized)

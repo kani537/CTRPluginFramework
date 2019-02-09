@@ -558,6 +558,9 @@
     <ClInclude Include="Includes\lodepng\lodepng.h">
       <Filter>Fichiers d%27en-tête</Filter>
     </ClInclude>
+    <ClInclude Include="Includes\CTRPluginFrameworkImpl\Menu\WatchPointManager.hpp">
+      <Filter>Fichiers d%27en-tête</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Sources\CTRPluginFramework\Graphics\Color.cpp">
@@ -1172,7 +1175,7 @@
     <ClCompile Include="Sources\Excluded\OSDManager.cpp">
       <Filter>Fichiers sources</Filter>
     </ClCompile>
-    <ClCompile Include="Sources\lodepng\lodepng.cpp">
+    <ClCompile Include="Sources\CTRPluginFrameworkImpl\Menu\WatchPointManager.cpp">
       <Filter>Fichiers sources</Filter>
     </ClCompile>
   </ItemGroup>

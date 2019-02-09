@@ -35,6 +35,8 @@ typedef unsigned long __PTRDIFF_TYPE__;
 
 namespace CTRPluginFramework
 {
+    volatile u32 g_mainThreadTls;
+
     static void    ToggleTouchscreenForceOn(void)
     {
         static u32 original = 0;
@@ -81,11 +83,12 @@ exit:
         svcCloseHandle(processHandle);
     }
 
-   u32 mainTls;
+
+
+
     // This function is called on the plugin start, before main
     void    PatchProcess(FwkSettings &settings)
     {
-
         ToggleTouchscreenForceOn();
         settings.WaitTimeToBoot = Seconds(8);
     }
@@ -237,11 +240,6 @@ exit:
         return 0;
     }
 
-    extern "C"
-    {
-        void dbgReturnFromExceptionDirectly(CpuRegisters *regs);
-    }
-
     // Uncomment to stall process at the beginning until Y is pressed
     //void    DebugFromStart(void){}
 
@@ -249,50 +247,160 @@ exit:
 
     MenuEntry *g_entry = new MenuEntry("Please use Find Base PTR first");
 
+    extern "C" void OSDNotify(const char *str)
+    {
+        OSD::Notify(str);
+    }
+
+    struct KThread{};
+    struct KAutoObject{};
+    struct HandleDescriptor
+    {
+        u32             info;
+        KAutoObject     *obj;
+    } PACKED;
+
+    struct KObjectMutex
+    {
+        KThread *owner;
+        s16     counter1;
+        s16     counter2;
+    } PACKED;
+
+    struct KProcessHandleTable
+    {
+        HandleDescriptor    *handleTable;
+        s16                 maxHandle;
+        s16                 openedHandleCounter;
+        HandleDescriptor    *nextOpenHandleDecriptor;
+        s16                 totalHandles;
+        s16                 handlesCount;
+        KObjectMutex        mutex;
+        HandleDescriptor    table[0x28];
+    } PACKED;
+
+    KAutoObject * KProcess__GetObjFromHandle(u32 kprocess, Handle handle)
+    {
+        KAutoObject *(*K_GetObjFromHandle)(u32, Handle) = [](u32 process, Handle handle)
+        {
+            KProcessHandleTable *table = (KProcessHandleTable *)(process + (SystemImpl::IsNew3DS ? 0xDC : 0xD4));
+
+            return table->handleTable[handle & 0xFFFF].obj;
+        };
+
+        return (KAutoObject *)svcCustomBackdoor((void *)K_GetObjFromHandle, kprocess, handle);
+    }
+
+    u32     KProcess__GetCurrent(void)
+    {
+        u32 (*K_GetCurrent)(void) = [](void) -> u32
+        {
+            return *(vu32 *)0xFFFF9004;
+        };
+
+        return (u32)svcCustomBackdoor((void *)K_GetCurrent);
+    }
+
+    u32     KProcess__SetCurrent(u32 process)
+    {
+        u32 (*K_SetCurrent)(u32) = [](u32 newProc) -> u32
+        {
+            u32 current = *(vu32 *)0xFFFF9004;
+            *(vu32 *)0xFFFF9004 = newProc;
+            return current;
+        };
+
+        return (u32)svcCustomBackdoor((void *)K_SetCurrent, process);
+    }
+
+    //  Force kill ntr server
+    void    KillNTRSOCHandle(void)
+    {
+        Handle  menuHandle;
+        Handle  handles[0x100] = {0};
+        u32     count;
+
+        // Open menu process
+        svcOpenProcess(&menuHandle, 0x14);
+        // List all handles used by menu process
+        count = svcControlProcess(menuHandle, PROCESSOP_GET_ALL_HANDLES, (u32)handles, 0);
+
+        // Only keep handles referencing an soc:U handle
+        for (u32 i = 0; i < count; ++i)
+        {
+            Handle copy;
+            char name[12];
+            svcCopyHandle(&copy, Process::GetHandle(), handles[i], menuHandle);
+            if (R_FAILED(svcControlService(SERVICEOP_GET_NAME, name, copy)) || strcmp("soc:U", name))
+                handles[i] = 0;
+            svcCloseHandle(copy);
+        }
+
+        // Now close all soc handles from menu
+        u32 current = KProcess__SetCurrent((u32)KProcess__GetObjFromHandle(KProcess__GetCurrent(), menuHandle));
+
+        for (u32 i = 0; i < count; ++i)
+            if (handles[i]) svcCloseHandle(handles[i]);
+
+        KProcess__SetCurrent(current);
+
+        svcCloseHandle(menuHandle);
+    }
+
+    /*
+    ** Debug svc stubbing
+    */
+    static vu32 *g_svcTable;
+    static u32   g_backupSvc[3];
+
+    void    StubDebugSvc(void)
+    {
+        if (!g_svcTable)
+        {
+            g_svcTable = (vu32 *)PA_FROM_VA(0xFFF00000);
+            while (*g_svcTable) ++g_svcTable;
+        }
+
+        vu32 *svcTable = g_svcTable;
+        u32  *backup = g_backupSvc;
+
+        *backup++ = svcTable[0x60];
+        *backup++ = svcTable[0x6A];
+        *backup = svcTable[0x6B];
+
+        svcTable[0x60] = svcTable[0x6A] = svcTable[0x6B] = svcTable[0x2E];
+    }
+
+    void    UnStubDebugSvc(void)
+    {
+        if (!g_svcTable)
+            return;
+
+        vu32 *svcTable = g_svcTable;
+        u32  *backup = g_backupSvc;
+
+        svcTable[0x60] = *backup++;
+        svcTable[0x6A] = *backup++;
+        svcTable[0x6B] = *backup;
+    }
+
     #define REG32(x) *(vu32 *)((x) | (1u << 31))
     u32     cfgProt = REG32(0x10140140);
 
     // Uncomment to stall process at the beginning until Y is pressed
     //void    DebugFromStart(void){}
 
-    void __ExceptionHandler(ERRF_ExceptionInfo* excep, CpuRegisters* regs)
-    {
-        std::string str = Color::Red << "Exception: ";
-
-        if (excep->type == ERRF_EXCEPTION_DATA_ABORT)
-            str += Color::Orange << "Data Abort" << Color::White;
-
-        str += Utils::Format(", pc: %08X", regs->pc);
-        OSD::Notify(str);
-        regs->pc += 4;
-        OSD::Notify("Return from exception: " << Color::LimeGreen << "SUCCESS");
-        dbgReturnFromExceptionDirectly(regs);
-    }
-
-    Result  MyHookedCode(u32 a1, u32 a2)
-    {
-        // Get the current hook context without the need for a global
-        HookContext& ctx = HookContext::GetCurrent();
-
-        Result res = ctx.OriginalFunction<Result>(a1, a2);
-
-        return res;
-    }
-
     int     main(void)
     {
         PluginMenu  *m = new PluginMenu("Action Replay", 0, 5, 2);
         PluginMenu  &menu = *m;
 
+ //       Task task(TimedTask);
+
+        //task.Start();
         menu.SynchronizeWithFrame(true);
 
-        menu += new MenuEntry("View TLS", nullptr, [](MenuEntry *entry)
-        {
-            Utils::OpenInHexEditor(mainTls, HexEditorView::Integer);
-        });
-
         int ret = menu.Run();
-
 
         delete m;
         // Exit plugin

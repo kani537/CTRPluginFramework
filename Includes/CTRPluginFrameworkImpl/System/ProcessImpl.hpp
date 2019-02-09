@@ -46,6 +46,13 @@ namespace CTRPluginFramework
         return left.base_addr != right.base_addr || left.size != right.size;
     }
 
+    enum
+    {
+        Running = 0,
+        Paused = 1,
+        NoImage = 2,
+    };
+
     class ProcessImpl
     {
     public:
@@ -71,12 +78,14 @@ namespace CTRPluginFramework
 
         static Handle       ProcessHandle;
         static u32          IsPaused;
+        static u32          Status;
         static u32          ProcessId;
         static u64          TitleId;
 
         static KThread *    MainThread;
         static KProcess *   KProcessPtr;
         static KCodeSet     CodeSet;
+        static u32          MainThreadTls;
 
         static MemInfo      InvalidRegion;
         static Mutex        MemoryMutex;

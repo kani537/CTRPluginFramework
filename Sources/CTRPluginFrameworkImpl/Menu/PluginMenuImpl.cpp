@@ -315,6 +315,7 @@ namespace CTRPluginFramework
             {
                 if (SyncOnFrame && !ProcessImpl::IsPaused)
                     LightEvent_Wait(&OSDImpl::OnNewFrameEvent);
+                //Sleep(Milliseconds(16));
 
                 if (SystemImpl::Status())
                 {
@@ -328,21 +329,17 @@ namespace CTRPluginFramework
                     PluginMenuExecuteLoop::ExecuteAR();
                 }
 
+                // Execute callbacks before cheats
+                for (auto cb : _callbacks)
+                    if (cb) cb(); ///< Guard against null
+
                 // Execute activated cheats
                 PluginMenuExecuteLoop::ExecuteBuiltin();
 
-                // Execute callbacks
-                for (int i = 0; i < _callbacks.size(); i++)
-                {
-                    _callbacks[i]();
-                }
+                //static KeySequenceImpl konamicode({ DPadUp, DPadUp, DPadDown, DPadDown, DPadLeft, DPadRight, DPadLeft, DPadRight, B, A, B, A });
 
-                static KeySequenceImpl konamicode({ DPadUp, DPadUp, DPadDown, DPadDown, DPadLeft, DPadRight, DPadLeft, DPadRight, B, A, B, A });
-
-                if (konamicode())
-                    OSDImpl::MessColors = !OSDImpl::MessColors;
-
-                OSDImpl::Update();
+                //if (konamicode())
+                //    OSDImpl::MessColors = !OSDImpl::MessColors;
 
                 if (_wasOpened)
                     _wasOpened = false;

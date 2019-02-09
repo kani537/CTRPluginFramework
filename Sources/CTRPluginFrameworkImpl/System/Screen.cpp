@@ -108,7 +108,7 @@ namespace CTRPluginFramework
                 0xE5A4C080,
                 0xE584100C,
                 0xE1C420F4,
-                0xE5900000,
+               /* 0xE5900000,
                 0xEF000032,
                 0xE2101102,
                 0x4A000004,
@@ -118,9 +118,10 @@ namespace CTRPluginFramework
                 0xE5850000,
                 0xE5940004,
                 0xE8BD8070,
-                0x00130042
+                0x00130042*/
             };
 
+            u32 found = 0;
             u32 addr = Utils::Search(0x00100000, Process::GetTextSize(), gspgpuRegisterInterruptPattern);
             Hook& hook = GSPRegisterInterruptReceiverHook;
 
@@ -131,14 +132,27 @@ namespace CTRPluginFramework
             }
             else
             {
-                addr = Utils::Search(0x00100000, Process::GetTextSize(), gspgpuRegisterInterruptPattern2);
-                if (addr)
+                for (addr = 0x00100000; !found && addr <= Process::GetTextSize() - gspgpuRegisterInterruptPattern2.size(); )
                 {
-                    hook.Initialize(addr + 0x28, (u32)GSPGPU__RegisterInterruptHook).SetFlags(USE_LR_TO_RETURN);
-                    hook.Enable();
+                    addr = Utils::Search(0x00100000, Process::GetTextSize(), gspgpuRegisterInterruptPattern2);
+                    if (!addr)
+                        return -1;
+
+                    u32 *a = (u32 *)addr;
+                    for (u32 i = 0; i < 20; ++i)
+                    {
+                        if (a[i] == 0x00130042)
+                        {
+                            found = 1;
+                            break;
+                        }
+                    }
                 }
-                else
+                if (!found)
                     return -1;
+
+                hook.Initialize(addr + 0x28, (u32)GSPGPU__RegisterInterruptHook).SetFlags(USE_LR_TO_RETURN);
+                hook.Enable();
             }
 
             svcCreateEvent(&WakeEvent, RESET_ONESHOT);

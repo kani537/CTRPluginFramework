@@ -25,16 +25,19 @@ namespace CTRPluginFramework
 
         enum
         {
-            DirtySrc = 1,
-            DirtyMemory = 1 << 1,
-            DirtyCursor = 1 << 2,
+            DirtySrc = 1,                   ///< Trigger a check on source (check if memory still mapped)
+            DirtyMemory = 1 << 1,           ///< Trigger a memory cache update
+            DirtyMemoryCache = 1 << 2,      ///< Set if memory cache is different than real memory
+            DirtyCursor = 1 << 3,           ///< Trigger a general cursor update based on current cursor address
 
-            DirtyViewCache = 1 << 3,
-            DirtyCursorAddress = 1 << 4,
-            DirtyCursorPos = 1 << 5,
-            DirtyCursorCache = 1 << 6,
+            DirtyViewCache = 1 << 4,        ///< Trigger view display update
+            DirtyCursorAddress = 1 << 5,    ///< Trigger cursor address update based on current position
+            DirtyCursorPos = 1 << 6,        ///< Trigger cursor coordinates update
+            DirtyCursorCache = 1 << 7,      ///< Trigger displayed cursor address update
 
             InvalidSrc = 1 << 8,
+
+            UpdateView = DirtySrc | DirtyMemory,
         };
 
         struct Item
@@ -47,12 +50,6 @@ namespace CTRPluginFramework
                 u8      b[4];
             };
 
-            union
-            {
-                u32     origin32;
-                float   originF;
-                u8      ob[4];
-            };
             char    addrCache[9]{0};
             std::string valueCache;
             std::string dataCache;
@@ -79,27 +76,28 @@ namespace CTRPluginFramework
 
         struct IView
         {
+            virtual ~IView() = default;
             virtual void    Draw(void) = 0;
-            virtual void    ProcessEvent(Event &event) = 0;
+            virtual void    ProcessEvent(Event& event) = 0;
             virtual void    UpdateView(void) = 0;
             virtual void    EditValueAtCursor(u32 val) = 0;
 
             void    ProcessEventsCommon(Context& _ctx, Event& event, s16 maxX);
 
-            u8      ItemsPerLine;   ///< Nb of items displayed on one line by the view
-            u8      DigitPerLine;   ///< Nb of editable digit per line
-            u8      TotalItems;     ///< Nb of items which can be displayed
-            u8      Stride;         ///< Nb of bytes which must be sub/add to fetch a new line
+            u8      ItemsPerLine{0};   ///< Nb of items displayed on one line by the view
+            u8      DigitPerLine{0};   ///< Nb of editable digit per line
+            u8      TotalItems{0};     ///< Nb of items which can be displayed
+            u8      Stride{0};         ///< Nb of bytes which must be sub/add to fetch a new line
         };
 
         struct ByteView : IView
         {
             ByteView(Context& ctx);
 
-            void    Draw(void);
-            void    ProcessEvent(Event &event);
-            void    UpdateView(void);
-            void    EditValueAtCursor(u32 val);
+            void    Draw(void) override;
+            void    ProcessEvent(Event& event) override;
+            void    UpdateView(void) override;
+            void    EditValueAtCursor(u32 val) override;
 
             Context&    _ctx;
         };
@@ -108,10 +106,10 @@ namespace CTRPluginFramework
         {
             IntegerView(Context &ctx);
 
-            void    Draw(void);
-            void    ProcessEvent(Event &event);
-            void    UpdateView(void);
-            void    EditValueAtCursor(u32 val);
+            void    Draw(void) override;
+            void    ProcessEvent(Event &event) override;
+            void    UpdateView(void) override;
+            void    EditValueAtCursor(u32 val) override;
 
             Context&    _ctx;
         };
@@ -120,10 +118,10 @@ namespace CTRPluginFramework
         {
             FloatView(Context &ctx);
 
-            void    Draw(void);
-            void    ProcessEvent(Event &event);
-            void    UpdateView(void);
-            void    EditValueAtCursor(u32 val);
+            void    Draw(void) override;
+            void    ProcessEvent(Event &event) override;
+            void    UpdateView(void) override;
+            void    EditValueAtCursor(u32 val) override;
 
             Context&    _ctx;
         };
@@ -132,10 +130,10 @@ namespace CTRPluginFramework
         {
             AsmView(Context &ctx);
 
-            void    Draw(void);
-            void    ProcessEvent(Event &event);
-            void    UpdateView(void);
-            void    EditValueAtCursor(u32 val);
+            void    Draw(void) override;
+            void    ProcessEvent(Event &event) override;
+            void    UpdateView(void) override;
+            void    EditValueAtCursor(u32 val) override;
 
             Context&    _ctx;
         };

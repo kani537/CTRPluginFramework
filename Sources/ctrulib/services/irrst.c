@@ -36,7 +36,7 @@ Result irrstInit(void)
 	if(R_FAILED(ret=IRRST_GetHandles(&irrstMemHandle, &irrstEvent))) goto cleanup1;
 
 	// Initialize ir:rst
-	if(envGetHandle("ir:rst") == 0) ret = IRRST_Initialize(10, 0);
+	if(envGetHandle("ir:rst") == 0) ret = IRRST_Initialize(15, 0);
 
 	// Map ir:rst shared memory.
 	irrstSharedMem=(vu32*)mappableAlloc(0x98);
@@ -47,7 +47,7 @@ Result irrstInit(void)
 	}
 
 	if(R_FAILED(ret = svcMapMemoryBlock(irrstMemHandle, (u32)irrstSharedMem, MEMPERM_READ, 0x10000000))) goto cleanup2;
-	
+
 	// Reset internal state.
 	kHeld = 0;
 	return 0;
@@ -109,7 +109,7 @@ u32 irrstCheckSectionUpdateTime(vu32 *sharedmem_section, u32 id)
 void irrstScanInput(void)
 {
 	if(irrstRefCount==0)return;
-	
+
 	u32 Id=0;
 	kHeld = 0;
 	memset(&csPos, 0, sizeof(circlePosition));

@@ -153,6 +153,7 @@
     <ClInclude Include="Includes\CTRPluginFrameworkImpl\Menu\PluginMenuActionReplay.hpp" />
     <ClInclude Include="Includes\CTRPluginFrameworkImpl\Menu\PluginMenuFreeCheats.hpp" />
     <ClInclude Include="Includes\CTRPluginFrameworkImpl\Menu\SubMenu.hpp" />
+    <ClInclude Include="Includes\CTRPluginFrameworkImpl\Menu\WatchPointManager.hpp" />
     <ClInclude Include="Includes\CTRPluginFrameworkImpl\Search\Search.hpp" />
     <ClInclude Include="Includes\CTRPluginFrameworkImpl\Search\Search32.hpp" />
     <ClInclude Include="Includes\CTRPluginFrameworkImpl\Search\SearchBase.hpp" />
@@ -401,6 +402,7 @@
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\Menu\PluginMenuTools.cpp" />
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\Menu\PluginMenu_SearchMenu.cpp" />
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\Menu\SubMenu.cpp" />
+    <ClCompile Include="Sources\CTRPluginFrameworkImpl\Menu\WatchPointManager.cpp" />
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\Preferences.cpp" />
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\Search\Search32.cpp" />
     <ClCompile Include="Sources\CTRPluginFrameworkImpl\Search\Search32_FirstSearchSpecified.cpp" />
@@ -498,7 +500,6 @@
     <ClCompile Include="Sources\ctrulib\util\utf\utf8_to_utf16.c" />
     <ClCompile Include="Sources\ctrulib\util\utf\utf8_to_utf32.c" />
     <ClCompile Include="Sources\Excluded\OSDMenu.cpp" />
-    <ClCompile Include="Sources\lodepng\lodepng.cpp" />
     <ClCompile Include="Sources\OSDMenu.cpp" />
     <ClCompile Include="Sources\CTRPluginFramework\System\Hook.cpp" />
     <ClCompile Include="Sources\main.cpp" />

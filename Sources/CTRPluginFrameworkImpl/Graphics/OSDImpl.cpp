@@ -18,6 +18,12 @@
 #include "CTRPluginFrameworkImpl/System/Screenshot.hpp"
 
 #define THREADVARS_MAGIC  0x21545624 // !TV$
+// Thanks to Luma3DS custom mapping, we have a direct access to those
+#define REG32(x)                    *(vu32 *)(x | (1u << 31))
+#define GPU_PSC0_CNT                REG32(0x1040001C)
+#define GPU_PSC1_CNT                REG32(0x1040002C)
+#define GPU_TRANSFER_CNT            REG32(0x10400C18)
+#define GPU_CMDLIST_CNT             REG32(0x104018F0)
 
 namespace CTRPluginFramework
 {
@@ -209,7 +215,7 @@ namespace CTRPluginFramework
             CallbackCommon(isBottom, leftFb, rightFb, stride, format);
         }
 
-        if (!ProcessImpl::IsPaused)
+        if (ProcessImpl::Status == Running)
             return HookContext::GetCurrent().OriginalFunction<u32>(isBottom, arg2, leftFb, rightFb, stride, format, arg7);
 
         return 0;
@@ -231,60 +237,29 @@ namespace CTRPluginFramework
                 CallbackCommon(isBottom, leftFb, nullptr, stride, format);
         }
 
-        if (!ProcessImpl::IsPaused)
+        if (ProcessImpl::Status == Running)
             return HookContext::GetCurrent().OriginalFunction<u32>(r0, params, isBottom, arg);
 
         return 0;
     }
 
-// Thanks to Luma3DS custom mapping, we have a direct access to those
-#define REG32(x)                    *(vu32 *)(x | (1u << 31))
-#define GPU_PSC0_CNT                REG32(0x1040001C)
-#define GPU_PSC1_CNT                REG32(0x1040002C)
-#define GPU_TRANSFER_CNT            REG32(0x10400C18)
-#define GPU_CMDLIST_CNT             REG32(0x104018F0)
-
-    void     OSDImpl::CallbackCommon(u32 isBottom, void* addr, void* addrB, int stride, int format)
+    Result      OSDImpl::OnTopScreenFrame(void)
     {
-        if (SystemImpl::Status())
-            return;
+        if (FramesToPlay)
+            --FramesToPlay;
 
-        Preferences::ApplyBacklight();
-
-        g_fpsCounter[isBottom].Update();
-
-        if (!isBottom)
-        {
-            if (FramesToPlay)
-                --FramesToPlay;
-
-            // Signal a new frame to all threads waiting for it
-            LightEvent_Pulse(&OnNewFrameEvent);
-            ThreadEx::Yield();
-        }
-
-        if (Screenshot::OSDCallback(isBottom, addr, addrB, stride, format))
-            return;
-
-        // If frame have to be paused
-        if (!isBottom && !WaitingForScreenshot && !FramesToPlay && ProcessImpl::IsPaused)
+        // If frame has to be paused
+        if (!WaitingForScreenshot && !FramesToPlay && ProcessImpl::IsPaused)
         {
             // Check frame buffers validity before pausing
             if (ScreenImpl::CheckGspFrameBuffersInfo())
-                return;
+                return 0;
 
             u32 *tls = (u32 *)getThreadLocalStorage();
             u32 bak = *tls;
 
             // Lock threads
-            *tls = THREADVARS_MAGIC;
-            ProcessImpl::LockGameThreads();
-
-            // Wake up gsp event thread
-            GSP::ResumeInterruptReceiver();
-
-            // Wait for gpu to finish all stuff
-            while ((GPU_PSC0_CNT | GPU_PSC1_CNT | GPU_TRANSFER_CNT | GPU_CMDLIST_CNT) & 1);
+            *tls = THREADVARS_MAGIC; ///< this prevent this particular thead from being blocked
 
             IsFramePaused = true;
 
@@ -295,98 +270,119 @@ namespace CTRPluginFramework
             LightEvent_Clear(&OnFrameResume);
             LightEvent_Wait(&OnFrameResume);
 
-            // Signal that the frame continue
-            LightEvent_Signal(&OnFrameResume);
-
-            GSP::PauseInterruptReceiver();
-            // Unlock threads
-            ProcessImpl::UnlockGameThreads();
+            // Restore tls
             *tls = bak;
 
             IsFramePaused = false;
-            return;
+            return 0;
         }
 
-        if (ProcessImpl::IsPaused)
+        if (DrawSaveIcon)
+            Icon::DrawSave(10, 10);
+
+        // Signal a new frame to all threads waiting for it
+       // Controller::Update();code
+        OSDImpl::Update();
+        LightEvent_Pulse(&OnNewFrameEvent);
+        ThreadEx::Yield(); ///< Give control to plugin thread
+
+        return 0;
+    }
+
+    Result      OSDImpl::OnBottomScreenFrame(void)
+    {
+        // Floating button
+        if (Preferences::IsEnabled(Preferences::UseFloatingBtn))
+            FloatingBtn.Draw();
+
+        // Touch cursor and / or position
+        if (Touch::IsDown())
+        {
+            IntVector touchPos(Touch::GetPosition());
+
+            if (Preferences::IsEnabled(Preferences::DrawTouchCursor))
+            {
+                int posX = touchPos.x - 2;
+                int posY = touchPos.y - 1;
+                Icon::DrawHandCursor(posX, posY);
+            }
+
+            if (Preferences::IsEnabled(Preferences::DrawTouchPosition))
+            {
+                std::string &&str = Utils::Format("Touch.x: %d  Touch.y: %d", touchPos.x, touchPos.y);
+                int posY = 20;
+                Renderer::DrawString(str.c_str(), 10, posY, Color::White, Color::Black);
+            }
+        }
+
+        return 0;
+    }
+
+    void     OSDImpl::CallbackCommon(u32 isBottom, void* addr, void* addrB, int stride, int format)
+    {
+        if (SystemImpl::Status())
             return;
 
-        bool drawRocket = isBottom && Preferences::IsEnabled(Preferences::UseFloatingBtn);
-        bool drawTouch =  isBottom && Preferences::IsEnabled(Preferences::DrawTouchCursor | Preferences::DrawTouchPosition) && Touch::IsDown();
+        Preferences::ApplyBacklight();
+
+        g_fpsCounter[isBottom].Update();
+
+        // Screen shot first
+        if (Screenshot::OSDCallback(isBottom, addr, addrB, stride, format))
+            return;
+
         bool drawFps = (Preferences::IsEnabled(Preferences::ShowBottomFps) && isBottom) || (Preferences::IsEnabled(Preferences::ShowTopFps) && !isBottom);
 
-        if (!drawRocket && !drawTouch && !drawFps && !DrawSaveIcon && !MessColors
+        /*if (!drawFps && !DrawSaveIcon && !MessColors
             && Callbacks.empty() && Notifications.empty())
-            return;
+            return; */
 
         // Convert for un-cached memory access
         addr = (void *)PA_FROM_VA(addr);
         if (addrB)
             addrB = (void *)PA_FROM_VA(addrB);
 
+        // TODO: remove
+        // if (MessColors)
+        //    MessColor((u32)addr, stride, format);
+
         if (!isBottom)
         {
             ScreenImpl::Top->Acquire((u32)addr, (u32)addrB, stride, format & 0b111);
             Renderer::SetTarget(TOP);
+
+            OnTopScreenFrame();
+
+            // No osd when game is paused
+            if (ProcessImpl::IsPaused)
+                return;
         }
         else
         {
             ScreenImpl::Bottom->Acquire((u32)addr, (u32)addrB, stride, format & 0b111);
             Renderer::SetTarget(BOTTOM);
+
+            OnBottomScreenFrame();
         }
-
-        if (MessColors)
-            MessColor((u32)addr, stride, format);
-
-        // Lock for notification & callbacks
-        Lock();
 
         DrawNotifArgs   args[2]; ///< Careful with the scope of that var
 
-        // Draw notifications & icon
-        if (!isBottom)
+        Lock();
+
+        if (Notifications.size())
         {
-            if (Notifications.size())
-            {
-                int nbOfMessage = std::min((u32)15, (u32)Notifications.size());
-                int posY = 230 - 15 * nbOfMessage;
+            int nbOfMessage = std::min((u32)15, (u32)Notifications.size());
+            int posY = 230 - 15 * nbOfMessage;
 
-                args[0].begin = Notifications.begin();
-                args[0].end = std::next(Notifications.begin(), nbOfMessage / 2);
-                args[0].posY = posY;
-                args[1].begin = args[0].end;
-                args[1].end = std::next(Notifications.begin(), nbOfMessage);
-                args[1].posY = posY + 15 * (nbOfMessage / 2);
+            args[0].begin = Notifications.begin();
+            args[0].end = std::next(Notifications.begin(), nbOfMessage / 2);
+            args[0].posY = posY;
+            args[1].begin = args[0].end;
+            args[1].end = std::next(Notifications.begin(), nbOfMessage);
+            args[1].posY = posY + 15 * (nbOfMessage / 2);
 
-                DrawNotifTask1.Start((void *)&args[0]);
-                DrawNotifTask2.Start((void *)&args[1]);
-            }
-            if (DrawSaveIcon)
-                Icon::DrawSave(10, 10);
-        }
-        // Draw touch cursor
-        else
-        {
-            if (drawRocket)
-                FloatingBtn.Draw();
-
-            if (drawTouch)
-            {
-                IntVector touchPos(Touch::GetPosition());
-
-                if (Preferences::IsEnabled(Preferences::DrawTouchCursor))
-                {
-                    int posX = touchPos.x - 2;
-                    int posY = touchPos.y - 1;
-                    Icon::DrawHandCursor(posX, posY);
-                }
-
-                if (Preferences::IsEnabled(Preferences::DrawTouchPosition))
-                {
-                    std::string &&str = Utils::Format("Touch.x: %d  Touch.y: %d", touchPos.x, touchPos.y);
-                    int posY = 20;
-                    Renderer::DrawString(str.c_str(), 10, posY, Color::White, Color::Black);
-                }
-            }
+            DrawNotifTask1.Start((void *)&args[0]);
+            DrawNotifTask2.Start((void *)&args[1]);
         }
 
         // We need to ensure that notifications are handled before running callbacks
@@ -446,13 +442,81 @@ namespace CTRPluginFramework
         BottomScreen.Format = screen->GetFormat();
     }
 
+    enum
+    {
+        CLEARED_STICKY = -2,
+        CLEARED_ONESHOT = -1,
+        SIGNALED_ONESHOT = 0,
+        SIGNALED_STICKY = 1
+    };
+
+    static inline int LightEvent_TryReset(LightEvent& event)
+    {
+	    do
+	    {
+		    if (__ldrex(&event.state))
+		    {
+			    __clrex();
+			    return 0;
+		    }
+	    } while (__strex(&event.state, CLEARED_ONESHOT));
+
+	    return 1;
+    }
+
+    // Return false when event was signaled, true on timeout
+    static bool    LightEvent__WaitTimeOut(LightEvent& event, const Time timeout)
+    {
+        Handle  arbiter = __sync_get_arbiter();
+        s64     timeOutNs = timeout.AsMicroseconds() * 1000;
+        Result  toRes = 0x09401BFE;
+        Result  res = 0;
+
+	    for (; res != toRes; )
+	    {
+		    if (event.state == CLEARED_STICKY)
+		    {
+			    res = svcArbitrateAddress(arbiter, (u32)&event, ARBITRATION_WAIT_IF_LESS_THAN_TIMEOUT, 0, timeOutNs);
+			    return res == toRes;
+		    }
+
+		    if (event.state != CLEARED_ONESHOT)
+		    {
+			    if (event.state == SIGNALED_STICKY)
+				    return false;
+
+			    if (event.state == SIGNALED_ONESHOT && LightEvent_TryReset(event))
+				    return false;
+		    }
+
+		    res = svcArbitrateAddress(arbiter, (u32)&event, ARBITRATION_WAIT_IF_LESS_THAN_TIMEOUT, 0, timeOutNs);
+	    }
+
+        return res == toRes;
+    }
+
     void    OSDImpl::WaitFramePaused(void)
     {
         if (IsFramePaused)
             return;
 
-        LightEvent_Wait(&OnFramePaused);
-        LightEvent_Clear(&OnFramePaused);
+        bool    isAsync = ProcessImpl::Status & NoImage;
+
+        if (!isAsync)
+        {
+            while (LightEvent__WaitTimeOut(OnFramePaused, Milliseconds(50))
+                   && ScreenImpl::CheckGspFrameBuffersInfo());
+            LightEvent_Clear(&OnFramePaused);
+
+            // Lock game threads
+            ProcessImpl::LockGameThreads();
+
+            // Wait for gpu to finish all stuff
+            while ((GPU_PSC0_CNT | GPU_PSC1_CNT | GPU_TRANSFER_CNT | GPU_CMDLIST_CNT) & 1);
+        }
+
+        // Wake up gsp event thread
+        GSP::ResumeInterruptReceiver();
     }
 
     void    OSDImpl::ResumeFrame(const u32 nbFrames)
@@ -460,10 +524,20 @@ namespace CTRPluginFramework
         if (!IsFramePaused)
             return;
 
+        bool    isAsync = ProcessImpl::Status & NoImage;
+
+        GSP::PauseInterruptReceiver();
+
+        if (isAsync)
+            return;
+
         FramesToPlay = nbFrames;
 
+        // Unlock game threads
+        ProcessImpl::UnlockGameThreads();
+
         // Wake up game's thread
-        LightEvent_Pulse(&OnFrameResume);
+        LightEvent_Signal(&OnFrameResume);
 
         if (nbFrames)
         {

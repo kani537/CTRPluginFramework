@@ -139,6 +139,13 @@ namespace CTRPluginFramework
             char path[255] = {0};
 
             PLGLDR__GetPluginPath(path);
+            for (u32 i = 254; i > 0; --i)
+            {
+                if (path[i] != '/')
+                    continue;
+                path[i] = 0;
+                break;
+            }
             Directory::ChangeWorkingDirectory(path);
         }
     }
@@ -386,9 +393,6 @@ namespace CTRPluginFramework
         // Reduce thread priority
         svcSetThreadPriority(threadGetCurrent()->handle, FwkSettings::Get().ThreadPriority);
 
-        // Continue game
-        //svcSignalEvent(g_continueGameEvent);
-
         // Update memory layout
         ProcessImpl::UpdateMemRegions();
 
@@ -439,7 +443,6 @@ namespace CTRPluginFramework
     #define BUTTON_X          (1 << 10)
     #define BUTTON_Y          (1 << 11)
 
-
     static void flash(u32 color)
     {
         color |= 0x01000000;
@@ -482,7 +485,9 @@ namespace CTRPluginFramework
         svcWaitSynchronization(g_continueGameEvent, U64_MAX);
         // Close the event
         svcCloseHandle(g_continueGameEvent);
+        // Set ProcessImpl::MainThreadTls
+        ProcessImpl::MainThreadTls = (u32)getThreadLocalStorage();
 
-        return (0);
+        return 0;
     }
 }

@@ -228,3 +228,4 @@ void LightEvent_Wait(LightEvent* event)
 		svcArbitrateAddress(arbiter, (u32)event, ARBITRATION_WAIT_IF_LESS_THAN, 0, 0);
 	}
 }
+

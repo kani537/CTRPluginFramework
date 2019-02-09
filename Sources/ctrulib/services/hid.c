@@ -52,7 +52,7 @@ Result hidInit(void)
 		goto cleanup1;
 	}
 
-	if(R_FAILED(ret=svcMapMemoryBlock(hidMemHandle, (u32)hidSharedMem, MEMPERM_READ, 0x10000000)))goto cleanup2;	
+	if(R_FAILED(ret=svcMapMemoryBlock(hidMemHandle, (u32)hidSharedMem, MEMPERM_READ, 0x10000000)))goto cleanup2;
 	APT_CheckNew3DS(&val);
 
 	if(val)

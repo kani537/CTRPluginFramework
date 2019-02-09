@@ -4,6 +4,7 @@
 #include "types.h"
 #include "CTRPluginFramework/System/Time.hpp"
 #include "CTRPluginFramework/Graphics/Color.hpp"
+#include "CTRPluginFramework/System/Rect.hpp"
 
 namespace CTRPluginFramework
 {
@@ -65,6 +66,30 @@ namespace CTRPluginFramework
             Color   ScrollBarBackground; ///< Color of the scrollbar's background | Default: Silver
             Color   ScrollBarThumb; ///< Color of the scrollbar's thumb | Default: DimGrey
         } CustomKeyboard;
+
+        enum Alignment_e
+        {
+            Left,
+            Right,
+            Center
+        };
+
+        enum Screen_e
+        {
+            Top,
+            Bottom
+        };
+
+        struct
+        {
+            Color           DefaultBackground;  ///< Default: Color::Black
+            Color           DefaultForeground;  ///< Default: Color::White
+            Screen_e        Screen;             ///< Screen used to display the notifications | Default: Top
+            UIntRect        Area;               ///< Area on the screen to display the notifications | Default: 0, 0, 400, 240
+            u32             Margin;             ///< Space between each notification | Default: 5px
+            Alignment_e     Alignment;          ///< Alignment of the notification in the defined area | Default: Right
+            Time            LifeSpan;           ///< Duration of a notification | Default: 5s
+        } Notifications;
 
         /**
          * \brief Returns a reference to the FwkSettings instance used by the framework

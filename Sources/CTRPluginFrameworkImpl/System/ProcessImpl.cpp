@@ -22,12 +22,14 @@ namespace CTRPluginFramework
 {
     Handle      ProcessImpl::ProcessHandle = 0;
     u32         ProcessImpl::IsPaused = 0;
+    u32         ProcessImpl::Status = Running;
     u32         ProcessImpl::ProcessId = 0;
     u64         ProcessImpl::TitleId = 0;
 
     KThread *   ProcessImpl::MainThread;
     KProcess *  ProcessImpl::KProcessPtr;
     KCodeSet    ProcessImpl::CodeSet;
+    u32         ProcessImpl::MainThreadTls;
     MemInfo     ProcessImpl::InvalidRegion = MemInfo{0, 0, 0, 0};
     Mutex       ProcessImpl::MemoryMutex;
     std::vector<MemInfo> ProcessImpl::MemRegions;
@@ -94,6 +96,8 @@ namespace CTRPluginFramework
         if (IsPaused > 1)
             return;
 
+        Status |= Paused;
+
         // Wait for the frame to be paused
         OSDImpl::WaitFramePaused();
 
@@ -123,6 +127,7 @@ namespace CTRPluginFramework
         // Resume frame
         if (!IsPaused)
         {
+            Status &= ~Paused;
             ScreenImpl::Top->Release();
             ScreenImpl::Bottom->Release();
             OSDImpl::ResumeFrame();

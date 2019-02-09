@@ -74,6 +74,8 @@ namespace CTRPluginFramework
 
         static  u32     MainCallback(u32 isBottom, int arg2, void *leftFb, void *rightFb, int stride, int format, int arg7);
         static  u32     MainCallback2(u32 r0, u32 *params, u32 isBottom, u32 arg);
+        static  Result  OnTopScreenFrame();
+        static  Result  OnBottomScreenFrame();
         static  void    CallbackCommon(u32 isBottom, void *leftFb, void *rightFb, int stride, int format);
         static  void    UpdateScreens(void);
 
