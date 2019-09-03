@@ -15,6 +15,7 @@ namespace CTRPluginFramework
     class PluginMenu
     {
         using CallbackPointer = void (*)(void);
+        using OnOpeningCallback = bool (*)(void);
         using FrameCallback = void (*)(Time);
         using DecipherPointer = void(*)(std::string &, void *);
     public:
@@ -135,9 +136,10 @@ namespace CTRPluginFramework
 
         /**
          * \brief If a callback is set, the callback will be called  - Must be set before calling Run
-         * when the menu is opened. Ideal to put the code that refresh the UI. ;)
+         * when the menu is opened. Ideal to put the code that refresh the UI. ;) Return true from the callback
+         * to proceed with menu opening, return false otherwise.
          */
-        CallbackPointer     OnOpening;
+        OnOpeningCallback     OnOpening;
 
         /**
          * \brief The callback set will be called at each frame rendered while the menu is open

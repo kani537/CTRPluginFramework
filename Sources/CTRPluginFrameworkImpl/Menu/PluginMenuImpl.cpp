@@ -218,21 +218,24 @@ namespace CTRPluginFramework
                     }
                     else ///< Open menu
                     {
-                        ProcessImpl::Pause(true);
-                        _isOpen = true;
-                        _wasOpened = true;
+                        // Check for OnOpening callback opening validation
+                        if (OnOpening == nullptr || OnOpening())
+                        {
+                            PluginMenuExecuteLoop::Lock();
+                            PluginMenuExecuteLoop::LockAR();
+                            ProcessImpl::Pause(true);
+                            _isOpen = true;
+                            _wasOpened = true;
+
+                            // Refresh HexEditor data
+                            _hexEditor.Refresh();
+                        }
+
                         // Clean the event list
                         while (Touch::IsDown())
                             Controller::Update();
                         eventList.clear();
                         _forceOpen = false;
-
-                        // Refresh HexEditor data
-                        _hexEditor.Refresh();
-
-                        if (OnOpening != nullptr)
-                            OnOpening();
-
                     }
                     inputClock.Restart();
                     continue;
