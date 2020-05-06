@@ -663,73 +663,75 @@ namespace CTRPluginFramework
         // Buttons visibility
 
         MenuFolderImpl *folder = _starMode ? _starred : _folder;
-
-        // If current folder is empty
-        if (folder->ItemsCount() == 0 && !ShowNoteBottom)
-        {
-            _AddFavoriteBtn.Enable(false);
-            _InfoBtn.Enable(false);
-            _keyboardBtn.Enable(false);
-            _controllerBtn.Enable(false);
-        }
-
-        // If selected object is a folder
-        else if ((*folder)[_selector]->IsFolder())
-        {
-            MenuFolderImpl *e = reinterpret_cast<MenuFolderImpl *>((*folder)[_selector]);
-
-			if (!ShowNoteBottom) {
-				// A folder will not have a menufunc
-				_keyboardBtn.Enable(false);
-				// Check if folder has a note
-				_InfoBtn.Enable(e->note.size());
-				// Enable AddFavorites icon
-				_AddFavoriteBtn.Enable(true);
-				_AddFavoriteBtn.SetState(e->_IsStarred());
-				_controllerBtn.Enable(false);
-			}
-			if (e->HasNoteChanged())
-			{
-				_noteTB.Update(e->firstName, e->GetNote());
-				e->HandledNoteChanges();
-			}
-        }
-
-        // If selected object is an entry
-        else if ((*folder)[_selector]->IsEntry())
-        {
-            MenuEntryImpl *e = reinterpret_cast<MenuEntryImpl *>((*folder)[_selector]);
-            std::string &note = e->GetNote();
-			if (!ShowNoteBottom) {
-				// Check if entry has a menu func
-				_keyboardBtn.Enable(e->MenuFunc != nullptr);
-				// Check if entry has a note
-				_InfoBtn.Enable(note.size());
-				// Enable AddFavorites icon
-				_AddFavoriteBtn.Enable(true);
-				_AddFavoriteBtn.SetState(e->_IsStarred());
-				// Enable controller icon
-				bool enable = false;
-				if (e->_owner != nullptr)
-					enable = e->_owner->Hotkeys.Count() > 0;
-				_controllerBtn.Enable(enable);
-			}
-            if (e->HasNoteChanged())
+        
+        if (folder && (*folder)[_selector]) {
+            
+            // If current folder is empty
+            if (folder->ItemsCount() == 0 && !ShowNoteBottom)
             {
-                _noteTB.Update(e->firstName, e->GetNote());
-                e->HandledNoteChanges();
+                _AddFavoriteBtn.Enable(false);
+                _InfoBtn.Enable(false);
+                _keyboardBtn.Enable(false);
+                _controllerBtn.Enable(false);
+            }
+
+            // If selected object is a folder
+            else if ((*folder)[_selector]->IsFolder())
+            {
+                MenuFolderImpl *e = reinterpret_cast<MenuFolderImpl *>((*folder)[_selector]);
+
+                if (!ShowNoteBottom) {
+                    // A folder will not have a menufunc
+                    _keyboardBtn.Enable(false);
+                    // Check if folder has a note
+                    _InfoBtn.Enable(e->note.size());
+                    // Enable AddFavorites icon
+                    _AddFavoriteBtn.Enable(true);
+                    _AddFavoriteBtn.SetState(e->_IsStarred());
+                    _controllerBtn.Enable(false);
+                }
+                if (e->HasNoteChanged())
+                {
+                    _noteTB.Update(e->firstName, e->GetNote());
+                    e->HandledNoteChanges();
+                }
+            }
+
+            // If selected object is an entry
+            else if ((*folder)[_selector]->IsEntry())
+            {
+                MenuEntryImpl *e = reinterpret_cast<MenuEntryImpl *>((*folder)[_selector]);
+                std::string &note = e->GetNote();
+                if (!ShowNoteBottom) {
+                    // Check if entry has a menu func
+                    _keyboardBtn.Enable(e->MenuFunc != nullptr);
+                    // Check if entry has a note
+                    _InfoBtn.Enable(note.size());
+                    // Enable AddFavorites icon
+                    _AddFavoriteBtn.Enable(true);
+                    _AddFavoriteBtn.SetState(e->_IsStarred());
+                    // Enable controller icon
+                    bool enable = false;
+                    if (e->_owner != nullptr)
+                        enable = e->_owner->Hotkeys.Count() > 0;
+                    _controllerBtn.Enable(enable);
+                }
+                if (e->HasNoteChanged())
+                {
+                    _noteTB.Update(e->firstName, e->GetNote());
+                    e->HandledNoteChanges();
+                }
+            }
+
+            // An error is happening
+            else
+            {
+                _AddFavoriteBtn.Enable(false);
+                _InfoBtn.Enable(false);
+                _keyboardBtn.Enable(false);
+                _controllerBtn.Enable(false);
             }
         }
-
-        // An error is happening
-        else
-        {
-            _AddFavoriteBtn.Enable(false);
-            _InfoBtn.Enable(false);
-            _keyboardBtn.Enable(false);
-            _controllerBtn.Enable(false);
-        }
-
         // Buttons status
         bool isTouched = Touch::IsDown();
         IntVector touchPos(Touch::GetPosition());
@@ -998,6 +1000,8 @@ namespace CTRPluginFramework
 		if (!ShowNoteBottom) return;
 
 		MenuFolderImpl* folder = _starMode ? _starred : _folder;
+        
+        if (!folder || !((*folder)[_selector])) return;
 
 		if ((*folder)[_selector]->IsFolder()) {
 			MenuFolderImpl* e = reinterpret_cast<MenuFolderImpl*>((*folder)[_selector]);
