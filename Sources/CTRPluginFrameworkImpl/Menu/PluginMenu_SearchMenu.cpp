@@ -18,7 +18,7 @@ namespace CTRPluginFramework
 {
     SearchMenu::SearchMenu(Search* &curSearch, HexEditor &hexEditor, bool &inEditor, bool &useHexInput) :
         _currentSearch(curSearch),
-        _submenu{ { "Show game", "Play 1 frame", "Play 2 frames", "Play 5 frames" }},
+        _submenu{ { "Show game"}}, //"Play 1 frame", "Play 2 frames", "Play 5 frames" }},
         _hexEditor(hexEditor),
         _inEditor(inEditor),
 	    _useHexInput(useHexInput)
@@ -201,9 +201,10 @@ namespace CTRPluginFramework
             }
 
             if (!subchoice--) _ShowGame();
-            else if (!subchoice--) Process::Play(1);
+            // Fix frame play!!!!!!!
+            /*else if (!subchoice--) Process::Play(1);
             else if (!subchoice--) Process::Play(2);
-            else if (!subchoice--) Process::Play(5);
+            else if (!subchoice--) Process::Play(5);*/
         }
 
         return (false);
@@ -341,14 +342,14 @@ namespace CTRPluginFramework
             _selector = 0;
             _index = 0;
             if (_submenu.OptionsCount() > 4)
-                _submenu.ChangeOptions({ "Show game", "Play 1 frame", "Play 2 frames", "Play 5 frames" });
+                _submenu.ChangeOptions({ "Show game"});//, "Play 1 frame", "Play 2 frames", "Play 5 frames" });
             return;
         }
 
         if (_submenu.OptionsCount() < 5 && !_currentSearch->IsFirstUnknownSearch())
         {
             _submenu.ChangeOptions({ "Edit", "Jump in editor", "New cheat", "Export", "Export all",
-                                     "Converter", "Show Game", "Play 1 frame", "Play 2 frames", "Play 5 frames" });
+            "Converter", "Show Game"});//, "Play 1 frame", "Play 2 frames", "Play 5 frames" });
         }
 
         if (_index + _selector >= _currentSearch->ResultsCount)
