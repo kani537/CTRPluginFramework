@@ -16,10 +16,10 @@ namespace CTRPluginFramework
 {
     PluginMenuImpl  *PluginMenuImpl::_runningInstance = nullptr;
 
-    PluginMenuImpl::PluginMenuImpl(std::string &name, std::string &about) :
+    PluginMenuImpl::PluginMenuImpl(std::string &name, std::string &about, u32 menuType) :
         _hexEditor(0x00100000),
         _actionReplay{ new PluginMenuActionReplay() },
-        _home(new PluginMenuHome(name)),
+        _home(new PluginMenuHome(name, (menuType == 1))),
         _search(new PluginMenuSearch(_hexEditor)),
         _tools(new PluginMenuTools(about, _hexEditor)),
         _executeLoop(new PluginMenuExecuteLoop()),
@@ -29,6 +29,7 @@ namespace CTRPluginFramework
     {
         SyncOnFrame = false;
         _isOpen = false;
+        _aboutToOpen = false;
         _wasOpened = false;
         _pluginRun = true;
         _showMsg = true;
@@ -218,25 +219,25 @@ namespace CTRPluginFramework
                     }
                     else ///< Open menu
                     {
-                        // Check for OnOpening callback opening validation
-                        if (OnOpening == nullptr || OnOpening())
-                        {
-                            PluginMenuExecuteLoop::Lock();
-                            PluginMenuExecuteLoop::LockAR();
-                            ProcessImpl::Pause(true);
-                            _isOpen = true;
-                            _wasOpened = true;
+                        bool continueOpening = true;
+						if (OnOpening != nullptr)
+							continueOpening = OnOpening();
 
-                            // Refresh HexEditor data
-                            _hexEditor.Refresh();
-                        }
-
-                        // Clean the event list
-                        while (Touch::IsDown())
-                            Controller::Update();
-                        eventList.clear();
-                        _forceOpen = false;
-                    }
+						if (continueOpening) {
+							ProcessImpl::Pause(true);
+							_aboutToOpen = _isOpen = true;
+							_wasOpened = true;
+							
+							while (Touch::IsDown())
+								Controller::Update();
+											
+							// Refresh HexEditor data
+							_hexEditor.Refresh();
+						}
+						// Clean the event list
+						eventList.clear();
+						_forceOpen = false;
+                     }
                     inputClock.Restart();
                     continue;
                 }
@@ -253,6 +254,7 @@ namespace CTRPluginFramework
                 { /* Home */
                     if (OnFrame != nullptr)
                         OnFrame(delta);
+                    if (_aboutToOpen) home.UpdateNote();
                     shouldClose = home(eventList, mode, delta);
                 }
                 /*
@@ -282,7 +284,7 @@ namespace CTRPluginFramework
                     if (tools(eventList, delta))
                         mode = 0;
                 }
-
+                _aboutToOpen = false;
                 // End frame
                 Renderer::EndFrame(shouldClose);
             __skip:

@@ -3,6 +3,7 @@
 
 #include "CTRPluginFramework/System/Vector.hpp"
 #include "CTRPluginFrameworkImpl/Menu/MenuEntryTools.hpp"
+#include <CTRPluginFramework\Graphics\CustomIcon.hpp>
 
 namespace CTRPluginFramework
 {
@@ -229,8 +230,12 @@ namespace CTRPluginFramework
         **************/
         static int      DrawUnsplash(int posX, int posY);
 
+		static CustomIcon DefaultCustomIcon;
+		static int        DrawCustomIcon(const CustomIcon& icon, int posX, int posY);
+
     private:
         static int      DrawImg(u8 *img, int posX, int posY, int sizeX, int sizeY);
+
     };
 }
 

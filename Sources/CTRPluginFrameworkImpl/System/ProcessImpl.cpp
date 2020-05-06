@@ -33,6 +33,7 @@ namespace CTRPluginFramework
     MemInfo     ProcessImpl::InvalidRegion = MemInfo{0, 0, 0, 0};
     Mutex       ProcessImpl::MemoryMutex;
     std::vector<MemInfo> ProcessImpl::MemRegions;
+    std::vector<u32> ProcessImpl::blackListedLockThreads;
 
     void    ProcessImpl::Initialize(void)
     {
@@ -193,7 +194,7 @@ namespace CTRPluginFramework
     {
         u32 *tls = (u32 *)thread->tls;
 
-        if (*tls != THREADVARS_MAGIC)
+        if (*tls != THREADVARS_MAGIC && std::find(ProcessImpl::blackListedLockThreads.begin(), ProcessImpl::blackListedLockThreads.end(), thread->threadId) == ProcessImpl::blackListedLockThreads.end())
             return true;
         return false;
     }
@@ -332,4 +333,9 @@ namespace CTRPluginFramework
 
         return region;
     }
+    
+    std::vector<u32>& ProcessImpl::GetThreadLockBlacklist()
+	{
+		return blackListedLockThreads;
+	}
 }

@@ -3,6 +3,7 @@
 
 #include "ctrulib/svc.h"
 #include <string>
+#include <vector>
 
 namespace CTRPluginFramework
 {
@@ -62,6 +63,12 @@ namespace CTRPluginFramework
         static u32      GetRoDataSize(void);
         static u32      GetRwDataSize(void);
 
+		/**
+		 * \brief All the thread IDs appended to this vector won't be locked on pause
+		 * \return Reference to vector of thread IDs
+		 */
+		static std::vector<u32>& GetThreadLockBlacklist();
+
         /**
          * \brief Check if the process is currently paused by the framework\n
          * (Like when a Keyboard, MessageBox or the menu is open)
@@ -72,7 +79,7 @@ namespace CTRPluginFramework
         /**
          * \brief Pause the process at the next frame
          */
-        static void     Pause(void);
+        static void     Pause();
 
         /**
          * \brief Resume the process

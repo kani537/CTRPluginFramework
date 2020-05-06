@@ -69,7 +69,23 @@ namespace CTRPluginFramework
             _Update();
 
             _keys = 0;
+            
+            if (_checkboxs[GetIndex(Key::DPadLeft)].GetState()) {
+				_checkboxs[GetIndex(Key::DPadRight)].SetState(false);
+				_checkboxs[GetIndex(Key::DPadRight)].Enable(false);
+			}
+			else {
+				_checkboxs[GetIndex(Key::DPadRight)].Enable(true);
+			}
 
+			if (_checkboxs[GetIndex(Key::DPadUp)].GetState()) {
+				_checkboxs[GetIndex(Key::DPadDown)].SetState(false);
+				_checkboxs[GetIndex(Key::DPadDown)].Enable(false);
+			}
+			else {
+				_checkboxs[GetIndex(Key::DPadDown)].Enable(true);
+			}
+            
             for (int i = 0; i < 14; i++)
             {
                 if (_checkboxs[i].GetState())

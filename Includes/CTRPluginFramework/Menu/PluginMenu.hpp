@@ -15,7 +15,7 @@ namespace CTRPluginFramework
     class PluginMenu
     {
         using CallbackPointer = void (*)(void);
-        using OnOpeningCallback = bool (*)(void);
+		using OnOpeningCallback = bool (*)(void);
         using FrameCallback = void (*)(Time);
         using DecipherPointer = void(*)(std::string &, void *);
     public:
@@ -25,7 +25,7 @@ namespace CTRPluginFramework
         ** name = The name of the menu / main folder
         ** about = text to display on the bottom screen of Tools section
         ******************************/
-        explicit PluginMenu(std::string name = "Cheats", std::string about = "");
+        explicit PluginMenu(std::string name = "Cheats", std::string about = "", u32 menuType = 0);
 
         /*
         ** Create a new PluginMenu
@@ -33,7 +33,7 @@ namespace CTRPluginFramework
         ** about = pointer to encrypted about's text data
         ** func = function to decrypt the about's data
         ******************************/
-        PluginMenu(std::string name, void *about, DecipherPointer func);
+        PluginMenu(std::string name, void *about, DecipherPointer func, u32 menuType = 0);
 
         /**
          * \brief Create a new PluginMenu
@@ -43,7 +43,7 @@ namespace CTRPluginFramework
          * \param revision The revision version number of the plugin version
          * \param about Text to display in Tools About
          */
-        PluginMenu(std::string name, u32 major, u32 minor, u32 revision, std::string about = "");
+        PluginMenu(std::string name, u32 major, u32 minor, u32 revision, std::string about = "", u32 menuType = 0);
 
         /*
         ** Destructor
@@ -122,6 +122,11 @@ namespace CTRPluginFramework
          */
         static PluginMenu   *GetRunningInstance(void);
 
+		/**
+		 * \brief Forces the opening of the menu
+		 */
+		static void ForceOpen(void);
+
         /**
          * \brief If set to true, the plugin's loop will only be executed 1 per top screen's frame
          * \param useSync Wheter to wait for the top screen's frame or not
@@ -137,7 +142,7 @@ namespace CTRPluginFramework
         /**
          * \brief If a callback is set, the callback will be called  - Must be set before calling Run
          * when the menu is opened. Ideal to put the code that refresh the UI. ;) Return true from the callback
-         * to proceed with menu opening, return false otherwise.
+		 * to proceed with menu opening, return false otherwise.
          */
         OnOpeningCallback     OnOpening;
 
@@ -159,7 +164,7 @@ namespace CTRPluginFramework
 
     private:
         std::unique_ptr<PluginMenuImpl> _menu;
-    };
+};
 }
 
 #endif

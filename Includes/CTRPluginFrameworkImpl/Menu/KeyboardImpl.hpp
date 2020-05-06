@@ -2,6 +2,7 @@
 #define CTRPLUGINFRAMEWORKIMPL_KEYBOARD_HPP
 
 #include "CTRPluginFrameworkImpl/Graphics.hpp"
+#include "CTRPluginFramework/Graphics/CustomIcon.hpp"
 #include "CTRPluginFrameworkImpl/Graphics/TouchKey.hpp"
 #include "CTRPluginFrameworkImpl/Graphics/TouchKeyString.hpp"
 #include "CTRPluginFramework/Menu/Keyboard.hpp"
@@ -48,7 +49,8 @@ namespace CTRPluginFramework
         void        SetConvertCallback(ConvertCallback callback);
         void        SetCompareCallback(CompareCallback callback);
         void        OnInputChange(OnInputChangeCallback callback);
-        void        Populate(const std::vector<std::string> &input);
+        void        Populate(const std::vector<std::string> &input, bool resetScroll);
+		void        Populate(const std::vector<CustomIcon>& input, bool resetScroll);
         void        Clear(void);
 
         int         Run(void);
@@ -125,6 +127,7 @@ namespace CTRPluginFramework
         // Custom keyboard stuff
         bool                    _customKeyboard{false};
         bool                    _displayScrollbar{false};
+		bool				    _isIconKeyboard{false};
         int                     _currentPosition{0};
         u32                     _scrollbarSize{0};
         u32                     _scrollCursorSize{0};

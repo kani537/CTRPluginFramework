@@ -7,6 +7,7 @@
 #include "ctrulib/util/utf.h"
 #include "CTRPluginFramework/Utils/Utils.hpp"
 #include "CTRPluginFrameworkImpl/Menu/PluginMenuImpl.hpp"
+#include "CTRPluginFramework/Graphics/CustomIcon.hpp"
 
 namespace CTRPluginFramework
 {
@@ -202,15 +203,18 @@ namespace CTRPluginFramework
         _onInputChange = callback;
     }
 
-    void    KeyboardImpl::Populate(const std::vector<std::string> &input)
+    void    KeyboardImpl::Populate(const std::vector<std::string> &input, bool resetScroll)
     {
         _customKeyboard = true;
-        _currentPosition = 0;
+		_isIconKeyboard = false;
+		bool mustReset = _strKeys.size() != input.size() || resetScroll || true; //FIX
+		if (mustReset) _currentPosition = 0;
         for (TouchKeyString *tks : _strKeys)
             delete tks;
         _strKeys.clear();
 
         int posY = 30;
+
         int count = input.size();
 
         if (count < 6)
@@ -218,7 +222,7 @@ namespace CTRPluginFramework
             posY = 20 + (200 - ((30 * count) + 6 * (count - 1))) / 2;
             _displayScrollbar = false;
         }
-        else
+        else if (mustReset)
         {
             int height = 190;
 
@@ -238,12 +242,12 @@ namespace CTRPluginFramework
 
             _scrollPadding = padding;
             _scrollCursorSize = cursorSize;
-            _scrollPosition = 0.f;
+			_scrollPosition = 0.f;
             _scrollEnd = _scrollbarSize - _scrollCursorSize;
             _displayScrollbar = true;
         }
 
-        IntRect box(60, posY, 200, 30);
+		IntRect box(60, posY, 200, 30);
 
         for (const std::string &str : input)
         {
@@ -251,6 +255,65 @@ namespace CTRPluginFramework
             box.leftTop.y += 36;
         }
     }
+
+	void    KeyboardImpl::Populate(const std::vector<CustomIcon>& input, bool resetScroll)
+	{
+		_customKeyboard = true;
+		_isIconKeyboard = true;
+		bool mustReset = _strKeys.size() != input.size() || resetScroll || true; //FIX
+		if (mustReset) _currentPosition = 0;
+		for (TouchKeyString* tks : _strKeys)
+			delete tks;
+		_strKeys.clear();
+
+		int posY = 30;
+
+		int elPerLine = 4;
+
+		int count = input.size() / elPerLine;
+		if (input.size() % elPerLine != 0) count++;
+
+		if (count < 6)
+		{
+			posY = 20 + (200 - ((30 * count) + 6 * (count - 1))) / 2;
+			_displayScrollbar = false;
+		}
+		else if (mustReset)
+		{
+			int height = 190;
+
+
+			float lsize = 36.f * (float)count + 1;
+
+			float padding = (float)height / lsize;
+			int cursorSize = padding * height;
+			float scrollTrackSpace = lsize - height;
+			float scrollThumbSpace = height - cursorSize;
+
+			_scrollJump = scrollTrackSpace / scrollThumbSpace;
+			_scrollbarSize = height;
+
+			if (cursorSize < 5)
+				cursorSize = 5;
+
+			_scrollPadding = padding;
+			_scrollCursorSize = cursorSize;
+		    _scrollPosition = 0.f;
+			_scrollEnd = _scrollbarSize - _scrollCursorSize;
+			_displayScrollbar = true;
+		}
+
+		IntRect box(91, posY, 30, 30);
+		int i = 1;
+		for (const CustomIcon& ico : input)
+		{
+			if (ico.sizeX != 30 || ico.sizeY != 30) _strKeys.push_back(new TouchKeyString(Icon::DefaultCustomIcon, box, true));
+			else _strKeys.push_back(new TouchKeyString(ico, box, true));
+			if (i == 0) box.leftTop.y += 36;
+			box.leftTop.x = 91 + i * 36;
+			if (i++ == 3) i = 0;
+		}
+	}
 
     void    KeyboardImpl::Clear(void)
     {
@@ -528,7 +591,8 @@ namespace CTRPluginFramework
             Renderer::DrawRect(background2, theme.BackgroundBorder, false);
 
             int max = _strKeys.size();
-            max = std::min(max, _currentPosition + 6);
+			int offset = _isIconKeyboard ? 24 : 6;
+            max = std::min(max, _currentPosition + offset);
 
             PrivColor::UseClamp(true, clampArea);
 
@@ -744,6 +808,8 @@ namespace CTRPluginFramework
                 _inertialVelocity *= INERTIA_ACCELERATION;
 
                 _currentPosition = (_scrollPosition * _scrollJump) / 36; //(_scrollPosition / 36);
+				if (_isIconKeyboard) _currentPosition *= 4;
+
                 if (std::abs(_inertialVelocity) < INERTIA_THRESHOLD)
                     _inertialVelocity = 0.f;
 
