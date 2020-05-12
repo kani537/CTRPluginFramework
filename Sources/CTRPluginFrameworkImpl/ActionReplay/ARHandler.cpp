@@ -4,7 +4,7 @@
 #include "CTRPluginFramework/System/Vector.hpp"
 #include "CTRPluginFramework/System/Touch.hpp"
 #include "CTRPluginFramework/Utils/Utils.hpp"
-#include "ctrulib/result.h"
+#include "3ds.h"
 
 #include <algorithm>
 #include <cmath>

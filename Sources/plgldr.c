@@ -1,7 +1,7 @@
 #include <3ds.h>
 #include "plgldr.h"
 #include <string.h>
-#include <ctrulib/result.h>
+#include "csvc.h"
 
 static Handle   plgLdrHandle;
 static Handle   plgLdrArbiter;

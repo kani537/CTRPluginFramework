@@ -16,8 +16,7 @@
 #include "CTRPluginFramework/Utils/StringExtensions.hpp"
 #include "CTRPluginFramework/Utils/Utils.hpp"
 
-#include "ctrulib/srv.h"
-#include "ctrulib/util/utf.h"
+#include "3ds.h"
 
 #include <ctime>
 #include <cstring>
@@ -363,6 +362,34 @@ namespace CTRPluginFramework
 
     std::string     KeysToString(u32 keys);
     bool            stou32(std::string &input, u32 &res);
+    
+    static bool g_manualScreenshotTrigger = false;
+    static void Screenshot_Enabler(MenuEntryTools *entry)
+    {
+        if (!g_manualScreenshotTrigger) Screenshot::IsEnabled = !Screenshot::IsEnabled;
+    }
+    
+    static void     UpdateScreenshotText(void) {
+        // Update entry
+        const char *screens[3] = {"Top screen", "Bottom screen", "Both screens"};
+
+        g_screenshotEntry->name = ("Screenshot: " << Color::LimeGreen).append(KeysToString(Screenshot::Hotkeys));
+        g_screenshotEntry->name += "\x18, " << Color::Orange;
+        g_screenshotEntry->name.append(screens[(Screenshot::Screens & SCREENSHOT_BOTH) - 1]);
+
+        u32 time = static_cast<u32>(Screenshot::Timer.AsSeconds());
+
+        if (time)
+        {
+            g_screenshotEntry->name += ("\x18, " << Color::DeepSkyBlue << time);
+            Screenshot::Screens |= 4; ///< TIMED flags
+        }
+        g_manualScreenshotTrigger = true;
+        if (Screenshot::IsEnabled) g_screenshotEntry->Enable();
+        else g_screenshotEntry->Disable();
+        g_manualScreenshotTrigger = false;
+    }
+    
     static void     ScreenshotMenuCallback(void)
     {
         Keyboard    kb(Color::LimeGreen << "Screenshot settings\x18\n\nWhat do you want to change ?", { "Screens", "Hotkeys", "Timer", "Name", "Directory" });
@@ -445,29 +472,11 @@ namespace CTRPluginFramework
                 break;
             }
         } while (choice != -1);
-
-        // Update entry
-        const char *screens[3] = {"Top screen", "Bottom screen", "Both screens"};
-
-        g_screenshotEntry->name = ("Screenshot: " << Color::LimeGreen).append(KeysToString(Screenshot::Hotkeys));
-        g_screenshotEntry->name += "\x18, " << Color::Orange;
-        g_screenshotEntry->name.append(screens[(Screenshot::Screens & SCREENSHOT_BOTH) - 1]);
-
-        u32 time = static_cast<u32>(Screenshot::Timer.AsSeconds());
-
-        if (time)
-        {
-            g_screenshotEntry->name += ("\x18, " << Color::DeepSkyBlue << time);
-            Screenshot::Screens |= 4; ///< TIMED flags
-        }
-
+        
+        UpdateScreenshotText();
+        
         // Update file count
         Screenshot::UpdateFileCount();
-    }
-
-    static void Screenshot_Enabler(MenuEntryTools *entry)
-    {
-            Screenshot::IsEnabled = !Screenshot::IsEnabled;
     }
 
     static void EditBacklight(MenuEntryTools *entry)
@@ -669,6 +678,7 @@ namespace CTRPluginFramework
             else if (arg != nullptr &&  *(u32 *)arg == SCREENSHOT)
             {
                 selector = _menu._selector;
+                UpdateScreenshotText();
                 _menu.Open(&_screenshotMenu);
             }
         }

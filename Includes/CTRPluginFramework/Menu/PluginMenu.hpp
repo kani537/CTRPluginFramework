@@ -16,6 +16,7 @@ namespace CTRPluginFramework
     {
         using CallbackPointer = void (*)(void);
 		using OnOpeningCallback = bool (*)(void);
+        using OnScreenshotCallback = bool (*)(void);
         using FrameCallback = void (*)(Time);
         using DecipherPointer = void(*)(std::string &, void *);
     public:
@@ -160,6 +161,39 @@ namespace CTRPluginFramework
          * \return the reference of the PluginMenu title string
          */
         std::string &       Title();
+        
+        /**
+         * \brief Returns the reference of the screenshot path string
+         * ScreenshotUpdatePaths needs to be called afterwards.
+         * \return the reference of the screenshot path string
+         */
+        static std::string &       ScreenshotPath();
+        
+        /**
+         * \brief Returns the reference of the screenshot file prefix string,
+         * ScreenshotUpdatePaths needs to be called afterwards.
+         * \return the reference of the screenshot file prefix string
+         */
+        static std::string &       ScreenshotFilePrefix();
+        
+        /**
+         * \brief Updates the paths after modifying the path and prefix strings.
+         */
+        static void                ScreenshotUpdatePaths();
+        
+        /**
+         * \brief Gets the screenshot settings references, can be read or written to.
+         * \param enabled Screenshot feature enabled reference
+         * \param hotkey Screenshot feature hotkey reference
+         */
+        static void                ScreenshotSettings(bool** enabled, u32** hotkey);
+        
+        /**
+         * \brief Sets the screenshot callback, called whenever an screenshot is taken.
+         * If the callback function returns false, the screenshot will be aborted.
+         * \param callback The callback function
+         */
+        static void                ScreenshotSetcallback(OnScreenshotCallback callback);
 
 
     private:

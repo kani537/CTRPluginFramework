@@ -1,5 +1,5 @@
 #include "types.h"
-#include "ctrulib/services/gspgpu.h"
+#include "3ds.h"
 
 #include "CTRPluginFramework/Graphics.hpp"
 #include "CTRPluginFrameworkImpl/Graphics.hpp"

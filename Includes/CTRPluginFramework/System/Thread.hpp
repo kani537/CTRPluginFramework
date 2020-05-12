@@ -2,7 +2,7 @@
 #define CTRPLUGINFRAMEWORK_SYSTEM_THREAD_HPP
 
 #include "types.h"
-#include "ctrulib/thread.h"
+#include "3ds.h"
 
 namespace CTRPluginFramework
 {

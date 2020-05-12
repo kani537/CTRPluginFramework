@@ -8,7 +8,7 @@
 namespace CTRPluginFramework
 {
     extern "C" CFNT_s* g_sharedFont;
-    extern "C" int charPerSheet;
+    extern "C" int g_charPerSheet;
 
     inline u32   GetFramebufferOffset(int posX, int posY, int bpp, int rowsize)
     {
@@ -19,11 +19,11 @@ namespace CTRPluginFramework
     {
         FINF_s* finf = &g_sharedFont->finf;
         TGLP_s* tglp = finf->tglp;
-        charWidthInfo_s *cwi = fontGetCharWidthInfo(glyphIndex);
+        charWidthInfo_s *cwi = fontGetCharWidthInfo(nullptr, glyphIndex);
         *cwout = cwi;
 
-        int sheetId = glyphIndex / charPerSheet;
-        int glInSheet = glyphIndex % charPerSheet;
+        int sheetId = glyphIndex / g_charPerSheet;
+        int glInSheet = glyphIndex % g_charPerSheet;
         out->sheetIndex = sheetId;
         out->xOffset = scaleX * cwi->left;
         out->xAdvance = scaleX * cwi->charWidth;

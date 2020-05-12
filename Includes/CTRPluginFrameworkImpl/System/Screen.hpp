@@ -1,7 +1,7 @@
 #ifndef CTRPLUGINFRAMEWORK_SCREENIMPL_HPP
 #define CTRPLUGINFRAMEWORK_SCREENIMPL_HPP
 
-#include "ctrulib/services/gspgpu.h"
+#include "3ds.h"
 #include "CTRPluginFrameworkImpl/Graphics/BMPImage.hpp"
 
 namespace CTRPluginFramework

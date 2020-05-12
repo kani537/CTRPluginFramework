@@ -2,9 +2,7 @@
 #define CTRPLUGINFRAMEWORK_RENDERER_HPP
 
 #include "types.h"
-
-#include "ctrulib/font.h"
-#include "ctrulib/gfx.h"
+#include "3ds.h"
 
 #include "CTRPluginFramework/Graphics/Color.hpp"
 #include "CTRPluginFramework/System/Vector.hpp"
@@ -14,7 +12,6 @@
 
 #include <vector>
 #include "Font.hpp"
-#include "ctrulib/thread.h"
 
 
 #define GEOMETRY 0

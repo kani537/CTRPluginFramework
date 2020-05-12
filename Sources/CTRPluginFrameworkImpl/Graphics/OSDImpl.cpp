@@ -1,6 +1,7 @@
 #include "CTRPluginFrameworkImpl/Graphics/OSDImpl.hpp"
 #include "CTRPluginFrameworkImpl/System/Screen.hpp"
 #include "font6x10Linux.h"
+#include "csvc.h"
 
 #include <vector>
 #include <cstring>
@@ -402,12 +403,12 @@ namespace CTRPluginFramework
             screen.BytesPerPixel = GetBPP((GSPFormat)format);
             screen.Format = (GSPFormat)format;
 
-            // WARNING: this is not totally safe despite of the lock
-            // OSDCallbacks can remove / add themselves from a callback
-            // Luckily it shouldn't be that problematic as it's funcptrs
-            // TODO: devise a fix ?
-            for (OSDCallback cb : Callbacks)
-                cb(screen);
+            for (int i = 0; i < Callbacks.size(); i++)
+            {
+                auto cb = Callbacks[i];
+                if (cb) cb(screen);
+                if (i < Callbacks.size() && cb != Callbacks[i]) i--; // Callback removed itself
+            }
         }
 
         Unlock();

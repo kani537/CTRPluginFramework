@@ -1,4 +1,5 @@
 #include "3DS.h"
+#include "ctrulibExtension.h"
 #include "CTRPluginFrameworkImpl.hpp"
 #include "CTRPluginFramework.hpp"
 #include "CTRPluginFrameworkImpl/Graphics/Font.hpp"
@@ -384,7 +385,7 @@ namespace CTRPluginFramework
             Screenshot::Initialize();
         }
     }
-
+    
     // Main thread's start
     void  ThreadInit(void *arg)
     {
@@ -394,7 +395,7 @@ namespace CTRPluginFramework
         svcSignalEvent(g_keepEvent);
 
         // Reduce thread priority
-        svcSetThreadPriority(threadGetCurrent()->handle, FwkSettings::Get().ThreadPriority);
+        svcSetThreadPriority(threadGetHandle(threadGetCurrent()), FwkSettings::Get().ThreadPriority);
 
         // Update memory layout
         ProcessImpl::UpdateMemRegions();
@@ -408,7 +409,7 @@ namespace CTRPluginFramework
     void  ThreadExit(void)
     {
         // In which thread are we ?
-        if (reinterpret_cast<u32>(threadGetCurrent()->stacktop) < 0x07000000)
+        if (reinterpret_cast<u32>(((CThread_tag*)threadGetCurrent())->stacktop) < 0x07000000)
         {
             // ## Main Thread ##
 
@@ -446,39 +447,9 @@ namespace CTRPluginFramework
     #define BUTTON_X          (1 << 10)
     #define BUTTON_Y          (1 << 11)
 
-    static void flash(u32 color)
-    {
-        color |= 0x01000000;
-        for (u32 i = 0; i < 64; i++)
-        {
-            REG32(0x10202204) = color;
-            svcSleepThread(5000000);
-        }
-        REG32(0x10202204) = 0;
-    }
-
     extern "C"
     int   __entrypoint(int arg)
     {
-        // A little debug routine to wait for debugger to connect
-        u32 debug = 0;
-
-        for (u32 i = 0; i < 200; ++i)
-        {
-            debug |= HID_PAD & BUTTON_Y;
-            Sleep(Milliseconds(1));
-        }
-
-        if (DebugFromStart || debug)
-        {
-            flash(0xFF0000);
-            u32 stall = 0;
-            do
-            {
-                Sleep(Milliseconds(100));
-                stall = HID_PAD & BUTTON_X;
-            } while (!stall);
-        }
 
         // Create event
         svcCreateEvent(&g_continueGameEvent, RESET_ONESHOT);

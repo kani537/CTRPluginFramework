@@ -1,7 +1,7 @@
 #ifndef CTRPLUGINFRAMEWORK_SYSTEM_LOCK_HPP
 #define CTRPLUGINFRAMEWORK_SYSTEM_LOCK_HPP
 
-#include "ctrulib/synchronization.h"
+#include "3ds.h"
 
 namespace CTRPluginFramework
 {

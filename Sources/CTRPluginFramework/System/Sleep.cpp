@@ -1,5 +1,5 @@
 #include "types.h"
-#include "ctrulib/svc.h"
+#include "3ds.h"
 #include "CTRPluginFramework/System/Time.hpp"
 
 namespace CTRPluginFramework

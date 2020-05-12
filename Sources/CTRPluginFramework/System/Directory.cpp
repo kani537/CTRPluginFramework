@@ -4,9 +4,7 @@
 #include "CTRPluginFramework/System/Mutex.hpp"
 #include "CTRPluginFramework/System/Lock.hpp"
 
-#include "ctrulib/util/utf.h"
-#include "ctrulib/services/fs.h"
-#include "ctrulib/result.h"
+#include "3ds.h"
 
 #include <algorithm>
 #include <limits.h>

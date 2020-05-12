@@ -28,6 +28,7 @@ namespace CTRPluginFramework
     std::string Screenshot::Path;// = "/Screenshots";
     std::string Screenshot::Prefix;
     Screenshot::ImageBuffer* Screenshot::ImgBuffer = nullptr;
+    Screenshot::OnScreenshotCallback Screenshot::ScreenshotCallback = nullptr;
 
     u32         Screenshot::_count;
     u32         Screenshot::_mode;
@@ -70,7 +71,7 @@ namespace CTRPluginFramework
         if (!IsEnabled)
             return IsEnabled;
 
-        if (!_mode && (Controller::GetKeysDown() & Hotkeys) == Hotkeys)
+        if (!_mode && (Controller::GetKeysDown() & Hotkeys) == Hotkeys && (!ScreenshotCallback || ScreenshotCallback()))
         {
             _mode = Screens;
             OSDImpl::WaitingForScreenshot = _mode & SCREENSHOT_BOTTOM;

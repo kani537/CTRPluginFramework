@@ -2,7 +2,7 @@
 #define CTRPPLUGINFRAMEWORK_PREFERENCES_HPP
 
 #include "types.h"
-#include "ctrulib/os.h"
+#include "3ds.h"
 #include "CTRPluginFramework/System/FwkSettings.hpp"
 #include "CTRPluginFrameworkImpl/Graphics/BMPImage.hpp"
 #include <vector>

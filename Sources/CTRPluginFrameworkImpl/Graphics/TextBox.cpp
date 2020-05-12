@@ -1,6 +1,5 @@
 #include "types.h"
-#include "ctrulib/util/utf.h"
-#include "ctrulib/font.h"
+#include "3ds.h"
 #include "CTRPluginFrameworkImpl/Preferences.hpp"
 #include "CTRPluginFrameworkImpl/Graphics/Textbox.hpp"
 #include "CTRPluginFrameworkImpl/Graphics/Renderer.hpp"

@@ -1,5 +1,5 @@
 #include "CTRPluginFrameworkImpl/System/MMU.hpp"
-#include "ctrulib/svc.h"
+#include "3ds.h"
 #include "csvc.h"
 
 static u32 ALIGN(0x1000) HookL2Table[256] = {0};

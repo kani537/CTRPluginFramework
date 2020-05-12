@@ -1,0 +1,1047 @@
+diff --git a/test/allocator/linear.cpp b/./allocator/linear.cpp
+index 8d8182a..946eea2 100644
+--- a/test/allocator/linear.cpp
++++ b/./allocator/linear.cpp
+@@ -1,6 +1,6 @@
+ extern "C"
+ {
+-	#include <3ds/types.h>
++	#include <types.h>
+ 	#include <3ds/allocator/linear.h>
+ 	#include <3ds/util/rbtree.h>
+ }
+@@ -8,8 +8,8 @@ extern "C"
+ #include "mem_pool.h"
+ #include "addrmap.h"
+ 
+-extern u32 __ctru_linear_heap;
+-extern u32 __ctru_linear_heap_size;
++extern "C" u32 __ctru_linear_heap;
++extern "C" u32 __ctru_linear_heap_size;
+ 
+ static MemPool sLinearPool;
+ 
+@@ -56,7 +56,7 @@ void* linearMemAlign(size_t size, size_t alignment)
+ 		sLinearPool.Deallocate(chunk);
+ 		return nullptr;
+ 	}
+-	if (rbtree_insert(&sAddrMap, &node->node));
++    rbtree_node_t *t = rbtree_insert(&sAddrMap, &node->node);
+ 	return chunk.addr;
+ }
+ 
+@@ -71,12 +71,6 @@ void* linearRealloc(void* mem, size_t size)
+ 	return NULL;
+ }
+ 
+-size_t linearGetSize(void* mem)
+-{
+-	auto node = getNode(mem);
+-	return node ? node->chunk.size : 0;
+-}
+-
+ void linearFree(void* mem)
+ {
+ 	auto node = getNode(mem);
+diff --git a/test/allocator/mappable.cpp b/./allocator/mappable.cpp
+index c75d7cd..b1fd762 100644
+--- a/test/allocator/mappable.cpp
++++ b/./allocator/mappable.cpp
+@@ -1,6 +1,6 @@
+ extern "C"
+ {
+-	#include <3ds/types.h>
++	#include <types.h>
+ 	#include <3ds/allocator/mappable.h>
+ 	#include <3ds/util/rbtree.h>
+ }
+@@ -12,7 +12,7 @@ static MemPool sMappablePool;
+ 
+ static bool mappableInit()
+ {
+-	auto blk = MemBlock::Create((u8*)0x10000000, 0x04000000);
++	auto blk = MemBlock::Create((u8*)0x10100000, 0x03000000);
+ 	if (blk)
+ 	{
+ 		sMappablePool.AddBlock(blk);
+@@ -43,12 +43,6 @@ void* mappableAlloc(size_t size)
+ 	return chunk.addr;
+ }
+ 
+-size_t mappableGetSize(void* mem)
+-{
+-	auto node = getNode(mem);
+-	return node ? node->chunk.size : 0;
+-}
+-
+ void mappableFree(void* mem)
+ {
+ 	auto node = getNode(mem);
+diff --git a/test/allocator/mem_pool.h b/./allocator/mem_pool.h
+index 87013e6..37ab1cd 100644
+--- a/test/allocator/mem_pool.h
++++ b/./allocator/mem_pool.h
+@@ -1,5 +1,5 @@
+ #pragma once
+-#include <3ds/types.h>
++#include <types.h>
+ #include <stdlib.h>
+ 
+ struct MemChunk
+diff --git a/./allocator/newlibHeap.c b/./allocator/newlibHeap.c
+new file mode 100644
+index 0000000..8a53c6c
+--- /dev/null
++++ b/./allocator/newlibHeap.c
+@@ -0,0 +1,35 @@
++#include <types.h>
++#include <malloc.h>    // for mallinfo() 
++#include <unistd.h>    // for sbrk() 
++
++extern u8 *fake_heap_end;   // current heap start 
++extern u8 *fake_heap_start;   // current heap end 
++
++u8  *getHeapStart(void)
++{
++    return fake_heap_start;
++}
++
++u8  *getHeapEnd(void)
++{
++    return (u8*)sbrk(0);
++}
++
++u8  *getHeapLimit(void)
++{
++    return fake_heap_end;
++}
++
++// returns the amount of used memory in bytes 
++int getMemUsed(void)
++{ 
++    struct mallinfo mi = mallinfo();
++    return mi.uordblks;
++}
++
++// returns the amount of free memory in bytes 
++int getMemFree(void)
++{ 
++    struct mallinfo mi = mallinfo();
++    return mi.fordblks + (getHeapLimit() - getHeapEnd());
++}
+diff --git a/test/allocator/vram.cpp b/./allocator/vram.cpp
+index 30498a5..3c7884f 100644
+--- a/test/allocator/vram.cpp
++++ b/./allocator/vram.cpp
+@@ -1,29 +1,44 @@
++#include "CTRPluginFramework/System/Mutex.hpp"
++#include "CTRPluginFramework/System/Lock.hpp"
++
+ extern "C"
+ {
+-	#include <3ds/types.h>
++	#include <types.h>
+ 	#include <3ds/allocator/vram.h>
+ 	#include <3ds/util/rbtree.h>
+ }
+ 
++#include "CTRPluginFramework/System/System.hpp"
+ #include "mem_pool.h"
+ #include "addrmap.h"
+ 
+ static MemPool sVramPool;
++static CTRPluginFramework::Mutex _mutex;
++
++using   CTRPluginFramework::Lock;
+ 
+ static bool vramInit()
+ {
+-	auto blk = MemBlock::Create((u8*)0x1F000000, 0x00600000);
+-	if (blk)
+-	{
+-		sVramPool.AddBlock(blk);
+-		rbtree_init(&sAddrMap, addrMapNodeComparator);
+-		return true;
+-	}
++    Lock    lock(_mutex);
++
++    if (false && CTRPluginFramework::System::IsNew3DS())
++    {
++        // Take advantage of the extra vram and Luma's mapping
++        auto blk = MemBlock::Create((u8*)(0x1F000000 | (1u << 31)), 0x00200000);
++
++	    if (blk)
++	    {
++		    sVramPool.AddBlock(blk);
++		    rbtree_init(&sAddrMap, addrMapNodeComparator);
++		    return true;
++	    }
++    }
+ 	return false;
+ }
+ 
+ void* vramMemAlign(size_t size, size_t alignment)
+ {
++    Lock    lock(_mutex);
+ 	// Enforce minimum alignment
+ 	if (alignment < 16)
+ 		alignment = 16;
+@@ -68,14 +83,10 @@ void* vramRealloc(void* mem, size_t size)
+ 	return NULL;
+ }
+ 
+-size_t vramGetSize(void* mem)
+-{
+-	auto node = getNode(mem);
+-	return node ? node->chunk.size : 0;
+-}
+-
+ void vramFree(void* mem)
+ {
++    Lock    lock(_mutex);
++
+ 	auto node = getNode(mem);
+ 	if (!node) return;
+ 
+diff --git a/./aptExtension.c b/./aptExtension.c
+new file mode 100644
+index 0000000..a2e42aa
+--- /dev/null
++++ b/./aptExtension.c
+@@ -0,0 +1,4 @@
++#include "types.h"
++
++u32 __apt_appid = 0x300;
++u32 __system_runflags = 0;
+\ No newline at end of file
+diff --git a/./diff.diff b/./diff.diff
+new file mode 100644
+index 0000000..4453049
+--- /dev/null
++++ b/./diff.diff
+@@ -0,0 +1,175 @@
++diff --git a/test/allocator/linear.cpp b/./allocator/linear.cpp
++index 8d8182a..946eea2 100644
++--- a/test/allocator/linear.cpp
+++++ b/./allocator/linear.cpp
++@@ -1,6 +1,6 @@
++ extern "C"
++ {
++-	#include <3ds/types.h>
+++	#include <types.h>
++ 	#include <3ds/allocator/linear.h>
++ 	#include <3ds/util/rbtree.h>
++ }
++@@ -8,8 +8,8 @@ extern "C"
++ #include "mem_pool.h"
++ #include "addrmap.h"
++ 
++-extern u32 __ctru_linear_heap;
++-extern u32 __ctru_linear_heap_size;
+++extern "C" u32 __ctru_linear_heap;
+++extern "C" u32 __ctru_linear_heap_size;
++ 
++ static MemPool sLinearPool;
++ 
++@@ -56,7 +56,7 @@ void* linearMemAlign(size_t size, size_t alignment)
++ 		sLinearPool.Deallocate(chunk);
++ 		return nullptr;
++ 	}
++-	if (rbtree_insert(&sAddrMap, &node->node));
+++    rbtree_node_t *t = rbtree_insert(&sAddrMap, &node->node);
++ 	return chunk.addr;
++ }
++ 
++@@ -71,12 +71,6 @@ void* linearRealloc(void* mem, size_t size)
++ 	return NULL;
++ }
++ 
++-size_t linearGetSize(void* mem)
++-{
++-	auto node = getNode(mem);
++-	return node ? node->chunk.size : 0;
++-}
++-
++ void linearFree(void* mem)
++ {
++ 	auto node = getNode(mem);
++diff --git a/test/allocator/mappable.cpp b/./allocator/mappable.cpp
++index c75d7cd..b1fd762 100644
++--- a/test/allocator/mappable.cpp
+++++ b/./allocator/mappable.cpp
++@@ -1,6 +1,6 @@
++ extern "C"
++ {
++-	#include <3ds/types.h>
+++	#include <types.h>
++ 	#include <3ds/allocator/mappable.h>
++ 	#include <3ds/util/rbtree.h>
++ }
++@@ -12,7 +12,7 @@ static MemPool sMappablePool;
++ 
++ static bool mappableInit()
++ {
++-	auto blk = MemBlock::Create((u8*)0x10000000, 0x04000000);
+++	auto blk = MemBlock::Create((u8*)0x10100000, 0x03000000);
++ 	if (blk)
++ 	{
++ 		sMappablePool.AddBlock(blk);
++@@ -43,12 +43,6 @@ void* mappableAlloc(size_t size)
++ 	return chunk.addr;
++ }
++ 
++-size_t mappableGetSize(void* mem)
++-{
++-	auto node = getNode(mem);
++-	return node ? node->chunk.size : 0;
++-}
++-
++ void mappableFree(void* mem)
++ {
++ 	auto node = getNode(mem);
++diff --git a/test/allocator/mem_pool.h b/./allocator/mem_pool.h
++index 87013e6..37ab1cd 100644
++--- a/test/allocator/mem_pool.h
+++++ b/./allocator/mem_pool.h
++@@ -1,5 +1,5 @@
++ #pragma once
++-#include <3ds/types.h>
+++#include <types.h>
++ #include <stdlib.h>
++ 
++ struct MemChunk
++diff --git a/./allocator/newlibHeap.c b/./allocator/newlibHeap.c
++new file mode 100644
++index 0000000..8a53c6c
++--- /dev/null
+++++ b/./allocator/newlibHeap.c
++@@ -0,0 +1,35 @@
+++#include <types.h>
+++#include <malloc.h>    // for mallinfo() 
+++#include <unistd.h>    // for sbrk() 
+++
+++extern u8 *fake_heap_end;   // current heap start 
+++extern u8 *fake_heap_start;   // current heap end 
+++
+++u8  *getHeapStart(void)
+++{
+++    return fake_heap_start;
+++}
+++
+++u8  *getHeapEnd(void)
+++{
+++    return (u8*)sbrk(0);
+++}
+++
+++u8  *getHeapLimit(void)
+++{
+++    return fake_heap_end;
+++}
+++
+++// returns the amount of used memory in bytes 
+++int getMemUsed(void)
+++{ 
+++    struct mallinfo mi = mallinfo();
+++    return mi.uordblks;
+++}
+++
+++// returns the amount of free memory in bytes 
+++int getMemFree(void)
+++{ 
+++    struct mallinfo mi = mallinfo();
+++    return mi.fordblks + (getHeapLimit() - getHeapEnd());
+++}
++diff --git a/test/allocator/vram.cpp b/./allocator/vram.cpp
++index 30498a5..3c7884f 100644
++--- a/test/allocator/vram.cpp
+++++ b/./allocator/vram.cpp
++@@ -1,29 +1,44 @@
+++#include "CTRPluginFramework/System/Mutex.hpp"
+++#include "CTRPluginFramework/System/Lock.hpp"
+++
++ extern "C"
++ {
++-	#include <3ds/types.h>
+++	#include <types.h>
++ 	#include <3ds/allocator/vram.h>
++ 	#include <3ds/util/rbtree.h>
++ }
++ 
+++#include "CTRPluginFramework/System/System.hpp"
++ #include "mem_pool.h"
++ #include "addrmap.h"
++ 
++ static MemPool sVramPool;
+++static CTRPluginFramework::Mutex _mutex;
+++
+++using   CTRPluginFramework::Lock;
++ 
++ static bool vramInit()
++ {
++-	auto blk = MemBlock::Create((u8*)0x1F000000, 0x00600000);
++-	if (blk)
++-	{
++-		sVramPool.AddBlock(blk);
++-		rbtree_init(&sAddrMap, addrMapNodeComparator);
++-		return true;
++-	}
+++    Lock    lock(_mutex);
+++
+++    if (false && CTRPluginFramework::System::IsNew3DS())
+++    {
+++        // Take advantage of the extra vram and Luma's mapping
+++        auto blk = MemBlock::Create((u8*)(0x1F000000 | (1u << 31)), 0x00200000);
+++
+++	    if (blk)
+++	    {
+++		    sVramPoo
+\ No newline at end of file
+diff --git a/./fontExtension.c b/./fontExtension.c
+new file mode 100644
+index 0000000..bcbe462
+--- /dev/null
++++ b/./fontExtension.c
+@@ -0,0 +1,13 @@
++#include <stdlib.h>
++#include <stdio.h>
++#include "3ds.h"
++
++CFNT_s* g_sharedFont;
++int charPerSheet;
++
++Result fontEnsureMappedExtension(void)
++{
++    Result res = fontEnsureMapped();
++    charPerSheet = g_sharedFont->finf.tglp->nRows * g_sharedFont->finf.tglp->nLines;
++    return res;
++}
+\ No newline at end of file
+diff --git a/test/system/allocateHeaps.c b/test/system/allocateHeaps.c
+deleted file mode 100644
+index fdb2ac8..0000000
+--- a/test/system/allocateHeaps.c
++++ /dev/null
+@@ -1,46 +0,0 @@
+-#include <3ds/types.h>
+-#include <3ds/svc.h>
+-#include <3ds/env.h>
+-#include <3ds/os.h>
+-
+-#define DEFAULT_LINEAR_HEAP_SIZE (32 << 20) // 32MB
+-
+-extern char* fake_heap_start;
+-extern char* fake_heap_end;
+-
+-u32 __ctru_heap;
+-u32 __ctru_linear_heap;
+-
+-__attribute__((weak)) u32 __ctru_heap_size        = 0;
+-__attribute__((weak)) u32 __ctru_linear_heap_size = 0;
+-
+-void __attribute__((weak)) __system_allocateHeaps(void) {
+-	u32 tmp = 0;
+-	u32 remaining = osGetMemRegionFree(MEMREGION_APPLICATION) &~ 0xFFF;
+-
+-	if (__ctru_heap_size + __ctru_linear_heap_size > remaining)
+-		svcBreak(USERBREAK_PANIC);
+-
+-	if (__ctru_heap_size == 0 && __ctru_linear_heap_size == 0) {
+-		// By default, automatically allocate all remaining free memory, aligning to page size.
+-		__ctru_linear_heap_size = (remaining / 2) & ~0xFFF;
+-		__ctru_linear_heap_size = __ctru_linear_heap_size <= DEFAULT_LINEAR_HEAP_SIZE ? __ctru_linear_heap_size : DEFAULT_LINEAR_HEAP_SIZE;
+-		__ctru_heap_size = remaining - __ctru_linear_heap_size;
+-	} else if (__ctru_heap_size == 0) {
+-		__ctru_heap_size = remaining - __ctru_linear_heap_size;
+-	} else if (__ctru_linear_heap_size == 0) {
+-		__ctru_linear_heap_size = remaining - __ctru_heap_size;
+-	}
+-
+-	// Allocate the application heap
+-	__ctru_heap = 0x08000000;
+-	svcControlMemory(&tmp, __ctru_heap, 0x0, __ctru_heap_size, MEMOP_ALLOC, MEMPERM_READ | MEMPERM_WRITE);
+-
+-	// Allocate the linear heap
+-	svcControlMemory(&__ctru_linear_heap, 0x0, 0x0, __ctru_linear_heap_size, MEMOP_ALLOC_LINEAR, MEMPERM_READ | MEMPERM_WRITE);
+-
+-	// Set up newlib heap
+-	fake_heap_start = (char*)__ctru_heap;
+-	fake_heap_end = fake_heap_start + __ctru_heap_size;
+-
+-}
+diff --git a/./system/allocateHeaps.cpp b/./system/allocateHeaps.cpp
+new file mode 100644
+index 0000000..cc34ab8
+--- /dev/null
++++ b/./system/allocateHeaps.cpp
+@@ -0,0 +1,53 @@
++#include <3DS.h>
++#include "csvc.h"
++#include "CTRPluginFramework/System/FwkSettings.hpp"
++#include "CTRPluginFrameworkImpl/System/ProcessImpl.hpp"
++
++namespace CTRPluginFramework
++{
++    extern "C" char *fake_heap_start;
++    extern "C" char *fake_heap_end;
++
++    extern "C" u32 __ctru_heap;
++    extern "C" u32 __ctru_heap_size;
++
++    static u32 Fail(u32 res)
++    {
++        return *(u32 *)0xDEADC0DE = res;
++    }
++
++    struct ScreensFramebuffers
++    {
++        u8  topFramebuffer0[400 * 240 * 2];
++        u8  topFramebuffer1[400 * 240 * 2];
++        u8  bottomFramebuffer0[320 * 240 * 2];
++        u8  bottomFramebuffer1[320 * 240 * 2];
++    } PACKED;
++
++    // Heap layout
++    /*
++    ** ScreensFramebuffer
++    ** Newlib heap
++    ** hook page
++    ** ar shared page
++    */
++    extern "C" void   __system_allocateHeaps(void);
++    void __system_allocateHeaps(void)
++    {
++        u32 fbSize = (sizeof(ScreensFramebuffers) + 0x1000) & ~0xFFF;
++
++        // Heap params
++        __ctru_heap = FwkSettings::Header->heapVA + fbSize;
++        __ctru_heap_size = FwkSettings::Header->heapSize - 0x2000 - fbSize;
++
++        // Map Hook memory + shared page
++        Result res = svcMapProcessMemoryEx(CUR_PROCESS_HANDLE, 0x1E80000, CUR_PROCESS_HANDLE, __ctru_heap + __ctru_heap_size, 0x2000);
++
++        if (R_FAILED(res))
++            Fail(res);
++
++        // Set up newlib heap
++        fake_heap_start = reinterpret_cast<char*>(__ctru_heap);
++        fake_heap_end = fake_heap_start + __ctru_heap_size;
++    }
++}
+diff --git a/test/system/appExit.c b/./system/appExit.c
+index f797e1d..32c941d 100644
+--- a/test/system/appExit.c
++++ b/./system/appExit.c
+@@ -1,17 +1,12 @@
+-#include <3ds/types.h>
+-#include <3ds/srv.h>
+-#include <3ds/gfx.h>
+-#include <3ds/archive.h>
+-#include <3ds/services/apt.h>
+-#include <3ds/services/fs.h>
+-#include <3ds/services/hid.h>
++#include <3DS.h>
+ 
+-void __attribute__((weak)) __appExit(void) {
++void    __appExit(void)
++{
+ 	// Exit services
+-	archiveUnmountAll();
+-	fsExit();
+-
+ 	hidExit();
+-	aptExit();
+-	srvExit();
++    cfguExit();
++    fsExit();
++    amExit();
++    acExit();
++    srvExit();
+ }
+diff --git a/test/system/appInit.c b/test/system/appInit.c
+deleted file mode 100644
+index 0bd3e04..0000000
+--- a/test/system/appInit.c
++++ /dev/null
+@@ -1,17 +0,0 @@
+-#include <3ds/types.h>
+-#include <3ds/srv.h>
+-#include <3ds/gfx.h>
+-#include <3ds/archive.h>
+-#include <3ds/services/apt.h>
+-#include <3ds/services/fs.h>
+-#include <3ds/services/hid.h>
+-
+-void __attribute__((weak)) __appInit(void) {
+-	// Initialize services
+-	srvInit();
+-	aptInit();
+-	hidInit();
+-
+-	fsInit();
+-	archiveMountSdmc();
+-}
+diff --git a/test/system/ctru_exit.c b/./system/ctru_exit.c
+index e9ece2e..7a2391f 100644
+--- a/test/system/ctru_exit.c
++++ b/./system/ctru_exit.c
+@@ -1,42 +1,16 @@
+-#include <3ds/types.h>
+-#include <3ds/svc.h>
+-#include <3ds/env.h>
+-
+-extern u32 __ctru_heap;
+-extern u32 __ctru_heap_size;
+-extern u32 __ctru_linear_heap;
+-extern u32 __ctru_linear_heap_size;
+-
+-extern void (*__system_retAddr)(void);
+-
+-void envDestroyHandles(void);
+-
+-void __appExit();
+-
+-void __libc_fini_array(void);
++#include <3DS.h>
+ 
+ Result __sync_fini(void) __attribute__((weak));
+ 
+-void __attribute__((weak)) __attribute__((noreturn)) __libctru_exit(int rc)
+-{
+-	u32 tmp=0;
+-
+-	// Unmap the linear heap
+-	svcControlMemory(&tmp, __ctru_linear_heap, 0x0, __ctru_linear_heap_size, MEMOP_FREE, 0x0);
+-
+-	// Unmap the application heap
+-	svcControlMemory(&tmp, __ctru_heap, 0x0, __ctru_heap_size, MEMOP_FREE, 0x0);
++void    envDestroyHandles(void);
+ 
+-	// Close some handles
+-	envDestroyHandles();
+-
+-	if (__sync_fini)
+-		__sync_fini();
++void    __attribute__((noreturn)) __libctru_exit(int rc)
++{
++    envDestroyHandles();
+ 
+-	// Jump to the loader if it provided a callback
+-	if (__system_retAddr)
+-		__system_retAddr();
++    if (__sync_fini)
++        __sync_fini();
+ 
+-	// Since above did not jump, end this process
+-	svcExitProcess();
++    // End this thread
++    svcExitThread();
+ }
+diff --git a/test/system/initArgv.c b/test/system/initArgv.c
+deleted file mode 100644
+index c34843e..0000000
+--- a/test/system/initArgv.c
++++ /dev/null
+@@ -1,51 +0,0 @@
+-#include <3ds/types.h>
+-#include <3ds/env.h>
+-
+-#include <string.h>
+-
+-// System globals we define here
+-int __system_argc;
+-char** __system_argv;
+-
+-extern char* fake_heap_start;
+-extern char* fake_heap_end;
+-
+-void __attribute__((weak)) __system_initArgv(void)
+-{
+-	int i;
+-	const char* arglist = envGetSystemArgList();
+-	const char* temp = arglist;
+-
+-	// Check if the argument list is present
+-	if (!temp)
+-		return;
+-
+-	// Retrieve argc
+-	__system_argc = *(u32*)temp;
+-	temp += sizeof(u32);
+-
+-	// Find the end of the argument data
+-	for (i = 0; i < __system_argc; i ++)
+-	{
+-		for (; *temp; temp ++);
+-		temp ++;
+-	}
+-
+-	// Reserve heap memory for argv data
+-	u32 argSize = temp - arglist - sizeof(u32);
+-	__system_argv = (char**)fake_heap_start;
+-	fake_heap_start += sizeof(char**)*(__system_argc + 1);
+-	char* argCopy = fake_heap_start;
+-	fake_heap_start += argSize;
+-
+-	// Fill argv array
+-	memcpy(argCopy, &arglist[4], argSize);
+-	temp = argCopy;
+-	for (i = 0; i < __system_argc; i ++)
+-	{
+-		__system_argv[i] = (char*)temp;
+-		for (; *temp; temp ++);
+-		temp ++;
+-	}
+-	__system_argv[__system_argc] = NULL;
+-}
+diff --git a/test/system/initSystem.c b/./system/initSystem.c
+index 236fbd0..ba880d1 100644
+--- a/test/system/initSystem.c
++++ b/./system/initSystem.c
+@@ -2,9 +2,13 @@
+ #include <sys/time.h>
+ #include <string.h>
+ 
+-#include <3ds/types.h>
+-#include <3ds/svc.h>
+-#include <3ds/env.h>
++#include <3DS.h>
++
++u32 __tmp;
++u32 __ctru_heap;
++u32 __ctru_heap_size;
++u32 __ctru_linear_heap;
++u32 __ctru_linear_heap_size;
+ 
+ void (*__system_retAddr)(void);
+ 
+@@ -15,20 +19,21 @@ void __appInit(void);
+ 
+ Result __sync_init(void);
+ 
+-void __attribute__((weak)) __libctru_init(void (*retAddr)(void))
++void __libctru_init(void)
+ {
++    return;
+ 	// Store the return address
+-	__system_retAddr = envIsHomebrew() ? retAddr : NULL;
++	//__system_retAddr = NULL;//envIsHomebrew() ? retAddr : NULL;
+ 
+ 	// Initialize the synchronization subsystem
+-	__sync_init();
++	//__sync_init();
+ 
+ 	// Initialize newlib support system calls
+-	__system_initSyscalls();
++	//__system_initSyscalls();
+ 
+ 	// Allocate application and linear heaps
+ 	__system_allocateHeaps();
+ 
+ 	// Build argc/argv if present
+-	__system_initArgv();
++	//__system_initArgv();
+ }
+diff --git a/test/system/readtp.s b/./system/readtp.s
+index d6aae74..ef099de 100644
+--- a/test/system/readtp.s
++++ b/./system/readtp.s
+@@ -1,9 +1,9 @@
+-#include <3ds/asminc.h>
+-
+ .arm
+-
+-BEGIN_ASM_FUNC __aeabi_read_tp
+-	mrc p15, 0, r0, c13, c0, 3
+-	ldr r0, [r0, #0xC] @ Read ThreadVars.tls_tp
+-	bx lr
+-END_ASM_FUNC
++.section .text.__aeabi_read_tp, "ax", %progbits
++.global __aeabi_read_tp
++.type __aeabi_read_tp, %function
++.align 2
++__aeabi_read_tp:
++	stmfd sp!, {r1-r3, lr}
++	bl	__getThreadLocalStorage
++	ldmfd sp!, {r1-r3, pc}
+diff --git a/test/system/stack_adjust.s b/./system/stack_adjust.s
+index 076a44a..41136f4 100644
+--- a/test/system/stack_adjust.s
++++ b/./system/stack_adjust.s
+@@ -1,52 +1,32 @@
+-#include <3ds/asminc.h>
+ 
+ 	.arm
++	.align 2
+ 
+-BEGIN_ASM_FUNC initSystem, weak
++	.global	initLib
++	.type	initLib,	%function
++initLib:
+ 	ldr	r2, =saved_stack
+ 	str	sp, [r2]
+ 	str	lr, [r2,#4]
+-
+-	bl	__libctru_init
+-
+-	ldr	r2, =fake_heap_start
+-	ldr	sp, [r2]
+-
+-	ldr	r3, =__stacksize__
+-	ldr	r3, [r3]
+-	add sp, sp, r3
+-	add	sp, sp, #7
+-	bics	sp, sp, #7
+-	str	sp, [r2]
+-
+-
+-	bl	__appInit
++	bl	__system_allocateHeaps
+ 	bl	__libc_init_array
+-
+ 	ldr	r2, =saved_stack
+ 	ldr	lr, [r2,#4]
+  	bx	lr
+-END_ASM_FUNC
+ 
+-BEGIN_ASM_FUNC __ctru_exit, weak
+-	bl	__libc_fini_array
+-	bl	__appExit
+ 
+-	ldr	r2, =saved_stack
+-	ldr	sp, [r2]
+-	b	__libctru_exit
+-END_ASM_FUNC
++	.global	__ctru_exit
++	.type	__ctru_exit,	%function
+ 
+-	.data
+-	.align 2
+-__stacksize__:
+-	.word	32 * 1024
+-	.weak	__stacksize__
++__ctru_exit:
++	@bl	__libc_fini_array
++	bl	__appExit
+ 
++	@ldr	r2, =saved_stack
++	@ldr	sp, [r2]
++	b	__libctru_exit
+ 
+ 	.bss
+ 	.align 2
+ saved_stack:
+ 	.space 8
+-
+-
+diff --git a/test/system/syscalls.c b/./system/syscalls.c
+index 4bc77cf..68d6688 100644
+--- a/test/system/syscalls.c
++++ b/./system/syscalls.c
+@@ -3,12 +3,8 @@
+ #include <sys/lock.h>
+ #include <sys/reent.h>
+ #include <string.h>
+-
+-#include <3ds/types.h>
+-#include <3ds/svc.h>
+-#include <3ds/env.h>
+-#include <3ds/synchronization.h>
+-#include "../internal.h"
++#include <3DS.h>
++#include "ctrulibExtension.h"
+ 
+ void __ctru_exit(int rc);
+ int __libctru_gtod(struct _reent *ptr, struct timeval *tp, struct timezone *tz);
+@@ -17,31 +13,41 @@ extern const u8 __tdata_lma[];
+ extern const u8 __tdata_lma_end[];
+ extern u8 __tls_start[];
+ 
++static ThreadVars * g_mainThreadVars;
++
++ThreadVars* __ctrpf_getThreadVars(ThreadVars * mainThreadVars);
++
+ static struct _reent* __ctru_get_reent()
+ {
+ 	ThreadVars* tv = getThreadVars();
++
+ 	if (tv->magic != THREADVARS_MAGIC)
+ 	{
+-		svcBreak(USERBREAK_PANIC);
+-		for (;;);
++        // We're probably hooked from game so get main thread's reent
++        return (__ctrpf_getThreadVars(g_mainThreadVars)->reent);
+ 	}
+ 	return tv->reent;
+ }
+ 
+-static int __libctru_nanosleep(const struct timespec *req, struct timespec *rem)
++void*     __getThreadLocalStorage(void)
+ {
+-	svcSleepThread(req->tv_sec * 1000000000ull + req->tv_nsec);
+-	return 0;
+-}
++	ThreadVars* tv = getThreadVars();
+ 
++	if (tv->magic != THREADVARS_MAGIC)
++	{
++        // We're probably hooked from game so get main thread's tls
++        return __ctrpf_getThreadVars(g_mainThreadVars)->tls_tp;
++	}
+ 
+-void __attribute__((weak)) __system_initSyscalls(void)
++	return tv->tls_tp;
++}
++
++void __system_initSyscalls(void)
+ {
+ 	// Register newlib syscalls
+ 	__syscalls.exit     = __ctru_exit;
+ 	__syscalls.gettod_r = __libctru_gtod;
+ 	__syscalls.getreent = __ctru_get_reent;
+-	__syscalls.nanosleep = __libctru_nanosleep;
+ 
+ 	// Register locking syscalls
+ 	__syscalls.lock_init                  = LightLock_Init;
+@@ -59,7 +65,8 @@ void __attribute__((weak)) __system_initSyscalls(void)
+ 	tv->reent = _impure_ptr;
+ 	tv->thread_ptr = NULL;
+ 	tv->tls_tp = __tls_start-8; // ARM ELF TLS ABI mandates an 8-byte header
+-	tv->srv_blocking_policy = false;
++
++    g_mainThreadVars = tv;
+ 
+ 	u32 tls_size = __tdata_lma_end - __tdata_lma;
+ 	if (tls_size)
+diff --git a/test/thread.c b/./thread.c
+index 034a164..6beb957 100644
+--- a/test/thread.c
++++ b/./thread.c
+@@ -1,4 +1,4 @@
+-#include "internal.h"
++#include "ctrulibExtension.h"
+ #include <stdlib.h>
+ #include <malloc.h>
+ #include <string.h>
+@@ -33,29 +33,32 @@ static void _thread_begin(void* arg)
+ 	tv->reent = &t->reent;
+ 	tv->thread_ptr = t;
+ 	tv->tls_tp = (u8*)t->stacktop-8; // ARM ELF TLS ABI mandates an 8-byte header
+-	tv->srv_blocking_policy = false;
+ 	t->ep(t->arg);
+ 	threadExit(0);
+ }
+ 
+-Thread threadCreate(ThreadFunc entrypoint, void* arg, size_t stack_size, int prio, int affinity, bool detached)
++u32     KProcess__PatchCategory(u32 newCatagory);
++u32     KProcess__PatchMaxPriority(u32 newPrio);
++
++Thread __createThread(ThreadFunc entrypoint, u32 stackSize, bool detached)
+ {
+-	size_t stackoffset = (sizeof(struct Thread_tag)+7)&~7;
+-	size_t allocsize   = stackoffset + ((stack_size+7)&~7);
++    size_t stackoffset = (sizeof(struct Thread_tag)+7)&~7;
++	size_t allocsize   = stackoffset + ((stackSize+7)&~7);
+ 	size_t tlssize = __tls_end-__tls_start;
+ 	size_t tlsloadsize = __tdata_lma_end-__tdata_lma;
+ 	size_t tbsssize = tlssize-tlsloadsize;
+ 
+ 	// Guard against overflow
+ 	if (allocsize < stackoffset) return NULL;
+-	if ((allocsize-stackoffset) < stack_size) return NULL;
++	if ((allocsize-stackoffset) < stackSize) return NULL;
+ 	if ((allocsize+tlssize) < allocsize) return NULL;
+ 
+-	Thread t = (Thread)memalign(8,allocsize+tlssize);
+-	if (!t) return NULL;
++    Thread t = (Thread)memalign(8, allocsize+tlssize);
++    if (!t) return NULL;
+ 
+-	t->ep       = entrypoint;
+-	t->arg      = arg;
++    t->ep       = entrypoint;
++    t->ep       = entrypoint;
++	t->arg      = NULL;
+ 	t->detached = detached;
+ 	t->finished = false;
+ 	t->stacktop = (u8*)t + allocsize;
+@@ -72,9 +75,41 @@ Thread threadCreate(ThreadFunc entrypoint, void* arg, size_t stack_size, int pri
+ 	t->reent._stdout = cur->_stdout;
+ 	t->reent._stderr = cur->_stderr;
+ 
+-	Result rc;
+-	rc = svcCreateThread(&t->handle, _thread_begin, (u32)t, (u32*)t->stacktop, prio, affinity);
+-	if (R_FAILED(rc))
++    return t;
++}
++
++Result __startThread(Thread t, int prio, int affinity)
++{
++    u32     oldAppType = -1;
++    u32     oldPrio = -1;
++	Result  rc;
++
++    // If affinity is meant to be on syscore or N3DS Core3, patch the application
++    if (affinity != -1 && affinity & 1)
++        oldAppType = KProcess__PatchCategory(0x300);
++
++    // Patch max priority allowed if necessary
++    if (prio < 0x18)
++        oldPrio = KProcess__PatchMaxPriority(0);
++
++	rc = svcCreateThread(&t->handle, _thread_begin, (u32)t, (u32 *)t->stacktop, prio, affinity);
++
++    if (oldAppType != -1)
++        KProcess__PatchCategory(oldAppType);
++
++    if (oldPrio != -1)
++        KProcess__PatchMaxPriority(oldPrio);
++
++    return rc;
++}
++
++Thread threadCreate(ThreadFunc entrypoint, void* arg, size_t stack_size, int prio, int affinity, bool detached)
++{
++	Thread t = __createThread(entrypoint, stack_size, detached);
++	if (!t) return NULL;
++
++    t->arg = arg;
++	if (R_FAILED(__startThread(t, prio, affinity)))
+ 	{
+ 		free(t);
+ 		return NULL;
+@@ -108,24 +143,34 @@ Result threadJoin(Thread thread, u64 timeout_ns)
+ 	return svcWaitSynchronization(thread->handle, timeout_ns);
+ }
+ 
++
+ void threadDetach(Thread thread)
+ {
+ 	if (!thread || thread->detached)
+ 		return;
++
+ 	if (thread->finished)
+ 	{
+ 		threadFree(thread);
+ 		return;
+ 	}
++
+ 	thread->detached = true;
+ 	return;
+ }
+ 
++
+ Thread threadGetCurrent(void)
+ {
+ 	ThreadVars* tv = getThreadVars();
++
++    // If magic isn't valid, then it's a game's thread
+ 	if (tv->magic != THREADVARS_MAGIC)
+-		__panic();
++    {
++		//__panic();
++        return NULL;
++    }
++
+ 	return tv->thread_ptr;
+ }
+ 
