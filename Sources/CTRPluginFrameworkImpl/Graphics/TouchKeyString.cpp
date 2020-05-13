@@ -5,11 +5,13 @@ namespace CTRPluginFramework
 {
     TouchKeyString::TouchKeyString(IntRect ui, bool isEnabled)
     {
+
         _uiProperties = ui;
         _posY = _uiProperties.leftTop.y;
         _enabled = isEnabled;
 
         _isPressed = false;
+        _isForcePressed = false;
         _execute = false;
 
     }
@@ -46,15 +48,24 @@ namespace CTRPluginFramework
         _enabled = isEnabled;
     }
 
+    void    TouchKeyString::ForcePressed(bool force) {
+        _isForcePressed = force;
+    }
+
+    bool TouchKeyString::CanUse(void)
+    {
+        return !(!_enabled || (_isIcon && !_icon.isEnabled) || (!_isIcon && _content.empty()));
+    }
+
     void    TouchKeyString::Draw(void)
     {
         // If key is disabled
-        if (!_enabled || (_isIcon && !_icon.isEnabled) || (!_isIcon && _content.empty()))
+        if (!CanUse())
             return;
 
         const auto    &theme = Preferences::Settings.CustomKeyboard;
-        const Color &background = _isPressed ? theme.KeyBackgroundPressed : theme.KeyBackground;
-        const Color &text = _isPressed ? theme.KeyTextPressed : theme.KeyText;
+        const Color &background = (_isPressed || _isForcePressed) ? theme.KeyBackgroundPressed : theme.KeyBackground;
+        const Color &text = (_isPressed || _isForcePressed) ? theme.KeyTextPressed : theme.KeyText;
 
         // Background
         Renderer::DrawRect(_uiProperties, background);
@@ -75,7 +86,7 @@ namespace CTRPluginFramework
 
     void    TouchKeyString::Update(const bool isTouchDown, const IntVector &touchPos)
     {
-        if (!_enabled || (_isIcon && !_icon.isEnabled) || (!_isIcon && _content.empty()))
+        if (!CanUse())
             return;
 
         bool    isTouched = _uiProperties.Contains(touchPos);
@@ -100,9 +111,12 @@ namespace CTRPluginFramework
 
     int     TouchKeyString::operator()(void)
     {
-        if (_enabled && _execute)
+        if (CanUse() && _execute)
         {
+<<<<<<< HEAD
             if (_isIcon && !_icon.isEnabled) return (-1);
+=======
+>>>>>>> dbcbe34... Make keyboards scrollable with buttons.
             _execute = false;
             return (1);
         }

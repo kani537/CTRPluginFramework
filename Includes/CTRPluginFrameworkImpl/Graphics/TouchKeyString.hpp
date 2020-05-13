@@ -27,6 +27,12 @@ namespace CTRPluginFramework
         // Enabler
         void    Enable(bool enable = true);
 
+        // Force key being pressed (graphically only)
+        void ForcePressed(bool force);
+
+        // Can be used
+        bool    CanUse(void);
+
         // Draw
         void    Draw(void);
 
@@ -47,6 +53,7 @@ namespace CTRPluginFramework
         IntRect         _uiProperties;
 
         bool            _isPressed;
+        bool            _isForcePressed;
         bool            _isIcon;
         bool            _execute;
         bool            _enabled;
