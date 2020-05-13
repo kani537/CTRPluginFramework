@@ -205,6 +205,7 @@ namespace CTRPluginFramework
 
     void    KeyboardImpl::Populate(const std::vector<std::string> &input, bool resetScroll)
     {
+		_manualKey = 0;
         _customKeyboard = true;
 		_isIconKeyboard = false;
 		bool mustReset = _strKeys.size() != input.size() || resetScroll || true; //FIX
@@ -258,6 +259,7 @@ namespace CTRPluginFramework
 
 	void    KeyboardImpl::Populate(const std::vector<CustomIcon>& input, bool resetScroll)
 	{
+		_manualKey = 0;
 		_customKeyboard = true;
 		_isIconKeyboard = true;
 		bool mustReset = _strKeys.size() != input.size() || resetScroll || true; //FIX
@@ -307,7 +309,7 @@ namespace CTRPluginFramework
 		int i = 1;
 		for (const CustomIcon& ico : input)
 		{
-			if (ico.sizeX != 30 || ico.sizeY != 30) _strKeys.push_back(new TouchKeyString(Icon::DefaultCustomIcon, box, true));
+			if (ico.sizeX != 30 || ico.sizeY != 30) _strKeys.push_back(new TouchKeyString(CustomIcon(Icon::DefaultCustomIcon.pixArray, Icon::DefaultCustomIcon.sizeX, Icon::DefaultCustomIcon.sizeY, ico.isEnabled), box, true));
 			else _strKeys.push_back(new TouchKeyString(ico, box, true));
 			if (i == 0) box.leftTop.y += 36;
 			box.leftTop.x = 91 + i * 36;
@@ -598,6 +600,7 @@ namespace CTRPluginFramework
 
             for (int i = _currentPosition; i < max && i < _strKeys.size(); i++)
             {
+				_strKeys[i]->ForcePressed(i == _manualKey);
                 _strKeys[i]->Draw();
             }
 
@@ -629,6 +632,9 @@ namespace CTRPluginFramework
 
     void    KeyboardImpl::_ProcessEvent(Event &event)
     {
+		static Clock inputClock;
+		bool inputPassedTime = inputClock.HasTimePassed(Milliseconds(200));
+
         if (event.type == Event::KeyPressed)
         {
             if (event.key.code == Key::B)
@@ -657,20 +663,30 @@ namespace CTRPluginFramework
                 SetLayout(_layout == DECIMAL ? HEXADECIMAL : DECIMAL);
                 _canChangeLayout = true;
             }
+			if (_customKeyboard && (event.key.code & (Key::Down | Key::Up | Key::Left | Key::Right | Key::A)))
+				_HandleManualKeyPress((Key)(event.key.code & Key::A));
+				inputPassedTime = true;
         }
 
         if (event.type == Event::KeyDown)
         {
-            static Clock inputClock;
-
-            if (_showCursor && inputClock.HasTimePassed(Milliseconds(200)))
+            if (_showCursor && inputPassedTime)
             {
-                if (event.key.code == Key::DPadLeft)
-                    _ScrollDown();
-                else if (event.key.code == Key::DPadRight)
-                    _ScrollUp();
-                inputClock.Restart();
+				if (event.key.code == Key::DPadLeft) {
+					inputClock.Restart();
+					_ScrollDown();
+				}
+				else if (event.key.code == Key::DPadRight) {
+					inputClock.Restart();
+					_ScrollUp();
+				}                
             }
+			if (_customKeyboard && inputPassedTime) {
+				if (event.key.code & (Key::Down | Key::Up | Key::Left | Key::Right | Key::A)) {
+					_HandleManualKeyPress((Key)(event.key.code & ~(u32)Key::A));
+					inputClock.Restart();
+				}				
+			}
         }
 
         if (!_displayScrollbar)
@@ -690,6 +706,8 @@ namespace CTRPluginFramework
 
         if (event.type == Event::TouchMoved)
         {
+			_manualKey = -1;
+			_scrollSize = 0;
             if (!buttons.Contains(event.touch.x, event.touch.y))
             {
                 Time delta = _touchTimer.Restart();
@@ -702,6 +720,8 @@ namespace CTRPluginFramework
 
         if (event.type == Event::TouchEnded)
         {
+			_manualKey = -1;
+			_scrollSize = 0;
             if (!buttons.Contains(event.touch.x, event.touch.y))
             {
                 if (_touchTimer.GetElapsedTime().AsSeconds() > 0.3f)
@@ -714,10 +734,64 @@ namespace CTRPluginFramework
     #define INERTIA_ACCELERATION 0.75f
     #define INERTIA_THRESHOLD 1.0f
 
+	void    KeyboardImpl::_UpdateScroll(float delta) {
+
+		bool			isTouchDown = Touch::IsDown();
+		IntVector		touchPos(Touch::GetPosition());
+
+		if (_displayScrollbar)
+		{
+			if (!_manualScrollUpdate)
+				_scrollSize = (_inertialVelocity * INERTIA_SCROLL_FACTOR * delta);
+
+			_manualScrollUpdate = false;
+
+			_scrollPosition += _scrollSize;
+
+			if (_scrollPosition <= 0.f)
+			{
+				_scrollSize = _scrollSize - _scrollPosition;
+				_scrollPosition = 0.f;
+				_inertialVelocity = 0.f;
+			}
+			else if (_scrollPosition >= _scrollEnd)
+			{
+				_scrollSize -= (_scrollPosition - _scrollEnd);
+				_scrollPosition = _scrollEnd;
+				_inertialVelocity = 0.f;
+			}
+
+
+			_inertialVelocity += (0.98f) * delta;
+
+			_inertialVelocity *= INERTIA_ACCELERATION;
+
+			_currentPosition = (_scrollPosition * _scrollJump) / 36; //(_scrollPosition / 36);
+			if (_isIconKeyboard) _currentPosition *= 4;
+
+			if (std::abs(_inertialVelocity) < INERTIA_THRESHOLD)
+				_inertialVelocity = 0.f;
+
+			float scr = -_scrollSize * _scrollJump;
+			_scrollSize = 0;
+
+			for (TouchKeyString* tks : _strKeys)
+			{
+				tks->Scroll(scr);
+				tks->Update(isTouchDown, touchPos);
+			}
+		}
+		else
+		{
+			for (TouchKeyString* tks : _strKeys)
+				tks->Update(isTouchDown, touchPos);
+		}
+	}
+
     void    KeyboardImpl::_Update(float delta)
     {
-        bool			isTouchDown = Touch::IsDown();
-        IntVector		touchPos(Touch::GetPosition());
+		bool			isTouchDown = Touch::IsDown();
+		IntVector		touchPos(Touch::GetPosition());
 
         if (!_customKeyboard)
         {
@@ -783,49 +857,7 @@ namespace CTRPluginFramework
         }
         else ///< Custom Keyboard
         {
-            if (_displayScrollbar)
-            {
-                _scrollSize = (_inertialVelocity * INERTIA_SCROLL_FACTOR * delta);
-
-                _scrollPosition += _scrollSize;
-
-                if (_scrollPosition <= 0.f)
-                {
-                    _scrollSize = _scrollSize - _scrollPosition;
-                    _scrollPosition = 0.f;
-                    _inertialVelocity = 0.f;
-                }
-                else if (_scrollPosition >= _scrollEnd)
-                {
-                    _scrollSize -= (_scrollPosition - _scrollEnd);
-                    _scrollPosition = _scrollEnd;
-                    _inertialVelocity = 0.f;
-                }
-
-
-                _inertialVelocity += (0.98f ) * delta;
-
-                _inertialVelocity *= INERTIA_ACCELERATION;
-
-                _currentPosition = (_scrollPosition * _scrollJump) / 36; //(_scrollPosition / 36);
-				if (_isIconKeyboard) _currentPosition *= 4;
-
-                if (std::abs(_inertialVelocity) < INERTIA_THRESHOLD)
-                    _inertialVelocity = 0.f;
-
-                float scr = -_scrollSize * _scrollJump;
-
-                for (TouchKeyString *tks : _strKeys)
-                {
-                    tks->Scroll(scr);
-                    tks->Update(isTouchDown, touchPos);
-                }
-            }
-            else
-            {
-                for (TouchKeyString *tks : _strKeys)
-                    tks->Update(isTouchDown, touchPos);
-            }
+			_UpdateScroll(delta);
         }
     }
 
@@ -1857,19 +1889,140 @@ namespace CTRPluginFramework
 
     bool    KeyboardImpl::_CheckButtons(int &ret)
     {
-
+		bool res = false;
         for (int i = 0; i < _strKeys.size(); i++)
         {
             ret = (*_strKeys[i])();
             if (ret != -1)
             {
                 ret = i;
-                return (true);
+				res = true;
+				break;
             }
         }
-
-        return (false);
+		if (_userSelectedKey && _manualKey != -1)
+		{
+			ret = _manualKey; res = true; _userSelectedKey = false;
+		}
+        return res;
     }
+
+	void KeyboardImpl::_HandleManualKeyPress(Key key)
+	{
+		_inertialVelocity = 0;
+		if (_isIconKeyboard) {
+			if (_manualKey == -1) {
+				if (key & (Key::Down | Key::Left)) {
+					_manualKey = _displayScrollbar ? _currentPosition : 0;
+					if (!_strKeys[_manualKey]->CanUse()) _manualKey = 0;
+				}					
+				else if (key & (Key::Up | Key::Right)) {
+					_manualKey = _displayScrollbar ? std::min((int)_strKeys.size() - 1, _currentPosition + 20) : _strKeys.size() - 1;
+					if (!_strKeys[_manualKey]->CanUse()) _manualKey = (int)_strKeys.size() - 1;
+				}
+				else return;
+			}
+			if (key & (Key::Down | Key::Up | Key::Left | Key::Right)) {
+				if (key & Key::Down) {
+					int orig = _manualKey;
+					do {
+						_manualKey += 4;
+					} while (_manualKey < _strKeys.size() && !_strKeys[_manualKey]->CanUse() && _manualKey - orig < 16);
+					if (_manualKey >= _strKeys.size() || _manualKey - orig >= 16)
+						_manualKey = orig;
+				}
+				else if (key & Key::Up) {
+					int orig = _manualKey;
+					do {
+						_manualKey -= 4;
+					} while (_manualKey > 0 && !_strKeys[_manualKey]->CanUse() && orig -_manualKey < 16);
+					if (_manualKey < 0 || orig - _manualKey >= 16)
+						_manualKey = orig;
+				}
+				else if (key & Key::Right) {
+					int orig = _manualKey;
+					do {
+						_manualKey++;
+					} while (_manualKey < _strKeys.size() && ((u32)_manualKey & 3) != 0 && !_strKeys[_manualKey]->CanUse());
+					if (_manualKey >= _strKeys.size() || ((u32)_manualKey & 3) == 0)
+						_manualKey = orig;
+				}
+				else if (key & Key::Left) {
+					int orig = _manualKey;
+					do {
+						_manualKey--;
+					} while (_manualKey > 0 && ((u32)_manualKey & 3) != 3 && !_strKeys[_manualKey]->CanUse());
+					if (_manualKey < 0 || ((u32)_manualKey & 3) == 3)
+						_manualKey = orig;
+				}
+
+				int keyRow = _manualKey / 4;
+				int positionRow = _currentPosition / 4;
+
+				if (keyRow > positionRow + 6 - 2) {
+					positionRow = keyRow - 4;
+					_scrollSize = ((positionRow * 36.01f) + 15) / _scrollJump - _scrollPosition;
+					_manualScrollUpdate = true;
+					_UpdateScroll(0.f);
+				}
+				else if (keyRow < positionRow + 1) {
+					positionRow = std::max(keyRow, 0);
+					_scrollSize = ((positionRow * 36.01f) - 15) / _scrollJump - _scrollPosition;
+					_manualScrollUpdate = true;
+					_UpdateScroll(0.f);
+				}
+			}
+		}
+		else {
+			if (_manualKey == -1) {
+				if (key & Key::Down) {
+					_manualKey = _displayScrollbar ? _currentPosition : 0;
+					if (!_strKeys[_manualKey]->CanUse()) _manualKey = 0;
+				} else if (key & Key::Up) {
+					_manualKey = _displayScrollbar ? std::min((int)_strKeys.size() - 1, _currentPosition + 5) : _strKeys.size() - 1;
+					if (!_strKeys[_manualKey]->CanUse()) _manualKey = (int)_strKeys.size() - 1;
+				}
+				else return;
+			}
+			if (key & (Key::Down | Key::Up)) {
+				if (key & Key::Down) {
+					int orig = _manualKey;
+					do {
+						_manualKey++;
+					} while (_manualKey < _strKeys.size() && !_strKeys[_manualKey]->CanUse() && _manualKey - orig < 4);
+					
+					if (_manualKey >= _strKeys.size() || _manualKey - orig >= 4) _manualKey = orig;
+				}
+				else if (key & Key::Up) {
+					int orig = _manualKey;
+					do {
+						_manualKey--;
+					} while (_manualKey > 0 && !_strKeys[_manualKey]->CanUse() && orig - _manualKey < 4);
+
+					if (_manualKey < 0 || orig - _manualKey >= 4) _manualKey = orig;
+				}
+
+				int keyRow = _manualKey;
+				int positionRow = _currentPosition;
+
+				if (keyRow > positionRow + 6 - 2) {
+					positionRow = keyRow - 4;
+					_scrollSize = ((positionRow * 36.01f) + 15) / _scrollJump - _scrollPosition;
+					_manualScrollUpdate = true;
+					_UpdateScroll(0.f);
+				}
+				else if (keyRow < positionRow + 1) {
+					positionRow = std::max(keyRow, 0);
+					_scrollSize = ((positionRow * 36.01f) - 15) / _scrollJump - _scrollPosition;
+					_manualScrollUpdate = true;
+					_UpdateScroll(0.f);
+				}
+			}
+		}		
+		if (key == A) {
+			_userSelectedKey = true;
+		}
+	}
 
     // WIll only be used in the hex editor, so no need to do a full implementation
     bool    KeyboardImpl::operator()(int &out)

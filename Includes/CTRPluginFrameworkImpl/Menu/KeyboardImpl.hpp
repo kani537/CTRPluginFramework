@@ -66,7 +66,8 @@ namespace CTRPluginFramework
         void    _RenderTop(void);
         void    _RenderBottom(void);
         void    _ProcessEvent(Event &event);
-        void    _Update(float delta);
+		void	_UpdateScroll(float delta);
+		void    _Update(float delta);
 
         // Keyboard layout constructor
         void    _Qwerty(void);
@@ -85,6 +86,7 @@ namespace CTRPluginFramework
         bool    _CheckInput(void); //<- Call compare callback, return true if the input is valid
 
         bool    _CheckButtons(int &ret); //<- for string button
+		void    _HandleManualKeyPress(Key key);
 
         Keyboard                *_owner{nullptr};
 
@@ -125,6 +127,9 @@ namespace CTRPluginFramework
         static std::vector<TouchKey>    _QwertyKeys;
 
         // Custom keyboard stuff
+		int						_manualKey{0};
+		bool					_manualScrollUpdate{false};
+		bool					_userSelectedKey{false};
         bool                    _customKeyboard{false};
         bool                    _displayScrollbar{false};
 		bool				    _isIconKeyboard{false};
