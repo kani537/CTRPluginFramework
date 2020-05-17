@@ -60,9 +60,11 @@ namespace CTRPluginFramework
 
     void    HotkeysModifier::operator()(void)
     {
-        while (!Window::BottomWindow.MustClose() || !_keys)
+		bool mustclose = false;
+        while ((!Window::BottomWindow.MustClose() && !mustclose) || !_keys)
         {
             Controller::Update();
+			mustclose = Controller::IsKeyPressed(Key::B);
             _DrawTop();
             _DrawBottom();
             Renderer::EndFrame();

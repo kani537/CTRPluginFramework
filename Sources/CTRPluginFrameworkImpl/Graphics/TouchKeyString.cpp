@@ -108,6 +108,19 @@ namespace CTRPluginFramework
         posY = _posY;
     }
 
+	void TouchKeyString::GetPosition(u16& posX, float& posY)
+	{
+		posX = _posX;
+		posY = _posY;
+	}
+
+	void TouchKeyString::SetPosition(u16 posX, float posY)
+	{
+		if (posX != 0xFFFF)
+			_posX = posX;
+		_posY = posY;
+	}
+
     int     TouchKeyString::operator()(void)
     {
         if (CanUse() && _execute)
