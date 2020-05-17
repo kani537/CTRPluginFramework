@@ -42,6 +42,10 @@ namespace CTRPluginFramework
         // Scrolls
         void    Scroll(float amount);
 
+		// Position getter/setter
+		void    GetPosition(u16& posX, float& posY);
+		void	SetPosition(u16 posX, float posY);
+
         // Executer
         // Return -1 if not pressed, 1 otherwise
         int    operator()(void);

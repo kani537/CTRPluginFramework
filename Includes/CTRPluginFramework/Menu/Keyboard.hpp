@@ -94,18 +94,24 @@ namespace CTRPluginFramework
         void    SetError(std::string error) const;
 
         /**
+         * \brief Selects and scroll to the specified entry, must be called after Populate
+         * \param entry Entry index to select, -1 to deselect all.
+         */
+        void	ChangeSelectedEntry(int entry);
+
+        /**
          * \brief Populate a keyboard with the strings contained in an std::vector
          * \param input  A std::vector that contain a list of strings
-         * \param resetScroll  Set to false to prevent resetting the scroll position if the list is the same size
+         * \param resetScroll  Set to true to reset the scroll position if the list is the same size
          */
-        void    Populate(const std::vector<std::string>& input, bool resetScroll = true);
+        void    Populate(const std::vector<std::string> &input, bool resetScroll = false);
 
         /**
          * \brief Populate a keyboard with the Icons contained in an std::vector
          * \param input  A std::vector that contain a list of strings
-         * \param resetScroll  Set to false to prevent resetting the scroll position if the list is the same size
+         * \param resetScroll  Set to true to reset the scroll position if the list is the same size
          */
-        void    Populate(const std::vector<CustomIcon>& input, bool resetScroll = true);
+        void    Populate(const std::vector<CustomIcon>& input, bool resetScroll = false);
 
         /**
          * \brief Open a keyboard which is populated with strings

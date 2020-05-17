@@ -279,6 +279,10 @@ namespace CTRPluginFramework
         _keyboard->SetCompareCallback(callback);
     }
 
+	void	Keyboard::ChangeSelectedEntry(int entry) {
+		_keyboard->ChangeSelectedEntry(entry);
+	}
+
     void    Keyboard::Populate(const std::vector<std::string> &input, bool resetScroll)
     {
         _keyboard->Populate(input, resetScroll);

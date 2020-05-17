@@ -49,6 +49,7 @@ namespace CTRPluginFramework
         void        SetConvertCallback(ConvertCallback callback);
         void        SetCompareCallback(CompareCallback callback);
         void        OnInputChange(OnInputChangeCallback callback);
+        void        ChangeSelectedEntry(int entry);
         void        Populate(const std::vector<std::string>& input, bool resetScroll);
         void        Populate(const std::vector<CustomIcon>& input, bool resetScroll);
         void        Clear(void);
@@ -66,7 +67,7 @@ namespace CTRPluginFramework
         void    _RenderTop(void);
         void    _RenderBottom(void);
         void    _ProcessEvent(Event &event);
-		void	_UpdateScroll(float delta);
+		void	_UpdateScroll(float delta, bool ignoreTouch);
 		void    _Update(float delta);
 
         // Keyboard layout constructor
