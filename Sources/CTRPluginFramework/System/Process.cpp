@@ -9,6 +9,8 @@ extern 		Handle gspThreadEventHandle;
 
 namespace CTRPluginFramework
 {
+    Process::ExceptionCallback Process::exceptionCallback = nullptr;
+
 	Handle 	Process::GetHandle(void)
 	{
 		return ProcessImpl::ProcessHandle;
@@ -507,5 +509,14 @@ namespace CTRPluginFramework
 
             return (ConvertString(out, in, size, outFmt));
         }
+    }
+    
+    void     Process::ReturnToHomeMenu(void)
+    {
+        APT_PrepareToCloseApplication(true);
+        APT_CloseApplication(NULL, 0, 0);
+        ProcessImpl::UnlockGameThreads();
+        svcExitProcess();
+        for (;;);
     }
 }

@@ -57,6 +57,11 @@ namespace CTRPluginFramework
          * \brief A callback that will be called in std::abort if set
          */
         static void         (*OnAbort)(void);
+
+        /**
+        * \brief Causes a system hardware reboot. Does not return.
+        */
+        static void     Reboot(void) NORETURN;
     };
 }
 

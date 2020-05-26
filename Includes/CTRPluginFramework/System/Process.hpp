@@ -287,6 +287,27 @@ namespace CTRPluginFramework
         * \return true if the write is successful, false otherwise
         */
         static bool     WriteString(u32 address, const std::string &input, u32 size, StringFormat outFmt = StringFormat::Utf8);
+        
+        /**
+        * \brief Causes the app to exit and jump to the home menu. Does not return.
+        */
+        static void     ReturnToHomeMenu(void) NORETURN;
+        
+        enum ExceptionCallbackState
+        {
+            EXCB_LOOP,
+            EXCB_DEFAULT_HANDLER,
+            EXCB_REBOOT,
+            EXCB_RETURN_HOME
+        };
+        using ExceptionCallback = ExceptionCallbackState(*)(ERRF_ExceptionInfo* excep, CpuRegisters* regs);
+        /**
+        * \brief A callback that will be executed if an exception is triggered. Overrides Luma exception handler. \n
+        If this callback causes a new exception, the default exception handler will be executed instead. \n
+        You can use OSD to get the screens and draw to them, followed to swap framebuffers.
+        * \return Action to perform after each callback execution. LOOP makes the callback be executed again.
+        */
+        static ExceptionCallback exceptionCallback;
     };
 }
 

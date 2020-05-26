@@ -33,6 +33,7 @@ namespace CTRPluginFramework
     Mutex       ProcessImpl::MemoryMutex;
     std::vector<MemInfo> ProcessImpl::MemRegions;
     std::vector<u32> ProcessImpl::blackListedLockThreads;
+    u32         ProcessImpl::exceptionCount = 0;
 
     void    ProcessImpl::Initialize(void)
     {
@@ -192,8 +193,9 @@ namespace CTRPluginFramework
     static bool    ThreadPredicate(KThread *thread)
     {
         u32 *tls = (u32 *)thread->tls;
+        KThread* currentThread = *(KThread**)0xFFFF9000;
 
-        if (*tls != THREADVARS_MAGIC && std::find(ProcessImpl::blackListedLockThreads.begin(), ProcessImpl::blackListedLockThreads.end(), thread->threadId) == ProcessImpl::blackListedLockThreads.end())
+        if (currentThread != thread && *tls != THREADVARS_MAGIC && std::find(ProcessImpl::blackListedLockThreads.begin(), ProcessImpl::blackListedLockThreads.end(), thread->threadId) == ProcessImpl::blackListedLockThreads.end())
             return true;
         return false;
     }
@@ -216,9 +218,9 @@ namespace CTRPluginFramework
 
     extern "C" u32 __ctru_heap;
 
-    void    ProcessImpl::UpdateMemRegions(void)
+    void    ProcessImpl::UpdateMemRegions(bool ignoreLock)
     {
-        Lock lock(MemoryMutex);
+        if (!ignoreLock) MemoryMutex.Lock();
 
         MemRegions.clear();
 
@@ -257,6 +259,7 @@ namespace CTRPluginFramework
 
             addr += 0x1000;
         }
+        if (!ignoreLock) MemoryMutex.Unlock();
     }
 
     static bool     IsRegionProhibited(const MemInfo& memInfo)
@@ -337,4 +340,90 @@ namespace CTRPluginFramework
 	{
 		return blackListedLockThreads;
 	}
+
+    void ProcessImpl::EnableExceptionHandlers()
+    {
+        if (MainThreadTls)
+        {
+            *(u32*)(MainThreadTls + 0x40) = (u32)ProcessImpl::ExceptionHandler;
+            *(u32*)(MainThreadTls + 0x44) = 1;//(u32)&stack[0x1000];
+            *(u32*)(MainThreadTls + 0x48) = 1;//(u32)&exceptionData;
+        }
+    }
+
+    void ProcessImpl::DisableExceptionHandlers()
+    {
+        if (MainThreadTls)
+            *(u32*)(MainThreadTls + 0x40) = 0;
+    }
+
+    void    ProcessImpl::ReturnFromException(CpuRegisters* regs) {
+#ifndef _MSC_VER
+        __asm__ __volatile__(
+            "ldr sp,    [r0,#0x34]  @sp \n"
+            "ldr r1,    [r0, #0x3c] @pc \n"
+            "str r1,    [sp, #-4]!      \n"
+            "ldr r1,    [r0, #0x38] @lr \n"
+            "str r1,    [sp, #-4]!      \n"
+            "mov r2,    #0x30           \n"
+
+            "_store_reg_loop:           \n"
+            "ldr r1,    [r0, r2]        \n"
+            "str r1,    [sp, #-4]!      \n"
+            "sub r2,    r2, #4          \n"
+            "cmp r2,    #0              \n"
+            "bge        _store_reg_loop \n"
+
+            "ldr r1,    [r0, #0x40]     \n"
+            "msr cpsr,  r1              \n"
+            "ldmfd sp!, {r0-r12, lr, pc}\n"
+        );
+#endif
+    }
+
+    void    ProcessImpl::ExceptionHandler(ERRF_ExceptionInfo* excep, CpuRegisters* regs) {
+        // Default exception handler, if the user didn't set an custom exception handler or an exception happened in the user callback
+        if (AtomicPostIncrement(&exceptionCount) || !Process::exceptionCallback) {
+            DisableExceptionHandlers();
+            ReturnFromException(regs);
+        }
+        
+        // Lock game threads
+        LockGameThreads();
+
+        // Resume interrupt reciever and acquire screens
+        // NOTE: NEEDS TO BE DISABLED IF THIS FUNCTION IS MADE TO RETURN EXECUTION
+        GSP::ResumeInterruptReceiver();
+        ScreenImpl::AcquireFromGsp();
+
+        // Update OSD screens
+        OSDImpl::UpdateScreens();
+
+        // Update memregions, this layout is used by internal checks
+        UpdateMemRegions(true);
+
+        Process::ExceptionCallbackState ret = Process::EXCB_LOOP;
+
+        while (ret == Process::EXCB_LOOP)
+        {
+            Controller::Update();
+
+            ret = Process::exceptionCallback(excep, regs);
+            
+        }
+
+        switch (ret)
+        {
+        case Process::EXCB_REBOOT:
+            System::Reboot();
+            break;
+        case Process::EXCB_RETURN_HOME:
+            Process::ReturnToHomeMenu();
+            break;
+        default:
+            DisableExceptionHandlers();
+            ReturnFromException(regs);
+            break;
+        }
+    }
 }

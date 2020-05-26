@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include "3ds.h"
 
-CFNT_s* g_sharedFont;
+extern CFNT_s* g_sharedFont;
 int g_charPerSheet = 1;
 
 Result fontEnsureMappedExtension(void)
