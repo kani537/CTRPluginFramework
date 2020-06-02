@@ -25,7 +25,7 @@ namespace CTRPluginFramework
         ** name = The name of the menu / main folder
         ** about = text to display on the bottom screen of Tools section
         ******************************/
-        explicit PluginMenu(std::string name = "Cheats", std::string about = "");
+        explicit PluginMenu(std::string name = "Cheats", std::string about = "", u32 menuType = 0);
 
         /*
         ** Create a new PluginMenu
@@ -33,7 +33,7 @@ namespace CTRPluginFramework
         ** about = pointer to encrypted about's text data
         ** func = function to decrypt the about's data
         ******************************/
-        PluginMenu(std::string name, void *about, DecipherPointer func);
+        PluginMenu(std::string name, void *about, DecipherPointer func, u32 menuType = 0);
 
         /**
          * \brief Create a new PluginMenu
@@ -43,7 +43,7 @@ namespace CTRPluginFramework
          * \param revision The revision version number of the plugin version
          * \param about Text to display in Tools About
          */
-        PluginMenu(std::string name, u32 major, u32 minor, u32 revision, std::string about = "");
+        PluginMenu(std::string name, u32 major, u32 minor, u32 revision, std::string about = "", u32 menuType = 0);
 
         /*
         ** Destructor
@@ -121,6 +121,11 @@ namespace CTRPluginFramework
          * \return A reference to a PluginMenu that is currently running
          */
         static PluginMenu   *GetRunningInstance(void);
+
+        /**
+         * \brief Forces the opening of the menu
+         */
+        static void ForceOpen(void);
 
         /**
          * \brief If set to true, the plugin's loop will only be executed 1 per top screen's frame

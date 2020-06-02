@@ -24,7 +24,7 @@ namespace CTRPluginFramework
         using HotkeysVector = std::vector<Preferences::HotkeysInfos>;
     public:
 
-        PluginMenuImpl(std::string &name, std::string &note);
+        PluginMenuImpl(std::string &name, std::string &note, u32 menuType);
         ~PluginMenuImpl(void);
 
         void    Append(MenuItem *item) const;
@@ -68,6 +68,7 @@ namespace CTRPluginFramework
         static PluginMenuImpl       *_runningInstance;
 
         bool                        _isOpen;
+        bool                        _aboutToOpen;
         bool                        _wasOpened;
         bool                        _pluginRun;
         bool                        _showMsg;

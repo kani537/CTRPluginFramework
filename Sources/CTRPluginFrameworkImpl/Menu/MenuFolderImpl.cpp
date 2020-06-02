@@ -8,6 +8,7 @@ namespace CTRPluginFramework
         MenuItem(MenuType::Folder), _owner(nullptr)
     {
         this->name = name;
+        this->firstName = name;
         this->note = note;
         this->_position[0] = -1;
         this->_position[1] = -1;
@@ -19,6 +20,7 @@ namespace CTRPluginFramework
     MenuItem(MenuType::Folder), _owner(owner)
     {
         this->name = name;
+        this->firstName = name;
         this->note = note;
         this->_position[0] = -1;
         this->_position[1] = -1;
@@ -51,7 +53,7 @@ namespace CTRPluginFramework
         {
             item->_container = this;
             item->_index = _items.size();
-        }        
+        }
         _items.push_back(item);
 
     }

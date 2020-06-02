@@ -9,6 +9,7 @@ namespace CTRPluginFramework
     MenuEntryImpl::MenuEntryImpl(const std::string &name, const std::string &note, MenuEntry *owner) : MenuItem(MenuType::Entry)
     {
         this->name = name;
+        this->firstName = name;
         this->note = note;
         this->GameFunc = nullptr;
         this->MenuFunc = nullptr;
@@ -25,6 +26,7 @@ namespace CTRPluginFramework
     MenuEntryImpl::MenuEntryImpl(const std::string &name, FuncPointer func, const std::string &note, MenuEntry *owner) : MenuItem(MenuType::Entry)
     {
         this->name = name;
+        this->firstName = name;
         this->note = note;
         this->GameFunc = func;
         this->MenuFunc = nullptr;

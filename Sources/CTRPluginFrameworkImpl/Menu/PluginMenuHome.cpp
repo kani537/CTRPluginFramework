@@ -38,13 +38,13 @@ namespace CTRPluginFramework
         *out = '\0';
     }
 
-    PluginMenuHome::PluginMenuHome(std::string &name) :
+    PluginMenuHome::PluginMenuHome(std::string &name, bool showNoteBottom) :
         _showStarredBtn(Button::Toggle | Button::Sysfont | Button::Rounded, "Favorite", IntRect(30, 70, 120, 30), Icon::DrawFavorite),
         _hidMapperBtn(Button::Sysfont | Button::Rounded, "Mapper", IntRect(165, 70, 120, 30), Icon::DrawController),
         _gameGuideBtn(Button::Sysfont | Button::Rounded, "Game Guide", IntRect(30, 105, 120, 30), Icon::DrawGuide),
         _searchBtn(Button::Sysfont | Button::Rounded, "Search", IntRect(165, 105, 120, 30), Icon::DrawSearch),
         _arBtn(Button::Sysfont | Button::Rounded, "ActionReplay", IntRect(30, 140, 120, 30)),
-        _toolsBtn(Button::Sysfont | Button::Rounded, "Tools", IntRect(165, 140, 120, 30), Icon::DrawTools),
+        _toolsBtn(Button::Sysfont | Button::Rounded, "Tools", showNoteBottom ? IntRect(99, 172, 120, 30) : IntRect(165, 140, 120, 30), Icon::DrawTools),
 
         _AddFavoriteBtn(Button::Icon | Button::Toggle, IntRect(50, 30, 25, 25), Icon::DrawAddFavorite),
         _InfoBtn(Button::Icon | Button::Toggle, IntRect(90, 30, 25, 25), Icon::DrawInfo),
@@ -52,7 +52,7 @@ namespace CTRPluginFramework
        // _closeBtn(*this, nullptr, IntRect(275, 24, 20, 20), Icon::DrawClose),
         _keyboardBtn(Button::Icon, IntRect(130, 30, 25, 25), Icon::DrawKeyboard),
         _controllerBtn(Button::Icon, IntRect(170, 30, 25, 25), Icon::DrawGameController25),
-        _noteTB("", "", IntRect(40, 30, 320, 180))
+        _noteTB("", "", showNoteBottom ? IntRect(20, 46, 280, 124) : IntRect(40, 30, 320, 180))
     {
         _root = _folder = new MenuFolderImpl(name);
         _starredConst = _starred = new MenuFolderImpl("Favorites");
@@ -65,6 +65,8 @@ namespace CTRPluginFramework
         _reverseFlow = false;
         _showVersion = false;
         _versionPosX = 0;
+
+        ShowNoteBottom = showNoteBottom;
 
         _mode = 0;
 
@@ -102,12 +104,17 @@ namespace CTRPluginFramework
         static Task top([](void *arg)
         {
             PluginMenuHome *home = reinterpret_cast<PluginMenuHome *>(arg);
-
-             Renderer::SetTarget(TOP);
-            if (home->_noteTB.IsOpen())
-                home->_noteTB.Draw();
-            else
+            if (home->ShowNoteBottom) {
+                Renderer::SetTarget(TOP);
                 home->_RenderTop();
+            }
+            else {
+                Renderer::SetTarget(TOP);
+                if (home->_noteTB.IsOpen())
+                    home->_noteTB.Draw();
+                else
+                    home->_RenderTop();
+            }
 
             return (s32)0;
 
@@ -116,7 +123,7 @@ namespace CTRPluginFramework
         _mode = mode;
 
         // Process events
-        if (_noteTB.IsOpen())
+        if (_noteTB.IsOpen() && !ShowNoteBottom)
         {
             for (int i = 0; i < eventList.size(); i++)
                 if (_noteTB.ProcessEvent(eventList[i]) == false)
@@ -131,17 +138,20 @@ namespace CTRPluginFramework
                 _ProcessEvent(eventList[i]);
         }
 
-        // Check all buttons
-        if (_showStarredBtn()) _showStarredBtn_OnClick();
-        // _hidMapperBtn();
-        if (_gameGuideBtn()) _gameGuideBtn_OnClick();
-        if (_searchBtn()) _searchBtn_OnClick();
-        if (_arBtn()) _actionReplayBtn_OnClick();
         if (_toolsBtn()) _toolsBtn_OnClick();
-        if (_AddFavoriteBtn()) _StarItem();
-        if (_InfoBtn()) _InfoBtn_OnClick();
-        if (_keyboardBtn()) _keyboardBtn_OnClick();
-        if (_controllerBtn()) _controllerBtn_OnClick();
+
+        if (!ShowNoteBottom) {
+            // Check all buttons
+            if (_showStarredBtn()) _showStarredBtn_OnClick();
+            // _hidMapperBtn();
+            if (_gameGuideBtn()) _gameGuideBtn_OnClick();
+            if (_searchBtn()) _searchBtn_OnClick();
+            if (_arBtn()) _actionReplayBtn_OnClick();
+            if (_AddFavoriteBtn()) _StarItem();
+            if (_InfoBtn()) _InfoBtn_OnClick();
+            if (_keyboardBtn()) _keyboardBtn_OnClick();
+            if (_controllerBtn()) _controllerBtn_OnClick();
+        }
 
         // Update UI
         _Update(delta);
@@ -418,8 +428,9 @@ namespace CTRPluginFramework
 
         folder = _starMode ? _starred : _folder;
 
-		if (_selector >= folder->ItemsCount())
-			_selector = 0;
+        if (_selector >= folder->ItemsCount())
+            _selector = 0;
+
         /*
         ** Scrolling text variables
         *********************************/
@@ -435,24 +446,27 @@ namespace CTRPluginFramework
         else if (folder->ItemsCount() == 0)
         {
             _selectedTextSize = 0;
-			_AddFavoriteBtn.SetState(false);
-			_AddFavoriteBtn.Enable(false);
-			_InfoBtn.Enable(false);
-			_InfoBtn.SetState(false);
-			_keyboardBtn.Enable(false);
-			_keyboardBtn.SetState(false);
+            _AddFavoriteBtn.SetState(false);
+            _AddFavoriteBtn.Enable(false);
+            _InfoBtn.Enable(false);
+            _InfoBtn.SetState(false);
+            _keyboardBtn.Enable(false);
+            _keyboardBtn.SetState(false);
         }
 
         /*
-        ** Update favorite state
+        ** Update icon buttons state
         **************************/
         if (folder->ItemsCount() > 0 && _selector < folder->ItemsCount())
         {
             item = folder->_items[_selector];
+
+            // Update favorite icon
             _AddFavoriteBtn.SetState(item->_IsStarred());
 
             if (last != item)
             {
+                // Toggle the keyboard icon
                 if (item->_type == MenuType::Entry)
                 {
                     MenuEntryImpl* e = reinterpret_cast<MenuEntryImpl *>(item);
@@ -463,13 +477,21 @@ namespace CTRPluginFramework
 
                 last = item;
 
-                if (item->GetNote().size() > 0)
+                if (!ShowNoteBottom)
                 {
-                    _noteTB.Update(item->name, item->GetNote());
-                    _InfoBtn.Enable(true);
+                    // Toggle the info button
+                    if (item->GetNote().size() > 0)
+                    {
+                        _noteTB.Update(item->name, item->GetNote());
+                        _InfoBtn.Enable(true);
+                    }
+                    else
+                        _InfoBtn.Enable(false);
                 }
                 else
-                    _InfoBtn.Enable(false);
+                {
+                    _noteTB.Update(item->firstName, item->GetNote());
+                }
             }
         }
     }
@@ -596,16 +618,23 @@ namespace CTRPluginFramework
         posY = 35;
 
         // Draw buttons
-        _showStarredBtn.Draw();
-        _hidMapperBtn.Draw();
-        _gameGuideBtn.Draw();
-        _searchBtn.Draw();
-        _arBtn.Draw();
+        if (ShowNoteBottom)
+        {
+            _noteTB.Draw();
+        }
+        else
+        {
+            _showStarredBtn.Draw();
+            _hidMapperBtn.Draw();
+            _gameGuideBtn.Draw();
+            _searchBtn.Draw();
+            _arBtn.Draw();
+            _AddFavoriteBtn.Draw();
+            _InfoBtn.Draw();
+            _keyboardBtn.Draw();
+            _controllerBtn.Draw();
+        }
         _toolsBtn.Draw();
-        _AddFavoriteBtn.Draw();
-        _InfoBtn.Draw();
-        _keyboardBtn.Draw();
-        _controllerBtn.Draw();
     }
 
     //###########################################
@@ -646,7 +675,7 @@ namespace CTRPluginFramework
         MenuFolderImpl *folder = _starMode ? _starred : _folder;
 
         // If current folder is empty
-        if (folder->ItemsCount() == 0)
+        if (folder->ItemsCount() == 0 && !ShowNoteBottom)
         {
             _AddFavoriteBtn.Enable(false);
             _InfoBtn.Enable(false);
@@ -659,37 +688,45 @@ namespace CTRPluginFramework
         {
             MenuFolderImpl *e = reinterpret_cast<MenuFolderImpl *>((*folder)[_selector]);
 
-            // A folder will not have a menufunc
-            _keyboardBtn.Enable(false);
-            // Check if folder has a note
-            _InfoBtn.Enable(e->note.size());
-            // Enable AddFavorites icon
-            _AddFavoriteBtn.Enable(true);
-            _AddFavoriteBtn.SetState(e->_IsStarred());
-            _controllerBtn.Enable(false);
+            if (!ShowNoteBottom)
+            {
+                // A folder will not have a menufunc
+                _keyboardBtn.Enable(false);
+                // Check if folder has a note
+                _InfoBtn.Enable(e->note.size());
+                // Enable AddFavorites icon
+                _AddFavoriteBtn.Enable(true);
+                _AddFavoriteBtn.SetState(e->_IsStarred());
+                _controllerBtn.Enable(false);
+            }
+            if (e->HasNoteChanged())
+            {
+                _noteTB.Update(e->firstName, e->GetNote());
+                e->HandledNoteChanges();
+            }
         }
 
         // If selected object is an entry
         else if ((*folder)[_selector]->IsEntry())
         {
-            MenuEntryImpl *e = reinterpret_cast<MenuEntryImpl *>((*folder)[_selector]);
-            std::string &note = e->GetNote();
-            // Check if entry has a menu func
-            _keyboardBtn.Enable(e->MenuFunc != nullptr);
-            // Check if entry has a note
-            _InfoBtn.Enable(note.size());
-            // Enable AddFavorites icon
-            _AddFavoriteBtn.Enable(true);
-            _AddFavoriteBtn.SetState(e->_IsStarred());
-            // Enable controller icon
-            bool enable = false;
-            if (e->_owner != nullptr)
-                enable = e->_owner->Hotkeys.Count() > 0;
-            _controllerBtn.Enable(enable);
+            MenuEntryImpl   *e = reinterpret_cast<MenuEntryImpl *>((*folder)[_selector]);
+            std::string     &note = e->GetNote();
 
+            if (!ShowNoteBottom)
+            {
+                // Check if entry has a menu func
+                _keyboardBtn.Enable(e->MenuFunc != nullptr);
+                // Check if entry has a note
+                _InfoBtn.Enable(note.size());
+                // Enable AddFavorites icon
+                _AddFavoriteBtn.Enable(true);
+                _AddFavoriteBtn.SetState(e->_IsStarred());
+                // Enable controller icon
+                _controllerBtn.Enable(e->_owner != nullptr && e->_owner->Hotkeys.Count() > 0);
+            }
             if (e->HasNoteChanged())
             {
-                _noteTB.Update(e->name, e->GetNote());
+                _noteTB.Update(e->firstName, note);
                 e->HandledNoteChanges();
             }
         }
@@ -707,17 +744,20 @@ namespace CTRPluginFramework
         bool isTouched = Touch::IsDown();
         IntVector touchPos(Touch::GetPosition());
 
-        // Update buttons
-        _showStarredBtn.Update(isTouched, touchPos);
-        //_hidMapperBtn.Update(isTouched, touchPos);
-        _gameGuideBtn.Update(isTouched, touchPos);
-        _searchBtn.Update(isTouched, touchPos);
-        _arBtn.Update(isTouched, touchPos);
+        if (!ShowNoteBottom)
+        {
+            // Update buttons
+            _showStarredBtn.Update(isTouched, touchPos);
+            //_hidMapperBtn.Update(isTouched, touchPos);
+            _gameGuideBtn.Update(isTouched, touchPos);
+            _searchBtn.Update(isTouched, touchPos);
+            _arBtn.Update(isTouched, touchPos);
+            _AddFavoriteBtn.Update(isTouched, touchPos);
+            _InfoBtn.Update(isTouched, touchPos);
+            _keyboardBtn.Update(isTouched, touchPos);
+            _controllerBtn.Update(isTouched, touchPos);
+        }
         _toolsBtn.Update(isTouched, touchPos);
-        _AddFavoriteBtn.Update(isTouched, touchPos);
-        _InfoBtn.Update(isTouched, touchPos);
-        _keyboardBtn.Update(isTouched, touchPos);
-        _controllerBtn.Update(isTouched, touchPos);
 
         Window::BottomWindow.Update(isTouched, touchPos);
     }
@@ -904,7 +944,7 @@ namespace CTRPluginFramework
 
         if (item != nullptr)
         {
-			item->Flags.isStarred = false;
+            item->Flags.isStarred = false;
 
             int count = _starredConst->ItemsCount();
 
@@ -962,6 +1002,33 @@ namespace CTRPluginFramework
                 _folder = _folder->_Close(_selector, false);
             if (_starred == folder)
                 _starred = _starred->_Close(_selector, true);
+        }
+    }
+
+    void PluginMenuHome::UpdateNote(void)
+    {
+        if (!ShowNoteBottom)
+            return;
+
+        MenuFolderImpl* folder = _starMode ? _starred : _folder;
+
+        if ((*folder)[_selector]->IsFolder())
+        {
+            MenuFolderImpl* e = reinterpret_cast<MenuFolderImpl*>((*folder)[_selector]);
+            if (e->HasNoteChanged())
+            {
+                _noteTB.Update(e->firstName, e->GetNote());
+                e->HandledNoteChanges();
+            }
+        }
+        else if ((*folder)[_selector]->IsEntry())
+        {
+            MenuEntryImpl* e = reinterpret_cast<MenuEntryImpl*>((*folder)[_selector]);
+            if (e->HasNoteChanged())
+            {
+                _noteTB.Update(e->firstName, e->GetNote());
+                e->HandledNoteChanges();
+            }
         }
     }
 }

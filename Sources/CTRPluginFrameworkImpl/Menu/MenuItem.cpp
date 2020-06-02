@@ -50,7 +50,7 @@ namespace CTRPluginFramework
                 // Set Hidden flag to the folder
                 f->Flags.isVisible = false;
                 _DisableFolder(f);
-            }               
+            }
 
             // Else disable the entry
             else
@@ -68,7 +68,7 @@ namespace CTRPluginFramework
         // If the item is starred
         if (Flags.isStarred)
             PluginMenuImpl::UnStar(this);
-        
+
         // If it's an entry, disable it
         if (_type == MenuType::Entry)
         {
@@ -85,7 +85,6 @@ namespace CTRPluginFramework
 
             PluginMenuImpl::Refresh();
         }
-        
 
         // Remove the item from it's container
         if (_container != nullptr)
