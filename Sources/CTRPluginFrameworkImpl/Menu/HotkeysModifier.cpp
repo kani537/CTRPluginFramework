@@ -62,11 +62,18 @@ namespace CTRPluginFramework
     {
         while (!Window::BottomWindow.MustClose() || !_keys)
         {
+
             Controller::Update();
             _DrawTop();
             _DrawBottom();
             Renderer::EndFrame();
             _Update();
+
+            #define DPADX (Key::DPadLeft | Key::DPadRight)
+            #define DPADY (Key::DPadDown | Key::DPadUp)
+
+            u32 oldDpadX = _keys & (DPADX);
+            u32 oldDpadY = _keys & (DPADY);
 
             _keys = 0;
 
@@ -74,6 +81,28 @@ namespace CTRPluginFramework
             {
                 if (_checkboxs[i].GetState())
                     _keys |= ktable[i];
+            }
+
+            // Only keep new DPAD keys
+
+            if (_keys & DPADX != oldDpadX && oldDpadX != DPADX)
+            {
+                _keys ^= oldDpadX;
+
+                auto& checkbox = _checkboxs[GetIndex(oldDpadX)];
+
+                checkbox.SetState(false);
+                checkbox.Enable(false);
+            }
+
+            if (_keys & DPADY != oldDpadY && oldDpadY != DPADY)
+            {
+                _keys ^= oldDpadY;
+
+                auto& checkbox = _checkboxs[GetIndex(oldDpadY)];
+
+                checkbox.SetState(false);
+                checkbox.Enable(false);
             }
         }
     }
