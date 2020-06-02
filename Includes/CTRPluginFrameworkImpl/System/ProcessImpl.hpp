@@ -75,6 +75,7 @@ namespace CTRPluginFramework
         static MemInfo  GetMemRegion(const u32 address);
         static MemInfo  GetNextRegion(const MemInfo &region);
         static MemInfo  GetPreviousRegion(const MemInfo &region);
+        static std::vector<u32>& GetThreadLockBlacklist();
 
         static Handle       ProcessHandle;
         static u32          IsPaused;
@@ -90,6 +91,8 @@ namespace CTRPluginFramework
         static MemInfo      InvalidRegion;
         static Mutex        MemoryMutex;
         static std::vector<MemInfo>     MemRegions;
+
+        static std::vector<u32> blackListedLockThreads;
     };
 }
 

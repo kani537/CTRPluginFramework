@@ -9,20 +9,20 @@ extern 		Handle gspThreadEventHandle;
 
 namespace CTRPluginFramework
 {
-	Handle 	Process::GetHandle(void)
-	{
-		return ProcessImpl::ProcessHandle;
-	}
+    Handle 	Process::GetHandle(void)
+    {
+        return ProcessImpl::ProcessHandle;
+    }
 
-	u32     Process::GetProcessID(void)
-	{
-		return ProcessImpl::ProcessId;
-	}
+    u32     Process::GetProcessID(void)
+    {
+        return ProcessImpl::ProcessId;
+    }
 
-	u64     Process::GetTitleID(void)
-	{
-		return ProcessImpl::TitleId;
-	}
+    u64     Process::GetTitleID(void)
+    {
+        return ProcessImpl::TitleId;
+    }
 
     void    Process::GetTitleID(std::string &output)
     {
@@ -35,14 +35,14 @@ namespace CTRPluginFramework
     }
 
     void    Process::GetName(std::string &output)
-	{
-	    for (int i = 0; i < 8; )
+    {
+        for (int i = 0; i < 8; )
         {
             char c = ProcessImpl::CodeSet.processName[i++];
             if (c)
-		        output += c;
+                output += c;
         }
-	}
+    }
 
     u16     Process::GetVersion(void)
     {
@@ -77,31 +77,36 @@ namespace CTRPluginFramework
         return ProcessImpl::CodeSet.rwPages * 0x1000;
     }
 
+    std::vector<u32>& Process::GetThreadLockBlacklist()
+    {
+        return ProcessImpl::GetThreadLockBlacklist();
+    }
+
 
     bool    Process::IsPaused(void)
-	{
+    {
         return ProcessImpl::IsPaused > 0;
-	}
+    }
 
-    void    Process::Pause(void)
+    void    Process::Pause()
     {
         ProcessImpl::Pause(false);
     }
 
     void    Process::Play(const u32 frames)
-	{
+    {
         if (frames)
         {
             OSDImpl::ResumeFrame(frames);
         }
         else
             ProcessImpl::Play(false);
-	}
+    }
 
     bool 	Process::Patch(u32 	addr, void *patch, u32 length, void *original)
-	{
-		return ProcessImpl::PatchProcess(addr, static_cast<u8 *>(patch), length, static_cast<u8 *>(original));
-	}
+    {
+        return ProcessImpl::PatchProcess(addr, static_cast<u8 *>(patch), length, static_cast<u8 *>(original));
+    }
 
     bool    Process::Patch(u32 addr, u32 patch, void *original)
     {
@@ -117,7 +122,7 @@ namespace CTRPluginFramework
             size &= ~0xFFF;
         }
 
-    	//if (R_FAILED(svcControlProcessMemory(ProcessImpl::ProcessHandle, addr, addr, size, 6, perm)))
+        //if (R_FAILED(svcControlProcessMemory(ProcessImpl::ProcessHandle, addr, addr, size, 6, perm)))
         //	return false;
         svcControlProcess(ProcessImpl::ProcessHandle, PROCESSOP_SET_MMU_TO_RWX, 0, 0);
         return true;
@@ -125,14 +130,14 @@ namespace CTRPluginFramework
 
     bool     Process::ProtectRegion(u32 addr, int perm)
     {
-    	MemInfo 	minfo;
-    	PageInfo 	pinfo;
+        MemInfo 	minfo;
+        PageInfo 	pinfo;
 
-    	if (R_FAILED(svcQueryProcessMemory(&minfo, &pinfo, ProcessImpl::ProcessHandle, addr))) goto error;
-    	if (minfo.state == MEMSTATE_FREE) goto error;
-    	if (addr < minfo.base_addr || addr > minfo.base_addr + minfo.size) goto error;
+        if (R_FAILED(svcQueryProcessMemory(&minfo, &pinfo, ProcessImpl::ProcessHandle, addr))) goto error;
+        if (minfo.state == MEMSTATE_FREE) goto error;
+        if (addr < minfo.base_addr || addr > minfo.base_addr + minfo.size) goto error;
 
-    	return ProtectMemory(minfo.base_addr, minfo.size, perm);
+        return ProtectMemory(minfo.base_addr, minfo.size, perm);
     error:
         return false;
     }
