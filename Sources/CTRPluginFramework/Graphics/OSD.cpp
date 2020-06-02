@@ -2,12 +2,25 @@
 #include "CTRPluginFrameworkImpl/Graphics/OSDImpl.hpp"
 #include "CTRPluginFrameworkImpl/Graphics/PrivColor.hpp"
 #include "CTRPluginFrameworkImpl/Graphics/Renderer.hpp"
+#include "CTRPluginFramework/System/Process.hpp"
 
 #include <algorithm>
 #include "CTRPluginFrameworkImpl/System/Screen.hpp"
 
 namespace CTRPluginFramework
 {
+    void     Screen::FlushFramebuffer() const
+    {
+        u32     size = !IsTop ? Stride * 320 : Stride * 400;
+        void* addrL = (void*)LeftFramebuffer;
+        void* addrR = (void*)RightFramebuffer;
+        Handle hnd = Process::GetHandle();
+        svcInvalidateProcessDataCache(hnd, addrL, size);
+
+        if (IsTop && Is3DEnabled && addrR && addrR != addrL)
+            svcInvalidateProcessDataCache(hnd, addrR, size);
+    }
+
     u8      *Screen::GetFramebuffer(u32 posX, u32 posY, bool useRightFb) const
     {
         if (useRightFb && (!IsTop || !Is3DEnabled))
