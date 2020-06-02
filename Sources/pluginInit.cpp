@@ -100,10 +100,11 @@ void     OnLoadCro(void)
 
 namespace CTRPluginFramework
 {
-    void WEAK_SYMBOL PatchProcess(FwkSettings& settings) {}
-    void WEAK_SYMBOL  DebugFromStart(void);
-    void WEAK_SYMBOL  OnProcessExit(void) {}
-    void WEAK_SYMBOL  OnPluginSwap(void) {}
+    void WEAK_SYMBOL    PatchProcess(FwkSettings& settings) {}
+    void WEAK_SYMBOL    DebugFromStart(void);
+    void WEAK_SYMBOL    OnProcessExit(void) {}
+    void WEAK_SYMBOL    OnPluginToSwap(void) {}
+    void WEAK_SYMBOL    OnPluginFromSwap(void) {}
 
     namespace Heap
     {
@@ -298,7 +299,7 @@ namespace CTRPluginFramework
                 }
                 else if (event == PLG_ABOUT_TO_SWAP)
                 {
-                    OnPluginSwap();
+                    OnPluginToSwap();
 
                     // Un-map hook memory
                     svcUnmapProcessMemoryEx(CUR_PROCESS_HANDLE, 0x01E80000, 0x2000);
@@ -309,6 +310,8 @@ namespace CTRPluginFramework
                     // Re-map hook memory
                     svcMapProcessMemoryEx(CUR_PROCESS_HANDLE, 0x1E80000, CUR_PROCESS_HANDLE,
                         __ctru_heap + __ctru_heap_size, 0x2000);
+
+                    OnPluginFromSwap();
                 }
                 else if (event == PLG_ABOUT_TO_EXIT)
                 {

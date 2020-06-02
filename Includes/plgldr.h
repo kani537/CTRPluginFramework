@@ -61,6 +61,8 @@ Result  PLGLDR__DisplayMessage(const char *title, const char *body);
 Result  PLGLDR__DisplayErrMessage(const char *title, const char *body, u32 error);
 Result  PLGLDR__GetVersion(u32 *version);
 Result  PLGLDR__GetPluginPath(char *path);
+Result  PLGLDR__GetMenuOpenBlock(u32* outBlockAddress);
+Result  PLGLDR__SetSwapSettings(const char* swapPath, void* encFunc, void* decFunc, void* args);
 void    PLGLDR__SetEventCallback(OnPlgLdrEventCb_t cb);
 void    PLGLDR__Status(void);
 
