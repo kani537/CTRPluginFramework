@@ -246,7 +246,7 @@ namespace CTRPluginFramework
     {
         _hexadecimal = false;
         DisplayTopScreen = !text.empty();
-        _keyboard->Populate(options);
+        _keyboard->Populate(options, true);
         _isPopulated = !options.empty();
     }
 
@@ -255,7 +255,7 @@ namespace CTRPluginFramework
     {
         _hexadecimal = false;
         DisplayTopScreen = false;
-        _keyboard->Populate(options);
+        _keyboard->Populate(options, true);
         _isPopulated = !options.empty();
     }
 
@@ -279,9 +279,15 @@ namespace CTRPluginFramework
         _keyboard->SetCompareCallback(callback);
     }
 
-    void    Keyboard::Populate(const std::vector<std::string> &input)
+    void    Keyboard::Populate(const std::vector<std::string> &input, bool resetScroll)
     {
-        _keyboard->Populate(input);
+        _keyboard->Populate(input, resetScroll);
+        _isPopulated = true;
+    }
+
+    void    Keyboard::Populate(const std::vector<CustomIcon>& input, bool resetScroll)
+    {
+        _keyboard->Populate(input, resetScroll);
         _isPopulated = true;
     }
 
