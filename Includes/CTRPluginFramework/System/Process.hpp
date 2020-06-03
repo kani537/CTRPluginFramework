@@ -81,6 +81,12 @@ namespace CTRPluginFramework
          */
         static void     Pause();
 
+        using OnPauseResumeCallback = void(*)(bool goingToPause);
+        /**
+        * \brief Called when the game is paused by CTRPF
+        */
+        static OnPauseResumeCallback    OnPauseResume;
+
         /**
          * \brief Resume the process
          * \param frames If a number is specified the process will play x frames

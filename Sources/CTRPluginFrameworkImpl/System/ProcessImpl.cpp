@@ -98,6 +98,7 @@ namespace CTRPluginFramework
             return;
 
         Status |= Paused;
+        if (Process::OnPauseResume) Process::OnPauseResume(true);
 
         // Wait for the frame to be paused
         OSDImpl::WaitFramePaused();
@@ -129,6 +130,7 @@ namespace CTRPluginFramework
         if (!IsPaused)
         {
             Status &= ~Paused;
+            if (Process::OnPauseResume) Process::OnPauseResume(false);
             ScreenImpl::Top->Release();
             ScreenImpl::Bottom->Release();
             OSDImpl::ResumeFrame();
@@ -230,7 +232,7 @@ namespace CTRPluginFramework
         {
             MemInfo     memInfo;
             PageInfo    pageInfo;
-
+            
             if (R_SUCCEEDED(svcQueryProcessMemory(&memInfo, &pageInfo, ProcessHandle, addr)))
             {
                 // If region is FREE, IO, SHARED or LOCKED, skip it
