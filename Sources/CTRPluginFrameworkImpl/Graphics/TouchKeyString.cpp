@@ -126,10 +126,6 @@ namespace CTRPluginFramework
     {
         if (CanUse() && _execute)
         {
-<<<<<<< HEAD
-            if (_isIcon && !_icon.isEnabled) return (-1);
-=======
->>>>>>> dbcbe34... Make keyboards scrollable with buttons.
             _execute = false;
             return (1);
         }
