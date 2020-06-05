@@ -56,6 +56,7 @@ typedef void (*voidfn)(void);
     #define UNUSED
     #define DEPRECATED
     #define NAKED
+    #define NORETURN
 
 #else
 
@@ -75,6 +76,7 @@ typedef void (*voidfn)(void);
         #define DEPRECATED
     #endif
     #define NAKED __attribute__((naked))
+    #define NORETURN __attribute__((noreturn))
 
 #endif
 

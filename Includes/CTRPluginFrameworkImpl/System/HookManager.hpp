@@ -54,6 +54,12 @@ namespace CTRPluginFramework
         HookWrapper&    GetFreeHookWrapper(s32& index);
         AsmWrapper&     GetAsmWrapper(HookContext *ctx);
 
+        static void            Lock();
+        static void            Unlock();
+
+        static void            PrepareToUnmapMemory();
+        static void            RecoverFromUnmapMemory();
+
         Mutex                       _mutex{};
         HookWrapper *               _hookWrappers{reinterpret_cast<HookWrapper *>(0x1E80000)};
         std::vector<AsmWrapper>     _asmWrappers{};

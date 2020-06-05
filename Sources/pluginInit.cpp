@@ -4,6 +4,7 @@
 #include "CTRPluginFramework.hpp"
 #include "CTRPluginFrameworkImpl/Graphics/Font.hpp"
 #include "CTRPluginFrameworkImpl/System/Screenshot.hpp"
+#include "CTRPluginFrameworkImpl/System/HookManager.hpp"
 #include "csvc.h"
 #include "plgldr.h"
 
@@ -303,6 +304,8 @@ namespace CTRPluginFramework
                     OnPluginToSwap();
 
                     // Un-map hook memory
+                    HookManager::Lock();
+                    HookManager::PrepareToUnmapMemory();
                     svcUnmapProcessMemoryEx(CUR_PROCESS_HANDLE, 0x01E80000, 0x2000);
 
                     // Reply and wait
@@ -311,6 +314,9 @@ namespace CTRPluginFramework
                     // Re-map hook memory
                     svcMapProcessMemoryEx(CUR_PROCESS_HANDLE, 0x1E80000, CUR_PROCESS_HANDLE,
                         __ctru_heap + __ctru_heap_size, 0x2000);
+
+                    HookManager::RecoverFromUnmapMemory();
+                    HookManager::Unlock();
 
                     OnPluginFromSwap();
                 }
@@ -333,6 +339,8 @@ namespace CTRPluginFramework
                     srvExit();
 
                     // Un-map hook wrapper memory
+                    HookManager::Lock();
+                    HookManager::PrepareToUnmapMemory();
                     svcUnmapProcessMemoryEx(CUR_PROCESS_HANDLE, 0x01E80000, 0x2000);
 
                     // This function do not return and exit the thread
@@ -487,6 +495,11 @@ namespace CTRPluginFramework
         if (__WaitForDebug)
             __WaitForDebug();
 
+        // Set ProcessImpl::MainThreadTls
+        ProcessImpl::MainThreadTls = (u32)getThreadLocalStorage();
+        // Set exception handlers
+        ProcessImpl::EnableExceptionHandlers();
+
         // Create event
         svcCreateEvent(&g_continueGameEvent, RESET_ONESHOT);
         // Start ctrpf's primary thread
@@ -495,8 +508,6 @@ namespace CTRPluginFramework
         svcWaitSynchronization(g_continueGameEvent, U64_MAX);
         // Close the event
         svcCloseHandle(g_continueGameEvent);
-        // Set ProcessImpl::MainThreadTls
-        ProcessImpl::MainThreadTls = (u32)getThreadLocalStorage();
 
         return 0;
     }

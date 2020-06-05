@@ -18,31 +18,6 @@ namespace CTRPluginFramework
     u8 stack[0x1000] ALIGN(8);
     ERRF_ExceptionData exceptionData;
 
-    static void NAKED __RFE(CpuRegisters *regs)
-    {
-#ifndef _MSC_VER
-        __asm__ __volatile__(
-	    "ldr sp,    [r0,#0x34]  @sp \n"
-	    "ldr r1,    [r0, #0x3c] @pc \n"
-	    "str r1,    [sp, #-4]!      \n"
-	    "ldr r1,    [r0, #0x38] @lr \n"
-	    "str r1,    [sp, #-4]!      \n"
-	    "mov r2,    #0x30           \n"
-
-    "_store_reg_loop:               \n"
-	    "ldr r1,    [r0, r2]        \n"
-	    "str r1,    [sp, #-4]!      \n"
-	    "sub r2,    r2, #4          \n"
-	    "cmp r2,    #0              \n"
-	    "bge        _store_reg_loop \n"
-
-	    "ldr r1,    [r0, #0x40]     \n"
-	    "msr cpsr,  r1              \n"
-	    "ldmfd sp!, {r0-r12, lr, pc}\n"
-        );
-#endif
-    }
-
     static u32      GetWFAR(void)
     {
         u32     (*K__GetWFAR)(void) = [](void)
@@ -188,7 +163,7 @@ namespace CTRPluginFramework
 			    regs->pc += 1;
 		    }
         }
-        __RFE(regs);
+        ProcessImpl::ReturnFromException(regs);
     }
 
     void    __ExceptionHandler(ERRF_ExceptionInfo* excep, CpuRegisters* regs)

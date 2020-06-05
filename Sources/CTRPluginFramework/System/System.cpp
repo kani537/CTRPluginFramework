@@ -50,4 +50,10 @@ namespace CTRPluginFramework
         if (_minor < minor) return (false);
         return (_revision >= revision);
     }
+
+    void    System::Reboot(void)
+    {
+        svcKernelSetState(7);
+        for (;;);
+    }
 }
