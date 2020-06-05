@@ -80,11 +80,6 @@ namespace CTRPluginFramework
         return ProcessImpl::CodeSet.rwPages * 0x1000;
     }
 
-    std::vector<u32> &Process::GetThreadLockBlacklist()
-    {
-        return ProcessImpl::GetThreadLockBlacklist();
-    }
-
     bool Process::IsPaused(void)
     {
         return ProcessImpl::IsPaused > 0;

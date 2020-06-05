@@ -64,12 +64,6 @@ namespace CTRPluginFramework
         static u32      GetRwDataSize(void);
 
         /**
-         * \brief All the thread IDs appended to this vector won't be locked on pause
-         * \return Reference to vector of thread IDs
-         */
-        static std::vector<u32>& GetThreadLockBlacklist();
-
-        /**
          * \brief Check if the process is currently paused by the framework\n
          * (Like when a Keyboard, MessageBox or the menu is open)
          * \return true if the process is paused

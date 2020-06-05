@@ -75,7 +75,6 @@ namespace CTRPluginFramework
         static MemInfo  GetMemRegion(const u32 address);
         static MemInfo  GetNextRegion(const MemInfo &region);
         static MemInfo  GetPreviousRegion(const MemInfo &region);
-        static std::vector<u32>& GetThreadLockBlacklist();
         static void ExceptionHandler(ERRF_ExceptionInfo* excep, CpuRegisters* regs) NORETURN;
 
         static Handle       ProcessHandle;
@@ -92,7 +91,6 @@ namespace CTRPluginFramework
         static MemInfo      InvalidRegion;
         static Mutex        MemoryMutex;
         static std::vector<MemInfo>     MemRegions;
-        static std::vector<u32> blackListedLockThreads;
 
         static u32          exceptionCount;
         static void         EnableExceptionHandlers();
