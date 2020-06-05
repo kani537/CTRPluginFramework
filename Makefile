@@ -12,11 +12,6 @@ include $(DEVKITARM)/3ds_rules
 TARGET		:= 	$(notdir $(CURDIR))
 BUILD		:= 	Build
 INCLUDES	:= 	Includes \
-				Includes\ctrulib \
-				Includes\ctrulib\allocator \
-				Includes\ctrulib\gpu \
-				Includes\ctrulib\services \
-				Includes\ctrulib\util \
 				Includes\lodepng
 
 SOURCES 	:= 	Sources \
@@ -33,13 +28,13 @@ SOURCES 	:= 	Sources \
 				Sources\CTRPluginFrameworkImpl\Menu \
 				Sources\CTRPluginFrameworkImpl\Search \
 				Sources\CTRPluginFrameworkImpl\System \
-				Sources\ctrulib \
-				Sources\ctrulib\allocator \
-				Sources\ctrulib\gpu \
-				Sources\ctrulib\services \
-				Sources\ctrulib\system \
-				Sources\ctrulib\util\utf \
-				Sources\ctrulib\util\rbtree \
+				Sources\ctrulibExtension \
+				Sources\ctrulibExtension\allocator \
+				Sources\ctrulibExtension\gpu \
+				Sources\ctrulibExtension\services \
+				Sources\ctrulibExtension\system \
+				Sources\ctrulibExtension\util\utf \
+				Sources\ctrulibExtension\util\rbtree \
 				Sources\lodepng
 
 IP			:=  5

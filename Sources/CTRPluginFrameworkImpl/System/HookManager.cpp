@@ -1,7 +1,6 @@
 #include "CTRPluginFrameworkImpl/System/HookManager.hpp"
 #include "CTRPluginFramework/System/Process.hpp"
-#include "ctrulib/result.h"
-#include "ctrulib/svc.h"
+#include "3ds.h"
 #include "csvc.h"
 #include "CTRPluginFramework/Menu/MessageBox.hpp"
 #include "CTRPluginFrameworkImpl/System/Screen.hpp"
@@ -147,7 +146,7 @@ static inline u32 ARMBranch(const void *src, const void *dst)
 HookResult  HookManager::ApplyHook(HookContext &ctx)
 {
     HookManager&    manager = _singleton;
-    Lock            lock(manager._mutex);
+    CTRPluginFramework::Lock            lock(manager._mutex);
 
     // Check if we have enough hooks unused
     if (manager._asmWrappers.size() >= MAX_HOOKS)
@@ -202,7 +201,7 @@ HookResult  HookManager::ApplyHook(HookContext &ctx)
 HookResult    HookManager::DisableHook(HookContext &ctx)
 {
     HookManager&    manager = _singleton;
-    Lock            lock(manager._mutex);
+    CTRPluginFramework::Lock            lock(manager._mutex);
 
     if (ctx.index > MAX_HOOKS)
         return HookResult::Success;
@@ -234,7 +233,7 @@ HookResult    HookManager::DisableHook(HookContext &ctx)
 
 AsmWrapper&    HookManager::GetFreeAsmWrapper(void)
 {
-    Lock    lock(_mutex);
+    CTRPluginFramework::Lock    lock(_mutex);
 
     for (AsmWrapper& asmWrapper : _asmWrappers)
         if (asmWrapper.ctx == nullptr)
@@ -246,7 +245,7 @@ AsmWrapper&    HookManager::GetFreeAsmWrapper(void)
 
 HookWrapper&    HookManager::GetFreeHookWrapper(s32& index)
 {
-    Lock    lock(_mutex);
+    CTRPluginFramework::Lock    lock(_mutex);
 
     HookWrapper *begin = _hookWrappers;
     HookWrapper *end = begin + MAX_HOOKS;
@@ -263,7 +262,7 @@ HookWrapper&    HookManager::GetFreeHookWrapper(s32& index)
 
 AsmWrapper&     HookManager::GetAsmWrapper(HookContext *ctx)
 {
-    Lock    lock(_mutex);
+    CTRPluginFramework::Lock    lock(_mutex);
 
     for (AsmWrapper& asmWrapper : _asmWrappers)
         if (asmWrapper.ctx == ctx)
@@ -272,4 +271,48 @@ AsmWrapper&     HookManager::GetAsmWrapper(HookContext *ctx)
     // We didn't found the specified AsmWrapper
     svcBreak(USERBREAK_ASSERT);
     return _asmWrappers.back();
+}
+
+void HookManager::Lock()
+{
+    _singleton._mutex.Lock();
+}
+
+void HookManager::Unlock()
+{
+    _singleton._mutex.Unlock();
+}
+
+void HookManager::PrepareToUnmapMemory()
+{
+    CTRPluginFramework::Lock lock(_singleton._mutex);
+
+    HookWrapper* begin = _singleton._hookWrappers;
+    HookWrapper* end = begin + MAX_HOOKS;
+
+    svcInvalidateEntireInstructionCache();
+
+    for (; begin != end; ++begin) {
+        if (!begin->ctx) continue;
+        HookContext& ctx = *begin->ctx;
+        *(vu32*)ctx.targetAddress = ctx.overwrittenInstr;
+        svcFlushProcessDataCache(Process::GetHandle(), (void*)ctx.targetAddress, 4);
+    }
+}
+
+void HookManager::RecoverFromUnmapMemory()
+{
+    CTRPluginFramework::Lock lock(_singleton._mutex);
+
+    HookWrapper* begin = _singleton._hookWrappers;
+    HookWrapper* end = begin + MAX_HOOKS;
+
+    svcInvalidateEntireInstructionCache();
+
+    for (; begin != end; ++begin) {
+        if (!begin->ctx) continue;
+        HookContext& ctx = *begin->ctx;
+        *(vu32*)ctx.targetAddress = ARMBranch((void*)ctx.targetAddress, &begin->jumpCode);
+        svcFlushProcessDataCache(Process::GetHandle(), (void*)ctx.targetAddress, 4);
+    }
 }

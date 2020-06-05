@@ -48,6 +48,7 @@ namespace CTRPluginFramework
         }
 
         std::string     name;
+        std::string     firstName;
         std::string     note;
 
         void    Hide(void);

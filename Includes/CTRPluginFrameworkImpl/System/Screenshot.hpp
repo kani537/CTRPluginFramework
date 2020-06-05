@@ -4,7 +4,7 @@
 #include "types.h"
 #include "CTRPluginFramework/System/Clock.hpp"
 #include "CTRPluginFramework/System/Task.hpp"
-#include "ctrulib/synchronization.h"
+#include <3ds.h>
 
 #include <string>
 
@@ -13,6 +13,7 @@ namespace CTRPluginFramework
 {
     class Screenshot
     {
+        using OnScreenshotCallback = bool (*)(void);
     public:
 
         struct ImageBuffer
@@ -38,6 +39,8 @@ namespace CTRPluginFramework
         static std::string  Path;
         static std::string  Prefix;
         static ImageBuffer *ImgBuffer;
+
+        static OnScreenshotCallback ScreenshotCallback;
 
     private:
 

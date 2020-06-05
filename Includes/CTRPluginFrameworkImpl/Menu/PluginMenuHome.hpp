@@ -16,7 +16,7 @@ namespace CTRPluginFramework
     {
         using EventList = std::vector<Event>;
     public:
-        PluginMenuHome(std::string &name);
+        PluginMenuHome(std::string &name, bool ShowNoteBottom);
         ~PluginMenuHome(){}
 
         // Return true if the Close Button is pressed, else false
@@ -28,6 +28,10 @@ namespace CTRPluginFramework
 
         void    AddPluginVersion(u32 version);
         void    Close(MenuFolderImpl *folder);
+
+        void    UpdateNote(void);
+
+        bool    ShowNoteBottom;
 
     private:
         friend class PluginMenuImpl;

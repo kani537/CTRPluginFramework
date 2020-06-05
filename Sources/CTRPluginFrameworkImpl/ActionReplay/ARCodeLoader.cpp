@@ -1,5 +1,5 @@
 #include "types.h"
-#include "ctrulib/util/utf.h"
+#include "3ds.h"
 #include "CTRPluginFramework/System/Process.hpp"
 #include "CTRPluginFramework/System/File.hpp"
 #include "CTRPluginFramework/Utils.hpp"

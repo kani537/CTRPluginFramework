@@ -1,7 +1,7 @@
 #include "CTRPluginFramework/System/Thread.hpp"
 #include "CTRPluginFramework/System/Mutex.hpp"
 #include "CTRPluginFramework/System/Lock.hpp"
-#include "../../ctrulib/internal.h"
+#include "ctrulibExtension.h"
 
 #include <cstdlib>
 #include <cstring>
@@ -130,7 +130,7 @@ namespace CTRPluginFramework
         if (_state == RUNNING)
             return 0;
 
-        _thread->arg = arg;
+        ((CThread_tag*)_thread)->arg = arg;
         Result res = __startThread(_thread, priority, affinity);
 
         if (R_SUCCEEDED(res))
@@ -154,7 +154,7 @@ namespace CTRPluginFramework
     Handle ThreadEx::GetHandle(void)
     {
         if (_thread)
-            return _thread->handle;
+            return ((CThread_tag*)_thread)->handle;
         return 0;
     }
 

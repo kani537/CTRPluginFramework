@@ -16,10 +16,10 @@ namespace CTRPluginFramework
 {
     PluginMenuImpl  *PluginMenuImpl::_runningInstance = nullptr;
 
-    PluginMenuImpl::PluginMenuImpl(std::string &name, std::string &about) :
+    PluginMenuImpl::PluginMenuImpl(std::string &name, std::string &about, u32 menuType) :
         _hexEditor(0x00100000),
         _actionReplay{ new PluginMenuActionReplay() },
-        _home(new PluginMenuHome(name)),
+        _home(new PluginMenuHome(name, (menuType == 1))),
         _search(new PluginMenuSearch(_hexEditor)),
         _tools(new PluginMenuTools(about, _hexEditor)),
         _executeLoop(new PluginMenuExecuteLoop()),
@@ -29,6 +29,7 @@ namespace CTRPluginFramework
     {
         SyncOnFrame = false;
         _isOpen = false;
+        _aboutToOpen = false;
         _wasOpened = false;
         _pluginRun = true;
         _showMsg = true;
@@ -58,12 +59,23 @@ namespace CTRPluginFramework
                 add = false;
 
         if (add)
+        {
             _callbacks.push_back(callback);
+        }
     }
 
     void    PluginMenuImpl::RemoveCallback(CallbackPointer callback)
     {
-        _callbacks.erase(std::remove(_callbacks.begin(), _callbacks.end(), callback), _callbacks.end());
+        bool add = true;
+
+        for (CallbackPointer cb : _callbacksTrashBin)
+            if (cb == callback)
+                add = false;
+
+        if (add)
+        {
+            _callbacksTrashBin.push_back(callback);
+        }
     }
 
     using KeyVector = std::vector<Key>;
@@ -218,25 +230,28 @@ namespace CTRPluginFramework
                     }
                     else ///< Open menu
                     {
-                        // Check for OnOpening callback opening validation
-                        if (OnOpening == nullptr || OnOpening())
+                        bool continueOpening = true;
+
+                        if (OnOpening != nullptr)
+                            continueOpening = OnOpening();
+
+                        if (continueOpening)
                         {
-                            PluginMenuExecuteLoop::Lock();
-                            PluginMenuExecuteLoop::LockAR();
                             ProcessImpl::Pause(true);
-                            _isOpen = true;
+
+                            _aboutToOpen = _isOpen = true;
                             _wasOpened = true;
+
+                            while (Touch::IsDown())
+                                Controller::Update();
 
                             // Refresh HexEditor data
                             _hexEditor.Refresh();
                         }
-
                         // Clean the event list
-                        while (Touch::IsDown())
-                            Controller::Update();
                         eventList.clear();
                         _forceOpen = false;
-                    }
+                     }
                     inputClock.Restart();
                     continue;
                 }
@@ -250,9 +265,11 @@ namespace CTRPluginFramework
             if (_isOpen)
             {
                 if (mode == 0)
-                { /* Home */
+                {   /* Home */
                     if (OnFrame != nullptr)
                         OnFrame(delta);
+                    if (_aboutToOpen)
+                        home.UpdateNote();
                     shouldClose = home(eventList, mode, delta);
                 }
                 /*
@@ -282,9 +299,10 @@ namespace CTRPluginFramework
                     if (tools(eventList, delta))
                         mode = 0;
                 }
-
+                _aboutToOpen = false;
                 // End frame
                 Renderer::EndFrame(shouldClose);
+
             __skip:
                 if (OnFirstOpening != nullptr)
                 {
@@ -332,9 +350,33 @@ namespace CTRPluginFramework
                     PluginMenuExecuteLoop::ExecuteAR();
                 }
 
+                // Remove callbacks in the trash bin
+                if (_callbacksTrashBin.size())
+                {
+                    _callbacks.erase(std::remove_if(_callbacks.begin(), _callbacks.end(),
+                                    [](CallbackPointer cb)
+                                    {
+                                        auto&   trashbin = _runningInstance->_callbacksTrashBin;
+                                        auto    foundIter = std::remove(trashbin.begin(), trashbin.end(), cb);
+
+                                        if (foundIter == trashbin.end())
+                                            return false;
+
+                                        trashbin.erase(foundIter);
+                                        return true;
+                                    }),
+                                     _callbacks.end());
+
+                    _callbacksTrashBin.clear();
+                }
+
                 // Execute callbacks before cheats
-                for (auto cb : _callbacks)
-                    if (cb) cb(); ///< Guard against null
+
+                for (int i = 0; i < _callbacks.size(); i++) {
+                    auto cb = _callbacks[i];
+                    if (cb) cb();
+                    if (i < _callbacks.size() && _callbacks[i] != cb) i--; // This callback removed itself
+                }
 
                 // Execute activated cheats
                 PluginMenuExecuteLoop::ExecuteBuiltin();

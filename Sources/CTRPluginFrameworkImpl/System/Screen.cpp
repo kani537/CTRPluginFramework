@@ -4,11 +4,10 @@
 #include "CTRPluginFrameworkImpl/System.hpp"
 #include "CTRPluginFramework/System/System.hpp"
 #include "CTRPluginFramework/Utils/Utils.hpp"
-#include "ctrulib/allocator/mappable.h"
+#include "3ds.h"
 #include "CTRPluginFrameworkImpl/Preferences.hpp"
 #include "csvc.h"
-#include "ctrulib/ipc.h"
-#include "ctrulib/srv.h"
+#include "3ds.h"
 
 namespace CTRPluginFramework
 {

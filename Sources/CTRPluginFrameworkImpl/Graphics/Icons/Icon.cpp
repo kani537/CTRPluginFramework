@@ -1,5 +1,5 @@
 #include "types.h"
-#include "ctrulib/services/gspgpu.h"
+#include "3ds.h"
 
 #include "CTRPluginFramework/Graphics.hpp"
 #include "CTRPluginFrameworkImpl/Graphics.hpp"
@@ -58,6 +58,9 @@ namespace CTRPluginFramework
     extern "C" unsigned char *TrashFilled25;
     extern "C" unsigned char *Unsplash15;
     extern "C" unsigned char *UserManualFilled15;
+    extern "C" unsigned char *DefaultKeyboardCustomIcon;
+
+    CustomIcon Icon::DefaultCustomIcon{(CustomIcon::Pixel*) DefaultKeyboardCustomIcon, 30, 30, true};
 
     #define RGBA8 GSP_RGBA8_OES
 
@@ -538,5 +541,10 @@ namespace CTRPluginFramework
     int     Icon::DrawUnsplash(int posX, int posY)
     {
         return (DrawImg(Unsplash15, posX, posY, 15, 15));
+    }
+
+    int     Icon::DrawCustomIcon(const CustomIcon& icon, int posX, int posY)
+    {
+        return (DrawImg((u8*)icon.pixArray, posX, posY, icon.sizeX, icon.sizeY));
     }
 }

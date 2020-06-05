@@ -2,6 +2,7 @@
 #define CTRPLUGINFRAMEWORK_HPP
 
 #include "types.h"
+#include "ctrulibExtension.h"
 
 using CallbackPointer = void (*)(void);
 

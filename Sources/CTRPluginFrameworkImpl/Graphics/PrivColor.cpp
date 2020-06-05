@@ -3,7 +3,7 @@
 #include "CTRPluginFrameworkImpl/Graphics/Renderer.hpp"
 #include "CTRPluginFrameworkImpl/System/Screen.hpp"
 #include "CTRPluginFrameworkImpl/Graphics/PrivColor.hpp"
-#include "ctrulib/services/gspgpu.h"
+#include "3ds.h"
 
 namespace CTRPluginFramework
 {

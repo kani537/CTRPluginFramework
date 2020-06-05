@@ -3,7 +3,7 @@
 #include "CTRPluginFrameworkImpl/Graphics.hpp"
 #include "CTRPluginFramework/Graphics.hpp"
 #include "CTRPluginFrameworkImpl/System/Screen.hpp"
-#include "ctrulib/gpu/enums.h"
+#include "3ds.h"
 #include <algorithm>
 #include <queue>
 

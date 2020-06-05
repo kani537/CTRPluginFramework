@@ -1,5 +1,5 @@
 #include "types.h"
-#include "ctrulib/services/gspgpu.h"
+#include "3ds.h"
 
 #include "CTRPluginFramework/Graphics.hpp"
 #include "CTRPluginFrameworkImpl/Graphics.hpp"
@@ -11,7 +11,7 @@
 
 #include "csvc.h"
 
-#define FPS 1
+#define FPS 0
 
 namespace CTRPluginFramework
 {
@@ -81,6 +81,7 @@ namespace CTRPluginFramework
             ScreenImpl::Top->Copy();
             ScreenImpl::Bottom->Copy();
         }
+
     }
 
     void    Renderer::MenuSelector(int posX, int posY, int width, int height)

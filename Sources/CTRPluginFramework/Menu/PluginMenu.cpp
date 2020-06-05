@@ -1,27 +1,28 @@
 #include "CTRPluginFramework/Menu.hpp"
 #include "CTRPluginFrameworkImpl/Menu.hpp"
 #include "CTRPluginFrameworkImpl/Menu/PluginMenuImpl.hpp"
+#include "CTRPluginFrameworkImpl/System/Screenshot.hpp"
 
 namespace CTRPluginFramework
 {
     static PluginMenu   *g_runningInstance = nullptr;
 
-    PluginMenu::PluginMenu(std::string name, std::string about) :
-        _menu(new PluginMenuImpl(name, about)), OnFirstOpening{ nullptr }, OnOpening{ nullptr }, OnNewFrame{ nullptr }
+    PluginMenu::PluginMenu(std::string name, std::string about, u32 menuType) :
+        _menu(new PluginMenuImpl(name, about, menuType)), OnFirstOpening{ nullptr }, OnOpening{ nullptr }, OnNewFrame{ nullptr }
     {
     }
 
-    PluginMenu::PluginMenu(std::string name, void *about, DecipherPointer func) :
+    PluginMenu::PluginMenu(std::string name, void *about, DecipherPointer func, u32 menuType) :
         OnFirstOpening{ nullptr }, OnOpening{ nullptr }, OnNewFrame{ nullptr }
     {
         std::string aboutStr = "";
         func(aboutStr, about);
 
-        _menu = std::unique_ptr<PluginMenuImpl>(new PluginMenuImpl(name, aboutStr));
+        _menu = std::unique_ptr<PluginMenuImpl>(new PluginMenuImpl(name, aboutStr, menuType));
     }
 
-    PluginMenu::PluginMenu(std::string name, u32 major, u32 minor, u32 revision, std::string about) :
-        _menu(new PluginMenuImpl(name, about)), OnFirstOpening{ nullptr }, OnOpening{ nullptr }, OnNewFrame{ nullptr }
+    PluginMenu::PluginMenu(std::string name, u32 major, u32 minor, u32 revision, std::string about, u32 menuType) :
+        _menu(new PluginMenuImpl(name, about, menuType)), OnFirstOpening{ nullptr }, OnOpening{ nullptr }, OnNewFrame{ nullptr }
     {
         u32 version = (major & 0xFF) | ((minor & 0xFF) << 8) | ((revision & 0xFF) << 16);
 
@@ -116,10 +117,10 @@ namespace CTRPluginFramework
         _menu->SetHexEditorState(isEnabled);
     }
 
-    void    PluginMenu::ShowWelcomeMessage(bool showMsg) const
-    {
-        _menu->ShowWelcomeMessage(showMsg);
-    }
+	void    PluginMenu::ShowWelcomeMessage(bool showMsg) const
+	{
+		_menu->ShowWelcomeMessage(showMsg);
+	}
 
     bool    PluginMenu::IsOpen(void)
     {
@@ -136,6 +137,11 @@ namespace CTRPluginFramework
         return (g_runningInstance);//(const_cast<PluginMenu &>(*g_runningInstance));
     }
 
+	void PluginMenu::ForceOpen(void)
+	{
+		PluginMenuImpl::ForceOpen();
+	}
+
     void    PluginMenu::SynchronizeWithFrame(const bool useSync)
     {
         _menu->SyncOnFrame = useSync;
@@ -144,5 +150,29 @@ namespace CTRPluginFramework
     std::string &   PluginMenu::Title(void)
     {
         return _menu->_home->_root->name;
+    }
+    std::string &       PluginMenu::ScreenshotPath(void)
+    {
+        return Screenshot::Path;
+    }
+    std::string &       PluginMenu::ScreenshotFilePrefix(void)
+    {
+        return Screenshot::Prefix;
+    }
+
+    void                PluginMenu::ScreenshotUpdatePaths(void)
+    {
+        Screenshot::UpdateFileCount();
+    }
+
+    void                PluginMenu::ScreenshotSettings(bool** enabled, u32** hotkey)
+    {
+        *enabled = &Screenshot::IsEnabled;
+        *hotkey = &Screenshot::Hotkeys;
+    }
+
+    void                PluginMenu::ScreenshotSetcallback(OnScreenshotCallback callback)
+    {
+        Screenshot::ScreenshotCallback = callback;
     }
 }

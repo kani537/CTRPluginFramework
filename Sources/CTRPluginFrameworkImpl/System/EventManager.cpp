@@ -1,6 +1,6 @@
 #include "types.h"
 
-#include "ctrulib/services/hid.h"
+#include "3ds.h"
 
 #include <queue>
 #include "CTRPluginFramework/System.hpp"

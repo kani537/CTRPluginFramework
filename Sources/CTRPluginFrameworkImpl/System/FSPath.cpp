@@ -1,7 +1,7 @@
 #include "CTRPluginFrameworkImpl/System/FSPath.hpp"
 #include "CTRPluginFramework/System/Lock.hpp"
 
-#include "ctrulib/util/utf.h"
+#include "3ds.h"
 
 namespace CTRPluginFramework
 {

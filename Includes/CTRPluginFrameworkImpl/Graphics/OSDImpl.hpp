@@ -2,13 +2,13 @@
 #define CTRPLUGINFRAMEWORKIMPL_OSDIMPL_HPP
 
 #include "types.h"
+#include "3ds.h"
 
 #include "CTRPluginFramework/Graphics/OSD.hpp"
 #include "CTRPluginFramework/System/Hook.hpp"
 #include "CTRPluginFramework/Graphics/Color.hpp"
 #include "CTRPluginFramework/System/Clock.hpp"
 #include "CTRPluginFrameworkImpl/Graphics/FloatingButton.hpp"
-#include "../../../Sources/ctrulib/internal.h"
 
 #include <string>
 #include <vector>
@@ -64,6 +64,7 @@ namespace CTRPluginFramework
         static Screen           BottomScreen;
         static std::vector<OSDMessage*>    Notifications;
         static std::vector<OSDCallback>    Callbacks;
+        static std::vector<OSDCallback>    CallbacksTrashBin;
 
         static bool             IsFramePaused;
         static LightEvent       OnNewFrameEvent;

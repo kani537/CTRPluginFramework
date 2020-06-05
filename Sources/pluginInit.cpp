@@ -1,8 +1,10 @@
 #include "3DS.h"
+#include "ctrulibExtension.h"
 #include "CTRPluginFrameworkImpl.hpp"
 #include "CTRPluginFramework.hpp"
 #include "CTRPluginFrameworkImpl/Graphics/Font.hpp"
 #include "CTRPluginFrameworkImpl/System/Screenshot.hpp"
+#include "CTRPluginFrameworkImpl/System/HookManager.hpp"
 #include "csvc.h"
 #include "plgldr.h"
 
@@ -24,8 +26,8 @@ extern "C"
     s32     PLGLDR__FetchEvent(void);
     void    PLGLDR__Reply(s32 event);
 
-    u32 __ctru_heap;
-    u32 __ctru_heap_size;
+    extern u32 __ctru_heap;
+    extern u32 __ctru_heap_size;
 }
 
 using CTRPluginFramework::Hook;
@@ -100,10 +102,11 @@ void     OnLoadCro(void)
 
 namespace CTRPluginFramework
 {
-    void WEAK_SYMBOL PatchProcess(FwkSettings& settings) {}
-    void WEAK_SYMBOL  DebugFromStart(void);
-    void WEAK_SYMBOL  OnProcessExit(void) {}
-    void WEAK_SYMBOL  OnPluginSwap(void) {}
+    void WEAK_SYMBOL    PatchProcess(FwkSettings& settings) {}
+    void WEAK_SYMBOL    DebugFromStart(void);
+    void WEAK_SYMBOL    OnProcessExit(void) {}
+    void WEAK_SYMBOL    OnPluginToSwap(void) {}
+    void WEAK_SYMBOL    OnPluginFromSwap(void) {}
 
     namespace Heap
     {
@@ -298,9 +301,11 @@ namespace CTRPluginFramework
                 }
                 else if (event == PLG_ABOUT_TO_SWAP)
                 {
-                    OnPluginSwap();
+                    OnPluginToSwap();
 
                     // Un-map hook memory
+                    HookManager::Lock();
+                    HookManager::PrepareToUnmapMemory();
                     svcUnmapProcessMemoryEx(CUR_PROCESS_HANDLE, 0x01E80000, 0x2000);
 
                     // Reply and wait
@@ -309,6 +314,11 @@ namespace CTRPluginFramework
                     // Re-map hook memory
                     svcMapProcessMemoryEx(CUR_PROCESS_HANDLE, 0x1E80000, CUR_PROCESS_HANDLE,
                         __ctru_heap + __ctru_heap_size, 0x2000);
+
+                    HookManager::RecoverFromUnmapMemory();
+                    HookManager::Unlock();
+
+                    OnPluginFromSwap();
                 }
                 else if (event == PLG_ABOUT_TO_EXIT)
                 {
@@ -329,6 +339,8 @@ namespace CTRPluginFramework
                     srvExit();
 
                     // Un-map hook wrapper memory
+                    HookManager::Lock();
+                    HookManager::PrepareToUnmapMemory();
                     svcUnmapProcessMemoryEx(CUR_PROCESS_HANDLE, 0x01E80000, 0x2000);
 
                     // This function do not return and exit the thread
@@ -391,7 +403,7 @@ namespace CTRPluginFramework
         svcSignalEvent(g_keepEvent);
 
         // Reduce thread priority
-        svcSetThreadPriority(threadGetCurrent()->handle, FwkSettings::Get().ThreadPriority);
+        svcSetThreadPriority(threadGetHandle(threadGetCurrent()), FwkSettings::Get().ThreadPriority);
 
         // Update memory layout
         ProcessImpl::UpdateMemRegions();
@@ -405,7 +417,7 @@ namespace CTRPluginFramework
     void  ThreadExit(void)
     {
         // In which thread are we ?
-        if (reinterpret_cast<u32>(threadGetCurrent()->stacktop) < 0x07000000)
+        if (reinterpret_cast<u32>(((CThread_tag*)threadGetCurrent())->stacktop) < 0x07000000)
         {
             // ## Main Thread ##
 
@@ -454,8 +466,7 @@ namespace CTRPluginFramework
         REG32(0x10202204) = 0;
     }
 
-    extern "C"
-    int   __entrypoint(int arg)
+    void WEAK_SYMBOL __WaitForDebug()
     {
         // A little debug routine to wait for debugger to connect
         u32 debug = 0;
@@ -476,6 +487,18 @@ namespace CTRPluginFramework
                 stall = HID_PAD & BUTTON_X;
             } while (!stall);
         }
+    }
+
+    extern "C"
+    int   __entrypoint(int arg)
+    {
+        if (__WaitForDebug)
+            __WaitForDebug();
+
+        // Set ProcessImpl::MainThreadTls
+        ProcessImpl::MainThreadTls = (u32)getThreadLocalStorage();
+        // Set exception handlers
+        ProcessImpl::EnableExceptionHandlers();
 
         // Create event
         svcCreateEvent(&g_continueGameEvent, RESET_ONESHOT);
@@ -485,8 +508,6 @@ namespace CTRPluginFramework
         svcWaitSynchronization(g_continueGameEvent, U64_MAX);
         // Close the event
         svcCloseHandle(g_continueGameEvent);
-        // Set ProcessImpl::MainThreadTls
-        ProcessImpl::MainThreadTls = (u32)getThreadLocalStorage();
 
         return 0;
     }

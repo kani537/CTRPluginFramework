@@ -1,5 +1,5 @@
 #include "types.h"
-#include "ctrulib/services/hid.h"
+#include "3ds.h"
 
 #include "CTRPluginFramework/System/Controller.hpp"
 #include "CTRPluginFramework/System/Touch.hpp"

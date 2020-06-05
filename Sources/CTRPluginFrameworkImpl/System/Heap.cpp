@@ -4,11 +4,11 @@
 extern "C"
 {
     #include "types.h"
-    #include "ctrulib/util/rbtree.h"
+    #include "3ds/util/rbtree.h"
 }
 
-#include "../../ctrulib/allocator/mem_pool.h"
-#include "../../ctrulib/allocator/addrmap.h"
+#include "../../ctrulibExtension/allocator/mem_pool.h"
+#include "../../ctrulibExtension/allocator/addrmap.h"
 #include "CTRPluginFrameworkImpl/System/Heap.hpp"
 
 #include <cstring>

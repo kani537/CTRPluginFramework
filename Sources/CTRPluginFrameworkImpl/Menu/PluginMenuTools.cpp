@@ -16,19 +16,18 @@
 #include "CTRPluginFramework/Utils/StringExtensions.hpp"
 #include "CTRPluginFramework/Utils/Utils.hpp"
 
-#include "ctrulib/srv.h"
-#include "ctrulib/util/utf.h"
+#include <3ds.h>
 
 #include <ctime>
 #include <cstring>
 #include <cstdio>
 
-#define ALPHA 1
+#define ALPHA 0
 
 #if ALPHA
-#define VersionStr "CTRPluginFramework Alpha V.0.5.2"
+#define VersionStr "CTRPluginFramework Alpha V.0.6.0"
 #else
-#define VersionStr "CTRPluginFramework Beta V.0.5.2"
+#define VersionStr "CTRPluginFramework Beta V.0.6.0"
 #endif
 
 namespace CTRPluginFramework
@@ -75,26 +74,28 @@ namespace CTRPluginFramework
     {
         using MenuItemIter =  MenuFolderImpl::MenuItemIter;
 
-        // Settings
-        auto item = _settingsMenu.begin() + 2;
+		// Settings
+		auto item = _settingsMenu.begin() + 2;
 
-        if (Preferences::IsEnabled(Preferences::UseFloatingBtn)) (*item++)->AsMenuEntryImpl().Enable();
-        else (*item++)->AsMenuEntryImpl().Disable();
+		if (Preferences::IsEnabled(Preferences::UseFloatingBtn)) (*item++)->AsMenuEntryImpl().Enable();
+		else (*item++)->AsMenuEntryImpl().Disable();
 
-        if (Preferences::IsEnabled(Preferences::AutoSaveCheats)) (*item++)->AsMenuEntryImpl().Enable();
-        else (*item++)->AsMenuEntryImpl().Disable();
+		if (Preferences::IsEnabled(Preferences::AutoSaveCheats)) (*item++)->AsMenuEntryImpl().Enable();
+		else (*item++)->AsMenuEntryImpl().Disable();
 
-        if (Preferences::IsEnabled(Preferences::AutoSaveFavorites)) (*item++)->AsMenuEntryImpl().Enable();
-        else (*item++)->AsMenuEntryImpl().Disable();
+		if (Preferences::IsEnabled(Preferences::AutoSaveFavorites)) (*item++)->AsMenuEntryImpl().Enable();
+		else (*item++)->AsMenuEntryImpl().Disable();
 
-        if (Preferences::IsEnabled(Preferences::AutoLoadCheats)) (*item++)->AsMenuEntryImpl().Enable();
-        else (*item++)->AsMenuEntryImpl().Disable();
+		if (Preferences::IsEnabled(Preferences::AutoLoadCheats)) (*item++)->AsMenuEntryImpl().Enable();
+		else (*item++)->AsMenuEntryImpl().Disable();
 
-        if (Preferences::IsEnabled(Preferences::AutoLoadFavorites)) (*item)->AsMenuEntryImpl().Enable();
-        else (*item)->AsMenuEntryImpl().Disable();
+		if (Preferences::IsEnabled(Preferences::AutoLoadFavorites)) (*item)->AsMenuEntryImpl().Enable();
+		else (*item)->AsMenuEntryImpl().Disable();
+
+		item = _miscellaneousMenu.begin();
 
         // Misc.
-        item = _miscellaneousMenu.begin();
+
 
         if (Preferences::IsEnabled(Preferences::DisplayLoadedFiles)) (*item++)->AsMenuEntryTools().Enable();
         else (*item++)->AsMenuEntryTools().Disable();
@@ -159,11 +160,11 @@ namespace CTRPluginFramework
             addr++;
         }
     }
+
     // TODO: clean this whole code
     static u32      FsTryOpenFileCallback(u32 a1, u16 *fileName, u32 mode);
     static bool     InitFsTryOpenFileHook(void)
     {
-        return false;
         static bool isInitialized = false;
 
         if (isInitialized)
@@ -362,6 +363,39 @@ namespace CTRPluginFramework
 
     std::string     KeysToString(u32 keys);
     bool            stou32(std::string &input, u32 &res);
+
+    static bool g_manualScreenshotTrigger = false;
+    static void Screenshot_Enabler(MenuEntryTools *entry)
+    {
+        if (!g_manualScreenshotTrigger)
+            Screenshot::IsEnabled = !Screenshot::IsEnabled;
+    }
+
+    static void     UpdateScreenshotText(void) {
+        // Update entry
+        const char *screens[3] = {"Top screen", "Bottom screen", "Both screens"};
+
+        g_screenshotEntry->name = ("Screenshot: " << Color::LimeGreen).append(KeysToString(Screenshot::Hotkeys));
+        g_screenshotEntry->name += "\x18, " << Color::Orange;
+        g_screenshotEntry->name.append(screens[(Screenshot::Screens & SCREENSHOT_BOTH) - 1]);
+
+        u32 time = static_cast<u32>(Screenshot::Timer.AsSeconds());
+
+        if (time)
+        {
+            g_screenshotEntry->name += ("\x18, " << Color::DeepSkyBlue << time);
+            Screenshot::Screens |= 4; ///< TIMED flags
+        }
+        g_manualScreenshotTrigger = true;
+
+        if (Screenshot::IsEnabled)
+            g_screenshotEntry->Enable();
+        else
+            g_screenshotEntry->Disable();
+
+        g_manualScreenshotTrigger = false;
+    }
+
     static void     ScreenshotMenuCallback(void)
     {
         Keyboard    kb(Color::LimeGreen << "Screenshot settings\x18\n\nWhat do you want to change ?", { "Screens", "Hotkeys", "Timer", "Name", "Directory" });
@@ -445,28 +479,10 @@ namespace CTRPluginFramework
             }
         } while (choice != -1);
 
-        // Update entry
-        const char *screens[3] = {"Top screen", "Bottom screen", "Both screens"};
-
-        g_screenshotEntry->name = ("Screenshot: " << Color::LimeGreen).append(KeysToString(Screenshot::Hotkeys));
-        g_screenshotEntry->name += "\x18, " << Color::Orange;
-        g_screenshotEntry->name.append(screens[(Screenshot::Screens & SCREENSHOT_BOTH) - 1]);
-
-        u32 time = static_cast<u32>(Screenshot::Timer.AsSeconds());
-
-        if (time)
-        {
-            g_screenshotEntry->name += ("\x18, " << Color::DeepSkyBlue << time);
-            Screenshot::Screens |= 4; ///< TIMED flags
-        }
+        UpdateScreenshotText();
 
         // Update file count
         Screenshot::UpdateFileCount();
-    }
-
-    static void Screenshot_Enabler(MenuEntryTools *entry)
-    {
-            Screenshot::IsEnabled = !Screenshot::IsEnabled;
     }
 
     static void EditBacklight(MenuEntryTools *entry)
@@ -535,13 +551,13 @@ namespace CTRPluginFramework
     {
         // Main menu
         _mainMenu.Append(new MenuEntryTools("About", [] { g_mode = ABOUT; }, Icon::DrawAbout));
+
         _hexEditorEntry = new MenuEntryTools("Hex Editor", [] { g_mode = HEXEDITOR; }, Icon::DrawGrid);
         _mainMenu.Append(_hexEditorEntry);
-
         _mainMenu.Append(new MenuEntryTools("Gateway RAM Dumper", [] { g_mode = GWRAMDUMP; }, Icon::DrawRAM));
         _mainMenu.Append(new MenuEntryTools("Screenshots", nullptr, Icon::DrawUnsplash, new u32(SCREENSHOT)));
         _mainMenu.Append(new MenuEntryTools("Miscellaneous", nullptr, Icon::DrawMore, new u32(MISCELLANEOUS)));
-        _mainMenu.Append(new MenuEntryTools("Settings", nullptr, Icon::DrawSettings, this));
+		_mainMenu.Append(new MenuEntryTools("Settings", nullptr, Icon::DrawSettings, this));
         _mainMenu.Append(new MenuEntryTools("Shutdown the 3DS", Shutdown, Icon::DrawShutdown));
         _mainMenu.Append(new MenuEntryTools("Reboot the 3DS", Reboot, Icon::DrawRestart));
 
@@ -554,21 +570,23 @@ namespace CTRPluginFramework
         _miscellaneousMenu.Append(new MenuEntryTools("Display loaded files", _DisplayLoadedFiles, true));
         _miscellaneousMenu.Append(new MenuEntryTools("Write loaded files to file", _WriteLoadedFiles, true));
         _miscellaneousMenu.Append(new MenuEntryTools("Display touch cursor", [] { Preferences::Toggle(Preferences::DrawTouchCursor); }, true, Preferences::IsEnabled(Preferences::DrawTouchCursor)));
-        _miscellaneousMenu.Append(new MenuEntryTools("Display touch coordinates", []{ Preferences::Toggle(Preferences::DrawTouchPosition); }, true, Preferences::IsEnabled(Preferences::DrawTouchPosition)));
+        _miscellaneousMenu.Append(new MenuEntryTools("Display touch coordinates", [] { Preferences::Toggle(Preferences::DrawTouchPosition); }, true, Preferences::IsEnabled(Preferences::DrawTouchPosition)));
         _miscellaneousMenu.Append(new MenuEntryTools("Display top screen's fps", [] { Preferences::Toggle(Preferences::ShowTopFps); }, true, Preferences::IsEnabled(Preferences::ShowTopFps)));
         _miscellaneousMenu.Append(new MenuEntryTools("Display bottom screen's fps", [] { Preferences::Toggle(Preferences::ShowBottomFps); }, true, Preferences::IsEnabled(Preferences::ShowBottomFps)));
 
         // Settings menu
         _settingsMenu.Append(new MenuEntryTools("Change menu hotkeys", MenuHotkeyModifier, Icon::DrawGameController));
+
         _settingsMenu.Append(new MenuEntryTools("Set backlight (Experimental)", EditBacklight, false, false));
-        _settingsMenu.Append(new MenuEntryTools("Use floating button", [] { Preferences::Toggle(Preferences::UseFloatingBtn); }, true, Preferences::IsEnabled(Preferences::UseFloatingBtn)));
-        _settingsMenu.Append(new MenuEntryTools("Auto save enabled cheats", [] { Preferences::Toggle(Preferences::AutoSaveCheats); }, true, Preferences::IsEnabled(Preferences::AutoSaveCheats)));
+		_settingsMenu.Append(new MenuEntryTools("Use floating button", [] { Preferences::Toggle(Preferences::UseFloatingBtn); }, true, Preferences::IsEnabled(Preferences::UseFloatingBtn)));
+
+		_settingsMenu.Append(new MenuEntryTools("Auto save enabled cheats", [] { Preferences::Toggle(Preferences::AutoSaveCheats); }, true, Preferences::IsEnabled(Preferences::AutoSaveCheats)));
         _settingsMenu.Append(new MenuEntryTools("Auto save favorites", [] { Preferences::Toggle(Preferences::AutoSaveFavorites); }, true, Preferences::IsEnabled(Preferences::AutoSaveFavorites)));
         _settingsMenu.Append(new MenuEntryTools("Auto load enabled cheats at starts", [] { Preferences::Toggle(Preferences::AutoLoadCheats); }, true, Preferences::IsEnabled(Preferences::AutoLoadCheats)));
         _settingsMenu.Append(new MenuEntryTools("Auto load favorites at starts", [] { Preferences::Toggle(Preferences::AutoLoadFavorites); }, true, Preferences::IsEnabled(Preferences::AutoSaveFavorites)));
         _settingsMenu.Append(new MenuEntryTools("Load enabled cheats now", [] { Preferences::LoadSavedEnabledCheats(); }, nullptr));
         _settingsMenu.Append(new MenuEntryTools("Load favorites now", [] { Preferences::LoadSavedFavorites(); }, nullptr));
-    }
+	}
 
     bool    PluginMenuTools::operator()(EventList &eventList, Time &delta)
     {
@@ -665,6 +683,7 @@ namespace CTRPluginFramework
             else if (arg != nullptr &&  *(u32 *)arg == SCREENSHOT)
             {
                 selector = _menu._selector;
+                UpdateScreenshotText();
                 _menu.Open(&_screenshotMenu);
             }
         }

@@ -2,7 +2,7 @@
 #define CTRPLUGINFRAMEWORKIMPL_FSPATH_HPP
 
 #include "types.h"
-#include "ctrulib/services/fs.h"
+#include "3ds.h"
 #include "CTRPluginFramework/System/Mutex.hpp"
 #include <string>
 #include <vector>

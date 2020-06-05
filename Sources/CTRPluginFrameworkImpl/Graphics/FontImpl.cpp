@@ -1,9 +1,8 @@
 #include "CTRPluginFrameworkImpl/Graphics/Font.hpp"
 #include "CTRPluginFrameworkImpl/Graphics/Renderer.hpp"
 #include "CTRPluginFramework/System/Lock.hpp"
-#include "ctrulib/allocator/linear.h"
-#include "ctrulib/font.h"
-#include "ctrulib/util/utf.h"
+#include "3ds.h"
+#include "ctrulibExtension.h"
 
 #include <cstring>
 #include <cmath>
@@ -13,7 +12,7 @@
 namespace CTRPluginFramework
 {
     extern "C" CFNT_s* g_sharedFont;
-    extern "C" int charPerSheet;
+    extern "C" int g_charPerSheet;
 
     u32     g_fontAllocated = 0;
     u32     g_glyphAllocated = 0;
@@ -46,7 +45,7 @@ namespace CTRPluginFramework
 
     void    Font::Initialize(void)
     {
-        fontEnsureMapped();
+        fontEnsureMappedExtension();
         PatchGameFontMapping();
         // Sysfont has 7505 glyph
         if (defaultSysFont != nullptr)
@@ -72,7 +71,7 @@ namespace CTRPluginFramework
         c += units;
         if (code > 0)
         {
-            glyphIndex = fontGlyphIndexFromCodePoint(code);
+            glyphIndex = fontGlyphIndexFromCodePoint(nullptr, code);
             if (defaultSysFont[glyphIndex] != 0)
                 return ((Glyph *)defaultSysFont[glyphIndex]);
             return (CacheGlyph(glyphIndex));
@@ -91,8 +90,8 @@ namespace CTRPluginFramework
     // https://github.com/ObsidianX/3dstools/blob/master/bffnt.py
     u8    *GetOriginalGlyph(u32 glyphIndex)
     {
-        TGLP_s  *tglp = fontGetGlyphInfo();
-        u8      *data = (u8 *)fontGetGlyphSheetTex(glyphIndex / charPerSheet);
+        TGLP_s  *tglp = fontGetGlyphInfo(nullptr);
+        u8      *data = (u8 *)fontGetGlyphSheetTex(nullptr, glyphIndex / g_charPerSheet);
 
         int     width = tglp->sheetWidth;
         int     height = tglp->sheetHeight;
@@ -100,7 +99,7 @@ namespace CTRPluginFramework
         int     dataWidth = width;
         int     dataHeight = height;
 
-        int     index = glyphIndex % charPerSheet;
+        int     index = glyphIndex % g_charPerSheet;
 
         // Increase the size of the image to a power-of-two boundary, if necessary
         width = 1 << (int)(std::ceil(std::log2(width)));

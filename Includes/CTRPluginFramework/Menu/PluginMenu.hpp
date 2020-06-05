@@ -16,6 +16,7 @@ namespace CTRPluginFramework
     {
         using CallbackPointer = void (*)(void);
         using OnOpeningCallback = bool (*)(void);
+        using OnScreenshotCallback = bool (*)(void);
         using FrameCallback = void (*)(Time);
         using DecipherPointer = void(*)(std::string &, void *);
     public:
@@ -25,7 +26,7 @@ namespace CTRPluginFramework
         ** name = The name of the menu / main folder
         ** about = text to display on the bottom screen of Tools section
         ******************************/
-        explicit PluginMenu(std::string name = "Cheats", std::string about = "");
+        explicit PluginMenu(std::string name = "Cheats", std::string about = "", u32 menuType = 0);
 
         /*
         ** Create a new PluginMenu
@@ -33,7 +34,7 @@ namespace CTRPluginFramework
         ** about = pointer to encrypted about's text data
         ** func = function to decrypt the about's data
         ******************************/
-        PluginMenu(std::string name, void *about, DecipherPointer func);
+        PluginMenu(std::string name, void *about, DecipherPointer func, u32 menuType = 0);
 
         /**
          * \brief Create a new PluginMenu
@@ -43,7 +44,7 @@ namespace CTRPluginFramework
          * \param revision The revision version number of the plugin version
          * \param about Text to display in Tools About
          */
-        PluginMenu(std::string name, u32 major, u32 minor, u32 revision, std::string about = "");
+        PluginMenu(std::string name, u32 major, u32 minor, u32 revision, std::string about = "", u32 menuType = 0);
 
         /*
         ** Destructor
@@ -123,6 +124,11 @@ namespace CTRPluginFramework
         static PluginMenu   *GetRunningInstance(void);
 
         /**
+         * \brief Forces the opening of the menu
+         */
+        static void ForceOpen(void);
+
+        /**
          * \brief If set to true, the plugin's loop will only be executed 1 per top screen's frame
          * \param useSync Wheter to wait for the top screen's frame or not
          */
@@ -137,7 +143,7 @@ namespace CTRPluginFramework
         /**
          * \brief If a callback is set, the callback will be called  - Must be set before calling Run
          * when the menu is opened. Ideal to put the code that refresh the UI. ;) Return true from the callback
-         * to proceed with menu opening, return false otherwise.
+		 * to proceed with menu opening, return false otherwise.
          */
         OnOpeningCallback     OnOpening;
 
@@ -149,17 +155,49 @@ namespace CTRPluginFramework
          */
         FrameCallback       OnNewFrame;
 
-
         /**
          * \brief Returns the reference of the PluginMenu title string
          * \return the reference of the PluginMenu title string
          */
         std::string &       Title();
 
+        /**
+         * \brief Returns the reference of the screenshot path string
+         * ScreenshotUpdatePaths needs to be called afterwards.
+         * \return the reference of the screenshot path string
+         */
+        static std::string &       ScreenshotPath();
+
+        /**
+         * \brief Returns the reference of the screenshot file prefix string,
+         * ScreenshotUpdatePaths needs to be called afterwards.
+         * \return the reference of the screenshot file prefix string
+         */
+        static std::string &       ScreenshotFilePrefix();
+
+        /**
+         * \brief Updates the paths after modifying the path and prefix strings.
+         */
+        static void                ScreenshotUpdatePaths();
+
+        /**
+         * \brief Gets the screenshot settings references, can be read or written to.
+         * \param enabled Screenshot feature enabled reference
+         * \param hotkey Screenshot feature hotkey reference
+         */
+        static void                ScreenshotSettings(bool** enabled, u32** hotkey);
+
+        /**
+         * \brief Sets the screenshot callback, called whenever an screenshot is taken.
+         * If the callback function returns false, the screenshot will be aborted.
+         * \param callback The callback function
+         */
+        static void                ScreenshotSetcallback(OnScreenshotCallback callback);
+
 
     private:
         std::unique_ptr<PluginMenuImpl> _menu;
-    };
+};
 }
 
 #endif

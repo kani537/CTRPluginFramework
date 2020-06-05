@@ -3,15 +3,24 @@
 
 namespace CTRPluginFramework
 {
-    TouchKeyString::TouchKeyString(const std::string &content, IntRect ui, bool isEnabled)
+    TouchKeyString::TouchKeyString(IntRect ui, bool isEnabled)
     {
-        _content = content;
+
         _uiProperties = ui;
         _posY = _uiProperties.leftTop.y;
         _enabled = isEnabled;
 
         _isPressed = false;
+        _isForcePressed = false;
         _execute = false;
+
+    }
+
+    TouchKeyString::TouchKeyString(const std::string& content, IntRect ui, bool isEnabled)
+        : TouchKeyString(ui, isEnabled)
+    {
+        _content = content;
+        _isIcon = false;
 
         _contentLength = Renderer::GetTextSize(_content.c_str());
 
@@ -26,35 +35,58 @@ namespace CTRPluginFramework
         _posX = ((_uiProperties.size.x - (int)_contentLength) >> 1) + _uiProperties.leftTop.x;
     }
 
+    TouchKeyString::TouchKeyString(const CustomIcon& icon, IntRect ui, bool isEnabled)
+        : TouchKeyString(ui, isEnabled)
+    {
+        _icon = icon;
+        _isIcon = true;
+        _posX = _uiProperties.leftTop.x;
+    }
+
     void    TouchKeyString::Enable(bool isEnabled)
     {
         _enabled = isEnabled;
     }
 
+    void    TouchKeyString::ForcePressed(bool force) {
+        _isForcePressed = force;
+    }
+
+    bool TouchKeyString::CanUse(void)
+    {
+        return !(!_enabled || (_isIcon && !_icon.isEnabled) || (!_isIcon && _content.empty()));
+    }
+
     void    TouchKeyString::Draw(void)
     {
         // If key is disabled
-        if (!_enabled)
+        if (!CanUse())
             return;
 
         const auto    &theme = Preferences::Settings.CustomKeyboard;
-        const Color &background = _isPressed ? theme.KeyBackgroundPressed : theme.KeyBackground;
-        const Color &text = _isPressed ? theme.KeyTextPressed : theme.KeyText;
-
-        int     posX = _posX;
-        int     posY = ((_uiProperties.size.y - 16) >> 1) + _uiProperties.leftTop.y;
-        int     maxX = _uiProperties.leftTop.x + _uiProperties.size.x - 1;
+        const Color &background = (_isPressed || _isForcePressed) ? theme.KeyBackgroundPressed : theme.KeyBackground;
+        const Color &text = (_isPressed || _isForcePressed) ? theme.KeyTextPressed : theme.KeyText;
 
         // Background
         Renderer::DrawRect(_uiProperties, background);
 
-        // Text
-        Renderer::DrawSysString(_content.c_str(), posX, posY,  maxX, text);
+        if (!_isIcon) {
+            int     posX = _posX;
+            int     posY = ((_uiProperties.size.y - 16) >> 1) + _uiProperties.leftTop.y;
+            int     maxX = _uiProperties.leftTop.x + _uiProperties.size.x - 1;
+
+            // Text
+            Renderer::DrawSysString(_content.c_str(), posX, posY, maxX, text);
+        }
+        else {
+            // Icon
+            Icon::DrawCustomIcon(_icon, _posX, _posY);
+        }
     }
 
     void    TouchKeyString::Update(const bool isTouchDown, const IntVector &touchPos)
     {
-        if (!_enabled)
+        if (!CanUse())
             return;
 
         bool    isTouched = _uiProperties.Contains(touchPos);
@@ -77,9 +109,22 @@ namespace CTRPluginFramework
         posY = _posY;
     }
 
+	void TouchKeyString::GetPosition(u16& posX, float& posY)
+	{
+		posX = _posX;
+		posY = _posY;
+	}
+
+	void TouchKeyString::SetPosition(u16 posX, float posY)
+	{
+		if (posX != 0xFFFF)
+			_posX = posX;
+		_posY = posY;
+	}
+
     int     TouchKeyString::operator()(void)
     {
-        if (_enabled && _execute)
+        if (CanUse() && _execute)
         {
             _execute = false;
             return (1);

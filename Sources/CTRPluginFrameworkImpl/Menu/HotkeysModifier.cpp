@@ -60,20 +60,67 @@ namespace CTRPluginFramework
 
     void    HotkeysModifier::operator()(void)
     {
-        while (!Window::BottomWindow.MustClose() || !_keys)
+		bool mustclose = false;
+        while ((!Window::BottomWindow.MustClose() && !mustclose) || !_keys)
         {
+
             Controller::Update();
+			mustclose = Controller::IsKeyPressed(Key::B);
             _DrawTop();
             _DrawBottom();
             Renderer::EndFrame();
             _Update();
 
-            _keys = 0;
+            #define DPADX (Key::DPadLeft | Key::DPadRight)
+            #define DPADY (Key::DPadDown | Key::DPadUp)
 
+            u32 oldDpadX = _keys & (DPADX);
+            u32 oldDpadY = _keys & (DPADY);
+
+            _keys = 0;
+            
+            if (_checkboxs[GetIndex(Key::DPadLeft)].GetState()) {
+				_checkboxs[GetIndex(Key::DPadRight)].SetState(false);
+				_checkboxs[GetIndex(Key::DPadRight)].Enable(false);
+			}
+			else {
+				_checkboxs[GetIndex(Key::DPadRight)].Enable(true);
+			}
+
+			if (_checkboxs[GetIndex(Key::DPadUp)].GetState()) {
+				_checkboxs[GetIndex(Key::DPadDown)].SetState(false);
+				_checkboxs[GetIndex(Key::DPadDown)].Enable(false);
+			}
+			else {
+				_checkboxs[GetIndex(Key::DPadDown)].Enable(true);
+			}
+            
             for (int i = 0; i < 14; i++)
             {
                 if (_checkboxs[i].GetState())
                     _keys |= ktable[i];
+            }
+
+            // Only keep new DPAD keys
+
+            if (_keys & DPADX != oldDpadX && oldDpadX != DPADX)
+            {
+                _keys ^= oldDpadX;
+
+                auto& checkbox = _checkboxs[GetIndex(oldDpadX)];
+
+                checkbox.SetState(false);
+                checkbox.Enable(false);
+            }
+
+            if (_keys & DPADY != oldDpadY && oldDpadY != DPADY)
+            {
+                _keys ^= oldDpadY;
+
+                auto& checkbox = _checkboxs[GetIndex(oldDpadY)];
+
+                checkbox.SetState(false);
+                checkbox.Enable(false);
             }
         }
     }

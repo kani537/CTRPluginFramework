@@ -395,9 +395,12 @@ exit:
         PluginMenu  *m = new PluginMenu("Action Replay", 0, 5, 2);
         PluginMenu  &menu = *m;
 
- //       Task task(TimedTask);
+        Task task([](void* args)  {
+            long int r = 0;
+            return r;
+        } );
 
-        //task.Start();
+        task.Start();
         menu.SynchronizeWithFrame(true);
 
         int ret = menu.Run();
