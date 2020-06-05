@@ -81,6 +81,12 @@ namespace CTRPluginFramework
          */
         static void     Pause();
 
+        using OnPauseResumeCallback = void(*)(bool goingToPause);
+        /**
+        * \brief Called when the game is paused by CTRPF
+        */
+        static OnPauseResumeCallback    OnPauseResume;
+
         /**
          * \brief Resume the process
          * \param frames If a number is specified the process will play x frames
@@ -287,12 +293,12 @@ namespace CTRPluginFramework
         * \return true if the write is successful, false otherwise
         */
         static bool     WriteString(u32 address, const std::string &input, u32 size, StringFormat outFmt = StringFormat::Utf8);
-        
+
         /**
         * \brief Causes the app to exit and jump to the home menu. Does not return.
         */
         static void     ReturnToHomeMenu(void) NORETURN;
-        
+
         enum ExceptionCallbackState
         {
             EXCB_LOOP,

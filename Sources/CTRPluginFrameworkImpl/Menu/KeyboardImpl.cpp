@@ -780,6 +780,12 @@ namespace CTRPluginFramework
                     inputClock.Restart();
                 }
             }
+			if (_customKeyboard && inputPassedTime) {
+				if (event.key.code & (Key::Down | Key::Up | Key::Left | Key::Right | Key::A)) {
+					_HandleManualKeyPress((Key)(event.key.code & ~(u32)Key::A));
+					inputClock.Restart();
+				}
+			}
         }
 
         if (event.type == Event::TouchMoved || event.type == Event::TouchEnded)
@@ -884,8 +890,8 @@ namespace CTRPluginFramework
 
     void    KeyboardImpl::_Update(float delta)
     {
-        bool			isTouchDown = Touch::IsDown();
-        IntVector		touchPos(Touch::GetPosition());
+		bool			isTouchDown = Touch::IsDown();
+		IntVector		touchPos(Touch::GetPosition());
 
         if (!_customKeyboard)
         {

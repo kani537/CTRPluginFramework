@@ -55,7 +55,7 @@ namespace CTRPluginFramework
     class ProcessImpl
     {
     public:
-        
+
         // Pause the current process
         static void     Pause(bool useFading);
         // Unpause the current process
@@ -92,9 +92,8 @@ namespace CTRPluginFramework
         static MemInfo      InvalidRegion;
         static Mutex        MemoryMutex;
         static std::vector<MemInfo>     MemRegions;
-
         static std::vector<u32> blackListedLockThreads;
-        
+
         static u32          exceptionCount;
         static void         EnableExceptionHandlers();
         static void         DisableExceptionHandlers();

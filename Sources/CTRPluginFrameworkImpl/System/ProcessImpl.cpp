@@ -98,6 +98,7 @@ namespace CTRPluginFramework
             return;
 
         Status |= Paused;
+        if (Process::OnPauseResume) Process::OnPauseResume(true);
 
         // Wait for the frame to be paused
         OSDImpl::WaitFramePaused();
@@ -129,6 +130,7 @@ namespace CTRPluginFramework
         if (!IsPaused)
         {
             Status &= ~Paused;
+            if (Process::OnPauseResume) Process::OnPauseResume(false);
             ScreenImpl::Top->Release();
             ScreenImpl::Bottom->Release();
             OSDImpl::ResumeFrame();
@@ -387,7 +389,6 @@ namespace CTRPluginFramework
             DisableExceptionHandlers();
             ReturnFromException(regs);
         }
-
         // Lock game threads
         LockGameThreads();
 
@@ -409,7 +410,6 @@ namespace CTRPluginFramework
             Controller::Update();
 
             ret = Process::exceptionCallback(excep, regs);
-
         }
 
         switch (ret)

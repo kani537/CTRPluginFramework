@@ -300,7 +300,6 @@ namespace CTRPluginFramework
                         mode = 0;
                 }
                 _aboutToOpen = false;
-
                 // End frame
                 Renderer::EndFrame(shouldClose);
 
@@ -372,8 +371,12 @@ namespace CTRPluginFramework
                 }
 
                 // Execute callbacks before cheats
-                for (auto cb : _callbacks)
-                    if (cb) cb(); ///< Guard against null
+
+                for (int i = 0; i < _callbacks.size(); i++) {
+                    auto cb = _callbacks[i];
+                    if (cb) cb();
+                    if (i < _callbacks.size() && _callbacks[i] != cb) i--; // This callback removed itself
+                }
 
                 // Execute activated cheats
                 PluginMenuExecuteLoop::ExecuteBuiltin();

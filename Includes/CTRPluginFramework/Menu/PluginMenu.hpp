@@ -143,7 +143,7 @@ namespace CTRPluginFramework
         /**
          * \brief If a callback is set, the callback will be called  - Must be set before calling Run
          * when the menu is opened. Ideal to put the code that refresh the UI. ;) Return true from the callback
-         * to proceed with menu opening, return false otherwise.
+		 * to proceed with menu opening, return false otherwise.
          */
         OnOpeningCallback     OnOpening;
 
@@ -154,7 +154,6 @@ namespace CTRPluginFramework
          * Must be set before calling Run
          */
         FrameCallback       OnNewFrame;
-
 
         /**
          * \brief Returns the reference of the PluginMenu title string
@@ -198,7 +197,7 @@ namespace CTRPluginFramework
 
     private:
         std::unique_ptr<PluginMenuImpl> _menu;
-    };
+};
 }
 
 #endif

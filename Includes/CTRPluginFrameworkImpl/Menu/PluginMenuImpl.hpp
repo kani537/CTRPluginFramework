@@ -19,7 +19,7 @@ namespace CTRPluginFramework
     class PluginMenuImpl
     {
         using FuncPointer = void(*)(void);
-        using OnOpeningCallback = bool (*)(void);
+		using OnOpeningCallback = bool (*)(void);
         using FramePointer = void (*)(Time);
         using HotkeysVector = std::vector<Preferences::HotkeysInfos>;
     public:
@@ -58,11 +58,10 @@ namespace CTRPluginFramework
         bool    WasOpened(void) const;
         void    AddPluginVersion(u32 version) const;
 
-        FuncPointer         OnFirstOpening;
-        OnOpeningCallback   OnOpening;
-        FramePointer        OnFrame;
-        bool                SyncOnFrame;
-
+        FuncPointer			OnFirstOpening;
+		OnOpeningCallback	OnOpening;
+        FramePointer		OnFrame;
+        bool				SyncOnFrame;
     private:
         friend std::string &PluginMenu::Title(void);
         static PluginMenuImpl       *_runningInstance;

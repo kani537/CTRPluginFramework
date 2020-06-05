@@ -151,12 +151,10 @@ namespace CTRPluginFramework
     {
         return _menu->_home->_root->name;
     }
-
     std::string &       PluginMenu::ScreenshotPath(void)
     {
         return Screenshot::Path;
     }
-
     std::string &       PluginMenu::ScreenshotFilePrefix(void)
     {
         return Screenshot::Prefix;
