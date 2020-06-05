@@ -3,6 +3,10 @@
 /Ressources
 /Guide
 /.vs
+*.sln
+*.vcxproj
+*.vcxproj.filters
+*.vcxproj.user
 /x64
 /x86
 *.db
@@ -14,3 +18,4 @@
 *.7z
 *.bmp
 *.3gx
+objdump
