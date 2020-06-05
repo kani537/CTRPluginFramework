@@ -106,7 +106,20 @@ namespace CTRPluginFramework
     void    OSD::Stop(OSDCallback cb)
     {
         OSDImpl::Lock();
-        OSDImpl::Callbacks.erase(std::remove(OSDImpl::Callbacks.begin(), OSDImpl::Callbacks.end(), cb), OSDImpl::Callbacks.end());
+
+        bool add = true;
+
+        for (auto _cb : OSDImpl::CallbacksTrashBin)
+            if (cb == _cb) {
+                add = false;
+                break;
+            }
+
+        if (add)
+        {
+            OSDImpl::CallbacksTrashBin.push_back(cb);
+        }
+
         OSDImpl::Unlock();
     }
 

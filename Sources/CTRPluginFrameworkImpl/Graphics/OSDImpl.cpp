@@ -39,6 +39,7 @@ namespace CTRPluginFramework
     FloatingButton OSDImpl::FloatingBtn(IntRect(0, 0, 40, 40), Icon::DrawRocket);
     std::vector<OSDImpl::OSDMessage*> OSDImpl::Notifications;
     std::vector<OSDCallback> OSDImpl::Callbacks;
+    std::vector<OSDCallback> OSDImpl::CallbacksTrashBin;
 
     bool        OSDImpl::IsFramePaused = false;
     LightEvent  OSDImpl::OnNewFrameEvent;
@@ -386,6 +387,26 @@ namespace CTRPluginFramework
             DrawNotifTask2.Start((void *)&args[1]);
         }
 
+        // Remove callbacks in the trash bin
+        if (CallbacksTrashBin.size())
+        {
+            Callbacks.erase(std::remove_if(Callbacks.begin(), Callbacks.end(),
+                            [](OSDCallback cb)
+                            {
+                                auto&   trashbin = CallbacksTrashBin;
+                                auto    foundIter = std::remove(trashbin.begin(), trashbin.end(), cb);
+
+                                if (foundIter == trashbin.end())
+                                    return false;
+
+                                trashbin.erase(foundIter);
+                                return true;
+                            }),
+                            Callbacks.end());
+
+            CallbacksTrashBin.clear();
+        }
+
         // We need to ensure that notifications are handled before running callbacks
         DrawNotifTask1.Wait();
         DrawNotifTask2.Wait();
@@ -403,10 +424,6 @@ namespace CTRPluginFramework
             screen.BytesPerPixel = GetBPP((GSPFormat)format);
             screen.Format = (GSPFormat)format;
 
-            // WARNING: this is not totally safe despite of the lock
-            // OSDCallbacks can remove / add themselves from a callback
-            // Luckily it shouldn't be that problematic as it's funcptrs
-            // TODO: devise a fix ?
             for (OSDCallback cb : Callbacks)
                 cb(screen);
         }

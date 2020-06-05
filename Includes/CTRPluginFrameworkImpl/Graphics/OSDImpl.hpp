@@ -64,6 +64,7 @@ namespace CTRPluginFramework
         static Screen           BottomScreen;
         static std::vector<OSDMessage*>    Notifications;
         static std::vector<OSDCallback>    Callbacks;
+        static std::vector<OSDCallback>    CallbacksTrashBin;
 
         static bool             IsFramePaused;
         static LightEvent       OnNewFrameEvent;
