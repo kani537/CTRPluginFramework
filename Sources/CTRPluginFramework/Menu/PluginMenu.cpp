@@ -1,6 +1,7 @@
 #include "CTRPluginFramework/Menu.hpp"
 #include "CTRPluginFrameworkImpl/Menu.hpp"
 #include "CTRPluginFrameworkImpl/Menu/PluginMenuImpl.hpp"
+#include "CTRPluginFrameworkImpl/System/Screenshot.hpp"
 
 namespace CTRPluginFramework
 {
@@ -149,5 +150,31 @@ namespace CTRPluginFramework
     std::string &   PluginMenu::Title(void)
     {
         return _menu->_home->_root->name;
+    }
+
+    std::string &       PluginMenu::ScreenshotPath(void)
+    {
+        return Screenshot::Path;
+    }
+
+    std::string &       PluginMenu::ScreenshotFilePrefix(void)
+    {
+        return Screenshot::Prefix;
+    }
+
+    void                PluginMenu::ScreenshotUpdatePaths(void)
+    {
+        Screenshot::UpdateFileCount();
+    }
+
+    void                PluginMenu::ScreenshotSettings(bool** enabled, u32** hotkey)
+    {
+        *enabled = &Screenshot::IsEnabled;
+        *hotkey = &Screenshot::Hotkeys;
+    }
+
+    void                PluginMenu::ScreenshotSetcallback(OnScreenshotCallback callback)
+    {
+        Screenshot::ScreenshotCallback = callback;
     }
 }

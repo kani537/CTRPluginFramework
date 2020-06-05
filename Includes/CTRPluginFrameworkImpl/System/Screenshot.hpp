@@ -13,7 +13,8 @@ namespace CTRPluginFramework
 {
     class Screenshot
     {
-   public:
+        using OnScreenshotCallback = bool (*)(void);
+    public:
 
         struct ImageBuffer
         {
@@ -38,6 +39,8 @@ namespace CTRPluginFramework
         static std::string  Path;
         static std::string  Prefix;
         static ImageBuffer *ImgBuffer;
+
+        static OnScreenshotCallback ScreenshotCallback;
 
     private:
 
