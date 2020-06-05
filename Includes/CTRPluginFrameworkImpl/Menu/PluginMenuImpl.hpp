@@ -81,6 +81,7 @@ namespace CTRPluginFramework
         GuideReader                 *_guide;
         HexEditor                   _hexEditor;
         std::vector<CallbackPointer>     _callbacks;
+        std::vector<CallbackPointer>     _callbacksTrashBin;
         bool                        _forceOpen;
     };
 }

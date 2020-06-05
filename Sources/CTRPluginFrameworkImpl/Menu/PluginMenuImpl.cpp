@@ -59,12 +59,23 @@ namespace CTRPluginFramework
                 add = false;
 
         if (add)
+        {
             _callbacks.push_back(callback);
+        }
     }
 
     void    PluginMenuImpl::RemoveCallback(CallbackPointer callback)
     {
-        _callbacks.erase(std::remove(_callbacks.begin(), _callbacks.end(), callback), _callbacks.end());
+        bool add = true;
+
+        for (CallbackPointer cb : _callbacksTrashBin)
+            if (cb == callback)
+                add = false;
+
+        if (add)
+        {
+            _callbacksTrashBin.push_back(callback);
+        }
     }
 
     using KeyVector = std::vector<Key>;
@@ -338,6 +349,26 @@ namespace CTRPluginFramework
                 {
                     // Lock the AR & execute codes before releasing it
                     PluginMenuExecuteLoop::ExecuteAR();
+                }
+
+                // Remove callbacks in the trash bin
+                if (_callbacksTrashBin.size())
+                {
+                    _callbacks.erase(std::remove_if(_callbacks.begin(), _callbacks.end(),
+                                    [](CallbackPointer cb)
+                                    {
+                                        auto&   trashbin = _runningInstance->_callbacksTrashBin;
+                                        auto    foundIter = std::remove(trashbin.begin(), trashbin.end(), cb);
+
+                                        if (foundIter == trashbin.end())
+                                            return false;
+
+                                        trashbin.erase(foundIter);
+                                        return true;
+                                    }),
+                                     _callbacks.end());
+
+                    _callbacksTrashBin.clear();
                 }
 
                 // Execute callbacks before cheats
