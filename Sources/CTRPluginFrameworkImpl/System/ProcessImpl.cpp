@@ -13,7 +13,6 @@ static bool      operator==(const MemInfo left, const MemInfo right)
 
 #include <cstdio>
 #include <cstring>
-#include "ctrulib/gpu/gpu.h"
 #include "csvc.h"
 
 extern      Handle gspThreadEventHandle;

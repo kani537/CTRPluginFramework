@@ -1,7 +1,6 @@
 #include "CTRPluginFrameworkImpl/System/HookManager.hpp"
 #include "CTRPluginFramework/System/Process.hpp"
-#include "ctrulib/result.h"
-#include "ctrulib/svc.h"
+#include "3ds.h"
 #include "csvc.h"
 #include "CTRPluginFramework/Menu/MessageBox.hpp"
 #include "CTRPluginFrameworkImpl/System/Screen.hpp"

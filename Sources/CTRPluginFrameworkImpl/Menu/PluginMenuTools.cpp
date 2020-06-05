@@ -16,8 +16,7 @@
 #include "CTRPluginFramework/Utils/StringExtensions.hpp"
 #include "CTRPluginFramework/Utils/Utils.hpp"
 
-#include "ctrulib/srv.h"
-#include "ctrulib/util/utf.h"
+#include <3ds.h>
 
 #include <ctime>
 #include <cstring>

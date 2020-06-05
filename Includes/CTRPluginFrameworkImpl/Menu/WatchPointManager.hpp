@@ -1,7 +1,7 @@
 #pragma once
 
 #include "types.h"
-#include <ctrulib/errf.h>
+#include <3ds.h>
 #include "CTRPluginFramework/System/Mutex.hpp"
 #include <vector>
 

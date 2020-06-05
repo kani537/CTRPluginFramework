@@ -2,7 +2,7 @@
 #include "CTRPluginFrameworkImpl/System/ProcessImpl.hpp"
 #include "CTRPluginFrameworkImpl/System/SystemImpl.hpp"
 #include "CTRPluginFramework/System/Lock.hpp"
-#include "ctrulib/svc.h"
+#include "3ds.h"
 #include "csvc.h"
 
 #define THREADVARS_MAGIC  0x21545624 // !TV$

@@ -3,9 +3,7 @@
 #include "CTRPluginFramework/System/Process.hpp"
 #include "CTRPluginFrameworkImpl/System/ProcessImpl.hpp"
 #include "CTRPluginFrameworkImpl/System/FSPath.hpp"
-#include "ctrulib/services/fs.h"
-#include "ctrulib/util/utf.h"
-#include "ctrulib/result.h"
+#include "3ds.h"
 
 #include <limits.h>
 #include <cstring>

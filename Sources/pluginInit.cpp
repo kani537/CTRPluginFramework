@@ -1,4 +1,5 @@
 #include "3DS.h"
+#include "ctrulibExtension.h"
 #include "CTRPluginFrameworkImpl.hpp"
 #include "CTRPluginFramework.hpp"
 #include "CTRPluginFrameworkImpl/Graphics/Font.hpp"
@@ -24,8 +25,8 @@ extern "C"
     s32     PLGLDR__FetchEvent(void);
     void    PLGLDR__Reply(s32 event);
 
-    u32 __ctru_heap;
-    u32 __ctru_heap_size;
+    extern u32 __ctru_heap;
+    extern u32 __ctru_heap_size;
 }
 
 using CTRPluginFramework::Hook;
@@ -394,7 +395,7 @@ namespace CTRPluginFramework
         svcSignalEvent(g_keepEvent);
 
         // Reduce thread priority
-        svcSetThreadPriority(threadGetCurrent()->handle, FwkSettings::Get().ThreadPriority);
+        svcSetThreadPriority(threadGetHandle(threadGetCurrent()), FwkSettings::Get().ThreadPriority);
 
         // Update memory layout
         ProcessImpl::UpdateMemRegions();
@@ -408,7 +409,7 @@ namespace CTRPluginFramework
     void  ThreadExit(void)
     {
         // In which thread are we ?
-        if (reinterpret_cast<u32>(threadGetCurrent()->stacktop) < 0x07000000)
+        if (reinterpret_cast<u32>(((CThread_tag*)threadGetCurrent())->stacktop) < 0x07000000)
         {
             // ## Main Thread ##
 

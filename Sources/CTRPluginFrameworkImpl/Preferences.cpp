@@ -1,7 +1,7 @@
 #include "CTRPluginFramework/System/Controller.hpp"
 #include "CTRPluginFrameworkImpl/Preferences.hpp"
 #include "CTRPluginFrameworkImpl/Menu/PluginMenuImpl.hpp"
-#include "ctrulib/result.h"
+#include "3ds.h"
 #include <cmath>
 
 namespace CTRPluginFramework

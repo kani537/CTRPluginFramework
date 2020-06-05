@@ -1,8 +1,7 @@
 #ifndef CTRPLUGINFRAMEWORKIMPL_PROCESSIMPL_HPP
 #define CTRPLUGINFRAMEWORKIMPL_PROCESSIMPL_HPP
 
-#include "ctrulib/svc.h"
-#include "ctrulib/synchronization.h"
+#include "3ds.h"
 #include "CTRPluginFrameworkImpl/System/Kernel.hpp"
 #include "CTRPluginFramework/System/Mutex.hpp"
 #include <vector>

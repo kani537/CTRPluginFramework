@@ -4,7 +4,7 @@
 #include "types.h"
 #include "CTRPluginFramework/System/Clock.hpp"
 #include "CTRPluginFramework/System/Task.hpp"
-#include "ctrulib/synchronization.h"
+#include <3ds.h>
 
 #include <string>
 
@@ -13,7 +13,7 @@ namespace CTRPluginFramework
 {
     class Screenshot
     {
-    public:
+   public:
 
         struct ImageBuffer
         {

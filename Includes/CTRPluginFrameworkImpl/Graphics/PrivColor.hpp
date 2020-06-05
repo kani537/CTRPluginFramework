@@ -1,7 +1,7 @@
 #ifndef COLOR_HPP
 #define COLOR_HPP
 
-#include "ctrulib/gfx.h"
+#include "3ds.h"
 #include "CTRPluginFramework/Graphics/Color.hpp"
 #include "CTRPluginFramework/System/Rect.hpp"
 

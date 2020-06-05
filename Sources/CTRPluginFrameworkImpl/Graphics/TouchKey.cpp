@@ -1,6 +1,6 @@
 #include "CTRPluginFrameworkImpl/Graphics/TouchKey.hpp"
 #include "CTRPluginFrameworkImpl/Preferences.hpp"
-#include "ctrulib/util/utf.h"
+#include "3ds.h"
 
 namespace CTRPluginFramework
 {

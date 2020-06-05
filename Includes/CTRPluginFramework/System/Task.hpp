@@ -2,7 +2,7 @@
 #define CTRPLUGINFRAMEWORK_SYSTEM_TASK_HPP
 
 #include "types.h"
-#include "ctrulib/synchronization.h"
+#include "3ds.h"
 #include <atomic>
 #include <memory>
 

@@ -1,6 +1,5 @@
 #include "types.h"
-#include "ctrulib/services/hid.h"
-#include "ctrulib/svc.h"
+#include "3ds.h"
 #include "CTRPluginFramework/System/Controller.hpp"
 
 namespace CTRPluginFramework

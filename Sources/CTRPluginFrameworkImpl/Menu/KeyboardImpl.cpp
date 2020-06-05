@@ -4,7 +4,7 @@
 #include "CTRPluginFramework/Menu/Keyboard.hpp"
 
 #include <cmath>
-#include "ctrulib/util/utf.h"
+#include "3ds.h"
 #include "CTRPluginFramework/Utils/Utils.hpp"
 #include "CTRPluginFrameworkImpl/Menu/PluginMenuImpl.hpp"
 #include "CTRPluginFramework/Graphics/CustomIcon.hpp"

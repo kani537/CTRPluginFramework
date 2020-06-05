@@ -14,8 +14,7 @@
 #include <cstdio>
 #include <cstring>
 #include <random>
-#include "ctrulib/util/utf.h"
-#include "ctrulib/svc.h"
+#include "3ds.h"
 #include "CTRPluginFramework/Menu/Keyboard.hpp"
 #include "Unicode.h"
 
