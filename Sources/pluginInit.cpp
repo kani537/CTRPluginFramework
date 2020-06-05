@@ -458,8 +458,7 @@ namespace CTRPluginFramework
         REG32(0x10202204) = 0;
     }
 
-    extern "C"
-    int   __entrypoint(int arg)
+    void WEAK_SYMBOL __WaitForDebug()
     {
         // A little debug routine to wait for debugger to connect
         u32 debug = 0;
@@ -480,6 +479,13 @@ namespace CTRPluginFramework
                 stall = HID_PAD & BUTTON_X;
             } while (!stall);
         }
+    }
+
+    extern "C"
+    int   __entrypoint(int arg)
+    {
+        if (__WaitForDebug)
+            __WaitForDebug();
 
         // Create event
         svcCreateEvent(&g_continueGameEvent, RESET_ONESHOT);
