@@ -1,4 +1,4 @@
-#include <3DS.h>
+#include <3ds.h>
 
 void    __appExit(void)
 {

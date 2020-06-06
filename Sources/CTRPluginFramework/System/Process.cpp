@@ -1,4 +1,4 @@
-#include "3DS.h"
+#include <3ds.h>
 #include "CTRPluginFrameworkImpl/System.hpp"
 #include "CTRPluginFramework/Utils/Utils.hpp"
 #include "CTRPluginFrameworkImpl/Graphics/OSDImpl.hpp"

@@ -1,4 +1,4 @@
-#include <3DS.h>
+#include <3ds.h>
 #include "csvc.h"
 #include "CTRPluginFramework/System/FwkSettings.hpp"
 #include "CTRPluginFrameworkImpl/System/ProcessImpl.hpp"

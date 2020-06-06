@@ -3,7 +3,7 @@
 #include "CTRPluginFramework/System/Process.hpp"
 #include "CTRPluginFramework/Menu/Keyboard.hpp"
 
-#include "3DS.h"
+#include <3ds.h>
 #include "CTRPluginFramework/Menu/MessageBox.hpp"
 #include "CTRPluginFramework/Utils/Utils.hpp"
 #include "CTRPluginFramework/Utils/StringExtensions.hpp"

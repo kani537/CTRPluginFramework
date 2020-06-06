@@ -5,7 +5,7 @@
 
 #include <vector>
 #include "CTRPluginFrameworkImpl/Preferences.hpp"
-#include "3DS.h"
+#include <3ds.h>
 
 namespace CTRPluginFramework
 {

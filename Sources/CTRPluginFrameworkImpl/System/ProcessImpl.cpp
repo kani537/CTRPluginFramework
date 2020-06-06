@@ -1,4 +1,4 @@
-#include "3DS.h"
+#include <3ds.h>
 
 // Fix std::vector<MemInfo> == operator
 static bool      operator==(const MemInfo left, const MemInfo right)

@@ -2,7 +2,7 @@
 #include <sys/time.h>
 #include <string.h>
 
-#include <3DS.h>
+#include <3ds.h>
 
 void (*__system_retAddr)(void);
 

@@ -1,5 +1,5 @@
 #include "types.h"
-#include "3DS.h"
+#include <3ds.h>
 #include "CTRPluginFramework/System/System.hpp"
 #include "CTRPluginFrameworkImpl/System/SystemImpl.hpp"
 

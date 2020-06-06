@@ -12,30 +12,30 @@ include $(DEVKITARM)/3ds_rules
 TARGET		:= 	$(notdir $(CURDIR))
 BUILD		:= 	Build
 INCLUDES	:= 	Includes \
-				Includes\lodepng
+				Includes/lodepng
 
 SOURCES 	:= 	Sources \
-				Sources\CTRPluginFramework \
-				Sources\CTRPluginFramework\Graphics \
-				Sources\CTRPluginFramework\Menu \
-				Sources\CTRPluginFramework\System \
-				Sources\CTRPluginFramework\Utils \
-				Sources\CTRPluginFrameworkImpl \
-				Sources\CTRPluginFrameworkImpl\ActionReplay \
-				Sources\CTRPluginFrameworkImpl\Disassembler \
-				Sources\CTRPluginFrameworkImpl\Graphics \
-				Sources\CTRPluginFrameworkImpl\Graphics\Icons \
-				Sources\CTRPluginFrameworkImpl\Menu \
-				Sources\CTRPluginFrameworkImpl\Search \
-				Sources\CTRPluginFrameworkImpl\System \
-				Sources\ctrulibExtension \
-				Sources\ctrulibExtension\allocator \
-				Sources\ctrulibExtension\gpu \
-				Sources\ctrulibExtension\services \
-				Sources\ctrulibExtension\system \
-				Sources\ctrulibExtension\util\utf \
-				Sources\ctrulibExtension\util\rbtree \
-				Sources\lodepng
+				Sources/CTRPluginFramework \
+				Sources/CTRPluginFramework/Graphics \
+				Sources/CTRPluginFramework/Menu \
+				Sources/CTRPluginFramework/System \
+				Sources/CTRPluginFramework/Utils \
+				Sources/CTRPluginFrameworkImpl \
+				Sources/CTRPluginFrameworkImpl/ActionReplay \
+				Sources/CTRPluginFrameworkImpl/Disassembler \
+				Sources/CTRPluginFrameworkImpl/Graphics \
+				Sources/CTRPluginFrameworkImpl/Graphics/Icons \
+				Sources/CTRPluginFrameworkImpl/Menu \
+				Sources/CTRPluginFrameworkImpl/Search \
+				Sources/CTRPluginFrameworkImpl/System \
+				Sources/ctrulibExtension \
+				Sources/ctrulibExtension/allocator \
+				Sources/ctrulibExtension/gpu \
+				Sources/ctrulibExtension/services \
+				Sources/ctrulibExtension/system \
+				Sources/ctrulibExtension/util/utf \
+				Sources/ctrulibExtension/util/rbtree \
+				Sources/lodepng
 
 IP			:=  5
 FTP_HOST 	:=	192.168.1.
@@ -123,7 +123,7 @@ ACNL:
 FL:
 	make send FTP_PATH="0004000000113100/"
 AR:
-	3gxtool.exe -s $(OUTPUT).plg $(CURDIR)/CTRPluginFramework.plgInfo $(CURDIR)/ActionReplay.3gx
+	3gxtool -s $(OUTPUT).plg $(CURDIR)/CTRPluginFramework.plgInfo $(CURDIR)/ActionReplay.3gx
 	@$(TOPDIR)/sendfile.py $(ACTIONREPLAY) "ActionReplay/" "$(FTP_HOST)$(IP)" $(FTP_PORT)
 
 install:
@@ -155,7 +155,7 @@ $(LIBOUT):	$(filter-out $(EXCLUDE), $(OFILES))
 #---------------------------------------------------------------------------------
 %.3gx: %.elf
 	@echo creating $(notdir $@)
-	@3gxtool.exe -s $(OUTPUT).elf $(TOPDIR)/$(PSF) $@
+	@3gxtool -s $(OUTPUT).elf $(TOPDIR)/$(PSF) $@
 
 -include $(DEPENDS)
 

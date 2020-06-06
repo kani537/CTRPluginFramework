@@ -1,4 +1,4 @@
-#include "3DS.h"
+#include <3ds.h>
 #include "ctrulibExtension.h"
 #include "CTRPluginFrameworkImpl.hpp"
 #include "CTRPluginFramework.hpp"

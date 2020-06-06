@@ -1,4 +1,4 @@
-#include <3DS.h>
+#include <3ds.h>
 
 Result __sync_fini(void) __attribute__((weak));
 

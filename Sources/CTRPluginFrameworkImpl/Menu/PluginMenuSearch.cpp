@@ -1,7 +1,7 @@
 #include "CTRPluginFrameworkImpl/Menu/PluginMenuSearch.hpp"
 #include "CTRPluginFrameworkImpl/Preferences.hpp"
 #include "CTRPluginFramework/System/Process.hpp"
-#include "3DS.h"
+#include <3ds.h>
 #include "CTRPluginFramework/Menu/MessageBox.hpp"
 #include "CTRPluginFramework/System/Directory.hpp"
 #include <iterator>

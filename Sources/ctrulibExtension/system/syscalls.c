@@ -3,7 +3,7 @@
 #include <sys/lock.h>
 #include <sys/reent.h>
 #include <string.h>
-#include <3DS.h>
+#include <3ds.h>
 #include "ctrulibExtension.h"
 
 void __ctru_exit(int rc);
