@@ -730,15 +730,14 @@ namespace CTRPluginFramework
                     _noteTB.Update(e->firstName, note);
                     e->HandledNoteChanges();
                 }
-
-                // An error is happening
-                else
-                {
-                    _AddFavoriteBtn.Enable(false);
-                    _InfoBtn.Enable(false);
-                    _keyboardBtn.Enable(false);
-                    _controllerBtn.Enable(false);
-                }
+            }
+            // An error is happening
+            else
+            {
+                _AddFavoriteBtn.Enable(false);
+                _InfoBtn.Enable(false);
+                _keyboardBtn.Enable(false);
+                _controllerBtn.Enable(false);
             }
         }
         // Buttons status
