@@ -66,6 +66,22 @@ static inline u32 ARMBranchLink(const void *src, const void *dst)
     return instrBase | ((off >> 2) & 0xFFFFFF);
 }
 
+static inline u32 ARMBranch(const void *src, const void *dst)
+{
+    u32 instrBase = 0xEA000000;
+    u32 off = (u32)((const u8 *)dst - ((const u8 *)src + 8));
+
+    return instrBase | ((off >> 2) & 0xFFFFFF);
+}
+
+static inline u32 DecodeARMBranch(const vu32 *src)
+{
+    s32 off = (*src & 0xFFFFFF) << 2;
+    off = (off << 6) >> 6; // sign extend
+
+    return (u32)src + 8 + off;
+}
+
 static inline u32 ARM__LDR_LR_PC(u32 offset)
 {
     return 0xE59FE000 | offset;
@@ -92,13 +108,77 @@ static __attribute__((noinline)) void     GenerateAsm(AsmWrapper& asmWrapper, Ho
 
     if (flags & MITM_MODE)
     {
+        u32 op = ctx.overwrittenInstr >> 24;
+
         // Jump to callback
         *code++ = 0xE51FF004; ///< ldr pc, [pc, #-4]
         *code++ = ctx.callbackAddress;
-        // Jump to original function - code[6]
-        *code++ = ctx.overwrittenInstr;
+
+        if (op == 0xEB) // If instruction is branch with link
+            *code = ARMBranchLink((void *)code, (void *)DecodeARMBranch((vu32 *)ctx.targetAddress));
+        else if (op == 0xEA) // If instruction is branch
+            *code = ARMBranch((void *)code, (void *)DecodeARMBranch((vu32 *)ctx.targetAddress));
+        else
+            *code = ctx.overwrittenInstr;
+
+        ++code;
+
+        // Jump back to original function - code[7]
         *code++ = 0xE51FF004;///< ldr pc, [pc, #-4]
         *code = ctx.returnAddress;
+
+        return;
+    }
+
+    if (flags & WRAP_SUB)
+    {
+        /*
+         * ldr lr, [pc, #] @callback
+         * blx lr
+         * ldr lr, [pc, #] @target
+         * blx lr
+         * ldr lr, [pc, #] @afterCallback
+         * blx lr
+         * ldr pc, [pc, #-4]
+         * @returnAddress
+         * @callback
+         * @target
+         * @afterCallback
+         */
+
+        vu32 *  ldrLrCb2;
+        vu32 *  ldrLrSub;
+
+        // If there's a before callback
+        if (ctx.callbackAddress)
+        {
+            ldrLrCb = code++;
+            *code++ = 0xE12FFF3E; ///< blx lr
+        }
+
+        // Execute sub
+        ldrLrSub = code++;
+        *code++ = 0xE12FFF3E; ///< blx lr
+
+        // If there's an after callback
+        if (ctx.callbackAddress2)
+        {
+            ldrLrCb2 = code++;
+            *code++ = 0xE12FFF3E; ///< blx lr
+        }
+
+        // Jump back to original function
+        *code++ = 0xE51FF004; ///< ldr pc, [pc -4]
+        *code++ = ctx.returnAddress;
+
+        // Set callbacks addresses
+        *code++ = ctx.callbackAddress;
+        *code++ = DecodeARMBranch((vu32 *)ctx.targetAddress);
+        *code = ctx.callbackAddress2;
+
+        *ldrLrCb = ARM__LDR_LR_PC(u32(code) - u32(ldrLrCb) - 16);
+        *ldrLrSub = ARM__LDR_LR_PC(u32(code) - u32(ldrLrSub) - 12);
+        *ldrLrCb2 = ARM__LDR_LR_PC(u32(code) - u32(ldrLrCb2) - 8);
 
         return;
     }
@@ -133,14 +213,6 @@ static __attribute__((noinline)) void     GenerateAsm(AsmWrapper& asmWrapper, Ho
     *strLr = ARM__STR_LR_PC(u32(code) - u32(strLr) - 8);
     *ldrLrCb = ARM__LDR_LR_PC(u32(code) - u32(ldrLrCb) - 12);
     *ldrLr = ARM__LDR_LR_PC(u32(code) - u32(ldrLr) - 8);
-}
-
-static inline u32 ARMBranch(const void *src, const void *dst)
-{
-    u32 instrBase = 0xEA000000;
-    u32 off = (u32)((const u8 *)dst - ((const u8 *)src + 8));
-
-    return instrBase | ((off >> 2) & 0xFFFFFF);
 }
 
 HookResult  HookManager::ApplyHook(HookContext &ctx)

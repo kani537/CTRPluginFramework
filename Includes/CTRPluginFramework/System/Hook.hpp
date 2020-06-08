@@ -12,6 +12,7 @@ namespace CTRPluginFramework
         EXECUTE_OI_BEFORE_CB = 1 << 1,  ///< If the instruction overwritten by the hook (target) must be executed before the callback
         EXECUTE_OI_AFTER_CB = 1 << 2,   ///< If the instruction overwritten by the hook (target) must be executed after the callback
         MITM_MODE = 1 << 3,             ///< This mode is perfect to intercepts functions calls
+        WRAP_SUB = 1 << 4,              ///< Wraps a subroutine call
 
         HOOK_DEFAULT_PARAMS = USE_LR_TO_RETURN | EXECUTE_OI_BEFORE_CB,
     };
@@ -34,6 +35,7 @@ namespace CTRPluginFramework
         u32     targetAddress;
         u32     returnAddress;
         u32     callbackAddress;
+        u32     callbackAddress2;
         u32     overwrittenInstr;
         u32     index;
 
@@ -96,6 +98,15 @@ namespace CTRPluginFramework
          * \return A reference to Hook obj
          */
         Hook&       InitializeForMitm(u32 targetAddr, u32 callbackAddr);
+
+         /**
+         * \brief Initialize a hook for subroutine wrapping (apply the required flags)
+         * \param targetAddr The address with the subroutine call to wrap (BL only)
+         * \param beforeCallback The callback to be called before the subroutine (can be null)
+         * \param afterCallback The callback to be called after the subroutine (can be null)
+         * \return A reference to Hook obj
+         */
+        Hook&       InitializeForSubWrap(u32 targetAddr, u32 beforeCallback, u32 afterCallback);
 
         /**
          * \brief Apply the specified flags to the hook. Must be done before enabling the hook otherwise nothing happens
