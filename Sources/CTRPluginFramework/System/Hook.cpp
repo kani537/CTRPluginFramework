@@ -44,6 +44,7 @@ Hook::Hook(void)
     _ctx->targetAddress = 0;
     _ctx->returnAddress = 0;
     _ctx->callbackAddress = 0;
+    _ctx->callbackAddress2 = 0;
     _ctx->overwrittenInstr = 0;
     _ctx->index = -1;
 }
@@ -121,6 +122,20 @@ Hook&   Hook::InitializeForMitm(u32 targetAddr, u32 callbackAddr)
     _ctx->flags = MITM_MODE;
 exit:
 
+    return *this;
+}
+
+Hook&   Hook::InitializeForSubWrap(u32 targetAddr, u32 beforeCallback, u32 afterCallback)
+{
+    if (!_ctx)
+        goto exit;
+
+    _ctx->targetAddress = targetAddr;
+    _ctx->callbackAddress = beforeCallback;
+    _ctx->callbackAddress2 = afterCallback;
+    _ctx->returnAddress = targetAddr + 4;
+    _ctx->flags = WRAP_SUB;
+exit:
 
     return *this;
 }
@@ -211,6 +226,10 @@ HookResult    Hook::Enable(void)
     if (flags & EXECUTE_OI_BEFORE_CB || flags & EXECUTE_OI_AFTER_CB)
         if (IsInstructionPCDependant(_ctx->overwrittenInstr))
             return HookResult::TargetInstructionCannotBeHandledAutomatically;
+
+    // Check validity for WRAP_SUB mode
+    if (flags & WRAP_SUB && _ctx->overwrittenInstr >> 24 != 0xEB)
+        return HookResult::HookParamsError;
 
     // Apply the hook
     return HookManager::ApplyHook(*_ctx);
