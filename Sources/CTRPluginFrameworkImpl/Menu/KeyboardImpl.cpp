@@ -238,7 +238,7 @@ namespace CTRPluginFramework
 
         if (mustReset)
             _manualKey = 0;
-        mustReset = (mustReset || count >= 6);
+        mustReset = (mustReset || count < 6);
 
         _customKeyboard = true;
         _isIconKeyboard = false;
@@ -323,7 +323,7 @@ namespace CTRPluginFramework
 
         if (mustReset)
             _manualKey = 0;
-        mustReset = (mustReset || count >= 6);
+        mustReset = (mustReset || count < 6);
 
         _customKeyboard = true;
         _isIconKeyboard = true;
@@ -780,12 +780,6 @@ namespace CTRPluginFramework
                     inputClock.Restart();
                 }
             }
-			if (_customKeyboard && inputPassedTime) {
-				if (event.key.code & (Key::Down | Key::Up | Key::Left | Key::Right | Key::A)) {
-					_HandleManualKeyPress((Key)(event.key.code & ~(u32)Key::A));
-					inputClock.Restart();
-				}
-			}
         }
 
         if (event.type == Event::TouchMoved || event.type == Event::TouchEnded)
