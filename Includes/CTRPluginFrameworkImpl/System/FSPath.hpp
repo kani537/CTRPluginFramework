@@ -9,6 +9,8 @@
 
 namespace CTRPluginFramework
 {
+    #define PATH_LENGTH_MAX 256
+
     struct FSPath
     {
         FSPath(std::string path);

@@ -5,8 +5,6 @@
 
 namespace CTRPluginFramework
 {
-    #define PATH_MAX 256
-
     Mutex           FSPath::FSMutex;
     std::string     FSPath::CurrentWorkingDirectory;
 
@@ -66,9 +64,9 @@ namespace CTRPluginFramework
             path = fixPath;
         }
 
-        if (path.size() >= PATH_MAX)
+        if (path.size() >= PATH_LENGTH_MAX)
         {
-            //__fixedpath[PATH_MAX] = 0;
+            //__fixedpath[PATH_LENGTH_MAX] = 0;
             //r->_errno = ENAMETOOLONG;
             return (-1);
         }
@@ -83,7 +81,7 @@ namespace CTRPluginFramework
             return;
 
         Utf16Path.resize(256, 0);
-        Units = utf8_to_utf16(Utf16Path.data(), (const uint8_t*)path.c_str(), PATH_MAX);
+        Units = utf8_to_utf16(Utf16Path.data(), (const uint8_t*)path.c_str(), PATH_LENGTH_MAX);
         if (Units <= 0)
             Error = -1;
     }
