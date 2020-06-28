@@ -35,6 +35,11 @@ namespace CTRPluginFramework
         return (Controller::IsKeysDown(_keys));
     }
 
+    bool    Hotkey::IsPressed(void) const
+    {
+        return (Controller::IsKeysPressed(_keys));
+    }
+
     void    Hotkey::AskForKeys(void)
     {
         HotkeysModifier(_keys, "Select the keys you want to use for:\n" + _name)();
@@ -108,9 +113,23 @@ namespace CTRPluginFramework
         _hotkeys.push_back(hotkey);
     }
 
+    static Hotkey g_dummy = Hotkey(0, "Dummy");
+
     Hotkey& HotkeyManager::operator[](u32 index)
     {
+        if (index >= _hotkeys.size())
+            return (g_dummy);
+
         return (_hotkeys[index]);
+    }
+
+    Hotkey& HotkeyManager::operator[](const std::string& name)
+    {
+        for (auto& hk : _hotkeys)
+            if (hk._name == name)
+                return hk;
+
+        return (g_dummy);
     }
 
     std::string     HotkeyManager::ToString(void)
@@ -139,7 +158,7 @@ namespace CTRPluginFramework
 
         for (Hotkey &hotkey : _hotkeys)
             hkNames.push_back(hotkey._name);
-        
+
         keyboard.Populate(hkNames);
 
         do
@@ -152,14 +171,14 @@ namespace CTRPluginFramework
 
                 if (_callback != nullptr)
                     _callback(_owner, ret);
-                    
+
                 _owner->RefreshNote();
             }
-                
+
         } while (ret != -1);
     }
 
-    void HotkeyManager::OnHotkeyChangeCallback(OnHotkeyChangeClbk callback)
+    void    HotkeyManager::OnHotkeyChangeCallback(OnHotkeyChangeClbk callback)
     {
         _callback = callback;
     }

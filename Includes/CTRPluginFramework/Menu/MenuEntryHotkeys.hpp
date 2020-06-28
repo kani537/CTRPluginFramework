@@ -10,7 +10,7 @@ namespace CTRPluginFramework
 {
     class MenuEntry;
     class Hotkey
-    {      
+    {
     public:
 
         Hotkey();
@@ -41,6 +41,12 @@ namespace CTRPluginFramework
          * \return If the keys are down
          */
         bool    IsDown(void) const;
+
+        /**
+         * \brief Check if the keys of this Hotkey are pressed
+         * \return If the keys were just being pressed
+         */
+        bool    IsPressed(void) const;
 
         /**
          * \brief Display a control for the user to select the keys
@@ -74,7 +80,7 @@ namespace CTRPluginFramework
     {
     public:
         /**
-         *  \brief A callback type, the args are: 
+         *  \brief A callback type, the args are:
          *  MenuEntry *: the entry that own the Hotkey
          *  int : the index in the HotkeyManager of the hotkey that changed
          */
@@ -95,6 +101,13 @@ namespace CTRPluginFramework
          * \return A reference to the desired Hotkey
          */
         Hotkey &operator[](u32 index);
+
+        /**
+         * \brief Return a reference to the Hotkey from the manager
+         * \param name The name of the Hotkey you want from the manager
+         * \return A reference to the desired Hotkey
+         */
+        Hotkey &operator[](const std::string& name);
 
         /**
          * \brief Stringify all Hotkeys
