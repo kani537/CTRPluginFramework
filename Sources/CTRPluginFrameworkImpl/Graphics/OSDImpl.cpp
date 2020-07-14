@@ -485,7 +485,6 @@ namespace CTRPluginFramework
     // Return false when event was signaled, true on timeout
     static bool    LightEvent__WaitTimeOut(LightEvent& event, const Time timeout)
     {
-        Handle  arbiter = __sync_get_arbiter();
         s64     timeOutNs = timeout.AsMicroseconds() * 1000;
         Result  toRes = 0x09401BFE;
         Result  res = 0;
@@ -494,7 +493,7 @@ namespace CTRPluginFramework
 	    {
 		    if (event.state == CLEARED_STICKY)
 		    {
-			    res = svcArbitrateAddress(arbiter, (u32)&event, ARBITRATION_WAIT_IF_LESS_THAN_TIMEOUT, 0, timeOutNs);
+			    res = syncArbitrateAddressWithTimeout(&event.state, ARBITRATION_WAIT_IF_LESS_THAN_TIMEOUT, 0, timeOutNs);
 			    return res == toRes;
 		    }
 
@@ -507,7 +506,7 @@ namespace CTRPluginFramework
 				    return false;
 		    }
 
-		    res = svcArbitrateAddress(arbiter, (u32)&event, ARBITRATION_WAIT_IF_LESS_THAN_TIMEOUT, 0, timeOutNs);
+		    res = syncArbitrateAddressWithTimeout(&event.state, ARBITRATION_WAIT_IF_LESS_THAN_TIMEOUT, 0, timeOutNs);
 	    }
 
         return res == toRes;
@@ -703,9 +702,9 @@ namespace CTRPluginFramework
     static void    MessColor(u32 startAddr, u32 stride, u32 format)
     {
         u32 endBuffer = startAddr + (stride * 400);
-        u32 bpp = GetBPP((GSPGPU_FramebufferFormats)format);
+        u32 bpp = GetBPP((GSPGPU_FramebufferFormat)format);
 
-        PrivColor::SetFormat((GSPGPU_FramebufferFormats)format);
+        PrivColor::SetFormat((GSPGPU_FramebufferFormat)format);
 
         if (bpp == 4)
         {

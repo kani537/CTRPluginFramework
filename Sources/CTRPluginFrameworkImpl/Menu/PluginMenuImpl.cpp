@@ -332,7 +332,7 @@ namespace CTRPluginFramework
                     SystemImpl::ReadyToSleep();
                 }
             }
-            else
+            else // menu is closed
             {
                 if (SyncOnFrame && !ProcessImpl::IsPaused)
                     LightEvent_Wait(&OSDImpl::OnNewFrameEvent);

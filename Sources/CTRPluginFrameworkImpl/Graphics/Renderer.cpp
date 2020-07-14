@@ -97,7 +97,7 @@ namespace CTRPluginFramework
         u8 *left = screen->GetLeftFrameBuffer(posX, posY + 1);
         int bpp;
         int rowstride;
-        GSPGPU_FramebufferFormats fmt;
+        GSPGPU_FramebufferFormat fmt;
         screen->GetFrameBufferInfos(rowstride, bpp, fmt);
 
         float fade = Preferences::Settings.CursorFadeValue;

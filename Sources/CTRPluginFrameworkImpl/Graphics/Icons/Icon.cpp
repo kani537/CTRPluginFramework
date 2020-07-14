@@ -83,7 +83,7 @@ namespace CTRPluginFramework
         Color   px;
 
         posY += sizeY;
-        GSPGPU_FramebufferFormats fmt;
+        GSPGPU_FramebufferFormat fmt;
         // Get target infos
         switch (target)
         {

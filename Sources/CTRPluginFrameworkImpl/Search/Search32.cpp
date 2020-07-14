@@ -50,7 +50,7 @@ namespace CTRPluginFramework
             _endRegion = parameters.ranges[0].endAddress - 1;
 
             // Flush memory
-            svcFlushProcessDataCache(ProcessImpl::ProcessHandle, (void *)_startRegion, _endRegion - _startRegion);
+            svcFlushProcessDataCache(ProcessImpl::ProcessHandle, _startRegion, _endRegion - _startRegion);
         }
         else
         {
@@ -88,7 +88,7 @@ namespace CTRPluginFramework
             _endRegion = _header.regions[0].endAddress - 1;
 
             // Flush memory
-            svcFlushProcessDataCache(ProcessImpl::ProcessHandle, (void *)_startRegion, _endRegion - _startRegion);
+            svcFlushProcessDataCache(ProcessImpl::ProcessHandle, _startRegion, _endRegion - _startRegion);
         }
 
         // Set first region's file offset

@@ -296,7 +296,7 @@ namespace CTRPluginFramework
             unpause = true;
         }
 
-        svcFlushProcessDataCache(Process::GetHandle(), (void *)address, length);
+        svcFlushProcessDataCache(Process::GetHandle(), address, length);
 
         // Dump in chunk of 32kb
         do

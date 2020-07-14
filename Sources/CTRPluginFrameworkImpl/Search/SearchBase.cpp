@@ -352,7 +352,7 @@ namespace CTRPluginFramework
             _header.regions[_indexRegion].fileOffset = _file.Tell();
 
             // Flush memory
-            svcFlushProcessDataCache(ProcessImpl::ProcessHandle, (void *)_startRegion, _endRegion - _startRegion);
+            svcFlushProcessDataCache(ProcessImpl::ProcessHandle, _startRegion, _endRegion - _startRegion);
             return (false);
         }
 
@@ -405,7 +405,7 @@ namespace CTRPluginFramework
             _previous->_file.Seek(offset, File::SET);
 
             // Flush memory
-            svcFlushProcessDataCache(ProcessImpl::ProcessHandle, (void *)_startRegion, _header.regions[_indexRegion].endAddress - _startRegion);
+            svcFlushProcessDataCache(ProcessImpl::ProcessHandle, _startRegion, _header.regions[_indexRegion].endAddress - _startRegion);
 
             return (false);
         }

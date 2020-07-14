@@ -149,21 +149,24 @@ namespace CTRPluginFramework
 
     bool Process::CopyMemory(void *dst, const void *src, u32 size)
     {
-        if (!CheckAddress((u32)src))
+        u32 src32 = (u32)src;
+        u32 dst32 = (u32)dst;
+
+        if (!CheckAddress(src32))
             goto error;
-        if (!CheckAddress((u32)dst))
+        if (!CheckAddress(dst32))
             goto error;
-        if (!CheckAddress((u32)dst + size))
+        if (!CheckAddress(dst32 + size))
             goto error;
-        if (!CheckAddress((u32)src + size))
+        if (!CheckAddress(src32 + size))
             goto error;
 
-        svcFlushProcessDataCache(ProcessImpl::ProcessHandle, src, size);
-        svcInvalidateProcessDataCache(ProcessImpl::ProcessHandle, dst, size);
+        svcFlushProcessDataCache(ProcessImpl::ProcessHandle, src32, size);
+        svcInvalidateProcessDataCache(ProcessImpl::ProcessHandle, dst32, size);
 
         std::memcpy(dst, src, size);
 
-        svcFlushProcessDataCache(ProcessImpl::ProcessHandle, dst, size);
+        svcFlushProcessDataCache(ProcessImpl::ProcessHandle, dst32, size);
 
         return true;
     error:

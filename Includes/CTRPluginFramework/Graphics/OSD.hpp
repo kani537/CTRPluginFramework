@@ -2,12 +2,12 @@
 #define CTRPLUGINFRAMEWORK_OSD_HPP
 
 #include "CTRPluginFramework/Graphics/Color.hpp"
-#include "3ds.h"
+#include <3ds.h>
 #include <string>
 
 namespace CTRPluginFramework
 {
-    using GSPFormat = GSPGPU_FramebufferFormats;
+    using GSPFormat = GSPGPU_FramebufferFormat;
 
     class Screen
     {

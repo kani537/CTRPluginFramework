@@ -55,7 +55,6 @@ namespace CTRPluginFramework
     class ProcessImpl
     {
     public:
-
         // Pause the current process
         static void     Pause(bool useFading);
         // Unpause the current process

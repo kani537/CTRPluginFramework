@@ -11,7 +11,7 @@ namespace CTRPluginFramework
     thread_local F8Pointer   PrivColor::ToFramebuffer = _WriteBGR8;
     thread_local bool        PrivColor::_useClamp = false;
     thread_local IntRect     PrivColor::_clampArea;
-    thread_local GSPGPU_FramebufferFormats PrivColor::_format = GSP_BGR8_OES;
+    thread_local GSPGPU_FramebufferFormat PrivColor::_format = GSP_BGR8_OES;
 
     void    PrivColor::UseClamp(bool willUse)
     {
@@ -26,7 +26,7 @@ namespace CTRPluginFramework
         SetFormat(_format);
     }
 
-    GSPGPU_FramebufferFormats PrivColor::GetFormat()
+    GSPGPU_FramebufferFormat PrivColor::GetFormat()
     {
         return (_format);
     }
@@ -34,7 +34,7 @@ namespace CTRPluginFramework
     /*
     ** Private
     *****************/
-    void    PrivColor::SetFormat(GSPGPU_FramebufferFormats format)
+    void    PrivColor::SetFormat(GSPGPU_FramebufferFormat format)
     {
         _format = format;
         switch (format)

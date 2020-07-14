@@ -202,7 +202,7 @@ namespace CTRPluginFramework
             u8  *dst = reinterpret_cast<u8 *>(framebuf0_vaddr);
             u32  width = (src.format & 0x60) > 0 ? 400 : 320;
 
-            svcInvalidateProcessDataCache(CUR_PROCESS_HANDLE, src.framebuf0_vaddr, width * src.framebuf_widthbytesize);
+            svcInvalidateProcessDataCache(CUR_PROCESS_HANDLE, (u32)src.framebuf0_vaddr, width * src.framebuf_widthbytesize);
 
             switch (src.format & 7)
             {
@@ -575,7 +575,7 @@ namespace CTRPluginFramework
     ScreenImpl  *ScreenImpl::Top = nullptr;
     ScreenImpl  *ScreenImpl::Bottom = nullptr;
 
-    u32 GetBPP(GSPGPU_FramebufferFormats format)
+    u32 GetBPP(GSPGPU_FramebufferFormat format)
     {
         switch(format)
         {
@@ -728,7 +728,7 @@ namespace CTRPluginFramework
     {
         _currentBuffer = 1;
 
-        _format = static_cast<GSPGPU_FramebufferFormats>(format & 7);
+        _format = static_cast<GSPGPU_FramebufferFormat>(format & 7);
         _stride = stride;
         _bytesPerPixel = GetBPP(_format);
         _rowSize = _stride / _bytesPerPixel;
@@ -751,7 +751,7 @@ namespace CTRPluginFramework
         u32 size = GetFrameBufferSize();
 
         // Flush currentBuffer
-        svcFlushProcessDataCache(CUR_PROCESS_HANDLE, GetLeftFrameBuffer(), size);
+        svcFlushProcessDataCache(CUR_PROCESS_HANDLE, (u32)GetLeftFrameBuffer(), size);
     }
 
 	void	ScreenImpl::Invalidate(void)
@@ -759,7 +759,7 @@ namespace CTRPluginFramework
 		u32 size = GetFrameBufferSize();
 
 		// Invalidate currentBuffer
-		svcInvalidateProcessDataCache(CUR_PROCESS_HANDLE, GetLeftFrameBuffer(), size);
+		svcInvalidateProcessDataCache(CUR_PROCESS_HANDLE, (u32)GetLeftFrameBuffer(), size);
 	}
 
     void    ScreenImpl::Clear(bool applyFlagForCurrent)
@@ -916,7 +916,7 @@ namespace CTRPluginFramework
         REG32(0x10202200 + _backlightOffset) = value;
     }
 
-    GSPGPU_FramebufferFormats   ScreenImpl::GetFormat(void) const
+    GSPGPU_FramebufferFormat   ScreenImpl::GetFormat(void) const
     {
         return _format;
     }
@@ -946,7 +946,7 @@ namespace CTRPluginFramework
         return _stride * _width;
     }
 
-    void    ScreenImpl::GetFrameBufferInfos(int &rowStride, int &bpp, GSPGPU_FramebufferFormats &format) const
+    void    ScreenImpl::GetFrameBufferInfos(int &rowStride, int &bpp, GSPGPU_FramebufferFormat &format) const
     {
         rowStride = _stride;
         bpp = _bytesPerPixel;

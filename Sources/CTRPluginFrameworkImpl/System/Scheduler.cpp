@@ -105,9 +105,9 @@ namespace CTRPluginFramework
             ctx->affinity |= AppCore1;
 
         // Ensure memory is updated
-        svcFlushProcessDataCache(Process::GetHandle(), (void *)ctx, sizeof(TaskContext));
+        svcFlushProcessDataCache(Process::GetHandle(), (u32)ctx, sizeof(TaskContext));
         if (ctx->arg)
-            svcFlushProcessDataCache(Process::GetHandle(), ctx->arg, 0x1000);
+            svcFlushProcessDataCache(Process::GetHandle(), (u32)ctx->arg, 0x1000);
 
         // Search for an idle core matching the Task affinity
         for (s32 i = 3; i >= 0; --i)

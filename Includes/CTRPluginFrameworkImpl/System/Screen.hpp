@@ -128,14 +128,14 @@ namespace CTRPluginFramework
         u32                         GetBacklight(void);
         void                        SetBacklight(u32 value);
 
-        GSPGPU_FramebufferFormats   GetFormat(void) const;
+        GSPGPU_FramebufferFormat    GetFormat(void) const;
         u16                         GetWidth(void) const;
         u32                         GetStride(void) const;
         u32                         GetRowSize(void) const;
         u32                         GetBytesPerPixel(void) const;
         u32                         GetFrameBufferSize(void) const;
 
-        void                        GetFrameBufferInfos(int &rowstride, int &bpp, GSPGPU_FramebufferFormats &format) const;
+        void                        GetFrameBufferInfos(int &rowstride, int &bpp, GSPGPU_FramebufferFormat &format) const;
 
         u8                          *GetLeftFrameBuffer(bool current = false);
         u8                          *GetLeftFrameBuffer(int posX, int posY);
@@ -163,7 +163,7 @@ namespace CTRPluginFramework
         u32                         _bytesPerPixel;
         bool                        _isTopScreen;
         bool                        _isGspAcquired{false};
-        GSPGPU_FramebufferFormats   _format;
+        GSPGPU_FramebufferFormat    _format;
         GSP::FrameBufferInfoShared  _frameBufferInfo{};
         GSP::FrameBufferInfoShared  _gameFrameBufferInfo{};
     };

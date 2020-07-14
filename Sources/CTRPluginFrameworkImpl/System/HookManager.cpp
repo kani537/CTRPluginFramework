@@ -251,20 +251,20 @@ HookResult  HookManager::ApplyHook(HookContext &ctx)
 
     // Update AsmWrapper
     asmWrapper.ctx = &ctx;
-    svcFlushProcessDataCache(Process::GetHandle(), &asmWrapper, sizeof(AsmWrapper));
+    svcFlushProcessDataCache(Process::GetHandle(), (u32)&asmWrapper, sizeof(AsmWrapper));
     //svcFlushDataCacheRange(&asmWrapper, sizeof(AsmWrapper));
 
     // Update HookWrapper
     hookWrapper.jumpCode = 0xE51FF004; ///< ldr pc, [pc, #-4]
     hookWrapper.callback = (u32)&asmWrapper.code[0];
     hookWrapper.ctx = &ctx;
-    svcFlushProcessDataCache(Process::GetHandle(), (void *)&hookWrapper, sizeof(HookWrapper));
+    svcFlushProcessDataCache(Process::GetHandle(), (u32)&hookWrapper, sizeof(HookWrapper));
     //svcFlushDataCacheRange(&hookWrapper, sizeof(HookWrapper));
 
     // Apply hook
     svcInvalidateEntireInstructionCache();
     *(vu32 *)ctx.targetAddress = ARMBranch((void *)ctx.targetAddress, &hookWrapper.jumpCode);
-    svcFlushProcessDataCache(Process::GetHandle(), (void *)ctx.targetAddress, 4);
+    svcFlushProcessDataCache(Process::GetHandle(), ctx.targetAddress, 4);
     //svcFlushDataCacheRange((void *)ctx.targetAddress, 4);
 
     return HookResult::Success;
@@ -285,7 +285,7 @@ HookResult    HookManager::DisableHook(HookContext &ctx)
     svcInvalidateEntireInstructionCache();
     *(vu32 *)ctx.targetAddress = ctx.overwrittenInstr;
     //svcFlushDataCacheRange((void *)ctx.targetAddress, 4);
-    svcFlushProcessDataCache(Process::GetHandle(), (void *)ctx.targetAddress, 4);
+    svcFlushProcessDataCache(Process::GetHandle(), ctx.targetAddress, 4);
 
     // Free HookWrapper
     hookWrapper.ctx = nullptr;
@@ -368,7 +368,7 @@ void HookManager::PrepareToUnmapMemory()
         if (!begin->ctx) continue;
         HookContext& ctx = *begin->ctx;
         *(vu32*)ctx.targetAddress = ctx.overwrittenInstr;
-        svcFlushProcessDataCache(Process::GetHandle(), (void*)ctx.targetAddress, 4);
+        svcFlushProcessDataCache(Process::GetHandle(), ctx.targetAddress, 4);
     }
 }
 
@@ -385,6 +385,6 @@ void HookManager::RecoverFromUnmapMemory()
         if (!begin->ctx) continue;
         HookContext& ctx = *begin->ctx;
         *(vu32*)ctx.targetAddress = ARMBranch((void*)ctx.targetAddress, &begin->jumpCode);
-        svcFlushProcessDataCache(Process::GetHandle(), (void*)ctx.targetAddress, 4);
+        svcFlushProcessDataCache(Process::GetHandle(), ctx.targetAddress, 4);
     }
 }

@@ -125,7 +125,7 @@ namespace CTRPluginFramework
                 Renderer::DrawString("Screenshot: An error occured", 0, posY, Color::Red, Color::White);
             else
                 _display = -1;
-            svcFlushProcessDataCache(Process::GetHandle(), addr, stride * 320);
+            svcFlushProcessDataCache(Process::GetHandle(), (u32)addr, stride * 320);
             ++_display;
         }
 

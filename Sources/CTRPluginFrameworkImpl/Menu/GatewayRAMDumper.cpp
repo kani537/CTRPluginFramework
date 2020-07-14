@@ -321,7 +321,7 @@ namespace CTRPluginFramework
             _totalSize += regionSize;
 
             // Flush region
-            svcFlushProcessDataCache(ProcessImpl::ProcessHandle, (void *)region.startAddress, regionSize);
+            svcFlushProcessDataCache(ProcessImpl::ProcessHandle, region.startAddress, regionSize);
         }
 
         // Buffer to file

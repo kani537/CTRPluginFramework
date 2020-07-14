@@ -1,7 +1,7 @@
 #ifndef COLOR_HPP
 #define COLOR_HPP
 
-#include "3ds.h"
+#include <3ds.h>
 #include "CTRPluginFramework/Graphics/Color.hpp"
 #include "CTRPluginFramework/System/Rect.hpp"
 
@@ -23,8 +23,8 @@ namespace CTRPluginFramework
         static void     UseClamp(bool willUse);
         static void     UseClamp(bool willUse, const IntRect& rect);
 
-        static GSPGPU_FramebufferFormats GetFormat(void);
-        static void     SetFormat(GSPGPU_FramebufferFormats format);
+        static GSPGPU_FramebufferFormat GetFormat(void);
+        static void     SetFormat(GSPGPU_FramebufferFormat format);
 
     private:
         friend class ScreenImpl;
@@ -48,7 +48,7 @@ namespace CTRPluginFramework
         static u8       *_WriteRGBA4Clamp(u8 *dst, const Color &color);
 
 
-        static thread_local GSPGPU_FramebufferFormats _format;
+        static thread_local GSPGPU_FramebufferFormat _format;
     };
 }
 
