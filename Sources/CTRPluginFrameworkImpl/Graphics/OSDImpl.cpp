@@ -42,6 +42,7 @@ namespace CTRPluginFramework
     std::vector<OSDCallback> OSDImpl::CallbacksTrashBin;
 
     bool        OSDImpl::IsFramePaused = false;
+    bool        OSDImpl::NeedToPauseFrame = false;
     LightEvent  OSDImpl::OnNewFrameEvent;
     LightEvent  OSDImpl::OnFramePaused;
     LightEvent  OSDImpl::OnFrameResume;
@@ -190,21 +191,6 @@ namespace CTRPluginFramework
         return 0;
     }
 
-    void    OSDImpl::Lock(void)
-    {
-        RecursiveLock_Lock(&RecLock);
-    }
-
-    bool OSDImpl::TryLock(void)
-    {
-        return (RecursiveLock_TryLock(&RecLock));
-    }
-
-    void    OSDImpl::Unlock(void)
-    {
-        RecursiveLock_Unlock(&RecLock);
-    }
-
     u32 GetBPP(GSPFormat format);
 
     static void    MessColor(u32 startAddr, u32 stride, u32 format);
@@ -251,33 +237,7 @@ namespace CTRPluginFramework
             --FramesToPlay;
 
         // If frame has to be paused
-        if (!WaitingForScreenshot && !FramesToPlay && ProcessImpl::IsPaused)
-        {
-            // Check frame buffers validity before pausing
-            if (ScreenImpl::CheckGspFrameBuffersInfo())
-                return 0;
-
-            u32 *tls = (u32 *)getThreadLocalStorage();
-            u32 bak = *tls;
-
-            // Lock threads
-            *tls = THREADVARS_MAGIC; ///< this prevent this particular thead from being blocked
-
-            IsFramePaused = true;
-
-            // Wake up threads waiting for frame to be paused
-            LightEvent_Signal(&OnFramePaused);
-
-            // Wait until the frame is ready to continue
-            LightEvent_Clear(&OnFrameResume);
-            LightEvent_Wait(&OnFrameResume);
-
-            // Restore tls
-            *tls = bak;
-
-            IsFramePaused = false;
-            return 0;
-        }
+        PauseFrame();
 
         if (DrawSaveIcon)
             Icon::DrawSave(10, 10);
@@ -286,7 +246,7 @@ namespace CTRPluginFramework
        // Controller::Update();code
         OSDImpl::Update();
         LightEvent_Pulse(&OnNewFrameEvent);
-        ThreadEx::Yield(); ///< Give control to plugin thread
+        // ThreadEx::Yield(); ///< Give control to plugin thread
 
         return 0;
     }
@@ -324,8 +284,8 @@ namespace CTRPluginFramework
     {
         if (SystemImpl::Status())
             return;
-
-        Preferences::ApplyBacklight();
+        // TODO: fully remove this, rosalina implements it now
+        // Preferences::ApplyBacklight();
 
         g_fpsCounter[isBottom].Update();
 
@@ -353,10 +313,10 @@ namespace CTRPluginFramework
             ScreenImpl::Top->Acquire((u32)addr, (u32)addrB, stride, format & 0b111);
             Renderer::SetTarget(TOP);
 
-            OnTopScreenFrame();
+            Result res = OnTopScreenFrame();
 
             // No osd when game is paused
-            if (ProcessImpl::IsPaused)
+            if (ProcessImpl::IsPaused || res)
                 return;
         }
         else
@@ -458,110 +418,6 @@ namespace CTRPluginFramework
         BottomScreen.Stride = (u32)screen->GetStride();
         BottomScreen.BytesPerPixel = screen->GetBytesPerPixel();
         BottomScreen.Format = screen->GetFormat();
-    }
-
-    enum
-    {
-        CLEARED_STICKY = -2,
-        CLEARED_ONESHOT = -1,
-        SIGNALED_ONESHOT = 0,
-        SIGNALED_STICKY = 1
-    };
-
-    static inline int LightEvent_TryReset(LightEvent& event)
-    {
-	    do
-	    {
-		    if (__ldrex(&event.state))
-		    {
-			    __clrex();
-			    return 0;
-		    }
-	    } while (__strex(&event.state, CLEARED_ONESHOT));
-
-	    return 1;
-    }
-
-    // Return false when event was signaled, true on timeout
-    static bool    LightEvent__WaitTimeOut(LightEvent& event, const Time timeout)
-    {
-        s64     timeOutNs = timeout.AsMicroseconds() * 1000;
-        Result  toRes = 0x09401BFE;
-        Result  res = 0;
-
-	    for (; res != toRes; )
-	    {
-		    if (event.state == CLEARED_STICKY)
-		    {
-			    res = syncArbitrateAddressWithTimeout(&event.state, ARBITRATION_WAIT_IF_LESS_THAN_TIMEOUT, 0, timeOutNs);
-			    return res == toRes;
-		    }
-
-		    if (event.state != CLEARED_ONESHOT)
-		    {
-			    if (event.state == SIGNALED_STICKY)
-				    return false;
-
-			    if (event.state == SIGNALED_ONESHOT && LightEvent_TryReset(event))
-				    return false;
-		    }
-
-		    res = syncArbitrateAddressWithTimeout(&event.state, ARBITRATION_WAIT_IF_LESS_THAN_TIMEOUT, 0, timeOutNs);
-	    }
-
-        return res == toRes;
-    }
-
-    void    OSDImpl::WaitFramePaused(void)
-    {
-        if (IsFramePaused)
-            return;
-
-        bool    isAsync = ProcessImpl::Status & NoImage;
-
-        if (!isAsync)
-        {
-            while (LightEvent__WaitTimeOut(OnFramePaused, Milliseconds(50))
-                   && ScreenImpl::CheckGspFrameBuffersInfo());
-            LightEvent_Clear(&OnFramePaused);
-
-            // Lock game threads
-            ProcessImpl::LockGameThreads();
-
-            // Wait for gpu to finish all stuff
-            while ((GPU_PSC0_CNT | GPU_PSC1_CNT | GPU_TRANSFER_CNT | GPU_CMDLIST_CNT) & 1);
-        }
-
-        // Wake up gsp event thread
-        GSP::ResumeInterruptReceiver();
-    }
-
-    void    OSDImpl::ResumeFrame(const u32 nbFrames)
-    {
-        if (!IsFramePaused)
-            return;
-
-        bool    isAsync = ProcessImpl::Status & NoImage;
-
-        GSP::PauseInterruptReceiver();
-
-        if (isAsync)
-            return;
-
-        FramesToPlay = nbFrames;
-
-        // Unlock game threads
-        ProcessImpl::UnlockGameThreads();
-
-        // Wake up game's thread
-        LightEvent_Signal(&OnFrameResume);
-
-        if (nbFrames)
-        {
-            // Wait until all our frames are rendered and the process is paused again
-            LightEvent_Wait(&OnFramePaused);
-            LightEvent_Clear(&OnFramePaused);
-        }
     }
 
     static const u32    g_OSDPattern[] =

@@ -37,10 +37,12 @@ namespace CTRPluginFramework
         static s32                      BufferFlags{0};
         static vu8 *                    SharedMemoryBlock{nullptr};
         static vu8 *                    EventData{nullptr};
+        static vu8 *                    CmdReqQueue{nullptr};
         static volatile Handle          GSPEvent;
         static Handle                   WakeEvent;
         static LightEvent               VBlank0Event;
         static LightEvent               VBlank1Event;
+        static LightSemaphore           Semaphore;
         static Hook                     GSPRegisterInterruptReceiverHook;
         static ThreadEx                 InterruptReceiverThread{InterruptReceiver, 0x1000, 0x35, -1};
         static FrameBufferInfoShared *  SharedFrameBuffers[2]{nullptr};
@@ -60,12 +62,12 @@ namespace CTRPluginFramework
                 "svc    0x32                           \n"
                 "ands   r1, r0, #0x80000000            \n"
                 "bxmi	lr                             \n"
-	            "stmfd	sp!, {r0, lr}                  \n"
+                "stmfd	sp!, {r0, lr}                  \n"
                 "ldr    r0, [r4, #8] @ thread id       \n"
-	            "mov	r2, r1                         \n"
+                "mov	r2, r1                         \n"
                 "ldr    r2, [r4, #0x10] @ shared mem handle \n"
                 "bl     __gsp__Update                  \n"
-	            "ldmfd	sp!, {r0, pc}                  \n"
+                "ldmfd	sp!, {r0, pc}                  \n"
             );
 #endif
         }
@@ -157,6 +159,7 @@ namespace CTRPluginFramework
             svcCreateEvent(&WakeEvent, RESET_ONESHOT);
             LightEvent_Init(&VBlank0Event, RESET_STICKY);
             LightEvent_Init(&VBlank1Event, RESET_STICKY);
+            LightSemaphore_Init(&Semaphore, 1, 1);
 
             return 0;
         }
@@ -176,6 +179,7 @@ namespace CTRPluginFramework
             SharedFrameBuffers[0] = reinterpret_cast<FrameBufferInfoShared *>(base);
             SharedFrameBuffers[1] = reinterpret_cast<FrameBufferInfoShared *>(base + 0x40);
             EventData = SharedMemoryBlock + threadId * 0x40;
+            CmdReqQueue = SharedMemoryBlock + 0x800 + threadId * 0x200;
 
             if (InterruptReceiverThread.GetStatus() == ThreadEx::IDLE)
             {
@@ -331,59 +335,97 @@ namespace CTRPluginFramework
 
         static void  ClearInterrupts(void)
         {
-	        bool    strexFailed;
+            bool    strexFailed;
 
-	        do
+            do
             {
-		        // Do a load on all header fields as an atomic unit
-		        __ldrex((s32 *)EventData);
+                // Do a load on all header fields as an atomic unit
+                __ldrex((s32 *)EventData);
 
-		        strexFailed = __strex((s32 *)EventData, 0);
+                strexFailed = __strex((s32 *)EventData, 0);
 
-	        } while (__builtin_expect(strexFailed, 0));
+            } while (__builtin_expect(strexFailed, 0));
         }
 
         static int  PopInterrupt(void)
         {
-	        int     curEvt;
-	        bool    strexFailed;
+            int     curEvt;
+            bool    strexFailed;
 
-	        do
+            do
             {
-		        union
-	            {
+                union
+                {
                     u32     as_u32;
-			        struct
-		            {
-				        u8  cur;
-				        u8  count;
-				        u8  err;
-				        u8  unused;
-			        };
+                    struct
+                    {
+                        u8  cur;
+                        u8  count;
+                        u8  status;
+                        u8  control;
+                    };
                 } header;
 
-		        // Do a load on all header fields as an atomic unit
-		        header.as_u32 = __ldrex((s32 *)EventData);
+                // Do a load on all header fields as an atomic unit
+                header.as_u32 = __ldrex((s32 *)EventData);
 
-		        if (__builtin_expect(header.count == 0, 0))
+                if (__builtin_expect(header.count == 0, 0))
                 {
-			        __clrex();
-			        return -1;
-		        }
+                    __clrex();
+                    return -1;
+                }
 
-		        curEvt = EventData[0xC + header.cur];
+                curEvt = EventData[0xC + header.cur];
 
-		        header.cur += 1;
-		        if (header.cur >= 0x34)
+                header.cur += 1;
+                if (header.cur >= 0x34)
                     header.cur -= 0x34;
-		        header.count -= 1;
-		        header.err = 0; // Should this really be set?
+                header.count -= 1;
+                header.status = 0;
 
-		        strexFailed = __strex((s32 *)EventData, header.as_u32);
+                strexFailed = __strex((s32 *)EventData, header.as_u32);
 
-	        } while (__builtin_expect(strexFailed, 0));
+            } while (__builtin_expect(strexFailed, 0));
 
-	        return curEvt;
+            return curEvt;
+        }
+
+        static void  EnqueueEvent(s8 event, bool signal = true)
+        {
+            int     curEvt;
+            bool    strexFailed;
+
+            do
+            {
+                union
+                {
+                    u32     as_u32;
+                    struct
+                    {
+                        u8  cur;
+                        u8  count;
+                        u8  status;
+                        u8  control;
+                    };
+                } header;
+
+                // Do a load on all header fields as an atomic unit
+                header.as_u32 = __ldrex((s32 *)EventData);
+
+                s32 lastIndex = (header.cur + header.count) % 0x34;
+
+                EventData[0xC + lastIndex] = event;
+
+                __dsb();
+
+                header.count++;
+
+                strexFailed = __strex((s32 *)EventData, header.as_u32);
+
+            } while (__builtin_expect(strexFailed, 0));
+
+            if (signal)
+                svcSignalEvent(GSPEvent);
         }
 
         static s32      __ldrex__(s32 *addr)
@@ -411,7 +453,9 @@ namespace CTRPluginFramework
                 {
                     if (!RunInterruptReceiver)
                         break;
+                    LightSemaphore_Release(&Semaphore, 1);
                     svcWaitSynchronization(WakeEvent, U64_MAX);
+                    LightSemaphore_Acquire(&Semaphore, 1);
                 }
 
                 ClearInterrupts();
@@ -422,22 +466,22 @@ namespace CTRPluginFramework
 
                     while (true)
                     {
-			            int curEvt = PopInterrupt();
+                        int curEvt = PopInterrupt();
 
-			            if (curEvt == -1)
-				            break;
+                        if (curEvt == -1)
+                            break;
 
                         // Top screen event
-			            if (curEvt == GSPGPU_EVENT_VBlank0)
-			            {
-				            LightEvent_Signal(&VBlank0Event);
-			            }
+                        if (curEvt == GSPGPU_EVENT_VBlank0)
+                        {
+                            LightEvent_Signal(&VBlank0Event);
+                        }
 
                         // Bottom screen event
-			            if (curEvt == GSPGPU_EVENT_VBlank1)
-			            {
+                        if (curEvt == GSPGPU_EVENT_VBlank1)
+                        {
                             LightEvent_Signal(&VBlank1Event);
-			            }
+                        }
                     }
                 }
             }
@@ -449,12 +493,23 @@ namespace CTRPluginFramework
         {
             svcClearEvent(WakeEvent);
             CatchInterrupt = false;
+            svcSignalEvent(GSPEvent);
+            LightSemaphore_Acquire(&Semaphore, 1);
             ClearInterrupts();
+
+            // Trigger all the events in case the game is waiting on one of them
+            EnqueueEvent(GSPGPU_EVENT_PSC0, false);
+            EnqueueEvent(GSPGPU_EVENT_PSC1, false);
+            EnqueueEvent(GSPGPU_EVENT_PPF, false);
+            EnqueueEvent(GSPGPU_EVENT_P3D, false);
+            EnqueueEvent(GSPGPU_EVENT_DMA, true);
         }
 
         void    ResumeInterruptReceiver(void)
         {
             CatchInterrupt = true;
+            ClearInterrupts();
+            LightSemaphore_Release(&Semaphore, 1);
             svcSignalEvent(WakeEvent);
         }
 
@@ -544,6 +599,8 @@ namespace CTRPluginFramework
                 if (src.fbInfo[1].framebuf1_vaddr)
                     fbs->fbInfo[1].framebuf1_vaddr = plgVAtoGameVa(src.fbInfo[0].framebuf1_vaddr);
             }
+
+            __dsb();
 
             src.header.update = 1;
             s32 *addr = &SharedFrameBuffers[screen]->header.header;
@@ -754,13 +811,13 @@ namespace CTRPluginFramework
         svcFlushProcessDataCache(CUR_PROCESS_HANDLE, (u32)GetLeftFrameBuffer(), size);
     }
 
-	void	ScreenImpl::Invalidate(void)
-	{
-		u32 size = GetFrameBufferSize();
+    void	ScreenImpl::Invalidate(void)
+    {
+        u32 size = GetFrameBufferSize();
 
-		// Invalidate currentBuffer
-		svcInvalidateProcessDataCache(CUR_PROCESS_HANDLE, (u32)GetLeftFrameBuffer(), size);
-	}
+        // Invalidate currentBuffer
+        svcInvalidateProcessDataCache(CUR_PROCESS_HANDLE, (u32)GetLeftFrameBuffer(), size);
+    }
 
     void    ScreenImpl::Clear(bool applyFlagForCurrent)
     {
@@ -878,8 +935,15 @@ namespace CTRPluginFramework
         Bottom->Copy();
     }
 
+#define GPU_PSC0_CNT                REG32(0x1040001C)
+#define GPU_PSC1_CNT                REG32(0x1040002C)
+#define GPU_TRANSFER_CNT            REG32(0x10400C18)
+#define GPU_CMDLIST_CNT             REG32(0x104018F0)
+
     u32     ScreenImpl::AcquireFromGsp(void)
     {
+        // Wait for gpu to finish all stuff
+        while ((GPU_PSC0_CNT | GPU_PSC1_CNT | GPU_TRANSFER_CNT | GPU_CMDLIST_CNT) & 1);
         return Top->Acquire() | Bottom->Acquire();
     }
 

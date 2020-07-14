@@ -56,6 +56,7 @@ namespace CTRPluginFramework
         static bool             MessColors;
         static u32              WaitingForScreenshot;
         static u32              FramesToPlay;
+        static bool             NeedToPauseFrame;
 
         static Hook             OSDHook;
         static RecursiveLock    RecLock;
@@ -80,6 +81,7 @@ namespace CTRPluginFramework
         static  void    CallbackCommon(u32 isBottom, void *leftFb, void *rightFb, int stride, int format);
         static  void    UpdateScreens(void);
 
+        static int      PauseFrame(void);
         static void     WaitFramePaused(void);
         static void     ResumeFrame(const u32 nbFrames = 0);
 
