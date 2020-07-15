@@ -3,7 +3,7 @@
 
 #include "CTRPluginFramework/System/Vector.hpp"
 #include "CTRPluginFrameworkImpl/Menu/MenuEntryTools.hpp"
-#include <CTRPluginFramework\Graphics\CustomIcon.hpp>
+#include "CTRPluginFramework/Graphics/CustomIcon.hpp"
 
 namespace CTRPluginFramework
 {
