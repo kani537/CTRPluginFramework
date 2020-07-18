@@ -1,6 +1,8 @@
 #include "CTRPluginFrameworkImpl/Graphics/OSDImpl.hpp"
 #include "CTRPluginFrameworkImpl/System/Screen.hpp"
 #include "CTRPluginFrameworkImpl/System/ProcessImpl.hpp"
+#include "CTRPluginFramework/System/Mutex.hpp"
+#include "CTRPluginFramework/System/Lock.hpp"
 #include "CTRPluginFramework/System/Thread.hpp"
 #include "CTRPluginFramework/System/Sleep.hpp"
 
@@ -12,6 +14,14 @@
 
 namespace CTRPluginFramework
 {
+    using CTRPFLock = CTRPluginFramework::Lock;
+
+    namespace
+    {
+        Mutex   FrameLockingMutex;
+        bool    IsForced = false;
+    }
+
     void    OSDImpl::Lock(void)
     {
         RecursiveLock_Lock(&RecLock);
@@ -91,17 +101,17 @@ namespace CTRPluginFramework
         if (ScreenImpl::CheckGspFrameBuffersInfo())
             return 0;
 
-        // Edit tls to prevent thread locking
-        //u32 *tls = (u32 *)getThreadLocalStorage();
-        //u32 bak = *tls;
+        {
+            CTRPFLock   lock(FrameLockingMutex);
 
-        // Lock threads
-        //*tls = THREADVARS_MAGIC; ///< this prevent this particular thead from being blocked
+            if (IsForced || !NeedToPauseFrame)
+                return 0;
 
-        // Lock game threads except this one
-        ProcessImpl::LockGameThreads();
+            // Lock game threads except this one
+            ProcessImpl::LockGameThreads();
 
-        IsFramePaused = true;
+            IsFramePaused = true;
+        }
 
         // Wake up threads waiting for frame to be paused
         LightEvent_Signal(&OnFramePaused);
@@ -109,9 +119,6 @@ namespace CTRPluginFramework
         // Wait until the frame is ready to continue
         LightEvent_Wait(&OnFrameResume);
         LightEvent_Clear(&OnFrameResume);
-
-        // Restore tls
-        //*tls = bak;
 
         IsFramePaused = false;
         return 1;
@@ -126,15 +133,24 @@ namespace CTRPluginFramework
 
         if (!isAsync)
         {
+            IsForced = false;
             NeedToPauseFrame = true;
 
-            while (LightEvent__WaitTimeOut(OnFramePaused, Milliseconds(50))
+            while ((IsForced = LightEvent__WaitTimeOut(OnFramePaused, Milliseconds(50)))
                    && ScreenImpl::CheckGspFrameBuffersInfo());
             LightEvent_Clear(&OnFramePaused);
 
+            CTRPFLock   lock(FrameLockingMutex);
+
             // Lock game threads
-            ProcessImpl::LockGameThreads();
+            if (!IsFramePaused)
+            {
+                ProcessImpl::LockGameThreads();
+                IsForced = true;
+            }
         }
+
+        IsFramePaused = true;
 
         // Wake up gsp event thread
         GSP::ResumeInterruptReceiver();
@@ -168,7 +184,7 @@ namespace CTRPluginFramework
         }
         else
         {
-            NeedToPauseFrame = false;
+            IsForced = NeedToPauseFrame = false;
         }
     }
 }
