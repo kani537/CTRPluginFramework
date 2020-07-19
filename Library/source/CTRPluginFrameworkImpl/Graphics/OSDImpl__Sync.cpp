@@ -20,6 +20,21 @@ namespace CTRPluginFramework
     {
         Mutex   FrameLockingMutex;
         bool    IsForced = false;
+        bool    HasGameResumed = false;
+        Task    CheckFrameResumedTask([](void *arg) -> s32
+        {
+            while (!HasGameResumed)
+            {
+                Sleep(Milliseconds(32)); ///< Wait for 2 frames
+
+                if (!HasGameResumed)
+                {
+                    GSP::TriggerAllEvents();
+                }
+            }
+
+            return 0;
+        });
     }
 
     void    OSDImpl::Lock(void)
@@ -93,6 +108,7 @@ namespace CTRPluginFramework
 
     int    OSDImpl::PauseFrame(void)
     {
+        HasGameResumed = true;
         // Check if we need to pause frame
         if (WaitingForScreenshot || FramesToPlay || !ProcessImpl::IsPaused || !NeedToPauseFrame)
             return 0;
@@ -161,6 +177,8 @@ namespace CTRPluginFramework
         if (!IsFramePaused)
             return;
 
+        HasGameResumed = false;
+
         bool    isAsync = ProcessImpl::Status & NoImage;
 
         GSP::PauseInterruptReceiver();
@@ -172,6 +190,9 @@ namespace CTRPluginFramework
 
         // Unlock game threads
         ProcessImpl::UnlockGameThreads();
+
+        // Async job to ensure frame is resumed
+        CheckFrameResumedTask.Start();
 
         // Wake up game's thread
         LightEvent_Signal(&OnFrameResume);

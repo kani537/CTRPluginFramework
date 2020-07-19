@@ -91,9 +91,6 @@ AR:
 	3gxtool -s $(OUTPUT).plg $(CURDIR)/CTRPluginFramework.plgInfo $(CURDIR)/ActionReplay.3gx
 	@$(TOPDIR)/sendfile.py $(ACTIONREPLAY) "ActionReplay/" "$(FTP_HOST)$(IP)" $(FTP_PORT)
 
-install:
-	@mv $(OUTPUT).3gx /mnt/g/luma/plugins/default.3gx
-
 #---------------------------------------------------------------------------------
 
 else
@@ -119,6 +116,7 @@ $(OUTPUT).3gx : $(OFILES)
 %.3gx: %.elf
 	@echo creating $(notdir $@)
 	@3gxtool -s $(OUTPUT).elf $(TOPDIR)/$(PSF) $@
+	@cp $@ ../default.3gx
 
 -include $(DEPENDS)
 

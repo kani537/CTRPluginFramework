@@ -51,6 +51,7 @@ namespace CTRPluginFramework
         void    Update(u32 threadId, Handle eventHandle, Handle sharedMemHandle);
         void    PauseInterruptReceiver(void);
         void    ResumeInterruptReceiver(void);
+        void    TriggerAllEvents(void);
         void    WaitForVBlank(void);
         void    WaitForVBlank1(void);
         void    SwapBuffer(int screen);

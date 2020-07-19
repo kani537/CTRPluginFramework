@@ -4,6 +4,7 @@
 #include "CTRPluginFrameworkImpl/System.hpp"
 #include "CTRPluginFramework/System/System.hpp"
 #include "CTRPluginFramework/Utils/Utils.hpp"
+#include "CTRPluginFramework/Graphics/OSD.hpp"
 #include "3ds.h"
 #include "CTRPluginFrameworkImpl/Preferences.hpp"
 #include "csvc.h"
@@ -44,7 +45,7 @@ namespace CTRPluginFramework
         static LightEvent               VBlank1Event;
         static LightSemaphore           Semaphore;
         static Hook                     GSPRegisterInterruptReceiverHook;
-        static ThreadEx                 InterruptReceiverThread{InterruptReceiver, 0x1000, 0x35, -1};
+        static ThreadEx                 InterruptReceiverThread{InterruptReceiver, 0x1000, 0x1A, -1};
         static FrameBufferInfoShared *  SharedFrameBuffers[2]{nullptr};
         u32    InterruptReceiverThreadPriority;
 
@@ -347,6 +348,54 @@ namespace CTRPluginFramework
             } while (__builtin_expect(strexFailed, 0));
         }
 
+        struct QueueBody
+        {
+            u32 control;
+            s32 droppedPdc0Count;
+            s32 droppedPdc1Count;
+            u8 data[52];
+        } PACKED;
+
+        static QueueBody g_backup;
+
+        static void SaveQueue(void)
+        {
+            QueueBody *queue = (QueueBody *)EventData;
+
+            __ldrex((s32 *)EventData);
+            g_backup.control = queue->control;
+            g_backup.droppedPdc0Count = queue->droppedPdc0Count;
+            g_backup.droppedPdc1Count = queue->droppedPdc1Count;
+
+            for (int i = 0; i < 52; ++i)
+            {
+                g_backup.data[i] = queue->data[i];
+            }
+
+            __clrex();
+
+            // OSD::Notify(Utils::Format("SQ Count: %08X", queue->control));
+        }
+
+        static void RestoreQueue(void)
+        {
+            QueueBody *queue = (QueueBody *)EventData;
+
+            __ldrex((s32 *)EventData);
+            queue->control = g_backup.control;
+            queue->droppedPdc0Count = g_backup.droppedPdc0Count;
+            queue->droppedPdc1Count = g_backup.droppedPdc1Count;
+
+            for (int i = 0; i < 52; ++i)
+            {
+                queue->data[i] = g_backup.data[i];
+            }
+
+            __clrex();
+
+            // OSD::Notify(Utils::Format("RQ Count: %08X", queue->control));
+        }
+
         static int  PopInterrupt(void)
         {
             int     curEvt;
@@ -453,12 +502,16 @@ namespace CTRPluginFramework
                 {
                     if (!RunInterruptReceiver)
                         break;
+
                     LightSemaphore_Release(&Semaphore, 1);
+
                     svcWaitSynchronization(WakeEvent, U64_MAX);
+
                     LightSemaphore_Acquire(&Semaphore, 1);
+                    SaveQueue();
                 }
 
-                ClearInterrupts();
+                // ClearInterrupts();
                 while (CatchInterrupt)
                 {
                     svcClearEvent(GSPEvent);
@@ -489,40 +542,40 @@ namespace CTRPluginFramework
             svcExitThread();
         }
 
+        void    TriggerAllEvents(void)
+        {
+            EnqueueEvent(GSPGPU_EVENT_PSC0, false);
+            EnqueueEvent(GSPGPU_EVENT_PSC1, true);
+            // EnqueueEvent(GSPGPU_EVENT_PPF, false);
+            // EnqueueEvent(GSPGPU_EVENT_P3D, false);
+            // EnqueueEvent(GSPGPU_EVENT_DMA, true);
+        }
+
         void    PauseInterruptReceiver(void)
         {
             svcClearEvent(WakeEvent);
             CatchInterrupt = false;
             svcSignalEvent(GSPEvent);
             LightSemaphore_Acquire(&Semaphore, 1);
-            ClearInterrupts();
-
-            // Trigger all the events in case the game is waiting on one of them
-            EnqueueEvent(GSPGPU_EVENT_PSC0, false);
-            EnqueueEvent(GSPGPU_EVENT_PSC1, false);
-            EnqueueEvent(GSPGPU_EVENT_PPF, false);
-            EnqueueEvent(GSPGPU_EVENT_P3D, false);
-            EnqueueEvent(GSPGPU_EVENT_DMA, true);
         }
 
         void    ResumeInterruptReceiver(void)
         {
             CatchInterrupt = true;
-            ClearInterrupts();
             LightSemaphore_Release(&Semaphore, 1);
             svcSignalEvent(WakeEvent);
         }
 
         void    WaitForVBlank(void)
         {
-            ClearInterrupts();
+            // ClearInterrupts();
             LightEvent_Clear(&VBlank0Event);
             LightEvent_Wait(&VBlank0Event);
         }
 
         void    WaitForVBlank1(void)
         {
-            ClearInterrupts();
+            // ClearInterrupts();
             LightEvent_Clear(&VBlank1Event);
             LightEvent_Wait(&VBlank1Event);
         }

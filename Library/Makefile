@@ -157,6 +157,7 @@ lib/libctrpf.a : lib release
 	@$(MAKE) BUILD=release OUTPUT=$(CURDIR)/$@ \
 	BUILD_CFLAGS="-DNDEBUG=1 -O2 -fomit-frame-pointer" DEPSDIR=$(CURDIR)/release \
 	--no-print-directory -C release	-f $(CURDIR)/Makefile
+	@rm release/PluginMenuTools.o # Force update of revision, date etc
 
 lib/libctrpfd.a : lib debug
 	@$(MAKE) BUILD=debug OUTPUT=$(CURDIR)/$@ BUILD_CFLAGS="-DDEBUG=1 -Og" \
