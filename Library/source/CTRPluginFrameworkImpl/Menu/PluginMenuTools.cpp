@@ -24,10 +24,13 @@
 
 #define ALPHA 0
 
+#define TAG_VERSION CTRPF_VERSION_MAJOR "." CTRPF_VERSION_MINOR "." CTRPF_VERSION_BUILD
+
+// Maybe add branch as metadata ?
 #if ALPHA
 #define VersionStr "CTRPluginFramework Alpha V.0.6.0"
 #else
-#define VersionStr "CTRPluginFramework Beta V.0.6.0"
+#define VersionStr "CTRPluginFramework Beta V" TAG_VERSION
 #endif
 
 namespace CTRPluginFramework
@@ -751,10 +754,23 @@ namespace CTRPluginFramework
         // Draw Framework version
         {
             static const char *version = VersionStr;
+            static const char *tagVersion = TAG_VERSION;
+            static const char *commit = COMMIT_HASH;
+            static const char *compilationDate = COMPILE_DATE;
+
+            int posY = 30, posYY = 50;
+            Renderer::DrawString("CTRPF Build:",  30, posY, blank);
+            Renderer::DrawLine(30, posY, 12 * 6, blank); posY += 10;
+            Renderer::DrawString("Version: ",  30, posY, blank);    Renderer::DrawString(tagVersion,  100, posYY, blank);
+            Renderer::DrawString("Commit: ",  30, posY, blank);     Renderer::DrawString(commit,  100, posYY, blank);
+            Renderer::DrawString("Compiled: ",  30, posY, blank);   Renderer::DrawString(compilationDate,  100, posYY, blank);
+
+
+            /*
             static const u32 xpos = (320 - Renderer::LinuxFontSize(version)) / 2;
 
             int posY = 205;
-            Renderer::DrawString(version, xpos, posY, blank);
+            Renderer::DrawString(version, xpos, posY, blank);*/
         }
     }
 

@@ -9,65 +9,38 @@ endif
 TOPDIR ?= $(CURDIR)
 include $(DEVKITARM)/3ds_rules
 
+CTRPFLIB	?=	$(DEVKITPRO)/libctrpf
+
 TARGET		:= 	$(notdir $(CURDIR))
 BUILD		:= 	Build
 INCLUDES	:= 	Includes \
-				Includes/lodepng
+				Includes/lodepng \
+				../Library/include
 
-SOURCES 	:= 	Sources \
-				Sources/CTRPluginFramework \
-				Sources/CTRPluginFramework/Graphics \
-				Sources/CTRPluginFramework/Menu \
-				Sources/CTRPluginFramework/System \
-				Sources/CTRPluginFramework/Utils \
-				Sources/CTRPluginFrameworkImpl \
-				Sources/CTRPluginFrameworkImpl/ActionReplay \
-				Sources/CTRPluginFrameworkImpl/Disassembler \
-				Sources/CTRPluginFrameworkImpl/Graphics \
-				Sources/CTRPluginFrameworkImpl/Graphics/Icons \
-				Sources/CTRPluginFrameworkImpl/Menu \
-				Sources/CTRPluginFrameworkImpl/Search \
-				Sources/CTRPluginFrameworkImpl/System \
-				Sources/ctrulibExtension \
-				Sources/ctrulibExtension/allocator \
-				Sources/ctrulibExtension/gpu \
-				Sources/ctrulibExtension/services \
-				Sources/ctrulibExtension/system \
-				Sources/ctrulibExtension/util/utf \
-				Sources/ctrulibExtension/util/rbtree \
-				Sources/lodepng
+SOURCES 	:= 	Sources
 
-IP			:=  5
-FTP_HOST 	:=	192.168.1.
-FTP_PORT	:=	"5000"
-FTP_PATH	:=	"0004000000033600/" #Zelda OOT
 PSF 		:= 	$(notdir $(TOPDIR)).plgInfo
-ACTIONREPLAY := ActionReplay.3gx
-ifneq ("$(wildcard $(ACTIONREPLAY))","")
-FILE_EXISTS = 1
-else
-FILE_EXISTS = 0
-endif
 
 #---------------------------------------------------------------------------------
 # options for code generation
 #---------------------------------------------------------------------------------
-ARCH	:=	-march=armv6k -mlittle-endian -mtune=mpcore -mfloat-abi=hard -mtp=soft
+ARCH	:=	-march=armv6k -mtune=mpcore -mfloat-abi=hard -mtp=soft
 
 CFLAGS	:=	-Os -mword-relocations \
  			-fomit-frame-pointer -ffunction-sections -fno-strict-aliasing \
 			$(ARCH)
 
 CFLAGS		+=	$(INCLUDE) -DARM11 -D_3DS
+
 #-Wall -Wextra -Wdouble-promotion -Werror
 
 CXXFLAGS	:= $(CFLAGS) -fno-rtti -fno-exceptions -std=gnu++11
 
 ASFLAGS		:= $(ARCH)
-LDFLAGS		:= -T $(TOPDIR)/3gx.ld $(ARCH) -Os -Wl,--gc-sections,--strip-discarded,--strip-debug
+LDFLAGS		:= -T $(TOPDIR)/3gx.ld $(ARCH) -Os -Wl,--gc-sections,--strip-discarded,--strip-debug,--section-start,.text=0x07000100 #-specs=3dsx.specs
 
-LIBS 		:= 	-lctru -lm
-LIBDIRS		:= 	$(CTRULIB) $(PORTLIBS)
+LIBS 		:= 	-lctrpf -lctru -lm
+LIBDIRS		:= 	$(CTRPFLIB) $(CTRULIB) $(PORTLIBS)
 
 #---------------------------------------------------------------------------------
 # no real need to edit anything past this point unless you need to add additional
@@ -114,20 +87,12 @@ clean:
 
 re: clean all
 
-send:
-	@echo "Sending the plugin over FTP"
-	@$(TOPDIR)/sendfile.py $(TARGET).plg $(FTP_PATH) "$(FTP_HOST)$(IP)" $(FTP_PORT)
-
-ACNL:
-	make send FTP_PATH="0004000000086400/"
-FL:
-	make send FTP_PATH="0004000000113100/"
 AR:
 	3gxtool -s $(OUTPUT).plg $(CURDIR)/CTRPluginFramework.plgInfo $(CURDIR)/ActionReplay.3gx
 	@$(TOPDIR)/sendfile.py $(ACTIONREPLAY) "ActionReplay/" "$(FTP_HOST)$(IP)" $(FTP_PORT)
 
 install:
-	@mv $(OUTPUT).3gx d:/luma/plugins/default.3gx
+	@mv $(OUTPUT).3gx /mnt/g/luma/plugins/default.3gx
 
 #---------------------------------------------------------------------------------
 
@@ -138,11 +103,9 @@ else
 #---------------------------------------------------------------------------------
 
 DEPENDS	:=	$(OFILES:.o=.d)
-EXCLUDE := main.o cheats.o ActionReplayTest.o OSDManager.o PointerTesting.o Speedometer.o
 
 
-$(OUTPUT).3gx : $(OFILES) $(LIBOUT)
-$(LIBOUT):	$(filter-out $(EXCLUDE), $(OFILES))
+$(OUTPUT).3gx : $(OFILES)
 
 #---------------------------------------------------------------------------------
 # you need a rule like this for each extension you use as binary data

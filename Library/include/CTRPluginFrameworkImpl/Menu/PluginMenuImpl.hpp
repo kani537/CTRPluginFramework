@@ -9,16 +9,17 @@
 #include "CTRPluginFrameworkImpl/Menu/PluginMenuSearch.hpp"
 #include "CTRPluginFrameworkImpl/Menu/PluginMenuTools.hpp"
 #include "CTRPluginFrameworkImpl/Menu/PluginMenuExecuteLoop.hpp"
+#include "CTRPluginFrameworkImpl/Menu/PluginMenuActionReplay.hpp"
 #include "CTRPluginFrameworkImpl/Preferences.hpp"
 
 #include <vector>
-#include "PluginMenuActionReplay.hpp"
 
 namespace CTRPluginFramework
 {
     class PluginMenuImpl
     {
-        using FuncPointer = void(*)(void);
+        using CallbackPointer = void (*)(void);
+        using FuncPointer = void (*)(void);
 		using OnOpeningCallback = bool (*)(void);
         using FramePointer = void (*)(Time);
         using HotkeysVector = std::vector<Preferences::HotkeysInfos>;

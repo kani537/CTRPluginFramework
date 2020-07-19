@@ -1,7 +1,7 @@
 #include "PointerSearcher.hpp"
 #include "CTRPluginFramework/System/Process.hpp"
-#include "ctrulib/result.h"
 #include "CTRPluginFramework/Utils/Utils.hpp"
+#include "3ds/result.h"
 
 namespace CTRPluginFramework
 {

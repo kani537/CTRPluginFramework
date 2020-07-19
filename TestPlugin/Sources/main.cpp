@@ -1,37 +1,16 @@
-#if __INTELLISENSE__
-typedef unsigned int __SIZE_TYPE__;
-typedef unsigned long __PTRDIFF_TYPE__;
-//#undef __cplusplus
-//#define __cplusplus 201103L
-#undef __cpp_exceptions
-#define __cpp_exceptions 0
-#define __attribute__(q)
-#define __extension__
-#define __asm__(expr)
-#define __builtin_labs(a) 0
-#define __builtin_llabs(a) 0
-#define __builtin_fabs(a) 0
-#define __builtin_fabsf(a) 0
-#define __builtin_fabsl(a) 0
-#define __builtin_strcmp(a,b) 0
-#define __builtin_strlen(a) 0
-#define __builtin_memcpy(a,b) 0
-#define __builtin_va_list void*
-#define __builtin_va_start(a,b)
-#endif
-
 #include <3ds.h>
-#include "CTRPluginFramework.hpp"
+#include <CTRPluginFramework.hpp>
+
+#include "csvc.h"
+#include "OSDManager.hpp"
+
 #include <string>
 #include <iterator>
-#include "csvc.h"
-#include "CTRPluginFrameworkImpl/System/Screen.hpp"
-#include "CTRPluginFrameworkImpl/Graphics/BMPImage.hpp"
-//#include "OSDManager.hpp"
-#include "CTRPluginFrameworkImpl/System/ProcessImpl.hpp"
 #include <list>
-#include "CTRPluginFrameworkImpl/Graphics/TextBox.hpp"
-#include "plgldr.h"
+
+#include "CTRPluginFrameworkImpl/System/Screen.hpp"
+#include "CTRPluginFrameworkImpl/System/SystemImpl.hpp"
+#include "CTRPluginFrameworkImpl/System/ProcessImpl.hpp"
 
 namespace CTRPluginFramework
 {

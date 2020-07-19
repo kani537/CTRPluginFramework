@@ -1,11 +1,6 @@
 #ifndef CTRPLUGINFRAMEWORK_HPP
 #define CTRPLUGINFRAMEWORK_HPP
 
-#include "types.h"
-#include "ctrulibExtension.h"
-
-using CallbackPointer = void (*)(void);
-
 #include "CTRPluginFramework/Graphics.hpp"
 #include "CTRPluginFramework/Menu.hpp"
 #include "CTRPluginFramework/System.hpp"

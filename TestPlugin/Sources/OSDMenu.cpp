@@ -1,6 +1,6 @@
 #include "OSDMenu.hpp"
 #include "CTRPluginFramework.hpp"
-#include "ctrulib/synchronization.h"
+#include <3ds.h>
 #include <algorithm>
 
 #define AtomicRead(ptr) __atomic_load_n((u32 *)(ptr), __ATOMIC_SEQ_CST)
@@ -161,7 +161,7 @@ namespace CTRPluginFramework
 
             for (; start < end; ++start, posY += 10)
             {
-                screen.Draw(entries[start], posX, posY, start == menu._selector ? Color::DeepSkyBlue : Color::Blank);
+                screen.Draw(entries[start], posX, posY, start == menu._selector ? Color::DeepSkyBlue : Color::White);
             }
         }
 

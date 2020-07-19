@@ -1,7 +1,7 @@
 #ifndef OSDMENU_HPP
 #define OSDMENU_HPP
 
-#include "types.h"
+#include <3ds.h>
 #include <string>
 #include <vector>
 
