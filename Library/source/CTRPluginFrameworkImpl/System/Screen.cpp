@@ -756,6 +756,26 @@ namespace CTRPluginFramework
         fb->framebuf_widthbytesize = 240 * 2; // Enforce RGB565
         fb->format = GSP_RGB565_OES;
         fb->framebuf_dispselect = 1;
+
+
+// #define FORCE_SCREEN_RESET 1
+#if FORCE_SCREEN_RESET
+        REG(Top->_LCDSetup + LCDSetup::FramebufferA1) = svcConvertVAToPA(screensFbs->topFramebuffer0, false);
+        REG(Top->_LCDSetup + LCDSetup::FramebufferA2) = svcConvertVAToPA(screensFbs->topFramebuffer1, false);
+        REG(Top->_LCDSetup + LCDSetup::FramebufferB1) = REG(Top->_LCDSetup + LCDSetup::FramebufferA1);
+        REG(Top->_LCDSetup + LCDSetup::FramebufferB2) = REG(Top->_LCDSetup + LCDSetup::FramebufferA2);
+        REG(Top->_LCDSetup + LCDSetup::Format) = (REG(Top->_LCDSetup + LCDSetup::Format) & 0xFFFF0000) | (GSP_RGB565_OES);
+        REG(Top->_LCDSetup + LCDSetup::Select) = 0;
+        REG(Top->_LCDSetup + LCDSetup::Stride) = 240*2;
+
+        REG(Bottom->_LCDSetup + LCDSetup::FramebufferA1) = svcConvertVAToPA(screensFbs->bottomFramebuffer0, false);
+        REG(Bottom->_LCDSetup + LCDSetup::FramebufferA2) = svcConvertVAToPA(screensFbs->bottomFramebuffer1, false);
+        REG(Bottom->_LCDSetup + LCDSetup::FramebufferB1) = REG(Bottom->_LCDSetup + LCDSetup::FramebufferA1);
+        REG(Bottom->_LCDSetup + LCDSetup::FramebufferB2) = REG(Bottom->_LCDSetup + LCDSetup::FramebufferA2);
+        REG(Bottom->_LCDSetup + LCDSetup::Format) = (REG(Bottom->_LCDSetup + LCDSetup::Format) & 0xFFFF0000) | (GSP_RGB565_OES);
+        REG(Bottom->_LCDSetup + LCDSetup::Select) = 0;
+        REG(Bottom->_LCDSetup + LCDSetup::Stride) = 240*2;
+#endif
     }
 
     void    ScreenImpl::Fade(const float fade)
