@@ -51,7 +51,7 @@ deploy-hourly:
         - develop
     script:
         - DATE=`date`
-        - gitlab-release --message "hourly $CI_COMMIT_BRANCH-$CI_COMMIT_SHORT_SHA $DATE" libctrpf-$CTRPF_REVISION.tar.bz2
+        - gitlab-release --message "$DATE : $CI_COMMIT_BRANCH -  $CI_COMMIT_SHORT_SHA - $CI_COMMIT_TITLE" libctrpf-$CTRPF_REVISION.tar.bz2
     needs:
       - job: prep
         artifacts: true
@@ -66,7 +66,7 @@ deploy-hourly-merge_requests:
     only: [merge_requests]
     script:
         - DATE=`date`
-        - gitlab-release --message "Hourly $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME-$CI_COMMIT_SHORT_SHA $DATE  ($CI_MERGE_REQUEST_TITLE)" libctrpf-$CTRPF_REVISION.tar.bz2
+        - gitlab-release --message "$DATE : $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME - $CI_COMMIT_SHORT_SHA - $CI_COMMIT_TITLE ($CI_MERGE_REQUEST_TITLE)" libctrpf-$CTRPF_REVISION.tar.bz2
     needs:
       - job: prep
         artifacts: true
