@@ -58,7 +58,7 @@ namespace CTRPluginFramework
         // 0: Top, 1: Bottom, 3: Both
         void    WaitBufferSwapped(int screen);
 
-        void    ImportFrameBufferInfo(FrameBufferInfoShared& dest, int screen);
+        u32     ImportFrameBufferInfo(FrameBufferInfoShared& dest, int screen);
         void    SetFrameBufferInfo(FrameBufferInfoShared& src, int screen, bool convert);
     }
 

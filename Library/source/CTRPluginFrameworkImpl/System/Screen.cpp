@@ -618,12 +618,15 @@ namespace CTRPluginFramework
             }
         }
 
-        void    ImportFrameBufferInfo(FrameBufferInfoShared& dest, int screen)
+        u32    ImportFrameBufferInfo(FrameBufferInfoShared& dest, int screen)
         {
             u8 *src = reinterpret_cast<u8 *>(SharedFrameBuffers[screen]);
             u8 *dst = reinterpret_cast<u8 *>(&dest);
 
+            if (!src) return -1;
+
             std::copy(src, src + sizeof(FrameBufferInfoShared), dst);
+            return 0;
         }
 
         static u32 *plgVAtoGameVa(u32 *va)
@@ -837,7 +840,8 @@ namespace CTRPluginFramework
             return 0;
 
         // Fetch game frame buffers
-        GSP::ImportFrameBufferInfo(_gameFrameBufferInfo, !_isTopScreen);
+        if (GSP::ImportFrameBufferInfo(_gameFrameBufferInfo, !_isTopScreen))
+            return -1;
 
         // Check frame buffers validity
         const u32 displayed = _gameFrameBufferInfo.header.screen;
