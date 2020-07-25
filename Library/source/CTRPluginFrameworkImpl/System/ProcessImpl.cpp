@@ -400,11 +400,7 @@ namespace CTRPluginFramework
         Process::ExceptionCallbackState ret = Process::EXCB_LOOP;
 
         while (ret == Process::EXCB_LOOP)
-        {
-            Controller::Update();
-
             ret = Process::exceptionCallback(excep, regs);
-        }
 
         switch (ret)
         {
