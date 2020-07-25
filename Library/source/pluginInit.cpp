@@ -5,6 +5,7 @@
 #include "CTRPluginFrameworkImpl/Graphics/Font.hpp"
 #include "CTRPluginFrameworkImpl/System/Screenshot.hpp"
 #include "CTRPluginFrameworkImpl/System/HookManager.hpp"
+#include "CTRPluginFrameworkImpl/System/Services/Gsp.hpp"
 #include "csvc.h"
 #include "plgldr.h"
 
@@ -31,6 +32,7 @@ extern "C"
 }
 
 using CTRPluginFramework::Hook;
+using namespace CTRPluginFrameworkImpl::Services;
 
 namespace CTRPluginFramework
 {

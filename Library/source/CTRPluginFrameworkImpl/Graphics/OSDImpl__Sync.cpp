@@ -1,6 +1,7 @@
 #include "CTRPluginFrameworkImpl/Graphics/OSDImpl.hpp"
 #include "CTRPluginFrameworkImpl/System/Screen.hpp"
 #include "CTRPluginFrameworkImpl/System/ProcessImpl.hpp"
+#include "CTRPluginFrameworkImpl/System/Services/Gsp.hpp"
 #include "CTRPluginFramework/System/Mutex.hpp"
 #include "CTRPluginFramework/System/Lock.hpp"
 #include "CTRPluginFramework/System/Thread.hpp"
@@ -15,6 +16,7 @@
 namespace CTRPluginFramework
 {
     using CTRPFLock = CTRPluginFramework::Lock;
+    using namespace CTRPluginFrameworkImpl::Services;
 
     namespace
     {

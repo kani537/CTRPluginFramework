@@ -6,9 +6,12 @@
 
 #include <algorithm>
 #include "CTRPluginFrameworkImpl/System/Screen.hpp"
+#include "CTRPluginFrameworkImpl/System/Services/Gsp.hpp"
 
 namespace CTRPluginFramework
 {
+    using namespace CTRPluginFrameworkImpl::Services;
+
     u8      *Screen::GetFramebuffer(u32 posX, u32 posY, bool useRightFb) const
     {
         if (useRightFb && (!IsTop || !Is3DEnabled))

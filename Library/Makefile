@@ -45,6 +45,7 @@ SOURCES		:=	source \
 				source/CTRPluginFrameworkImpl/Menu \
 				source/CTRPluginFrameworkImpl/Search \
 				source/CTRPluginFrameworkImpl/System \
+				source/CTRPluginFrameworkImpl/System/Services \
 				source/ctrulibExtension \
 				source/ctrulibExtension/allocator \
 				source/ctrulibExtension/gpu \
@@ -160,7 +161,7 @@ lib/libctrpf.a : lib release
 	@rm release/PluginMenuTools.o # Force update of revision, date etc
 
 lib/libctrpfd.a : lib debug
-	@$(MAKE) BUILD=debug OUTPUT=$(CURDIR)/$@ BUILD_CFLAGS="-DDEBUG=1 -Og" G=-g \
+	@$(MAKE) BUILD=debug OUTPUT=$(CURDIR)/$@ BUILD_CFLAGS="-DDEBUG=1" G=-g \
 	DEPSDIR=$(CURDIR)/debug --no-print-directory -C debug -f $(CURDIR)/Makefile
 
 #---------------------------------------------------------------------------------

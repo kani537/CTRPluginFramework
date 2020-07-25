@@ -10,6 +10,7 @@ static bool      operator==(const MemInfo left, const MemInfo right)
 #include "CTRPluginFrameworkImpl/System.hpp"
 #include "CTRPluginFrameworkImpl/Preferences.hpp"
 #include "CTRPluginFrameworkImpl/Graphics/OSDImpl.hpp"
+#include "CTRPluginFrameworkImpl/System/Services/Gsp.hpp"
 
 #include <cstdio>
 #include <cstring>
@@ -19,6 +20,8 @@ extern      Handle gspThreadEventHandle;
 
 namespace CTRPluginFramework
 {
+    using namespace CTRPluginFrameworkImpl::Services;
+
     Handle      ProcessImpl::ProcessHandle = 0;
     u32         ProcessImpl::IsPaused = 0;
     u32         ProcessImpl::Status = Running;
