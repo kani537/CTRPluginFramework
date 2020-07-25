@@ -6,13 +6,12 @@ ifeq ($(strip $(DEVKITARM)),)
 $(error "Please set DEVKITARM in your environment. export DEVKITARM=<path to>devkitARM")
 endif
 
-TOPDIR ?= $(CURDIR)
+export TOPDIR ?= $(CURDIR)
 include $(DEVKITARM)/3ds_rules
 
 CTRPFLIB	?=	$(DEVKITPRO)/libctrpf
 
 TARGET		:= 	$(notdir $(CURDIR))
-BUILD		:= 	Build
 INCLUDES	:= 	Includes \
 				Includes/lodepng \
 				../Library/include
@@ -26,20 +25,20 @@ PSF 		:= 	$(notdir $(TOPDIR)).plgInfo
 #---------------------------------------------------------------------------------
 ARCH	:=	-march=armv6k -mtune=mpcore -mfloat-abi=hard -mtp=soft
 
-CFLAGS	:=	-Os -mword-relocations \
- 			-fomit-frame-pointer -ffunction-sections -fno-strict-aliasing \
-			$(ARCH)
+CFLAGS	:=	-mword-relocations \
+ 			-ffunction-sections -fdata-sections -fno-strict-aliasing \
+			$(ARCH) $(BUILD_FLAGS) $(G)
 
-CFLAGS		+=	$(INCLUDE) -DARM11 -D_3DS
+CFLAGS		+=	$(INCLUDE) -DARM11 -D_3DS $(DEFINES)
 
 #-Wall -Wextra -Wdouble-promotion -Werror
 
 CXXFLAGS	:= $(CFLAGS) -fno-rtti -fno-exceptions -std=gnu++11
 
-ASFLAGS		:= $(ARCH)
-LDFLAGS		:= -T $(TOPDIR)/3gx.ld $(ARCH) -Os -Wl,--gc-sections,--strip-discarded,--strip-debug,--section-start,.text=0x07000100 #-specs=3dsx.specs
+ASFLAGS		:= $(ARCH) $(G)
+LDFLAGS		:= -T $(TOPDIR)/3gx.ld $(ARCH) -Os -Wl,$(WL)--gc-sections,--section-start,.text=0x07000100 #-specs=3dsx.specs
 
-LIBS 		:= 	-lctrpf -lctru -lm
+LIBS 		:=  $(BUILD_LIBS) -lm
 LIBDIRS		:= 	$(CTRPFLIB) $(CTRULIB) $(PORTLIBS)
 
 #---------------------------------------------------------------------------------
@@ -48,11 +47,6 @@ LIBDIRS		:= 	$(CTRPFLIB) $(CTRULIB) $(PORTLIBS)
 #---------------------------------------------------------------------------------
 ifneq ($(BUILD),$(notdir $(CURDIR)))
 #---------------------------------------------------------------------------------
-
-export OUTPUT	:=	$(CURDIR)/$(TARGET)
-export LIBOUT	:=  $(CURDIR)/lib$(TARGET).a
-export TOPDIR	:=	$(CURDIR)
-
 export VPATH	:=	$(foreach dir,$(SOURCES),$(CURDIR)/$(dir)) \
 					$(foreach dir,$(DATA),$(CURDIR)/$(dir))
 
@@ -74,22 +68,29 @@ export LIBPATHS	:=	$(foreach dir,$(LIBDIRS),-L $(dir)/lib)
 .PHONY: $(BUILD) clean re all
 
 #---------------------------------------------------------------------------------
-all: $(BUILD)
+all: $(TARGET)-release.3gx $(TARGET)-debug.3gx
 
-$(BUILD):
+release:
 	@[ -d $@ ] || mkdir -p $@
-	@$(MAKE) --no-print-directory -C $(BUILD) -f $(CURDIR)/Makefile
+
+debug:
+	@[ -d $@ ] || mkdir -p $@
+
+$(TARGET)-release.3gx : release
+	@$(MAKE) BUILD=release OUTPUT=$(CURDIR)/$@ BUILD_LIBS="-lctrpf -lctru" WL=--strip-discarded,--strip-debug, \
+	BUILD_CFLAGS="-DNDEBUG=1 -O2 -fomit-frame-pointer" DEPSDIR=$(CURDIR)/release \
+	--no-print-directory -C release	-f $(CURDIR)/Makefile
+
+$(TARGET)-debug.3gx : debug
+	@$(MAKE) BUILD=debug OUTPUT=$(CURDIR)/$@ BUILD_LIBS="-lctrpfd -lctrud" BUILD_CFLAGS="-DDEBUG=1 -Og" G=-g \
+	DEPSDIR=$(CURDIR)/debug --no-print-directory -C debug -f $(CURDIR)/Makefile
 
 #---------------------------------------------------------------------------------
 clean:
 	@echo clean ...
-	@rm -fr $(BUILD) $(TARGET).3dsx $(OUTPUT).smdh $(TARGET).elf
+	@rm -fr release debug *.elf *.3gx
 
 re: clean all
-
-AR:
-	3gxtool -s $(OUTPUT).plg $(CURDIR)/CTRPluginFramework.plgInfo $(CURDIR)/ActionReplay.3gx
-	@$(TOPDIR)/sendfile.py $(ACTIONREPLAY) "ActionReplay/" "$(FTP_HOST)$(IP)" $(FTP_PORT)
 
 #---------------------------------------------------------------------------------
 
@@ -102,8 +103,8 @@ else
 DEPENDS	:=	$(OFILES:.o=.d)
 
 
-$(OUTPUT).3gx : $(OFILES)
-
+$(OUTPUT) : $(basename $(OUTPUT)).elf
+$(basename $(OUTPUT)).elf : $(OFILES)
 #---------------------------------------------------------------------------------
 # you need a rule like this for each extension you use as binary data
 #---------------------------------------------------------------------------------
@@ -115,8 +116,7 @@ $(OUTPUT).3gx : $(OFILES)
 #---------------------------------------------------------------------------------
 %.3gx: %.elf
 	@echo creating $(notdir $@)
-	@3gxtool -s $(OUTPUT).elf $(TOPDIR)/$(PSF) $@
-	@cp $@ ../default.3gx
+	@3gxtool -s $^ $(TOPDIR)/$(PSF) $@
 
 -include $(DEPENDS)
 

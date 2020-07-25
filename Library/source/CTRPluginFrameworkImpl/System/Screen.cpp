@@ -5,10 +5,9 @@
 #include "CTRPluginFramework/System/System.hpp"
 #include "CTRPluginFramework/Utils/Utils.hpp"
 #include "CTRPluginFramework/Graphics/OSD.hpp"
-#include "3ds.h"
+#include <3ds.h>
 #include "CTRPluginFrameworkImpl/Preferences.hpp"
 #include "csvc.h"
-#include "3ds.h"
 
 namespace CTRPluginFramework
 {

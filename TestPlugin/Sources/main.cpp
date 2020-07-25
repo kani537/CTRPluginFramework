@@ -363,6 +363,12 @@ exit:
         svcTable[0x6B] = *backup;
     }
 
+    int     SomeFunc(int a0, int a1, const char *s)
+    {
+        OSD::Notify(s);
+        return a0 + a1;
+    }
+
     #define REG32(x) *(vu32 *)((x) | (1u << 31))
     u32     cfgProt = REG32(0x10140140);
 
@@ -381,6 +387,12 @@ exit:
 
         task.Start();
         menu.SynchronizeWithFrame(true);
+
+        menu += []
+
+        {
+            int res = SomeFunc(0, 2, "Hello world");
+        };
 
         int ret = menu.Run();
 

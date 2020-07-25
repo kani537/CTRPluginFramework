@@ -70,13 +70,13 @@ CFLAGS	:=	-Wall -mword-relocations \
 			-ffunction-sections \
 			-fdata-sections \
 			$(ARCH) \
-			$(BUILD_CFLAGS)
+			$(BUILD_CFLAGS) $(G)
 
 CFLAGS	+=	$(INCLUDE) -DARM11 -D_3DS $(DEFINES)
 
 CXXFLAGS 	:= $(CFLAGS) -fno-rtti -fno-exceptions -std=gnu++11
 
-ASFLAGS	:=	$(ARCH) $(INCLUDE) -Os -Wl,--gc-sections,--strip-discarded,--strip-debug
+ASFLAGS	:=	$(G) $(ARCH) $(INCLUDE) -Os -Wl,$(WL)--gc-sections
 
 #---------------------------------------------------------------------------------
 # list of directories containing libraries, this must be the top level containing
@@ -128,7 +128,7 @@ export INCLUDE	:=	$(foreach dir,$(INCLUDES),-I$(CURDIR)/$(dir)) \
 .PHONY: clean all
 
 #---------------------------------------------------------------------------------
-all: lib/libctrpf.a
+all: lib/libctrpf.a lib/libctrpfd.a
 
 dist-bin: all
 	@tar --exclude=*~ -cjf libctrpf-$(CTRPF_REVISION).tar.bz2 include/CTRPluginFramework include/CTRPluginFramework.hpp lib
@@ -138,7 +138,7 @@ dist-src:
 
 dist: dist-bin #dist-src
 
-install: dist-bin
+install: dist
 	@rm -rf $(DESTDIR)$(DEVKITPRO)/libctrpf
 	@mkdir -p $(DESTDIR)$(DEVKITPRO)/libctrpf
 	@bzip2 -cd libctrpf-$(CTRPF_REVISION).tar.bz2 | tar -xf - -C $(DESTDIR)$(DEVKITPRO)/libctrpf
@@ -154,13 +154,13 @@ debug:
 	@[ -d $@ ] || mkdir -p $@
 
 lib/libctrpf.a : lib release
-	@$(MAKE) BUILD=release OUTPUT=$(CURDIR)/$@ \
+	@$(MAKE) BUILD=release OUTPUT=$(CURDIR)/$@ WL=--strip-discarded,--strip-debug, \
 	BUILD_CFLAGS="-DNDEBUG=1 -O2 -fomit-frame-pointer" DEPSDIR=$(CURDIR)/release \
 	--no-print-directory -C release	-f $(CURDIR)/Makefile
 	@rm release/PluginMenuTools.o # Force update of revision, date etc
 
 lib/libctrpfd.a : lib debug
-	@$(MAKE) BUILD=debug OUTPUT=$(CURDIR)/$@ BUILD_CFLAGS="-DDEBUG=1 -Og" \
+	@$(MAKE) BUILD=debug OUTPUT=$(CURDIR)/$@ BUILD_CFLAGS="-DDEBUG=1 -Og" G=-g \
 	DEPSDIR=$(CURDIR)/debug --no-print-directory -C debug -f $(CURDIR)/Makefile
 
 #---------------------------------------------------------------------------------

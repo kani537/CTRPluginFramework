@@ -1,0 +1,21 @@
+{
+	"folders": [
+		{
+			"path": ".",
+			"name": "Root"
+		},
+		{
+			"path": "Library"
+		},
+		{
+			"path": "TestPlugin",
+			"name": "Plugin"
+		}
+	],
+	"settings": {
+		"files.trimTrailingWhitespace": true,
+		"editor.renderWhitespace": "all",
+		"editor.renderControlCharacters": true,
+		"C_Cpp.intelliSenseEngineFallback": "Disabled",
+	}
+}
