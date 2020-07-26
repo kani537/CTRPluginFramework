@@ -260,7 +260,7 @@ namespace CTRPluginFramework
 
         // Check threads priorities
         settings.ThreadPriority = std::min(settings.ThreadPriority, (u32)0x3E);
-        GSP::InterruptReceiverThreadPriority = settings.ThreadPriority + 1;
+
         if (GSP::Initialize())
         {
             ScreenImpl::Top->Flash((Color&)Color::Yellow);

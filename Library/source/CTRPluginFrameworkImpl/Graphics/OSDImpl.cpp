@@ -195,7 +195,7 @@ namespace CTRPluginFramework
 
     static void    MessColor(u32 startAddr, u32 stride, u32 format);
 
-    u32     OSDImpl::MainCallback(u32 isBottom, int arg2, void *leftFb, void *rightFb, int stride, int format, int arg7)
+    u32     OSDImpl::MainCallback(u32 isBottom, int nextBank, void *leftFb, void *rightFb, int stride, int format, int swap)
     {
         // Only call our OSD callback if left frame buffer is valid
         if (leftFb)
@@ -204,7 +204,7 @@ namespace CTRPluginFramework
         }
 
         if (ProcessImpl::Status == Running)
-            return HookContext::GetCurrent().OriginalFunction<u32>(isBottom, arg2, leftFb, rightFb, stride, format, arg7);
+            return HookContext::GetCurrent().OriginalFunction<u32>(isBottom, nextBank, leftFb, rightFb, stride, format, swap);
 
         return 0;
     }

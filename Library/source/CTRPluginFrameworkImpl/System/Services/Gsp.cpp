@@ -1,4 +1,5 @@
 #include "types.h"
+#include <3ds.h>
 #include "csvc.h"
 #include "CTRPluginFrameworkImpl/System/Services/Gsp.hpp"
 #include "CTRPluginFrameworkImpl/System/Screen.hpp"
@@ -46,13 +47,14 @@ namespace Services
 #ifndef _MSC_VER
             __asm__ __volatile__
             (
-                "ldr    r2, [r4, #0xC] @event handle    \n"
+                "ldr    r2, [r4, #0xC] @event handle   \n"
+                "str    r2, [sp, #-4]!                 \n"
                 "svc    0x32                           \n"
                 "ands   r1, r0, #0x80000000            \n"
+                "ldr    r1, [sp], #4                   \n"
                 "bxmi	lr                             \n"
                 "stmfd	sp!, {r0, lr}                  \n"
                 "ldr    r0, [r4, #8] @ thread id       \n"
-                "mov	r2, r1                         \n"
                 "ldr    r2, [r4, #0x10] @ shared mem handle \n"
                 "bl     __gsp__Update                  \n"
                 "ldmfd	sp!, {r0, pc}                  \n"
@@ -417,7 +419,7 @@ namespace Services
                 if (header.cur >= 0x34)
                     header.cur -= 0x34;
                 header.count -= 1;
-                header.status = 0;
+                // header.status = 0;
 
                 strexFailed = __strex((s32 *)EventData, header.as_u32);
 
@@ -481,11 +483,11 @@ namespace Services
                     SaveQueue();
                 }
 
-                // ClearInterrupts();
+                ClearInterrupts();
                 while (CatchInterrupt)
                 {
                     svcClearEvent(GSPEvent);
-                    svcWaitSynchronization(GSPEvent, U64_MAX);
+                    Result res = svcWaitSynchronization(GSPEvent, U64_MAX);
 
                     while (true)
                     {

@@ -13,8 +13,9 @@ namespace CTRPluginFramework
 {
     using namespace CTRPluginFrameworkImpl::Services;
 
-    #define REG(x)   *(vu32 *)(x)
-    #define REG32(x) *(vu32 *)((x) | (1u << 31))
+    #define REG(x)          *(vu32 *)(x)
+    #define REG32(x)        *(vu32 *)((x) | (1u << 31))
+    #define LCDREG(offset)  REG(this->_LCDSetup + offset)
 
     struct ScreensFramebuffers
     {
@@ -231,7 +232,7 @@ namespace CTRPluginFramework
         svcFlushProcessDataCache(CUR_PROCESS_HANDLE, (u32)GetLeftFrameBuffer(), size);
     }
 
-    void	ScreenImpl::Invalidate(void)
+    void    ScreenImpl::Invalidate(void)
     {
         u32 size = GetFrameBufferSize();
 

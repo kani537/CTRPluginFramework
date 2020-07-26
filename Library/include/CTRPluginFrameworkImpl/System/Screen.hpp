@@ -53,7 +53,7 @@ namespace CTRPluginFramework
 
         void                        Fade(const float fade);
         void                        Flush(void);
-		void						Invalidate(void);
+        void                        Invalidate(void);
 
         // Clear Framebuffer + apply fade effect
         void                        Clear(bool applyFlagForCurrent);
