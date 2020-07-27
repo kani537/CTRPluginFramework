@@ -147,8 +147,6 @@ namespace CTRPluginFramework
         // Copy images and convert to RGB565 to ctrpf's frame buffer (0)
         _frameBufferInfo.FillFrameBuffersFrom(_gameFrameBufferInfo);
 
-        _currentBuffer = _frameBufferInfo.header.screen = 1;
-
         _format = GSP_RGB565_OES;
         _stride = 240*2;
         _bytesPerPixel = 2;
@@ -161,14 +159,19 @@ namespace CTRPluginFramework
         _rightFrameBuffers[0] = reinterpret_cast<u32>(fbInfo[0].framebuf1_vaddr);
         _rightFrameBuffers[1] = reinterpret_cast<u32>(fbInfo[1].framebuf1_vaddr);
 
+        // Set fb1 as current
+        _currentBuffer = _frameBufferInfo.header.screen = 1;
+
         // Apply fade to fb0
         Fade(0.3f);
 
         // Copy to fb1
         _currentBuffer = 0;
         Copy();
-        Flush();
+
+        // Flush fb0
         _currentBuffer = 1;
+        Flush();
 
         // Apply current frame buffers
         GSP::SetFrameBufferInfo(_frameBufferInfo, !_isTopScreen, true);
@@ -330,6 +333,8 @@ namespace CTRPluginFramework
         {
             Top->Release();
             Bottom->Release();
+
+            GSP::WaitBufferSwapped(3);
         }
         else
         {
@@ -337,6 +342,7 @@ namespace CTRPluginFramework
             Bottom->_frameBufferInfo.header.screen = Bottom->_currentBuffer;
             GSP::SetFrameBufferInfo(Top->_frameBufferInfo, 0, true);
             GSP::SetFrameBufferInfo(Bottom->_frameBufferInfo, 1, true);
+            GSP::WaitBufferSwapped(3);
             Top->_isGspAcquired = true;
             Bottom->_isGspAcquired = true;
         }
@@ -365,7 +371,12 @@ namespace CTRPluginFramework
     {
         // Wait for gpu to finish all stuff
         while ((GPU_PSC0_CNT | GPU_PSC1_CNT | GPU_TRANSFER_CNT | GPU_CMDLIST_CNT) & 1);
-        return Top->Acquire() | Bottom->Acquire();
+        u32 err = Top->Acquire() | Bottom->Acquire();
+
+        //if (!err)
+        //    GSP::WaitBufferSwapped(3);
+
+        return err;
     }
 
     u32     ScreenImpl::CheckGspFrameBuffersInfo()

@@ -537,15 +537,24 @@ namespace Services
 
         void    WaitForVBlank(void)
         {
-            // ClearInterrupts();
+            ClearInterrupts();
             LightEvent_Clear(&VBlank0Event);
             LightEvent_Wait(&VBlank0Event);
         }
 
         void    WaitForVBlank1(void)
         {
-            // ClearInterrupts();
+            ClearInterrupts();
             LightEvent_Clear(&VBlank1Event);
+            LightEvent_Wait(&VBlank1Event);
+        }
+
+        void    WaitForVBlankBoth(void)
+        {
+            ClearInterrupts();
+            LightEvent_Clear(&VBlank0Event);
+            LightEvent_Clear(&VBlank1Event);
+            LightEvent_Wait(&VBlank0Event);
             LightEvent_Wait(&VBlank1Event);
         }
 
@@ -568,8 +577,14 @@ namespace Services
                 WaitForVBlank1();
                 goto __clearBottom;
             }
-
-            WaitForVBlank();
+            if (screen == 0)
+            {
+                WaitForVBlank();
+            }
+            else
+            {
+                WaitForVBlankBoth();
+            }
 
             if (BufferFlags & FB_TOP_NEED_CLEAR)
             {
@@ -633,12 +648,6 @@ namespace Services
             {
                 __ldrex(addr);
             } while (__strex(addr, src.header.header));
-
-            if (!SystemImpl::WantsToSleep())
-            {
-                if (screen) WaitForVBlank();
-                else WaitForVBlank1();
-            }
         }
     } ///< GSP
 }}
