@@ -163,6 +163,7 @@ lib/libctrpf.a : lib release
 lib/libctrpfd.a : lib debug
 	@$(MAKE) BUILD=debug OUTPUT=$(CURDIR)/$@ BUILD_CFLAGS="-DDEBUG=1" G=-g \
 	DEPSDIR=$(CURDIR)/debug --no-print-directory -C debug -f $(CURDIR)/Makefile
+	@rm debug/PluginMenuTools.o # Force update of revision, date etc.
 
 #---------------------------------------------------------------------------------
 clean:
