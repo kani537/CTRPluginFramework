@@ -31,7 +31,7 @@ namespace CTRPluginFramework
 
                 if (!HasGameResumed)
                 {
-                    GSP::TriggerAllEvents();
+                    GSP::TriggerPSCEvents();
                 }
             }
 

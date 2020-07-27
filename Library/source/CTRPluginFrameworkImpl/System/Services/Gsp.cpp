@@ -514,13 +514,10 @@ namespace Services
             svcExitThread();
         }
 
-        void    TriggerAllEvents(void)
+        void    TriggerPSCEvents(void)
         {
             EnqueueEvent(GSPGPU_EVENT_PSC0, false);
             EnqueueEvent(GSPGPU_EVENT_PSC1, true);
-            // EnqueueEvent(GSPGPU_EVENT_PPF, false);
-            // EnqueueEvent(GSPGPU_EVENT_P3D, false);
-            // EnqueueEvent(GSPGPU_EVENT_DMA, true);
         }
 
         void    PauseInterruptReceiver(void)
