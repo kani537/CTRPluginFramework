@@ -65,7 +65,7 @@ export INCLUDE	:=	$(foreach dir,$(INCLUDES),-I$(CURDIR)/$(dir)) \
 
 export LIBPATHS	:=	$(foreach dir,$(LIBDIRS),-L $(dir)/lib)
 
-.PHONY: $(BUILD) clean re all
+.PHONY: $(BUILD) clean re relink all
 
 #---------------------------------------------------------------------------------
 all: $(TARGET)-release.3gx $(TARGET)-debug.3gx
@@ -91,6 +91,10 @@ clean:
 	@rm -fr release debug *.elf *.3gx
 
 re: clean all
+
+relink:
+	@rm *.elf *.3gx
+	@$(MAKE)
 
 #---------------------------------------------------------------------------------
 

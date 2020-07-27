@@ -1,6 +1,6 @@
 all:
 	cd Library && $(MAKE) install && cd ..
-	cd TestPlugin && $(MAKE) re && cd ..
+	cd TestPlugin && $(MAKE) relink && cd ..
 
 clean:
 	cd Library && $(MAKE) clean && cd ..
