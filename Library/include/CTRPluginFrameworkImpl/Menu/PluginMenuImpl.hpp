@@ -66,6 +66,7 @@ namespace CTRPluginFramework
     private:
         friend std::string &PluginMenu::Title(void);
         static PluginMenuImpl       *_runningInstance;
+        static Mutex                _trashBinMutex;
 
         bool                        _isOpen;
         bool                        _aboutToOpen;
