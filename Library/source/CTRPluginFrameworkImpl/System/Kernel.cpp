@@ -21,7 +21,7 @@ static inline u32 __get_cpsr(void)
 
 static inline bool __is_svmode(void)
 {
-    return __get_cpsr() & 0b11111 == 0b10011;
+    return (__get_cpsr() & 0b11111) == 0b10011;
 }
 
 static inline void __set_cpsr_cx(u32 cpsr)
