@@ -15,6 +15,7 @@
 namespace CTRPluginFramework
 {
     PluginMenuImpl  *PluginMenuImpl::_runningInstance = nullptr;
+    Mutex           PluginMenuImpl::_trashBinMutex;
 
     PluginMenuImpl::PluginMenuImpl(std::string &name, std::string &about, u32 menuType) :
         _hexEditor(0x00100000),
@@ -52,30 +53,26 @@ namespace CTRPluginFramework
 
     void    PluginMenuImpl::Callback(CallbackPointer callback)
     {
-        bool add = true;
-
-        for (CallbackPointer cb : _callbacks)
-            if (cb == callback)
-                add = false;
-
-        if (add)
+        // If the callback is going to be added, make sure it's not in the trash bin
         {
-            _callbacks.push_back(callback);
+            Lock    lock(_trashBinMutex);
+            if (_callbacksTrashBin.size())
+            {
+                auto it = std::find(_callbacksTrashBin.begin(), _callbacksTrashBin.end(), callback);
+                if (it != _callbacksTrashBin.end()) _callbacksTrashBin.erase(it);
+            }
         }
+
+        if (std::find(_callbacks.begin(), _callbacks.end(), callback) == _callbacks.end())
+            _callbacks.push_back(callback);
     }
 
     void    PluginMenuImpl::RemoveCallback(CallbackPointer callback)
     {
-        bool add = true;
+        Lock    lock(_trashBinMutex);
 
-        for (CallbackPointer cb : _callbacksTrashBin)
-            if (cb == callback)
-                add = false;
-
-        if (add)
-        {
+        if (std::find(_callbacksTrashBin.begin(), _callbacksTrashBin.end(), callback) == _callbacksTrashBin.end())
             _callbacksTrashBin.push_back(callback);
-        }
     }
 
     using KeyVector = std::vector<Key>;
@@ -351,32 +348,27 @@ namespace CTRPluginFramework
                 }
 
                 // Remove callbacks in the trash bin
-                if (_callbacksTrashBin.size())
                 {
-                    _callbacks.erase(std::remove_if(_callbacks.begin(), _callbacks.end(),
-                                    [](CallbackPointer cb)
-                                    {
-                                        auto&   trashbin = _runningInstance->_callbacksTrashBin;
-                                        auto    foundIter = std::remove(trashbin.begin(), trashbin.end(), cb);
+                    Lock    lock(_trashBinMutex);
+                    if (_callbacksTrashBin.size())
+                    {
+                        _callbacks.erase(std::remove_if(_callbacks.begin(), _callbacks.end(),
+                            [](CallbackPointer cb)
+                        {
+                            auto&   trashbin = _runningInstance->_callbacksTrashBin;
+                            auto    foundIter = std::find(trashbin.begin(), trashbin.end(), cb);
 
-                                        if (foundIter == trashbin.end())
-                                            return false;
+                            return foundIter != trashbin.end();
+                        }),
+                            _callbacks.end());
 
-                                        trashbin.erase(foundIter);
-                                        return true;
-                                    }),
-                                     _callbacks.end());
-
-                    _callbacksTrashBin.clear();
+                        _callbacksTrashBin.clear();
+                    }
                 }
 
                 // Execute callbacks before cheats
-
-                for (int i = 0; i < _callbacks.size(); i++) {
-                    auto cb = _callbacks[i];
-                    if (cb) cb();
-                    if (i < _callbacks.size() && _callbacks[i] != cb) i--; // This callback removed itself
-                }
+                for (int i = 0; i < _callbacks.size(); i++)
+                    if (_callbacks[i]) _callbacks[i]();
 
                 // Execute activated cheats
                 PluginMenuExecuteLoop::ExecuteBuiltin();

@@ -87,10 +87,17 @@ namespace CTRPluginFramework
     void    OSD::Run(OSDCallback cb)
     {
         OSDImpl::Lock();
-        for (OSDCallback c : OSDImpl::Callbacks)
-            if (c == cb) goto exit;
-        OSDImpl::Callbacks.push_back(cb);
-    exit:
+
+        // If the callback is going to be added, make sure it's not in the trash bin
+        if (OSDImpl::CallbacksTrashBin.size())
+        {
+            auto it = std::find(OSDImpl::CallbacksTrashBin.begin(), OSDImpl::CallbacksTrashBin.end(), cb);
+            if (it != OSDImpl::CallbacksTrashBin.end()) OSDImpl::CallbacksTrashBin.erase(it);
+        }
+
+        if (std::find(OSDImpl::Callbacks.begin(), OSDImpl::Callbacks.end(), cb) == OSDImpl::Callbacks.end())
+            OSDImpl::Callbacks.push_back(cb);
+        
         OSDImpl::Unlock();
     }
 
@@ -98,18 +105,8 @@ namespace CTRPluginFramework
     {
         OSDImpl::Lock();
 
-        bool add = true;
-
-        for (auto _cb : OSDImpl::CallbacksTrashBin)
-            if (cb == _cb) {
-                add = false;
-                break;
-            }
-
-        if (add)
-        {
+        if (std::find(OSDImpl::CallbacksTrashBin.begin(), OSDImpl::CallbacksTrashBin.end(), cb) == OSDImpl::CallbacksTrashBin.end())
             OSDImpl::CallbacksTrashBin.push_back(cb);
-        }
 
         OSDImpl::Unlock();
     }

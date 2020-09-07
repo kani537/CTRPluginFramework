@@ -351,18 +351,14 @@ namespace CTRPluginFramework
         if (CallbacksTrashBin.size())
         {
             Callbacks.erase(std::remove_if(Callbacks.begin(), Callbacks.end(),
-                            [](OSDCallback cb)
-                            {
-                                auto&   trashbin = CallbacksTrashBin;
-                                auto    foundIter = std::remove(trashbin.begin(), trashbin.end(), cb);
+                [](OSDCallback cb)
+                {
+                    auto&   trashbin = CallbacksTrashBin;
+                    auto    foundIter = std::find(trashbin.begin(), trashbin.end(), cb);
 
-                                if (foundIter == trashbin.end())
-                                    return false;
-
-                                trashbin.erase(foundIter);
-                                return true;
-                            }),
-                            Callbacks.end());
+                    return foundIter != trashbin.end();
+                }),
+                Callbacks.end());
 
             CallbacksTrashBin.clear();
         }
@@ -384,8 +380,8 @@ namespace CTRPluginFramework
             screen.BytesPerPixel = GetBPP((GSPFormat)format);
             screen.Format = (GSPFormat)format;
 
-            for (OSDCallback cb : Callbacks)
-                cb(screen);
+            for (int i = 0; i < Callbacks.size(); i++)
+                if (Callbacks[i]) Callbacks[i](screen);
         }
 
         Unlock();
