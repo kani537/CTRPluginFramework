@@ -54,7 +54,7 @@ namespace CTRPluginFramework
         _keys = nullptr;
         _convert = nullptr;
         _compare = nullptr;
-        _onInputChange = nullptr;
+        _onKeyboardEvent = nullptr;
 
         _customKeyboard = false;
         _displayScrollbar = false;
@@ -102,7 +102,7 @@ namespace CTRPluginFramework
 
         _convert = nullptr;
         _compare = nullptr;
-        _onInputChange = nullptr;
+        _onKeyboardEvent = nullptr;
         _keys = nullptr;
 
         _customKeyboard = false;
@@ -198,9 +198,9 @@ namespace CTRPluginFramework
         _compare = callback;
     }
 
-    void    KeyboardImpl::OnInputChange(OnInputChangeCallback callback)
+    void    KeyboardImpl::OnKeyboardEvent(OnEventCallback callback)
     {
-        _onInputChange = callback;
+        _onKeyboardEvent = callback;
     }
 
     void	KeyboardImpl::ChangeSelectedEntry(int entry) {
@@ -208,8 +208,7 @@ namespace CTRPluginFramework
             return;
         if (!_strKeys.size() || entry >= _strKeys.size() || !_strKeys[entry]->CanUse())
             entry = -1;
-
-        _manualKey = entry;
+        _ChangeManualKey(entry);
         // Update the position
         if (entry != -1 && _displayScrollbar) {
             int keyRow = _manualKey / (_isIconKeyboard ? 4 : 1);
@@ -237,7 +236,7 @@ namespace CTRPluginFramework
         int count = input.size();
 
         if (mustReset)
-            _manualKey = 0;
+            _ChangeManualKey(0);
         mustReset = (mustReset || count < 6);
 
         _customKeyboard = true;
@@ -322,7 +321,8 @@ namespace CTRPluginFramework
         int count = input.size() / 4;
 
         if (mustReset)
-            _manualKey = 0;
+            _ChangeManualKey(0);
+
         mustReset = (mustReset || count < 6);
 
         _customKeyboard = true;
@@ -492,8 +492,8 @@ namespace CTRPluginFramework
                 if (inputChanged)
                 {
                     _errorMessage = !_CheckInput();
-                    if (_onInputChange != nullptr && _owner != nullptr)
-                        _onInputChange(*_owner, _inputChangeEvent);
+                    if (_onKeyboardEvent != nullptr && _owner != nullptr)
+                        _onKeyboardEvent(*_owner, _KeyboardEvent);
                 }
 
                 // If user try to exit the keyboard
@@ -727,38 +727,46 @@ namespace CTRPluginFramework
     {
         static Clock inputClock;
         bool inputPassedTime = inputClock.HasTimePassed(Milliseconds(200));
+        bool keyPressIntended = false;
 
         if (event.type == Event::KeyPressed)
         {
             if (event.key.code == Key::B)
             {
+                keyPressIntended = true;
                 if (_canAbort)
                     _userAbort = true;
                 return;
             }
             if (!_customKeyboard && event.key.code == Y && !_userInput.empty())
             {
+                keyPressIntended  = true;
                 _userInput.clear();
-                _inputChangeEvent.type = InputChangeEvent::EventType::InputWasCleared;
-                _inputChangeEvent.codepoint = 0;
+                _ClearKeyboardEvent();
+                _KeyboardEvent.type = KeyboardEvent::EventType::InputWasCleared;
+                _KeyboardEvent.codepoint = 0;
                 _errorMessage = !_CheckInput();
-                if (_onInputChange != nullptr && _owner != nullptr)
-                    _onInputChange(*_owner, _inputChangeEvent);
+                if (_onKeyboardEvent != nullptr && _owner != nullptr)
+                    _onKeyboardEvent(*_owner, _KeyboardEvent);
             }
             if (event.key.code == X && !_customKeyboard && _layout != QWERTY && _canChangeLayout)
             {
+                keyPressIntended = true;
                 _userInput.clear();
-                _inputChangeEvent.type = InputChangeEvent::EventType::InputWasCleared;
-                _inputChangeEvent.codepoint = 0;
+                _ClearKeyboardEvent();
+                _KeyboardEvent.type = KeyboardEvent::EventType::InputWasCleared;
+                _KeyboardEvent.codepoint = 0;
                 _errorMessage = !_CheckInput();
-                if (_onInputChange != nullptr && _owner != nullptr)
-                    _onInputChange(*_owner, _inputChangeEvent);
+                if (_onKeyboardEvent != nullptr && _owner != nullptr)
+                    _onKeyboardEvent(*_owner, _KeyboardEvent);
                 SetLayout(_layout == DECIMAL ? HEXADECIMAL : DECIMAL);
                 _canChangeLayout = true;
             }
-            if (_customKeyboard && (event.key.code & (Key::Down | Key::Up | Key::Left | Key::Right | Key::A)))
+            if (_customKeyboard && (event.key.code & (Key::Down | Key::Up | Key::Left | Key::Right | Key::A))) {
+                keyPressIntended = true;
                 _HandleManualKeyPress((Key)(event.key.code & Key::A));
                 inputPassedTime = true;
+            }
         }
 
         if (event.type == Event::KeyDown)
@@ -766,25 +774,36 @@ namespace CTRPluginFramework
             if (_showCursor && inputPassedTime)
             {
                 if (event.key.code == Key::DPadLeft) {
+                    keyPressIntended = true;
                     inputClock.Restart();
                     _ScrollDown();
                 }
                 else if (event.key.code == Key::DPadRight) {
+                    keyPressIntended = true;
                     inputClock.Restart();
                     _ScrollUp();
                 }
             }
             if (_customKeyboard && inputPassedTime) {
                 if (event.key.code & (Key::Down | Key::Up | Key::Left | Key::Right | Key::A)) {
+                    keyPressIntended = true;
                     _HandleManualKeyPress((Key)(event.key.code & ~(u32)Key::A));
                     inputClock.Restart();
                 }
             }
         }
+        if (!keyPressIntended && _onKeyboardEvent != nullptr && _owner != nullptr && (event.type == Event::KeyDown || event.type == Event::KeyPressed || event.type == Event::KeyReleased)) {
+            _ClearKeyboardEvent();
+            if (event.type == Event::KeyPressed) _KeyboardEvent.type = KeyboardEvent::EventType::KeyPressed;
+            else if (event.type == Event::KeyDown) _KeyboardEvent.type = KeyboardEvent::EventType::KeyDown;
+            else if (event.type == Event::KeyReleased) _KeyboardEvent.type = KeyboardEvent::EventType::KeyReleased;
+            _KeyboardEvent.affectedKey = event.key.code;
+            _onKeyboardEvent(*_owner, _KeyboardEvent);
+        }
 
         if (event.type == Event::TouchMoved || event.type == Event::TouchEnded)
         {
-            _scrollSize = 0; _manualKey = -1;
+            _scrollSize = 0; _ChangeManualKey(-1);
         }
 
         if (!_displayScrollbar)
@@ -1851,10 +1870,11 @@ namespace CTRPluginFramework
                         || (_layout == QWERTY && _max && Utils::GetSize(_userInput) >= _max))
                         return (false);
 
-                    _inputChangeEvent.type = InputChangeEvent::CharacterAdded;
-                    decode_utf8(&_inputChangeEvent.codepoint, (const u8 *)temp.c_str());
+                    _ClearKeyboardEvent();
+                    _KeyboardEvent.type = KeyboardEvent::CharacterAdded;
+                    decode_utf8(&_KeyboardEvent.codepoint, (const u8 *)temp.c_str());
 
-                    if (_inputChangeEvent.codepoint == 0x00B1) // ± key
+                    if (_KeyboardEvent.codepoint == 0x00B1) // ± key
                     {
                         if (_userInput[0] == '-')
                         {
@@ -1931,8 +1951,9 @@ namespace CTRPluginFramework
                         temp.clear();
                         temp += ret;
                         _userInput.insert(_cursorPositionInString, temp);
-                        _inputChangeEvent.type = InputChangeEvent::CharacterAdded;
-                        _inputChangeEvent.codepoint = ret;
+                        _ClearKeyboardEvent();
+                        _KeyboardEvent.type = KeyboardEvent::CharacterAdded;
+                        _KeyboardEvent.codepoint = ret;
                         _ScrollUp();
                     }
                     return (true);
@@ -1947,12 +1968,13 @@ namespace CTRPluginFramework
         std::string &&right = _userInput.substr(_cursorPositionInString);
         _userInput.erase(_cursorPositionInString);
         _ScrollDown(); ///< Scroll down before removing the char
-        _inputChangeEvent.codepoint = Utils::RemoveLastChar(_userInput);
+        _ClearKeyboardEvent();
+        _KeyboardEvent.codepoint = Utils::RemoveLastChar(_userInput);
         _userInput += right;
 
-        if (_inputChangeEvent.codepoint != 0)
+        if (_KeyboardEvent.codepoint != 0)
         {
-            _inputChangeEvent.type = InputChangeEvent::CharacterRemoved;
+            _KeyboardEvent.type = KeyboardEvent::CharacterRemoved;
             return (true);
         }
         return (false);
@@ -2010,15 +2032,17 @@ namespace CTRPluginFramework
             {
                 if (key & (Key::Down | Key::Left))
                 {
-                    _manualKey = _displayScrollbar ? _currentPosition : 0;
-                    if (!_strKeys[_manualKey]->CanUse())
-                        _manualKey = 0;
+                    int tempKey = _displayScrollbar ? _currentPosition : 0;
+                    if (!_strKeys[tempKey]->CanUse())
+                        tempKey = 0;
+                    _ChangeManualKey(tempKey);
                 }
                 else if (key & (Key::Up | Key::Right))
                 {
-                    _manualKey = _displayScrollbar ? std::min((int)_strKeys.size() - 1, _currentPosition + 20) : _strKeys.size() - 1;
-                    if (!_strKeys[_manualKey]->CanUse())
-                        _manualKey = (int)_strKeys.size() - 1;
+                    int tempKey = _displayScrollbar ? std::min((int)_strKeys.size() - 1, _currentPosition + 20) : _strKeys.size() - 1;
+                    if (!_strKeys[tempKey]->CanUse())
+                        tempKey = (int)_strKeys.size() - 1;
+                    _ChangeManualKey(tempKey);
                 }
                 else return;
             }
@@ -2027,49 +2051,62 @@ namespace CTRPluginFramework
                 if (key & Key::Down)
                 {
                     int orig = _manualKey;
+                    int tempKey = _manualKey;
+
                     do
                     {
-                        _manualKey += 4;
-                    } while (_manualKey < _strKeys.size() && !_strKeys[_manualKey]->CanUse() && _manualKey - orig < 16);
+                        tempKey += 4;
+                    } while (tempKey < _strKeys.size() && !_strKeys[tempKey]->CanUse() && tempKey - orig < 16);
 
-                    if (_manualKey >= _strKeys.size() || _manualKey - orig >= 16)
-                        _manualKey = orig;
+                    if (tempKey >= _strKeys.size() || tempKey - orig >= 16)
+                        tempKey = orig;
+
+                    _ChangeManualKey(tempKey);
                 }
                 else if (key & Key::Up)
                 {
                     int orig = _manualKey;
+                    int tempKey = _manualKey;
 
                     do
                     {
-                        _manualKey -= 4;
-                    } while (_manualKey > 0 && !_strKeys[_manualKey]->CanUse() && orig -_manualKey < 16);
+                        tempKey -= 4;
+                    } while (tempKey > 0 && !_strKeys[tempKey]->CanUse() && orig - tempKey < 16);
 
-                    if (_manualKey < 0 || orig - _manualKey >= 16)
-                        _manualKey = orig;
+                    if (tempKey < 0 || orig - tempKey >= 16)
+                        tempKey = orig;
+
+                    _ChangeManualKey(tempKey);
                 }
                 else if (key & Key::Right)
                 {
                     int orig = _manualKey;
+                    int tempKey = _manualKey;
 
                     do
                     {
-                        _manualKey++;
-                    } while (_manualKey < _strKeys.size() && ((u32)_manualKey & 3) != 0 && !_strKeys[_manualKey]->CanUse());
+                        tempKey++;
+                    } while (tempKey < _strKeys.size() && ((u32)tempKey & 3) != 0 && !_strKeys[tempKey]->CanUse());
 
-                    if (_manualKey >= _strKeys.size() || ((u32)_manualKey & 3) == 0)
-                        _manualKey = orig;
+                    if (tempKey >= _strKeys.size() || ((u32)tempKey & 3) == 0)
+                        tempKey = orig;
+
+                    _ChangeManualKey(tempKey);
                 }
                 else if (key & Key::Left)
                 {
                     int orig = _manualKey;
+                    int tempKey = _manualKey;
 
                     do
                     {
-                        _manualKey--;
-                    } while (_manualKey > 0 && ((u32)_manualKey & 3) != 3 && !_strKeys[_manualKey]->CanUse());
+                        tempKey--;
+                    } while (tempKey > 0 && ((u32)tempKey & 3) != 3 && !_strKeys[tempKey]->CanUse());
 
-                    if (_manualKey < 0 || ((u32)_manualKey & 3) == 3)
-                        _manualKey = orig;
+                    if (tempKey < 0 || ((u32)tempKey & 3) == 3)
+                        tempKey = orig;
+
+                    _ChangeManualKey(tempKey);
                 }
 
                 if (_displayScrollbar)
@@ -2100,14 +2137,18 @@ namespace CTRPluginFramework
             {
                 if (key & Key::Down)
                 {
-                    _manualKey = _displayScrollbar ? _currentPosition : 0;
-                    if (!_strKeys[_manualKey]->CanUse())
-                        _manualKey = 0;
+                    int tempKey = _displayScrollbar ? _currentPosition : 0;
+                    if (!_strKeys[tempKey]->CanUse())
+                        tempKey = 0;
+
+                    _ChangeManualKey(tempKey);
                 } else if (key & Key::Up)
                 {
-                    _manualKey = _displayScrollbar ? std::min((int)_strKeys.size() - 1, _currentPosition + 5) : _strKeys.size() - 1;
-                    if (!_strKeys[_manualKey]->CanUse())
-                        _manualKey = (int)_strKeys.size() - 1;
+                    int tempKey = _displayScrollbar ? std::min((int)_strKeys.size() - 1, _currentPosition + 5) : _strKeys.size() - 1;
+                    if (!_strKeys[tempKey]->CanUse())
+                        tempKey = (int)_strKeys.size() - 1;
+
+                    _ChangeManualKey(tempKey);
                 }
                 else return;
             }
@@ -2116,23 +2157,30 @@ namespace CTRPluginFramework
                 if (key & Key::Down)
                 {
                     int orig = _manualKey;
+                    int tempKey = _manualKey;
 
                     do {
-                        _manualKey++;
-                    } while (_manualKey < _strKeys.size() && !_strKeys[_manualKey]->CanUse() && _manualKey - orig < 4);
+                        tempKey++;
+                    } while (tempKey < _strKeys.size() && !_strKeys[tempKey]->CanUse() && tempKey - orig < 4);
 
-                    if (_manualKey >= _strKeys.size() || _manualKey - orig >= 4)
-                        _manualKey = orig;
+                    if (tempKey >= _strKeys.size() || tempKey - orig >= 4)
+                        tempKey = orig;
+
+                    _ChangeManualKey(tempKey);
                 }
                 else if (key & Key::Up)
                 {
                     int orig = _manualKey;
-                    do {
-                        _manualKey--;
-                    } while (_manualKey > 0 && !_strKeys[_manualKey]->CanUse() && orig - _manualKey < 4);
+                    int tempKey = _manualKey;
 
-                    if (_manualKey < 0 || orig - _manualKey >= 4)
-                        _manualKey = orig;
+                    do {
+                        tempKey--;
+                    } while (tempKey > 0 && !_strKeys[tempKey]->CanUse() && orig - tempKey < 4);
+
+                    if (tempKey < 0 || orig - tempKey >= 4)
+                        tempKey = orig;
+
+                    _ChangeManualKey(tempKey);
                 }
 
                 if (_displayScrollbar)
@@ -2163,6 +2211,28 @@ namespace CTRPluginFramework
         }
     }
 
+    void KeyboardImpl::_ClearKeyboardEvent()
+    {
+        _KeyboardEvent.selectedIndex = 0;
+        _KeyboardEvent.codepoint = 0;
+        _KeyboardEvent.affectedKey = (Key)0;
+    }
+
+    void    KeyboardImpl::_ChangeManualKey(int newVal)
+    {
+        _manualKey = newVal;
+        static bool preventRecursion = false;
+        if (_onKeyboardEvent != nullptr && _owner != nullptr && _manualKey != _prevManualKey && !preventRecursion) {
+            preventRecursion = true;
+            _ClearKeyboardEvent();
+            _KeyboardEvent.type = KeyboardEvent::EventType::SelectionChanged;
+            _KeyboardEvent.selectedIndex = _manualKey;
+            _onKeyboardEvent(*_owner, _KeyboardEvent);
+            preventRecursion = false;
+        }
+        _prevManualKey = _manualKey;
+    }
+
     // WIll only be used in the hex editor, so no need to do a full implementation
     bool    KeyboardImpl::operator()(int &out)
     {
@@ -2188,4 +2258,6 @@ namespace CTRPluginFramework
     {
         _canChangeLayout = canChange;
     }
+
+
 }

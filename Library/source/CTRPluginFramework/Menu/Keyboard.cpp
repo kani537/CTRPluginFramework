@@ -716,8 +716,8 @@ namespace CTRPluginFramework
         _keyboard->Close();
     }
 
-    void Keyboard::OnInputChange(OnInputChangeCallback callback) const
+    void Keyboard::OnKeyboardEvent(OnEventCallback callback) const
     {
-        _keyboard->OnInputChange(callback);
+        _keyboard->OnKeyboardEvent(callback);
     }
 } // namespace CTRPluginFramework

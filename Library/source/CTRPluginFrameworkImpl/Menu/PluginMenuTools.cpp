@@ -435,9 +435,9 @@ namespace CTRPluginFramework
                             << Color::Orange << " Note that during that time, you can't\n access the menu.");
 
                 keyboard.IsHexadecimal(false);
-                keyboard.OnInputChange([](Keyboard &kb, InputChangeEvent &event)
+                keyboard.OnKeyboardEvent([](Keyboard &kb, KeyboardEvent &event)
                 {
-                    if (event.type == InputChangeEvent::CharacterAdded)
+                    if (event.type == KeyboardEvent::CharacterAdded)
                     {
                         std::string &input = kb.GetInput();
                         u32  value;
