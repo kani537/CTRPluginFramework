@@ -74,6 +74,8 @@ namespace CTRPluginFramework
         static MemInfo  GetMemRegion(const u32 address);
         static MemInfo  GetNextRegion(const MemInfo &region);
         static MemInfo  GetPreviousRegion(const MemInfo &region);
+        static void     GetFreeBlocks(std::vector<MemInfo> &blocks);
+        static u32      GetFreeMemRegion(const u32 size, const u32 searchStart = 0x100000);
         static void ExceptionHandler(ERRF_ExceptionInfo* excep, CpuRegisters* regs) NORETURN;
 
         static Handle       ProcessHandle;

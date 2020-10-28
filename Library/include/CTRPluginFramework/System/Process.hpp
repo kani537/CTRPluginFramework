@@ -164,6 +164,15 @@ namespace CTRPluginFramework
         static bool     CheckRegion(u32 address, u32& size, u32 perm = MEMPERM_READ | MEMPERM_WRITE);
 
         /**
+        * \brief Gets the address of the best fitting memory region bigger or equal than the specified size \n
+        * and past the starting address. Doesn't guarantee that the process will try to use the same region later.
+        * \param size           Minimum size of the memory region
+        * \param startAddress   Starting address to search from
+        * \return Adress of the best fitting memory region bigger than size and past startAddress
+        */
+        static u32      GetFreeMemoryRegion(u32 size, u32 startAddress = 0x100000);
+
+        /**
          * \brief Safely write 64 bits
          * \param address   Address to write to
          * \param value     The value to write
