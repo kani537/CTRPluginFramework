@@ -188,6 +188,11 @@ namespace CTRPluginFramework
         return mInfo != ProcessImpl::InvalidRegion;
     }
 
+    u32  Process::GetFreeMemoryRegion(u32 size, u32 startAddress)
+    {
+        return ProcessImpl::GetFreeMemRegion(size, startAddress);
+    }
+
     bool Process::Write64(u32 address, u64 value)
     {
         if (CheckAddress(address, MEMPERM_WRITE))
