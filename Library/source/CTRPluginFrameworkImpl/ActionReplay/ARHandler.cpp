@@ -283,6 +283,8 @@ bool AlmostEqualRelative(float A, float B, float maxRelDiff = FLT_EPSILON);
                         continue;
                     }
                 }
+
+                loopCount += (code.Type >= 0xC0 && code.Type <= 0xC2);
                 loopCodes.push_back(code);
                 continue;
             }
