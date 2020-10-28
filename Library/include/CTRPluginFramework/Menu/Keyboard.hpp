@@ -2,6 +2,7 @@
 #define CTRPLUGINFRAMEWORK_KEYBOARD_HPP
 
 #include "CTRPluginFramework/Graphics/CustomIcon.hpp"
+#include "CTRPluginFramework/System/Controller.hpp"
 #include "types.h"
 #include <string>
 #include <vector>
@@ -9,18 +10,24 @@
 
 namespace CTRPluginFramework
 {
-    class InputChangeEvent
+    class KeyboardEvent
     {
     public:
         enum EventType
         {
             CharacterAdded,
             CharacterRemoved,
-            InputWasCleared
+            InputWasCleared,
+            SelectionChanged,
+            KeyPressed,
+            KeyDown,
+            KeyReleased
         };
 
         EventType   type{};       ///< Type of the event
-        u32         codepoint{0};  ///< The codepoint of the character that thrown the event
+        u32         codepoint{0};  ///< The codepoint of the character that thrown the event (used for CharacterAdded and CharacterRemoved, 0 otherwise)
+        u32         selectedIndex{0}; ///< The entry index in a custom keyboard being selected (used for SelectionChanged, 0 otherwise)
+        Key         affectedKey{(Key)0}; //< Button affected not mapped to any keyboard feature (used for ButtonPressed, ButtonHold and ButtonReleased, 0 otherwise)
     };
 
     class KeyboardImpl;
@@ -39,7 +46,7 @@ namespace CTRPluginFramework
          * \param keyboard  A reference to the Keyboard object that called the callback
          * \event event     The event that caused the input to change
          */
-        using   OnInputChangeCallback = void(*)(Keyboard&, InputChangeEvent &event);
+        using   OnEventCallback = void(*)(Keyboard&, KeyboardEvent &event);
     public:
 
         /**
@@ -80,11 +87,11 @@ namespace CTRPluginFramework
 
         /**
          * \brief Define a callback that will be called when the user change the input \n
-         * Note that if a CompareCallback is set, CompareCallback is called before OnInputChange \n
-         * See OnInputChangeCallback's description for more infos
+         * Note that if a CompareCallback is set, CompareCallback is called before OnKeyboardEvent \n
+         * See OnEventCallback's description for more infos
          * \param callback
          */
-        void    OnInputChange(OnInputChangeCallback callback) const;
+        void    OnKeyboardEvent(OnEventCallback callback) const;
 
         /**
          * \brief Set the error flag and an error message \n
@@ -241,7 +248,7 @@ namespace CTRPluginFramework
 
         /**
          * \brief Forcefully close the keyboard without any regard to the error flag \n
-         * (This can only be called from an OnInputChange callback)
+         * (This can only be called from an OnKeyboardEvent callback)
          */
         void    Close(void) const;
 
