@@ -73,9 +73,9 @@ DC000000 XXXXXXXX – Adds a value to the current offset
 
 Loop Codes:
 ------------
-CX000000 YYYYYYYY – Execute next block YYYYYYYY times (immediate value)
-C0000000 00000000 – Execute next block as many times as the value stored in data#1
-C1000000 00000000 – Execute next block as many times as the value stored in data#2
+C0000000 YYYYYYYY – Execute next block YYYYYYYY times (immediate value)
+C1000000 00000000 – Execute next block as many times as the value stored in data#1
+C2000000 00000000 – Execute next block as many times as the value stored in data#2
 D1000000 00000000 – Loop execute
 D0000000 00000001 - Stops a loop execution directly (jump to next block) - Doesn't ends blocks
 
