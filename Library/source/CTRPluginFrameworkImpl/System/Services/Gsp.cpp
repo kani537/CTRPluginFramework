@@ -178,6 +178,11 @@ namespace Services
                 InterruptReceiverThread.priority = InterruptReceiverThreadPriority;
                 InterruptReceiverThread.Start(nullptr);
             }
+
+#define FORCE_SCREEN_RESET
+#ifdef FORCE_SCREEN_RESET
+            ScreenImpl::ApplyCtrpfScreens();
+#endif
         }
 
         void    FrameBufferInfo::FillFrameBufferFrom(FrameBufferInfo &src)

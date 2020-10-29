@@ -87,6 +87,7 @@ namespace CTRPluginFramework
         u32                         GetRowSize(void) const;
         u32                         GetBytesPerPixel(void) const;
         u32                         GetFrameBufferSize(void) const;
+        u32                         GetCurrentBufferID(void) const;
 
         void                        GetFrameBufferInfos(int &rowstride, int &bpp, GSPGPU_FramebufferFormat &format) const;
 
@@ -98,9 +99,12 @@ namespace CTRPluginFramework
 
     private:
         friend class Renderer;
-        friend void                 KeepThreadMain(void *);
+        friend void  CTRPluginFrameworkImpl::Services::GSP::Update(u32 threadId, Handle eventHandle, Handle sharedMemHandle);
+        friend void  KeepThreadMain(void *);
 
         static void                 Initialize(void);
+        // Displays ctrpf' screens without setting internal state as "screen captured"
+        static void                 ApplyCtrpfScreens(void);
 
         u32                         _LCDSetup;  ///< Address of this screen LCD configuration
         u32                         _FillColor; ///< Address of this screen fill color register
