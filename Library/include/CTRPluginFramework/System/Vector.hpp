@@ -122,6 +122,7 @@ namespace CTRPluginFramework
     typedef Vector<unsigned int> UIntVector;
     typedef Vector<int> IntVector;
     typedef Vector<float> FloatVector;
+    typedef Vector<signed short> shortVector;
 }
 
 #endif
