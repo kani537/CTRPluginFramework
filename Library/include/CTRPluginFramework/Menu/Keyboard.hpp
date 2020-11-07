@@ -123,6 +123,7 @@ namespace CTRPluginFramework
         /**
          * \brief Open a keyboard which is populated with strings
          * \return -1 : user abort / not populated \n
+         * -2 : closed by event callback \n
          * >= 0 : index of the user choice in the vector
          */
         int     Open(void) const;
@@ -131,6 +132,7 @@ namespace CTRPluginFramework
          * \brief Open the keyboard and wait for user input
          * \param output Where to place the user's input
          * \return -1 : user abort / error \n
+         * -2 : closed by event callback \n
          * 0 : Success
          */
         int     Open(u8 &output) const;
@@ -140,6 +142,7 @@ namespace CTRPluginFramework
          * \param output Where to place the user's input
          * \param start The keyboard will start with this value as input
          * \return -1 : user abort / error \n
+         * -2 : closed by event callback \n
          * 0 : Success
          */
         int     Open(u8 &output, u8 start) const;
@@ -148,6 +151,7 @@ namespace CTRPluginFramework
         * \brief Open the keyboard and wait for user input
         * \param output Where to place the user's input
         * \return -1 : user abort / error \n
+        * -2 : closed by event callback \n
         * 0 : Success
         */
         int     Open(u16 &output) const;
@@ -157,6 +161,7 @@ namespace CTRPluginFramework
         * \param output Where to place the user's input
         * \param start The keyboard will start with this value as input
         * \return -1 : user abort / error \n
+        * -2 : closed by event callback \n
         * 0 : Success
         */
         int     Open(u16 &output, u16 start) const;
@@ -165,6 +170,7 @@ namespace CTRPluginFramework
         * \brief Open the keyboard and wait for user input
         * \param output Where to place the user's input
         * \return -1 : user abort / error \n
+        * -2 : closed by event callback \n
         * 0 : Success
         */
         int     Open(u32 &output) const;
@@ -174,6 +180,7 @@ namespace CTRPluginFramework
         * \param output Where to place the user's input
         * \param start The keyboard will start with this value as input
         * \return -1 : user abort / error \n
+        * -2 : closed by event callback \n
         * 0 : Success
         */
         int     Open(u32 &output, u32 start) const;
@@ -182,6 +189,7 @@ namespace CTRPluginFramework
         * \brief Open the keyboard and wait for user input
         * \param output Where to place the user's input
         * \return -1 : user abort / error \n
+        * -2 : closed by event callback \n
         * 0 : Success
         */
         int     Open(u64 &output) const;
@@ -191,6 +199,7 @@ namespace CTRPluginFramework
         * \param output Where to place the user's input
         * \param start The keyboard will start with this value as input
         * \return -1 : user abort / error \n
+        * -2 : closed by event callback \n
         * 0 : Success
         */
         int     Open(u64 &output, u64 start) const;
@@ -199,6 +208,7 @@ namespace CTRPluginFramework
         * \brief Open the keyboard and wait for user input
         * \param output Where to place the user's input
         * \return -1 : user abort / error \n
+        * -2 : closed by event callback \n
         * 0 : Success
         */
         int     Open(float &output) const;
@@ -208,6 +218,7 @@ namespace CTRPluginFramework
         * \param output Where to place the user's input
         * \param start The keyboard will start with this value as input
         * \return -1 : user abort / error \n
+        * -2 : closed by event callback \n
         * 0 : Success
         */
         int     Open(float &output, float start) const;
@@ -216,6 +227,7 @@ namespace CTRPluginFramework
         * \brief Open the keyboard and wait for user input
         * \param output Where to place the user's input
         * \return -1 : user abort / error \n
+        * -2 : closed by event callback \n
         * 0 : Success
         */
         int     Open(double &output) const;
@@ -225,6 +237,7 @@ namespace CTRPluginFramework
         * \param output Where to place the user's input
         * \param start The keyboard will start with this value as input
         * \return -1 : user abort / error \n
+        * -2 : closed by event callback \n
         * 0 : Success
         */
         int     Open(double &output, double start) const;
@@ -233,6 +246,7 @@ namespace CTRPluginFramework
         * \brief Open the keyboard and wait for user input
         * \param output Where to place the user's input
         * \return -1 : user abort / error \n
+        * -2 : closed by event callback \n
         * 0 : Success
         */
         int     Open(std::string &output) const;
@@ -242,6 +256,7 @@ namespace CTRPluginFramework
         * \param output Where to place the user's input
         * \param start The keyboard will start with this value as input
         * \return -1 : user abort / error \n
+        * -2 : closed by event callback \n
         * 0 : Success
         */
         int     Open(std::string &output, const std::string &start) const;
