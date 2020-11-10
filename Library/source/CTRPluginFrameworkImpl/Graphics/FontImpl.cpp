@@ -86,6 +86,24 @@ namespace CTRPluginFramework
         return (GetGlyph(s));
     }
 
+    inline u8    GetAlphaValueFromData(u8* data, int dataPos, u16 format) {
+        u8 res, byte;
+        switch (format)
+        {
+        case GPU_A4:
+            byte = data[dataPos / 2];
+            res = ((byte >> ((dataPos & 1) * 4)) & 0x0F) * 0x11;
+            break;
+        case GPU_A8:
+            res = data[dataPos];
+            break;
+        default: // The rest of the formats are not normally used with fonts
+            res = 0;
+            break;
+        }
+        return res;
+    }
+
     // Original code by ObsidianX
     // https://github.com/ObsidianX/3dstools/blob/master/bffnt.py
     u8    *GetOriginalGlyph(u32 glyphIndex)
@@ -148,10 +166,7 @@ namespace CTRPluginFramework
                                         int dataPos = dataX + dataY;
                                         int bmpPos = pixelX + (pixelY * width);
 
-                                        u8 byte = data[dataPos / 2];
-                                        int shift = (dataPos & 1) * 4;
-
-                                        tileData[bmpPos] = ((byte >> shift) & 0x0F) * 0x11;
+                                        tileData[bmpPos] = GetAlphaValueFromData(data, dataPos, tglp->sheetFmt);
                                     }
                                 }
                             }
