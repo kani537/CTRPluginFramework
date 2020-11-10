@@ -6,6 +6,7 @@
 
 #include <cstring>
 #include <cmath>
+#include <unordered_map>
 #include "CTRPluginFramework/Utils/Utils.hpp"
 
 
@@ -16,9 +17,9 @@ namespace CTRPluginFramework
 
     u32     g_fontAllocated = 0;
     u32     g_glyphAllocated = 0;
-    static u32     *defaultSysFont = nullptr;
-    static u8      *glyph = nullptr;
-    static u8      *tileData = nullptr;
+    static std::unordered_map<u16, u32> defaultSysFont;
+    static u8                           *glyph = nullptr;
+    static u8                           *tileData = nullptr;
     Mutex  Font::_mutex;
 
     float Glyph::Width(void) const
@@ -47,21 +48,14 @@ namespace CTRPluginFramework
     {
         fontEnsureMappedExtension();
         PatchGameFontMapping();
-        // Sysfont has 7505 glyph
-        if (defaultSysFont != nullptr)
-            delete [] defaultSysFont;
-
-        defaultSysFont = new u32[7505];
-        g_fontAllocated = sizeof(u32) * 7505;
         tileData = (u8 *)new u8[4096];
         glyph = (u8 *)new u8[1000];
-        std::memset(defaultSysFont, 0, sizeof(u32) * 7505);
     }
 
     Glyph   *Font::GetGlyph(u8* &c)
     {
         u32     code;
-        u32     glyphIndex;
+        u16     glyphIndex;
         ssize_t units;
 
         units = decode_utf8(&code, c);
@@ -71,9 +65,9 @@ namespace CTRPluginFramework
         c += units;
         if (code > 0)
         {
-            glyphIndex = fontGlyphIndexFromCodePoint(nullptr, code);
+            glyphIndex = (u16)fontGlyphIndexFromCodePoint(nullptr, code);
             if (glyphIndex == 0xFFFF) // Glyph not found, return "?" instead
-                glyphIndex = fontGlyphIndexFromCodePoint(nullptr, (u32)'?');
+                glyphIndex = (u16)fontGlyphIndexFromCodePoint(nullptr, (u32)'?');
 
             if (defaultSysFont[glyphIndex] != 0)
                 return ((Glyph *)defaultSysFont[glyphIndex]);
@@ -109,10 +103,10 @@ namespace CTRPluginFramework
 
     // Original code by ObsidianX
     // https://github.com/ObsidianX/3dstools/blob/master/bffnt.py
-    u8    *GetOriginalGlyph(u32 glyphIndex)
+    u8    *GetOriginalGlyph(u16 glyphIndex)
     {
         TGLP_s  *tglp = fontGetGlyphInfo(nullptr);
-        u8      *data = (u8 *)fontGetGlyphSheetTex(nullptr, glyphIndex / g_charPerSheet);
+        u8      *data = (u8 *)fontGetGlyphSheetTex(nullptr, (u32)glyphIndex / g_charPerSheet);
 
         int     width = tglp->sheetWidth;
         int     height = tglp->sheetHeight;
@@ -266,7 +260,7 @@ namespace CTRPluginFramework
         }
     }
 
-    Glyph   *Font::CacheGlyph(u32 glyphIndex)
+    Glyph   *Font::CacheGlyph(u16 glyphIndex)
     {
         // if the glyph already exists
         if (defaultSysFont[glyphIndex] != 0)
