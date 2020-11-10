@@ -19,7 +19,6 @@ namespace CTRPluginFramework
     u32     g_glyphAllocated = 0;
     static std::unordered_map<u16, u32> defaultSysFont;
     static u8                           *glyph = nullptr;
-    static u8                           *tileData = nullptr;
     Mutex  Font::_mutex;
 
     float Glyph::Width(void) const
@@ -48,7 +47,6 @@ namespace CTRPluginFramework
     {
         fontEnsureMappedExtension();
         PatchGameFontMapping();
-        tileData = (u8 *)new u8[4096];
         glyph = (u8 *)new u8[1000];
     }
 
@@ -123,9 +121,12 @@ namespace CTRPluginFramework
         int tileWidth = width / 8;
         int tileHeight = height / 8;
 
-        std::memset(tileData, 0, 4096);
         std::memset(glyph, 0, 1000);
 
+        // Get the part we're interested in
+        int singleW = std::round(width / tglp->nRows);
+        int startPx = std::round(index * singleW);
+        int endPx = startPx + singleW;
 
         // Sheet is composed of 8x8 pixel tiles
         for (int tileY = 0; tileY < tileHeight; tileY++)
@@ -161,9 +162,10 @@ namespace CTRPluginFramework
                                         int dataY = ((yyy * 2) + (yy * 8) + (y * 32) + (tileY * width * 8));
 
                                         int dataPos = dataX + dataY;
-                                        int bmpPos = pixelX + (pixelY * width);
 
-                                        tileData[bmpPos] = GetAlphaValueFromData(data, dataPos, tglp->sheetFmt);
+                                        if (pixelY < 32)
+                                            if (pixelX >= startPx && pixelX < endPx)
+                                                *(glyph + ((pixelX - startPx) + pixelY * (endPx - startPx))) = GetAlphaValueFromData(data, dataPos, tglp->sheetFmt);
                                     }
                                 }
                             }
@@ -172,21 +174,6 @@ namespace CTRPluginFramework
                 }
             }
         }
-
-        // Get the part we're interested in
-        int w = std::round(width / 5);
-        int start = std::round(index * w);
-        int end = start + w;
-        u8  *p = glyph;
-
-        for (int y = 0; y < 32; y++)
-        {
-            for (int x = start; x < end; x++)
-            {
-                *p++ = tileData[x + (y * width)];
-            }
-        }
-
         return (glyph);
     }
 
