@@ -72,6 +72,9 @@ namespace CTRPluginFramework
         if (code > 0)
         {
             glyphIndex = fontGlyphIndexFromCodePoint(nullptr, code);
+            if (glyphIndex == 0xFFFF) // Glyph not found, return "?" instead
+                glyphIndex = fontGlyphIndexFromCodePoint(nullptr, (u32)'?');
+
             if (defaultSysFont[glyphIndex] != 0)
                 return ((Glyph *)defaultSysFont[glyphIndex]);
             return (CacheGlyph(glyphIndex));
