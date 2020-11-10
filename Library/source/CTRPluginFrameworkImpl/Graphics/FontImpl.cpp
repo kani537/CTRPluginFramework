@@ -269,10 +269,10 @@ namespace CTRPluginFramework
         Lock    lock(_mutex);
 
         u8  *originalGlyph = GetOriginalGlyph(glyphIndex);
-        // 16px * 16px
-        u8  *newGlyph = new u8[16 * 16];
-        g_fontAllocated += 16 * 16;
-        std::memset(newGlyph, 0, 16 * 16);
+        // 16px * 14px = 224
+        u8  *newGlyph = new u8[224];
+        g_fontAllocated += 224;
+        std::memset(newGlyph, 0, 224);
 
         // Shrink glyph data to the required size
         ShrinkGlyph(newGlyph, originalGlyph);
