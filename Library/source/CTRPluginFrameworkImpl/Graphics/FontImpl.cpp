@@ -124,9 +124,17 @@ namespace CTRPluginFramework
         std::memset(glyph, 0, 1000);
 
         // Get the part we're interested in
-        int singleW = std::round(width / tglp->nRows);
-        int startPx = std::round(index * singleW);
-        int endPx = startPx + singleW;
+        int glyphsPerRow = tglp->nRows;
+        int glyphsPerColumn = tglp->nLines;
+        int indexX = index % glyphsPerRow;
+        int indexY = index / glyphsPerRow;
+
+        int singleWx = std::round(width / glyphsPerRow);
+        int singleHy = std::round(height / glyphsPerColumn);
+        int startPx = std::round(indexX * singleWx);
+        int endPx = startPx + singleWx;
+        int startPy = std::round(indexY * singleHy);
+        int endPy = startPy + singleHy;
 
         // Sheet is composed of 8x8 pixel tiles
         for (int tileY = 0; tileY < tileHeight; tileY++)
@@ -163,9 +171,9 @@ namespace CTRPluginFramework
 
                                         int dataPos = dataX + dataY;
 
-                                        if (pixelY < 32)
+                                        if (pixelY >= startPy && pixelY < endPy)
                                             if (pixelX >= startPx && pixelX < endPx)
-                                                *(glyph + ((pixelX - startPx) + pixelY * (endPx - startPx))) = GetAlphaValueFromData(data, dataPos, tglp->sheetFmt);
+                                                *(glyph + ((pixelX - startPx) + (pixelY - startPy) * (endPx - startPx))) = GetAlphaValueFromData(data, dataPos, tglp->sheetFmt);
                                     }
                                 }
                             }
