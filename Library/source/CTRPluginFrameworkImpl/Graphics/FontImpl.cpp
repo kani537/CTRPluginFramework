@@ -17,7 +17,7 @@ namespace CTRPluginFramework
 
     u32     g_fontAllocated = 0;
     u32     g_glyphAllocated = 0;
-    static std::unordered_map<u16, u32> defaultSysFont;
+    static std::unordered_map<u32, u32> defaultSysFont;
     static u8                           *glyph = nullptr;
     Mutex  Font::_mutex;
 
@@ -25,7 +25,8 @@ namespace CTRPluginFramework
     {
         return (xOffset + xAdvance);
     }
-
+    
+    // Stub game' call to APT_MapSharedFont as we do it already
     static void     PatchGameFontMapping(void)
     {
         std::vector<u32> pattern =
@@ -53,7 +54,7 @@ namespace CTRPluginFramework
     Glyph   *Font::GetGlyph(u8* &c)
     {
         u32     code;
-        u16     glyphIndex;
+        u32     glyphIndex;
         ssize_t units;
 
         units = decode_utf8(&code, c);
@@ -63,9 +64,9 @@ namespace CTRPluginFramework
         c += units;
         if (code > 0)
         {
-            glyphIndex = (u16)fontGlyphIndexFromCodePoint(nullptr, code);
+            glyphIndex = fontGlyphIndexFromCodePoint(nullptr, code);
             if (glyphIndex == 0xFFFF) // Glyph not found, return "?" instead
-                glyphIndex = (u16)fontGlyphIndexFromCodePoint(nullptr, (u32)'?');
+                glyphIndex = fontGlyphIndexFromCodePoint(nullptr, (u32)'?');
 
             if (defaultSysFont[glyphIndex] != 0)
                 return ((Glyph *)defaultSysFont[glyphIndex]);
@@ -101,10 +102,10 @@ namespace CTRPluginFramework
 
     // Original code by ObsidianX
     // https://github.com/ObsidianX/3dstools/blob/master/bffnt.py
-    u8    *GetOriginalGlyph(u16 glyphIndex)
+    u8    *GetOriginalGlyph(u32 glyphIndex)
     {
         TGLP_s  *tglp = fontGetGlyphInfo(nullptr);
-        u8      *data = (u8 *)fontGetGlyphSheetTex(nullptr, (u32)glyphIndex / g_charPerSheet);
+        u8      *data = (u8 *)fontGetGlyphSheetTex(nullptr, glyphIndex / g_charPerSheet);
 
         int     width = tglp->sheetWidth;
         int     height = tglp->sheetHeight;
@@ -255,7 +256,7 @@ namespace CTRPluginFramework
         }
     }
 
-    Glyph   *Font::CacheGlyph(u16 glyphIndex)
+    Glyph   *Font::CacheGlyph(u32 glyphIndex)
     {
         // if the glyph already exists
         if (defaultSysFont[glyphIndex] != 0)
