@@ -30,7 +30,7 @@ namespace CTRPluginFramework
         static void     Initialize(void);
 
         // Cache a new glyph
-        static Glyph    *CacheGlyph(u16 glyphIndex);
+        static Glyph    *CacheGlyph(u32 glyphIndex);
         static Mutex    _mutex;
     };
 }

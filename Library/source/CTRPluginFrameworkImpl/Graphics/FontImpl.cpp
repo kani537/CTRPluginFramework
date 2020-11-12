@@ -17,9 +17,14 @@ namespace CTRPluginFramework
 
     u32     g_fontAllocated = 0;
     u32     g_glyphAllocated = 0;
-    static std::unordered_map<u32, u32> defaultSysFont;
-    static u8                           *glyph = nullptr;
     Mutex  Font::_mutex;
+
+    namespace
+    {
+        u8 *                         glyph = nullptr;
+        u8 *                         defaultGlyph = nullptr; 
+        std::unordered_map<u32, u32> defaultSysFont;
+    }
 
     float Glyph::Width(void) const
     {
@@ -66,11 +71,14 @@ namespace CTRPluginFramework
         {
             glyphIndex = fontGlyphIndexFromCodePoint(nullptr, code);
             if (glyphIndex == 0xFFFF) // Glyph not found, return "?" instead
-                glyphIndex = fontGlyphIndexFromCodePoint(nullptr, (u32)'?');
+            {
+                if (defaultGlyph == nullptr)
+                    defaultGlyph = CacheGlyph(fontGlyphIndexFromCodePoint(nullptr, (u32)'?'));
 
-            if (defaultSysFont[glyphIndex] != 0)
-                return ((Glyph *)defaultSysFont[glyphIndex]);
-            return (CacheGlyph(glyphIndex));
+                return defaultGlyph;
+            }
+
+            return CacheGlyph(glyphIndex);
         }
         return (nullptr);
     }
@@ -258,9 +266,13 @@ namespace CTRPluginFramework
 
     Glyph   *Font::CacheGlyph(u32 glyphIndex)
     {
-        // if the glyph already exists
-        if (defaultSysFont[glyphIndex] != 0)
-            return (reinterpret_cast<Glyph *>(defaultSysFont[glyphIndex]));
+        // Check if the glyph already exists
+        {
+            Glyph *glyph = reinterpret_cast<Glyph *>(defaultSysFont[glyphIndex]);
+
+            if (glyph != nullptr)
+                return glyph;
+        }
 
         Lock    lock(_mutex);
 
