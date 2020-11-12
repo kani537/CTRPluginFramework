@@ -22,7 +22,7 @@ namespace CTRPluginFramework
     namespace
     {
         u8 *                         glyph = nullptr;
-        u8 *                         defaultGlyph = nullptr; 
+        Glyph *                      defaultGlyph = nullptr; 
         std::unordered_map<u32, u32> defaultSysFont;
     }
 
