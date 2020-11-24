@@ -6,6 +6,7 @@
 
 #include <cstring>
 #include <cmath>
+#include <unordered_map>
 #include "CTRPluginFramework/Utils/Utils.hpp"
 
 
@@ -16,16 +17,21 @@ namespace CTRPluginFramework
 
     u32     g_fontAllocated = 0;
     u32     g_glyphAllocated = 0;
-    static u32     *defaultSysFont = nullptr;
-    static u8      *glyph = nullptr;
-    static u8      *tileData = nullptr;
     Mutex  Font::_mutex;
+
+    namespace
+    {
+        u8 *                         glyph = nullptr;
+        Glyph *                      defaultGlyph = nullptr; 
+        std::unordered_map<u32, u32> defaultSysFont;
+    }
 
     float Glyph::Width(void) const
     {
         return (xOffset + xAdvance);
     }
-
+    
+    // Stub game' call to APT_MapSharedFont as we do it already
     static void     PatchGameFontMapping(void)
     {
         std::vector<u32> pattern =
@@ -47,15 +53,7 @@ namespace CTRPluginFramework
     {
         fontEnsureMappedExtension();
         PatchGameFontMapping();
-        // Sysfont has 7505 glyph
-        if (defaultSysFont != nullptr)
-            delete [] defaultSysFont;
-
-        defaultSysFont = new u32[7505];
-        g_fontAllocated = sizeof(u32) * 7505;
-        tileData = (u8 *)new u8[4096];
         glyph = (u8 *)new u8[1000];
-        std::memset(defaultSysFont, 0, sizeof(u32) * 7505);
     }
 
     Glyph   *Font::GetGlyph(u8* &c)
@@ -72,9 +70,15 @@ namespace CTRPluginFramework
         if (code > 0)
         {
             glyphIndex = fontGlyphIndexFromCodePoint(nullptr, code);
-            if (defaultSysFont[glyphIndex] != 0)
-                return ((Glyph *)defaultSysFont[glyphIndex]);
-            return (CacheGlyph(glyphIndex));
+            if (glyphIndex == 0xFFFF) // Glyph not found, return "?" instead
+            {
+                if (defaultGlyph == nullptr)
+                    defaultGlyph = CacheGlyph(fontGlyphIndexFromCodePoint(nullptr, (u32)'?'));
+
+                return defaultGlyph;
+            }
+
+            return CacheGlyph(glyphIndex);
         }
         return (nullptr);
     }
@@ -84,6 +88,24 @@ namespace CTRPluginFramework
         u8 *s = (u8 *)&c;
 
         return (GetGlyph(s));
+    }
+
+    inline u8    GetAlphaValueFromData(u8* data, int dataPos, u16 format) {
+        u8 res, byte;
+        switch (format)
+        {
+        case GPU_A4:
+            byte = data[dataPos / 2];
+            res = ((byte >> ((dataPos & 1) * 4)) & 0x0F) * 0x11;
+            break;
+        case GPU_A8:
+            res = data[dataPos];
+            break;
+        default: // The rest of the formats are not normally used with fonts
+            res = 0;
+            break;
+        }
+        return res;
     }
 
     // Original code by ObsidianX
@@ -108,9 +130,20 @@ namespace CTRPluginFramework
         int tileWidth = width / 8;
         int tileHeight = height / 8;
 
-        std::memset(tileData, 0, 4096);
         std::memset(glyph, 0, 1000);
 
+        // Get the part we're interested in
+        int glyphsPerRow = tglp->nRows;
+        int glyphsPerColumn = tglp->nLines;
+        int indexX = index % glyphsPerRow;
+        int indexY = index / glyphsPerRow;
+
+        int singleWx = std::round(width / glyphsPerRow);
+        int singleHy = std::round(height / glyphsPerColumn);
+        int startPx = std::round(indexX * singleWx);
+        int endPx = startPx + singleWx;
+        int startPy = std::round(indexY * singleHy);
+        int endPy = startPy + singleHy;
 
         // Sheet is composed of 8x8 pixel tiles
         for (int tileY = 0; tileY < tileHeight; tileY++)
@@ -146,12 +179,10 @@ namespace CTRPluginFramework
                                         int dataY = ((yyy * 2) + (yy * 8) + (y * 32) + (tileY * width * 8));
 
                                         int dataPos = dataX + dataY;
-                                        int bmpPos = pixelX + (pixelY * width);
 
-                                        u8 byte = data[dataPos / 2];
-                                        int shift = (dataPos & 1) * 4;
-
-                                        tileData[bmpPos] = ((byte >> shift) & 0x0F) * 0x11;
+                                        if (pixelY >= startPy && pixelY < endPy)
+                                            if (pixelX >= startPx && pixelX < endPx)
+                                                *(glyph + ((pixelX - startPx) + (pixelY - startPy) * (endPx - startPx))) = GetAlphaValueFromData(data, dataPos, tglp->sheetFmt);
                                     }
                                 }
                             }
@@ -160,21 +191,6 @@ namespace CTRPluginFramework
                 }
             }
         }
-
-        // Get the part we're interested in
-        int w = std::round(width / 5);
-        int start = std::round(index * w);
-        int end = start + w;
-        u8  *p = glyph;
-
-        for (int y = 0; y < 32; y++)
-        {
-            for (int x = start; x < end; x++)
-            {
-                *p++ = tileData[x + (y * width)];
-            }
-        }
-
         return (glyph);
     }
 
@@ -250,9 +266,13 @@ namespace CTRPluginFramework
 
     Glyph   *Font::CacheGlyph(u32 glyphIndex)
     {
-        // if the glyph already exists
-        if (defaultSysFont[glyphIndex] != 0)
-            return (reinterpret_cast<Glyph *>(defaultSysFont[glyphIndex]));
+        // Check if the glyph already exists
+        {
+            Glyph *glyph = reinterpret_cast<Glyph *>(defaultSysFont[glyphIndex]);
+
+            if (glyph != nullptr)
+                return glyph;
+        }
 
         Lock    lock(_mutex);
 
