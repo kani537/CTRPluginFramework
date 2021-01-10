@@ -114,8 +114,8 @@ namespace CTRPluginFramework
         void    Populate(const std::vector<std::string> &input, bool resetScroll = false);
 
         /**
-         * \brief Populate a keyboard with the Icons contained in an std::vector
-         * \param input  A std::vector that contain a list of strings
+         * \brief Populate a keyboard with the CustomIcons contained in an std::vector
+         * \param input A std::vector that contains a list of CustomIcons (icon size must be 30x30 pixels, otherwise a red cross will be displayed)
          * \param resetScroll  Set to true to reset the scroll position if the list is the same size
          */
         void    Populate(const std::vector<CustomIcon>& input, bool resetScroll = false);
