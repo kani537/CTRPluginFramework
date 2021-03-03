@@ -220,20 +220,19 @@ Result  PLGLDR__GetPluginPath(char *path)
     return res;
 }
 
-Result PLGLDR__GetMenuOpenBlock(u32* outBlockAddress)
+Result  PLGLDR__SetRosalinaMenuBlock(bool shouldBlock)
 {
     Result res = 0;
 
-    u32* cmdbuf = getThreadCommandBuffer();
+    u32 *cmdbuf = getThreadCommandBuffer();
 
-    cmdbuf[0] = IPC_MakeHeader(11, 0, 0);
+    cmdbuf[0] = IPC_MakeHeader(11, 1, 0);
+    cmdbuf[1] = (u32)shouldBlock;
 
     if (R_SUCCEEDED((res = svcSendSyncRequest(plgLdrHandle))))
     {
         res = cmdbuf[1];
-        *outBlockAddress = cmdbuf[2] | (1 << 31);
     }
-
     return res;
 }
 
