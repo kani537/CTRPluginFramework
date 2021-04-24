@@ -20,16 +20,16 @@ namespace CTRPluginFramework
             None
         };
 
-        Color(void) : r(0), g(0), b(0), a(255) {}
-        Color(u32 color);
-        Color(u8 red, u8 green, u8 blue, u8 alpha = 255);
+        constexpr Color(void) : a(255), b(0), g(0), r(0) {}
+        constexpr Color(u32 color) : raw(color) {}
+        constexpr Color(u8 red, u8 green, u8 blue, u8 alpha = 255) : a(alpha), b(blue), g(green), r(red) {}
 
-        u32     ToU32(void) const;
+        inline u32 ToU32(void) const { return raw; };
         Color   &Fade(float fading);
         Color   Blend(const Color &color, BlendMode mode) const;
 
-        bool    operator == (const Color &right) const;
-        bool    operator != (const Color &right) const;
+        inline bool    operator == (const Color &right) const {return raw == right.raw;}
+        inline bool    operator != (const Color &right) const {return raw != right.raw;}
         bool    operator < (const Color &right) const;
         bool    operator <= (const Color &right) const;
         bool    operator > (const Color &right) const;
@@ -56,12 +56,12 @@ namespace CTRPluginFramework
         union
         {
             u32     raw;
-            struct
+            struct // Match raw byte order
             {
-                u8      r;
-                u8      g;
-                u8      b;
                 u8      a;
+                u8      b;
+                u8      g;
+                u8      r;
             };
         };
 
