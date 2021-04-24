@@ -17,9 +17,9 @@
 namespace CTRPluginFramework
 {
     SearchMenu::SearchMenu(Search* &curSearch, HexEditor &hexEditor, bool &inEditor, bool &useHexInput) :
+        _hexEditor(hexEditor),
         _currentSearch(curSearch),
         _submenu{ { "Show game"}}, //"Play 1 frame", "Play 2 frames", "Play 5 frames" }},
-        _hexEditor(hexEditor),
         _inEditor(inEditor),
 	    _useHexInput(useHexInput)
     {
@@ -37,7 +37,7 @@ namespace CTRPluginFramework
         static Clock    _startFastScroll;
 
         bool isSubMenuOpen = _submenu.IsOpen();
-        for (int i = 0; i < eventList.size(); i++)
+        for (size_t i = 0; i < eventList.size(); i++)
         {
             Event &event = eventList[i];
 
@@ -285,17 +285,17 @@ namespace CTRPluginFramework
         int posX2 = 113;
         int posX3 = 239;
 
-        int start = std::max((int)0, (int)_selector - 5);
+        u32 start = std::max((int)0, (int)_selector - 5);
 
-        int end = std::min((int)_resultsAddress.size(), (int)(start + 10));
+        u32 end = std::min((int)_resultsAddress.size(), (int)(start + 10));
 
-        for (int i = start; i < end; i++)
+        for (u32 i = start; i < end; i++)
         {
             if (i >= _resultsAddress.size())
                 return;
 
             // Selector
-            if (i == _selector)
+            if (i == static_cast<u32>(_selector))
                 Renderer::DrawRect(35, 95 + (i - start) * 10, 330, 10, silver);
 
             int pos = posX1;
@@ -360,7 +360,7 @@ namespace CTRPluginFramework
 
         _currentSearch->ReadResults(_index, _resultsAddress, _resultsNewValue, _resultsOldValue);
 
-        if (_selector >= _resultsAddress.size())
+        if (static_cast<size_t>(_selector) >= _resultsAddress.size())
             _selector = 0;
 
         // If the results are empty try again from the start of the results
@@ -557,7 +557,7 @@ namespace CTRPluginFramework
 
         for (int i = _selector; i < _selector + 10; i++)
         {
-            if (i >= _resultsAddress.size())
+            if (i >= static_cast<int>(_resultsAddress.size()))
                 break;
             out += _resultsAddress[i] +" : " + _resultsNewValue[i] + "\r\n";
         }

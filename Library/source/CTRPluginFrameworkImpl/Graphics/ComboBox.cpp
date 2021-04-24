@@ -5,12 +5,12 @@
 namespace CTRPluginFramework
 {
     ComboBox::ComboBox(int posX, int posY, int width, int height) :
-    _rectPos(IntRect(posX, posY, width, height)),
-    _execute(false),
-    _isTouched(false),
     IsEnabled(true),
     IsVisible(true),
-    SelectedItem(-1)
+    SelectedItem(-1),
+    _execute(false),
+    _isTouched(false),
+    _rectPos(IntRect(posX, posY, width, height))
     {
 
     }

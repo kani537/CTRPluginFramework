@@ -46,7 +46,7 @@ Hook::Hook(void)
     _ctx->callbackAddress = 0;
     _ctx->callbackAddress2 = 0;
     _ctx->overwrittenInstr = 0;
-    _ctx->index = -1;
+    _ctx->index = 0xFFFFFFFF;
 }
 
 Hook::Hook(const Hook &hook)
@@ -156,7 +156,7 @@ Hook&   Hook::SetReturnAddress(u32 returnAddr)
 
 bool    Hook::IsEnabled(void)
 {
-    return _ctx && _ctx->index != -1;
+    return _ctx && _ctx->index != 0xFFFFFFFF;
 }
 
 

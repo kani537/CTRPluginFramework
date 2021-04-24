@@ -31,16 +31,16 @@ static inline void __set_cpsr_cx(u32 cpsr)
 
 namespace Kernel
 {
-    static KRecursiveLock * CriticalSectionLock; // = (KRecursiveLock *)0xFFF2F0AC;
-    static KThread  **  CurrentKThread = (KThread **)0xFFFF9000;
+    //static KRecursiveLock * CriticalSectionLock; // = (KRecursiveLock *)0xFFF2F0AC;
+    //static KThread  **  CurrentKThread = (KThread **)0xFFFF9000;
     static KProcess **  CurrentKProcess = (KProcess **)0xFFFF9004;
-    static KScheduler** CurrentScheduler  = (KScheduler **)0xFFFF900C;
-    static KObjectMutex * SynchronizationMutex;
-    static KCoreContext * CoreCtxs; // (KCoreContext *)0xFFFC9000;
+    //static KScheduler** CurrentScheduler  = (KScheduler **)0xFFFF900C;
+    //static KObjectMutex * SynchronizationMutex;
+    //static KCoreContext * CoreCtxs; // (KCoreContext *)0xFFFC9000;
 
-    static void    (*KRecursiveLock__Lock)(KRecursiveLock *lock); // = (void (*)(KRecursiveLock *))0xFFF1DC24;
-    static void    (*KRecursiveLock__Unlock)(KRecursiveLock *lock); // = (void (*)(KRecursiveLock *))0xFFF1DD64;
-    static void    (*KScheduler__AdjustThread)(KScheduler *scheduler, KThread *thread, u32 oldSchedulingMask);// = (void (*)(KScheduler *, KThread*, u32))0xFFF1DD38;
+    //static void    (*KRecursiveLock__Lock)(KRecursiveLock *lock); // = (void (*)(KRecursiveLock *))0xFFF1DC24;
+    //static void    (*KRecursiveLock__Unlock)(KRecursiveLock *lock); // = (void (*)(KRecursiveLock *))0xFFF1DD64;
+    //static void    (*KScheduler__AdjustThread)(KScheduler *scheduler, KThread *thread, u32 oldSchedulingMask);// = (void (*)(KScheduler *, KThread*, u32))0xFFF1DD38;
 
     static inline u32   decodeARMBranch(const u32 *src)
     {

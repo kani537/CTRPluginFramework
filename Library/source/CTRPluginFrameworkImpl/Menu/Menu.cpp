@@ -85,7 +85,7 @@ namespace CTRPluginFramework
             }
         }
 
-        if (_selector >= _folder->ItemsCount())
+        if (_selector >= static_cast<int>(_folder->ItemsCount()))
             _selector = std::max((int)0, (int)(_folder->ItemsCount() - 1));
     }
 
@@ -101,7 +101,7 @@ namespace CTRPluginFramework
 
     MenuItem    *Menu::GetSelectedItem()
     {
-        u32 count = _folder->ItemsCount();
+        int count = _folder->ItemsCount();
 
         if (count > 0)
         {
@@ -117,7 +117,7 @@ namespace CTRPluginFramework
     void    Menu::Draw(void) const
     {
         const Color &title = Preferences::Settings.WindowTitleColor;
-        const Color &text = Preferences::Settings.MainTextColor;
+        //const Color &text = Preferences::Settings.MainTextColor;
         const Color &selected = Preferences::Settings.MenuSelectedItemColor;
         const Color &unselected = Preferences::Settings.MenuUnselectedItemColor;
 
@@ -515,7 +515,7 @@ namespace CTRPluginFramework
         if (!item || !_folder)
             return;
 
-        if (_selector >= _folder->_items.size())
+        if (_selector >= static_cast<int>(_folder->_items.size()))
             _folder->Append(item);
         else
         {

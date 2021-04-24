@@ -38,14 +38,16 @@ namespace CTRPluginFramework
     u32     Screen::Draw(const std::string &str, u32 posX, u32 posY, const Color& foreground, const Color& background) const
     {
         Renderer::SetTarget(IsTop ? TOP : BOTTOM);
-        Renderer::DrawString(str.c_str(), posX, (int &)posY, foreground, background);
-        return (posY);
+        int newPosY = posY;
+        Renderer::DrawString(str.c_str(), posX, newPosY, foreground, background);
+        return (newPosY);
     }
 
     u32 Screen::DrawSysfont(const std::string &str, u32 posX, u32 posY, const Color &foreground) const
     {
         Renderer::SetTarget(IsTop ? TOP : BOTTOM);
-        Renderer::DrawSysString(str.c_str(), posX, (int &)posY, 400, foreground);
+        int newPosY = posY;
+        Renderer::DrawSysString(str.c_str(), posX, newPosY, 400, foreground);
         return (posY);
     }
 

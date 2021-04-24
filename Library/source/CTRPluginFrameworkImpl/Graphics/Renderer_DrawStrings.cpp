@@ -19,7 +19,7 @@ namespace CTRPluginFramework
         ScreenImpl  *screen = GetContext()->screen;
 
         u32 stride = screen->GetStride();
-        u32 bpp = screen->GetBytesPerPixel();
+        //u32 bpp = screen->GetBytesPerPixel();
         int posXX = posX - 10;
         int posYY = posY;
 
@@ -63,7 +63,7 @@ namespace CTRPluginFramework
         ScreenImpl  *screen = GetContext()->screen;
 
         u32 stride = screen->GetStride();
-        u32 bpp = screen->GetBytesPerPixel();
+        //u32 bpp = screen->GetBytesPerPixel();
         int posXX = posX - 10;
         int posYY = posY;
 

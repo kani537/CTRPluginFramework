@@ -232,7 +232,7 @@ namespace CTRPluginFramework
             }
         }
 
-        if (position < 0 && offset < -position)
+        if (position < 0 && offset < static_cast<u64>(-position))
             return (INVALID_ARG);
 
         _offset = offset + position;
@@ -374,7 +374,7 @@ namespace CTRPluginFramework
 
     std::string     File::GetName(void) const
     {
-        int pos = _path.rfind("/");
+        size_t pos = _path.rfind("/");
 
         if (pos != std::string::npos)
             return (_path.substr(pos + 1));
@@ -383,7 +383,7 @@ namespace CTRPluginFramework
 
     std::string     File::GetExtension(void) const
     {
-        int pos = _path.rfind(".");
+        size_t pos = _path.rfind(".");
 
         if (pos != std::string::npos)
             return (_path.substr(pos + 1));

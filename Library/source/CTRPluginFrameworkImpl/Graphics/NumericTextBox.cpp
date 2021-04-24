@@ -8,14 +8,15 @@
 namespace CTRPluginFramework
 {
     NumericTextBox::NumericTextBox(int posX, int posY, int width, int height) :
-    _rectPos(IntRect(posX, posY, width, height)),
-    _execute(false),
-    _isTouched(false),
-	_isHexadecimal(true),
+
     IsEnabled(true),
     IsVisible(true),
     ValueType(Type::Bits32),
-    Bits32(0)
+    Bits32(0),
+    _execute(false),
+    _isTouched(false),
+	_isHexadecimal(true),
+    _rectPos(IntRect(posX, posY, width, height))
     {
         Clear();
     }

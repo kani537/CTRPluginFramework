@@ -4,7 +4,7 @@ namespace CTRPluginFramework
 {
     void    Search32::SubsidiarySearchUnknownU8(Storage<Results32WithOld>& data, SearchFlags compare, Results32WithOld* result)
     {
-        u8 checkValue = _checkValue.U8;
+        //u8 checkValue = _checkValue.U8;
 
         // If current search is specified
         if (IsSpecifiedSearch(_flags))
@@ -203,6 +203,8 @@ namespace CTRPluginFramework
                 }
                 break;
             }
+            default:
+                break;
             }
         }
 
@@ -403,6 +405,8 @@ namespace CTRPluginFramework
                 }
                 break;
             }
+            default:
+                break;
             }
         }
     }
@@ -607,6 +611,8 @@ namespace CTRPluginFramework
                 }
                 break;
             }
+            default:
+                break;
             }
         }
 
@@ -804,13 +810,15 @@ namespace CTRPluginFramework
                 }
                 break;
             }
+            default:
+                break;
             }
         }
     }
 
     void    Search32::SubsidiarySearchUnknownU32(Storage<Results32WithOld>& data, SearchFlags compare, Results32WithOld* result)
     {
-        u32 checkValue = _checkValue.U32;
+        //u32 checkValue = _checkValue.U32;
 
         // If current search is specified
         if (IsSpecifiedSearch(_flags))
@@ -1009,6 +1017,8 @@ namespace CTRPluginFramework
                 }
                 break;
             }
+            default:
+                break;
             }
         }
 
@@ -1209,6 +1219,8 @@ namespace CTRPluginFramework
                 }
                 break;
             }
+            default:
+                break;
             }
         }
 
@@ -1433,6 +1445,8 @@ namespace CTRPluginFramework
                 }
                 break;
             }
+            default:
+                break;
             }
         }
 
@@ -1647,6 +1661,8 @@ namespace CTRPluginFramework
                 }
                 break;
             }
+            default:
+                break;
         }
         }
     }

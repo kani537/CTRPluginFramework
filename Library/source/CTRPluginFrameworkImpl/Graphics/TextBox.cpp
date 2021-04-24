@@ -238,7 +238,7 @@ namespace CTRPluginFramework
         int  max = std::min((int)(_currentLine + _maxLines), (int)(_newline.size() - 1));
 
         FwkSettings     &settings = Preferences::Settings;
-        const Color     &titleColor = settings.WindowTitleColor;
+        //const Color     &titleColor = settings.WindowTitleColor;
         const Color     &textColor = settings.MainTextColor;
         const Color     &blank = Color::White;
 
@@ -267,7 +267,7 @@ namespace CTRPluginFramework
         {
             int width;
             width = Renderer::DrawSysString((const char *)_title.c_str(), posX, posY, xLimit, settings.WindowTitleColor);
-            u32 length = width - posX + 30;
+            int length = width - posX + 30;
             if (posX + length > xLimit)
                 length = xLimit - posX;
             Renderer::DrawLine(posX, posY, length, blank);

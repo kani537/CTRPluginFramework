@@ -371,7 +371,7 @@ namespace Services
             // OSD::Notify(Utils::Format("SQ Count: %08X", queue->control));
         }
 
-        static void RestoreQueue(void)
+        /*static void RestoreQueue(void)
         {
             QueueBody *queue = (QueueBody *)EventData;
 
@@ -388,7 +388,7 @@ namespace Services
             __clrex();
 
             // OSD::Notify(Utils::Format("RQ Count: %08X", queue->control));
-        }
+        }*/
 
         static int  PopInterrupt(void)
         {
@@ -435,7 +435,7 @@ namespace Services
 
         static void  EnqueueEvent(s8 event, bool signal = true)
         {
-            int     curEvt;
+            //int     curEvt;
             bool    strexFailed;
 
             do
@@ -492,7 +492,7 @@ namespace Services
                 while (CatchInterrupt)
                 {
                     svcClearEvent(GSPEvent);
-                    Result res = svcWaitSynchronization(GSPEvent, U64_MAX);
+                    static_cast<void>(!svcWaitSynchronization(GSPEvent, U64_MAX));
 
                     while (true)
                     {

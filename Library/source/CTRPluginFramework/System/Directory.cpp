@@ -45,7 +45,7 @@ namespace CTRPluginFramework
 
         res = FSUSER_CreateDirectory(_sdmcArchive, fsPath, 0);
 
-        if (res == 0xC82044BE || R_SUCCEEDED(res))
+        if (res == static_cast<Result>(0xC82044BE) || R_SUCCEEDED(res))
             return (SUCCESS);
         return (res);
     }
@@ -323,7 +323,7 @@ namespace CTRPluginFramework
 
     std::string     Directory::GetName(void) const
     {
-        int pos = _path.rfind("/");
+        size_t pos = _path.rfind("/");
 
         if (pos != std::string::npos)
             return (_path.substr(pos + 1));

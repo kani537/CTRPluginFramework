@@ -7,7 +7,7 @@
 
 namespace CTRPluginFramework
 {
-#define DEBUG 0
+#define SCH_DEBUG 0
 
     Scheduler   Scheduler::_singleton;
     void Scheduler__CoreHandler(void *arg);
@@ -51,7 +51,7 @@ namespace CTRPluginFramework
 
             if (SystemImpl::Status())
                 return;
-#if DEBUG
+#if SCH_DEBUG
             OSD::Notify(Utils::Format("New task on core: %d", core.id));
 #endif
             core.state = Scheduler::Core::Busy;
@@ -75,7 +75,7 @@ namespace CTRPluginFramework
 
             // Release Core::taskContext ownership
             taskCtx.reset();
-#if DEBUG
+#if SCH_DEBUG
             OSD::Notify(Utils::Format("Task ended on core: %d", core.id));
 #endif
         }

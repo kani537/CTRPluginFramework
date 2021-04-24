@@ -96,7 +96,7 @@ static __attribute__((noinline)) void     GenerateAsm(AsmWrapper& asmWrapper, Ho
 {
     u32     flags = ctx.flags;
     vu32 *  code = &asmWrapper.code[0];
-    vu32 *  ldrLrCb;
+    vu32 *  ldrLrCb = nullptr;
     vu32 *  ldrLr;
     vu32 *  strLr;
 
@@ -146,7 +146,7 @@ static __attribute__((noinline)) void     GenerateAsm(AsmWrapper& asmWrapper, Ho
          * @afterCallback
          */
 
-        vu32 *  ldrLrCb2;
+        vu32 *  ldrLrCb2 = nullptr;
         vu32 *  ldrLrSub;
 
         // If there's a before callback

@@ -46,7 +46,7 @@ namespace CTRPluginFramework
         img->UpSample(*temp);
         delete img;
 
-        if (temp->Width() < maxX || temp->Height() < maxY)
+        if (temp->Width() < static_cast<u32>(maxX) || temp->Height() < static_cast<u32>(maxY))
             return (UpSampleUntilItsEnough(temp, maxX, maxY));
         return (temp);
     }
@@ -143,7 +143,7 @@ namespace CTRPluginFramework
         {
             MenuHotkeys = header.hotkeys;
             Flags = header.flags;
-            *reinterpret_cast<u64 *>(Backlights) = header.lcdbacklights;
+            memcpy(reinterpret_cast<void*>(Backlights), &header.lcdbacklights, sizeof(Backlights));
         }
 
         // Check for hotkeys to be valid
@@ -289,7 +289,7 @@ namespace CTRPluginFramework
         header.version = SETTINGS_VERSION;
         header.hotkeys = MenuHotkeys;
         header.flags = Flags;
-        header.lcdbacklights = *reinterpret_cast<u64 *>(Backlights);
+        memcpy(&header.lcdbacklights, Backlights, sizeof(header.lcdbacklights));
 
         if (File::Open(settings, "CTRPFData.bin", mode) == 0)
         {

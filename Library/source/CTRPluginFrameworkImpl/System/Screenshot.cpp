@@ -367,7 +367,7 @@ namespace CTRPluginFramework
             }
 
         } while (_mode & TIMED && !_timer.HasTimePassed(Timer));
-    exit:
+    // exit:
         _mode = 0;
         OSDImpl::WaitingForScreenshot = false;
         return 0;

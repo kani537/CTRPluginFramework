@@ -38,7 +38,7 @@ namespace CTRPluginFramework
         void        SetLayout(Layout layout);
         void        SetHexadecimal(bool isHex);
         bool        IsHexadecimal(void) const;
-        void        SetMaxInput(int max);
+        void        SetMaxInput(u32 max);
         void        CanAbort(bool canAbort);
         void        CanChangeLayout(bool canChange);
         std::string &GetInput(void);
@@ -110,7 +110,7 @@ namespace CTRPluginFramework
         bool                    _useSymbols{false};
         bool                    _useNintendo{false};
         float                   _offset{0.f};
-        int                     _max{0};
+        u32                     _max{0};
         u8                      _symbolsPage{0};
         u8                      _nintendoPage{0};
         Layout                  _layout{HEXADECIMAL};

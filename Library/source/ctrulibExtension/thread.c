@@ -92,7 +92,7 @@ Result __startThread(Thread t, int prio, int affinity)
     if (prio < 0x18)
         oldPrio = KProcess__PatchMaxPriority(0);
 
-	rc = svcCreateThread(&t->handle, _thread_begin, (u32)t, (u32 *)t->stacktop, prio, affinity);
+    rc = svcCreateThread(&t->handle, _thread_begin, (u32)t, (u32 *)t->stacktop, prio, affinity);
 
     if (oldAppType != -1)
         KProcess__PatchCategory(oldAppType);

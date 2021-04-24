@@ -191,6 +191,8 @@ namespace CTRPluginFramework
                 }
                 break;
             }
+            default:
+                break;
             }
         }
         // Else for unknown search
@@ -351,6 +353,8 @@ namespace CTRPluginFramework
                 }
                 break;
             }
+            default:
+                break;
             }
 
         }
@@ -545,6 +549,8 @@ namespace CTRPluginFramework
                 }
                 break;
             }
+            default:
+                break;
             }
         }
 
@@ -733,6 +739,8 @@ namespace CTRPluginFramework
                 }
                 break;
             }
+            default:
+                break;
             }
         }
     }
@@ -923,6 +931,8 @@ namespace CTRPluginFramework
                 }
                 break;
             }
+            default:
+                break;
             }
         }
 
@@ -1112,6 +1122,8 @@ namespace CTRPluginFramework
                 }
                 break;
             }
+            default:
+                break;
             }
         }
     }
@@ -1323,6 +1335,8 @@ namespace CTRPluginFramework
                 }
                 break;
             }
+            default:
+                break;
             }
         }
 
@@ -1529,6 +1543,8 @@ namespace CTRPluginFramework
                 }
                 break;
             }
+            default:
+                break;
             }
         }
     }

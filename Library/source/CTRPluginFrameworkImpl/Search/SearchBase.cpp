@@ -202,7 +202,7 @@ namespace CTRPluginFramework
     {
         u32  totalResults = 0;
 
-        for (int i = 0; i < _header.nbRegions; i++)
+        for (size_t i = 0; i < _header.nbRegions; i++)
         {
             if (_header.regions[i].startAddress != header.regions[i].startAddress)
                 continue;
@@ -415,7 +415,7 @@ namespace CTRPluginFramework
     {
         u32 resultCount = 0;
 
-        for (int i = 0; i < _header.nbRegions; i++)
+        for (size_t i = 0; i < _header.nbRegions; i++)
         {
             RegionIndex rindex;
 

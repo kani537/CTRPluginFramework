@@ -79,7 +79,7 @@ namespace CTRPluginFramework
         // Process events
         bool isSubMenuOpen = _submenu.IsOpen();
 
-        for (int i = 0; i < eventList.size(); i++)
+        for (size_t i = 0; i < eventList.size(); i++)
         {
             _submenu.ProcessEvent(eventList[i]);
             if (!isSubMenuOpen)
@@ -213,7 +213,7 @@ namespace CTRPluginFramework
         Renderer::SetTarget(TOP);
 
         const Color     &maintextcolor = Preferences::Settings.MainTextColor;
-        const Color     &red = Color::Red;
+        //const Color     &red = Color::Red;
 
         int   posY = 61;
 
@@ -231,7 +231,7 @@ namespace CTRPluginFramework
         Renderer::DrawRect(44, posY, 66, 100, Color::SkyBlue);
 
         // Addresses
-        for (int i = 0; i < _ctx._items.size(); i += obj->_viewCurrent->ItemsPerLine)
+        for (size_t i = 0; i < _ctx._items.size(); i += obj->_viewCurrent->ItemsPerLine)
         {
             Renderer::DrawString(_ctx._items[i].addrCache, 54, posY, Color::Black);
         }
@@ -317,7 +317,7 @@ namespace CTRPluginFramework
 
                 item.address =  address;
                 item.value32 = *(vu32 *)address;
-                snprintf(item.addrCache, 9, "%08X", address);
+                snprintf(item.addrCache, 9, "%08X", static_cast<unsigned int>(address));
                 address += 4;
             }
 
@@ -332,7 +332,7 @@ namespace CTRPluginFramework
         if (flags & DirtyCursorCache)
         {
             flags &= ~DirtyCursorCache;
-            snprintf(_ctx._cursorAddressStr, 9, "%08X", _ctx._cursorAddress);
+            snprintf(_ctx._cursorAddressStr, 9, "%08X", static_cast<unsigned int>(_ctx._cursorAddress));
         }
     }
 
@@ -372,7 +372,7 @@ namespace CTRPluginFramework
             return;
 
         ++_indexHistory;
-        if (_indexHistory >= _history.size() - 1)
+        if (static_cast<size_t>(_indexHistory) >= _history.size() - 1)
             _indexHistory = _history.size() - 1;
 
         // Jump to address
@@ -1051,7 +1051,7 @@ namespace CTRPluginFramework
 
             for (Item& item: _ctx._items)
             {
-                bool            red = false;
+                //bool            red = false;
                 std::string&    value = item.valueCache;
                 std::string&    data = item.dataCache;
 
@@ -1252,7 +1252,7 @@ namespace CTRPluginFramework
 
             for (Item& item: _ctx._items)
             {
-                bool            red = false;
+                //bool            red = false;
                 std::string&    value = item.valueCache;
                 std::string&    data = item.dataCache;
 

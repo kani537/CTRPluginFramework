@@ -197,6 +197,8 @@ namespace CTRPluginFramework
                 }
                 break;
             }
+            default:
+                break;
         }
     }
 
@@ -395,6 +397,8 @@ namespace CTRPluginFramework
                 }
                 break;
             }
+            default:
+                break;
         }
     }
 
@@ -593,6 +597,8 @@ namespace CTRPluginFramework
                 }
                 break;
             }
+            default:
+                break;
         }
     }
 
@@ -809,6 +815,8 @@ namespace CTRPluginFramework
                 }
                 break;
             }
+            default:
+                break;
         }
     }
 }

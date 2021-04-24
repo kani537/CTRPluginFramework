@@ -56,7 +56,7 @@ void* linearMemAlign(size_t size, size_t alignment)
 		sLinearPool.Deallocate(chunk);
 		return nullptr;
 	}
-    rbtree_node_t *t = rbtree_insert(&sAddrMap, &node->node);
+    static_cast<void>(!rbtree_insert(&sAddrMap, &node->node));
 	return chunk.addr;
 }
 

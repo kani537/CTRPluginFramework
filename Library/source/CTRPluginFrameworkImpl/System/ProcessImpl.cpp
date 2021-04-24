@@ -1,10 +1,10 @@
 #include <3ds.h>
 
 // Fix std::vector<MemInfo> == operator
-static bool      operator==(const MemInfo left, const MemInfo right)
+/*static bool      operator==(const MemInfo left, const MemInfo right)
 {
     return left.base_addr == right.base_addr && left.size == right.size;
-}
+}*/
 
 #include "CTRPluginFramework/System.hpp"
 #include "CTRPluginFrameworkImpl/System.hpp"
@@ -228,7 +228,7 @@ namespace CTRPluginFramework
 
         MemRegions.clear();
 
-        bool    regionPatched  = false;
+        //bool    regionPatched  = false;
 
         for (u32 addr = 0x00100000; addr < 0x40000000; )
         {

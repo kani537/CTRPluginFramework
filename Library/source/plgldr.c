@@ -286,10 +286,13 @@ static s32      __ldrex__(s32 *addr)
 
 static void     __strex__(s32 *addr, s32 val)
 {
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-but-set-variable"
     s32 v;
     do
         v = __ldrex(addr);
     while (__strex(addr, val));
+#pragma GCC diagnostic pop
 }
 
 void    PLGLDR__Status(void)

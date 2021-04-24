@@ -138,7 +138,7 @@ void    L1MMUTable__MapHookWrappers(u32 va)
 
     u32 *           tableDst = &table[0x1E80000 >> 20];
     L1Descriptor    src = {table[va >> 20]};
-    L1Descriptor    dst;
+    //L1Descriptor    dst;
 
     switch (L1Descriptor__GetType(src.raw))
     {

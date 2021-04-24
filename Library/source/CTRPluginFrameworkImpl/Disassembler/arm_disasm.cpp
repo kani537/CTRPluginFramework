@@ -198,7 +198,7 @@ static std::string GetRegList(u32 reglist)
             {
                 RegBlock&   block = blocks.back();
 
-                if (i == block.end + 1)
+                if (static_cast<u32>(i) == block.end + 1)
                     ++block.end;
                 else
                     blocks.emplace_back(i, i);
@@ -475,7 +475,7 @@ std::string ARM_Disasm::DisassembleMemblock(Opcode opcode, uint32_t insn)
     if (bit_s)
         carret = "^";
 
-    const char *comma = "";
+    //const char *comma = "";
 
     tmp_list = GetRegList(reg_list);
 
@@ -600,7 +600,7 @@ std::string ARM_Disasm::DisassembleMemHalf(uint32_t insn)
     uint8_t is_pre = (insn >> 24) & 0x1;
     uint8_t rn = (insn >> 16) & 0xf;
     uint8_t rd = (insn >> 12) & 0xf;
-    uint8_t bits_65 = (insn >> 5) & 0x3;
+    //uint8_t bits_65 = (insn >> 5) & 0x3;
     uint8_t rm = insn & 0xf;
     uint8_t offset = (((insn >> 8) & 0xf) << 4) | (insn & 0xf);
 
@@ -608,13 +608,14 @@ std::string ARM_Disasm::DisassembleMemHalf(uint32_t insn)
     if (is_load == 0)
         opname = "str";
 
-    const char *width = "";
+    /*const char *width = "";
     if (bits_65 == 1)
         width = "h";
     else if (bits_65 == 2)
         width = "sb";
     else
         width = "sh";
+    */
 
     const char *bang = "";
     if (write_back)
