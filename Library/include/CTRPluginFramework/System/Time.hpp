@@ -7,111 +7,198 @@ namespace CTRPluginFramework
     {
     public :
 
-        Time(void);
+        constexpr Time(void) : _ticks(0) {}
 
 
-        float   AsSeconds(void) const;
+        float           AsSeconds(void) const;
 
-        int     AsMilliseconds(void) const;
+        int             AsMilliseconds(void) const;
 
-        s64     AsMicroseconds(void) const;
+        s64             AsMicroseconds(void) const;
 
+        inline s64      AsTicks(void) const { return _ticks; }
 
         static const Time Zero; ///< Predefined "zero" time value
 
-    private :
-
-        friend      Time Seconds(float amount);
-        friend      Time Milliseconds(int amount);
-        friend      Time Microseconds(s64 amount);   
-
-        explicit    Time(s64 microseconds);
+        static constexpr u32 TicksPerSecond = 268111856U;
 
     private :
 
+        friend      constexpr Time Seconds(float amount);
+        friend      constexpr Time Milliseconds(int amount);
+        friend      constexpr Time Microseconds(s64 amount);
+        friend      constexpr Time Ticks(s64 amount);
 
-        s64     _microseconds;
+        constexpr Time(s64 ticks) : _ticks(ticks) {}
+
+    private :
+
+
+        s64     _ticks;
     };
 
-  
-    Time Seconds(float amount);
-
- 
-    Time Milliseconds(int amount);
-
- 
-    Time Microseconds(s64 amount);
- 
-    bool operator ==(Time left, Time right);
-
-  
-    bool operator !=(Time left, Time right);
-
- 
-    bool operator <(Time left, Time right);
-
- 
-    bool operator >(Time left, Time right);
+    constexpr Time    Seconds(float amount)
+    {
+        return (Time(static_cast<s64>(amount * Time::TicksPerSecond)));
+    }
 
 
-    bool operator <=(Time left, Time right);
+    constexpr Time    Milliseconds(int amount)
+    {
+        return (Time(static_cast<s64>(amount * (Time::TicksPerSecond / 1000.f))));
+    }
 
 
-    bool operator >=(Time left, Time right);
+    constexpr Time    Microseconds(s64 amount)
+    {
+        return (Time(static_cast<s64>(amount * (Time::TicksPerSecond / 1000000.f))));
+    }
+
+    constexpr Time    Ticks(s64 amount)
+    {
+        return (Time(amount));
+    }
+
+    inline bool operator ==(Time left, Time right)
+    {
+        return (left.AsTicks() == right.AsTicks());
+    }
 
 
-    Time operator -(Time right);
+    inline bool operator !=(Time left, Time right)
+    {
+        return (left.AsTicks() != right.AsTicks());
+    }
 
 
-    Time operator +(Time left, Time right);
+    inline bool operator <(Time left, Time right)
+    {
+        return (left.AsTicks() < right.AsTicks());
+    }
 
 
-    Time& operator +=(Time& left, Time right);
+    inline bool operator >(Time left, Time right)
+    {
+        return (left.AsTicks() > right.AsTicks());
+    }
 
 
-    Time operator -(Time left, Time right);
+    inline bool operator <=(Time left, Time right)
+    {
+        return (left.AsTicks() <= right.AsTicks());
+    }
+
+    inline bool operator >=(Time left, Time right)
+    {
+        return (left.AsTicks() >= right.AsTicks());
+    }
+
+    inline Time operator -(Time right)
+    {
+        return (Ticks(-right.AsTicks()));
+    }
 
 
-    Time& operator -=(Time& left, Time right);
+    inline Time operator +(Time left, Time right)
+    {
+        return (Ticks(left.AsTicks() + right.AsTicks()));
+    }
 
 
-    Time operator *(Time left, float right);
+    inline Time& operator +=(Time& left, Time right)
+    {
+        return (left = left + right);
+    }
 
 
-    Time operator *(Time left, s64 right);
+    inline Time operator -(Time left, Time right)
+    {
+        return (Ticks(left.AsTicks() - right.AsTicks()));
+    }
 
 
-    Time operator *(float left, Time right);
+    inline Time& operator -=(Time& left, Time right)
+    {
+        return left = left - right;
+    }
 
 
-    Time operator *(s64 left, Time right);
+    inline Time operator *(Time left, float right)
+    {
+        return (Seconds(left.AsSeconds() * right));
+    }
 
 
-    Time& operator *=(Time& left, float right);
+    inline Time operator *(Time left, s64 right)
+    {
+        return (Microseconds(left.AsMicroseconds() * right));
+    }
 
 
-    Time& operator *=(Time& left, s64 right);
+    inline Time operator *(float left, Time right)
+    {
+        return (right * left);
+    }
 
 
-    Time operator /(Time left, float right);
+    inline Time operator *(s64 left, Time right)
+    {
+        return (right * left);
+    }
 
 
-    Time operator /(Time left, s64 right);
+    inline Time& operator *=(Time& left, float right)
+    {
+        return (left = left * right);
+    }
 
 
-    Time& operator /=(Time& left, float right);
+    inline Time& operator *=(Time& left, s64 right)
+    {
+        return (left = left * right);
+    }
 
 
-    Time& operator /=(Time& left, s64 right);
+    inline Time operator /(Time left, float right)
+    {
+        return Seconds(left.AsSeconds() / right);
+    }
 
 
-    float operator /(Time left, Time right);
+    inline Time operator /(Time left, s64 right)
+    {
+        return (Microseconds(left.AsMicroseconds() / right));
+    }
 
 
-    Time operator %(Time left, Time right);
+    inline Time& operator /=(Time& left, float right)
+    {
+        return (left = left / right);
+    }
 
 
-    Time& operator %=(Time& left, Time right);
+    inline Time& operator /=(Time& left, s64 right)
+    {
+        return (left = left / right);
+    }
+
+
+    inline float operator /(Time left, Time right)
+    {
+        return (left.AsSeconds() / right.AsSeconds());
+    }
+
+
+    inline Time operator %(Time left, Time right)
+    {
+        return (Ticks(left.AsTicks() % right.AsTicks()));
+    }
+
+
+    inline Time& operator %=(Time& left, Time right)
+    {
+        return (left = left % right);
+    }
 
 }
 
