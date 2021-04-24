@@ -75,27 +75,27 @@ namespace CTRPluginFramework
 
     void    PluginMenuTools::UpdateSettings(void)
     {
-        using MenuItemIter =  MenuFolderImpl::MenuItemIter;
+        //using MenuItemIter =  MenuFolderImpl::MenuItemIter;
 
-		// Settings
-		auto item = _settingsMenu.begin() + 2;
+        // Settings
+        auto item = _settingsMenu.begin() + 2;
 
-		if (Preferences::IsEnabled(Preferences::UseFloatingBtn)) (*item++)->AsMenuEntryImpl().Enable();
-		else (*item++)->AsMenuEntryImpl().Disable();
+        if (Preferences::IsEnabled(Preferences::UseFloatingBtn)) (*item++)->AsMenuEntryImpl().Enable();
+        else (*item++)->AsMenuEntryImpl().Disable();
 
-		if (Preferences::IsEnabled(Preferences::AutoSaveCheats)) (*item++)->AsMenuEntryImpl().Enable();
-		else (*item++)->AsMenuEntryImpl().Disable();
+        if (Preferences::IsEnabled(Preferences::AutoSaveCheats)) (*item++)->AsMenuEntryImpl().Enable();
+        else (*item++)->AsMenuEntryImpl().Disable();
 
-		if (Preferences::IsEnabled(Preferences::AutoSaveFavorites)) (*item++)->AsMenuEntryImpl().Enable();
-		else (*item++)->AsMenuEntryImpl().Disable();
+        if (Preferences::IsEnabled(Preferences::AutoSaveFavorites)) (*item++)->AsMenuEntryImpl().Enable();
+        else (*item++)->AsMenuEntryImpl().Disable();
 
-		if (Preferences::IsEnabled(Preferences::AutoLoadCheats)) (*item++)->AsMenuEntryImpl().Enable();
-		else (*item++)->AsMenuEntryImpl().Disable();
+        if (Preferences::IsEnabled(Preferences::AutoLoadCheats)) (*item++)->AsMenuEntryImpl().Enable();
+        else (*item++)->AsMenuEntryImpl().Disable();
 
-		if (Preferences::IsEnabled(Preferences::AutoLoadFavorites)) (*item)->AsMenuEntryImpl().Enable();
-		else (*item)->AsMenuEntryImpl().Disable();
+        if (Preferences::IsEnabled(Preferences::AutoLoadFavorites)) (*item)->AsMenuEntryImpl().Enable();
+        else (*item)->AsMenuEntryImpl().Disable();
 
-		item = _miscellaneousMenu.begin();
+        item = _miscellaneousMenu.begin();
 
         // Misc.
 
@@ -129,7 +129,7 @@ namespace CTRPluginFramework
     };
     static Hook         g_FsTryOpenFileHook;
     static u32          g_HookMode = NONE;
-    static u32          g_returncode[4];
+    //static u32          g_returncode[4];
     static File         g_hookExportFile;
     u32                 g_FsTryOpenFileAddress = 0;
     static LightLock    g_OpenFileLock;
@@ -173,12 +173,12 @@ namespace CTRPluginFramework
         if (isInitialized)
             return isInitialized;
 
-        auto  createReturncode = [](u32 address, u32 *buf)
+        /*auto  createReturncode = [](u32 address, u32 *buf)
         {
             Process::CopyMemory(buf, (void *)address, 8);
             buf[2] = 0xE51FF004;
             buf[3] = address + 8;
-        };
+        };*/
 
         // Hook on OpenFile
         u32     FsTryOpenFileAddress = 0;
@@ -560,7 +560,7 @@ namespace CTRPluginFramework
         _mainMenu.Append(new MenuEntryTools("Gateway RAM Dumper", [] { g_mode = GWRAMDUMP; }, Icon::DrawRAM));
         _mainMenu.Append(new MenuEntryTools("Screenshots", nullptr, Icon::DrawUnsplash, new u32(SCREENSHOT)));
         _mainMenu.Append(new MenuEntryTools("Miscellaneous", nullptr, Icon::DrawMore, new u32(MISCELLANEOUS)));
-		_mainMenu.Append(new MenuEntryTools("Settings", nullptr, Icon::DrawSettings, this));
+        _mainMenu.Append(new MenuEntryTools("Settings", nullptr, Icon::DrawSettings, this));
         _mainMenu.Append(new MenuEntryTools("Shutdown the 3DS", Shutdown, Icon::DrawShutdown));
         _mainMenu.Append(new MenuEntryTools("Reboot the 3DS", Reboot, Icon::DrawRestart));
 
@@ -581,15 +581,15 @@ namespace CTRPluginFramework
         _settingsMenu.Append(new MenuEntryTools("Change menu hotkeys", MenuHotkeyModifier, Icon::DrawGameController));
 
         _settingsMenu.Append(new MenuEntryTools("Set backlight (Experimental)", EditBacklight, false, false));
-		_settingsMenu.Append(new MenuEntryTools("Use floating button", [] { Preferences::Toggle(Preferences::UseFloatingBtn); }, true, Preferences::IsEnabled(Preferences::UseFloatingBtn)));
+        _settingsMenu.Append(new MenuEntryTools("Use floating button", [] { Preferences::Toggle(Preferences::UseFloatingBtn); }, true, Preferences::IsEnabled(Preferences::UseFloatingBtn)));
 
-		_settingsMenu.Append(new MenuEntryTools("Auto save enabled cheats", [] { Preferences::Toggle(Preferences::AutoSaveCheats); }, true, Preferences::IsEnabled(Preferences::AutoSaveCheats)));
+        _settingsMenu.Append(new MenuEntryTools("Auto save enabled cheats", [] { Preferences::Toggle(Preferences::AutoSaveCheats); }, true, Preferences::IsEnabled(Preferences::AutoSaveCheats)));
         _settingsMenu.Append(new MenuEntryTools("Auto save favorites", [] { Preferences::Toggle(Preferences::AutoSaveFavorites); }, true, Preferences::IsEnabled(Preferences::AutoSaveFavorites)));
         _settingsMenu.Append(new MenuEntryTools("Auto load enabled cheats at starts", [] { Preferences::Toggle(Preferences::AutoLoadCheats); }, true, Preferences::IsEnabled(Preferences::AutoLoadCheats)));
         _settingsMenu.Append(new MenuEntryTools("Auto load favorites at starts", [] { Preferences::Toggle(Preferences::AutoLoadFavorites); }, true, Preferences::IsEnabled(Preferences::AutoSaveFavorites)));
         _settingsMenu.Append(new MenuEntryTools("Load enabled cheats now", [] { Preferences::LoadSavedEnabledCheats(); }, nullptr));
         _settingsMenu.Append(new MenuEntryTools("Load favorites now", [] { Preferences::LoadSavedFavorites(); }, nullptr));
-	}
+    }
 
     bool    PluginMenuTools::operator()(EventList &eventList, Time &delta)
     {
@@ -599,7 +599,7 @@ namespace CTRPluginFramework
                 g_mode = NORMAL;
             return (false);
         }
-        u32 i = Preferences::IsEnabled(Preferences::UseFloatingBtn);
+        //u32 i = Preferences::IsEnabled(Preferences::UseFloatingBtn);
         if (g_mode == ABOUT)
         {
             if (!_abouttb.IsOpen())
@@ -616,7 +616,7 @@ namespace CTRPluginFramework
         }
 
         // Process Event
-        for (int i = 0; i < eventList.size(); i++)
+        for (size_t i = 0; i < eventList.size(); i++)
             _ProcessEvent(eventList[i]);
 
         // Update
@@ -693,7 +693,7 @@ namespace CTRPluginFramework
 
         if (ret == MenuClose)
         {
-            MenuFolderImpl *cur = _menu.GetFolder();
+            //MenuFolderImpl *cur = _menu.GetFolder();
 
             if (_menu.GetFolder() == &_mainMenu)
             {
@@ -741,9 +741,9 @@ namespace CTRPluginFramework
     *****************/
     void    PluginMenuTools::_RenderBottom(void)
     {
-        const Color    &black = Color::Black;
+        //const Color    &black = Color::Black;
         const Color    &blank = Color::White;
-        const Color    &dimGrey = Color::BlackGrey;
+        //const Color    &dimGrey = Color::BlackGrey;
 
         // Enable renderer
         Renderer::SetTarget(BOTTOM);
@@ -753,7 +753,7 @@ namespace CTRPluginFramework
 
         // Draw Framework version
         {
-            static const char *version = VersionStr;
+            //static const char *version = VersionStr;
             static const char *tagVersion = TAG_VERSION;
             static const char *commit = COMMIT_HASH;
             static const char *compilationDate = COMPILE_DATE;

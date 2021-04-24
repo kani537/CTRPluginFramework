@@ -204,9 +204,9 @@ namespace CTRPluginFramework
 
         // Draw Text
         int posY = _box.leftTop.y + _textbox._box.size.y;
-        int posX = _box.leftTop.x + 5;
-        int maxW = _box.leftTop.x + _box.size.x - 5; ///< Should be -10, but that way a letter that is slighty too big can still be drawn
-        int maxH = _box.leftTop.y + _box.size.y - 30;
+        //int posX = _box.leftTop.x + 5;
+        //int maxW = _box.leftTop.x + _box.size.x - 5; ///< Should be -10, but that way a letter that is slighty too big can still be drawn
+        //int maxH = _box.leftTop.y + _box.size.y - 30;
 
         /*if (!_title.empty())
         {

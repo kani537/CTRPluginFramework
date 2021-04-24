@@ -37,7 +37,7 @@ namespace CTRPluginFramework
     {
         char buf[9] = { 0 };
 
-        sprintf(buf, "%08X", x);
+        sprintf(buf, "%08X", static_cast<unsigned int>(x));
 
         return (buf);
     }

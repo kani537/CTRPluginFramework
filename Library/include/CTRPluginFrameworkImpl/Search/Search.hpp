@@ -81,8 +81,8 @@ namespace CTRPluginFramework
 #define LE(x, y) (x <= y)
 #define ABS(x) (x > 0 ? x : -x)
 #define DB(new, old, check) (new != old && (new == (old + check) || new == (old - check)))
-#define DBL(new, old, check) (new != old && ABS((int)(new - old)) <= check)
-#define DBM(new, old, check) (new != old && ABS((int)(new - old)) >= check)
+#define DBL(new, old, check) (new != old && (u32)ABS((int)(new - old)) <= check)
+#define DBM(new, old, check) (new != old && (u32)ABS((int)(new - old)) >= check)
 
 bool AlmostEqualRelative(float A, float B, float maxRelDiff = FLT_EPSILON);
 #define IsValid(val) (!std::isnan(val) && !std::isinf(val))

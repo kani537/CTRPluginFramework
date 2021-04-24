@@ -154,7 +154,7 @@ namespace CTRPluginFramework
 
             ++hit._count;
 
-            if (hit._flags & WatchPointHit::Skip == 0)
+            if ((hit._flags & WatchPointHit::Skip) == 0)
                 OSD::Notify(Utils::Format("WP%d triggered: 0x%08X", wpid, wfar));
 
             if (tflag)

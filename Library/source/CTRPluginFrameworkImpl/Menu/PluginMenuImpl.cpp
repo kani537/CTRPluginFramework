@@ -18,15 +18,17 @@ namespace CTRPluginFramework
     Mutex           PluginMenuImpl::_trashBinMutex;
 
     PluginMenuImpl::PluginMenuImpl(std::string &name, std::string &about, u32 menuType) :
-        _hexEditor(0x00100000),
+
+        OnFirstOpening(nullptr),
+        OnOpening(nullptr),
         _actionReplay{ new PluginMenuActionReplay() },
         _home(new PluginMenuHome(name, (menuType == 1))),
         _search(new PluginMenuSearch(_hexEditor)),
         _tools(new PluginMenuTools(about, _hexEditor)),
         _executeLoop(new PluginMenuExecuteLoop()),
         _guide(new GuideReader()),
-        _forceOpen(false),
-        OnFirstOpening(nullptr), OnOpening{ nullptr }
+        _hexEditor(0x00100000),
+        _forceOpen(false)
     {
         SyncOnFrame = false;
         _isOpen = false;
@@ -119,7 +121,7 @@ namespace CTRPluginFramework
     private:
         KeyVector   _sequence;
         Clock       _timer;
-        int         _indexInSequence;
+        u32         _indexInSequence;
     };
 
     /*
@@ -140,7 +142,7 @@ namespace CTRPluginFramework
         PluginMenuTools         &tools = *_tools;
         PluginMenuSearch        &search = *_search;
         GuideReader             &guide = *_guide;
-        PluginMenuExecuteLoop   &executer = *_executeLoop;
+        //PluginMenuExecuteLoop   &executer = *_executeLoop;
 
         Time                    delta;
         std::vector<Event>      eventList;
@@ -206,7 +208,7 @@ namespace CTRPluginFramework
                     {
                         u32 key = Preferences::MenuHotkeys & (1u << i);
 
-                        if (key && event.key.code == key)
+                        if (key && static_cast<u32>(event.key.code) == key)
                         {
                             if (Controller::IsKeysDown(Preferences::MenuHotkeys ^ key))
                                 isHotkeysDown = true;
@@ -271,7 +273,7 @@ namespace CTRPluginFramework
                 }
                 /*
                 else if (mode == 1)
-                { /* Mapper *
+                { // Mapper
 
                 }
                 */
@@ -367,7 +369,7 @@ namespace CTRPluginFramework
                 }
 
                 // Execute callbacks before cheats
-                for (int i = 0; i < _callbacks.size(); i++)
+                for (size_t i = 0; i < _callbacks.size(); i++)
                     if (_callbacks[i]) _callbacks[i]();
 
                 // Execute activated cheats
@@ -460,7 +462,7 @@ namespace CTRPluginFramework
         u32     buffer[50];
         MenuFolderImpl      *folder = _runningInstance->_home->_root;
 
-        for (int count = 0; count < header.hotkeysCount; count++)
+        for (size_t count = 0; count < header.hotkeysCount; count++)
         {
             if (settings.Read(buffer, sizeof(u32) * 2) == 0)
             {
@@ -475,7 +477,7 @@ namespace CTRPluginFramework
 
                     if (entry->Hotkeys.Count() == buffer[1])
                     {
-                        for (int i = 0; i < buffer[1]; i++)
+                        for (u32 i = 0; i < buffer[1]; i++)
                         {
                             entry->Hotkeys[i] = buffer[2 + i];
                             if (callback != nullptr)
@@ -567,7 +569,7 @@ namespace CTRPluginFramework
                 hInfos.uid = item->Uid;
                 hInfos.count = entry->Hotkeys.Count();
 
-                for (int j = 0; j < hInfos.count; j++)
+                for (u32 j = 0; j < hInfos.count; j++)
                 {
                     Hotkey &hk = entry->Hotkeys[j];
 

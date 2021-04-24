@@ -36,7 +36,7 @@ namespace CTRPluginFramework
             res *= 10;
 
             // Check that the addition won't overflow
-            if ((res > 0) && (val > UINT32_MAX - res))
+            if ((res > 0) && (static_cast<u32>(val) > UINT32_MAX - res))
                 goto overflow;
 
             res += val;
@@ -81,7 +81,7 @@ namespace CTRPluginFramework
             res *= 10;
 
             // Check that the addition won't overflow
-            if ((res > 0) && (val > U64_MAX - res))
+            if ((res > 0) && (static_cast<u64>(val) > U64_MAX - res))
                 goto overflow;
 
             res += val;

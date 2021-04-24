@@ -12,21 +12,21 @@ using CTRPluginFramework::Lock;
 
 typedef struct
 {
-	// Magic value used to check if the struct is initialized
-	u32 magic;
+    // Magic value used to check if the struct is initialized
+    u32 magic;
 
-	// Pointer to the current thread (if exists)
-	Thread thread_ptr;
+    // Pointer to the current thread (if exists)
+    Thread thread_ptr;
 
-	// Pointer to this thread's newlib state
-	struct _reent* reent;
+    // Pointer to this thread's newlib state
+    struct _reent* reent;
 
-	// Pointer to this thread's thread-local segment
-	void* tls_tp; // !! Keep offset in sync inside __aeabi_read_tp !!
+    // Pointer to this thread's thread-local segment
+    void* tls_tp; // !! Keep offset in sync inside __aeabi_read_tp !!
 
-	// FS session override
-	u32    fs_magic;
-	Handle fs_session;
+    // FS session override
+    u32    fs_magic;
+    Handle fs_session;
 
     struct _reent _reent;
 } ThreadVarsHook;
@@ -47,9 +47,9 @@ extern "C"
     static ThreadVars* CreateThreadVars(ThreadVars * mainThreadVars)
     {
         size_t tvsize = (sizeof(ThreadVarsHook)+7)&~7;
-	    size_t tlssize = __tls_end-__tls_start;
-	    size_t tlsloadsize = __tdata_lma_end-__tdata_lma;
-	    size_t tbsssize = tlssize-tlsloadsize;
+        size_t tlssize = __tls_end-__tls_start;
+        size_t tlsloadsize = __tdata_lma_end-__tdata_lma;
+        size_t tbsssize = tlssize-tlsloadsize;
 
         ThreadVarsHook *tv = (ThreadVarsHook *)_malloc_r(mainThreadVars->reent, tvsize+tlssize);
         if (!tv) return NULL;
@@ -58,20 +58,20 @@ extern "C"
 
         memset(tv, 0, tvsize+tlssize);
         tv->magic = THREADVARS_MAGIC;
-	    tv->tls_tp = tls - 8;
+        tv->tls_tp = tls - 8;
         tv->reent = &tv->_reent;
 
-	    if (tlsloadsize)
-		    memcpy(tls, __tdata_lma, tlsloadsize);
-	    if (tbsssize)
-		    memset((u8 *)tls+tlsloadsize, 0, tbsssize);
+        if (tlsloadsize)
+            memcpy(tls, __tdata_lma, tlsloadsize);
+        if (tbsssize)
+            memset((u8 *)tls+tlsloadsize, 0, tbsssize);
 
-	    // Set up child thread's reent struct, inheriting standard file handles
-	    _REENT_INIT_PTR(&tv->_reent);
-	    struct _reent* cur = mainThreadVars->reent;
-	    tv->_reent._stdin  = cur->_stdin;
-	    tv->_reent._stdout = cur->_stdout;
-	    tv->_reent._stderr = cur->_stderr;
+        // Set up child thread's reent struct, inheriting standard file handles
+        _REENT_INIT_PTR(&tv->_reent);
+        struct _reent* cur = mainThreadVars->reent;
+        tv->_reent._stdin  = cur->_stdin;
+        tv->_reent._stdout = cur->_stdout;
+        tv->_reent._stderr = cur->_stderr;
 
         return (ThreadVars*)tv;
     }
@@ -84,23 +84,23 @@ extern "C"
         if (((RecursiveLock *)&__mutex)->counter > 1)
             return mainThreadVars;
 
-	    // Get thread's tls (used as key)
-	    u32     tls = (u32)getThreadLocalStorage();
+        // Get thread's tls (used as key)
+        u32     tls = (u32)getThreadLocalStorage();
 
-	    // Check if we already created a context for this thread
-	    auto    pair = __threads.find(tls);
+        // Check if we already created a context for this thread
+        auto    pair = __threads.find(tls);
 
-	    if (pair != __threads.end())
-		    return pair->second;
+        if (pair != __threads.end())
+            return pair->second;
 
-	    // Otherwise create one
-	    ThreadVars  *tv = CreateThreadVars(mainThreadVars);
+        // Otherwise create one
+        ThreadVars  *tv = CreateThreadVars(mainThreadVars);
 
-	    // and add it to our list of thread ctxs
-	    __threads.insert(std::make_pair(tls, tv));
+        // and add it to our list of thread ctxs
+        __threads.insert(std::make_pair(tls, tv));
 
-	    // Then return our new buffer
-	    return tv;
+        // Then return our new buffer
+        return tv;
     }
 }
 

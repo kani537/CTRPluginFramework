@@ -749,7 +749,7 @@ namespace CTRPluginFramework
         int     x;
         int     y;
         float   d1;
-        int     d2;
+        int     d2 = 0;
 
         using Point = IntVector;
 
@@ -987,7 +987,7 @@ namespace CTRPluginFramework
         if (_lines.empty())
             ComputeRoundedRectangle(_lines, IntRect(0, 0, rect.size.x, rect.size.y), 7.f, 50);
 
-        int     bMax = _lines.size() - 5;
+        u32     bMax = _lines.size() - 5;
         u32     i;
         u32     posX = rect.leftTop.x;
         u32     posY = rect.leftTop.y;

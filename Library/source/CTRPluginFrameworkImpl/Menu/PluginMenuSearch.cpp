@@ -11,24 +11,24 @@ namespace CTRPluginFramework
 {
     PluginMenuSearch::PluginMenuSearch(HexEditor &hexEditor) :
         _hexEditor(hexEditor),
+        _inSearch(false),
+        _inEditor(false),
+        _firstRegionInit(false),
+        _hexInput(false),
+        _step(0),
         _searchMenu(_currentSearch, hexEditor, _inEditor, _hexInput),
         // _closeBtn(*this, nullptr, IntRect(275, 24, 20, 20), Icon::DrawClose),
         _memoryRegions(150, 45, 130, 15),
-        _startRangeTextBox(85, 65, 66, 15),
-        _endRangeTextBox(214, 65, 66, 15),
         _searchSize(150, 85, 130, 15),
         _searchType(150, 105, 130, 15),
         _compareType(150, 125, 130, 15),
+        _startRangeTextBox(85, 65, 66, 15),
+        _endRangeTextBox(214, 65, 66, 15),
         _valueTextBox(150, 145, 130, 15),
         _searchBtn(0, "Search", IntRect(35, 195, 80, 15)),
-        _undoBtn(0, "Undo", IntRect(120, 195, 80, 15)),
         _cancelBtn(0, "Cancel", IntRect(120, 195, 80, 15)),
+        _undoBtn(0, "Undo", IntRect(120, 195, 80, 15)),
         _resetBtn(0, "Reset", IntRect(205, 195, 80, 15)),
-        _inSearch(false),
-        _firstRegionInit(false),
-        _step(0),
-        _hexInput(false),
-        _inEditor(false),
         _hexBtn(Button::Toggle, "Hex", IntRect(110, 145, 38, 15))
     {
         _currentSearch = nullptr;
@@ -98,7 +98,7 @@ namespace CTRPluginFramework
         {
             if (_searchMenu.ProcessEvent(eventList, delta))
                 Window::BottomWindow.Close();
-            for (int i = 0; i < eventList.size(); i++)
+            for (size_t i = 0; i < eventList.size(); i++)
             {
                 _ProcessEvent(eventList[i]);
             }
@@ -339,9 +339,9 @@ namespace CTRPluginFramework
 
     void    PluginMenuSearch::_RenderTop(void)
     {
-        const Color    &black = Color::Black;
-        const Color    &blank = Color::White;
-        const Color    &dimGrey = Color::BlackGrey;
+        //const Color    &black = Color::Black;
+        //const Color    &blank = Color::White;
+        //const Color    &dimGrey = Color::BlackGrey;
         //static IntRect  background(30, 20, 340, 200);
 
         // Enable renderer
@@ -359,9 +359,9 @@ namespace CTRPluginFramework
     *****************/
     void    PluginMenuSearch::_RenderBottom(void)
     {
-        const Color    &black = Color::Black;
+        //const Color    &black = Color::Black;
         const Color    &blank = Color::White;
-        const Color    &dimGrey = Color::BlackGrey;
+        //const Color    &dimGrey = Color::BlackGrey;
         //static IntRect  background(20, 20, 280, 200);
 
         // Enable renderer
@@ -478,7 +478,7 @@ namespace CTRPluginFramework
             // TODO : search-> = nullptr;
         }
 
-        if (_memoryRegions.SelectedItem == -1 || _memoryRegions.SelectedItem > _regionsList.size())
+        if (_memoryRegions.SelectedItem == -1 || _memoryRegions.SelectedItem > static_cast<int>(_regionsList.size()))
             return;
 
         u32     startRange = _startRangeTextBox.Bits32;
@@ -703,7 +703,7 @@ namespace CTRPluginFramework
 
 
             // Draw Result count
-            sprintf(buf, "Hit(s): %u", currentSearch->ResultsCount);
+            sprintf(buf, "Hit(s): %u", static_cast<unsigned int>(currentSearch->ResultsCount));
             Renderer::DrawString(buf, 131, posY, textcolor);
 
             // Render bottom screen
@@ -763,7 +763,7 @@ namespace CTRPluginFramework
         MemInfo     meminfo;
         u32         save_addr;
         int         i;
-        Region      bakRegion = _memoryRegions.SelectedItem && _regionsList.size() > _memoryRegions.SelectedItem ? _regionsList[_memoryRegions.SelectedItem] : (Region){0};
+        Region      bakRegion = _memoryRegions.SelectedItem && static_cast<int>(_regionsList.size()) > _memoryRegions.SelectedItem ? _regionsList[_memoryRegions.SelectedItem] : (Region){0};
         Result      ret;
 
         _regionsList.clear();

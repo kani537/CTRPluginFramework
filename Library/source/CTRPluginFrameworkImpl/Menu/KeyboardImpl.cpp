@@ -157,7 +157,7 @@ namespace CTRPluginFramework
         return (_isHex);
     }
 
-    void    KeyboardImpl::SetMaxInput(int max)
+    void    KeyboardImpl::SetMaxInput(u32 max)
     {
         _max = max;
     }
@@ -206,7 +206,7 @@ namespace CTRPluginFramework
     void	KeyboardImpl::ChangeSelectedEntry(int entry) {
         if (!_customKeyboard)
             return;
-        if (!_strKeys.size() || entry >= _strKeys.size() || !_strKeys[entry]->CanUse())
+        if (!_strKeys.size() || entry >= static_cast<int>(_strKeys.size()) || !_strKeys[entry]->CanUse())
             entry = -1;
         _ChangeManualKey(entry);
         // Update the position
@@ -685,15 +685,15 @@ namespace CTRPluginFramework
             Renderer::DrawRect2(background, theme.BackgroundMain, theme.BackgroundSecondary);
             Renderer::DrawRect(background2, theme.BackgroundBorder, false);
 
-            int max = _strKeys.size();
+            size_t max = _strKeys.size();
             int offset = _isIconKeyboard ? 24 : 6;
-            max = std::min(max, _currentPosition + offset);
+            max = std::min(static_cast<int>(max), _currentPosition + offset);
 
             PrivColor::UseClamp(true, clampArea);
 
-            for (int i = _currentPosition; i < max && i < _strKeys.size(); i++)
+            for (size_t i = _currentPosition; i < max && i < _strKeys.size(); i++)
             {
-                _strKeys[i]->ForcePressed(i == _manualKey);
+                _strKeys[i]->ForcePressed(static_cast<int>(i) == _manualKey);
                 _strKeys[i]->Draw();
             }
 
@@ -1665,7 +1665,7 @@ namespace CTRPluginFramework
             _cursorPositionInString += units;
         }
         // cursor must be at most, after the last char of input
-        if (_cursorPositionInString > strLength)
+        if (_cursorPositionInString > static_cast<int>(strLength))
             _cursorPositionInString = strLength;
 
         _blinkingClock.Restart();
@@ -1690,7 +1690,7 @@ namespace CTRPluginFramework
             goto empty;
 
         // If cursor is beyond the string, fix it (can happen when deleting a unicode)
-        if (_cursorPositionInString > strLength)
+        if (_cursorPositionInString > static_cast<int>(strLength))
             _cursorPositionInString = strLength;
 
         {
@@ -1822,7 +1822,7 @@ namespace CTRPluginFramework
         }
 
         // Check cursor position, just in case
-        if (_cursorPositionInString > _userInput.size())
+        if (_cursorPositionInString > static_cast<int>(_userInput.size()))
             _ScrollUp();
 
         for (int i = start; i < end; i++)
@@ -2006,7 +2006,7 @@ namespace CTRPluginFramework
     bool    KeyboardImpl::_CheckButtons(int &ret)
     {
         bool res = false;
-        for (int i = 0; i < _strKeys.size(); i++)
+        for (int i = 0; i < static_cast<int>(_strKeys.size()); i++)
         {
             ret = (*_strKeys[i])();
             if (ret != -1)
@@ -2056,9 +2056,9 @@ namespace CTRPluginFramework
                     do
                     {
                         tempKey += 4;
-                    } while (tempKey < _strKeys.size() && !_strKeys[tempKey]->CanUse() && tempKey - orig < 16);
+                    } while (tempKey < static_cast<int>(_strKeys.size()) && !_strKeys[tempKey]->CanUse() && tempKey - orig < 16);
 
-                    if (tempKey >= _strKeys.size() || tempKey - orig >= 16)
+                    if (tempKey >= static_cast<int>(_strKeys.size()) || tempKey - orig >= 16)
                         tempKey = orig;
 
                     _ChangeManualKey(tempKey);
@@ -2086,9 +2086,9 @@ namespace CTRPluginFramework
                     do
                     {
                         tempKey++;
-                    } while (tempKey < _strKeys.size() && ((u32)tempKey & 3) != 0 && !_strKeys[tempKey]->CanUse());
+                    } while (tempKey < static_cast<int>(_strKeys.size()) && ((u32)tempKey & 3) != 0 && !_strKeys[tempKey]->CanUse());
 
-                    if (tempKey >= _strKeys.size() || ((u32)tempKey & 3) == 0)
+                    if (tempKey >= static_cast<int>(_strKeys.size()) || ((u32)tempKey & 3) == 0)
                         tempKey = orig;
 
                     _ChangeManualKey(tempKey);
@@ -2161,9 +2161,9 @@ namespace CTRPluginFramework
 
                     do {
                         tempKey++;
-                    } while (tempKey < _strKeys.size() && !_strKeys[tempKey]->CanUse() && tempKey - orig < 4);
+                    } while (tempKey < static_cast<int>(_strKeys.size()) && !_strKeys[tempKey]->CanUse() && tempKey - orig < 4);
 
-                    if (tempKey >= _strKeys.size() || tempKey - orig >= 4)
+                    if (tempKey >= static_cast<int>(_strKeys.size()) || tempKey - orig >= 4)
                         tempKey = orig;
 
                     _ChangeManualKey(tempKey);

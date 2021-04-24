@@ -193,8 +193,6 @@ namespace CTRPluginFramework
 
     u32 GetBPP(GSPFormat format);
 
-    static void    MessColor(u32 startAddr, u32 stride, u32 format);
-
     u32     OSDImpl::MainCallback(u32 isBottom, int nextBank, void *leftFb, void *rightFb, int stride, int format, int swap)
     {
         // Only call our OSD callback if left frame buffer is valid
@@ -380,7 +378,7 @@ namespace CTRPluginFramework
             screen.BytesPerPixel = GetBPP((GSPFormat)format);
             screen.Format = (GSPFormat)format;
 
-            for (int i = 0; i < Callbacks.size(); i++)
+            for (size_t i = 0; i < Callbacks.size(); i++)
                 if (Callbacks[i]) Callbacks[i](screen);
         }
 
@@ -550,10 +548,9 @@ namespace CTRPluginFramework
         OSDImpl::OSDHook.InitializeForMitm(found, u32(OSDImpl::MainCallback)).Enable();
     }
 
-    // TODO: remove this
-    static void    MessColor(u32 startAddr, u32 stride, u32 format)
+    /*static void    MessColor(u32 startAddr, u32 stride, u32 format)
     {
-        u32 endBuffer = startAddr + (stride * 400);
+        //u32 endBuffer = startAddr + (stride * 400);
         u32 bpp = GetBPP((GSPGPU_FramebufferFormat)format);
 
         PrivColor::SetFormat((GSPGPU_FramebufferFormat)format);
@@ -634,5 +631,5 @@ namespace CTRPluginFramework
                 }
             }
         }
-    }
+    }*/
 }

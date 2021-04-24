@@ -52,7 +52,7 @@ namespace CTRPluginFramework
     }
 
     BMPImage::BMPImage(const u32 width, const u32 height) :
-        _width{ width }, _height{ height }
+        _width{ static_cast<u16>(width) }, _height{ static_cast<u16>(height) }
     {
         _rowIncrement = _width * _bytesPerPixel;
         _dataSize = height * _rowIncrement;

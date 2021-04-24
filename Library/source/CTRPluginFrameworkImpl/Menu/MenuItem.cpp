@@ -139,7 +139,7 @@ namespace CTRPluginFramework
             std::vector<MenuItem *> &items = container->_items;
             std::vector<MenuItem *>::iterator iter = items.begin();
 
-            if (_index < items.size())
+            if (_index < static_cast<int>(items.size()))
             {
                 std::advance(iter, _index);
                 container->_items.insert(iter, this);

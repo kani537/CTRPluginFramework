@@ -1,4 +1,5 @@
 #include "CTRPluginFrameworkImpl/Search/Search32.hpp"
+#include "memory.h"
 
 namespace CTRPluginFramework
 {
@@ -446,6 +447,8 @@ namespace CTRPluginFramework
                 }
                 break;
             }
+            default:
+                break;
         }
 
         _currentAddress = (address - _startRegion) / 4;
@@ -733,6 +736,8 @@ namespace CTRPluginFramework
                 }
                 break;
             }
+            default:
+                break;
         }
 
         _currentAddress = (address - _startRegion) / 4;
@@ -930,6 +935,8 @@ namespace CTRPluginFramework
                 }
                 break;
             }
+            default:
+                break;
         }
 
         _currentAddress = (address - _startRegion) / 4;
@@ -945,7 +952,8 @@ namespace CTRPluginFramework
             {
                 for (u32 v : data)
                 {
-                    float value = *(float *)&v;
+                    float value;
+                    memcpy(&value, &v, sizeof(float));
 
                     if (_resultsInPool > _maxResults)
                         break;
@@ -969,7 +977,8 @@ namespace CTRPluginFramework
             {
                 for (u32 v : data)
                 {
-                    float value = *(float *)&v;
+                    float value;
+                    memcpy(&value, &v, sizeof(float));
 
                     if (_resultsInPool > _maxResults)
                         break;
@@ -993,7 +1002,8 @@ namespace CTRPluginFramework
             {
                 for (u32 v : data)
                 {
-                    float value = *(float *)&v;
+                    float value;
+                    memcpy(&value, &v, sizeof(float));
 
                     if (_resultsInPool > _maxResults)
                         break;
@@ -1017,7 +1027,8 @@ namespace CTRPluginFramework
             {
                 for (u32 v : data)
                 {
-                    float value = *(float *)&v;
+                    float value;
+                    memcpy(&value, &v, sizeof(float));
 
                     if (_resultsInPool > _maxResults)
                         break;
@@ -1041,7 +1052,8 @@ namespace CTRPluginFramework
             {
                 for (u32 v : data)
                 {
-                    float value = *(float *)&v;
+                    float value;
+                    memcpy(&value, &v, sizeof(float));
 
                     if (_resultsInPool > _maxResults)
                         break;
@@ -1065,7 +1077,8 @@ namespace CTRPluginFramework
             {
                 for (u32 v : data)
                 {
-                    float value = *(float *)&v;
+                    float value;
+                    memcpy(&value, &v, sizeof(float));
 
                     if (_resultsInPool > _maxResults)
                         break;
@@ -1091,7 +1104,8 @@ namespace CTRPluginFramework
 
                 for (u32 v : data)
                 {
-                    float value = *(float *)&v;
+                    float value;
+                    memcpy(&value, &v, sizeof(float));
 
                     if (_resultsInPool > _maxResults)
                         break;
@@ -1117,7 +1131,8 @@ namespace CTRPluginFramework
 
                 for (u32 v : data)
                 {
-                    float value = *(float *)&v;
+                    float value;
+                    memcpy(&value, &v, sizeof(float));
 
                     if (_resultsInPool > _maxResults)
                         break;
@@ -1143,7 +1158,8 @@ namespace CTRPluginFramework
 
                 for (u32 v : data)
                 {
-                    float value = *(float *)&v;
+                    float value;
+                    memcpy(&value, &v, sizeof(float));
 
                     if (_resultsInPool > _maxResults)
                         break;
@@ -1163,6 +1179,8 @@ namespace CTRPluginFramework
                 }
                 break;
             }
+            default:
+                break;
         }
 
         _currentAddress = (address - _startRegion) / 4;

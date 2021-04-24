@@ -3,6 +3,7 @@
 #include "CTRPluginFrameworkImpl/Graphics/Renderer.hpp"
 #include "CTRPluginFrameworkImpl/System.hpp"
 #include "CTRPluginFrameworkImpl/Preferences.hpp"
+#include "memory.h"
 
 namespace CTRPluginFramework
 {
@@ -39,7 +40,9 @@ namespace CTRPluginFramework
         {
             _hexadecimalTB.SetValue(v);
             _decimalTB.SetValue(v);
-            _floatTB.SetValue(*(float *)&v);
+            float vf;
+            memcpy(&vf, &v, sizeof(float)); // Optimized away
+            _floatTB.SetValue(vf);
             _hexfloatTB.SetValue(v);
         }
 

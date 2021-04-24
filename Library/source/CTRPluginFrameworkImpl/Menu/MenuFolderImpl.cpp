@@ -128,7 +128,7 @@ namespace CTRPluginFramework
         return (folders);
     }
 
-    MenuItem* MenuFolderImpl::operator[](int index)
+    MenuItem* MenuFolderImpl::operator[](u32 index)
     {
         if (index >= _items.size())
             return (nullptr);

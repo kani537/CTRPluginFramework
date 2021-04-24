@@ -468,7 +468,7 @@ namespace CTRPluginFramework
             if (code.Left == 0xFFFFFE)
             {
                 bool conversion = (code.Right & 0x10) > 0;
-                reg = code.Right & 1 > 0 ? "enabled" : "disabled";
+                reg = (code.Right & 1) > 0 ? "enabled" : "disabled";
                 ret = Utils::Format("data vfp state %s", reg);
                 if (conversion)
                     ret += ", cvt";
@@ -775,7 +775,7 @@ namespace CTRPluginFramework
                 return;
             }
             // If what changes is the size to patch for E or FE code
-            else if ((cursor >= 8 && (base.Type == 0xE0 || base.Type == 0xFD) || (IsInRange(cursor, 2, 7) && base.Type == 0xFE)))
+            else if ((cursor >= 8 && (base.Type == 0xE0 || base.Type == 0xFD)) || (IsInRange(cursor, 2, 7) && base.Type == 0xFE))
             {
             _changeDataSize:
                 u32             size = base.Type == 0xFE ? base.Left : base.Right;
@@ -984,7 +984,7 @@ namespace CTRPluginFramework
                 _converter();
                 break;
             case 4: ///< Hex Editor
-                if (_line < _codes.size() && _codes[_line].base.Type == 0xD3)
+                if (static_cast<size_t>(_line) < _codes.size() && _codes[_line].base.Type == 0xD3)
                 {
                     u32 address = _codes[_line].base.Right;
                     if (address && __g_hexEditor)
@@ -1161,7 +1161,7 @@ namespace CTRPluginFramework
             // Delete code
             case Key::Y:
             {
-                if (_line >= _codes.size()) break;
+                if (static_cast<size_t>(_line) >= _codes.size()) break;
 
                 CodeLine &code = _codes[_line];
                 // If we're in the middle of data, don't remove anything
@@ -1326,7 +1326,7 @@ namespace CTRPluginFramework
                             (code.Type == 0xF0 && code.Left == 0x00F00000 ? CodeLine::Asm : CodeLine::PatchData);
 
 
-                for (int i = 0; i < code.Data.size() - 1; i += 2)
+                for (size_t i = 0; i < code.Data.size() - 1; i += 2)
                 {
                     bool error;
                     std::string data = Utils::Format("%08X %08X", code.Data[i], code.Data[i + 1]);
@@ -1343,7 +1343,7 @@ namespace CTRPluginFramework
             }
         }
 
-        while (_line >= _codes.size() && _line > 0)
+        while (static_cast<size_t>(_line) >= _codes.size() && _line > 0)
             _line--;
         if (_line < 0)
             _line = 0;

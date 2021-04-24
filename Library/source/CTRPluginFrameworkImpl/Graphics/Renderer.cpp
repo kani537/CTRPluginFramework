@@ -91,8 +91,8 @@ namespace CTRPluginFramework
     {
         ScreenImpl  *screen = GetContext()->screen;
 
-        int x = posX;
-        int y = posY;
+        //int x = posX;
+        //int y = posY;
         int w = width;
         int h = height;
 

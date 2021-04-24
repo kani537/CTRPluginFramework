@@ -26,7 +26,7 @@ namespace CTRPluginFramework
         folder.ListDirectories(directories);
         if (!directories.empty())
         {
-            for (int i = 0; i < directories.size(); i++)
+            for (size_t i = 0; i < directories.size(); i++)
             {
                 MenuFolderImpl *subMFolder = CreateFolder(path + "/" + directories[i]);
                 if (subMFolder != nullptr)
@@ -38,7 +38,7 @@ namespace CTRPluginFramework
         folder.ListFiles(files, ".txt");
         if (!files.empty())
         {
-            for (int i = 0; i < files.size(); i++)
+            for (size_t i = 0; i < files.size(); i++)
             {
                 u32 fpos = files[i].rfind(".txt");
                 std::string fname = fpos != std::string::npos ? files[i].substr(0, fpos) : files[i];
@@ -86,7 +86,7 @@ namespace CTRPluginFramework
     {
         _isOpen = true;
         // Process event
-        for (int i = 0; i < eventList.size(); i++)
+        for (size_t i = 0; i < eventList.size(); i++)
             _ProcessEvent(eventList[i]);
 
         // Draw
@@ -244,7 +244,7 @@ namespace CTRPluginFramework
                     _currentBMP--;
                     _LoadBMP();
                 }
-                else if (event.key.code == Key::R && _currentBMP < _bmpList.size() -1)
+                else if (event.key.code == Key::R && static_cast<size_t>(_currentBMP) < _bmpList.size() -1)
                 {
                     _currentBMP++;
                     _LoadBMP();
@@ -257,7 +257,7 @@ namespace CTRPluginFramework
                     _currentBMP--;
                     _LoadBMP();
                 }
-                else if (event.swip.direction == Event::SwipDirection::Right && _currentBMP < _bmpList.size() -1)
+                else if (event.swip.direction == Event::SwipDirection::Right && static_cast<size_t>(_currentBMP) < _bmpList.size() -1)
                 {
                     _currentBMP++;
                     _LoadBMP();

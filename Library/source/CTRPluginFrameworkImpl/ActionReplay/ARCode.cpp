@@ -160,7 +160,7 @@ namespace CTRPluginFramework
     }
 
     ARCode::ARCode(u8 type, u32 left, u32 right) :
-        Type(type), Left(left), Right(right), HasError(false)
+        HasError(false), Type(type), Left(left), Right(right)
     {
     }
 

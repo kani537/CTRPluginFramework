@@ -27,7 +27,7 @@ namespace CTRPluginFramework
 
         std::vector<MenuEntry *>    GetEntryList(void) const;
         std::vector<MenuFolder *>   GetFolderList(void) const;
-        MenuItem    *operator[](int index);
+        MenuItem    *operator[](u32 index);
         bool        HasParent(void);
         void        Remove(MenuItem *item);
         void        Remove(u32 start, u32 count = 1, bool destroy = false);

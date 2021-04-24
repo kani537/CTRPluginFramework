@@ -97,7 +97,7 @@ namespace CTRPluginFramework
                                 (_isPressed ? Color::DimGrey :
                                 (_isToggleBtn && _state ? Color::LimeGreen : Color::Gainsboro));
         const Color &textColor = Color::Black;
-        const Color &borderColor = _isLocked ? Color::Gray : Color::DarkGrey;
+        //const Color &borderColor = _isLocked ? Color::Gray : Color::DarkGrey;
 
         // Background
         if (_isRounded)
