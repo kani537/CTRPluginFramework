@@ -126,7 +126,7 @@ namespace CTRPluginFramework
         }
     }
 
-    u32     ScreenImpl::Acquire(void)
+    u32     ScreenImpl::Acquire(bool fade)
     {
         // Fetch game frame buffers & check validity
         if (ImportFromGsp())
@@ -151,7 +151,8 @@ namespace CTRPluginFramework
         _currentBuffer = _frameBufferInfo.header.screen = 1;
 
         // Apply fade to fb0
-        Fade(0.3f);
+        if (fade)
+            Fade(0.3f);
 
         // Copy to fb1
         _currentBuffer = 0;
@@ -355,11 +356,11 @@ namespace CTRPluginFramework
 #define GPU_TRANSFER_CNT            REG32(0x10400C18)
 #define GPU_CMDLIST_CNT             REG32(0x104018F0)
 
-    u32     ScreenImpl::AcquireFromGsp(void)
+    u32     ScreenImpl::AcquireFromGsp(bool fade)
     {
         // Wait for gpu to finish all stuff
         while ((GPU_PSC0_CNT | GPU_PSC1_CNT | GPU_TRANSFER_CNT | GPU_CMDLIST_CNT) & 1);
-        u32 err = Top->Acquire() | Bottom->Acquire();
+        u32 err = Top->Acquire(fade) | Bottom->Acquire(fade);
 
         //if (!err)
         //    GSP::WaitBufferSwapped(3);

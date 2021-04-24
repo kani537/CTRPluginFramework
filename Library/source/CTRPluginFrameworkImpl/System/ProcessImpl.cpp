@@ -447,7 +447,7 @@ namespace CTRPluginFramework
         // Resume interrupt reciever and acquire screens
         // NOTE: NEEDS TO BE DISABLED IF THIS FUNCTION IS MADE TO RETURN EXECUTION
         GSP::ResumeInterruptReceiver();
-        if (!ScreenImpl::AcquireFromGsp())
+        if (!ScreenImpl::AcquireFromGsp(false))
             // Update OSD screens
             OSDImpl::UpdateScreens();
 
