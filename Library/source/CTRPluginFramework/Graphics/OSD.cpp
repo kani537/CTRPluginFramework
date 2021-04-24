@@ -68,6 +68,12 @@ namespace CTRPluginFramework
         pixel = PrivColor::FromFramebuffer(fb);
     }
 
+    void    Screen::Fade(const float fadeAmount)
+    {
+        ScreenImpl* scrImpl = IsTop ? ScreenImpl::Top : ScreenImpl::Bottom;
+        scrImpl->Fade(fadeAmount);
+    }
+
     int     OSD::Notify(const std::string &str, const Color &fg, const Color &bg)
     {
         OSDImpl::Lock();
@@ -97,7 +103,7 @@ namespace CTRPluginFramework
 
         if (std::find(OSDImpl::Callbacks.begin(), OSDImpl::Callbacks.end(), cb) == OSDImpl::Callbacks.end())
             OSDImpl::Callbacks.push_back(cb);
-        
+
         OSDImpl::Unlock();
     }
 

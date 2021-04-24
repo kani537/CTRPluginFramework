@@ -50,7 +50,7 @@ namespace CTRPluginFramework
         static void                 ApplyFading(void);
 
         // Return non zero on failure
-        static u32                  AcquireFromGsp(void);
+        static u32                  AcquireFromGsp(bool fade = true);
         // Return non zero on failure
         static u32                  CheckGspFrameBuffersInfo(void);
 
@@ -66,7 +66,7 @@ namespace CTRPluginFramework
 
         // Fetch Game's FrameBufferInfo and swap to CTRPF FrameBufferInfo
         // Return non zero on failure
-        u32                         Acquire(void);
+        u32                         Acquire(bool fade = true);
         // Return non zero on failure
         u32                         ImportFromGsp(void);
 
