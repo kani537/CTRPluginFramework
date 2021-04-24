@@ -34,25 +34,6 @@ namespace CTRPluginFramework
     const Color     Color::SkyBlue = Color(135, 206, 235);
     const Color     Color::Turquoise = Color(64, 224, 208);
 
-    Color::Color(u8 red, u8 green, u8 blue, u8 alpha)
-    : r(red), g(green), b(blue), a(alpha)
-    {
-
-    }
-
-    Color::Color(u32 color)
-    {
-        a = color & 0xFF;
-        r = color >> 24;
-        g = (color >> 16) & 0xFF;
-        b = (color >> 8) & 0xFF;
-    }
-
-    u32     Color::ToU32(void) const
-    {
-        return ((a << 24) | (b << 16) | (g << 8) | r);
-    }
-
     Color&   Color::Fade(float fading)
     {
         if (fading > 1.0f || fading < -1.0f)
@@ -127,22 +108,6 @@ namespace CTRPluginFramework
             break;
         }
         return (ret);
-    }
-
-    bool Color::operator==(const Color& right) const
-    {
-        return ((r == right.r)
-            && (b == right.b)
-            && (g == right.g)
-            && (a == right.a));
-    }
-
-    bool Color::operator!=(const Color& right) const
-    {
-        return ((r != right.r)
-            || (b != right.b)
-            || (g != right.g)
-            || (a != right.a));
     }
 
     bool Color::operator < (const Color &right) const
