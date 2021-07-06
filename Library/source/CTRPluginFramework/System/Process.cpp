@@ -11,6 +11,7 @@ namespace CTRPluginFramework
 {
     Process::ExceptionCallback Process::exceptionCallback = nullptr;
     Process::OnPauseResumeCallback Process::OnPauseResume = nullptr;
+    bool Process::ThrowOldExceptionOnCallbackException = false;
 
     Handle Process::GetHandle(void)
     {

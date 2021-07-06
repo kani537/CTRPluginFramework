@@ -434,15 +434,19 @@ namespace CTRPluginFramework
         );
 #endif
     }
+    static CpuRegisters g_previousException;
 
     void    ProcessImpl::ExceptionHandler(ERRF_ExceptionInfo* excep, CpuRegisters* regs) {
         // Default exception handler, if the user didn't set an custom exception handler or an exception happened in the user callback
         if (AtomicPostIncrement(&exceptionCount) || !Process::exceptionCallback) {
             DisableExceptionHandlers();
-            ReturnFromException(regs);
+            ReturnFromException(Process::ThrowOldExceptionOnCallbackException ? &g_previousException : regs);
         }
         // Lock game threads
         LockGameThreads();
+
+        // Backup exception register state
+        memcpy(&g_previousException, regs, sizeof(CpuRegisters));
 
         // Resume interrupt reciever and acquire screens
         // NOTE: NEEDS TO BE DISABLED IF THIS FUNCTION IS MADE TO RETURN EXECUTION

@@ -317,6 +317,13 @@ namespace CTRPluginFramework
         * \return Action to perform after each callback execution. LOOP makes the callback be executed again.
         */
         static ExceptionCallback exceptionCallback;
+
+        /**
+         *  \brief Determines the behaviour if the exception handler callback causes another exception. If set to true, \n
+         * the first exception is thrown with the default handler (luma). If set to false, the new exception is thrown with the \n
+         * default handler (luma). Default value: false
+         */
+        static bool ThrowOldExceptionOnCallbackException;
     };
 }
 
