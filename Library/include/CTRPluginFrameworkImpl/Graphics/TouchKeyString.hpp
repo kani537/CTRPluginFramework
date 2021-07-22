@@ -7,6 +7,7 @@
 #include "CTRPluginFramework/Graphics/CustomIcon.hpp"
 
 #include "CTRPluginFramework/System/Touch.hpp"
+#include "CTRPluginFramework/Sound.hpp"
 
 #include <string>
 
@@ -50,13 +51,18 @@ namespace CTRPluginFramework
         // Return -1 if not pressed, 1 otherwise
         int    operator()(void);
 
+        void    SetAcceptSoundEvent(SoundEngine::Event event);
+        SoundEngine::Event GetAcceptSoundEvent();
+
     private:
         std::string     _content;
         CustomIcon      _icon;
 
         IntRect         _uiProperties;
+        SoundEngine::Event      _acceptSoundEvent;
 
         bool            _isPressed;
+        bool            _wasPressed;
         bool            _isForcePressed;
         bool            _isIcon;
         bool            _execute;

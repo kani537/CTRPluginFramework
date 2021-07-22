@@ -3,6 +3,7 @@
 
 #include "CTRPluginFramework/Graphics.hpp"
 #include "CTRPluginFramework/Menu.hpp"
+#include "CTRPluginFramework/Sound.hpp"
 #include "CTRPluginFramework/System.hpp"
 #include "CTRPluginFramework/Utils.hpp"
 
