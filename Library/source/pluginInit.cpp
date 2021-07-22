@@ -6,7 +6,6 @@
 #include "CTRPluginFrameworkImpl/System/Screenshot.hpp"
 #include "CTRPluginFrameworkImpl/System/HookManager.hpp"
 #include "CTRPluginFrameworkImpl/System/Services/Gsp.hpp"
-#include "CTRPluginFrameworkImpl/Sound.hpp"
 #include "csvc.h"
 #include "plgldr.h"
 
@@ -183,12 +182,7 @@ namespace CTRPluginFramework
         fsInit();
         hidInit();
         cfguInit();
-        csndInit();
         plgLdrInit();
-
-        // Set cwav VA to PA function
-        SoundEngineImpl::Initializelibcwav();
-        SoundEngineImpl::SetVaToPaConvFunction([](const void* addr) {return svcConvertVAToPA(addr, false);});
 
         // Initialize Kernel stuff
         Kernel::Initialize();
@@ -212,7 +206,6 @@ namespace CTRPluginFramework
         settings.AllowActionReplay = true;
         settings.AllowSearchEngine = true;
         settings.WaitTimeToBoot = Seconds(5.f);
-        settings.TryLoadSDSounds = true;
 
         // Set default theme
         FwkSettings::SetThemeDefault();
@@ -259,9 +252,6 @@ namespace CTRPluginFramework
         // Patch process before it starts & let the dev init some settings
         PatchProcess(settings);
 
-        // Init menu sounds.
-        SoundEngineImpl::InitializeMenuSounds();
-
         // Load settings
         Preferences::LoadSettings();
 
@@ -303,24 +293,17 @@ namespace CTRPluginFramework
 
                 if (event == PLG_SLEEP_ENTRY)
                 {
-                    SoundEngineImpl::NotifyAptEvent(APT_HookType::APTHOOK_ONSLEEP);
                     SystemImpl::AptStatus |= BIT(6);
                     PLGLDR__Reply(event);
                 }
                 else if (event == PLG_SLEEP_EXIT)
                 {
                     SystemImpl::WakeUpFromSleep();
-                    SoundEngineImpl::NotifyAptEvent(APT_HookType::APTHOOK_ONWAKEUP);
                     PLGLDR__Reply(event);
                 }
                 else if (event == PLG_ABOUT_TO_SWAP)
                 {
                     OnPluginToSwap();
-
-                    SoundEngineImpl::NotifyAptEvent(APT_HookType::APTHOOK_ONSUSPEND);
-
-                    // Close csnd as it may be needed by other processes (4 sessions max.)
-                    csndExit();
 
                     // Un-map hook memory
                     HookManager::Lock();
@@ -337,19 +320,11 @@ namespace CTRPluginFramework
                     HookManager::RecoverFromUnmapMemory();
                     HookManager::Unlock();
 
-                    // Init csnd again.
-                    csndInit();
-
-                    SoundEngineImpl::NotifyAptEvent(APT_HookType::APTHOOK_ONRESTORE);
-
                     OnPluginFromSwap();
                 }
                 else if (event == PLG_ABOUT_TO_EXIT)
                 {
                     OnProcessExit();
-
-                    SoundEngineImpl::NotifyAptEvent(APT_HookType::APTHOOK_ONEXIT);
-                    SoundEngineImpl::ClearMenuSounds();
 
                     SystemImpl::AptStatus |= BIT(3);
                     Scheduler::Exit();
@@ -358,7 +333,6 @@ namespace CTRPluginFramework
                     PluginMenuImpl::ForceExit();
 
                     // Close some handles
-                    csndExit();
                     hidExit();
                     cfguExit();
                     fsExit();

@@ -1,4 +1,4 @@
-/Build
+*/Build
 /Debug
 /Ressources
 /Guide
@@ -7,7 +7,6 @@
 /Library/release
 /.devcontainer
 /.vscode
-*/.vscode
 /.vs
 *.sln
 *.vcxproj

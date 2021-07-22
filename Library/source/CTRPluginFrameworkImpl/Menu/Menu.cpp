@@ -317,23 +317,15 @@ namespace CTRPluginFramework
                         MenuEntryImpl &e = item->AsMenuEntryImpl();
 
                         if (e.IsActivated())
-                        {
-                            SoundEngine::PlayMenuSound(SoundEngine::Event::DESELECT);
                             e.Disable();
-                        }
                         else
-                        {
-                            SoundEngine::PlayMenuSound(SoundEngine::Event::SELECT);
                             e.Enable();
-                        }
                         return (MenuEvent::EntrySelected);
                     }
                     // MenuEntryTools
                     else if (item->_type == MenuType::EntryTools)
                     {
                         MenuEntryTools *e = reinterpret_cast<MenuEntryTools *>(item);
-
-                        SoundEngine::PlayMenuSound(SoundEngine::Event::ACCEPT);
 
                         if (e->UseCheckBox)
                             e->TriggerState();
@@ -366,15 +358,9 @@ namespace CTRPluginFramework
                         bool state = e->_TriggerState();
 
                         if (state)
-                        {
-                            SoundEngine::PlayMenuSound(SoundEngine::Event::SELECT);
                             PluginMenuExecuteLoop::AddAR(e);
-                        }
                         else
-                        {
-                            SoundEngine::PlayMenuSound(SoundEngine::Event::DESELECT);
                             PluginMenuExecuteLoop::RemoveAR(e);
-                        }
 
                         return (MenuEvent::EntrySelected);
                     }
@@ -388,7 +374,6 @@ namespace CTRPluginFramework
                 }
                 case B:
                 {
-                    SoundEngine::PlayMenuSound(SoundEngine::Event::CANCEL);
                     MenuFolderImpl *p = _folder->_Close(_selector);
                     if (p != nullptr)
                     {
@@ -416,7 +401,6 @@ namespace CTRPluginFramework
         if (step > 0)
             _selector = std::max(0, static_cast<int>(_folder->ItemsCount() - 1));
         _input.Restart();
-        SoundEngine::PlayMenuSound(SoundEngine::Event::CURSOR);
     }
 
     void    Menu::_ScrollDown(int step)
@@ -428,7 +412,6 @@ namespace CTRPluginFramework
         if (step > 0)
             _selector = 0;
         _input.Restart();
-        SoundEngine::PlayMenuSound(SoundEngine::Event::CURSOR);
     }
 
     void    Menu::Update(const Time &delta)

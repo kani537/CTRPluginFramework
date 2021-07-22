@@ -3,7 +3,6 @@
 #include "CTRPluginFrameworkImpl/Preferences.hpp"
 #include "CTRPluginFrameworkImpl/Menu/PluginMenuExecuteLoop.hpp"
 #include "CTRPluginFramework/Menu/MenuFolder.hpp"
-#include "CTRPluginFramework/Sound.hpp"
 
 #include <cstring>
 
@@ -262,8 +261,6 @@ namespace CTRPluginFramework
             // If entry is unselectable scroll again
             if (IsUnselectableEntry(folder[selector]))
                 ScrollUp(selector, folder, step);
-            else
-                SoundEngine::PlayMenuSound(SoundEngine::Event::CURSOR);
             return;
         }
         // Else go up
@@ -276,8 +273,6 @@ namespace CTRPluginFramework
             step = step > 1 ? step - 1 : 1;
             ScrollUp(selector, folder, step);
         }
-        else
-            SoundEngine::PlayMenuSound(SoundEngine::Event::CURSOR);
     }
 
     static void ScrollDown(int &selector, MenuFolderImpl &folder, int step)
@@ -294,8 +289,6 @@ namespace CTRPluginFramework
             // If entry is unselectable scroll again
             if (IsUnselectableEntry(folder[selector]))
                 ScrollDown(selector, folder, step);
-            else
-                SoundEngine::PlayMenuSound(SoundEngine::Event::CURSOR);
             return;
         }
         // Else go down
@@ -308,8 +301,6 @@ namespace CTRPluginFramework
             step = step > 1 ? step - 1 : 1;
             ScrollDown(selector, folder, step);
         }
-        else
-            SoundEngine::PlayMenuSound(SoundEngine::Event::CURSOR);
     }
 
     //###########################################
@@ -423,7 +414,6 @@ namespace CTRPluginFramework
                         // Switch current folder
                         if (newFolder != nullptr)
                         {
-                            SoundEngine::PlayMenuSound(SoundEngine::Event::CANCEL);
                             if (_starMode)
                                 _starred = newFolder;
                             else
@@ -792,11 +782,7 @@ namespace CTRPluginFramework
             MenuEntryImpl* entry = reinterpret_cast<MenuEntryImpl *>(item);
 
             if (entry->_flags.isUnselectable)
-            {
-                SoundEngine::PlayMenuSound(SoundEngine::Event::CANCEL);
                 return;
-            }
-
             // If the entry has a valid funcpointer
             if (entry->GameFunc != nullptr)
             {
@@ -807,18 +793,15 @@ namespace CTRPluginFramework
                 // If is activated add to executeLoop
                 if (state)
                 {
-                    SoundEngine::PlayMenuSound(SoundEngine::Event::SELECT);
                     PluginMenuExecuteLoop::Add(entry);
                 }
                 else if (just)
                 {
-                    SoundEngine::PlayMenuSound(SoundEngine::Event::DESELECT);
                     PluginMenuExecuteLoop::Remove(entry);
                 }
             }
             else if (entry->MenuFunc != nullptr)
             {
-                SoundEngine::PlayMenuSound(SoundEngine::Event::ACCEPT);
                 entry->MenuFunc(entry->_owner);
             }
         }
@@ -834,12 +817,8 @@ namespace CTRPluginFramework
             {
                 // If the callabck tells us to not open the folder
                 if (!(p->_owner->OnAction(*p->_owner, ActionType::Opening)))
-                {
-                    SoundEngine::PlayMenuSound(SoundEngine::Event::CANCEL);
                     return;
-                }
             }
-            SoundEngine::PlayMenuSound(SoundEngine::Event::ACCEPT);
             p->_Open(folder, _selector, _starMode);
             if (_starMode)
                 _starred = p;

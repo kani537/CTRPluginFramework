@@ -10,7 +10,6 @@ namespace CTRPluginFramework
         _isEnabled = true;
         _isToggleBtn = type & Toggle;
         _isRounded = type & Rounded;
-        _acceptSoundEvent = SoundEngine::Event::ACCEPT;
 
         if (type & Icon)
         {
@@ -51,7 +50,6 @@ namespace CTRPluginFramework
         _isEnabled = true;
         _isToggleBtn = type & Toggle;
         _isRounded = type & Rounded;
-        _acceptSoundEvent = SoundEngine::Event::ACCEPT;
 
         if (type & Icon)
         {
@@ -81,11 +79,6 @@ namespace CTRPluginFramework
 
         bool ret = _execute;
         _execute = false;
-        if (ret && !_isToggleBtn)
-        {
-            SoundEngine::PlayMenuSound(_acceptSoundEvent);
-            _isPressed = _wasPressed = false;
-        }
         return ret;
     }
 
@@ -139,26 +132,10 @@ namespace CTRPluginFramework
         {
             _isPressed = false;
             _state = !_state;
-            if (_isToggleBtn)
-            {
-                if (_state)
-                    SoundEngine::PlayMenuSound(SoundEngine::Event::SELECT);
-                else
-                    SoundEngine::PlayMenuSound(SoundEngine::Event::DESELECT);
-            }
             _execute = true;
             _clock.Restart();
             return;
         }
-
-        if (_isPressed != _wasPressed && !_isToggleBtn)
-        {
-            if (_isPressed)
-                SoundEngine::PlayMenuSound(SoundEngine::Event::SELECT);
-            else
-                SoundEngine::PlayMenuSound(SoundEngine::Event::DESELECT);
-        }
-        _wasPressed = _isPressed;
 
         if (_isToggleBtn && !_clock.HasTimePassed(halfSecond))
             return;
@@ -204,9 +181,5 @@ namespace CTRPluginFramework
     bool    Button::GetState(void) const
     {
         return _state;
-    }
-    void Button::SetAcceptSoundEvent(SoundEngine::Event event)
-    {
-        _acceptSoundEvent = event;
     }
 }

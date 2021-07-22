@@ -6,7 +6,6 @@
 #include "CTRPluginFramework/System/Touch.hpp"
 #include "CTRPluginFrameworkImpl/Graphics/Renderer.hpp"
 #include "CTRPluginFrameworkImpl/Graphics/Drawable.hpp"
-#include "CTRPluginFramework/Sound.hpp"
 
 #include <string>
 
@@ -44,7 +43,6 @@ namespace CTRPluginFramework
         void    Execute(void);
         void    SetState(bool state);
         bool    GetState(void) const;
-        void    SetAcceptSoundEvent(SoundEngine::Event event);
 
     private:
 
@@ -55,7 +53,6 @@ namespace CTRPluginFramework
         std::string             _content;
         IntRect                 _bounds;
         Clock                   _clock;
-        SoundEngine::Event      _acceptSoundEvent;
 
         union
         {
@@ -71,7 +68,6 @@ namespace CTRPluginFramework
                 bool    _isLocked : 1;
                 bool    _state : 1;
                 bool    _isPressed : 1;
-                bool    _wasPressed : 1;
                 bool    _execute : 1;
             };
         };

@@ -280,11 +280,6 @@ namespace CTRPluginFramework
         _keyboard->ChangeSelectedEntry(entry);
     }
 
-    void Keyboard::ChangeEntrySound(int entry, SoundEngine::Event soundEvent)
-    {
-        _keyboard->ChangeEntrySound(entry, soundEvent);
-    }
-
     void Keyboard::Populate(const std::vector<std::string> &input, bool resetScroll)
     {
         _keyboard->Populate(input, resetScroll);

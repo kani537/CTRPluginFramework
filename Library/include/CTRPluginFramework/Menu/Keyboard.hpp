@@ -3,7 +3,6 @@
 
 #include "CTRPluginFramework/Graphics/CustomIcon.hpp"
 #include "CTRPluginFramework/System/Controller.hpp"
-#include "CTRPluginFramework/Sound.hpp"
 #include "types.h"
 #include <string>
 #include <vector>
@@ -106,13 +105,6 @@ namespace CTRPluginFramework
          * \param entry Entry index to select, -1 to deselect all.
          */
         void	ChangeSelectedEntry(int entry);
-
-        /**
-         * \brief Sets the sound event to play when the entry is activated
-         * \param entry Entry index to change the sound event
-         * \param soundEvent Event to set for the given entry.
-         */
-        void	ChangeEntrySound(int entry, SoundEngine::Event soundEvent);
 
         /**
          * \brief Populate a keyboard with the strings contained in an std::vector

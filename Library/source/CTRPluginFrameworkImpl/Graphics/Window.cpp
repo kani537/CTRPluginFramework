@@ -16,11 +16,7 @@ namespace CTRPluginFramework
     _image(image)
     {
         if (closeBtn)
-        {
             _closeBtn = new Button(Button::Icon, IntRect(posX + width - 25, posY + 4, 20, 20), Icon::DrawClose);
-            _closeBtn->SetAcceptSoundEvent(SoundEngine::Event::NUM_EVENTS);
-        }
-
         else
             _closeBtn = nullptr;
     }

@@ -6,7 +6,6 @@
 
 #include "CTRPluginFrameworkImpl/Graphics/Drawable.hpp"
 #include "CTRPluginFrameworkImpl/Graphics.hpp"
-#include "CTRPluginFramework/Sound.hpp"
 
 namespace CTRPluginFramework
 {
@@ -64,7 +63,7 @@ namespace CTRPluginFramework
         // Return -1 if not pressed, _character value or 0x12345678 otherwise
         int    operator()(std::string &str);
 
-        void    SetAcceptSoundEvent(SoundEngine::Event event);
+
 
     private:
         int             _character{0};
@@ -72,13 +71,11 @@ namespace CTRPluginFramework
         KeyContent    * _content{nullptr};
         IconCallback    _icon{nullptr};
         IntRect         _uiProperties;
-        SoundEngine::Event      _acceptSoundEvent;
 
         u16             _posX{0};
         u16             _posY{0};
 
         bool            _isPressed{false};
-        bool            _wasPressed{false};
         bool            _execute{false};
         bool            _enabled{true};
     };
