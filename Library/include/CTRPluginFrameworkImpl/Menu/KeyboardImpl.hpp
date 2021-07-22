@@ -7,6 +7,7 @@
 #include "CTRPluginFrameworkImpl/Graphics/TouchKeyString.hpp"
 #include "CTRPluginFramework/Menu/Keyboard.hpp"
 #include "CTRPluginFrameworkImpl/System.hpp"
+#include "CTRPluginFramework/Sound.hpp"
 
 #include <vector>
 #include <string>
@@ -50,6 +51,7 @@ namespace CTRPluginFramework
         void        SetCompareCallback(CompareCallback callback);
         void        OnKeyboardEvent(OnEventCallback callback);
         void        ChangeSelectedEntry(int entry);
+        void        ChangeEntrySound(int entry, SoundEngine::Event soundEvent);
         void        Populate(const std::vector<std::string>& input, bool resetScroll);
         void        Populate(const std::vector<CustomIcon>& input, bool resetScroll);
         void        Clear(void);
@@ -89,7 +91,7 @@ namespace CTRPluginFramework
         bool    _CheckButtons(int &ret); //<- for string button
 		void    _HandleManualKeyPress(Key key);
         void    _ClearKeyboardEvent();
-        void    _ChangeManualKey(int newVal);
+        void    _ChangeManualKey(int newVal, bool playSound = true);
 
         Keyboard                *_owner{nullptr};
 

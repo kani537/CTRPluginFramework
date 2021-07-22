@@ -6,6 +6,7 @@
 #include "Unicode.h"
 #include "CTRPluginFramework/System/System.hpp"
 #include "CTRPluginFrameworkImpl/Preferences.hpp"
+#include "CTRPluginFramework/Sound.hpp"
 
 namespace CTRPluginFramework
 {
@@ -110,6 +111,7 @@ namespace CTRPluginFramework
                 checkbox.SetState(false);
             }
         }
+        SoundEngine::PlayMenuSound(SoundEngine::Event::CANCEL);
     }
 
     void    HotkeysModifier::_DrawTop(void) const

@@ -221,6 +221,7 @@ namespace CTRPluginFramework
                 {
                     if (_isOpen) ///< Close menu
                     {
+                        SoundEngine::PlayMenuSound(SoundEngine::Event::CANCEL);
                         ProcessImpl::Play(true);
                         _isOpen = false;
 
@@ -236,6 +237,7 @@ namespace CTRPluginFramework
 
                         if (continueOpening)
                         {
+                            SoundEngine::PlayMenuSound(SoundEngine::Event::ACCEPT);
                             ProcessImpl::Pause(true);
 
                             _aboutToOpen = _isOpen = true;
@@ -321,6 +323,8 @@ namespace CTRPluginFramework
                 // Close menu
                 if (shouldClose || SystemImpl::WantsToSleep())
                 {
+                    if (shouldClose)
+                        SoundEngine::PlayMenuSound(SoundEngine::Event::CANCEL);
                     ProcessImpl::Play(true);
                     _isOpen = false;
                     shouldClose = false;
