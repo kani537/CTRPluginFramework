@@ -86,19 +86,25 @@ namespace CTRPluginFramework
             if ((_mode & SCREENSHOT_TOP) && !isBottom)
             {
                 // Copy image data to buffer
-                std::copy(static_cast<u32 *>(addr), static_cast<u32 *>(addr) + fbSize, reinterpret_cast<u32 *>(&ImgBuffer->top[0]));
-                ImgBuffer->topFormat = format & 7;
-                ImgBuffer->topStride = stride;
-                _mode &= ~SCREENSHOT_TOP;
+                if (Process::CheckAddress((u32)addr))
+                {
+                    std::copy(static_cast<u32 *>(addr), static_cast<u32 *>(addr) + fbSize, reinterpret_cast<u32 *>(&ImgBuffer->top[0]));
+                    ImgBuffer->topFormat = format & 7;
+                    ImgBuffer->topStride = stride;
+                    _mode &= ~SCREENSHOT_TOP;
+                }
             }
 
             if ((_mode & SCREENSHOT_BOTTOM) && isBottom)
             {
-                // Copy image data to buffer
-                std::copy(static_cast<u32 *>(addr), static_cast<u32 *>(addr) + fbSize, reinterpret_cast<u32 *>(&ImgBuffer->bottom[0]));
-                ImgBuffer->bottomFormat = format & 7;
-                ImgBuffer->bottomStride = stride;
-                _mode &= ~SCREENSHOT_BOTTOM;
+                if (Process::CheckAddress((u32)addr))
+                {
+                    // Copy image data to buffer
+                    std::copy(static_cast<u32 *>(addr), static_cast<u32 *>(addr) + fbSize, reinterpret_cast<u32 *>(&ImgBuffer->bottom[0]));
+                    ImgBuffer->bottomFormat = format & 7;
+                    ImgBuffer->bottomStride = stride;
+                    _mode &= ~SCREENSHOT_BOTTOM;
+                }
             }
 
             // Wake up thread if we're done with all the preparations

@@ -91,6 +91,33 @@ namespace CTRPluginFramework
         friend void    KeepThreadMain(void *arg);
 
         static  void    _Initialize(void);
+
+        class FrameBufferList
+        {
+        public:
+            enum class FrameBufferType {
+                INVALID,
+                BOTTOM,
+                TOPLEFT,
+                TOPRIGHT
+            };
+            u32 GetBuffer(u32 addr, FrameBufferType type);
+            static inline FrameBufferType GetType(bool isBottom, bool isLeft) {
+                if (isBottom) return FrameBufferType::BOTTOM;
+                else if (isLeft) return FrameBufferType::TOPLEFT;
+                else return FrameBufferType::TOPRIGHT;
+            }
+        private:
+            struct FrameBufferEntry {
+                u32 fromAddress;
+                u32 toAddress;
+                u32 oldness;
+                FrameBufferType type = FrameBufferType::INVALID;
+            };
+            std::array<FrameBufferEntry, 10> knownBuffers;
+        };
+
+        static FrameBufferList bufferList;
     };
 }
 
