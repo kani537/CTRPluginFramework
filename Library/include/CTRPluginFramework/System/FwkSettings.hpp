@@ -29,6 +29,7 @@ namespace CTRPluginFramework
         bool    AllowActionReplay; ///< Enable the Action Replay's handler, if this is set to off, even if the menu allows to create codes, they won't be executed
         bool    AllowSearchEngine; ///< If false then the search engine won't be available | Default: true
         Time    WaitTimeToBoot; ///< Time to wait for the plugin to starts (from when the game will starts) | Default: 5 seconds
+        bool    CachedDrawMode; ///< Set to true if your plugin heavily uses OSD to draw to the screen to improve performance (only change it in PatchProcess). | Default: false
 
         // UI colors
         Color   MainTextColor;  ///< The color of all texts within the plugin | Default: Blank

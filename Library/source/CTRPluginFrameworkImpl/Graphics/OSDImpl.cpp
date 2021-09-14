@@ -49,6 +49,8 @@ namespace CTRPluginFramework
     Task        OSDImpl::DrawNotifTask1(OSDImpl::DrawNotif_TaskFunc, nullptr, Task::AppCores);
     Task        OSDImpl::DrawNotifTask2(OSDImpl::DrawNotif_TaskFunc, nullptr, Task::AppCores);
 
+    OSDImpl::FrameBufferList OSDImpl::bufferList;
+
     static const Time  g_second = Seconds(1.f);
 
     struct FpsCounter
@@ -57,7 +59,7 @@ namespace CTRPluginFramework
         Clock   clock;
         Time    last;
 
-        std::string text;
+        char text[16];
 
         Time    Update(void)
         {
@@ -68,7 +70,7 @@ namespace CTRPluginFramework
             ++nbFrames;
             if (elapsedTime > g_second)
             {
-                text = Utils::Format("FPS: %d", nbFrames);
+                sprintf(text, "FPS: %ld", nbFrames);
                 nbFrames = 0;
                 clock.Restart();
             }
@@ -79,7 +81,7 @@ namespace CTRPluginFramework
         void    Display(void)
         {
             int posY = 10;
-            Renderer::DrawString(text.c_str(), 10, posY, Color::White, Color::Black);
+            Renderer::DrawString(text, 10, posY, Color::White, Color::Black);
         }
     };
 
@@ -278,6 +280,41 @@ namespace CTRPluginFramework
         return 0;
     }
 
+    u32 OSDImpl::FrameBufferList::GetBuffer(u32 addr, FrameBufferType type) {
+        if (!addr) return 0;
+
+        int oldestEntry = 0;
+        int foundEntry = -1;
+
+        for (u32 i = 0; i < knownBuffers.size(); i++) {
+            if (foundEntry < 0 && addr == knownBuffers[i].fromAddress && type == knownBuffers[i].type) {
+                foundEntry = i;
+                knownBuffers[i].oldness = 0;
+            } else
+                knownBuffers[i].oldness++;
+
+            if (knownBuffers[i].oldness > knownBuffers[oldestEntry].oldness) {
+                oldestEntry = i;
+            }
+        }
+        if (foundEntry >= 0) return knownBuffers[foundEntry].toAddress;
+        else {
+            knownBuffers[oldestEntry].oldness = 0;
+            knownBuffers[oldestEntry].type = type;
+            knownBuffers[oldestEntry].fromAddress = addr;
+
+            FwkSettings &settings = FwkSettings::Get();
+            if (settings.CachedDrawMode)
+                knownBuffers[oldestEntry].toAddress = addr;
+            else
+                knownBuffers[oldestEntry].toAddress = PA_FROM_VA(addr);
+
+            if (!Process::CheckAddress(addr)) knownBuffers[oldestEntry].toAddress = 0;
+
+            return knownBuffers[oldestEntry].toAddress;
+        }
+    }
+
     void     OSDImpl::CallbackCommon(u32 isBottom, void* addr, void* addrB, int stride, int format)
     {
         if (SystemImpl::Status())
@@ -285,22 +322,21 @@ namespace CTRPluginFramework
         // TODO: fully remove this, rosalina implements it now
         // Preferences::ApplyBacklight();
 
-        g_fpsCounter[isBottom].Update();
+        bool drawFps = (Preferences::IsEnabled(Preferences::ShowBottomFps) && isBottom) || (Preferences::IsEnabled(Preferences::ShowTopFps) && !isBottom);
+        if (drawFps) g_fpsCounter[isBottom].Update();
 
         // Screen shot first
         if (Screenshot::OSDCallback(isBottom, addr, addrB, stride, format))
             return;
 
-        bool drawFps = (Preferences::IsEnabled(Preferences::ShowBottomFps) && isBottom) || (Preferences::IsEnabled(Preferences::ShowTopFps) && !isBottom);
-
         /*if (!drawFps && !DrawSaveIcon && !MessColors
             && Callbacks.empty() && Notifications.empty())
             return; */
 
-        // Convert for un-cached memory access
-        addr = (void *)PA_FROM_VA(addr);
-        if (addrB)
-            addrB = (void *)PA_FROM_VA(addrB);
+        // Convert to actual addresses and check validity
+        addr = (void*)bufferList.GetBuffer((u32)addr, FrameBufferList::GetType(isBottom, true));
+        if (!isBottom)
+            addrB = (void*)bufferList.GetBuffer((u32)addrB, FrameBufferList::GetType(isBottom, true));
 
         // TODO: remove
         // if (MessColors)
@@ -328,6 +364,13 @@ namespace CTRPluginFramework
         DrawNotifArgs   args[2]; ///< Careful with the scope of that var
 
         Lock();
+
+        FwkSettings &settings = FwkSettings::Get();
+        if (settings.CachedDrawMode) {
+            svcInvalidateProcessDataCache(CUR_PROCESS_HANDLE, reinterpret_cast<u32>(addr), isBottom ? stride * 320 : stride * 400);
+            if (!isBottom && addrB && addrB != addr)
+                svcInvalidateProcessDataCache(CUR_PROCESS_HANDLE, reinterpret_cast<u32>(addrB), stride * 400);
+        }
 
         if (Notifications.size())
         {
@@ -387,6 +430,12 @@ namespace CTRPluginFramework
         // Draw fps
         if (drawFps)
             g_fpsCounter[isBottom].Display();
+
+        if (settings.CachedDrawMode) {
+            svcFlushProcessDataCache(CUR_PROCESS_HANDLE, reinterpret_cast<u32>(addr), isBottom ? stride * 320 : stride * 400);
+            if (!isBottom && addrB && addrB != addr)
+                svcFlushProcessDataCache(CUR_PROCESS_HANDLE, reinterpret_cast<u32>(addrB), stride * 400);
+        }
     }
 
     void    OSDImpl::UpdateScreens(void)

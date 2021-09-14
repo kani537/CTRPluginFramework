@@ -206,6 +206,7 @@ namespace CTRPluginFramework
         settings.AllowActionReplay = true;
         settings.AllowSearchEngine = true;
         settings.WaitTimeToBoot = Seconds(5.f);
+        settings.CachedDrawMode = false;
 
         // Set default theme
         FwkSettings::SetThemeDefault();
