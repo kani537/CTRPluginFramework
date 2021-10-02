@@ -8,13 +8,30 @@ namespace CTRPluginFramework
     class Mutex
     {
     public:
-        Mutex(void);
-        ~Mutex(void);
+        inline Mutex(void) {
+            RecursiveLock_Init(&_lock);
+        }
+        inline ~Mutex(void) {
+            // I suppose that we can "force" unlock the mutex
+            if (_lock.counter > 0)
+            {
+                _lock.counter = 1;
+                RecursiveLock_Unlock(&_lock);
+            }
+        }
 
-        void    Lock(void);
+        inline void    Lock(void) {
+            RecursiveLock_Lock(&_lock);
+        }
+
         // Return true on failure
-        bool    TryLock(void);
-        void    Unlock(void);
+        inline bool    TryLock(void) {
+            return RecursiveLock_TryLock(&_lock) != 0;
+        }
+        
+        inline void    Unlock(void) {
+            RecursiveLock_Unlock(&_lock);
+        }
 
     private:
         RecursiveLock _lock;

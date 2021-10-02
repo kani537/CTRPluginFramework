@@ -9,14 +9,39 @@ namespace CTRPluginFramework
     class Lock
     {
     public:
-        explicit Lock(LightLock &llock);
-        explicit Lock(RecursiveLock &rlock);
-        explicit Lock(Mutex &mutex);
+        inline explicit Lock(LightLock &llock) :
+            _type{LIGHTLOCK}, _llock{&llock}
+        {
+            LightLock_Lock(_llock);
+        }
 
-        ~Lock(void);
+        inline explicit Lock(RecursiveLock &rlock) :
+            _type{RECLOCK}, _rlock{&rlock}
+        {
+            RecursiveLock_Lock(_rlock);
+        }
+
+        inline explicit Lock(Mutex &mutex) :
+            _type{MUTEX}, _mutex{&mutex}
+        {
+            mutex.Lock();
+        }
+
+        inline ~Lock(void)
+        {
+            if (_type == LIGHTLOCK)
+                LightLock_Unlock(_llock);
+            else if (_type == RECLOCK)
+                RecursiveLock_Unlock(_rlock);
+            else if (_type == MUTEX)
+                _mutex->Unlock();
+        }
 
     private:
-        int     _type;
+        static const constexpr u32 LIGHTLOCK = 1;
+        static const constexpr u32 RECLOCK   = 2;
+        static const constexpr u32 MUTEX     = 3;
+        u32     _type;
         union
         {
             LightLock       *_llock;
