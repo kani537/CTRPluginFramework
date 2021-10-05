@@ -1,7 +1,6 @@
 stages:
   - prep
   - build
-  - deploy
 
 .vars-global:
   variables:
@@ -17,11 +16,11 @@ prep:
   script:
     - CTRPF_REVISION=`git describe --always --tags --match [0-9]* --abbrev=8 | sed 's/-[0-9]*-g/-/'`
     - echo "CTRPF_REVISION=$CTRPF_REVISION" >> build.env
-    - cat build.env  
+    - cat build.env
   artifacts:
     reports:
       dotenv: build.env
-      
+
 build:
   image: nanquitas/luma3ds:latest
   stage: build
@@ -36,39 +35,8 @@ build:
     - cd ..
     - mv Library/libctrpf-$CTRPF_REVISION.tar.bz2 libctrpf-$CTRPF_REVISION.tar.bz2
   artifacts:
-    paths:      
+    paths:
       - libctrpf-$CTRPF_REVISION.tar.bz2
     expire_in: 1 hour
   needs:
     - job: prep
-
-deploy-hourly:
-    image: inetprocess/gitlab-release
-    stage: deploy
-    extends:
-    - .vars-global
-    only:
-        - develop
-    script:
-        - DATE=`date`
-        - gitlab-release --message "**$DATE** $CI_COMMIT_BRANCH -  $CI_COMMIT_SHORT_SHA - $CI_COMMIT_TITLE" libctrpf-$CTRPF_REVISION.tar.bz2
-    needs:
-      - job: prep
-        artifacts: true
-      - job: build
-        artifacts: true
-
-deploy-hourly-merge_requests:
-    image: inetprocess/gitlab-release
-    stage: deploy
-    extends:
-    - .vars-global
-    only: [merge_requests]
-    script:
-        - DATE=`date`
-        - gitlab-release --message "**$DATE** $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME - $CI_COMMIT_SHORT_SHA - $CI_COMMIT_TITLE ($CI_MERGE_REQUEST_TITLE)" libctrpf-$CTRPF_REVISION.tar.bz2
-    needs:
-      - job: prep
-        artifacts: true
-      - job: build
-        artifacts: true
