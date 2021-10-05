@@ -388,11 +388,52 @@ exit:
         task.Start();
         menu.SynchronizeWithFrame(true);
 
-        menu += []
+        /*menu += []
 
         {
             int res = SomeFunc(0, 2, "Hello world");
-        };
+        };*/
+
+        /*menu.Append(new MenuEntry("Text Stuff", nullptr, [](MenuEntry* entry) {
+            Keyboard kbd("a");
+            std::string s = ToggleDrawMode(Render::FontDrawMode::UNDERLINE);
+            s += "This is left aligned.\n\n";
+            s += CenterAlign("This is multiline\nand is center aligned.\n\n");
+            s += RightAlign("This is aligned to the right.\n\n");
+            s += "Entry 1:" + RightAlign("0\n", 30, 240);
+            s += "Another Entry:" + RightAlign("10\n", 30, 240);
+            s += "Last entry:" + RightAlign("10000\n\n", 30, 240);
+            kbd.GetMessage() = s;
+            kbd.Populate({"OK"});
+            kbd.Open();
+        }, ""));
+
+        menu.Append(new MenuEntry("Text Stuff 2", nullptr, [](MenuEntry* entry) {
+            Keyboard kbd("a");
+            std::string s = "";
+            s += CenterAlign("This string is so so large that it doesn't fit in a single line, so the plugin breaks it automatically.");
+            kbd.GetMessage() = s;
+            kbd.Populate({"OK"});
+            kbd.Open();
+        }, ""));
+
+        menu.Append(new MenuEntry("Text Stuff 3", nullptr, [](MenuEntry* entry) {
+            Keyboard kbd("a");
+            std::string s = "\n";
+            s += "This is normal text.\n";
+            s += ToggleDrawMode(Render::FontDrawMode::BOLD) + "This is bold text.\n" + ToggleDrawMode(Render::FontDrawMode::BOLD);
+            s += ToggleDrawMode(Render::FontDrawMode::ITALIC) + "This is italic text.\n" + ToggleDrawMode(Render::FontDrawMode::ITALIC);
+            s += ToggleDrawMode(Render::FontDrawMode::UNDERLINE) + "This is underline text.\n" + ToggleDrawMode(Render::FontDrawMode::UNDERLINE);
+            s += ToggleDrawMode(Render::FontDrawMode::STRIKETHROUGH) + "This is strikethrough text.\n" + ToggleDrawMode(Render::FontDrawMode::STRIKETHROUGH);
+            s += ToggleDrawMode(Render::FontDrawMode::LINEDOTTED);
+            s += ToggleDrawMode(Render::FontDrawMode::UNDERLINE) + "This is dotted underline text.\n" + ToggleDrawMode(Render::FontDrawMode::UNDERLINE);
+            s += ToggleDrawMode(Render::FontDrawMode::STRIKETHROUGH) + "This is dotted strikethrough text.\n" + ToggleDrawMode(Render::FontDrawMode::STRIKETHROUGH);
+            s += ToggleDrawMode(Render::FontDrawMode::LINEDOTTED);
+            s += ToggleDrawMode(Render::FontDrawMode::BOLD | Render::FontDrawMode::ITALIC | Render::FontDrawMode::UNDERLINE | Render::FontDrawMode::STRIKETHROUGH) + "\nThis is all at once. :P";
+            kbd.GetMessage() = s;
+            kbd.Populate({"OK"});
+            kbd.Open();
+        }, ""));*/
 
         int ret = menu.Run();
 

@@ -1,5 +1,6 @@
 #include "types.h"
 
+#include "CTRPluginFramework/Graphics/Render.hpp"
 #include "CTRPluginFrameworkImpl/Graphics.hpp"
 #include "CTRPluginFrameworkImpl/Graphics/Font.hpp"
 #include "CTRPluginFrameworkImpl/Preferences.hpp"
@@ -78,6 +79,20 @@ namespace CTRPluginFramework
                 continue;
             }
 
+            if (*c == 0x11)
+            {
+                c++;
+                u16 control = *(u16*)c;
+                c += 2;
+                if (control & 0x8000)
+                {
+                    u16 skipToX = control & 0x1FF;
+                    if (skipToX > w)
+                        w = skipToX;
+                }
+                continue;
+            }
+
             Glyph *glyph = Font::GetGlyph(c);
             if (glyph == nullptr) break;
 
@@ -124,6 +139,20 @@ namespace CTRPluginFramework
             if (*c == 0x1B)
             {
                 c += 4;
+                continue;
+            }
+
+            if (*c == 0x11)
+            {
+                c++;
+                u16 control = *(u16*)c;
+                c += 2;
+                if (control & 0x8000)
+                {
+                    u16 skipToX = control & 0x1FF;
+                    if (skipToX > w && skipToX < maxWidth)
+                        w = skipToX;
+                }
                 continue;
             }
 
@@ -185,6 +214,20 @@ namespace CTRPluginFramework
                 continue;
             }
 
+            if (*c == 0x11)
+            {
+                c++;
+                u16 control = *(u16*)c;
+                c += 2;
+                if (control & 0x8000)
+                {
+                    u16 skipToX = control & 0x1FF;
+                    if (skipToX > w && skipToX < maxWidth)
+                        w = skipToX;
+                }
+                continue;
+            }
+
             Glyph *glyph = Font::GetGlyph(c);
 
             if (glyph == nullptr)
@@ -223,12 +266,12 @@ namespace CTRPluginFramework
         posY += 1;
     }
 
-    int Renderer::DrawGlyph(Glyph *glyph, int posX, int posY, Color color)
+    int Renderer::DrawGlyph(Glyph *glyph, int posX, int posY, Color color, u32 flags)
     {
-        return DrawGlyph(GetContext()->screen, glyph, posX, posY, color);
+        return DrawGlyph(GetContext()->screen, glyph, posX, posY, color, flags);
     }
 
-    int Renderer::DrawGlyph(ScreenImpl *screen, Glyph *glyph, int posX, int posY, Color color)
+    int Renderer::DrawGlyph(ScreenImpl *screen, Glyph *glyph, int posX, int posY, Color color, u32 flags)
     {
         if (!screen || !glyph)
             return posY;
@@ -240,24 +283,30 @@ namespace CTRPluginFramework
         u8   *data = glyph->glyph;
         u8   *left = static_cast<u8 *>(screen->GetLeftFrameBuffer(posX, posY));
         u8   *fb = left;
+        u8   italicOffset = (flags & Render::FontDrawMode::ITALIC) ? 3 : 0;
+        u32  lineCount = 0;
 
         for (int i = 0; i < 208; i++)
         {
             if (i != 0 && i % 13 == 0)
             {
+                if ((lineCount % 4) == 0 && flags &Render::FontDrawMode::ITALIC)
+                    italicOffset--;
+                lineCount++;
                 left -= bpp;
                 fb = left;
             }
+
             u32 alpha = data[i];
 
-            // Don't waste time on pixels which are only 10% visible
-            if (alpha > 25)
+            // Don't waste time on pixels which are only 5% visible
+            for (int j = 0; (alpha > 12) && j < ((flags & Render::FontDrawMode::BOLD) ? 2 : 1); j++)
             {
-                color.a = data[i];
-                Color &&l = PrivColor::FromFramebuffer(fb);
+                color.a = alpha;
+                Color &&l = PrivColor::FromFramebuffer(fb + stride * j + italicOffset * stride);
                 Color &&c = l.Blend(color, Color::BlendMode::Alpha);
 
-                PrivColor::ToFramebuffer(fb, c);
+                PrivColor::ToFramebuffer(fb + stride * j + italicOffset * stride, c);
             }
             fb += stride;
         }
@@ -265,7 +314,7 @@ namespace CTRPluginFramework
         return (posX + glyph->xAdvance);
     }
 
-    int Renderer::DrawGlyph(ScreenImpl *screen, Glyph *glyph, int posX, int posY, float &offset, Color color)
+    int Renderer::DrawGlyph(ScreenImpl *screen, Glyph *glyph, int posX, int posY, float &offset, Color color, u32 flags)
     {
         if (!screen || !glyph)
             return posY;
@@ -277,6 +326,8 @@ namespace CTRPluginFramework
         u8   *data = glyph->glyph;
         u8   *left = static_cast<u8 *>(screen->GetLeftFrameBuffer(posX, posY));
         u8   *fb = left;
+        u8   italicOffset = (flags & Render::FontDrawMode::ITALIC) ? 3 : 0;
+        u32  lineCount = 0;
 
         for (int i = static_cast<int>(offset); i < 208; i++)
         {
@@ -284,20 +335,23 @@ namespace CTRPluginFramework
             {
                 if (offset)
                     i += offset;
+                if ((lineCount % 4) == 0 && flags & Render::FontDrawMode::ITALIC)
+                    italicOffset--;
+                lineCount++;
                 left -= bpp;
                 fb = left;
             }
 
             u32 alpha = data[i];
 
-            // Don't waste time on pixels which are only 10% visible
-            if (alpha > 25)
+            // Don't waste time on pixels which are only 5% visible
+            for (int j = 0; (alpha > 12) && j < ((flags & Render::FontDrawMode::BOLD) ? 2 : 1); j++)
             {
-                color.a = data[i];
-                Color &&l = PrivColor::FromFramebuffer(fb);
+                color.a = alpha;
+                Color &&l = PrivColor::FromFramebuffer(fb + stride * j + italicOffset * stride);
                 Color &&c = l.Blend(color, Color::BlendMode::Alpha);
 
-                PrivColor::ToFramebuffer(fb, c);
+                PrivColor::ToFramebuffer(fb + stride * j + italicOffset * stride, c);
             }
             fb += stride;
         }
@@ -310,7 +364,7 @@ namespace CTRPluginFramework
         return (posX + glyph->xAdvance);
     }
 
-    int Renderer::DrawSysStringReturn(const unsigned char *stri, int posX, int& posY, int xLimits, Color color, int maxY)
+    int Renderer::DrawSysStringReturn(const unsigned char *stri, int posX, int& posY, int xLimits, Color color, int maxY, u32 flags)
     {
         // Check for a valid pointer
         if (!(stri && *stri))
@@ -318,7 +372,9 @@ namespace CTRPluginFramework
         int             lineCount = 1;
         u8              *str = const_cast<u8 *>(stri);
         int             x = posX;
+        int             underLineStart = -1, strikeLineStart = -1;
         ScreenImpl      *screen = GetContext()->screen;
+        void (*lineDrawer)(int posX, int posY, int width, const Color &color, int height) = Renderer::DrawLine;
 
         if (!screen)
             return posY;
@@ -331,12 +387,25 @@ namespace CTRPluginFramework
 
         do
         {
+            if (posY >= maxY)
+                break;
+
             u8 c = *str;
 
             if (c == '\r')
                 str++;
             if (c == '\n')
             {
+                if (flags & Render::FontDrawMode::UNDERLINE) {
+                    if (underLineStart != x)
+                        lineDrawer(underLineStart, posY + 15, x - underLineStart, color, 1);
+                    underLineStart = posX;
+                }
+                if (flags & Render::FontDrawMode::STRIKETHROUGH) {
+                    if (strikeLineStart != x)
+                        lineDrawer(strikeLineStart, posY + 9, x - strikeLineStart, color, 1);
+                    strikeLineStart = posX;
+                }
                 x = posX;
                 lineCount++;
                 posY += 16;
@@ -360,8 +429,59 @@ namespace CTRPluginFramework
                 continue;
             }
 
-            if (posY >= maxY)
-                break;
+            if (c == 0x11)
+            {
+                str++;
+                u16 control = *(u16*)str;
+                str += 2;
+                if (control & 0x8000)
+                {
+                    u16 skipToX = control & 0x1FF;
+                    if (skipToX > x && skipToX < xLimits) {
+                        if (underLineStart == posX && x == posX) // Fix for aligned text after newline
+                            underLineStart = skipToX;
+                        if (strikeLineStart == posX && x == posX) // Fix for aligned text after newline
+                            strikeLineStart = skipToX;
+                        x = skipToX;
+                    }
+                }
+                else if (control & 0x4000)
+                {
+                    u32 prevFlags = flags;
+                    flags ^= (control & 0x7F);
+
+                    if (flags & Render::LINEDOTTED)
+                        lineDrawer = DrawStippledLine;
+                    else
+                        lineDrawer = DrawLine;
+
+                    if ((prevFlags & Render::FontDrawMode::UNDERLINE) != (flags & Render::FontDrawMode::UNDERLINE)) {
+                        bool startLine = flags & Render::FontDrawMode::UNDERLINE;
+                        if (startLine)
+                            underLineStart = x;
+                        else
+                        {
+                            if (underLineStart != x)
+                                lineDrawer(underLineStart, posY + 15, x - underLineStart, color, 1);
+                            underLineStart = -1;
+                        }
+
+                    }
+                    if ((prevFlags & Render::FontDrawMode::STRIKETHROUGH) != (flags & Render::FontDrawMode::STRIKETHROUGH)) {
+                        bool startLine = flags & Render::FontDrawMode::STRIKETHROUGH;
+                        if (startLine)
+                            strikeLineStart = x;
+                        else
+                        {
+                            if (strikeLineStart != x)
+                                lineDrawer(strikeLineStart, posY + 9, x - strikeLineStart, color, 1);
+                            strikeLineStart = -1;
+                        }
+
+                    }
+                }
+                continue;
+            }
 
             Glyph *glyph = Font::GetGlyph(str);
 
@@ -370,14 +490,33 @@ namespace CTRPluginFramework
 
             if (x + glyph->Width() >= xLimits)
             {
+                if (flags & Render::FontDrawMode::UNDERLINE) {
+                    if (underLineStart != x)
+                        lineDrawer(underLineStart, posY + 15, x - underLineStart, color, 1);
+                    underLineStart = posX;
+                }
+                if (flags & Render::FontDrawMode::STRIKETHROUGH) {
+                    if (strikeLineStart != x)
+                        lineDrawer(strikeLineStart, posY + 9, x - strikeLineStart, color, 1);
+                    strikeLineStart = posX;
+                }
                 x = posX;
                 lineCount++;
                 posY += 16;
             }
 
-            x = DrawGlyph(screen, glyph, x, posY, color);
+            x = DrawGlyph(screen, glyph, x, posY, color, flags);
 
         } while (*str);
+
+        if (posY < maxY && flags & Render::FontDrawMode::UNDERLINE) {
+            if (underLineStart != x)
+                lineDrawer(underLineStart, posY + 15, x - underLineStart, color, 1);
+        }
+        if (posY < maxY && flags & Render::FontDrawMode::STRIKETHROUGH) {
+            if (strikeLineStart != x)
+                lineDrawer(strikeLineStart, posY + 9, x - strikeLineStart, color, 1);
+        }
 
         posY += 16;
         return (x);
@@ -388,12 +527,14 @@ namespace CTRPluginFramework
         Color   g_customColor;
     }
 
-    int Renderer::DrawSysString(const char *stri, int posX, int &posY, int xLimits, Color color, float offset, const char *end)
+    int Renderer::DrawSysString(const char *stri, int posX, int &posY, int xLimits, Color color, float offset, const char *end, u32 flags)
     {
         Glyph   *glyph;
         int      x = posX;
         //u8      *str = (u8 *)stri.c_str();
         u8 *str = (u8 *)stri;
+        int             underLineStart = -1, strikeLineStart = -1;
+        void            (*lineDrawer)(int posX, int posY, int width, const Color &color, int height) = DrawLine;
         ScreenImpl *screen = GetContext()->screen;
 
         if (!(str && *str) || !screen)
@@ -437,6 +578,55 @@ namespace CTRPluginFramework
                 continue;
             }
 
+            if (c == 0x11)
+            {
+                str++;
+                u16 control = *(u16*)str;
+                str += 2;
+                if (control & 0x8000)
+                {
+                    u16 skipToX = control & 0x1FF;
+                    if (skipToX > x && skipToX < xLimits)
+                        x = skipToX;
+                }
+                else if (control & 0x4000)
+                {
+                    u32 prevFlags = flags;
+                    flags ^= (control & 0x7F);
+
+                    if (flags & Render::LINEDOTTED)
+                        lineDrawer = DrawStippledLine;
+                    else
+                        lineDrawer = DrawLine;
+
+                    if ((prevFlags & Render::FontDrawMode::UNDERLINE) != (flags & Render::FontDrawMode::UNDERLINE)) {
+                        bool startLine = flags & Render::FontDrawMode::UNDERLINE;
+                        if (startLine)
+                            underLineStart = x;
+                        else
+                        {
+                            if (underLineStart != x)
+                                lineDrawer(underLineStart, posY + 15, x - underLineStart, color, 1);
+                            underLineStart = -1;
+                        }
+
+                    }
+                    if ((prevFlags & Render::FontDrawMode::STRIKETHROUGH) != (flags & Render::FontDrawMode::STRIKETHROUGH)) {
+                        bool startLine = flags & Render::FontDrawMode::STRIKETHROUGH;
+                        if (startLine)
+                            strikeLineStart = x;
+                        else
+                        {
+                            if (strikeLineStart != x)
+                                lineDrawer(strikeLineStart, posY + 9, x - strikeLineStart, color, 1);
+                            strikeLineStart = -1;
+                        }
+
+                    }
+                }
+                continue;
+            }
+
             if (posY >= 240)
                 break;
 
@@ -458,8 +648,17 @@ namespace CTRPluginFramework
                 continue;
             }
 
-            x = DrawGlyph(screen, glyph, x, posY, offset, color);
+            x = DrawGlyph(screen, glyph, x, posY, offset, color, flags);
         } while (*str);
+
+        if (flags & Render::FontDrawMode::UNDERLINE) {
+            if (underLineStart != x)
+                lineDrawer(underLineStart, posY + 15, x - underLineStart, color, 1);
+        }
+        if (flags & Render::FontDrawMode::STRIKETHROUGH) {
+            if (strikeLineStart != x)
+                lineDrawer(strikeLineStart, posY + 9, x - strikeLineStart, color, 1);
+        }
 
         posY += 16;
         return (x);
