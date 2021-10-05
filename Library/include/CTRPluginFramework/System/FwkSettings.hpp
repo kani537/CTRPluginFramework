@@ -31,6 +31,9 @@ namespace CTRPluginFramework
         Time    WaitTimeToBoot; ///< Time to wait for the plugin to starts (from when the game will starts) | Default: 5 seconds
         bool    CachedDrawMode; ///< Set to true if your plugin heavily uses OSD to draw to the screen to improve performance (only change it in PatchProcess). | Default: false
 
+        // Sound engine
+        bool    TryLoadSDSounds; ///< Determines if the plugin should automatically try to load the sound files from the SD card. | Default: true
+
         // UI colors
         Color   MainTextColor;  ///< The color of all texts within the plugin | Default: Blank
         Color   WindowTitleColor; ///< The color of all window's titles | Default: Blank

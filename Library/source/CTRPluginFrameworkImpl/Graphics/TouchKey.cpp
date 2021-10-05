@@ -16,6 +16,7 @@ namespace CTRPluginFramework
         _isPressed = tk._isPressed;
         _enabled = tk._enabled;
         _execute = tk._execute;
+        _acceptSoundEvent = tk._acceptSoundEvent;
 
         tk._content = nullptr;
     }
@@ -26,6 +27,7 @@ namespace CTRPluginFramework
         _icon = nullptr;
         _uiProperties = ui;
         _enabled = isEnabled;
+        _acceptSoundEvent = SoundEngine::Event::DESELECT;
 
         _isPressed = false;
         _execute = false;
@@ -47,6 +49,7 @@ namespace CTRPluginFramework
         _icon = nullptr;
         _uiProperties = ui;
         _enabled = isEnabled;
+        _acceptSoundEvent = SoundEngine::Event::DESELECT;
 
         _isPressed = false;
         _execute = false;
@@ -63,6 +66,7 @@ namespace CTRPluginFramework
         _icon = icon;
         _uiProperties = ui;
         _enabled = isEnabled;
+        _acceptSoundEvent = SoundEngine::Event::DESELECT;
 
         _isPressed = false;
         _execute = false;
@@ -142,8 +146,19 @@ namespace CTRPluginFramework
         if (_isPressed && !isTouchDown)
         {
             _isPressed = false;
+            _wasPressed = _isPressed;
             _execute = true;
+            return;
         }
+
+        if (_isPressed != _wasPressed)
+        {
+            if (_isPressed)
+                SoundEngine::PlayMenuSound(SoundEngine::Event::SELECT);
+            else if (isTouchDown)
+                SoundEngine::PlayMenuSound(SoundEngine::Event::DESELECT);
+        }
+        _wasPressed = _isPressed;
 
         _isPressed = isTouchDown && isTouched;
     }
@@ -157,6 +172,7 @@ namespace CTRPluginFramework
                 return (_character);
             if (_execute)
             {
+                SoundEngine::PlayMenuSound(_acceptSoundEvent);
                 _execute = false;
                 return (~_character);
             }
@@ -166,6 +182,7 @@ namespace CTRPluginFramework
             if (_enabled && _execute)
             {
                 _execute = false;
+                SoundEngine::PlayMenuSound(_acceptSoundEvent);
                 if (_content != nullptr && _character == 0x12345678)
                 {
                     str += _content->text;
@@ -175,5 +192,10 @@ namespace CTRPluginFramework
         }
 
         return (-1);
+    }
+
+    void TouchKey::SetAcceptSoundEvent(SoundEngine::Event event)
+    {
+        _acceptSoundEvent = event;
     }
 }
