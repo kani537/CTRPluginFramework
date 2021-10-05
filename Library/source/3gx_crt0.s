@@ -27,6 +27,7 @@ startup:
     bl      ClearMem
 
     @ Jump to plugin init code
+    ldr     R0, [SP]
     bl      __entrypoint
 
     @ Jump back to plugin loader hook
