@@ -64,4 +64,51 @@ namespace CTRPluginFramework
         _offsetInBuffer = 0;
         return (false);
     }
+
+    StringLineReader::StringLineReader(const std::string &str) :
+        _strin(str),
+        _offset(0)
+    {
+
+    }
+
+    bool    StringLineReader::operator()(std::string &line)
+    {
+        line.clear();
+
+        const char* cStr = _strin.c_str();
+
+        char c = cStr[_offset];
+        bool ret = false;
+
+        while (c)
+        {
+
+            if (c == '\n')
+            {
+                _offset++;
+                return (true);
+            }
+
+            if (c == 0x1B)
+            {
+                line.append(cStr + _offset, 4);
+                _offset += 4 - 1;
+                ret = true;
+            }
+            else if (c == 0x11)
+            {
+                line.append(cStr + _offset, 3);
+                _offset += 3 - 1;
+                ret = true;
+            }
+            else if (c && c != '\r')
+            {
+                line += c;
+                ret = true;
+            }
+            c = cStr[++_offset];
+        }
+        return (ret);
+    }
 }

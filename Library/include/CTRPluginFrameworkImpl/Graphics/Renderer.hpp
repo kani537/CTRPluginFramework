@@ -48,7 +48,7 @@ namespace CTRPluginFramework
         //#############################################################################################
         static void     DrawPixel(int posX, int posY, const Color &color);
         static void     DrawLine(int posX, int posY, int length, const Color &color, int width = 1);
-        static void     DrawLine(IntVector &start, IntVector &end, const Color &color);
+        static void     DrawLine(const IntVector &start, const IntVector &end, const Color &color);
         static void     DrawStippledLine(int posX, int posY, int width, const Color &color, int height);
         static void     DrawRect(int posX, int posY, int width, int height, const Color &color, bool fill = true, int thickness = 1);
         static void     DrawRect(const IntRect& rect, const Color& color, bool fill = true);
@@ -81,8 +81,8 @@ namespace CTRPluginFramework
 
         // System Font
         //#############################################################################################
-        static int      DrawSysString(const char *str, int posX, int &posY, int max, Color color, float offset = 0.f, const char *end = nullptr);
-        static int      DrawSysStringReturn(const unsigned char* stri, int posX, int& posY, int xLimits, Color color, int maxY = 200);
+        static int      DrawSysString(const char *str, int posX, int &posY, int max, Color color, float offset = 0.f, const char *end = nullptr, u32 flags = 0);
+        static int      DrawSysStringReturn(const unsigned char* stri, int posX, int& posY, int xLimits, Color color, int maxY = 200, u32 flags = 0);
 
         static float    GetTextSize(const char *text);
         static int      GetLineCount(const char *text, float maxWidth);
@@ -91,9 +91,9 @@ namespace CTRPluginFramework
 
         static void     DrawSysCheckBox(const char *str, int posX, int &posY, int xLimits, Color color, bool isChecked = false, float offset = 0);
         static void     DrawSysFolder(const char *str, int posX, int &posY, int xLimits, Color color, float offset = 0);
-        static int      DrawGlyph(Glyph* glyph, int posX, int posY, Color color);
-        static int      DrawGlyph(ScreenImpl *screen, Glyph* glyph, int posX, int posY, Color color);
-        static int      DrawGlyph(ScreenImpl *screen, Glyph* glyph, int posX, int posY, float& offset, Color color);
+        static int      DrawGlyph(Glyph* glyph, int posX, int posY, Color color, u32 flags = 0);
+        static int      DrawGlyph(ScreenImpl *screen, Glyph* glyph, int posX, int posY, Color color, u32 flags = 0);
+        static int      DrawGlyph(ScreenImpl *screen, Glyph* glyph, int posX, int posY, float& offset, Color color, u32 flags = 0);
         // Misc
         //#############################################################################################
 

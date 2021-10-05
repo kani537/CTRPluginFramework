@@ -22,6 +22,18 @@ namespace CTRPluginFramework
         u32             _dataInBuffer;
         char            *_buffer;
     };
+    class StringLineReader
+    {
+    public:
+        StringLineReader(const std::string &str);
+
+        // Return true if a line was read
+        bool    operator()(std::string &line);
+
+    private:
+        const std::string   &_strin;
+        u32                 _offset;
+    };
 }
 
 #endif

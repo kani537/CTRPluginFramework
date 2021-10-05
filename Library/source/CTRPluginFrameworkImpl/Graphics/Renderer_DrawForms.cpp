@@ -285,7 +285,7 @@ namespace CTRPluginFramework
         }
     }
 
-    void        Renderer::DrawLine(IntVector &start, IntVector &end, const Color &color)
+    void        Renderer::DrawLine(const IntVector &start, const IntVector &end, const Color &color)
     {
         int posX = start.x;
         int posY = start.y;
