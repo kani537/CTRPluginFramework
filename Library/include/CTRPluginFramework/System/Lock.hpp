@@ -41,7 +41,7 @@ namespace CTRPluginFramework
         static const constexpr u32 LIGHTLOCK = 1;
         static const constexpr u32 RECLOCK   = 2;
         static const constexpr u32 MUTEX     = 3;
-        u32     _type;
+        const u32     _type;
         union
         {
             LightLock       *_llock;
