@@ -2,6 +2,7 @@
 #define CTRPLUGINFRAMEWORK_CONTROLLER_HPP
 
 #include "types.h"
+#include "Vector.hpp"
 
 namespace CTRPluginFramework
 {
@@ -58,6 +59,8 @@ namespace CTRPluginFramework
         static bool     IsKeysPressed(u32 keys);
         // Return is the keys combo just was released
         static bool     IsKeysReleased(u32 keys);
+        // Returns the circle pad position
+        static shortVector  GetCirclePadPosition();
         // Update Controller status
         static void     Update(void);
 

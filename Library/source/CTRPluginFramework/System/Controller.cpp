@@ -53,7 +53,15 @@ namespace CTRPluginFramework
             return (true);
         return (false);
     }
-
+    
+    shortVector  Controller::GetCirclePadPosition()
+    {
+        circlePosition cPos;
+        
+        hidCircleRead(&cPos);
+        return (shortVector(cPos.dx, cPos.dy));
+    }
+    
     // TODO: a better injection, touch input injection being not good enough
     void    Controller::InjectTouch(u16 posX, u16 posY)
     {
