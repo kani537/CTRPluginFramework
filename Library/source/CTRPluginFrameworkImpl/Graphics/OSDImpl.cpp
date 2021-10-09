@@ -280,25 +280,30 @@ namespace CTRPluginFramework
         return 0;
     }
 
-    u32 OSDImpl::FrameBufferList::GetBuffer(u32 addr, FrameBufferType type) {
+    u32 OSDImpl::FrameBufferList::GetBuffer(u32 addr, FrameBufferType type)
+    {
         if (!addr) return 0;
 
         int oldestEntry = 0;
         int foundEntry = -1;
 
-        for (u32 i = 0; i < knownBuffers.size(); i++) {
-            if (foundEntry < 0 && addr == knownBuffers[i].fromAddress && type == knownBuffers[i].type) {
+        for (u32 i = 0; i < knownBuffers.size(); i++)
+        {
+            if (foundEntry < 0 && addr == knownBuffers[i].fromAddress && type == knownBuffers[i].type)
+            {
                 foundEntry = i;
                 knownBuffers[i].oldness = 0;
             } else
                 knownBuffers[i].oldness++;
 
-            if (knownBuffers[i].oldness > knownBuffers[oldestEntry].oldness) {
+            if (knownBuffers[i].oldness > knownBuffers[oldestEntry].oldness)
+            {
                 oldestEntry = i;
             }
         }
         if (foundEntry >= 0) return knownBuffers[foundEntry].toAddress;
-        else {
+        else
+        {
             knownBuffers[oldestEntry].oldness = 0;
             knownBuffers[oldestEntry].type = type;
             knownBuffers[oldestEntry].fromAddress = addr;
@@ -307,7 +312,10 @@ namespace CTRPluginFramework
             if (settings.CachedDrawMode)
                 knownBuffers[oldestEntry].toAddress = addr;
             else
-                knownBuffers[oldestEntry].toAddress = PA_FROM_VA(addr);
+            {
+                u32 newAddr = PA_FROM_VA(addr);
+                knownBuffers[oldestEntry].toAddress = (newAddr & (1 << 31)) ? newAddr : 0;
+            }
 
             if (!Process::CheckAddress(addr)) knownBuffers[oldestEntry].toAddress = 0;
 
@@ -336,7 +344,7 @@ namespace CTRPluginFramework
         // Convert to actual addresses and check validity
         addr = (void*)bufferList.GetBuffer((u32)addr, FrameBufferList::GetType(isBottom, true));
         if (!isBottom)
-            addrB = (void*)bufferList.GetBuffer((u32)addrB, FrameBufferList::GetType(isBottom, true));
+            addrB = (void*)bufferList.GetBuffer((u32)addrB, FrameBufferList::GetType(isBottom, false));
 
         // TODO: remove
         // if (MessColors)
