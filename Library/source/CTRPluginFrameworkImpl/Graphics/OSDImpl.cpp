@@ -49,8 +49,6 @@ namespace CTRPluginFramework
     Task        OSDImpl::DrawNotifTask1(OSDImpl::DrawNotif_TaskFunc, nullptr, Task::AppCores);
     Task        OSDImpl::DrawNotifTask2(OSDImpl::DrawNotif_TaskFunc, nullptr, Task::AppCores);
 
-    OSDImpl::FrameBufferList OSDImpl::bufferList;
-
     static const Time  g_second = Seconds(1.f);
 
     struct FpsCounter
@@ -280,47 +278,23 @@ namespace CTRPluginFramework
         return 0;
     }
 
-    u32 OSDImpl::FrameBufferList::GetBuffer(u32 addr, FrameBufferType type)
+    static u32 GetBuffer(u32 addr)
     {
-        if (!addr) return 0;
+        FwkSettings &settings = FwkSettings::Get();
+        u32 ret;
 
-        int oldestEntry = 0;
-        int foundEntry = -1;
-
-        for (u32 i = 0; i < knownBuffers.size(); i++)
+        if (settings.CachedDrawMode)
         {
-            if (foundEntry < 0 && addr == knownBuffers[i].fromAddress && type == knownBuffers[i].type)
-            {
-                foundEntry = i;
-                knownBuffers[i].oldness = 0;
-            } else
-                knownBuffers[i].oldness++;
-
-            if (knownBuffers[i].oldness > knownBuffers[oldestEntry].oldness)
-            {
-                oldestEntry = i;
-            }
+            ret = addr;
         }
-        if (foundEntry >= 0) return knownBuffers[foundEntry].toAddress;
         else
         {
-            knownBuffers[oldestEntry].oldness = 0;
-            knownBuffers[oldestEntry].type = type;
-            knownBuffers[oldestEntry].fromAddress = addr;
-
-            FwkSettings &settings = FwkSettings::Get();
-            if (settings.CachedDrawMode)
-                knownBuffers[oldestEntry].toAddress = addr;
-            else
-            {
-                u32 newAddr = PA_FROM_VA(addr);
-                knownBuffers[oldestEntry].toAddress = (newAddr & (1 << 31)) ? newAddr : 0;
-            }
-
-            if (!Process::CheckAddress(addr)) knownBuffers[oldestEntry].toAddress = 0;
-
-            return knownBuffers[oldestEntry].toAddress;
+            u32 newAddr = PA_FROM_VA(addr);
+            ret = (newAddr & (1 << 31)) ? newAddr : 0;
         }
+
+        if (addr < 0x01000000 || addr > 0x40000000) return 0;
+        else return ret;
     }
 
     void     OSDImpl::CallbackCommon(u32 isBottom, void* addr, void* addrB, int stride, int format)
@@ -342,9 +316,12 @@ namespace CTRPluginFramework
             return; */
 
         // Convert to actual addresses and check validity
-        addr = (void*)bufferList.GetBuffer((u32)addr, FrameBufferList::GetType(isBottom, true));
+        addr = (void*)GetBuffer((u32)addr);
         if (!isBottom)
-            addrB = (void*)bufferList.GetBuffer((u32)addrB, FrameBufferList::GetType(isBottom, false));
+            addrB = (void*)GetBuffer((u32)addrB);
+
+        if (!addr)
+            return;
 
         // TODO: remove
         // if (MessColors)

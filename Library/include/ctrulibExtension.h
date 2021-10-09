@@ -6,7 +6,7 @@
 #define THREADVARS_MAGIC  0x21545624 // !TV$
 #define FS_OVERRIDE_MAGIC 0x21465324 // !FS$
 
-#define PA_FROM_VA_PTR(addr)    PA_PTR(svcConvertVAToPA((const void *)(addr), false))
+#define PA_FROM_VA_PTR(addr)    PA_FROM_VA(addr)
 
 // Needed to override ctrulib Thread_tag
 struct CThread_tag
