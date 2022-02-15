@@ -186,7 +186,7 @@ namespace CTRPluginFramework
         // Open menu
         int             menuEvent;
         Event           event;
-        EventManager    eventManager;
+        EventManager    eventManager(EventManager::EventGroups::GROUP_KEYS);
         MenuItem        *item;
         Clock           clock;
         SubMenu         submenu({ "Create folder", "Create file", "Rename", "Delete", "Cancel" });
@@ -382,7 +382,7 @@ namespace CTRPluginFramework
         extern HexEditor *__g_hexEditor;
 
         Event           event;
-        EventManager    manager;
+        EventManager    manager(EventManager::EventGroups::GROUP_KEYS);
         std::vector<Event>  eventList;
         HexEditor& hexEditor = *__g_hexEditor;
 

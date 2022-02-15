@@ -130,7 +130,8 @@ namespace CTRPluginFramework
     int    PluginMenuImpl::Run(void)
     {
         Event                   event;
-        EventManager            manager;
+        EventManager            closedManager(EventManager::EventGroups::GROUP_KEYS);
+        EventManager            openManager(EventManager::EventGroups::GROUP_KEYS | EventManager::EventGroups::GROUP_TOUCH_AND_SWIPE);
         Clock                   clock;
         Clock                   inputClock;
         int                     mode = 0;
@@ -195,7 +196,7 @@ namespace CTRPluginFramework
         {
             // Check Event
             eventList.clear();
-            while (manager.PollEvent(event) || _forceOpen)
+            while ((_isOpen && openManager.PollEvent(event)) || (!_isOpen && closedManager.PollEvent(event)) || _forceOpen)
             {
                 bool isHotkeysDown = false;
 
@@ -224,6 +225,7 @@ namespace CTRPluginFramework
                         SoundEngine::PlayMenuSound(SoundEngine::Event::CANCEL);
                         ProcessImpl::Play(true);
                         _isOpen = false;
+                        openManager.Clear();
 
                         // Save settings
                         Preferences::WriteSettings();
@@ -241,10 +243,8 @@ namespace CTRPluginFramework
                             ProcessImpl::Pause(true);
 
                             _aboutToOpen = _isOpen = true;
+                            closedManager.Clear();
                             _wasOpened = true;
-
-                            while (Touch::IsDown())
-                                Controller::Update();
 
                             // Refresh HexEditor data
                             _hexEditor.Refresh();
@@ -327,6 +327,7 @@ namespace CTRPluginFramework
                         SoundEngine::PlayMenuSound(SoundEngine::Event::CANCEL);
                     ProcessImpl::Play(true);
                     _isOpen = false;
+                    openManager.Clear();
                     shouldClose = false;
 
                     // Save settings

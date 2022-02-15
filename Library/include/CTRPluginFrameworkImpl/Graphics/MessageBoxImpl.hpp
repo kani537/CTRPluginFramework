@@ -35,6 +35,7 @@ namespace CTRPluginFramework
         TextBox         _textbox;
         bool            _exit;
         int             _cursor;
+        u32             _exitKey;
         IntRect         _box;
 
     };

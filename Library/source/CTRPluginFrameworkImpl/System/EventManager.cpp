@@ -10,7 +10,11 @@ namespace CTRPluginFramework
 {
     #define ABS(x) (x >= 0 ? x : -x)
 
-    EventManager::EventManager(void)
+    bool                EventManager::_refresh = true;
+    bool                EventManager::_isTouching;
+    touchPosition       EventManager::_firstTouch;
+
+    EventManager::EventManager(u32 captureEventsGroups) : _captureMask(captureEventsGroups)
     {
 
     }
@@ -29,11 +33,17 @@ namespace CTRPluginFramework
         return (false);
     }
 
+    void EventManager::Clear()
+    {
+        while (!_eventsQueue.empty())
+            _eventsQueue.pop();
+
+        _startTime.Restart();
+    }
+
     bool    EventManager::PopEvent(Event &event, bool isBlocking)
     {
-        static bool refresh = true;
-
-        if (refresh && _eventsQueue.empty())
+        if (_refresh && _eventsQueue.empty())
         {
             ProcessEvents();
             if (isBlocking)
@@ -47,14 +57,14 @@ namespace CTRPluginFramework
         }
         else if (_eventsQueue.empty())
         {
-            refresh = true;
+            _refresh = true;
         }
         if (!_eventsQueue.empty())
         {
             event = _eventsQueue.front();
             _eventsQueue.pop();
             if (_eventsQueue.empty())
-                refresh = false;
+                _refresh = false;
             return (true);
         }
         return (false);
@@ -62,7 +72,8 @@ namespace CTRPluginFramework
 
     void    EventManager::PushEvent(const Event &event)
     {
-        _eventsQueue.push(event);
+        if (_startTime.HasTimePassed(Milliseconds(50)))
+            _eventsQueue.push(event);
     }
 
     void    EventManager::ProcessEvents(void)
@@ -72,113 +83,118 @@ namespace CTRPluginFramework
         Controller::Update();
 
         // Key Event
-        for (int i = 0; i < 32; i++)
-        {
-            Key code = static_cast<Key>(1 << i);
-            if (Controller::IsKeyPressed(code))
+        if (_captureMask & EventGroups::GROUP_KEYS) {
+
+            for (int i = 0; i < 32; i++)
             {
-                event.type = Event::KeyPressed;
-                event.key.code = code;
-                PushEvent(event);
-            }
-            if (Controller::IsKeyDown(code))
-            {
-                event.type = Event::KeyDown;
-                event.key.code = code;
-                PushEvent(event);
-            }
-            if (Controller::IsKeyReleased(code))
-            {
-                event.type = Event::KeyReleased;
-                event.key.code = code;
-                PushEvent(event);
+                Key code = static_cast<Key>(1 << i);
+                if (Controller::IsKeyPressed(code))
+                {
+                    event.type = Event::KeyPressed;
+                    event.key.code = code;
+                    PushEvent(event);
+                }
+                if (Controller::IsKeyDown(code))
+                {
+                    event.type = Event::KeyDown;
+                    event.key.code = code;
+                    PushEvent(event);
+                }
+                if (Controller::IsKeyReleased(code))
+                {
+                    event.type = Event::KeyReleased;
+                    event.key.code = code;
+                    PushEvent(event);
+                }
             }
         }
 
         // Touch Event
-        static bool  isTouching = false;
-        static touchPosition firstTouch;
+        if ((_captureMask & EventGroups::GROUP_TOUCH) || (_captureMask & EventGroups::GROUP_TOUCH_AND_SWIPE)) {
 
-        touchPosition touchPos;
-        hidTouchRead(&touchPos);
+            touchPosition touchPos;
+            hidTouchRead(&touchPos);
 
-        if (Controller::IsKeyDown(Key::Touchpad))
-        {
-            if (touchPos.px != _lastTouch.px
-            || touchPos.py != _lastTouch.py
-            || !isTouching)
+            if (Controller::IsKeyDown(Key::Touchpad))
             {
-                _lastTouch = touchPos;
-                if (isTouching)
+                if (touchPos.px != _lastTouch.px
+                || touchPos.py != _lastTouch.py
+                || !_isTouching)
                 {
-                    event.type = Event::TouchMoved;
+                    _lastTouch = touchPos;
+                    if (_isTouching)
+                    {
+                        event.type = Event::TouchMoved;
+                    }
+                    else
+                    {
+                        event.type = Event::TouchBegan;
+                        _firstTouch = touchPos;
+                    }
+                    _isTouching = true;
+                    event.touch.x = touchPos.px;
+                    event.touch.y = touchPos.py;
+                    PushEvent(event);
+                    _lastTouch = touchPos;
                 }
-                else
-                {
-                    event.type = Event::TouchBegan;
-                    firstTouch = touchPos;
-                }
-                isTouching = true;
-                event.touch.x = touchPos.px;
-                event.touch.y = touchPos.py;
-                PushEvent(event);
-                _lastTouch = touchPos;
             }
-        }
-        else if (isTouching)
-        {
-            isTouching = false;
-            event.type = Event::TouchEnded;
-            event.touch.x = _lastTouch.px;
-            event.touch.y = _lastTouch.py;
-            PushEvent(event);
-
-            int horizontalOffset = firstTouch.px - _lastTouch.px;
-            int verticalOffset = firstTouch.py - _lastTouch.py;
-
-            event.type = Event::TouchSwipped;
-            event.swip.direction = Event::None;
-            if (ABS(horizontalOffset) > 50 || ABS(verticalOffset) > 50)
+            else if (_isTouching)
             {
-                if (horizontalOffset > 50)
-                {
-                    event.swip.direction = Event::Right;
-                    PushEvent(event);
-                }
-                if (horizontalOffset < -50)
-                {
-                    event.swip.direction = Event::Left;
-                    PushEvent(event);
-                }
-                if (verticalOffset < -50)
-                {
-                    event.swip.direction = Event::Up;
-                    PushEvent(event);
-                }
-                if (verticalOffset > 50)
-                {
-                    event.swip.direction = Event::Down;
-                    PushEvent(event);
-                }
-                if (horizontalOffset < -50 && verticalOffset < -50)
-                {
-                    event.swip.direction = Event::LeftUp;
-                    PushEvent(event);
-                }
-                if (horizontalOffset > 50 && verticalOffset < -50)
-                {
-                    event.swip.direction = Event::RightUp;
-                    PushEvent(event);
-                }
-                if (horizontalOffset < -50 && verticalOffset > 50)
-                {
-                    event.swip.direction = Event::LeftDown;
-                    PushEvent(event);
-                }
-                if (horizontalOffset > 50 && verticalOffset > 50)
-                {
-                    event.swip.direction = Event::RightDown;
-                    PushEvent(event);
+                _isTouching = false;
+                event.type = Event::TouchEnded;
+                event.touch.x = _lastTouch.px;
+                event.touch.y = _lastTouch.py;
+                PushEvent(event);
+
+                if (_captureMask & EventGroups::GROUP_TOUCH_AND_SWIPE) {
+                    int horizontalOffset = _firstTouch.px - _lastTouch.px;
+                    int verticalOffset = _firstTouch.py - _lastTouch.py;
+
+                    event.type = Event::TouchSwipped;
+                    event.swip.direction = Event::None;
+                    if (ABS(horizontalOffset) > 50 || ABS(verticalOffset) > 50)
+                    {
+                        if (horizontalOffset > 50)
+                        {
+                            event.swip.direction = Event::Right;
+                            PushEvent(event);
+                        }
+                        if (horizontalOffset < -50)
+                        {
+                            event.swip.direction = Event::Left;
+                            PushEvent(event);
+                        }
+                        if (verticalOffset < -50)
+                        {
+                            event.swip.direction = Event::Up;
+                            PushEvent(event);
+                        }
+                        if (verticalOffset > 50)
+                        {
+                            event.swip.direction = Event::Down;
+                            PushEvent(event);
+                        }
+                        if (horizontalOffset < -50 && verticalOffset < -50)
+                        {
+                            event.swip.direction = Event::LeftUp;
+                            PushEvent(event);
+                        }
+                        if (horizontalOffset > 50 && verticalOffset < -50)
+                        {
+                            event.swip.direction = Event::RightUp;
+                            PushEvent(event);
+                        }
+                        if (horizontalOffset < -50 && verticalOffset > 50)
+                        {
+                            event.swip.direction = Event::LeftDown;
+                            PushEvent(event);
+                        }
+                        if (horizontalOffset > 50 && verticalOffset > 50)
+                        {
+                            event.swip.direction = Event::RightDown;
+                            PushEvent(event);
+                        }
+                    }
                 }
             }
         }

@@ -173,7 +173,7 @@ namespace CTRPluginFramework
                                                     "    Select: (De)Select all regions\n" \
                                                     "    Start: Start the dump");
         Event           event;
-        EventManager    manager;
+        EventManager    manager(EventManager::EventGroups::GROUP_KEYS);
         bool            exit = false;
         bool            select = false;
 

@@ -84,6 +84,8 @@ namespace CTRPluginFramework
     {
         bool mustReleaseGame = false;
 
+        _exitKey = 0;
+
         // Check if game is paused
         if (!ProcessImpl::IsPaused)
         {
@@ -92,18 +94,8 @@ namespace CTRPluginFramework
         }
 
         Event               event;
-        EventManager        manager;
+        EventManager        manager(EventManager::EventGroups::GROUP_KEYS);
 
-        // Wait until keys are released
-        do
-        {
-            Controller::Update();
-        }
-        while (Controller::GetKeysDown());
-
-        // Eat key released events
-        Controller::Update();
-        while (manager.PollEvent(event));
 
         // Clear screens
         for (int i = 0; i < 2; ++i)
@@ -141,11 +133,7 @@ namespace CTRPluginFramework
         {
             Controller::Update();
         }
-        while (Controller::GetKeysDown());
-
-        // Eat key released events
-        Controller::Update();
-        while (manager.PollEvent(event));
+        while (Controller::GetKeysDown() & _exitKey);
 
         // Release game if we paused it in this function
         PluginMenu *menu = PluginMenu::GetRunningInstance();
@@ -190,6 +178,7 @@ namespace CTRPluginFramework
                     else
                         SoundEngine::PlayMenuSound(SoundEngine::Event::CANCEL);
                     _exit = true;
+                    _exitKey |= Key::A;
                     break;
                 }
                 case Key::B:
@@ -197,6 +186,7 @@ namespace CTRPluginFramework
                     SoundEngine::PlayMenuSound(SoundEngine::Event::CANCEL);
                     _cursor = 1;
                     _exit = true;
+                    _exitKey |= Key::B;
                     break;
                 }
                 default:
