@@ -77,7 +77,7 @@ CFLAGS	:=	-Wall -Werror -Wno-psabi -mword-relocations \
 			$(ARCH) \
 			$(BUILD_CFLAGS) $(G)
 
-CFLAGS	+=	$(INCLUDE) -DARM11 -D_3DS $(DEFINES)
+CFLAGS	+=	$(INCLUDE) -D__3DS__ $(DEFINES)
 
 CXXFLAGS 	:= $(CFLAGS) -fno-rtti -fno-exceptions -std=gnu++11
 
@@ -171,7 +171,7 @@ debug:
 lib/libctrpf.a : SHELL := /bin/bash
 lib/libctrpf.a : libcwav-build lib release
 	@$(MAKE) BUILD=release OUTPUT=$(CURDIR)/$@ WL=--strip-discarded,--strip-debug, \
-	BUILD_CFLAGS="-DNDEBUG=1 -O2 -fomit-frame-pointer" DEPSDIR=$(CURDIR)/release \
+	BUILD_CFLAGS="-DNDEBUG=1 -Os -fomit-frame-pointer" DEPSDIR=$(CURDIR)/release \
 	--no-print-directory -C release	-f $(CURDIR)/Makefile
 	@rm release/PluginMenuTools.o # Force update of revision, date etc
 	@cp $(CURDIR)/libcwav/lib/libcwav.a lib/libcwav.a
