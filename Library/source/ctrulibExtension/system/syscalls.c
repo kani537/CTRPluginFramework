@@ -17,7 +17,7 @@ static ThreadVars * g_mainThreadVars;
 
 ThreadVars* __ctrpf_getThreadVars(ThreadVars * mainThreadVars);
 
-static struct _reent* __ctru_get_reent()
+struct _reent* __SYSCALL(getreent)()
 {
 	ThreadVars* tv = getThreadVars();
 
@@ -44,21 +44,6 @@ void*     __getThreadLocalStorage(void)
 
 void __system_initSyscalls(void)
 {
-	// Register newlib syscalls
-	__syscalls.exit     = __ctru_exit;
-	__syscalls.gettod_r = __libctru_gtod;
-	__syscalls.getreent = __ctru_get_reent;
-
-	// Register locking syscalls
-	__syscalls.lock_init                  = LightLock_Init;
-	__syscalls.lock_acquire               = LightLock_Lock;
-	__syscalls.lock_try_acquire           = LightLock_TryLock;
-	__syscalls.lock_release               = LightLock_Unlock;
-	__syscalls.lock_init_recursive        = RecursiveLock_Init;
-	__syscalls.lock_acquire_recursive     = RecursiveLock_Lock;
-	__syscalls.lock_try_acquire_recursive = RecursiveLock_TryLock;
-	__syscalls.lock_release_recursive     = RecursiveLock_Unlock;
-
 	// Initialize thread vars for the main thread
 	ThreadVars* tv = getThreadVars();
 	tv->magic = THREADVARS_MAGIC;

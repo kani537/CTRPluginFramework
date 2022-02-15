@@ -29,7 +29,7 @@ CFLAGS	:=	-mword-relocations \
  			-ffunction-sections -fdata-sections -fno-strict-aliasing \
 			$(ARCH) $(BUILD_FLAGS) $(G)
 
-CFLAGS		+=	$(INCLUDE) -DARM11 -D_3DS $(DEFINES)
+CFLAGS		+=	$(INCLUDE) -D__3DS__ $(DEFINES)
 
 #-Wall -Wextra -Wdouble-promotion -Werror
 

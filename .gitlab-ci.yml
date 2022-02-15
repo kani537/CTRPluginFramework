@@ -22,7 +22,7 @@ prep:
       dotenv: build.env
 
 build:
-  image: nanquitas/luma3ds:latest
+  image: devkitpro/devkitarm:20220128
   stage: build
   extends:
     - .vars-global
