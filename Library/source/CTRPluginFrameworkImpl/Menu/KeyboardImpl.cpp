@@ -444,7 +444,7 @@ namespace CTRPluginFramework
 
         int                 ret = -2;
         Event               event;
-        EventManager        manager;
+        EventManager        manager(EventManager::EventGroups::GROUP_KEYS | EventManager::EventGroups::GROUP_TOUCH);
         Clock               clock;
 
         // Construct keyboard

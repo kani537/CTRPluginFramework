@@ -34,7 +34,7 @@ namespace CTRPluginFramework
     void    Converter::operator()(u32 v)
     {
         Event   event;
-        EventManager eventMgr;
+        EventManager eventMgr(EventManager::EventGroups::GROUP_KEYS);
 
         if (v != 0)
         {

@@ -1035,7 +1035,7 @@ namespace CTRPluginFramework
 
         Event           event;
         EventList       eventList;
-        EventManager    manager;
+        EventManager    manager(EventManager::EventGroups::GROUP_KEYS);
         bool            exit = false;
 
         do
