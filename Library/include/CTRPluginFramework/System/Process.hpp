@@ -90,6 +90,13 @@ namespace CTRPluginFramework
         static void     Play(const u32 frames = 0);
 
         /**
+         * @brief Waits until the application exits.
+         * Useful if PluginMenu::Run is not used in main()
+         * to block execution until the app exits.
+         */
+        static void     WaitForExit(void);
+
+        /**
         * \brief Safely patch the current process (MemPerm check and Invalidate cache)
         * \param addr      The address to start the patch
         * \param patch     The patch values
