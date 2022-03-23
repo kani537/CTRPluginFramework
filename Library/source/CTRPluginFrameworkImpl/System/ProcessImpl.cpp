@@ -35,6 +35,7 @@ namespace CTRPluginFramework
     MemInfo     ProcessImpl::InvalidRegion = MemInfo{0, 0, 0, 0};
     Mutex       ProcessImpl::MemoryMutex;
     std::vector<MemInfo> ProcessImpl::MemRegions;
+    LightEvent  ProcessImpl::waitForExitEvent;
     u32         ProcessImpl::exceptionCount = 0;
 
     void    ProcessImpl::Initialize(void)
@@ -82,6 +83,9 @@ namespace CTRPluginFramework
         svcOpenProcess(&ProcessHandle, ProcessId);
 
         UpdateMemRegions();
+
+        // Init wait for exit event
+        LightEvent_Init(&waitForExitEvent, RESET_ONESHOT);
     }
 
     extern "C" Handle gspEvent;
@@ -477,5 +481,15 @@ namespace CTRPluginFramework
             ReturnFromException(regs);
             break;
         }
+    }
+
+    void     ProcessImpl::SignalExit(void)
+    {
+        LightEvent_Signal(&waitForExitEvent);
+    }
+
+    void     ProcessImpl::WaitForExit(void)
+    {
+        LightEvent_Wait(&waitForExitEvent);
     }
 }

@@ -348,6 +348,7 @@ namespace CTRPluginFramework
                 else if (event == PLG_ABOUT_TO_EXIT)
                 {
                     OnProcessExit();
+                    ProcessImpl::SignalExit();
 
                     SoundEngineImpl::NotifyAptEvent(APT_HookType::APTHOOK_ONEXIT);
                     SoundEngineImpl::ClearMenuSounds();

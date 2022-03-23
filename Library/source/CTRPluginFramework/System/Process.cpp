@@ -101,6 +101,11 @@ namespace CTRPluginFramework
             ProcessImpl::Play(false);
     }
 
+    void    Process::WaitForExit()
+    {
+        ProcessImpl::WaitForExit();
+    }
+
     bool Process::Patch(u32 addr, void *patch, u32 length, void *original)
     {
         return ProcessImpl::PatchProcess(addr, static_cast<u8 *>(patch), length, static_cast<u8 *>(original));

@@ -77,6 +77,8 @@ namespace CTRPluginFramework
         static void     GetFreeBlocks(std::vector<MemInfo> &blocks);
         static u32      GetFreeMemRegion(const u32 size, const u32 searchStart = 0x100000);
         static void ExceptionHandler(ERRF_ExceptionInfo* excep, CpuRegisters* regs) NORETURN;
+        static void     SignalExit(void);
+        static void     WaitForExit(void);
 
         static Handle       ProcessHandle;
         static u32          IsPaused;
@@ -92,6 +94,8 @@ namespace CTRPluginFramework
         static MemInfo      InvalidRegion;
         static Mutex        MemoryMutex;
         static std::vector<MemInfo>     MemRegions;
+
+        static LightEvent   waitForExitEvent;
 
         static u32          exceptionCount;
         static void         EnableExceptionHandlers();

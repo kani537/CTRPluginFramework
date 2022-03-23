@@ -40,9 +40,11 @@ namespace CTRPluginFramework
     std::vector<OSDImpl::OSDMessage*> OSDImpl::Notifications;
     std::vector<OSDCallback> OSDImpl::Callbacks;
     std::vector<OSDCallback> OSDImpl::CallbacksTrashBin;
+    void*       OSDImpl::previousFBAddr[2][2][2] = {0};
 
     bool        OSDImpl::IsFramePaused = false;
     bool        OSDImpl::NeedToPauseFrame = false;
+    bool        OSDImpl::WritesToPrevFB = false;
     LightEvent  OSDImpl::OnNewFrameEvent;
     LightEvent  OSDImpl::OnFramePaused;
     LightEvent  OSDImpl::OnFrameResume;
@@ -96,6 +98,23 @@ namespace CTRPluginFramework
         LightEvent_Init(&OnFramePaused, RESET_STICKY);
         LightEvent_Init(&OnFrameResume, RESET_STICKY);
         IsFramePaused = false;
+
+        const u64 titlesNeedWritePrevFB[] =
+        {
+            0x0004000000101200ULL, // Puyo Puyo Tetris
+            0x0004000000197500ULL, // Puyo Puyo Chronicle
+            0x0004000000056600ULL, // Puyo Puyo!! 20th Anniversary
+        };
+        u64 titleID = Process::GetTitleID();
+
+        for (u32 i = 0; i < sizeof(titlesNeedWritePrevFB) / sizeof(u64); i++)
+        {
+            if (titleID == titlesNeedWritePrevFB[i])
+            {
+                WritesToPrevFB = true;
+                break;
+            }
+        }
 
         InstallOSD();
     }
@@ -198,7 +217,7 @@ namespace CTRPluginFramework
         // Only call our OSD callback if left frame buffer is valid
         if (leftFb)
         {
-            CallbackCommon(isBottom, leftFb, rightFb, stride, format);
+            CallbackCommon(isBottom, leftFb, rightFb, stride, format, swap);
         }
 
         if (ProcessImpl::Status == Running)
@@ -220,7 +239,7 @@ namespace CTRPluginFramework
             u32 format = params[4] & 0xF;
 
             if (leftFb)
-                CallbackCommon(isBottom, leftFb, nullptr, stride, format);
+                CallbackCommon(isBottom, leftFb, nullptr, stride, format, 0);
         }
 
         if (ProcessImpl::Status == Running)
@@ -297,7 +316,7 @@ namespace CTRPluginFramework
         else return ret;
     }
 
-    void     OSDImpl::CallbackCommon(u32 isBottom, void* addr, void* addrB, int stride, int format)
+    void     OSDImpl::CallbackCommon(u32 isBottom, void* addr, void* addrB, int stride, int format, int swap)
     {
         if (SystemImpl::Status())
             return;
@@ -316,6 +335,21 @@ namespace CTRPluginFramework
             return; */
 
         // Convert to actual addresses and check validity
+        if (WritesToPrevFB)
+        {
+            // TO DO: This is a very hacky fix! Research why this actually happens
+            // From my research, looks like puyo puyo games either re-render
+            // or do some post-processing to the FB after CTRPF writes to them,
+            // which causes the changes to be overwritten.
+            // As a hacky solution, we actually draw to the FB that's currently
+            // being displayed. This causes some artifacts such as flickering
+            // but is better than nothing. /shrug
+            previousFBAddr[isBottom][swap ? 1 : 0][0] = addr;
+            previousFBAddr[isBottom][swap ? 1 : 0][1] = addrB;
+
+            addr = previousFBAddr[isBottom][swap ? 0 : 1][0];
+            addrB = previousFBAddr[isBottom][swap ? 0 : 1][1];
+        }
         addr = (void*)GetBuffer((u32)addr);
         if (!isBottom)
             addrB = (void*)GetBuffer((u32)addrB);
