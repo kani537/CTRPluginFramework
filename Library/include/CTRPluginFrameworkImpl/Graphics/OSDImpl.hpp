@@ -57,6 +57,7 @@ namespace CTRPluginFramework
         static u32              WaitingForScreenshot;
         static u32              FramesToPlay;
         static bool             NeedToPauseFrame;
+        static bool             WritesToPrevFB;
 
         static Hook             OSDHook;
         static RecursiveLock    RecLock;
@@ -66,6 +67,7 @@ namespace CTRPluginFramework
         static std::vector<OSDMessage*>    Notifications;
         static std::vector<OSDCallback>    Callbacks;
         static std::vector<OSDCallback>    CallbacksTrashBin;
+        static void*            previousFBAddr[2][2][2];
 
         static bool             IsFramePaused;
         static LightEvent       OnNewFrameEvent;
@@ -78,7 +80,7 @@ namespace CTRPluginFramework
         static  u32     MainCallback2(u32 r0, u32 *params, u32 isBottom, u32 arg);
         static  Result  OnTopScreenFrame();
         static  Result  OnBottomScreenFrame();
-        static  void    CallbackCommon(u32 isBottom, void *leftFb, void *rightFb, int stride, int format);
+        static  void    CallbackCommon(u32 isBottom, void *leftFb, void *rightFb, int stride, int format, int swap);
         static  void    UpdateScreens(void);
 
         static int      PauseFrame(void);
