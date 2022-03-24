@@ -204,17 +204,8 @@ namespace CTRPluginFramework
                 if (event.type == Event::KeyPressed && inputClock.HasTimePassed(Milliseconds(500))
                     && (!Preferences::IsEnabled(Preferences::UseFloatingBtn) || _isOpen) && Controller::GetKeysDown() != SystemImpl::RosalinaHotkey)
                 {
-                    // Check that MenuHotkeys are pressed
-                    for (int i = 0; i < 16; i++)
-                    {
-                        u32 key = Preferences::MenuHotkeys & (1u << i);
-
-                        if (key && static_cast<u32>(event.key.code) == key)
-                        {
-                            if (Controller::IsKeysDown(Preferences::MenuHotkeys ^ key))
-                                isHotkeysDown = true;
-                        }
-                    }
+                    if (Controller::IsKeysPressed(Preferences::MenuHotkeys))
+                        isHotkeysDown = true;
                 }
 
                 // If MenuHotkeys are pressed
@@ -355,6 +346,7 @@ namespace CTRPluginFramework
                 }
 
                 // Remove callbacks in the trash bin
+                if (_callbacksTrashBin.size())
                 {
                     Lock    lock(_trashBinMutex);
                     if (_callbacksTrashBin.size())

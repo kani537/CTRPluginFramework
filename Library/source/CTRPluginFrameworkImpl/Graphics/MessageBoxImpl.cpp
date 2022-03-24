@@ -83,6 +83,7 @@ namespace CTRPluginFramework
     bool    MessageBoxImpl::operator()(void)
     {
         bool mustReleaseGame = false;
+        bool sleepExit = false;
 
         _exitKey = 0;
 
@@ -119,7 +120,9 @@ namespace CTRPluginFramework
                 _textbox.ProcessEvent(event);
             }
 
-            if (_exit)
+            sleepExit = SystemImpl::IsSleeping();
+
+            if (_exit || sleepExit)
                 break;
 
             // Draw box
@@ -138,12 +141,14 @@ namespace CTRPluginFramework
         // Release game if we paused it in this function
         PluginMenu *menu = PluginMenu::GetRunningInstance();
 
-        if (menu && !menu->IsOpen())
+        if (menu && !menu->IsOpen() && !sleepExit)
             ScreenImpl::Top->Clear(true);
 
         if (mustReleaseGame)
             ProcessImpl::Play(false);
 
+        if (sleepExit)
+            return false;
         return _cursor == 0;
     }
 

@@ -1,5 +1,6 @@
 #include "CTRPluginFramework/Sound.hpp"
 #include "CTRPluginFrameworkImpl/Sound/SoundImpl.hpp"
+#include "CTRPluginFrameworkImpl/System/SystemImpl.hpp"
 
 namespace CTRPluginFramework
 {
@@ -153,6 +154,8 @@ namespace CTRPluginFramework
 
     Sound::CWAVStatus Sound::Play(int leftEarChannel, int rightEarChannel)
     {
+        if (SystemImpl::WantsToSleep())
+            return CWAVStatus::GOING_TO_SLEEP;
         if (_soundImpl)
             return static_cast<Sound::CWAVStatus>(PublicToImpl(_soundImpl)->Play(leftEarChannel, rightEarChannel));
         else

@@ -13,6 +13,7 @@ namespace CTRPluginFramework
 {
     #define USER_VALID  0
     #define USER_ABORT  -1
+    #define SLEEP_ABORT -2
     #define KEY_ENTER 0xA
     #define KEY_BACKSPACE 0x8
     #define KEY_SYMBOLS -2
@@ -442,7 +443,7 @@ namespace CTRPluginFramework
         else
             _mustRelease = false;
 
-        int                 ret = -2;
+        int                 ret = -1;
         Event               event;
         EventManager        manager(EventManager::EventGroups::GROUP_KEYS | EventManager::EventGroups::GROUP_TOUCH);
         Clock               clock;
@@ -534,11 +535,15 @@ namespace CTRPluginFramework
                     _isOpen = false;
                 }
             }
+            if (SystemImpl::IsSleeping()) {
+                ret = SLEEP_ABORT;
+                _isOpen = false;
+            }
         }
 
     exit:
         PluginMenu *menu = PluginMenu::GetRunningInstance();
-        if (menu && !menu->IsOpen())
+        if (menu && !menu->IsOpen() && ret != SLEEP_ABORT)
             ScreenImpl::Clean();
         if (_mustRelease)
             ProcessImpl::Play(false);

@@ -189,10 +189,17 @@ namespace CTRPluginFramework
 
     bool    PluginMenuExecuteLoop::operator()(void)
     {
-        Lock    lock(_mutex);
-
+        // Double condition pattern, removed the need of locking the mutex
         if (_builtinEnabledList.empty())
             return false;
+
+        _mutex.Lock();
+
+        if (_builtinEnabledList.empty())
+        {
+            _mutex.Unlock();
+            return false;
+        }
 
         bool needToRemove = false;
         for (MenuEntryImpl *entry : _builtinEnabledList)
@@ -230,6 +237,7 @@ namespace CTRPluginFramework
                 _builtinEnabledList.end());
         }
 
+        _mutex.Unlock();
         return (false);
     }
 }
