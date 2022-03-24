@@ -53,6 +53,11 @@ namespace CTRPluginFramework
         return AptStatus & FLAG_WANTSTOSLEEP;
     }
 
+    bool     SystemImpl::IsSleeping(void)
+    {
+        return AptStatus & (FLAG_SLEEPING | FLAG_WANTSTOSLEEP);
+    }
+
     void    SystemImpl::ReadyToSleep(void)
     {
         if (AptStatus & FLAG_WANTSTOSLEEP)

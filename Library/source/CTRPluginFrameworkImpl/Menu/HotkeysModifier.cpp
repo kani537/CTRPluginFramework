@@ -5,6 +5,7 @@
 #include "CTRPluginFramework/System/Controller.hpp"
 #include "Unicode.h"
 #include "CTRPluginFramework/System/System.hpp"
+#include "CTRPluginFrameworkImpl/System/SystemImpl.hpp"
 #include "CTRPluginFrameworkImpl/Preferences.hpp"
 #include "CTRPluginFramework/Sound.hpp"
 
@@ -67,11 +68,14 @@ namespace CTRPluginFramework
     void    HotkeysModifier::operator()(void)
     {
 		bool mustclose = false;
-        while ((!Window::BottomWindow.MustClose() && !mustclose) || !_keys)
+        bool sleepClose = false;
+        u32 oldKeys = _keys;
+        while (((!Window::BottomWindow.MustClose() && !mustclose) || !_keys) && !sleepClose)
         {
 
             Controller::Update();
 			mustclose = Controller::IsKeyPressed(Key::B);
+            sleepClose = SystemImpl::IsSleeping();
             _DrawTop();
             _DrawBottom();
             Renderer::EndFrame();
@@ -111,6 +115,7 @@ namespace CTRPluginFramework
                 checkbox.SetState(false);
             }
         }
+        if (sleepClose) _keys = oldKeys;
         SoundEngine::PlayMenuSound(SoundEngine::Event::CANCEL);
     }
 

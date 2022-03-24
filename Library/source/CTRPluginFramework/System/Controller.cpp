@@ -10,58 +10,14 @@ namespace CTRPluginFramework
 
     extern "C" vu32* hidSharedMem;
 
-    u32     Controller::GetKeysDown(void)
-    {
-        return (_keysDown | _keysHeld);
-    }
-
-    u32     Controller::GetKeysReleased(void)
-    {
-        return _keysReleased;
-    }
-
-    bool    Controller::IsKeyDown(Key key)
-    {
-        return (_keysHeld & (u32)key) != 0;
-    }
-
-    bool    Controller::IsKeyPressed(Key key)
-    {
-        return (_keysDown & (u32)key) != 0;
-    }
-
-    bool    Controller::IsKeyReleased(Key key)
-    {
-        return (_keysReleased & (u32)key) != 0;
-    }
-
-    bool    Controller::IsKeysDown(u32 keys)
-    {
-        return ((_keysHeld & keys) == keys);
-    }
-
-    bool    Controller::IsKeysPressed(u32 keys)
-    {
-        if ((_keysDown & keys) && ((_keysHeld | _keysDown) & keys) == keys)
-            return (true);
-        return (false);
-    }
-
-    bool    Controller::IsKeysReleased(u32 keys)
-    {
-        if ((_keysReleased & keys) == keys)
-            return (true);
-        return (false);
-    }
-    
     shortVector  Controller::GetCirclePadPosition()
     {
         circlePosition cPos;
-        
+
         hidCircleRead(&cPos);
         return (shortVector(cPos.dx, cPos.dy));
     }
-    
+
     // TODO: a better injection, touch input injection being not good enough
     void    Controller::InjectTouch(u16 posX, u16 posY)
     {

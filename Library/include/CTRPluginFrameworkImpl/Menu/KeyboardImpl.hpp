@@ -51,6 +51,7 @@ namespace CTRPluginFramework
         void        SetCompareCallback(CompareCallback callback);
         void        OnKeyboardEvent(OnEventCallback callback);
         void        ChangeSelectedEntry(int entry);
+        int         GetSelectedEntry() {return _manualKey;}
         void        ChangeEntrySound(int entry, SoundEngine::Event soundEvent);
         void        Populate(const std::vector<std::string>& input, bool resetScroll);
         void        Populate(const std::vector<CustomIcon>& input, bool resetScroll);

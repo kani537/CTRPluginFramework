@@ -113,10 +113,10 @@ namespace CTRPluginFramework
         if ((_captureMask & EventGroups::GROUP_TOUCH) || (_captureMask & EventGroups::GROUP_TOUCH_AND_SWIPE)) {
 
             touchPosition touchPos;
-            hidTouchRead(&touchPos);
 
             if (Controller::IsKeyDown(Key::Touchpad))
             {
+                hidTouchRead(&touchPos);
                 if (touchPos.px != _lastTouch.px
                 || touchPos.py != _lastTouch.py
                 || !_isTouching)

@@ -50,6 +50,8 @@ namespace CTRPluginFramework
             INVALID_CWAV_CHANNEL = 9, ///< The specified channel is not in the CWAV.
             NO_CHANNEL_AVAILABLE = 10, ///< No DSP/CSND channels available to play the sound.
 
+            // Custom status only for CTRPF
+            GOING_TO_SLEEP = 100, ///< The console is entering sleep mode, so the audio is not played.
         };
 
         /**
