@@ -22,7 +22,7 @@ namespace CTRPluginFramework
     namespace
     {
         u8 *                         glyph = nullptr;
-        Glyph *                      defaultGlyph = nullptr; 
+        Glyph *                      defaultGlyph = nullptr;
         std::unordered_map<u32, u32> defaultSysFont;
     }
 
@@ -30,7 +30,7 @@ namespace CTRPluginFramework
     {
         return (xOffset + xAdvance);
     }
-    
+
     // Stub game' call to APT_MapSharedFont as we do it already
     static void     PatchGameFontMapping(void)
     {
@@ -182,7 +182,11 @@ namespace CTRPluginFramework
 
                                         if (pixelY >= startPy && pixelY < endPy)
                                             if (pixelX >= startPx && pixelX < endPx)
-                                                *(glyph + ((pixelX - startPx) + (pixelY - startPy) * (endPx - startPx))) = GetAlphaValueFromData(data, dataPos, tglp->sheetFmt);
+                                            {
+                                                u32 offset = ((pixelX - startPx) + (pixelY - startPy) * (endPx - startPx));
+                                                if (offset < 1000)
+                                                    *(glyph + offset) = GetAlphaValueFromData(data, dataPos, tglp->sheetFmt);
+                                            }
                                     }
                                 }
                             }
