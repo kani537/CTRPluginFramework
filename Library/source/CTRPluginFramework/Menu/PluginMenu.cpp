@@ -175,4 +175,9 @@ namespace CTRPluginFramework
     {
         Screenshot::ScreenshotCallback = callback;
     }
+
+    bool                PluginMenu::IsBackgroundLoaded(bool isTopScreen)
+    {
+        return isTopScreen ? (Preferences::topBackgroundImage != nullptr) : (Preferences::bottomBackgroundImage != nullptr);
+    }
 }
