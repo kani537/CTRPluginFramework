@@ -51,7 +51,10 @@ namespace CTRPluginFramework
         static void UnStar(MenuItem *item);
         static void Refresh(void);
 
-        void    SetHexEditorState(bool isEnabled) const;
+        static PluginMenuImpl* GetRunningInstance();
+
+        void    SetHexEditorState(bool isEnabled);
+        bool    GetHexEditorState() const;
         void    ShowWelcomeMessage(bool showMsg);
 
         MenuFolderImpl *GetRoot(void) const;
@@ -84,6 +87,7 @@ namespace CTRPluginFramework
         std::vector<CallbackPointer>     _callbacks;
         std::vector<CallbackPointer>     _callbacksTrashBin;
         bool                        _forceOpen;
+        bool                        _hexEditorState;
     };
 }
 
