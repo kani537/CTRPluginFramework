@@ -107,16 +107,28 @@ namespace CTRPluginFramework
         void    CanBeSelected(bool canBeSelected) const;
 
         /**
-        * \brief Set the gamefunction of this entry
+        * \brief Set the game function of this entry
         * \param func  The new function to be executed on game loop
         */
         void    SetGameFunc(FuncPointer func) const;
 
         /**
-        * \brief Set the menu funuction of this entry
+        * \brief Set the menu function of this entry
         * \param func  The new function to be executed on the menu
         */
         void    SetMenuFunc(FuncPointer func) const;
+
+        /**
+        * \brief Gets the game function of this entry
+        * \return The game function of this entry
+        */
+        FuncPointer    GetGameFunc() const;
+
+        /**
+        * \brief Gets the menu function of this entry
+        * \return The menu function of this entry
+        */
+        FuncPointer    GetMenuFunc() const;
 
         /**
         * \brief Force the menu to refresh the note
