@@ -28,7 +28,8 @@ namespace CTRPluginFramework
         _executeLoop(new PluginMenuExecuteLoop()),
         _guide(new GuideReader()),
         _hexEditor(0x00100000),
-        _forceOpen(false)
+        _forceOpen(false),
+        _hexEditorState(true)
     {
         SyncOnFrame = false;
         _isOpen = false;
@@ -649,9 +650,20 @@ namespace CTRPluginFramework
         }
     }
 
-    void    PluginMenuImpl::SetHexEditorState(bool isEnabled) const
+    PluginMenuImpl* PluginMenuImpl::GetRunningInstance()
     {
+        return _runningInstance;
+    }
+
+    void    PluginMenuImpl::SetHexEditorState(bool isEnabled)
+    {
+        _hexEditorState = isEnabled;
         _tools->TriggerHexEditor(isEnabled);
+    }
+
+    bool    PluginMenuImpl::GetHexEditorState() const
+    {
+        return _hexEditorState;
     }
 
     void    PluginMenuImpl::ShowWelcomeMessage(bool showMsg)
