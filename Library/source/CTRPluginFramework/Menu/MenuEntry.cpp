@@ -123,6 +123,16 @@ namespace CTRPluginFramework
         _item->MenuFunc = func;
     }
 
+    FuncPointer MenuEntry::GetGameFunc() const
+    {
+        return _item->GameFunc;
+    }
+
+    FuncPointer MenuEntry::GetMenuFunc() const
+    {
+        return _item->MenuFunc;
+    }
+
     void MenuEntry::RefreshNote() const
     {
         _item->NoteChanged();
