@@ -60,6 +60,12 @@ namespace CTRPluginFramework
         u32     GetKeys(void);
 
         /**
+         * @brief Gets the name of this HotKey
+         * \return The hotkey name
+         */
+        const std::string& GetName() const;
+
+        /**
          * \brief Stringify the Hotkey
          * \param withName if the name of the Hotkey must be in the result
          * \return return a string of this Hotkey\n
