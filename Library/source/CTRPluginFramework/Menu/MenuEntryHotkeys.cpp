@@ -50,6 +50,11 @@ namespace CTRPluginFramework
         return (_keys);
     }
 
+    const std::string& Hotkey::GetName() const
+    {
+        return _name;
+    }
+
     static const std::string g_keyName[16] =
     {
         FONT_A,
