@@ -28,6 +28,10 @@ extern "C"
     s32     PLGLDR__FetchEvent(void);
     void    PLGLDR__Reply(s32 event);
 
+    void hidInitFake();
+    void hidExitFake();
+    void hidSetSharedMem(vu32* sharedMem);
+
     extern u32 __ctru_heap;
     extern u32 __ctru_heap_size;
 }
@@ -64,6 +68,7 @@ namespace Kernel
 }
 
 static Hook         g_onLoadCroHook;
+static Hook         g_onSharedMemMapHook;
 static LightLock    g_onLoadCroLock;
 
 void abort(void)
@@ -95,6 +100,30 @@ void     OnLoadCro(void)
     LightLock_Lock(&g_onLoadCroLock);
     ExecuteLoopOnEvent();
     LightLock_Unlock(&g_onLoadCroLock);
+}
+
+Result     OnSharedMemMap(Handle handle, void* sharedMem, MemPerm myPerm, MemPerm otherPerm)
+{
+    Result res = svcMapMemoryBlock(handle, (u32)sharedMem, myPerm, otherPerm);
+    if (R_SUCCEEDED(res) && sharedMem && CTRPluginFramework::FwkSettings::Get().UseGameHidMemory)
+    {
+        u64 firstSysTick = reinterpret_cast<vu64*>(sharedMem)[0];
+        u32 arrayIndex = reinterpret_cast<vu32*>(sharedMem)[4];
+
+        u32 sharedMemTouchScreen = (u32)sharedMem + 0xA8;
+        u64 firstSysTickTS = reinterpret_cast<vu64*>(sharedMemTouchScreen)[0];
+        u32 arrayIndexTS = reinterpret_cast<vu32*>(sharedMemTouchScreen)[4];
+
+        u64 currSysTick = svcGetSystemTick();
+
+        // VERY HACKY VERIFICATION THIS IS HID SHARED MEM!!!
+        // Probably breaks if hid thread is paused just here, but the likelyness of this
+        // happening is very low, so I guess it's good enough...
+        if (llabs(currSysTick - firstSysTick) < 1000000000ULL && llabs(currSysTick - firstSysTickTS) < 1000000000ULL &&
+        arrayIndex < 8 && arrayIndexTS < 8)
+            hidSetSharedMem((vu32*)sharedMem);
+    }
+    return res;
 }
 
 #ifdef _MSC_VER
@@ -181,7 +210,7 @@ namespace CTRPluginFramework
         acInit();
         amInit();
         fsInit();
-        hidInit();
+        hidInitFake();
         cfguInit();
         ncsndInit(false);
         plgLdrInit();
@@ -213,7 +242,6 @@ namespace CTRPluginFramework
         settings.AllowSearchEngine = true;
         settings.WaitTimeToBoot = Seconds(5.f);
         settings.TryLoadSDSounds = true;
-        settings.CachedDrawMode = false;
 
         // Set default theme
         FwkSettings::SetThemeDefault();
@@ -251,6 +279,29 @@ namespace CTRPluginFramework
             }
         }
 
+        // Install svcMapMemoryBlock hook
+        {
+            u32 svcMapMemoryBlockAddr = 0x00100000 - 4;
+            do
+            {
+                svcMapMemoryBlockAddr = Utils::Search<u32>(svcMapMemoryBlockAddr + 4, Process::GetTextSize(), {0xEF00001F});
+                if (svcMapMemoryBlockAddr)
+                {
+                    for (int i = 0; i > -10; i--)
+                    {
+                        if (reinterpret_cast<u32*>(svcMapMemoryBlockAddr)[i] == 0xE3A03201) // MOV R3, #0x10000000
+                        {
+                            g_onSharedMemMapHook.Initialize(svcMapMemoryBlockAddr, (u32)OnSharedMemMap);
+                            g_onSharedMemMapHook.SetFlags(USE_LR_TO_RETURN);
+                            g_onSharedMemMapHook.Enable();
+                            svcMapMemoryBlockAddr = 0; // Exit condition for while
+                            break;
+                        }
+                    }
+                }
+            } while (svcMapMemoryBlockAddr);
+        }
+
         // Init sdmc & paths
         InitFS();
 
@@ -259,6 +310,17 @@ namespace CTRPluginFramework
 
         // Patch process before it starts & let the dev init some settings
         PatchProcess(settings);
+
+        // Init hid properly depending on the settings
+        if (settings.UseGameHidMemory)
+        {
+            // Check the svcMapMemoryBlock hook was installed properly
+            if (!g_onSharedMemMapHook.IsEnabled())
+                abort();
+        } else {
+            hidExitFake();
+            hidInit();
+        }
 
         // Init menu sounds.
         SoundEngineImpl::InitializeMenuSounds();
@@ -361,7 +423,10 @@ namespace CTRPluginFramework
 
                     // Close some handles
                     ncsndExit();
-                    hidExit();
+                    if (settings.UseGameHidMemory)
+                        hidExitFake();
+                    else
+                        hidExit();
                     cfguExit();
                     fsExit();
                     amExit();
@@ -480,10 +545,6 @@ namespace CTRPluginFramework
             svcSignalEvent(g_continueGameEvent);
         svcExitThread();
     }
-
-    #define HID_PAD           (REG32(0x10146000) ^ 0xFFF)
-    #define BUTTON_X          (1 << 10)
-    #define BUTTON_Y          (1 << 11)
 
     extern "C"
     int   __entrypoint(int arg)
