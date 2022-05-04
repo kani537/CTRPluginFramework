@@ -13,6 +13,7 @@ Place the contents of the provided *tar* file inside a folder named `libctrpf` i
 ## License
 
 Copyright (c) The Pixellizer Group
+
 This software is licensed under the following terms:
 
 ```
