@@ -287,9 +287,9 @@ namespace CTRPluginFramework
         else if (g_condAgainstData == CondMode::DataAgainstVal)
         {
             if (mask)
-                return Utils::Format("if data%s[%07X+of] & %04X:", value, ope, left, mask);
+                return Utils::Format("if data%s[%07X+of] & %04X:", ope, left, mask);
             else
-                return Utils::Format("if data %s [%07X+offs]:", value, ope, left);
+                return Utils::Format("if data %s [%07X+offs]:", ope, left);
         }
         else if (g_condAgainstData == CondMode::ImmAgainstStorage)
         {
