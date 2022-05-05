@@ -9,35 +9,11 @@
 
 namespace CTRPluginFramework
 {
-    static char* g_ctrpfString = nullptr;
-    static char* g_bymeString = nullptr;
+    static u32 g_textXpos[2] = { 0 };
 
-    static u32 g_size[2] = { 0 };
-    static const u32 g_ctrpf[18] =
-    {
-        0x00000043, 0x00000054, 0x00000148, 0x00000140, 0x0000006C, 0x00000075, 0x0000019C, 0x000001A4, 0x00006E00, 0x00004600, 0x0001C800, 0x00018400, 0x00006D00, 0x00006500, 0x0001DC00, 0x0001BC00, 0x00000072, 0x0000006B,
-    };
-
-    static const u32 g_byme[12] =
-    {
-        0x00000062, 0x00000079, 0x00000080, 0x00000138, 0x00000061, 0x0000006E, 0x000001C4, 0x000001D4, 0x00006900, 0x00007400, 0x00018400, 0x0001CC00,
-    };
-
-    static void decoder(char* out, const u32* in, int size)
-    {
-        int i = 0;
-        while (size)
-        {
-            u32 c = *in++;
-
-            c = (c >> (i++ & 0b1010));
-
-            *out++ = (char)c;
-
-            size--;
-        }
-        *out = '\0';
-    }
+    // DO NOT REMOVE THIS COPYRIGHT NOTICE
+    static const char g_ctrpfText[] = "CTRPluginFramework";
+    static const char g_copyrightText[] = "Copyright (c) The Pixellizer Group";
 
     PluginMenuHome::PluginMenuHome(std::string &name, bool showNoteBottom) :
 
@@ -83,17 +59,9 @@ namespace CTRPluginFramework
         // Temporary disable unused buttons
         _hidMapperBtn.Lock();
 
-        // Decode strings
-        g_ctrpfString = new char[19];
-        g_bymeString = new char[13];
-
-        std::memset(g_ctrpfString, 0, 19);
-        std::memset(g_bymeString, 0, 13);
-
-        decoder(g_ctrpfString, g_ctrpf, 18);
-        decoder(g_bymeString, g_byme, 12);
-        g_size[0] = Renderer::LinuxFontSize(g_ctrpfString);
-        g_size[1] = Renderer::LinuxFontSize(g_bymeString);
+        // Get strings x position
+        g_textXpos[0] = (320 - Renderer::LinuxFontSize(g_ctrpfText)) / 2;
+        g_textXpos[1] = (320 - Renderer::LinuxFontSize(g_copyrightText)) / 2;
 
         // Are the buttons locked ?
         if (!Preferences::Settings.AllowActionReplay)
@@ -617,9 +585,9 @@ namespace CTRPluginFramework
         int posY = 205;
 
         if (framework)
-            Renderer::DrawString(g_ctrpfString, 100, posY, blank);
+            Renderer::DrawString(g_ctrpfText, g_textXpos[0], posY, blank);
         else
-            Renderer::DrawString(g_bymeString, 124, posY, blank);
+            Renderer::DrawString(g_copyrightText, g_textXpos[1], posY, blank);
 
         if (creditClock.HasTimePassed(Seconds(5)))
         {
