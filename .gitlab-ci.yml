@@ -1,7 +1,6 @@
 stages:
   - prep
   - build
-  - deploy
 
 .vars-global:
   variables:
@@ -41,19 +40,3 @@ build:
     expire_in: 1 hour
   needs:
     - job: prep
-
-deploy-hourly:
-    image: inetprocess/gitlab-release
-    stage: deploy
-    extends:
-    - .vars-global
-    only:
-        - develop
-    script:
-        - DATE=`date`
-        - gitlab-release --message "**$DATE** $CI_COMMIT_BRANCH -  $CI_COMMIT_SHORT_SHA - $CI_COMMIT_TITLE" libctrpf-$CTRPF_REVISION.tar.bz2
-    needs:
-      - job: prep
-        artifacts: true
-      - job: build
-        artifacts: true
