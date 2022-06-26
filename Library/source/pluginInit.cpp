@@ -241,6 +241,7 @@ namespace CTRPluginFramework
         settings.AllowActionReplay = true;
         settings.AllowSearchEngine = true;
         settings.WaitTimeToBoot = Seconds(5.f);
+        settings.AreN3DSButtonsAvailable = true;
         settings.TryLoadSDSounds = true;
 
         // Set default theme
