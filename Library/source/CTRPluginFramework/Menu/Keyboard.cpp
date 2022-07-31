@@ -196,7 +196,7 @@ namespace CTRPluginFramework
             {
                 const char *cstr = input.c_str();
                 char *cstro = nullptr;
-                temp = static_cast<u64>(strtoul(cstr, &cstro, 16));
+                temp = static_cast<u64>(strtoull(cstr, &cstro, 16));
                 if (cstro == cstr)
                     temp = UINT64_MAX;
             }
