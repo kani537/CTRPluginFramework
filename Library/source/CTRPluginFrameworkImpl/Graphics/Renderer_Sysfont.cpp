@@ -377,6 +377,7 @@ namespace CTRPluginFramework
         ScreenImpl      *screen = GetContext()->screen;
         void (*lineDrawer)(int posX, int posY, int width, const Color &color, int height) = Renderer::DrawLine;
         u32 shakingH = 0, shakingV = 0;
+        int randomTextID = -1;
 
         if (!screen)
             return posY;
@@ -494,11 +495,26 @@ namespace CTRPluginFramework
                         if (setH) shakingH = shakeAmount;
                         if (setV) shakingV = shakeAmount;
                     }
+                    else if (mode == 2) // Random text
+                    {
+                        bool disable = control & 0x80;
+                        if (disable)
+                            randomTextID = -1;
+                        else
+                            randomTextID = (control & 0x3F) - 1;
+                    }
+
                 }
                 continue;
             }
 
+
             Glyph *glyph = Font::GetGlyph(str);
+            if (randomTextID != -1) // Not a bug, the first GetGlyph consumes a character from str.
+            {
+                u8* rstr = (u8*)Render::PullRandomCharacter(randomTextID).c_str();
+                glyph = Font::GetGlyph(rstr);
+            }
 
             if (glyph == nullptr)
                 break;
@@ -561,6 +577,7 @@ namespace CTRPluginFramework
         void            (*lineDrawer)(int posX, int posY, int width, const Color &color, int height) = DrawLine;
         ScreenImpl *screen = GetContext()->screen;
         u32 shakingH = 0, shakingV = 0;
+        int randomTextID = -1;
 
         if (!(str && *str) || !screen)
             return (x);
@@ -661,6 +678,14 @@ namespace CTRPluginFramework
                         if (setH) shakingH = shakeAmount;
                         if (setV) shakingV = shakeAmount;
                     }
+                    else if (mode == 2) // Random text
+                    {
+                        bool disable = control & 0x80;
+                        if (disable)
+                            randomTextID = -1;
+                        else
+                            randomTextID = (control & 0x3F) - 1;
+                    }
                 }
                 continue;
             }
@@ -669,6 +694,11 @@ namespace CTRPluginFramework
                 break;
 
             glyph = Font::GetGlyph(str);
+            if (randomTextID != -1) // Not a bug, the first GetGlyph consumes a character from str.
+            {
+                u8* rstr = (u8*)Render::PullRandomCharacter(randomTextID).c_str();
+                glyph = Font::GetGlyph(rstr);
+            }
 
             if (glyph == nullptr)
                 break;
