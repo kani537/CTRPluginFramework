@@ -36,6 +36,21 @@ namespace CTRPluginFramework
         return (code);
     }
 
+    std::string     SetShake(bool horizontalDirection, bool verticalDirection, u8 amount) {
+        char code[4];
+        if (amount >= 63)
+        {
+            code[0] = '\0';
+        }
+        else
+        {
+            code[0] = '\x11';
+            *(u16*)&code[1] = 0x2100 | (horizontalDirection ? 0x80 : 0) | (verticalDirection ? 0x40 : 0) | ((amount + 1) & 0x3F);
+            code[3] = '\0';
+        }
+        return (code);
+    }
+
     static size_t     SafeStringHalve(const std::string& str) {
         size_t middle = str.length()/2;
         const char* strC = str.c_str();
