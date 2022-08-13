@@ -395,17 +395,31 @@ exit:
         };*/
 
         /*menu.Append(new MenuEntry("Text Stuff", nullptr, [](MenuEntry* entry) {
+            std::string caps;
+            for (char a = 'A'; a <= 'Z'; a++) caps.push_back(a);
+            std::string noncaps;
+            for (char a = 'a'; a <= 'z'; a++) noncaps.push_back(a);
+            std::string symbols = "'?¡¿ç~`*+º()/[]{}\\\"";
+
+            int capsID = Render::CreateRandomSet(caps);
+            int nocapsID = Render::CreateRandomSet(noncaps);
+            int symbolsID = Render::CreateRandomSet(symbols);
+
             Keyboard kbd("a");
-            std::string s = ToggleDrawMode(Render::FontDrawMode::UNDERLINE);
-            s += "This is left aligned.\n\n";
-            s += CenterAlign("This is multiline\nand is center aligned.\n\n");
-            s += RightAlign("This is aligned to the right.\n\n");
-            s += "Entry 1:" + RightAlign("0\n", 30, 240);
-            s += "Another Entry:" + RightAlign("10\n", 30, 240);
-            s += "Last entry:" + RightAlign("10000\n\n", 30, 240);
+            std::string s = ToggleDrawMode(Render::FontDrawMode::BOLD) + "Bold" + ToggleDrawMode(Render::FontDrawMode::BOLD) + " " + ToggleDrawMode(Render::FontDrawMode::UNDERLINE) + "UnderLine" + ToggleDrawMode(Render::FontDrawMode::UNDERLINE) + " " + ToggleDrawMode(Render::FontDrawMode::ITALIC) + "Italic" + ToggleDrawMode(Render::FontDrawMode::ITALIC) + "\n";
+            s += ToggleDrawMode(Render::FontDrawMode::STRIKETHROUGH) + "Strikethrough" + ToggleDrawMode(Render::FontDrawMode::STRIKETHROUGH) + " " + ToggleDrawMode(Render::FontDrawMode::UNDERLINE) + ToggleDrawMode(Render::FontDrawMode::LINEDOTTED) + "DottedLine" + ToggleDrawMode(Render::FontDrawMode::UNDERLINE) + ToggleDrawMode(Render::FontDrawMode::LINEDOTTED) + "\n";
+            s += "This is left aligned.\n";
+            s += CenterAlign("This is multiline\nand is center aligned.\n");
+            s += RightAlign("This is aligned to the right.\n");
+            s += "Shake: " + SetShake(true, false, 1) + "    horizontal    " + SetShake(true, false, 0) + SetShake(false, true, 1) + "vertical    " + SetShake(true, false, 1) + "bothmodes" + SetShake(true, true, 0) + "\n";
+            s += "Random:\nCap: " + SetRandomText(capsID) + "aaaa" + SetRandomText(-1) + " " + SkipToPixel(140) + "Low: " + SetRandomText(nocapsID) + "aaaa" + SetRandomText(-1) + " " + SkipToPixel(250) + "Sym: " + SetRandomText(symbolsID) + "aaaa" + SetRandomText(-1) + "\n";
             kbd.GetMessage() = s;
             kbd.Populate({"OK"});
             kbd.Open();
+
+            Render::EraseRandomSet(capsID);
+            Render::EraseRandomSet(nocapsID);
+            Render::EraseRandomSet(symbolsID);
         }, ""));
 
         menu.Append(new MenuEntry("Text Stuff 2", nullptr, [](MenuEntry* entry) {
