@@ -558,6 +558,8 @@ namespace CTRPluginFramework
         ProcessImpl::MainThreadTls = (u32)getThreadLocalStorage();
         // Set exception handlers
         ProcessImpl::EnableExceptionHandlers();
+        // Check if we are on citra
+        SystemImpl::CheckCitra();
 
         // Create event
         svcCreateEvent(&g_continueGameEvent, RESET_ONESHOT);

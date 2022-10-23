@@ -359,7 +359,10 @@ namespace CTRPluginFramework
     u32     ScreenImpl::AcquireFromGsp(bool fade)
     {
         // Wait for gpu to finish all stuff
-        while ((GPU_PSC0_CNT | GPU_PSC1_CNT | GPU_TRANSFER_CNT | GPU_CMDLIST_CNT) & 1);
+        if (SystemImpl::IsCitra) {
+            svcSleepThread(Seconds(0.0001f).AsMicroseconds() * 1000);
+        } else
+            while ((GPU_PSC0_CNT | GPU_PSC1_CNT | GPU_TRANSFER_CNT | GPU_CMDLIST_CNT) & 1);
         u32 err = Top->Acquire(fade) | Bottom->Acquire(fade);
 
         //if (!err)
