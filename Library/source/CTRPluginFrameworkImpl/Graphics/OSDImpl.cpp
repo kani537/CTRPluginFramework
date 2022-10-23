@@ -302,7 +302,7 @@ namespace CTRPluginFramework
         FwkSettings &settings = FwkSettings::Get();
         u32 ret;
 
-        if (settings.CachedDrawMode)
+        if (settings.CachedDrawMode || SystemImpl::IsCitra)
         {
             ret = addr;
         }
