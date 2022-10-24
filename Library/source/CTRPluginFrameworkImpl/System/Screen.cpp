@@ -221,7 +221,7 @@ namespace CTRPluginFramework
         u32 size = GetFrameBufferSize();
 
         // Flush currentBuffer
-        svcFlushProcessDataCache(CUR_PROCESS_HANDLE, (u32)GetLeftFrameBuffer(), size);
+        if (!SystemImpl::IsCitra) svcFlushProcessDataCache(CUR_PROCESS_HANDLE, (u32)GetLeftFrameBuffer(), size);
     }
 
     void    ScreenImpl::Invalidate(void)
@@ -359,10 +359,7 @@ namespace CTRPluginFramework
     u32     ScreenImpl::AcquireFromGsp(bool fade)
     {
         // Wait for gpu to finish all stuff
-        if (SystemImpl::IsCitra) {
-            svcSleepThread(Seconds(0.0001f).AsMicroseconds() * 1000);
-        } else
-            while ((GPU_PSC0_CNT | GPU_PSC1_CNT | GPU_TRANSFER_CNT | GPU_CMDLIST_CNT) & 1);
+        while ((GPU_PSC0_CNT | GPU_PSC1_CNT | GPU_TRANSFER_CNT | GPU_CMDLIST_CNT) & 1);
         u32 err = Top->Acquire(fade) | Bottom->Acquire(fade);
 
         //if (!err)
@@ -382,7 +379,7 @@ namespace CTRPluginFramework
 
     void    ScreenImpl::SwapBuffer(void)
     {
-        svcFlushDataCacheRange(GetLeftFrameBuffer(), GetFrameBufferSize());
+        if (!SystemImpl::IsCitra) svcFlushDataCacheRange(GetLeftFrameBuffer(), GetFrameBufferSize());
 
         GSP::SwapBuffer(!_isTopScreen);
 
