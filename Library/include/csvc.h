@@ -185,6 +185,8 @@ typedef enum ProcessOp
                                                 ///< svcControlProcess(handle, PROCESSOP_SCHEDULE_THREADS, lock, tlsvalue)
                                                 ///< lock: 0 to unlock threads, any other value to lock threads
                                                 ///< tlsvalue: threads with this tls value won't be affected
+    PROCESSOP_DISABLE_CREATE_THREAD_RESTRICTIONS, ///< Disable any thread creation restrictions, such as priority value
+                                                  ///< or allowed cores
 } ProcessOp;
 
 Result  svcControlProcess(Handle process, ProcessOp op, u32 varg2, u32 varg3);

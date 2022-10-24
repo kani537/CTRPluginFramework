@@ -4,6 +4,10 @@
 #include "CTRPluginFrameworkImpl/System/Scheduler.hpp"
 #include "CTRPluginFrameworkImpl/Graphics/OSDImpl.hpp"
 
+extern "C" {
+    bool _g_isCitra = false;
+}
+
 namespace CTRPluginFramework
 {
     bool    SystemImpl::IsNew3DS = false;
@@ -54,6 +58,7 @@ namespace CTRPluginFramework
         s64 output = 0;
         svcGetSystemInfo(&output, 0x20000, 0);
         IsCitra = output;
+        _g_isCitra = output;
     }
 
     bool    SystemImpl::WantsToSleep(void)
