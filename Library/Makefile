@@ -13,7 +13,7 @@ export CTRPF_VERSION_MAJOR	:=	$(shell git describe --always --tags | cut -f1 -d-
 export CTRPF_VERSION_MINOR	:=	$(shell git describe --always --tags | cut -f1 -d- | cut -f2 -d.)
 export CTRPF_VERSION_BUILD	:=	$(shell git describe --always --tags | cut -f1 -d- | cut -f3 -d.)
 export COMMIT			:=	$(shell git rev-parse --short=8 HEAD)
-export COMPILE_DATE 	:=  $(shell date)
+export COMPILE_DATE 	:=  $(shell date -u +"%Y-%m-%dT%H:%M:%S%Z")
 
 #ifeq ($(strip $(CTRPF_REVISION)),)
 #	export CTRPF_REVISION			:=	v0.0.0-0
