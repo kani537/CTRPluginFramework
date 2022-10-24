@@ -38,8 +38,8 @@ Result  plgLdrInit(void)
 
     if (R_SUCCEEDED(res))
     {
-        res = PLGLDR__GetArbiter();
-        if (R_SUCCEEDED(res) || res == 0xE0E01BF4) { // Succeeded or not implemented (citra)
+        u32 res2 = PLGLDR__GetArbiter();
+        if (R_SUCCEEDED(res2) || res2 == 0xE0E01BF4) { // Succeeded or not implemented (citra)
             PluginHeader *header = (PluginHeader *)0x07000000;
 
             plgEvent = header->plgldrEvent;
