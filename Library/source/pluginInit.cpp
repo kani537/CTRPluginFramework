@@ -513,7 +513,7 @@ namespace CTRPluginFramework
     void  ThreadExit(void)
     {
         // In which thread are we ?
-        if (reinterpret_cast<u32>(((CThread_tag*)threadGetCurrent())->stacktop) < 0x07000000)
+        if (reinterpret_cast<u32>(((Thread_tag*)threadGetCurrent())->stacktop) < 0x07000000)
         {
             // ## Main Thread ##
 
