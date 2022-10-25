@@ -4,22 +4,7 @@
 #include <malloc.h>
 #include <string.h>
 
-extern const u8 __tdata_lma[];
-extern const u8 __tdata_lma_end[];
-extern u8 __tls_start[];
-extern u8 __tls_end[];
 extern bool _g_isCitra;
-
-struct Thread_tag
-{
-    Handle handle;
-    ThreadFunc ep;
-    void* arg;
-    int rc;
-    bool detached, finished;
-    struct _reent reent;
-    void* stacktop;
-};
 
 static void __panic(void)
 {
@@ -30,11 +15,7 @@ static void __panic(void)
 static void _thread_begin(void* arg)
 {
     Thread t = (Thread)arg;
-    ThreadVars* tv = getThreadVars();
-    tv->magic = THREADVARS_MAGIC;
-    tv->reent = &t->reent;
-    tv->thread_ptr = t;
-    tv->tls_tp = (u8*)t->stacktop-8; // ARM ELF TLS ABI mandates an 8-byte header
+    initThreadVars(t);
     t->ep(t->arg);
     threadExit(0);
 }
@@ -44,18 +25,25 @@ u32     KProcess__PatchMaxPriority(u32 newPrio);
 
 Thread __createThread(ThreadFunc entrypoint, u32 stackSize, bool detached)
 {
-    size_t stackoffset = (sizeof(struct Thread_tag)+7)&~7;
-    size_t allocsize   = stackoffset + ((stackSize+7)&~7);
+    // The stack must be 8-aligned at minimum.
+    size_t align =  __tdata_align > 8 ? __tdata_align : 8;
+
+    size_t stackoffset = alignTo(sizeof(struct Thread_tag), align);
+    size_t allocsize = alignTo(stackoffset + stackSize, align);
     size_t tlssize = __tls_end-__tls_start;
     size_t tlsloadsize = __tdata_lma_end-__tdata_lma;
-    size_t tbsssize = tlssize-tlsloadsize;
+    size_t tbsssize = tlssize - tlsloadsize;
+
+    // memalign seems to have an implicit requirement that (size % align) == 0.
+    // Without this, it seems to return NULL whenever (align > 8).
+    size_t size = alignTo(allocsize + tlssize, align);
 
     // Guard against overflow
     if (allocsize < stackoffset) return NULL;
     if ((allocsize-stackoffset) < stackSize) return NULL;
-    if ((allocsize+tlssize) < allocsize) return NULL;
+    if (size < allocsize) return NULL;
 
-    Thread t = (Thread)memalign(8, allocsize+tlssize);
+    Thread t = (Thread)memalign(align, size);
     if (!t) return NULL;
 
     t->ep       = entrypoint;
@@ -65,10 +53,14 @@ Thread __createThread(ThreadFunc entrypoint, u32 stackSize, bool detached)
     t->finished = false;
     t->stacktop = (u8*)t + allocsize;
 
+    // ThreadVars.tls_tp must be aligned correctly, so we bump tdata_start to
+    // ensure that after subtracting 8 bytes for the TLS header, it will be aligned.
+    size_t tdata_start = 8 + alignTo((size_t)t->stacktop - 8, align);
+
     if (tlsloadsize)
-        memcpy(t->stacktop, __tdata_lma, tlsloadsize);
+        memcpy((void*)tdata_start, __tdata_lma, tlsloadsize);
     if (tbsssize)
-        memset((u8*)t->stacktop+tlsloadsize, 0, tbsssize);
+        memset((void*)tdata_start + tlsloadsize, 0, tbsssize);
 
     // Set up child thread's reent struct, inheriting standard file handles
     _REENT_INIT_PTR(&t->reent);
