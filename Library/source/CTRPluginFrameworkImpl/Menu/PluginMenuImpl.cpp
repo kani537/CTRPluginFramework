@@ -21,6 +21,7 @@ namespace CTRPluginFramework
 
         OnFirstOpening(nullptr),
         OnOpening(nullptr),
+        OnClosing(nullptr),
         _actionReplay{ new PluginMenuActionReplay() },
         _home(new PluginMenuHome(name, (menuType == 1))),
         _search(new PluginMenuSearch(_hexEditor)),
@@ -215,6 +216,10 @@ namespace CTRPluginFramework
                     if (_isOpen) ///< Close menu
                     {
                         SoundEngine::PlayMenuSound(SoundEngine::Event::CANCEL);
+
+                        if (OnClosing != nullptr)
+                            OnClosing();
+
                         ProcessImpl::Play(true);
                         _isOpen = false;
                         openManager.Clear();

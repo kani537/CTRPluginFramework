@@ -8,12 +8,12 @@ namespace CTRPluginFramework
     static PluginMenu   *g_runningInstance = nullptr;
 
     PluginMenu::PluginMenu(std::string name, std::string about, u32 menuType) :
-        OnFirstOpening{ nullptr }, OnOpening{ nullptr }, OnNewFrame{ nullptr }, _menu(new PluginMenuImpl(name, about, menuType))
+        OnFirstOpening{ nullptr }, OnOpening{ nullptr }, OnClosing{ nullptr }, OnNewFrame{ nullptr }, _menu(new PluginMenuImpl(name, about, menuType))
     {
     }
 
     PluginMenu::PluginMenu(std::string name, void *about, DecipherPointer func, u32 menuType) :
-        OnFirstOpening{ nullptr }, OnOpening{ nullptr }, OnNewFrame{ nullptr }
+        OnFirstOpening{ nullptr }, OnOpening{ nullptr }, OnClosing{ nullptr }, OnNewFrame{ nullptr }
     {
         std::string aboutStr = "";
         func(aboutStr, about);
@@ -22,7 +22,7 @@ namespace CTRPluginFramework
     }
 
     PluginMenu::PluginMenu(std::string name, u32 major, u32 minor, u32 revision, std::string about, u32 menuType) :
-        OnFirstOpening{ nullptr }, OnOpening{ nullptr }, OnNewFrame{ nullptr }, _menu(new PluginMenuImpl(name, about, menuType))
+        OnFirstOpening{ nullptr }, OnOpening{ nullptr }, OnClosing{ nullptr }, OnNewFrame{ nullptr }, _menu(new PluginMenuImpl(name, about, menuType))
     {
         u32 version = (major & 0xFF) | ((minor & 0xFF) << 8) | ((revision & 0xFF) << 16);
 
@@ -93,6 +93,7 @@ namespace CTRPluginFramework
 
         _menu->OnFirstOpening = OnFirstOpening;
         _menu->OnOpening = OnOpening;
+        _menu->OnClosing = OnClosing;
         _menu->OnFrame = OnNewFrame;
 
         int ret = _menu->Run();
