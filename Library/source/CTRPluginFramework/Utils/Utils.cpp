@@ -17,6 +17,7 @@
 #include "3ds.h"
 #include "CTRPluginFramework/Menu/Keyboard.hpp"
 #include "Unicode.h"
+#include "plgldr.h"
 
 
 namespace CTRPluginFramework
@@ -52,7 +53,15 @@ namespace CTRPluginFramework
     void    InitializeRandomEngine(void)
     {
         // Init the engine with a random seed
-        g_rng.seed(svcGetSystemTick());
+        if (SystemImpl::IsCitra) {
+            sslcInit(0);
+            u32 data = 0;
+            sslcGenerateRandomData(reinterpret_cast<u8*>(&data), sizeof(data));
+            sslcExit();
+            g_rng.seed(data);
+        } else {
+            g_rng.seed(svcGetSystemTick());
+        }
     }
 
     u32     Utils::Random(void)
