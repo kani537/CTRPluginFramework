@@ -554,8 +554,7 @@ namespace CTRPluginFramework
         if (EarlyCallback)
             EarlyCallback((u32*)arg);
 
-        // Set ProcessImpl::MainThreadTls
-        ProcessImpl::MainThreadTls = (u32)getThreadLocalStorage();
+
         // Set exception handlers
         ProcessImpl::EnableExceptionHandlers();
         // Check if we are on citra
