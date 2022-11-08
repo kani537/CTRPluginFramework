@@ -550,10 +550,12 @@ namespace CTRPluginFramework
     extern "C"
     int   __entrypoint(int arg)
     {
+        // Set ProcessImpl::MainThreadTls
+        ProcessImpl::MainThreadTls = (u32)getThreadLocalStorage();
+
         // Call early callback, with pointer to the 2 saved instructions
         if (EarlyCallback)
             EarlyCallback((u32*)arg);
-
 
         // Set exception handlers
         ProcessImpl::EnableExceptionHandlers();
