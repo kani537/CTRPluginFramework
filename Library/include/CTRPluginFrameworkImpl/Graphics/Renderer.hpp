@@ -5,6 +5,7 @@
 #include "3ds.h"
 
 #include "CTRPluginFramework/Graphics/Color.hpp"
+#include "CTRPluginFramework/Graphics/Render.hpp"
 #include "CTRPluginFramework/System/Vector.hpp"
 #include "CTRPluginFramework/System/Rect.hpp"
 #include "CTRPluginFrameworkImpl/Graphics/Line.hpp"
@@ -106,6 +107,10 @@ namespace CTRPluginFramework
         }
 
         static thread_local RendererContext  _rendererContext;
+
+        static inline Render::Interface GetInterface() {
+            return Render::Interface();
+        }
     };
 
         // Can't find a good name...
