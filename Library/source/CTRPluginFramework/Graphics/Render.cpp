@@ -47,4 +47,37 @@ namespace CTRPluginFramework
         Utils::ConvertUTF16ToUTF8(ret, newStr);
         return ret;
     }
+
+    void Render::Interface::DrawPixel(int posX, int posY, const Color &color) {
+        Renderer::DrawPixel(posX, posY, color);
+    }
+
+    void Render::Interface::DrawHLine(int posX, int posY, int length, const Color &color, int thickness, bool stippled) {
+        if (stippled)
+            Renderer::DrawStippledLine(posX, posY, length, color, thickness);
+        else
+            Renderer::DrawLine(posX, posY, length, color, thickness);
+    }
+
+    void Render::Interface::DrawVLine(int posX, int posY, int length, const Color &color, int thickness, bool stippled) {
+        if (stippled)
+            Renderer::DrawStippledLine(posX, posY, thickness, color, length);
+        else
+            Renderer::DrawLine(posX, posY, thickness, color, length);
+    }
+
+    void Render::Interface::DrawLine(const IntVector &start, const IntVector &end, const Color &color) {
+        Renderer::DrawLine(start, end, color);
+    }
+
+    void Render::Interface::DrawRect(const IntRect& rect, const Color& color, bool fill, int thickness) {
+        Renderer::DrawRect(rect.leftTop.x, rect.leftTop.y, rect.size.x, rect.size.y, color, fill, thickness);
+    }
+
+    void Render::Interface::DrawSysString(const std::string& str, int posX, int posY, Color color, int xLimit, int yLimit, bool autoWrap) {
+        if (autoWrap)
+            Renderer::DrawSysStringReturn(reinterpret_cast<const unsigned char*>(str.c_str()), posX, posY, xLimit, color, yLimit);
+        else
+            Renderer::DrawSysString(str.c_str(), posX, posY, xLimit, color);
+    }
  }

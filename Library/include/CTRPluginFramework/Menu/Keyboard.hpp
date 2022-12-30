@@ -2,6 +2,7 @@
 #define CTRPLUGINFRAMEWORK_KEYBOARD_HPP
 
 #include "CTRPluginFramework/Graphics/CustomIcon.hpp"
+#include "CTRPluginFramework/Graphics/Render.hpp"
 #include "CTRPluginFramework/System/Controller.hpp"
 #include "CTRPluginFramework/Sound.hpp"
 #include "types.h"
@@ -22,13 +23,16 @@ namespace CTRPluginFramework
             SelectionChanged,
             KeyPressed,
             KeyDown,
-            KeyReleased
+            KeyReleased,
+            FrameTop,
+            FrameBottom
         };
 
         EventType   type{};       ///< Type of the event
         u32         codepoint{0};  ///< The codepoint of the character that thrown the event (used for CharacterAdded and CharacterRemoved, 0 otherwise)
         u32         selectedIndex{0}; ///< The entry index in a custom keyboard being selected (used for SelectionChanged, 0 otherwise)
-        Key         affectedKey{(Key)0}; //< Button affected not mapped to any keyboard feature (used for ButtonPressed, ButtonHold and ButtonReleased, 0 otherwise)
+        Key         affectedKey{(Key)0}; ///< Button affected not mapped to any keyboard feature (used for ButtonPressed, ButtonHold and ButtonReleased, 0 otherwise)
+        Render::Interface* renderInterface{nullptr}; ///< Interface to render to the screen (used for FrameTop and FrameBottom, nullptr otherwise)
     };
 
     class KeyboardImpl;

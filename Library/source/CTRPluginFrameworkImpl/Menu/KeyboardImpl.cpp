@@ -597,6 +597,13 @@ namespace CTRPluginFramework
                 posY += 48;
             Renderer::DrawSysStringReturn(reinterpret_cast<const u8 *>(_error.c_str()), posX, posY, maxX, red, maxY);
         }
+        if (_onKeyboardEvent != nullptr && _owner != nullptr) {
+            Render::Interface interface = Renderer::GetInterface();
+            _ClearKeyboardEvent();
+            _KeyboardEvent.type = KeyboardEvent::EventType::FrameTop;
+            _KeyboardEvent.renderInterface = &interface;
+            _onKeyboardEvent(*_owner, _KeyboardEvent);
+        }
     }
 
     void    KeyboardImpl::_RenderBottom(void)
@@ -750,6 +757,13 @@ namespace CTRPluginFramework
             Renderer::DrawLine(posX, posY + 1, 1, sbThumb, _scrollCursorSize - 2);
             Renderer::DrawLine(posX + 1, posY, 1, sbThumb, _scrollCursorSize);
             Renderer::DrawLine(posX + 2, posY + 1, 1, sbThumb, _scrollCursorSize - 2);
+        }
+        if (_onKeyboardEvent != nullptr && _owner != nullptr) {
+            Render::Interface interface = Renderer::GetInterface();
+            _ClearKeyboardEvent();
+            _KeyboardEvent.type = KeyboardEvent::EventType::FrameBottom;
+            _KeyboardEvent.renderInterface = &interface;
+            _onKeyboardEvent(*_owner, _KeyboardEvent);
         }
     }
 
