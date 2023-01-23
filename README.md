@@ -10,16 +10,25 @@ The latest version of devkitARM and libctru is needed to build the framework. Yo
 
 The installation and updating is done through `devkitpro-pacman`.
 
-### Adding package repository
-The first time you install any *ThePixellizerOSS* software, you will need to add the package database. After you have added the database for the first time, you no longer need to do the following steps again.
+### Adding package database
+The first time you install any *ThePixellizerOSS* software, you will need to add the package database to `devkitpro-pacman`. The following steps only need to be done once. If the package database was added in the past, you can skip this section.
 
 #### Windows
 1. Navigate to `C:/devkitPro/msys2` and run `msys2_shell.bat`.
-2. Copy and paste the following text and press Enter.
+2. Copy and paste the following command and press Enter.
 ```
-if ! grep -Fxq "[thepixellizeross]" /etc/pacman.conf; then echo -e "\n\n[thepixellizeross]\nServer = https://thepixellizeross.gitlab.io/packages/any\nSigLevel = Optional\n" >> /etc/pacman.conf; fi
+if ! grep -Fxq "[thepixellizeross-lib]" /etc/pacman.conf; then echo -e "\n[thepixellizeross-lib]\nServer = https://thepixellizeross.gitlab.io/packages/any\nSigLevel = Optional" | tee -a /etc/pacman.conf > /dev/null; fi; if ! grep -Fxq "[thepixellizeross-win]" /etc/pacman.conf; then echo -e "\n[thepixellizeross-win]\nServer = https://thepixellizeross.gitlab.io/packages/x86_64/win\nSigLevel = Optional" | tee -a /etc/pacman.conf > /dev/null; fi
 ```
-3. Run `pacman -Sy` and verify it mentions the `thepixellizeross` database.
+3. Run `pacman -Sy` and verify it mentions the *ThePixellizerOSS* databases.
+
+#### Linux
+The following steps have only been tested for debian based installations (such as Ubuntu).
+
+1. Open a command prompt and type the following command.
+```
+if ! grep -Fxq "[thepixellizeross-lib]" /opt/devkitpro/pacman/etc/pacman.conf; then echo -e "\n[thepixellizeross-lib]\nServer = https://thepixellizeross.gitlab.io/packages/any\nSigLevel = Optional" | sudo tee -a /opt/devkitpro/pacman/etc/pacman.conf > /dev/null; fi; if ! grep -Fxq "[thepixellizeross-linux]" /opt/devkitpro/pacman/etc/pacman.conf; then echo -e "\n[thepixellizeross-linux]\nServer = https://thepixellizeross.gitlab.io/packages/x86_64/linux\nSigLevel = Optional" | sudo tee -a /opt/devkitpro/pacman/etc/pacman.conf > /dev/null; fi
+```
+2. Run `dkp-pacman -Sy` and verify it mentions the *ThePixellizerOSS* databases.
 
 ### Installing
 The following steps are required to install **CTRPluginFramwork**.
@@ -28,12 +37,18 @@ The following steps are required to install **CTRPluginFramwork**.
 1. Navigate to `C:/devkitPro/msys2` and run `msys2_shell.bat`.
 2. Run `pacman -S libctrpf` to install the package
 
+#### Linux
+1. Open a command prompt and run `dkp-pacman -S libctrpf` to install the package.
+
 ### Updating
-Any updates to **CTRPluginFramework**, alongside any other packages can be performed with the following commands.
+Any updates to **CTRPluginFramework**, alongside other packages can be done with the following commands.
 
 #### Windows
 1. Navigate to `C:/devkitPro/msys2` and run `msys2_shell.bat`.
-2. Run `pacman -Syu` to search for updates. Make sure to run this command multiple times until it prompts there are no pending updates.
+2. Run `pacman -Syu` to check for updates. Make sure to run this command multiple times until it says everything is up to date.
+
+#### Linux
+1. Open a command prompt and run `dkp-pacman -Syu` to check for updates. Make sure to run this command multiple times until it says everything is up to date.
 
 ## Uninstalling
 The following steps are required to remove **CTRPluginFramwork**.
@@ -42,20 +57,9 @@ The following steps are required to remove **CTRPluginFramwork**.
 1. Navigate to `C:/devkitPro/msys2` and run `msys2_shell.bat`.
 2. Run `pacman -R libctrpf` to remove the package
 
+#### Linux
+1. Open a command prompt and run `dkp-pacman -R libctrpf` to remove the package.
+
 ## License
 
-Copyright (c) The Pixellizer Group
-
-This software is licensed under the following terms:
-
-```
-Permission to use, copy, modify, and/or distribute this software for any purpose is hereby granted as long as the following three conditions are met.
-
-1) Access to any work in binary form that is based or uses part or the totality of this software must not be restricted to individuals that have been charged a fee or any other kind of compensation.
-
-2) You are exempt of the condition 1 of this license as long as the source code of the work that is based or uses part or the totality of this software is provided along with its binary form.
-
-3) Any copy, modification or distribution of the source code of this software must retain the same license text.
-
-THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
-```
+See the [LICENSE file](LICENSE.txt).
