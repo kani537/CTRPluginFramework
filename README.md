@@ -6,9 +6,41 @@
 
 The latest version of devkitARM and libctru is needed to build the framework. You can run `make dist-bin` in the `Library` folder to generate a *tar* file containing the library and include files.
 
-## Installing
+## Installing & Updating
 
-Place the contents of the provided *tar* file inside a folder named `libctrpf` in your devkitPro installation directory. (The resulting folder should contain the `lib` and `include` subfolders.)
+The installation and updating is done through `devkitpro-pacman`.
+
+### Adding package repository
+The first time you install any *ThePixellizerOSS* software, you will need to add the package database. After you have added the database for the first time, you no longer need to do the following steps again.
+
+#### Windows
+1. Navigate to `C:/devkitPro/msys2` and run `msys2_shell.bat`.
+2. Copy and paste the following text and press Enter.
+```
+if ! grep -Fxq "[thepixellizeross]" /etc/pacman.conf; then echo -e "\n\n[thepixellizeross]\nServer = https://thepixellizeross.gitlab.io/packages/any\nSigLevel = Optional\n" >> /etc/pacman.conf; fi
+```
+3. Run `pacman -Sy` and verify it mentions the `thepixellizeross` database.
+
+### Installing
+The following steps are required to install **CTRPluginFramwork**.
+
+#### Windows
+1. Navigate to `C:/devkitPro/msys2` and run `msys2_shell.bat`.
+2. Run `pacman -S libctrpf` to install the package
+
+### Updating
+Any updates to **CTRPluginFramework**, alongside any other packages can be performed with the following commands.
+
+#### Windows
+1. Navigate to `C:/devkitPro/msys2` and run `msys2_shell.bat`.
+2. Run `pacman -Syu` to search for updates. Make sure to run this command multiple times until it prompts there are no pending updates.
+
+## Uninstalling
+The following steps are required to remove **CTRPluginFramwork**.
+
+#### Windows
+1. Navigate to `C:/devkitPro/msys2` and run `msys2_shell.bat`.
+2. Run `pacman -R libctrpf` to remove the package
 
 ## License
 
