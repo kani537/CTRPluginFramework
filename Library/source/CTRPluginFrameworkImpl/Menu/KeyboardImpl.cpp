@@ -1958,6 +1958,9 @@ namespace CTRPluginFramework
                 else if (ret == KEY_SPACE && (!_max || Utils::GetSize(_userInput) < _max))
                 {
                     _userInput.insert(_cursorPositionInString, " ");
+                    _ClearKeyboardEvent();
+                    _KeyboardEvent.type = KeyboardEvent::CharacterAdded;
+                    _KeyboardEvent.codepoint = ' ';
                     _ScrollUp();
                     return (true);
                 }
@@ -2271,9 +2274,10 @@ namespace CTRPluginFramework
 
     void KeyboardImpl::_ClearKeyboardEvent()
     {
-        _KeyboardEvent.selectedIndex = 0;
         _KeyboardEvent.codepoint = 0;
+        _KeyboardEvent.selectedIndex = 0;
         _KeyboardEvent.affectedKey = (Key)0;
+        _KeyboardEvent.renderInterface = nullptr;
     }
 
     void    KeyboardImpl::_ChangeManualKey(int newVal, bool playSound)
