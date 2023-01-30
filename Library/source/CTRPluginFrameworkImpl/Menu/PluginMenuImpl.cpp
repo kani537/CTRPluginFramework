@@ -547,7 +547,7 @@ namespace CTRPluginFramework
         }
     }
 
-    void    PluginMenuImpl::ExtractHotkeys(HotkeysVector &hotkeys, MenuFolderImpl *folder, u32 &size)
+    void    PluginMenuImpl::ExtractHotkeys(HotkeysVector &hotkeys, MenuFolderImpl *folder, u32 &size, std::vector<MenuItem *> &ancestorFolders)
     {
         if (folder == nullptr)
             return;
@@ -559,7 +559,18 @@ namespace CTRPluginFramework
 
             if (item->IsFolder())
             {
-                ExtractHotkeys(hotkeys, reinterpret_cast<MenuFolderImpl*>(item), size);
+                bool flag = true;
+                for (auto *ancestorFolder:ancestorFolders)
+                    if(item == ancestorFolder)
+                    {
+                        flag = false;
+                        break;
+                    }
+                if (flag)
+                {
+                    ancestorFolders.push_back(item);
+                    ExtractHotkeys(hotkeys, reinterpret_cast<MenuFolderImpl*>(item), size, ancestorFolders);
+                }
                 continue;
             }
 
@@ -594,7 +605,8 @@ namespace CTRPluginFramework
             u32             size = 0;
             u32             *buffer;
 
-            ExtractHotkeys(hotkeys, root, size);
+            std::vector<MenuItem *> ancestorFolders;
+            ExtractHotkeys(hotkeys, root, size, ancestorFolders);
 
             if (size)
             {
