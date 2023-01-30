@@ -32,7 +32,7 @@ namespace CTRPluginFramework
 
         _AddFavoriteBtn(Button::Icon | Button::Toggle, IntRect(50, 30, 25, 25), Icon::DrawAddFavorite),
         _InfoBtn(Button::Icon | Button::Toggle, IntRect(90, 30, 25, 25), Icon::DrawInfo),
-        _submenu{{"enable all", "disable all"}}
+        _submenu{{"enable all", "disable all","go to root"}}
     {
         _root = _folder = new MenuFolderImpl(name);
         _starredConst = _starred = new MenuFolderImpl("Favorites");
@@ -133,8 +133,9 @@ namespace CTRPluginFramework
         if(isSubMenuOpen) {
             int subChoice = _submenu();
 
-            if(!subChoice--) ToggleAllEntry(true);
-            if(!subChoice--) ToggleAllEntry(false);
+            if(!subChoice--) _toggleAllEntry(true);
+            if(!subChoice--) _toggleAllEntry(false);
+            if(!subChoice--) _gotoRoot();
         }
 
         // Update UI
@@ -1041,7 +1042,7 @@ namespace CTRPluginFramework
         }
     }
 
-    void PluginMenuHome::ToggleAllEntry(bool enable)
+    void PluginMenuHome::_toggleAllEntry(bool enable)
     {
         MenuFolderImpl *folder = _starMode ? _starred : _folder;
 
@@ -1067,5 +1068,10 @@ namespace CTRPluginFramework
                 }
             }
         }
+    }
+
+    void PluginMenuHome::_gotoRoot(void)
+    {
+        _folder = _root;
     }
 }

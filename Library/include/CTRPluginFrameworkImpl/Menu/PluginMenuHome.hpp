@@ -57,7 +57,8 @@ namespace CTRPluginFramework
         void    _toolsBtn_OnClick(void);  // 5
         void    _InfoBtn_OnClick(void); // note
 
-        void ToggleAllEntry(bool enable);
+        void    _toggleAllEntry(bool enable);
+        void    _gotoRoot(void);
 
         // Members
         MenuFolderImpl    * _root;
