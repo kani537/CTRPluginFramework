@@ -547,7 +547,7 @@ namespace CTRPluginFramework
         }
     }
 
-    void    PluginMenuImpl::ExtractHotkeys(HotkeysVector &hotkeys, MenuFolderImpl *folder, u32 &size, std::vector<MenuItem *> &ancestorFolders)
+    void    PluginMenuImpl::ExtractHotkeys(HotkeysVector &hotkeys, MenuFolderImpl *folder, u32 &size, std::vector<MenuItem *> ancestorFolders)
     {
         if (folder == nullptr)
             return;
