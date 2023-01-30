@@ -31,7 +31,8 @@ namespace CTRPluginFramework
         _controllerBtn(Button::Icon, IntRect(170, 30, 25, 25), Icon::DrawGameController25),
 
         _AddFavoriteBtn(Button::Icon | Button::Toggle, IntRect(50, 30, 25, 25), Icon::DrawAddFavorite),
-        _InfoBtn(Button::Icon | Button::Toggle, IntRect(90, 30, 25, 25), Icon::DrawInfo)
+        _InfoBtn(Button::Icon | Button::Toggle, IntRect(90, 30, 25, 25), Icon::DrawInfo),
+        _submenu{{"enable all", "disable all"}}
     {
         _root = _folder = new MenuFolderImpl(name);
         _starredConst = _starred = new MenuFolderImpl("Favorites");
@@ -93,6 +94,8 @@ namespace CTRPluginFramework
 
         _mode = mode;
 
+        bool isSubMenuOpen = _submenu.IsOpen();
+
         // Process events
         if (_noteTB.IsOpen() && !ShowNoteBottom)
         {
@@ -105,8 +108,11 @@ namespace CTRPluginFramework
         }
         else
         {
-            for (size_t i = 0; i < eventList.size(); i++)
+            for (size_t i = 0; i < eventList.size(); i++) {
+                _submenu.ProcessEvent(eventList[i]);
+                if(!isSubMenuOpen)
                 _ProcessEvent(eventList[i]);
+            }
         }
 
         if (_toolsBtn()) _toolsBtn_OnClick();
@@ -122,6 +128,13 @@ namespace CTRPluginFramework
             if (_InfoBtn()) _InfoBtn_OnClick();
             if (_keyboardBtn()) _keyboardBtn_OnClick();
             if (_controllerBtn()) _controllerBtn_OnClick();
+        }
+
+        if(isSubMenuOpen) {
+            int subChoice = _submenu();
+
+            if(!subChoice--) ToggleAllEntry(true);
+            if(!subChoice--) ToggleAllEntry(false);
         }
 
         // Update UI
@@ -566,6 +579,8 @@ namespace CTRPluginFramework
             }
             posY += 4;
         }
+
+        _submenu.Draw();
     }
 
     //###########################################
@@ -1022,6 +1037,34 @@ namespace CTRPluginFramework
             {
                 _noteTB.Update(e->firstName, e->GetNote());
                 e->HandledNoteChanges();
+            }
+        }
+    }
+
+    void PluginMenuHome::ToggleAllEntry(bool enable)
+    {
+        MenuFolderImpl *folder = _starMode ? _starred : _folder;
+
+        for (size_t i = 0; i < folder->_items.size(); i++)
+        {
+            MenuItem *item = folder->_items[i];
+
+            if (item->_type == MenuType::Entry)
+            {
+                MenuEntryImpl *entry = reinterpret_cast<MenuEntryImpl *>(item);
+
+                if (entry->_flags.isUnselectable)
+                    break;
+
+                // If the entry has a valid funcpointer
+                if (entry->GameFunc != nullptr)
+                {
+                    // Change the state
+                    if (enable)
+                    entry->Enable();
+                else
+                    entry->Disable();
+                }
             }
         }
     }

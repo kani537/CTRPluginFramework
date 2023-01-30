@@ -7,6 +7,7 @@
 #include "CTRPluginFrameworkImpl/Menu/MenuEntryImpl.hpp"
 #include "CTRPluginFrameworkImpl/Menu/MenuItem.hpp"
 #include "CTRPluginFramework/Menu/PluginMenu.hpp"
+#include "CTRPluginFrameworkImpl/Menu/SubMenu.hpp"
 
 #include <vector>
 
@@ -56,6 +57,8 @@ namespace CTRPluginFramework
         void    _toolsBtn_OnClick(void);  // 5
         void    _InfoBtn_OnClick(void); // note
 
+        void ToggleAllEntry(bool enable);
+
         // Members
         MenuFolderImpl    * _root;
         MenuFolderImpl    * _folder;
@@ -90,6 +93,8 @@ namespace CTRPluginFramework
         // Entry button
         Button              _AddFavoriteBtn;
         Button              _InfoBtn;
+
+        SubMenu _submenu;
     };
 }
 

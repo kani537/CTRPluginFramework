@@ -198,7 +198,7 @@ lib/libctrpfd.a : libcwav-build lib debug
 #---------------------------------------------------------------------------------
 clean:
 	@echo clean ...
-	@rm -fr release debug lib docs libcwav
+	@rm -fr release debug docs libcwav
 
 #---------------------------------------------------------------------------------
 else
