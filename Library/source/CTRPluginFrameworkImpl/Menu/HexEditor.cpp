@@ -348,7 +348,7 @@ namespace CTRPluginFramework
         }
 
         u32     address = _ctx._cursorAddress & ~3;
-        PluginMenuActionReplay::NewARCode(0, address, *(u32 *)address);
+        PluginMenuActionReplay::NewARCode(PluginMenuActionReplay::CODE{0, address, *(u32 *)address});
     }
 
     void    HexEditor::_MoveBackward(void)

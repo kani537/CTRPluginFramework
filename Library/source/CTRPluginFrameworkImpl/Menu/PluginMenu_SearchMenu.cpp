@@ -191,6 +191,7 @@ namespace CTRPluginFramework
                 else if (!subchoice--) _EditAll();
                 else if (!subchoice--) _JumpInEditor();
                 else if (!subchoice--) _NewCheat();
+                else if (!subchoice--) _NewCheatAll();
                 else if (!subchoice--) _Export();
                 else if (!subchoice--) _ExportAll();
                 else if (!subchoice--)
@@ -350,7 +351,7 @@ namespace CTRPluginFramework
 
         if (_submenu.OptionsCount() < 5 && !_currentSearch->IsFirstUnknownSearch())
         {
-            _submenu.ChangeOptions({ "Edit", "Edit all", "Jump in editor", "New cheat", "Export", "Export all",
+            _submenu.ChangeOptions({ "Edit", "Edit all", "Jump in editor", "New cheat", "New cheat all", "Export", "Export all",
             "Converter", "Show Game"});//, "Play 1 frame", "Play 2 frames", "Play 5 frames" });
         }
 
@@ -409,7 +410,41 @@ namespace CTRPluginFramework
         else
             Process::Read32(address, value);
 
-        PluginMenuActionReplay::NewARCode(codetype, address, value);
+        PluginMenuActionReplay::NewARCode(PluginMenuActionReplay::CODE{codetype, address, value});
+
+    }
+
+    void    SearchMenu::_NewCheatAll(void)
+    {
+        std::vector<PluginMenuActionReplay::CODE> codes;
+        for (std::string resultsAddress : _resultsAddress)
+        {
+            u32         address = strtoul(_resultsAddress[_selector].c_str(), NULL, 16);
+            u32         value = 0;
+            u8          codetype = 0;
+            SearchFlags type = _currentSearch->GetType();
+
+            if (type == SearchFlags::U8)
+            {
+                codetype = 0x20;
+                u8 val8 = 0;
+                Process::Read8(address, val8);
+                value = val8;
+            }
+            else if (type == SearchFlags::U16)
+            {
+                codetype = 0x10;
+                u16 val16 = 0;
+                Process::Read16(address, val16);
+                value = val16;
+            }
+            else
+                Process::Read32(address, value);
+
+            codes.push_back(PluginMenuActionReplay::CODE{codetype,address,value});
+        }
+
+        PluginMenuActionReplay::NewARCode(codes);
 
     }
 
