@@ -1,5 +1,6 @@
 #include "CTRPluginFramework/Graphics/Render.hpp"
 #include "CTRPluginFrameworkImpl/Graphics/Renderer.hpp"
+#include "CTRPluginFrameworkImpl/Graphics/Icon.hpp"
 
 namespace CTRPluginFramework
 {
@@ -79,5 +80,9 @@ namespace CTRPluginFramework
             Renderer::DrawSysStringReturn(reinterpret_cast<const unsigned char*>(str.c_str()), posX, posY, xLimit, color, yLimit);
         else
             Renderer::DrawSysString(str.c_str(), posX, posY, xLimit, color);
+    }
+
+    void Render::Interface::DrawCustomIcon(const CustomIcon& icon, int posX, int posY) {
+        Icon::DrawCustomIcon(icon, posX, posY);
     }
  }

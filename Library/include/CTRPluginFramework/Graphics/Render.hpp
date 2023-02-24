@@ -3,6 +3,7 @@
 
 #include "string"
 #include "unordered_map"
+#include "CTRPluginFramework/Graphics/CustomIcon.hpp"
 #include "CTRPluginFramework/System/Rect.hpp"
 #include "CTRPluginFramework/System/Vector.hpp"
 #include "CTRPluginFramework/Utils/Utils.hpp"
@@ -115,6 +116,15 @@ namespace CTRPluginFramework
              * @param autoWrap Automatically wrap text to the next line
              */
             void     DrawSysString(const std::string& str, int posX, int posY, Color color, int xLimit = 320, int yLimit = 240, bool autoWrap = false);
+
+            /**
+             * @brief Draws a custom icon
+             *
+             * @param icon Icon to draw
+             * @param posX X position
+             * @param posY Y position
+             */
+            void     DrawCustomIcon(const CustomIcon& icon, int posX, int posY);
 
         private:
             friend class Renderer;
