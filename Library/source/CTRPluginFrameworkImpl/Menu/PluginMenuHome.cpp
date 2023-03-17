@@ -9,11 +9,6 @@
 
 namespace CTRPluginFramework
 {
-    static u32 g_textXpos[2] = { 0 };
-
-    // DO NOT REMOVE THIS COPYRIGHT NOTICE
-    static const char g_ctrpfText[] = "CTRPluginFramework";
-    static const char g_copyrightText[] = "Copyright (c) The Pixellizer Group";
 
     PluginMenuHome::PluginMenuHome(std::string &name, bool showNoteBottom) :
 
@@ -23,7 +18,7 @@ namespace CTRPluginFramework
         _hidMapperBtn(Button::Sysfont | Button::Rounded, "Mapper", IntRect(165, 70, 120, 30), Icon::DrawController),
         _gameGuideBtn(Button::Sysfont | Button::Rounded, "Game Guide", IntRect(30, 105, 120, 30), Icon::DrawGuide),
         _searchBtn(Button::Sysfont | Button::Rounded, "Search", IntRect(165, 105, 120, 30), Icon::DrawSearch),
-        _arBtn(Button::Sysfont | Button::Rounded, "ActionReplay", IntRect(30, 140, 120, 30)),
+        _arBtn(Button::Sysfont | Button::Rounded, "Action Replay", IntRect(30, 140, 120, 30)),
         _toolsBtn(Button::Sysfont | Button::Rounded, "Tools", showNoteBottom ? IntRect(99, 172, 120, 30) : IntRect(165, 140, 120, 30), Icon::DrawTools),
 
        // _closeBtn(*this, nullptr, IntRect(275, 24, 20, 20), Icon::DrawClose),
@@ -58,10 +53,6 @@ namespace CTRPluginFramework
 
         // Temporary disable unused buttons
         _hidMapperBtn.Lock();
-
-        // Get strings x position
-        g_textXpos[0] = (320 - Renderer::LinuxFontSize(g_ctrpfText)) / 2;
-        g_textXpos[1] = (320 - Renderer::LinuxFontSize(g_copyrightText)) / 2;
 
         // Are the buttons locked ?
         if (!Preferences::Settings.AllowActionReplay)
@@ -574,28 +565,9 @@ namespace CTRPluginFramework
 
     void PluginMenuHome::_RenderBottom(void)
     {
-        const Color& blank = Color::White;
-        static Clock creditClock;
-        static bool framework = true;
-
         Renderer::SetTarget(BOTTOM);
 
         Window::BottomWindow.Draw();
-
-        int posY = 205;
-
-        if (framework)
-            Renderer::DrawString(g_ctrpfText, g_textXpos[0], posY, blank);
-        else
-            Renderer::DrawString(g_copyrightText, g_textXpos[1], posY, blank);
-
-        if (creditClock.HasTimePassed(Seconds(5)))
-        {
-            creditClock.Restart();
-            framework = !framework;
-        }
-
-        posY = 35;
 
         // Draw buttons
         if (ShowNoteBottom)
