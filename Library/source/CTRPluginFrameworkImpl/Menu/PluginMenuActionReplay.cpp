@@ -376,7 +376,7 @@ namespace CTRPluginFramework
             return;
 
         // Backup current codes
-        if (MessageBox(Color::Orange << "Warning", "Do you want to save all changes to current file ?", DialogType::DialogYesNo)())
+        if (MessageBox(Color::Orange << "Warning", "Do you want to save all changes to current file?", DialogType::DialogYesNo)())
             SaveCodes();
 
         std::string newPath;
@@ -391,7 +391,7 @@ namespace CTRPluginFramework
 
         if (root->ItemsCount() > 0)
         {
-            if (MessageBox(Color::Orange << "Warning", "Do you want to clear current code list ?", DialogType::DialogYesNo)())
+            if (MessageBox(Color::Orange << "Warning", "Do you want to clear current code list?", DialogType::DialogYesNo)())
             {
                 // Ensure we're at the root of the menu
                 __pmARinstance->_topMenu.CloseAll();

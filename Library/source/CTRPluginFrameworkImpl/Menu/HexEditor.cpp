@@ -217,7 +217,7 @@ namespace CTRPluginFramework
 
         int   posY = 61;
 
-        Window::TopWindow.Draw("HexEditor");
+        Window::TopWindow.Draw("Hex Editor");
 
         // Render common elements
 
