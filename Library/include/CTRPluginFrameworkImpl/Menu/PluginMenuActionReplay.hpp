@@ -11,6 +11,12 @@ namespace CTRPluginFramework
     {
         using EventList = std::vector<Event>;
     public:
+        struct CODE
+        {
+            u8 type;
+            u32 address;
+            u32 value;
+        };
         PluginMenuActionReplay();
         ~PluginMenuActionReplay();
 
@@ -22,7 +28,8 @@ namespace CTRPluginFramework
         bool    operator()(EventList &eventList, const Time &delta);
 
         static void     SaveCodes(void);
-        static void     NewARCode(u8 type, u32 address, u32 value);
+        static void     NewARCode(CODE code);
+        static void     NewARCode(const std::vector<CODE> &codes);
     private:
         ARCodeEditor    _editor;
         Menu            _topMenu;

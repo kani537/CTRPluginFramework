@@ -188,8 +188,10 @@ namespace CTRPluginFramework
             if (_submenu.OptionsCount() > 4)
             {
                 if (!subchoice--) _Edit();
+                else if (!subchoice--) _EditAll();
                 else if (!subchoice--) _JumpInEditor();
                 else if (!subchoice--) _NewCheat();
+                else if (!subchoice--) _NewCheatAll();
                 else if (!subchoice--) _Export();
                 else if (!subchoice--) _ExportAll();
                 else if (!subchoice--)
@@ -349,7 +351,7 @@ namespace CTRPluginFramework
 
         if (_submenu.OptionsCount() < 5 && !_currentSearch->IsFirstUnknownSearch())
         {
-            _submenu.ChangeOptions({ "Edit", "Jump in editor", "New cheat", "Export", "Export all",
+            _submenu.ChangeOptions({ "Edit", "Edit all", "Jump in editor", "New cheat", "New cheat all", "Export", "Export all",
             "Converter", "Show Game"});//, "Play 1 frame", "Play 2 frames", "Play 5 frames" });
         }
 
@@ -408,7 +410,41 @@ namespace CTRPluginFramework
         else
             Process::Read32(address, value);
 
-        PluginMenuActionReplay::NewARCode(codetype, address, value);
+        PluginMenuActionReplay::NewARCode(PluginMenuActionReplay::CODE{codetype, address, value});
+
+    }
+
+    void    SearchMenu::_NewCheatAll(void)
+    {
+        std::vector<PluginMenuActionReplay::CODE> codes;
+        for (std::string resultsAddress : _resultsAddress)
+        {
+            u32         address = strtoul(_resultsAddress[_selector].c_str(), NULL, 16);
+            u32         value = 0;
+            u8          codetype = 0;
+            SearchFlags type = _currentSearch->GetType();
+
+            if (type == SearchFlags::U8)
+            {
+                codetype = 0x20;
+                u8 val8 = 0;
+                Process::Read8(address, val8);
+                value = val8;
+            }
+            else if (type == SearchFlags::U16)
+            {
+                codetype = 0x10;
+                u16 val16 = 0;
+                Process::Read16(address, val16);
+                value = val16;
+            }
+            else
+                Process::Read32(address, value);
+
+            codes.push_back(PluginMenuActionReplay::CODE{codetype,address,value});
+        }
+
+        PluginMenuActionReplay::NewARCode(codes);
 
     }
 
@@ -485,6 +521,116 @@ namespace CTRPluginFramework
                 {
                     if (Process::CheckAddress(address))
                         *(float *)(address) = value;
+                }
+                break;
+            }
+           /* case SearchFlags::Double:
+            {
+                double value = *(double *)(address);//strtod(_resultsNewValue[_selector].c_str(), NULL);
+
+                int res = keyboard.Open(value, value);
+
+                if (res != -1)
+                {
+                    if (Process::CheckAddress(address))
+                        *(double *)(address) = value;
+                }
+                break;
+            }*/
+            default:
+                break;
+        }
+    }
+
+    void    SearchMenu::_EditAll(void)
+    {
+        Keyboard keyboard;
+
+        keyboard.DisplayTopScreen = false;
+		keyboard.IsHexadecimal(_useHexInput);
+
+        u32 address = strtoul(_resultsAddress[_selector].c_str(), NULL, 16);
+
+        switch (_currentSearch->GetType())
+        {
+            case SearchFlags::U8:
+            {
+                u8 value = *(u8 *)(address);//strtoul(_resultsNewValue[_selector].c_str(), NULL, 16);
+
+                int res = keyboard.Open(value, value);
+
+                if (res != -1)
+                {
+                    for(auto resultsAddress : _resultsAddress)
+                    {
+                        u32 address = strtoul(resultsAddress.c_str(), NULL, 16);
+                        if (Process::CheckAddress(address))
+                            *(u8 *)(address) = value;
+                    }
+                }
+                break;
+            }
+            case SearchFlags::U16:
+            {
+                u16 value = *(u16 *)(address);//strtoul(_resultsNewValue[_selector].c_str(), NULL, 16);
+
+                int res = keyboard.Open(value, value);
+
+                if (res != -1)
+                {
+                    for(auto resultsAddress : _resultsAddress)
+                    {
+                        u32 address = strtoul(resultsAddress.c_str(), NULL, 16);
+                        if (Process::CheckAddress(address))
+                            *(u16 *)(address) = value;
+                    }
+                }
+                break;
+            }
+            case SearchFlags::U32:
+            {
+                u32 value = *(u32 *)(address);//strtoul(_resultsNewValue[_selector].c_str(), NULL, 16);
+
+                int res = keyboard.Open(value, value);
+
+                if (res != -1)
+                {
+                    for(auto resultsAddress : _resultsAddress)
+                    {
+                        u32 address = strtoul(resultsAddress.c_str(), NULL, 16);
+                        if (Process::CheckAddress(address))
+                            *(u32 *)(address) = value;
+                    }
+                }
+                break;
+            }
+          /*  case SearchFlags::U64:
+            {
+                u64 value = *(u64 *)(address);//strtoull(_resultsNewValue[_selector].c_str(), NULL, 16);
+
+                int res = keyboard.Open(value, value);
+
+                if (res != -1)
+                {
+                    if (Process::CheckAddress(address))
+                        *(u64 *)(address) = value;
+                }
+                break;
+            }*/
+            case SearchFlags::Float:
+            {
+                float value = *(float *)(address);//strtof(_resultsNewValue[_selector].c_str(), NULL);
+
+                int res = keyboard.Open(value, value);
+
+                if (res != -1)
+                {
+                    for(auto resultsAddress : _resultsAddress)
+                    {
+                        u32 address = strtoul(resultsAddress.c_str(), NULL, 16);
+                        if (Process::CheckAddress(address))
+                            *(float *)(address) = value;
+                    }
                 }
                 break;
             }

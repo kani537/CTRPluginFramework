@@ -43,7 +43,9 @@ namespace CTRPluginFramework
 
         void        _OpenExportFile(void);
         void        _NewCheat(void);
+        void        _NewCheatAll(void);
         void        _Edit(void);
+        void        _EditAll(void);
         void        _JumpInEditor(void);
         void        _Export(void);
         void        _ExportAll(void);

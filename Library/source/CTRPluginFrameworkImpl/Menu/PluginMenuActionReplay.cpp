@@ -442,7 +442,7 @@ namespace CTRPluginFramework
         File::Rename("AR.temp", path);
     }
 
-    void    PluginMenuActionReplay::NewARCode(u8 type, u32 address, u32 value)
+    void    PluginMenuActionReplay::NewARCode(CODE code)
     {
         if (!__pmARinstance)
             return;
@@ -454,10 +454,40 @@ namespace CTRPluginFramework
 
         MenuEntryActionReplay *ar = new MenuEntryActionReplay(name);
 
-        u32 offset = address & 0xFF000000;
-        address &= 0xFFFFFF;
+        u32 offset = code.address & 0xFF000000;
+        code.address &= 0xFFFFFF;
         ar->context.codes.push_back(ARCode(0xD3, 0, offset));
-        ar->context.codes.push_back(ARCode(type, address, value));
+        ar->context.codes.push_back(ARCode(code.type, code.address, code.value));
+        ar->context.codes.push_back(ARCode(0xD2, 0, 0));
+
+        ar->context.Update();
+        MenuFolderImpl *f = __pmARinstance->_topMenu.GetRootFolder();
+
+        if (f)
+            f->Append(ar);
+        ARCodeEditor::Edit(ar->context);
+        ar->context.Update();
+    }
+
+    void    PluginMenuActionReplay::NewARCode(const std::vector<CODE> &codes)
+    {
+        if (!__pmARinstance)
+            return;
+
+        std::string name;
+
+        if (!ActionReplay_GetInput(name))
+            return;
+
+        MenuEntryActionReplay *ar = new MenuEntryActionReplay(name);
+
+        for (CODE code : codes)
+        {
+            u32 offset = code.address & 0xFF000000;
+            code.address &= 0xFFFFFF;
+            ar->context.codes.push_back(ARCode(0xD3, 0, offset));
+            ar->context.codes.push_back(ARCode(code.type, code.address, code.value));
+        }
         ar->context.codes.push_back(ARCode(0xD2, 0, 0));
 
         ar->context.Update();
