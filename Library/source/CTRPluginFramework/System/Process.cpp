@@ -543,4 +543,8 @@ namespace CTRPluginFramework
     {
         return ProcessImpl::MainThreadTls;
     }
+
+    void Process::SetProcessEventCallback(ProcessEventCallback callback) {
+        ProcessImpl::processEventCallback = callback;
+    }
 } // namespace CTRPluginFramework
