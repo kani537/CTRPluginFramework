@@ -18,10 +18,9 @@ namespace CTRPluginFramework
         u32     isDefaultPlugin;
         s32*    plgldrEvent; ///< Used for synchronization
         s32*    plgldrReply; ///< Used for synchronization
-        struct  {
-            u32         notifyHomeEvent : 1; // Set by the plugin to request home events
-        }               manifest;
-        u32             reserved[23];
+        u8      notifyHomeEvent;
+        u8      padding[3];
+        u32     reserved[23];
         u32     config[32];
     };
 

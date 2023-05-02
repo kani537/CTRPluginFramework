@@ -572,7 +572,8 @@ namespace CTRPluginFramework
 
         // Populate manifest
         {
-            FwkSettings::Header->manifest.notifyHomeEvent = true;
+            volatile PluginHeader* header = (volatile PluginHeader*)PA_FROM_VA_PTR(FwkSettings::Header);
+            header->notifyHomeEvent = true;
         }
 
         // Create event
